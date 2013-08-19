@@ -39,4 +39,4 @@ case "$name" in
 esac
 
 GCS_HOME="$(cd "$(dirname "$name")"; pwd)"
-java -Xmx256M -Dapp.home="$GCS_HOME" -jar "$GCS_HOME/GCS.jar" $* &
+java -Xmx256M -Dapp.home="$GCS_HOME" -jar "$GCS_HOME/GCS.jar" $*

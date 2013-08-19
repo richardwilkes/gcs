@@ -171,7 +171,7 @@
 		<reference>M130</reference>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<name compare="is"></name>
+				<any/>
 				<quantity compare="at_least">15</quantity>
 			</spell_prereq>
 			<prereq_list all="no">

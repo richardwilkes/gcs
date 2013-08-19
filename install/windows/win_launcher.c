@@ -22,7 +22,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 // The class that will be run
-#define MAIN_CLASS com/trollworks/gcs/GCS
+#define MAIN_CLASS com/trollworks/gcs/app/GCS
 
 // The maximum amount of RAM the VM will use for the app
 #ifndef MAX_RAM
@@ -84,30 +84,75 @@ static char *CreateString2(char *format,char *embed1,char *embed2) {
 	return ptr;
 }
 
-static char *LocateJVM() {
-	static char buffer[MAX_PATH];
-	HKEY key;
+static char JRE_version[MAX_PATH];
+static char JRE_lib[MAX_PATH];
 
-	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,"SOFTWARE\\JavaSoft\\Java Runtime Environment\\1.5",0,KEY_READ,&key) == ERROR_SUCCESS) {
+static int LocateSpecificJVM(void) {
+	if (JRE_version[1] == '.' && (JRE_version[0] > '1' || (JRE_version[0] == '1' && JRE_version[2] >= '5'))) {
 		unsigned long size = MAX_PATH;
-		unsigned long type;
+		char path[MAX_PATH];
+		HKEY key;
+		int result;
+		FILE *fp;
 
-		if (RegQueryValueEx(key,"RuntimeLib",NULL,&type,buffer,&size) == ERROR_SUCCESS) {
-			RegCloseKey(key);
-			return buffer;
+		sprintf(path,"SOFTWARE\\JavaSoft\\Java Runtime Environment\\%s",JRE_version);
+		if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,path,0,KEY_READ,&key) != ERROR_SUCCESS) {
+			return 0;
+		}
+		result = RegQueryValueEx(key,"RuntimeLib",NULL,NULL,JRE_lib,&size);
+		RegCloseKey(key);
+		if (result != ERROR_SUCCESS) {
+			return 0;
+		}
+		fp = fopen(JRE_lib, "rb");
+		if (fp) {
+			fclose(fp);
+			return 1;
 		}
 	}
-	RegCloseKey(key);
-	ExitWithError("Unable to locate an installed Java 1.5 virtual machine.");
-	return NULL;
+	return 0;
+}	
+
+static char *LocateJVM(void) {
+	unsigned long size = MAX_PATH;
+	HKEY key;
+	int i = 0;
+
+	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,"SOFTWARE\\JavaSoft\\Java Runtime Environment",0,KEY_READ,&key) != ERROR_SUCCESS) {
+		ExitWithError("Unable to locate an installed Java Runtime Environment.");
+	}
+	if (RegQueryValueEx(key,"CurrentVersion",NULL,NULL,JRE_version,&size) != ERROR_SUCCESS) {
+		RegCloseKey(key);
+		ExitWithError("Unable to read the version of the current Java Runtime Environment.");
+	}
+	if (LocateSpecificJVM()) {
+		RegCloseKey(key);
+		return JRE_lib;
+	}
+
+	while (1) {
+		char subKeyName[255];
+
+		size = 255;
+		if (RegEnumKeyEx(key,i++,subKeyName,&size,NULL,NULL,NULL,NULL) != ERROR_SUCCESS) {
+			RegCloseKey(key);
+			ExitWithError("Unable to locate a suitable Java Runtime Enviroment.");
+		}
+		strcpy(JRE_version,subKeyName);
+		if (LocateSpecificJVM()) {
+			RegCloseKey(key);
+			return JRE_lib;
+		}
+	}
+	return NULL; // Will never hit this line of code.
 }
 
 static JavaVM *CreateVM(JNIEnv **vm_env,JavaVMInitArgs *vm_args,char *pathToAppDir) {
 	JavaVM *	vm;
 	HINSTANCE	vmH;
 
-	vmH = ExitIfNull(LoadLibrary(LocateJVM()),"Unable to load the Java 1.5 virtual machine.");
-	ExitIfNotZero((*(CreateJavaVM)GetProcAddress(vmH,"JNI_CreateJavaVM"))(&vm,vm_env,vm_args),"Unable to launch the Java 1.5 virtual machine.");
+	vmH = ExitIfNull(LoadLibrary(LocateJVM()),"Unable to load the Java Runtime Environment.");
+	ExitIfNotZero((*(CreateJavaVM)GetProcAddress(vmH,"JNI_CreateJavaVM"))(&vm,vm_env,vm_args),"Unable to launch the Java Runtime Environment.");
 	return vm;
 }
 

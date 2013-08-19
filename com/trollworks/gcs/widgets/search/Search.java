@@ -1,0 +1,217 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is GURPS Character Sheet.
+ *
+ * The Initial Developer of the Original Code is Richard A. Wilkes.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2002,
+ * 2005-2007 the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *
+ * ***** END LICENSE BLOCK ***** */
+
+package com.trollworks.gcs.widgets.search;
+
+import com.trollworks.gcs.utility.io.Images;
+import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.gcs.utility.text.NumberUtils;
+import com.trollworks.gcs.widgets.IconButton;
+import com.trollworks.gcs.widgets.UIUtilities;
+import com.trollworks.gcs.widgets.layout.FlexRow;
+
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
+import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
+import javax.swing.JPanel;
+import javax.swing.JRootPane;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+/** A standard search control. */
+public class Search extends JPanel implements ActionListener, DocumentListener, KeyListener, FocusListener {
+	private static String		MSG_HIT_TOOLTIP;
+	private static String		MSG_SEARCH_BUTTON_TOOLTIP;
+	private static String		MSG_SEARCH_FIELD_TOOLTIP;
+	/** The commands the tool panel provides. */
+	public static final String	CMD_SEARCH	= "search";	//$NON-NLS-1$
+	private SearchTarget		mTarget;
+	private JLabel				mHits;
+	private JTextField			mFilterField;
+	private SearchDropDown		mFloater;
+	private String				mFilter;
+
+	static {
+		LocalizedMessages.initialize(Search.class);
+	}
+
+	/**
+	 * Creates the search panel.
+	 * 
+	 * @param target The search target.
+	 */
+	public Search(SearchTarget target) {
+		mTarget = target;
+
+		IconButton button = new IconButton(Images.getQuickSearchIcon(), MSG_SEARCH_BUTTON_TOOLTIP);
+		button.setFocusable(false);
+		button.setActionCommand(CMD_SEARCH);
+		button.addActionListener(this);
+		add(button);
+
+		mFilterField = new JTextField(20);
+		mFilterField.getDocument().addDocumentListener(this);
+		mFilterField.addKeyListener(this);
+		mFilterField.addFocusListener(this);
+		mFilterField.setToolTipText(MSG_SEARCH_FIELD_TOOLTIP);
+		add(mFilterField);
+
+		mHits = new JLabel();
+		mHits.setToolTipText(MSG_HIT_TOOLTIP);
+		adjustHits();
+		add(mHits);
+
+		FlexRow row = new FlexRow();
+		row.add(button);
+		row.add(mFilterField);
+		row.add(mHits);
+		row.apply(this);
+	}
+
+	@Override public boolean requestFocusInWindow() {
+		return mFilterField.requestFocusInWindow();
+	}
+
+	public void actionPerformed(ActionEvent event) {
+		String command = event.getActionCommand();
+
+		if (CMD_SEARCH.equals(command)) {
+			searchSelect();
+		}
+	}
+
+	private void searchSelect() {
+		if (mFloater != null) {
+			Object[] selection = mFloater.getSelectedValues();
+			if (selection != null && selection.length > 0) {
+				mTarget.searchSelect(selection);
+				return;
+			}
+		}
+		mTarget.searchSelect(adjustHits());
+	}
+
+	/**
+	 * Adjust the hits count.
+	 * 
+	 * @return The current hits.
+	 */
+	public Object[] adjustHits() {
+		Object[] hits = mFilter != null ? mTarget.search(mFilter) : new Object[0];
+		mHits.setText(NumberUtils.format(hits.length));
+		if (mFloater != null) {
+			mFloater.adjustToHits(hits);
+		}
+		return hits;
+	}
+
+	public void changedUpdate(DocumentEvent event) {
+		documentChanged();
+	}
+
+	public void insertUpdate(DocumentEvent event) {
+		documentChanged();
+	}
+
+	public void removeUpdate(DocumentEvent event) {
+		documentChanged();
+	}
+
+	private void documentChanged() {
+		String filterText = mFilterField.getText();
+		mFilter = filterText.length() > 0 ? filterText : null;
+		adjustHits();
+	}
+
+	public void keyPressed(KeyEvent event) {
+		switch (event.getKeyCode()) {
+			case KeyEvent.VK_UP:
+			case KeyEvent.VK_DOWN:
+				if (mFloater != null) {
+					mFloater.handleKeyPressed(event);
+				}
+				break;
+			case KeyEvent.VK_ENTER:
+				searchSelect();
+				break;
+		}
+	}
+
+	public void keyReleased(KeyEvent event) {
+		// Not used.
+	}
+
+	public void keyTyped(KeyEvent event) {
+		// Not used.
+	}
+
+	public void focusGained(FocusEvent event) {
+		if (mFloater == null) {
+			Point where = new Point(0, mFilterField.getHeight() + 1);
+			mFloater = new SearchDropDown(mTarget.getSearchRenderer(), mFilterField, mTarget);
+			JLayeredPane layeredPane = getRootPane().getLayeredPane();
+			UIUtilities.convertPoint(where, mFilterField, layeredPane);
+			layeredPane.add(mFloater, JLayeredPane.POPUP_LAYER);
+			mFloater.repaint();
+			adjustHits();
+		}
+	}
+
+	public void focusLost(FocusEvent event) {
+		removeFloater();
+	}
+
+	/** @return The filter edit field. */
+	public JTextField getFilterField() {
+		return mFilterField;
+	}
+
+	@Override public void setEnabled(boolean enabled) {
+		super.setEnabled(enabled);
+		mHits.setEnabled(enabled);
+		mFilterField.setEnabled(enabled);
+		if (!enabled) {
+			removeFloater();
+		}
+	}
+
+	private void removeFloater() {
+		if (mFloater != null) {
+			Rectangle bounds = mFloater.getBounds();
+			JRootPane rootPane = getRootPane();
+			UIUtilities.convertRectangle(bounds, mFloater.getParent(), rootPane);
+			mFloater.getParent().remove(mFloater);
+			mFloater = null;
+			rootPane.repaint(bounds);
+		}
+	}
+}

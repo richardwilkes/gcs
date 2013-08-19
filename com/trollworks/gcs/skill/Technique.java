@@ -1,0 +1,354 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is GURPS Character Sheet.
+ *
+ * The Initial Developer of the Original Code is Richard A. Wilkes.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2002,
+ * 2005-2007 the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *
+ * ***** END LICENSE BLOCK ***** */
+
+package com.trollworks.gcs.skill;
+
+import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.utility.io.xml.XMLReader;
+import com.trollworks.gcs.utility.io.xml.XMLWriter;
+import com.trollworks.gcs.utility.text.NumberUtils;
+import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.gcs.widgets.outline.RowEditor;
+
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.HashSet;
+
+/** A GURPS Technique. */
+public class Technique extends Skill {
+	private static String		MSG_TECHNIQUE_DEFAULT_NAME;
+	private static String		MSG_REQUIRES_SKILL;
+	private static String		MSG_REQUIRES_POINTS;
+	/** The XML tag used for items. */
+	public static final String	TAG_TECHNIQUE	= "technique";	//$NON-NLS-1$
+	private static final String	ATTRIBUTE_LIMIT	= "limit";		//$NON-NLS-1$
+	private SkillDefault		mDefault;
+	private boolean				mLimited;
+	private int					mLimitModifier;
+
+	/**
+	 * Calculates the technique level.
+	 * 
+	 * @param character The character the technique will be attached to.
+	 * @param name The name of the technique.
+	 * @param specialization The specialization of the technique.
+	 * @param def The default the technique is based on.
+	 * @param difficulty The difficulty of the technique.
+	 * @param points The number of points spent in the technique.
+	 * @param limited Whether the technique has been limited or not.
+	 * @param limitModifier The maximum bonus the technique can grant.
+	 * @return The calculated technique level.
+	 */
+	public static SkillLevel calculateTechniqueLevel(GURPSCharacter character, String name, String specialization, SkillDefault def, SkillDifficulty difficulty, int points, boolean limited, int limitModifier) {
+		int relativeLevel = 0;
+		int level = getBaseLevel(character, def);
+
+		if (level != Integer.MIN_VALUE) {
+			int baseLevel = level;
+
+			level += def.getModifier();
+			if (difficulty == SkillDifficulty.H) {
+				points--;
+			}
+			if (points > 0) {
+				relativeLevel = points;
+			}
+
+			if (level != Integer.MIN_VALUE) {
+				level += relativeLevel + character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase()) + character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, specialization); //$NON-NLS-1$ //$NON-NLS-2$
+			}
+			if (limited) {
+				int max = baseLevel + limitModifier;
+
+				if (level > max) {
+					relativeLevel -= level - max;
+					level = max;
+				}
+			}
+		}
+		return new SkillLevel(level, relativeLevel);
+	}
+
+	private static int getBaseLevel(GURPSCharacter character, SkillDefault def) {
+		SkillDefaultType type = def.getType();
+
+		if (SkillDefaultType.Skill == type) {
+			Skill skill = character != null ? character.getBestSkillNamed(def.getName(), def.getSpecialization(), false, new HashSet<Skill>()) : null;
+
+			return skill != null ? skill.getLevel() : Integer.MIN_VALUE;
+		}
+		// Take the modifier back out, as we wanted the base, not the final value.
+		return type.getSkillLevelFast(character, def, null) - def.getModifier();
+	}
+
+	/**
+	 * Creates a string suitable for displaying the level.
+	 * 
+	 * @param level The skill level.
+	 * @param relativeLevel The relative skill level.
+	 * @param modifier The modifer to the skill level.
+	 * @return The formatted string.
+	 */
+	public static String getTechniqueDisplayLevel(int level, int relativeLevel, int modifier) {
+		if (level < 0) {
+			return "-"; //$NON-NLS-1$
+		}
+		return NumberUtils.format(level) + "/" + NumberUtils.format(relativeLevel + modifier, true); //$NON-NLS-1$
+	}
+
+	/**
+	 * Creates a new technique.
+	 * 
+	 * @param dataFile The data file to associate it with.
+	 */
+	public Technique(DataFile dataFile) {
+		super(dataFile, false);
+		mDefault = new SkillDefault(SkillDefaultType.Skill, MSG_DEFAULT_NAME, null, 0);
+		updateLevel(false);
+	}
+
+	/**
+	 * Creates a clone of an existing technique and associates it with the specified data file.
+	 * 
+	 * @param dataFile The data file to associate it with.
+	 * @param technique The technique to clone.
+	 * @param forSheet Whether this is for a character sheet or a list.
+	 */
+	public Technique(DataFile dataFile, Technique technique, boolean forSheet) {
+		super(dataFile, technique, false, forSheet);
+		mPoints = forSheet ? technique.mPoints : getDifficulty() == SkillDifficulty.A ? 1 : 2;
+		mDefault = new SkillDefault(technique.mDefault);
+		mLimited = technique.mLimited;
+		mLimitModifier = technique.mLimitModifier;
+		updateLevel(false);
+	}
+
+	/**
+	 * Loads a technique and associates it with the specified data file.
+	 * 
+	 * @param dataFile The data file to associate it with.
+	 * @param reader The XML reader to load from.
+	 * @throws IOException
+	 */
+	public Technique(DataFile dataFile, XMLReader reader) throws IOException {
+		this(dataFile);
+		load(reader, false);
+		if (!(dataFile instanceof GURPSCharacter)) {
+			mPoints = getDifficulty() == SkillDifficulty.A ? 1 : 2;
+		}
+	}
+
+	@Override public String getLocalizedName() {
+		return MSG_TECHNIQUE_DEFAULT_NAME;
+	}
+
+	@Override public String getXMLTagName() {
+		return TAG_TECHNIQUE;
+	}
+
+	@Override public String getRowType() {
+		return "Technique"; //$NON-NLS-1$
+	}
+
+	@Override protected void prepareForLoad(boolean forUndo) {
+		super.prepareForLoad(forUndo);
+		mDefault = new SkillDefault(SkillDefaultType.Skill, MSG_DEFAULT_NAME, null, 0);
+		mLimited = false;
+		mLimitModifier = 0;
+	}
+
+	@Override protected void loadAttributes(XMLReader reader, boolean forUndo) {
+		String value = reader.getAttribute(ATTRIBUTE_LIMIT);
+
+		if (value != null && value.length() > 0) {
+			mLimited = true;
+			try {
+				mLimitModifier = Integer.parseInt(value);
+			} catch (Exception exception) {
+				mLimited = false;
+				mLimitModifier = 0;
+			}
+		}
+		super.loadAttributes(reader, forUndo);
+	}
+
+	@Override protected void loadSubElement(XMLReader reader, boolean forUndo) throws IOException {
+		if (SkillDefault.TAG_ROOT.equals(reader.getName())) {
+			mDefault = new SkillDefault(reader);
+		} else {
+			super.loadSubElement(reader, forUndo);
+		}
+	}
+
+	@Override public void saveSelf(XMLWriter out, boolean forUndo) {
+		super.saveSelf(out, forUndo);
+		mDefault.save(out);
+	}
+
+	@Override protected void saveAttributes(XMLWriter out, boolean forUndo) {
+		if (mLimited) {
+			out.writeAttribute(ATTRIBUTE_LIMIT, mLimitModifier);
+		}
+	}
+
+	/**
+	 * @param builder The {@link StringBuilder} to append this technique's satisfied/unsatisfied
+	 *            description to. May be <code>null</code>.
+	 * @param prefix The prefix to add to each line appended to the builder.
+	 * @return <code>true</code> if this technique has its default satisfied.
+	 */
+	public boolean satisfied(StringBuilder builder, String prefix) {
+		if (mDefault.getType() == SkillDefaultType.Skill) {
+			Skill skill = getCharacter().getBestSkillNamed(mDefault.getName(), mDefault.getSpecialization(), true, new HashSet<Skill>());
+			boolean satisfied = skill != null && skill.getPoints() > 0;
+
+			if (!satisfied && builder != null) {
+				if (skill != null) {
+					builder.append(MessageFormat.format(MSG_REQUIRES_SKILL, prefix, mDefault.getFullName()));
+				} else {
+					builder.append(MessageFormat.format(MSG_REQUIRES_POINTS, prefix, mDefault.getFullName()));
+				}
+			}
+			return satisfied;
+		}
+		return true;
+	}
+
+	@Override protected SkillLevel calculateLevelSelf() {
+		return calculateTechniqueLevel(getCharacter(), getName(), getSpecialization(), getDefault(), getDifficulty(), getPoints(), isLimited(), getLimitModifier());
+	}
+
+	@Override public void updateLevel(boolean notify) {
+		if (mDefault != null) {
+			super.updateLevel(notify);
+		}
+	}
+
+	/**
+	 * @param difficulty The difficulty to set.
+	 * @return Whether it was modified or not.
+	 */
+	public boolean setDifficulty(SkillDifficulty difficulty) {
+		return setDifficulty(getAttribute(), difficulty);
+	}
+
+	@Override public String getSpecialization() {
+		return mDefault.getFullName();
+	}
+
+	@Override public boolean setSpecialization(String specialization) {
+		return false;
+	}
+
+	@Override public String getTechLevel() {
+		return null;
+	}
+
+	@Override public boolean setTechLevel(String techLevel) {
+		return false;
+	}
+
+	/** @return The default to base the technique on. */
+	public SkillDefault getDefault() {
+		return mDefault;
+	}
+
+	/**
+	 * @param def The new default to base the technique on.
+	 * @return Whether anything was changed.
+	 */
+	public boolean setDefault(SkillDefault def) {
+		if (!mDefault.equals(def)) {
+			mDefault = new SkillDefault(def);
+			return true;
+		}
+		return false;
+	}
+
+	@Override public void setDifficultyFromText(String text) {
+		text = text.trim();
+		if (SkillDifficulty.A.toString().equalsIgnoreCase(text)) {
+			setDifficulty(SkillDifficulty.A);
+		} else if (SkillDifficulty.H.toString().equalsIgnoreCase(text)) {
+			setDifficulty(SkillDifficulty.H);
+		}
+	}
+
+	@Override public String getDifficultyAsText() {
+		return getDifficulty().toString();
+	}
+
+	/** @return Whether the maximum level is limited. */
+	public boolean isLimited() {
+		return mLimited;
+	}
+
+	/**
+	 * Sets whether the maximum level is limited.
+	 * 
+	 * @param limited The value to set.
+	 * @return Whether anything was changed.
+	 */
+	public boolean setLimited(boolean limited) {
+		if (limited != mLimited) {
+			mLimited = limited;
+			return true;
+		}
+		return false;
+	}
+
+	/** @return The limit modifier. */
+	public int getLimitModifier() {
+		return mLimitModifier;
+	}
+
+	/**
+	 * Sets the value of limit modifier.
+	 * 
+	 * @param limitModifier The value to set.
+	 * @return Whether anything was changed.
+	 */
+	public boolean setLimitModifier(int limitModifier) {
+		if (mLimitModifier != limitModifier) {
+			mLimitModifier = limitModifier;
+			return true;
+		}
+		return false;
+	}
+
+	@Override public RowEditor<? extends ListRow> createEditor() {
+		return new TechniqueEditor(this);
+	}
+
+	@Override public void fillWithNameableKeys(HashSet<String> set) {
+		super.fillWithNameableKeys(set);
+		mDefault.fillWithNameableKeys(set);
+	}
+
+	@Override public void applyNameableKeys(HashMap<String, String> map) {
+		super.applyNameableKeys(map);
+		mDefault.applyNameableKeys(map);
+	}
+}

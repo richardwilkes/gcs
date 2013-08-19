@@ -1,0 +1,98 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is GURPS Character Sheet.
+ *
+ * The Initial Developer of the Original Code is Richard A. Wilkes.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2002,
+ * 2005-2007 the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *
+ * ***** END LICENSE BLOCK ***** */
+
+package com.trollworks.gcs.menu.item;
+
+import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.spell.Spell;
+import com.trollworks.gcs.spell.SpellListWindow;
+import com.trollworks.gcs.template.TemplateWindow;
+import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.gcs.widgets.outline.ListOutline;
+
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+
+import javax.swing.JMenuItem;
+
+/** Provides the "New Spell" command. */
+public class NewSpellCommand extends Command {
+	private static String				MSG_SPELL;
+	private static String				MSG_SPELL_CONTAINER;
+
+	static {
+		LocalizedMessages.initialize(NewSpellCommand.class);
+	}
+
+	/** The "New Spell" command. */
+	public static final NewSpellCommand	INSTANCE			= new NewSpellCommand(false, MSG_SPELL, KeyEvent.VK_B, COMMAND_MODIFIER);
+	/** The "New Spell Container" command. */
+	public static final NewSpellCommand	CONTAINER_INSTANCE	= new NewSpellCommand(true, MSG_SPELL_CONTAINER, KeyEvent.VK_B, SHIFTED_COMMAND_MODIFIER);
+	private boolean						mContainer;
+
+	private NewSpellCommand(boolean container, String title, int keyCode, int modifiers) {
+		super(title, keyCode, modifiers);
+		mContainer = container;
+	}
+
+	@Override public void adjustForMenu(JMenuItem item) {
+		Window window = getActiveWindow();
+		if (window instanceof SpellListWindow) {
+			setEnabled(!((SpellListWindow) window).getOutline().getModel().isLocked());
+		} else {
+			setEnabled(window instanceof SheetWindow || window instanceof TemplateWindow);
+		}
+	}
+
+	@Override public void actionPerformed(ActionEvent event) {
+		ListOutline outline;
+		DataFile dataFile;
+
+		Window window = getActiveWindow();
+		if (window instanceof SpellListWindow) {
+			SpellListWindow listWindow = (SpellListWindow) window;
+			dataFile = listWindow.getList();
+			outline = listWindow.getOutline();
+		} else {
+			if (window instanceof SheetWindow) {
+				SheetWindow sheetWindow = (SheetWindow) window;
+				outline = sheetWindow.getSheet().getSpellOutline();
+				dataFile = sheetWindow.getCharacter();
+			} else if (window instanceof TemplateWindow) {
+				TemplateWindow templateWindow = (TemplateWindow) window;
+				outline = templateWindow.getSheet().getSpellOutline();
+				dataFile = templateWindow.getTemplate();
+			} else {
+				return;
+			}
+		}
+
+		Spell spell = new Spell(dataFile, mContainer);
+		outline.addRow(spell, getTitle(), false);
+		outline.getModel().select(spell, false);
+		outline.openDetailEditor(true);
+	}
+}

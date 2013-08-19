@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <project name="gcs" default="installers">
-	<property file="com/trollworks/gcs/Msgs.properties"/>
+	<property file="com/trollworks/gcs/app/Main.properties"/>
 
 	<target name="installers" description="Build GCS">
 		<property name="BuildDir" value="${java.io.tmpdir}/${user.name}/gcs_build"/>
@@ -20,9 +20,10 @@
 		<mkdir dir="${BuildDir}"/>
 
 		<!-- Compile the code. -->
-		<unjar src="itext.jar" dest="${JavaBuildDir}"/>
+		<unjar src="libraries/itext-2.0.4.jar" dest="${JavaBuildDir}"/>
+		<unjar src="libraries/AppleJavaExtensions.jar" dest="${JavaBuildDir}"/>
 		<javac srcdir="." destdir="${JavaBuildDir}"
-			includes="com/trollworks/gcs/CSMain.java,com/apple/eawt/*.java"
+			includes="com/trollworks/gcs/app/Main.java"
 			debug="no" optimize="yes" target="1.5" source="1.5"/>
 
 		<!-- Copy the resources over. -->
@@ -31,7 +32,7 @@
 		</copy>
 
 		<!-- Create the jar file and the Java 1.1 entry point. -->
-		<javac srcdir="." destdir="${JavaBuildDir}" includes="com/trollworks/gcs/GCS.java"
+		<javac srcdir="." destdir="${JavaBuildDir}" includes="com/trollworks/gcs/app/GCS.java"
 				debug="no" optimize="yes" target="1.1" source="1.1"/>
 		<jar destfile="${InstallDir}/GCS.jar" basedir="${JavaBuildDir}" manifest="install/gcs.mf" duplicate="fail"/>
 
