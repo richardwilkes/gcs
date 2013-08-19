@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -24,12 +24,13 @@
 package com.trollworks.gcs.prereq;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.criteria.DoubleCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
+import com.trollworks.gcs.criteria.WeightCriteria;
 import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.ttk.collections.Enums;
-import com.trollworks.ttk.units.WeightUnits;
+import com.trollworks.ttk.units.WeightValue;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
@@ -43,8 +44,7 @@ public class ContainedWeightPrereq extends HasPrereq {
 	/** The XML tag for this class. */
 	public static final String	TAG_ROOT			= "contained_weight_prereq";	//$NON-NLS-1$
 	private static final String	ATTRIBUTE_COMPARE	= "compare";					//$NON-NLS-1$
-	private static final String	ATTRIBUTE_UNITS		= "units";						//$NON-NLS-1$
-	private DoubleCriteria		mWeightCompare;
+	private WeightCriteria		mWeightCompare;
 
 	static {
 		LocalizedMessages.initialize(ContainedWeightPrereq.class);
@@ -57,20 +57,20 @@ public class ContainedWeightPrereq extends HasPrereq {
 	 */
 	public ContainedWeightPrereq(PrereqList parent) {
 		super(parent);
-		mWeightCompare = new DoubleCriteria(NumericCompareType.AT_MOST, 5.0, true);
+		mWeightCompare = new WeightCriteria(NumericCompareType.AT_MOST, new WeightValue(5.0, SheetPreferences.getWeightUnits()));
 	}
 
 	/**
 	 * Loads a prerequisite.
 	 * 
 	 * @param parent The owning prerequisite list, if any.
-	 * @param reader The XML readerment to load from.
+	 * @param reader The XML reader to load from.
 	 */
 	public ContainedWeightPrereq(PrereqList parent, XMLReader reader) throws IOException {
 		this(parent);
 		loadHasAttribute(reader);
 		mWeightCompare.setType(Enums.extract(reader.getAttribute(ATTRIBUTE_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
-		mWeightCompare.setQualifier(WeightUnits.POUNDS.convert(Enums.extract(reader.getAttribute(ATTRIBUTE_UNITS), WeightUnits.values(), WeightUnits.POUNDS), reader.readDouble(0)));
+		mWeightCompare.setQualifier(WeightValue.extract(reader.readText()));
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class ContainedWeightPrereq extends HasPrereq {
 	 */
 	protected ContainedWeightPrereq(PrereqList parent, ContainedWeightPrereq prereq) {
 		super(parent, prereq);
-		mWeightCompare = new DoubleCriteria(prereq.mWeightCompare);
+		mWeightCompare = new WeightCriteria(prereq.mWeightCompare);
 	}
 
 	@Override
@@ -110,25 +110,27 @@ public class ContainedWeightPrereq extends HasPrereq {
 		out.startTag(TAG_ROOT);
 		saveHasAttribute(out);
 		out.writeAttribute(ATTRIBUTE_COMPARE, mWeightCompare.getType().name().toLowerCase());
-		out.writeAttribute(ATTRIBUTE_UNITS, WeightUnits.POUNDS.toString());
 		out.finishTag();
-		out.writeEncodedData(Double.toString(mWeightCompare.getQualifier()));
+		out.writeEncodedData(mWeightCompare.getQualifier().toString());
 		out.endTagEOL(TAG_ROOT, false);
 	}
 
 	/** @return The weight comparison object. */
-	public DoubleCriteria getWeightCompare() {
+	public WeightCriteria getWeightCompare() {
 		return mWeightCompare;
 	}
 
 	@Override
 	public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
 		boolean satisfied = false;
-
 		if (exclude instanceof Equipment) {
 			Equipment equipment = (Equipment) exclude;
-
-			satisfied = !equipment.canHaveChildren() || mWeightCompare.matches(equipment.getExtendedWeight() - equipment.getWeight());
+			satisfied = !equipment.canHaveChildren();
+			if (!satisfied) {
+				WeightValue weight = equipment.getExtendedWeight().clone();
+				weight.subtract(equipment.getWeight());
+				satisfied = mWeightCompare.matches(weight);
+			}
 		}
 		if (!has()) {
 			satisfied = !satisfied;

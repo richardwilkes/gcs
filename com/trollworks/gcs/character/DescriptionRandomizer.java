@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -26,7 +26,8 @@ package com.trollworks.gcs.character;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.undo.MultipleUndo;
-import com.trollworks.ttk.units.WeightUnits;
+import com.trollworks.ttk.units.LengthValue;
+import com.trollworks.ttk.units.WeightValue;
 import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.BorderLayout;
@@ -79,8 +80,8 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
 		addField(wrapper, DescriptionPanel.MSG_GENDER, null, GENDER_INDEX, description.getGender());
 		addField(wrapper, DescriptionPanel.MSG_AGE, null, AGE_INDEX, Numbers.format(description.getAge()));
 		addField(wrapper, DescriptionPanel.MSG_BIRTHDAY, null, BIRTHDAY_INDEX, description.getBirthday());
-		addField(wrapper, DescriptionPanel.MSG_HEIGHT, null, HEIGHT_INDEX, Numbers.formatHeight(description.getHeight()));
-		addField(wrapper, DescriptionPanel.MSG_WEIGHT, null, WEIGHT_INDEX, WeightUnits.POUNDS.format(description.getWeight(), true));
+		addField(wrapper, DescriptionPanel.MSG_HEIGHT, null, HEIGHT_INDEX, description.getHeight().toString());
+		addField(wrapper, DescriptionPanel.MSG_WEIGHT, null, WEIGHT_INDEX, description.getWeight().toString());
 		addField(wrapper, DescriptionPanel.MSG_HAIR, DescriptionPanel.MSG_HAIR_TOOLTIP, HAIR_INDEX, description.getHair());
 		addField(wrapper, DescriptionPanel.MSG_EYE_COLOR, DescriptionPanel.MSG_EYE_COLOR_TOOLTIP, EYES_INDEX, description.getEyeColor());
 		addField(wrapper, DescriptionPanel.MSG_SKIN_COLOR, DescriptionPanel.MSG_SKIN_COLOR_TOOLTIP, SKIN_INDEX, description.getSkinColor());
@@ -115,10 +116,10 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
 			mFields[BIRTHDAY_INDEX].setText(Profile.getRandomMonthAndDay());
 		}
 		if (mCheckBoxes[HEIGHT_INDEX].isSelected()) {
-			mFields[HEIGHT_INDEX].setText(Numbers.formatHeight(Profile.getRandomHeight(mCharacter.getStrength(), description.getSizeModifier())));
+			mFields[HEIGHT_INDEX].setText(Profile.getRandomHeight(mCharacter.getStrength(), description.getSizeModifier()).toString());
 		}
 		if (mCheckBoxes[WEIGHT_INDEX].isSelected()) {
-			mFields[WEIGHT_INDEX].setText(WeightUnits.POUNDS.format(Profile.getRandomWeight(mCharacter.getStrength(), description.getSizeModifier(), description.getWeightMultiplier()), true));
+			mFields[WEIGHT_INDEX].setText(Profile.getRandomWeight(mCharacter.getStrength(), description.getSizeModifier(), description.getWeightMultiplier()).toString());
 		}
 		if (mCheckBoxes[HAIR_INDEX].isSelected()) {
 			mFields[HAIR_INDEX].setText(Profile.getRandomHair());
@@ -143,8 +144,8 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
 		description.setGender(mFields[GENDER_INDEX].getText());
 		description.setAge(Numbers.getLocalizedInteger(mFields[AGE_INDEX].getText(), 18));
 		description.setBirthday(mFields[BIRTHDAY_INDEX].getText());
-		description.setHeight(Numbers.getHeight(mFields[HEIGHT_INDEX].getText()));
-		description.setWeight(Numbers.getLocalizedDouble(mFields[WEIGHT_INDEX].getText(), 0.0));
+		description.setHeight(LengthValue.extract(mFields[HEIGHT_INDEX].getText()));
+		description.setWeight(WeightValue.extract(mFields[WEIGHT_INDEX].getText()));
 		description.setHair(mFields[HAIR_INDEX].getText());
 		description.setEyeColor(mFields[EYES_INDEX].getText());
 		description.setSkinColor(mFields[SKIN_INDEX].getText());

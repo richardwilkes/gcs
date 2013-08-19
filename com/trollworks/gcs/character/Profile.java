@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -27,14 +27,15 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.feature.BonusAttributeType;
-import com.trollworks.ttk.collections.Enums;
+import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.ttk.image.Images;
 import com.trollworks.ttk.preferences.Preferences;
 import com.trollworks.ttk.text.Base64;
-import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.text.TextUtility;
 import com.trollworks.ttk.units.LengthUnits;
+import com.trollworks.ttk.units.LengthValue;
 import com.trollworks.ttk.units.WeightUnits;
+import com.trollworks.ttk.units.WeightValue;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.xml.XMLNodeType;
 import com.trollworks.ttk.xml.XMLReader;
@@ -171,7 +172,6 @@ public class Profile {
 	private static final String		TAG_SKIN			= "skin";																														//$NON-NLS-1$
 	private static final String		TAG_HANDEDNESS		= "handedness";																												//$NON-NLS-1$
 	private static final String		TAG_HEIGHT			= "height";																													//$NON-NLS-1$
-	private static final String		ATTRIBUTE_UNITS		= "units";																														//$NON-NLS-1$
 	private static final String		TAG_WEIGHT			= "weight";																													//$NON-NLS-1$
 	private static final String		TAG_GENDER			= "gender";																													//$NON-NLS-1$
 	private static final String		TAG_RACE			= "race";																														//$NON-NLS-1$
@@ -198,8 +198,8 @@ public class Profile {
 	private String					mHair;
 	private String					mSkinColor;
 	private String					mHandedness;
-	private int						mHeight;
-	private double					mWeight;
+	private LengthValue				mHeight;
+	private WeightValue				mWeight;
 	private int						mSizeModifier;
 	private int						mSizeModifierBonus;
 	private String					mGender;
@@ -222,10 +222,10 @@ public class Profile {
 		mHair = full ? getRandomHair() : EMPTY;
 		mSkinColor = full ? getRandomSkinColor() : EMPTY;
 		mHandedness = full ? getRandomHandedness() : EMPTY;
-		mHeight = full ? getRandomHeight(mCharacter.getStrength(), getSizeModifier()) : 0;
-		mWeight = full ? getRandomWeight(mCharacter.getStrength(), getSizeModifier(), 1.0) : 0.0;
+		mHeight = full ? getRandomHeight(mCharacter.getStrength(), getSizeModifier()) : new LengthValue(0, SheetPreferences.getLengthUnits());
+		mWeight = full ? getRandomWeight(mCharacter.getStrength(), getSizeModifier(), 1.0) : new WeightValue(0, SheetPreferences.getWeightUnits());
 		mGender = full ? getRandomGender() : EMPTY;
-		mName = full ? USCensusNames.INSTANCE.getFullName(mGender == MSG_MALE) : EMPTY;
+		mName = full && SheetPreferences.isNewCharacterAutoNamed() ? USCensusNames.INSTANCE.getFullName(mGender == MSG_MALE) : EMPTY;
 		mRace = full ? MSG_DEFAULT_RACE : EMPTY;
 		mTechLevel = full ? getDefaultTechLevel() : EMPTY;
 		mReligion = EMPTY;
@@ -271,16 +271,9 @@ public class Profile {
 		} else if (TAG_HANDEDNESS.equals(tag)) {
 			mHandedness = reader.readText();
 		} else if (TAG_HEIGHT.equals(tag)) {
-			LengthUnits units = Enums.extract(reader.getAttribute(ATTRIBUTE_UNITS), LengthUnits.values());
-			if (units == null) {
-				// Old output didn't include a units attribute, as it was in a mixed
-				// feet/inches format.
-				mHeight = Numbers.getHeight(reader.readText());
-			} else {
-				mHeight = (int) LengthUnits.INCHES.convert(units, reader.readDouble(0));
-			}
+			mHeight = LengthValue.extract(reader.readText());
 		} else if (TAG_WEIGHT.equals(tag)) {
-			mWeight = WeightUnits.POUNDS.convert(Enums.extract(reader.getAttribute(ATTRIBUTE_UNITS), WeightUnits.values(), WeightUnits.POUNDS), reader.readDouble(0));
+			mWeight = WeightValue.extract(reader.readText());
 		} else if (BonusAttributeType.SM.getXMLTag().equals(tag) || "size_modifier".equals(tag)) { //$NON-NLS-1$
 			mSizeModifier = reader.readInteger(0);
 		} else if (TAG_GENDER.equals(tag)) {
@@ -316,8 +309,12 @@ public class Profile {
 		out.simpleTagNotEmpty(TAG_HAIR, mHair);
 		out.simpleTagNotEmpty(TAG_SKIN, mSkinColor);
 		out.simpleTagNotEmpty(TAG_HANDEDNESS, mHandedness);
-		out.simpleTagWithAttribute(TAG_HEIGHT, Integer.toString(mHeight), ATTRIBUTE_UNITS, LengthUnits.INCHES.toString());
-		out.simpleTagWithAttribute(TAG_WEIGHT, Double.toString(mWeight), ATTRIBUTE_UNITS, WeightUnits.POUNDS.toString());
+		if (mHeight.getNormalizedValue() != 0) {
+			out.simpleTag(TAG_HEIGHT, mHeight.toString(false));
+		}
+		if (mWeight.getNormalizedValue() != 0) {
+			out.simpleTag(TAG_WEIGHT, mWeight.toString(false));
+		}
 		out.simpleTag(BonusAttributeType.SM.getXMLTag(), mSizeModifier);
 		out.simpleTagNotEmpty(TAG_GENDER, mGender);
 		out.simpleTagNotEmpty(TAG_RACE, mRace);
@@ -674,8 +671,8 @@ public class Profile {
 		}
 	}
 
-	/** @return The height, in inches. */
-	public int getHeight() {
+	/** @return The height. */
+	public LengthValue getHeight() {
 		return mHeight;
 	}
 
@@ -684,18 +681,17 @@ public class Profile {
 	 * 
 	 * @param height The new height.
 	 */
-	public void setHeight(int height) {
-		if (mHeight != height) {
-			Integer value = new Integer(height);
-
-			mCharacter.postUndoEdit(MSG_HEIGHT_UNDO, ID_HEIGHT, new Integer(mHeight), value);
+	public void setHeight(LengthValue height) {
+		if (!mHeight.equals(height)) {
+			height = height.clone();
+			mCharacter.postUndoEdit(MSG_HEIGHT_UNDO, ID_HEIGHT, mHeight.clone(), height);
 			mHeight = height;
-			mCharacter.notifySingle(ID_HEIGHT, value);
+			mCharacter.notifySingle(ID_HEIGHT, height);
 		}
 	}
 
 	/** @return The weight. */
-	public double getWeight() {
+	public WeightValue getWeight() {
 		return mWeight;
 	}
 
@@ -704,13 +700,12 @@ public class Profile {
 	 * 
 	 * @param weight The new weight.
 	 */
-	public void setWeight(double weight) {
-		if (mWeight != weight) {
-			Double value = new Double(weight);
-
-			mCharacter.postUndoEdit(MSG_WEIGHT_UNDO, ID_WEIGHT, new Double(mWeight), value);
+	public void setWeight(WeightValue weight) {
+		if (!mWeight.equals(weight)) {
+			weight = weight.clone();
+			mCharacter.postUndoEdit(MSG_WEIGHT_UNDO, ID_WEIGHT, mWeight.clone(), weight);
 			mWeight = weight;
-			mCharacter.notifySingle(ID_WEIGHT, value);
+			mCharacter.notifySingle(ID_WEIGHT, weight);
 		}
 	}
 
@@ -802,9 +797,9 @@ public class Profile {
 			} else if (ID_HANDEDNESS.equals(id)) {
 				return getHandedness();
 			} else if (ID_HEIGHT.equals(id)) {
-				return new Integer(getHeight());
+				return getHeight().clone();
 			} else if (ID_WEIGHT.equals(id)) {
-				return new Double(getWeight());
+				return getWeight().clone();
 			} else if (ID_GENDER.equals(id)) {
 				return getGender();
 			} else if (ID_RACE.equals(id)) {
@@ -849,9 +844,9 @@ public class Profile {
 			} else if (ID_HANDEDNESS.equals(id)) {
 				setHandedness((String) value);
 			} else if (ID_HEIGHT.equals(id)) {
-				setHeight(((Integer) value).intValue());
+				setHeight((LengthValue) value);
 			} else if (ID_WEIGHT.equals(id)) {
-				setWeight(((Double) value).doubleValue());
+				setWeight((WeightValue) value);
 			} else if (ID_GENDER.equals(id)) {
 				setGender((String) value);
 			} else if (ID_RACE.equals(id)) {
@@ -919,16 +914,15 @@ public class Profile {
 	/** @return A random month and day. */
 	public static String getRandomMonthAndDay() {
 		SimpleDateFormat formatter = new SimpleDateFormat("MMMM d"); //$NON-NLS-1$
-
 		return formatter.format(new Date(RANDOM.nextLong()));
 	}
 
 	/**
 	 * @param strength The strength to base the height on.
 	 * @param sm The size modifier to use.
-	 * @return A random height, in inches.
+	 * @return A random height.
 	 */
-	public static int getRandomHeight(int strength, int sm) {
+	public static LengthValue getRandomHeight(int strength, int sm) {
 		int base;
 
 		if (strength < 7) {
@@ -946,16 +940,17 @@ public class Profile {
 		if (sm != 0) {
 			base = (int) Math.max(Math.round(base * Math.pow(10.0, sm / 6.0)), 1);
 		}
-		return base;
+		LengthUnits desiredUnits = SheetPreferences.getLengthUnits();
+		return new LengthValue(desiredUnits.convert(LengthUnits.FEET_AND_INCHES, base), desiredUnits);
 	}
 
 	/**
 	 * @param strength The strength to base the weight on.
 	 * @param sm The size modifier to use.
 	 * @param multiplier The weight multiplier for being under- or overweight.
-	 * @return A random weight, in pounds.
+	 * @return A random weight.
 	 */
-	public static int getRandomWeight(int strength, int sm, double multiplier) {
+	public static WeightValue getRandomWeight(int strength, int sm, double multiplier) {
 		int base;
 		int range;
 
@@ -979,7 +974,9 @@ public class Profile {
 		if (sm != 0) {
 			base = (int) Math.round(base * Math.pow(1000.0, sm / 6.0));
 		}
-		return (int) Math.max(Math.round(base * multiplier), 1);
+		base = (int) Math.max(Math.round(base * multiplier), 1);
+		WeightUnits desiredUnits = SheetPreferences.getWeightUnits();
+		return new WeightValue(desiredUnits.convert(WeightUnits.POUNDS, base), desiredUnits);
 	}
 
 	/** @return The default player name. */

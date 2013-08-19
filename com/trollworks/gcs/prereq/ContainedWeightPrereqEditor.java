@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -60,7 +60,7 @@ public class ContainedWeightPrereqEditor extends PrereqEditor {
 
 		row = new FlexRow();
 		row.add(addNumericCompareCombo(prereq.getWeightCompare(), MSG_WHICH));
-		row.add(addNumericCompareField(prereq.getWeightCompare(), 0, 9999999999.0, false));
+		row.add(addWeightCompareField(prereq.getWeightCompare()));
 		row.add(new FlexSpacer(0, 0, true, false));
 		grid.add(row, 1, 1);
 	}

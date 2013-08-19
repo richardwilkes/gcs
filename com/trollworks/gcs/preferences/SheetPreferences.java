@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -36,6 +36,8 @@ import com.trollworks.ttk.preferences.Preferences;
 import com.trollworks.ttk.preferences.PreferencesWindow;
 import com.trollworks.ttk.print.PrintManager;
 import com.trollworks.ttk.text.Numbers;
+import com.trollworks.ttk.units.LengthUnits;
+import com.trollworks.ttk.units.WeightUnits;
 import com.trollworks.ttk.utility.App;
 import com.trollworks.ttk.utility.Dice;
 import com.trollworks.ttk.utility.LocalizedMessages;
@@ -63,62 +65,82 @@ import javax.swing.text.Document;
 
 /** The sheet preferences panel. */
 public class SheetPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {
-	private static String			MSG_SHEET;
-	private static String			MSG_PLAYER;
-	private static String			MSG_PLAYER_TOOLTIP;
-	private static String			MSG_CAMPAIGN;
-	private static String			MSG_CAMPAIGN_TOOLTIP;
-	private static String			MSG_TECH_LEVEL;
-	private static String			MSG_TECH_LEVEL_TOOLTIP;
-	private static String			MSG_INITIAL_POINTS;
-	private static String			MSG_INITIAL_POINTS_TOOLTIP;
-	private static String			MSG_SELECT_PORTRAIT;
-	private static String			MSG_OPTIONAL_IQ_RULES;
-	private static String			MSG_OPTIONAL_MODIFIER_RULES;
-	private static String			MSG_OPTIONAL_DICE_RULES;
-	private static String			MSG_PNG_RESOLUTION_PRE;
-	private static String			MSG_PNG_RESOLUTION_POST;
-	private static String			MSG_PNG_RESOLUTION_TOOLTIP;
-	private static String			MSG_DPI;
-	private static String			MSG_HTML_TEMPLATE_OVERRIDE;
-	private static String			MSG_HTML_TEMPLATE_PICKER;
-	private static String			MSG_HTML_TEMPLATE_OVERRIDE_TOOLTIP;
-	private static String			MSG_SELECT_HTML_TEMPLATE;
-	private static String			MSG_NATIVE_PRINTER;
-	private static String			MSG_NATIVE_PRINTER_TOOLTIP;
-	private static final String		MODULE								= "Sheet";														//$NON-NLS-1$
-	private static final String		OPTIONAL_DICE_RULES					= "UseOptionDiceRules";										//$NON-NLS-1$
+	private static String				MSG_SHEET;
+	private static String				MSG_PLAYER;
+	private static String				MSG_PLAYER_TOOLTIP;
+	private static String				MSG_CAMPAIGN;
+	private static String				MSG_CAMPAIGN_TOOLTIP;
+	private static String				MSG_TECH_LEVEL;
+	private static String				MSG_TECH_LEVEL_TOOLTIP;
+	private static String				MSG_INITIAL_POINTS;
+	private static String				MSG_INITIAL_POINTS_TOOLTIP;
+	private static String				MSG_SELECT_PORTRAIT;
+	private static String				MSG_OPTIONAL_IQ_RULES;
+	private static String				MSG_OPTIONAL_MODIFIER_RULES;
+	private static String				MSG_OPTIONAL_DICE_RULES;
+	private static String				MSG_USE;
+	private static String				MSG_AND;
+	private static String				MSG_PNG_RESOLUTION_POST;
+	private static String				MSG_PNG_RESOLUTION_TOOLTIP;
+	private static String				MSG_DPI;
+	private static String				MSG_HTML_TEMPLATE_OVERRIDE;
+	private static String				MSG_HTML_TEMPLATE_PICKER;
+	private static String				MSG_HTML_TEMPLATE_OVERRIDE_TOOLTIP;
+	private static String				MSG_SELECT_HTML_TEMPLATE;
+	private static String				MSG_NATIVE_PRINTER;
+	private static String				MSG_NATIVE_PRINTER_TOOLTIP;
+	private static String				MSG_AUTO_NAME;
+	private static String				MSG_LENGTH_UNITS_TOOLTIP;
+	private static String				MSG_WEIGHT_UNITS_TOOLTIP;
+	private static String				MSG_FOR_UNIT_DISPLAY;
+	private static final String			MODULE								= "Sheet";														//$NON-NLS-1$
+	private static final String			OPTIONAL_DICE_RULES					= "UseOptionDiceRules";										//$NON-NLS-1$
 	/** The optional dice rules preference key. */
-	public static final String		OPTIONAL_DICE_RULES_PREF_KEY		= Preferences.getModuleKey(MODULE, OPTIONAL_DICE_RULES);
-	private static final boolean	DEFAULT_OPTIONAL_DICE_RULES			= false;
-	private static final String		OPTIONAL_IQ_RULES					= "UseOptionIQRules";											//$NON-NLS-1$
+	public static final String			OPTIONAL_DICE_RULES_PREF_KEY		= Preferences.getModuleKey(MODULE, OPTIONAL_DICE_RULES);
+	private static final boolean		DEFAULT_OPTIONAL_DICE_RULES			= false;
+	private static final String			OPTIONAL_IQ_RULES					= "UseOptionIQRules";											//$NON-NLS-1$
 	/** The optional IQ rules preference key. */
-	public static final String		OPTIONAL_IQ_RULES_PREF_KEY			= Preferences.getModuleKey(MODULE, OPTIONAL_IQ_RULES);
-	private static final boolean	DEFAULT_OPTIONAL_IQ_RULES			= false;
-	private static final String		OPTIONAL_MODIFIER_RULES				= "UseOptionModifierRules";									//$NON-NLS-1$
+	public static final String			OPTIONAL_IQ_RULES_PREF_KEY			= Preferences.getModuleKey(MODULE, OPTIONAL_IQ_RULES);
+	private static final boolean		DEFAULT_OPTIONAL_IQ_RULES			= false;
+	private static final String			OPTIONAL_MODIFIER_RULES				= "UseOptionModifierRules";									//$NON-NLS-1$
 	/** The optional modifier rules preference key. */
-	public static final String		OPTIONAL_MODIFIER_RULES_PREF_KEY	= Preferences.getModuleKey(MODULE, OPTIONAL_MODIFIER_RULES);
-	private static final boolean	DEFAULT_OPTIONAL_MODIFIER_RULES		= false;
-	private static final int		DEFAULT_PNG_RESOLUTION				= 200;
-	private static final String		PNG_RESOLUTION						= "PNGResolution";												//$NON-NLS-1$
-	private static final int[]		DPI									= { 72, 96, 144, 150, 200, 300 };
-	private static final String		USE_HTML_TEMPLATE_OVERRIDE			= "UseHTMLTemplateOverride";									//$NON-NLS-1$
-	private static final String		HTML_TEMPLATE_OVERRIDE				= "HTMLTemplateOverride";										//$NON-NLS-1$
-	private static final String		INITIAL_POINTS_KEY					= "InitialPoints";												//$NON-NLS-1$
-	private static final int		DEFAULT_INITIAL_POINTS				= 100;
-	private JTextField				mPlayerName;
-	private JTextField				mCampaign;
-	private JTextField				mTechLevel;
-	private JTextField				mInitialPoints;
-	private PortraitPreferencePanel	mPortrait;
-	private JComboBox				mPNGResolutionCombo;
-	private JCheckBox				mUseHTMLTemplateOverride;
-	private JTextField				mHTMLTemplatePath;
-	private JButton					mHTMLTemplatePicker;
-	private JCheckBox				mUseOptionalDiceRules;
-	private JCheckBox				mUseOptionalIQRules;
-	private JCheckBox				mUseOptionalModifierRules;
-	private JCheckBox				mUseNativePrinter;
+	public static final String			OPTIONAL_MODIFIER_RULES_PREF_KEY	= Preferences.getModuleKey(MODULE, OPTIONAL_MODIFIER_RULES);
+	private static final boolean		DEFAULT_OPTIONAL_MODIFIER_RULES		= false;
+	private static final String			AUTO_NAME							= "AutoNameNewCharacters";										//$NON-NLS-1$
+	/** The auto-naming preference key. */
+	public static final String			AUTO_NAME_PREF_KEY					= Preferences.getModuleKey(MODULE, AUTO_NAME);
+	private static final boolean		DEFAULT_AUTO_NAME					= true;
+	private static final String			LENGTH_UNITS						= "LengthUnits";												//$NON-NLS-1$
+	/** The default length units preference key. */
+	public static final String			LENGTH_UNITS_PREF_KEY				= Preferences.getModuleKey(MODULE, LENGTH_UNITS);
+	private static final LengthUnits	DEFAULT_LENGTH_UNITS				= LengthUnits.FEET_AND_INCHES;
+	private static final String			WEIGHT_UNITS						= "WeightUnits";												//$NON-NLS-1$
+	/** The default weight units preference key. */
+	public static final String			WEIGHT_UNITS_PREF_KEY				= Preferences.getModuleKey(MODULE, WEIGHT_UNITS);
+	private static final WeightUnits	DEFAULT_WEIGHT_UNITS				= WeightUnits.POUNDS;
+	private static final int			DEFAULT_PNG_RESOLUTION				= 200;
+	private static final String			PNG_RESOLUTION						= "PNGResolution";												//$NON-NLS-1$
+	private static final int[]			DPI									= { 72, 96, 144, 150, 200, 300 };
+	private static final String			USE_HTML_TEMPLATE_OVERRIDE			= "UseHTMLTemplateOverride";									//$NON-NLS-1$
+	private static final String			HTML_TEMPLATE_OVERRIDE				= "HTMLTemplateOverride";										//$NON-NLS-1$
+	private static final String			INITIAL_POINTS_KEY					= "InitialPoints";												//$NON-NLS-1$
+	private static final int			DEFAULT_INITIAL_POINTS				= 100;
+	private JTextField					mPlayerName;
+	private JTextField					mCampaign;
+	private JTextField					mTechLevel;
+	private JTextField					mInitialPoints;
+	private PortraitPreferencePanel		mPortrait;
+	private JComboBox					mPNGResolutionCombo;
+	private JComboBox					mLengthUnitsCombo;
+	private JComboBox					mWeightUnitsCombo;
+	private JCheckBox					mUseHTMLTemplateOverride;
+	private JTextField					mHTMLTemplatePath;
+	private JButton						mHTMLTemplatePicker;
+	private JCheckBox					mUseOptionalDiceRules;
+	private JCheckBox					mUseOptionalIQRules;
+	private JCheckBox					mUseOptionalModifierRules;
+	private JCheckBox					mAutoName;
+	private JCheckBox					mUseNativePrinter;
 
 	static {
 		LocalizedMessages.initialize(SheetPreferences.class);
@@ -127,6 +149,24 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	/** Initializes the services controlled by these preferences. */
 	public static void initialize() {
 		adjustOptionalDiceRulesProperty(areOptionalDiceRulesUsed());
+	}
+
+	/** @return The default length units to use. */
+	public static LengthUnits getLengthUnits() {
+		try {
+			return LengthUnits.valueOf(Preferences.getInstance().getStringValue(MODULE, LENGTH_UNITS, DEFAULT_LENGTH_UNITS.name()));
+		} catch (Exception exception) {
+			return DEFAULT_LENGTH_UNITS;
+		}
+	}
+
+	/** @return The default weight units to use. */
+	public static WeightUnits getWeightUnits() {
+		try {
+			return WeightUnits.valueOf(Preferences.getInstance().getStringValue(MODULE, WEIGHT_UNITS, DEFAULT_WEIGHT_UNITS.name()));
+		} catch (Exception exception) {
+			return DEFAULT_WEIGHT_UNITS;
+		}
 	}
 
 	private static void adjustOptionalDiceRulesProperty(boolean use) {
@@ -150,6 +190,11 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	/** @return Whether the optional modifier rules from PW102 are in use. */
 	public static boolean areOptionalModifierRulesUsed() {
 		return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_MODIFIER_RULES, DEFAULT_OPTIONAL_MODIFIER_RULES);
+	}
+
+	/** @return Whether a new character should be automatically named. */
+	public static boolean isNewCharacterAutoNamed() {
+		return Preferences.getInstance().getBooleanValue(MODULE, AUTO_NAME, DEFAULT_AUTO_NAME);
 	}
 
 	/** @return The resolution to use when saving the sheet as a PNG. */
@@ -219,6 +264,19 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 		addSeparator(column);
 
+		FlexRow row = new FlexRow();
+		row.add(createLabel(MSG_USE, null));
+		mLengthUnitsCombo = createLengthUnitsPopup();
+		row.add(mLengthUnitsCombo);
+		row.add(createLabel(MSG_AND, null));
+		mWeightUnitsCombo = createWeightUnitsPopup();
+		row.add(mWeightUnitsCombo);
+		row.add(createLabel(MSG_FOR_UNIT_DISPLAY, null));
+		column.add(row);
+
+		mAutoName = createCheckBox(MSG_AUTO_NAME, null, isNewCharacterAutoNamed());
+		column.add(mAutoName);
+
 		mUseOptionalIQRules = createCheckBox(MSG_OPTIONAL_IQ_RULES, null, areOptionalIQRulesUsed());
 		column.add(mUseOptionalIQRules);
 
@@ -228,7 +286,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		mUseOptionalDiceRules = createCheckBox(MSG_OPTIONAL_DICE_RULES, null, areOptionalDiceRulesUsed());
 		column.add(mUseOptionalDiceRules);
 
-		FlexRow row = new FlexRow();
+		row = new FlexRow();
 		mUseHTMLTemplateOverride = createCheckBox(MSG_HTML_TEMPLATE_OVERRIDE, MSG_HTML_TEMPLATE_OVERRIDE_TOOLTIP, isHTMLTemplateOverridden());
 		row.add(mUseHTMLTemplateOverride);
 		mHTMLTemplatePath = createHTMLTemplatePathField();
@@ -239,7 +297,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		column.add(row);
 
 		row = new FlexRow();
-		row.add(createLabel(MSG_PNG_RESOLUTION_PRE, MSG_PNG_RESOLUTION_TOOLTIP));
+		row.add(createLabel(MSG_USE, MSG_PNG_RESOLUTION_TOOLTIP));
 		mPNGResolutionCombo = createPNGResolutionPopup();
 		row.add(mPNGResolutionCombo);
 		row.add(createLabel(MSG_PNG_RESOLUTION_POST, MSG_PNG_RESOLUTION_TOOLTIP, SwingConstants.LEFT));
@@ -307,6 +365,30 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		return combo;
 	}
 
+	private JComboBox createLengthUnitsPopup() {
+		JComboBox combo = createCombo(MSG_LENGTH_UNITS_TOOLTIP);
+		for (LengthUnits unit : LengthUnits.values()) {
+			combo.addItem(unit.getDescription());
+		}
+		combo.setSelectedIndex(getLengthUnits().ordinal());
+		combo.addActionListener(this);
+		combo.setMaximumRowCount(combo.getItemCount());
+		UIUtilities.setOnlySize(combo, combo.getPreferredSize());
+		return combo;
+	}
+
+	private JComboBox createWeightUnitsPopup() {
+		JComboBox combo = createCombo(MSG_WEIGHT_UNITS_TOOLTIP);
+		for (WeightUnits unit : WeightUnits.values()) {
+			combo.addItem(unit.getDescription());
+		}
+		combo.setSelectedIndex(getWeightUnits().ordinal());
+		combo.addActionListener(this);
+		combo.setMaximumRowCount(combo.getItemCount());
+		UIUtilities.setOnlySize(combo, combo.getPreferredSize());
+		return combo;
+	}
+
 	private JTextField createTextField(String tooltip, String value) {
 		JTextField field = new JTextField(value);
 		field.setToolTipText(tooltip);
@@ -329,6 +411,10 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 			}
 		} else if (source == mPNGResolutionCombo) {
 			Preferences.getInstance().setValue(MODULE, PNG_RESOLUTION, DPI[mPNGResolutionCombo.getSelectedIndex()]);
+		} else if (source == mLengthUnitsCombo) {
+			Preferences.getInstance().setValue(MODULE, LENGTH_UNITS, LengthUnits.values()[mLengthUnitsCombo.getSelectedIndex()].name());
+		} else if (source == mWeightUnitsCombo) {
+			Preferences.getInstance().setValue(MODULE, WEIGHT_UNITS, WeightUnits.values()[mWeightUnitsCombo.getSelectedIndex()].name());
 		} else if (source == mHTMLTemplatePicker) {
 			File file = StdFileDialog.choose(this, true, MSG_SELECT_HTML_TEMPLATE, null, null, "html", "htm"); //$NON-NLS-1$ //$NON-NLS-2$
 			if (file != null) {
@@ -351,7 +437,10 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 				break;
 			}
 		}
+		mLengthUnitsCombo.setSelectedIndex(DEFAULT_LENGTH_UNITS.ordinal());
+		mWeightUnitsCombo.setSelectedIndex(DEFAULT_WEIGHT_UNITS.ordinal());
 		mUseHTMLTemplateOverride.setSelected(false);
+		mAutoName.setSelected(DEFAULT_AUTO_NAME);
 		mUseOptionalDiceRules.setSelected(DEFAULT_OPTIONAL_DICE_RULES);
 		mUseOptionalIQRules.setSelected(DEFAULT_OPTIONAL_IQ_RULES);
 		mUseOptionalModifierRules.setSelected(DEFAULT_OPTIONAL_MODIFIER_RULES);
@@ -360,7 +449,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 	@Override
 	public boolean isSetToDefaults() {
-		return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultCampaign().equals("") && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getInitialPoints() == DEFAULT_INITIAL_POINTS && getPNGResolution() == DEFAULT_PNG_RESOLUTION && isHTMLTemplateOverridden() == false && areOptionalDiceRulesUsed() == DEFAULT_OPTIONAL_DICE_RULES && areOptionalIQRulesUsed() == DEFAULT_OPTIONAL_IQ_RULES && areOptionalModifierRulesUsed() == DEFAULT_OPTIONAL_MODIFIER_RULES && !PrintManager.useNativeDialogs(); //$NON-NLS-1$ //$NON-NLS-2$
+		return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultCampaign().equals("") && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getInitialPoints() == DEFAULT_INITIAL_POINTS && getPNGResolution() == DEFAULT_PNG_RESOLUTION && isHTMLTemplateOverridden() == false && areOptionalDiceRulesUsed() == DEFAULT_OPTIONAL_DICE_RULES && areOptionalIQRulesUsed() == DEFAULT_OPTIONAL_IQ_RULES && areOptionalModifierRulesUsed() == DEFAULT_OPTIONAL_MODIFIER_RULES && isNewCharacterAutoNamed() == DEFAULT_AUTO_NAME && !PrintManager.useNativeDialogs(); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	private void setPortrait(String path) {
@@ -416,6 +505,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 			Preferences.getInstance().setValue(MODULE, OPTIONAL_IQ_RULES, mUseOptionalIQRules.isSelected());
 		} else if (source == mUseOptionalModifierRules) {
 			Preferences.getInstance().setValue(MODULE, OPTIONAL_MODIFIER_RULES, mUseOptionalModifierRules.isSelected());
+		} else if (source == mAutoName) {
+			Preferences.getInstance().setValue(MODULE, AUTO_NAME, mAutoName.isSelected());
 		} else if (source == mUseNativePrinter) {
 			PrintManager.useNativeDialogs(mUseNativePrinter.isSelected());
 		}

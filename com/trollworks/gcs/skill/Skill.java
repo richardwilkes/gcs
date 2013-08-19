@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -699,8 +699,12 @@ public class Skill extends ListRow {
 						level = best.getAdjLevel();
 					}
 				}
-				level += character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, specialization);
-				level += character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
+				int bonus = character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, specialization);
+				level += bonus;
+				relativeLevel += bonus;
+				bonus = character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
+				level += bonus;
+				relativeLevel += bonus;
 				level += character.getEncumbrancePenalty(character.getEncumbranceLevel()) * encPenaltyMult;
 			}
 		}

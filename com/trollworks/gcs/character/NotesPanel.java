@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -71,7 +71,8 @@ public class NotesPanel extends ActionPanel {
 		setAlignmentY(-1f);
 		setEnabled(true);
 		setOpaque(true);
-		setBackground(Color.white);
+		setBackground(Color.WHITE);
+		setForeground(Color.BLACK);
 		setActionCommand(CMD_EDIT_NOTES);
 		setToolTipText(MSG_NOTES_TOOLTIP);
 		mNotes = TextUtility.standardizeLineEndings(notes);

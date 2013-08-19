@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
-Class-Path: TrollworksToolkit.jar Trove.jar iText.jar AppleJavaExtensions.jar
+Class-Path: TrollworksToolkit.jar Trove.jar iText.jar
 Main-Class: com.trollworks.ttk.Launcher
 SplashScreen-Image: com/trollworks/gcs/app/images/Splash.gif

@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -85,6 +85,7 @@ public class GCS {
 		App.setVersion(MSG_APP_VERSION);
 		App.setCopyrightYears(MSG_APP_COPYRIGHT_YEARS);
 		App.setCopyrightOwner(MSG_APP_COPYRIGHT_OWNER);
+		SplashScreenUpdater.update();
 	}
 
 	private static final CmdLineOption	PDF_OPTION				= new CmdLineOption(MSG_PDF_OPTION, null, "pdf");										//$NON-NLS-1$

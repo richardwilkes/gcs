@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -29,6 +29,7 @@ import com.trollworks.ttk.utility.UIUtilities;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
@@ -48,5 +49,6 @@ public class AboutPanel extends JPanel {
 	protected void paintComponent(Graphics gc) {
 		super.paintComponent(GraphicsUtilities.prepare(gc));
 		gc.drawImage(GCSImages.getSplash(), 0, 0, null);
+		SplashScreenUpdater.drawOverlay((Graphics2D) gc, getSize());
 	}
 }

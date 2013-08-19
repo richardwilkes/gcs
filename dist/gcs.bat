@@ -16,10 +16,10 @@ REM The Original Code is GURPS Character Sheet.
 REM
 REM The Initial Developer of the Original Code is Richard A. Wilkes.
 REM Portions created by the Initial Developer are Copyright (C) 1998-2002,
-REM 2005-2009 the Initial Developer. All Rights Reserved.
+REM 2005-2011 the Initial Developer. All Rights Reserved.
 REM
 REM Contributor(s):
 REM
 REM ***** END LICENSE BLOCK *****
 
-start javaw -Xmx256M -jar "GURPS Character Sheet.app/Contents/Resources/Java/GCS.jar" %*
+start javaw -Xmx256M -jar "%~p0GURPS Character Sheet.app\Contents\Resources\Java\GCS.jar" %*

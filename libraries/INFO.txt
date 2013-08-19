@@ -5,4 +5,5 @@ iText
   Files: iText.jar
          iText-src.jar
   Version: 2.1.7
+  License Used: LGPL 2.1
   Obtained from: http://www.lowagie.com/iText

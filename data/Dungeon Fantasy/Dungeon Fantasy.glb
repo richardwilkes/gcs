@@ -577,28 +577,28 @@
 				<category>Advantage</category>
 			</categories>
 			<skill_bonus>
-				<name compare="contains">biology</name>
+				<name compare="contains">bow</name>
 				<specialization compare="is anything"></specialization>
 				<amount per_level="yes">1</amount>
 			</skill_bonus>
 			<skill_bonus>
-				<name compare="is">farming</name>
+				<name compare="is">camouflage</name>
 				<specialization compare="is anything"></specialization>
 				<amount per_level="yes">1</amount>
 			</skill_bonus>
 			<skill_bonus>
-				<name compare="is">gardening</name>
+				<name compare="is">fast-draw</name>
+				<specialization compare="is">arrow</specialization>
+				<amount per_level="yes">1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">stealth</name>
 				<specialization compare="is anything"></specialization>
 				<amount per_level="yes">1</amount>
 			</skill_bonus>
 			<skill_bonus>
-				<name compare="is">herb lore</name>
-				<specialization compare="is anything"></specialization>
-				<amount per_level="yes">1</amount>
-			</skill_bonus>
-			<skill_bonus>
-				<name compare="is">naturalist</name>
-				<specialization compare="is anything"></specialization>
+				<name compare="is">survival</name>
+				<specialization compare="is">woodlands</specialization>
 				<amount per_level="yes">1</amount>
 			</skill_bonus>
 			<prereq_list all="yes">
@@ -9243,11 +9243,10 @@
 		</equipment>
 		<equipment_container version="2" open="yes">
 			<description>Canteen</description>
-			<tech_level>5</tech_level>
 			<legality_class>4</legality_class>
 			<value>10</value>
-			<weight units="lbs">1.0</weight>
-			<reference>B288</reference>
+			<weight units="lbs">3.0</weight>
+			<reference>DF1:23</reference>
 			<notes>1 qt liquid</notes>
 			<categories>
 				<category>Basic</category>
@@ -10187,8 +10186,8 @@
 		<equipment_container version="2" open="yes">
 			<description>Quick-Release Backpack</description>
 			<legality_class>4</legality_class>
-			<value>60</value>
-			<weight units="lbs">1.0</weight>
+			<value>300</value>
+			<weight units="lbs">3.0</weight>
 			<reference>DF1:25</reference>
 			<notes>40 lb. Drop as Free Action. Fragile items break on 1 on 1d.</notes>
 			<categories>
@@ -10994,7 +10993,7 @@
 			<quantity>1</quantity>
 			<description>Bladeblack</description>
 			<legality_class>4</legality_class>
-			<value>5</value>
+			<value>1000</value>
 			<weight units="lbs">0.5</weight>
 			<reference>DF1:28</reference>
 			<notes>Utility. Immediate roll HT-5 or take 6d injury.</notes>

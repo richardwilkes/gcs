@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,30 +23,23 @@
 
 package com.trollworks.gcs.criteria;
 
-import com.trollworks.ttk.collections.Enums;
-import com.trollworks.ttk.units.WeightUnits;
 import com.trollworks.ttk.xml.XMLReader;
-import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 
 /** Manages double comparison criteria. */
 public class DoubleCriteria extends NumericCriteria {
-	private static final String	ATTRIBUTE_UNITS	= "units";	//$NON-NLS-1$
-	private double				mQualifier;
-	private boolean				mIsWeight;
+	private double	mQualifier;
 
 	/**
 	 * Creates a new double comparison.
 	 * 
 	 * @param type The {@link NumericCompareType} to use.
 	 * @param qualifier The qualifier to match against.
-	 * @param isWeight Whether this number represents a weight.
 	 */
-	public DoubleCriteria(NumericCompareType type, double qualifier, boolean isWeight) {
+	public DoubleCriteria(NumericCompareType type, double qualifier) {
 		super(type);
 		setQualifier(qualifier);
-		mIsWeight = isWeight;
 	}
 
 	/**
@@ -57,7 +50,6 @@ public class DoubleCriteria extends NumericCriteria {
 	public DoubleCriteria(DoubleCriteria other) {
 		super(other.getType());
 		mQualifier = other.mQualifier;
-		mIsWeight = other.mIsWeight;
 	}
 
 	@Override
@@ -66,8 +58,7 @@ public class DoubleCriteria extends NumericCriteria {
 			return true;
 		}
 		if (obj instanceof DoubleCriteria && super.equals(obj)) {
-			DoubleCriteria criteria = (DoubleCriteria) obj;
-			return mIsWeight == criteria.mIsWeight && mQualifier == criteria.mQualifier;
+			return mQualifier == ((DoubleCriteria) obj).mQualifier;
 		}
 		return false;
 	}
@@ -75,30 +66,7 @@ public class DoubleCriteria extends NumericCriteria {
 	@Override
 	public void load(XMLReader reader) throws IOException {
 		super.load(reader);
-		if (mIsWeight) {
-			setQualifier(WeightUnits.POUNDS.convert(Enums.extract(reader.getAttribute(ATTRIBUTE_UNITS), WeightUnits.values(), WeightUnits.POUNDS), reader.readDouble(0)));
-		} else {
-			setQualifier(reader.readDouble(0.0));
-		}
-	}
-
-	@Override
-	public void save(XMLWriter out, String tag) {
-		if (mIsWeight) {
-			out.startTag(tag);
-			out.writeAttribute(ATTRIBUTE_COMPARE, getType().name().toLowerCase());
-			out.writeAttribute(ATTRIBUTE_UNITS, WeightUnits.POUNDS.toString());
-			out.finishTag();
-			out.writeEncodedData(getQualifierAsString(false));
-			out.endTagEOL(tag, false);
-		} else {
-			super.save(out, tag);
-		}
-	}
-
-	/** @return Whether this number represents a weight. */
-	public boolean isWeight() {
-		return mIsWeight;
+		setQualifier(reader.readDouble(0.0));
 	}
 
 	/** @return The qualifier to match against. */
@@ -108,9 +76,6 @@ public class DoubleCriteria extends NumericCriteria {
 
 	@Override
 	public String getQualifierAsString(boolean allowAdornments) {
-		if (mIsWeight && allowAdornments) {
-			return WeightUnits.POUNDS.format(mQualifier, true);
-		}
 		return Double.toString(mQualifier);
 	}
 

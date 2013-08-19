@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -27,6 +27,7 @@ import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
+import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.OldWeapon;
@@ -35,7 +36,7 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.ttk.collections.Enums;
-import com.trollworks.ttk.units.WeightUnits;
+import com.trollworks.ttk.units.WeightValue;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.widgets.outline.Row;
@@ -52,7 +53,7 @@ import java.util.List;
 
 /** A piece of equipment. */
 public class Equipment extends ListRow {
-	private static final int		CURRENT_VERSION				= 2;
+	private static final int		CURRENT_VERSION				= 3;
 	private static String			MSG_DEFAULT_NAME;
 	private static final String		NEWLINE						= "\n";											//$NON-NLS-1$
 	private static final String		SPACE						= " ";												//$NON-NLS-1$
@@ -72,7 +73,6 @@ public class Equipment extends ListRow {
 	private static final String		TAG_LEGALITY_CLASS			= "legality_class";								//$NON-NLS-1$
 	private static final String		TAG_VALUE					= "value";											//$NON-NLS-1$
 	private static final String		TAG_WEIGHT					= "weight";										//$NON-NLS-1$
-	private static final String		ATTRIBUTE_UNITS				= "units";											//$NON-NLS-1$
 	private static final String		TAG_REFERENCE				= "reference";										//$NON-NLS-1$
 	/** The prefix used in front of all IDs for the equipment. */
 	public static final String		PREFIX						= GURPSCharacter.CHARACTER_PREFIX + "equipment.";	//$NON-NLS-1$
@@ -108,9 +108,9 @@ public class Equipment extends ListRow {
 	private String					mTechLevel;
 	private String					mLegalityClass;
 	private double					mValue;
-	private double					mWeight;
+	private WeightValue				mWeight;
 	private double					mExtendedValue;
-	private double					mExtendedWeight;
+	private WeightValue				mExtendedWeight;
 	private String					mReference;
 	private ArrayList<WeaponStats>	mWeapons;
 
@@ -132,6 +132,8 @@ public class Equipment extends ListRow {
 		mTechLevel = EMPTY;
 		mLegalityClass = DEFAULT_LEGALITY_CLASS;
 		mReference = EMPTY;
+		mWeight = new WeightValue(0, SheetPreferences.getWeightUnits());
+		mExtendedWeight = mWeight.clone();
 		mWeapons = new ArrayList<WeaponStats>();
 	}
 
@@ -151,9 +153,10 @@ public class Equipment extends ListRow {
 		mTechLevel = equipment.mTechLevel;
 		mLegalityClass = equipment.mLegalityClass;
 		mValue = equipment.mValue;
-		mWeight = equipment.mWeight;
+		mWeight = equipment.mWeight.clone();
 		mExtendedValue = mQuantity * mValue;
-		mExtendedWeight = mQuantity * mWeight;
+		mExtendedWeight = mWeight.clone();
+		mExtendedWeight.setValue(mExtendedWeight.getValue() * mQuantity);
 		mReference = equipment.mReference;
 		mWeapons = new ArrayList<WeaponStats>(equipment.mWeapons.size());
 		for (WeaponStats weapon : equipment.mWeapons) {
@@ -191,7 +194,7 @@ public class Equipment extends ListRow {
 		}
 		if (obj instanceof Equipment && super.isEquivalentTo(obj)) {
 			Equipment row = (Equipment) obj;
-			if (mQuantity == row.mQuantity && mValue == row.mValue && mWeight == row.mWeight && mState == row.mState && mDescription.equals(row.mDescription) && mTechLevel.equals(row.mTechLevel) && mLegalityClass.equals(row.mLegalityClass) && mReference.equals(row.mReference)) {
+			if (mQuantity == row.mQuantity && mValue == row.mValue && mWeight.equals(row.mWeight) && mState == row.mState && mDescription.equals(row.mDescription) && mTechLevel.equals(row.mTechLevel) && mLegalityClass.equals(row.mLegalityClass) && mReference.equals(row.mReference)) {
 				return mWeapons.equals(row.mWeapons);
 			}
 		}
@@ -233,7 +236,7 @@ public class Equipment extends ListRow {
 		mLegalityClass = DEFAULT_LEGALITY_CLASS;
 		mReference = EMPTY;
 		mValue = 0.0;
-		mWeight = 0.0;
+		mWeight.setValue(0.0);
 		mWeapons = new ArrayList<WeaponStats>();
 	}
 
@@ -265,7 +268,7 @@ public class Equipment extends ListRow {
 		} else if (TAG_VALUE.equals(name)) {
 			mValue = reader.readDouble(0.0);
 		} else if (TAG_WEIGHT.equals(name)) {
-			mWeight = WeightUnits.POUNDS.convert(Enums.extract(reader.getAttribute(ATTRIBUTE_UNITS), WeightUnits.values(), WeightUnits.POUNDS), reader.readDouble(0));
+			mWeight = WeightValue.extract(reader.readText());
 		} else if (TAG_REFERENCE.equals(name)) {
 			mReference = reader.readText().replace(NEWLINE, SPACE);
 		} else if (!state.mForUndo && (TAG_EQUIPMENT.equals(name) || TAG_EQUIPMENT_CONTAINER.equals(name))) {
@@ -316,7 +319,9 @@ public class Equipment extends ListRow {
 		out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
 		out.simpleTagNotEmpty(TAG_LEGALITY_CLASS, mLegalityClass);
 		out.simpleTag(TAG_VALUE, mValue);
-		out.simpleTagWithAttribute(TAG_WEIGHT, Double.toString(mWeight), ATTRIBUTE_UNITS, WeightUnits.POUNDS.toString());
+		if (mWeight.getNormalizedValue() != 0) {
+			out.simpleTag(TAG_WEIGHT, mWeight.toString(false));
+		}
 		out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
 		for (WeaponStats weapon : mWeapons) {
 			weapon.save(out);
@@ -432,7 +437,7 @@ public class Equipment extends ListRow {
 	}
 
 	/** @return The weight. */
-	public double getWeight() {
+	public WeightValue getWeight() {
 		return mWeight;
 	}
 
@@ -440,9 +445,9 @@ public class Equipment extends ListRow {
 	 * @param weight The weight to set.
 	 * @return Whether it was modified.
 	 */
-	public boolean setWeight(double weight) {
-		if (weight != mWeight) {
-			mWeight = weight;
+	public boolean setWeight(WeightValue weight) {
+		if (!mWeight.equals(weight)) {
+			mWeight = weight.clone();
 			startNotify();
 			notify(ID_WEIGHT, this);
 			updateContainingWeights(true);
@@ -453,13 +458,13 @@ public class Equipment extends ListRow {
 	}
 
 	private boolean updateExtendedWeight(boolean okToNotify) {
-		double savedWeight = mExtendedWeight;
+		WeightValue saved = mExtendedWeight;
 		int count = getChildCount();
-		mExtendedWeight = mQuantity * mWeight;
+		mExtendedWeight = new WeightValue(mWeight.getValue() * mQuantity, mWeight.getUnits());
 		for (int i = 0; i < count; i++) {
-			mExtendedWeight += ((Equipment) getChild(i)).mExtendedWeight;
+			mExtendedWeight.add(((Equipment) getChild(i)).mExtendedWeight);
 		}
-		if (savedWeight != mExtendedWeight) {
+		if (!saved.equals(mExtendedWeight)) {
 			if (okToNotify) {
 				notify(ID_EXTENDED_WEIGHT, this);
 			}
@@ -510,7 +515,7 @@ public class Equipment extends ListRow {
 	}
 
 	/** @return The extended weight. */
-	public double getExtendedWeight() {
+	public WeightValue getExtendedWeight() {
 		return mExtendedWeight;
 	}
 

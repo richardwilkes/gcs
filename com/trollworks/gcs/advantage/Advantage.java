@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -505,7 +505,7 @@ public class Advantage extends ListRow {
 					if (!found && max == value) {
 						found = true;
 					} else {
-						points += calculateModifierPoints(value, 20);
+						points += (int) Math.ceil(calculateModifierPoints(value, 20));
 					}
 				}
 			} else {
@@ -582,18 +582,19 @@ public class Advantage extends ListRow {
 			}
 		}
 
-		int leveledPoints = levels > 0 ? pointsPerLevel * levels : 0;
+		double modifiedBasePoints = basePoints;
+		double leveledPoints = levels > 0 ? pointsPerLevel * levels : 0;
 		if (baseEnh != 0 || baseLim != 0 || levelEnh != 0 || levelLim != 0) {
 			int baseMod = 0;
 			int levelMod = 0;
 
 			if (SheetPreferences.areOptionalModifierRulesUsed()) {
 				if (baseEnh == levelEnh && baseLim == levelLim) {
-					basePoints = modifyPoints(basePoints + leveledPoints, baseEnh);
-					basePoints = modifyPoints(basePoints, Math.max(baseLim, -80));
+					modifiedBasePoints = modifyPoints(basePoints + leveledPoints, baseEnh);
+					modifiedBasePoints = modifyPoints(basePoints, Math.max(baseLim, -80));
 				} else {
-					basePoints = modifyPoints(basePoints, baseEnh);
-					basePoints = modifyPoints(basePoints, Math.max(baseLim, -80));
+					modifiedBasePoints = modifyPoints(basePoints, baseEnh);
+					modifiedBasePoints = modifyPoints(basePoints, Math.max(baseLim, -80));
 					leveledPoints = modifyPoints(leveledPoints, levelEnh);
 					leveledPoints = modifyPoints(leveledPoints, Math.max(levelLim, -80));
 					basePoints += leveledPoints;
@@ -602,38 +603,24 @@ public class Advantage extends ListRow {
 				baseMod = Math.max(baseEnh + baseLim, -80);
 				levelMod = Math.max(levelEnh + levelLim, -80);
 				if (baseMod == levelMod) {
-					basePoints = modifyPoints(basePoints + leveledPoints, baseMod);
+					modifiedBasePoints = modifyPoints(basePoints + leveledPoints, baseMod);
 				} else {
-					basePoints = modifyPoints(basePoints, baseMod) + modifyPoints(leveledPoints, levelMod);
+					modifiedBasePoints = modifyPoints(basePoints, baseMod) + modifyPoints(leveledPoints, levelMod);
 				}
 			}
 		} else {
-			basePoints += leveledPoints;
+			modifiedBasePoints += leveledPoints;
 		}
 
-		if (basePoints > 0) {
-			basePoints = (int) (basePoints * multiplier + 0.5);
-			if (basePoints < 1) {
-				basePoints = 1;
-			}
-		} else if (basePoints < 0) {
-			basePoints = (int) (basePoints * multiplier);
-		}
-		return basePoints;
+		return (int) Math.ceil(modifiedBasePoints * multiplier);
 	}
 
-	private static int modifyPoints(int points, int modifier) {
+	private static double modifyPoints(double points, int modifier) {
 		return points + calculateModifierPoints(points, modifier);
 	}
 
-	private static int calculateModifierPoints(int points, int modifier) {
-		modifier *= points;
-		if (modifier > 0) {
-			modifier = (modifier + 50) / 100;
-		} else {
-			modifier /= 100;
-		}
-		return modifier;
+	private static double calculateModifierPoints(double points, int modifier) {
+		return points * modifier / 100.0;
 	}
 
 	/** @return The points. */

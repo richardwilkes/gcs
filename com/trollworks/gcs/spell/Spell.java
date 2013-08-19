@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -477,10 +477,10 @@ public class Spell extends ListRow {
 			}
 
 			if (level != -1) {
+				relativeLevel += getSpellBonusesFor(character, ID_COLLEGE, college);
+				relativeLevel += getSpellBonusesFor(character, ID_POWER_SOURCE, powerSource);
+				relativeLevel += getSpellBonusesFor(character, ID_NAME, name);
 				level += relativeLevel;
-				level += getSpellBonusesFor(character, ID_COLLEGE, college);
-				level += getSpellBonusesFor(character, ID_POWER_SOURCE, powerSource);
-				level += getSpellBonusesFor(character, ID_NAME, name);
 			}
 		} else {
 			level = -1;

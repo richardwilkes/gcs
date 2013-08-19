@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -32,8 +32,10 @@ import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.WindowUtils;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +46,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -109,7 +112,9 @@ public class ModifierEnabler extends JPanel {
 		super(new BorderLayout());
 		mAdvantage = advantage;
 		add(createTop(advantage, remaining), BorderLayout.NORTH);
-		add(createCenter(), BorderLayout.CENTER);
+		JScrollPane scrollPanel = new JScrollPane(createCenter());
+		scrollPanel.setMinimumSize(new Dimension(500, 120));
+		add(scrollPanel, BorderLayout.CENTER);
 	}
 
 	private Container createTop(Advantage advantage, int remaining) {
@@ -135,6 +140,7 @@ public class ModifierEnabler extends JPanel {
 
 	private Container createCenter() {
 		JPanel wrapper = new JPanel(new ColumnLayout());
+		wrapper.setBackground(Color.WHITE);
 		SelfControlRoll cr = mAdvantage.getCR();
 		if (cr != SelfControlRoll.NONE_REQUIRED) {
 			ArrayList<String> possible = new ArrayList<String>();

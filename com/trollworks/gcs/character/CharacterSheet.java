@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -59,7 +59,6 @@ import com.trollworks.ttk.preferences.Preferences;
 import com.trollworks.ttk.print.PrintManager;
 import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.undo.StdUndoManager;
-import com.trollworks.ttk.units.WeightUnits;
 import com.trollworks.ttk.utility.App;
 import com.trollworks.ttk.utility.Debug;
 import com.trollworks.ttk.utility.Fonts;
@@ -181,7 +180,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		if (!GraphicsUtilities.inHeadlessPrintMode()) {
 			setDropTarget(new DropTarget(this, this));
 		}
-		Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY, Fonts.FONT_NOTIFICATION_KEY);
+		Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY, Fonts.FONT_NOTIFICATION_KEY, SheetPreferences.WEIGHT_UNITS_PREF_KEY);
 	}
 
 	/** Call when the sheet is no longer in use. */
@@ -268,6 +267,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		OutlineSyncer.remove(mSpellOutline);
 		OutlineSyncer.remove(mEquipmentOutline);
 		mCharacter.addTarget(this, GURPSCharacter.CHARACTER_PREFIX);
+		mCharacter.calculateWeightAndWealthCarried(true);
 		if (focusKey != null) {
 			restoreFocusToKey(focusKey, this);
 		} else if (focus instanceof Outline) {
@@ -637,7 +637,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 	@Override
 	public void handleNotification(Object producer, String type, Object data) {
-		if (SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY.equals(type) || Fonts.FONT_NOTIFICATION_KEY.equals(type)) {
+		if (SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY.equals(type) || Fonts.FONT_NOTIFICATION_KEY.equals(type) || SheetPreferences.WEIGHT_UNITS_PREF_KEY.equals(type)) {
 			markForRebuild();
 		} else {
 			if (type.startsWith(Advantage.PREFIX)) {
@@ -710,6 +710,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		}
 
 		Font savedFont = gc.getFont();
+		gc.setColor(Color.BLACK);
 		gc.setFont(font1);
 		gc.drawString(left, bounds.x, y);
 		gc.drawString(right, bounds.x + bounds.width - (int) fm1.getStringBounds(right, gc).getWidth(), y);
@@ -1123,13 +1124,13 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		} else if (key.equals("RACE")) { //$NON-NLS-1$
 			writeXMLText(out, description.getRace());
 		} else if (key.equals("HEIGHT")) { //$NON-NLS-1$
-			writeXMLText(out, Numbers.formatHeight(description.getHeight()));
+			writeXMLText(out, description.getHeight().toString());
 		} else if (key.equals("HAIR")) { //$NON-NLS-1$
 			writeXMLText(out, description.getHair());
 		} else if (key.equals("GENDER")) { //$NON-NLS-1$
 			writeXMLText(out, description.getGender());
 		} else if (key.equals("WEIGHT")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(description.getWeight(), true));
+			writeXMLText(out, description.getWeight().toString());
 		} else if (key.equals("EYES")) { //$NON-NLS-1$
 			writeXMLText(out, description.getEyeColor());
 		} else if (key.equals("AGE")) { //$NON-NLS-1$
@@ -1241,19 +1242,19 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		} else if (key.equals("DEAD")) { //$NON-NLS-1$
 			writeXMLText(out, Numbers.format(mCharacter.getDeadHitPoints()));
 		} else if (key.equals("BASIC_LIFT")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getBasicLift(), true));
+			writeXMLText(out, mCharacter.getBasicLift().toString());
 		} else if (key.equals("ONE_HANDED_LIFT")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getOneHandedLift(), true));
+			writeXMLText(out, mCharacter.getOneHandedLift().toString());
 		} else if (key.equals("TWO_HANDED_LIFT")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getTwoHandedLift(), true));
+			writeXMLText(out, mCharacter.getTwoHandedLift().toString());
 		} else if (key.equals("SHOVE")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getShoveAndKnockOver(), true));
+			writeXMLText(out, mCharacter.getShoveAndKnockOver().toString());
 		} else if (key.equals("RUNNING_SHOVE")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getRunningShoveAndKnockOver(), true));
+			writeXMLText(out, mCharacter.getRunningShoveAndKnockOver().toString());
 		} else if (key.equals("CARRY_ON_BACK")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getCarryOnBack(), true));
+			writeXMLText(out, mCharacter.getCarryOnBack().toString());
 		} else if (key.equals("SHIFT_SLIGHTLY")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getShiftSlightly(), true));
+			writeXMLText(out, mCharacter.getShiftSlightly().toString());
 		} else if (key.startsWith("ADVANTAGES_LOOP_START")) { //$NON-NLS-1$
 			processAdvantagesLoop(out, extractUpToMarker(in, "ADVANTAGES_LOOP_END")); //$NON-NLS-1$
 		} else if (key.startsWith("SKILLS_LOOP_START")) { //$NON-NLS-1$
@@ -1265,7 +1266,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		} else if (key.startsWith("RANGED_LOOP_START")) { //$NON-NLS-1$
 			processRangedLoop(out, extractUpToMarker(in, "RANGED_LOOP_END")); //$NON-NLS-1$
 		} else if (key.equals("CARRIED_WEIGHT")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getWeightCarried(), true));
+			writeXMLText(out, mCharacter.getWeightCarried().toString());
 		} else if (key.equals("CARRIED_VALUE")) { //$NON-NLS-1$
 			writeXMLText(out, "$" + Numbers.format(mCharacter.getWealthCarried())); //$NON-NLS-1$
 		} else if (key.startsWith("EQUIPMENT_LOOP_START")) { //$NON-NLS-1$
@@ -1359,7 +1360,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 							} else if (key.equals("LEVEL")) { //$NON-NLS-1$
 								writeXMLText(out, MessageFormat.format(level == mCharacter.getEncumbranceLevel() ? EncumbrancePanel.MSG_CURRENT_ENCUMBRANCE_FORMAT : EncumbrancePanel.MSG_ENCUMBRANCE_FORMAT, EncumbrancePanel.ENCUMBRANCE_TITLES[level], Numbers.format(level)));
 							} else if (key.equals("MAX_LOAD")) { //$NON-NLS-1$
-								writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getMaximumCarry(level), true));
+								writeXMLText(out, mCharacter.getMaximumCarry(level).toString());
 							} else if (key.equals("MOVE")) { //$NON-NLS-1$
 								writeXMLText(out, Numbers.format(mCharacter.getMove(level)));
 							} else if (key.equals("DODGE")) { //$NON-NLS-1$
@@ -1821,11 +1822,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 									} else if (key.equals("COST")) { //$NON-NLS-1$
 										writeXMLText(out, Numbers.format(equipment.getValue()));
 									} else if (key.equals("WEIGHT")) { //$NON-NLS-1$
-										writeXMLText(out, WeightUnits.POUNDS.format(equipment.getWeight(), true));
+										writeXMLText(out, equipment.getWeight().toString());
 									} else if (key.equals("COST_SUMMARY")) { //$NON-NLS-1$
 										writeXMLText(out, Numbers.format(equipment.getExtendedValue()));
 									} else if (key.equals("WEIGHT_SUMMARY")) { //$NON-NLS-1$
-										writeXMLText(out, WeightUnits.POUNDS.format(equipment.getExtendedWeight(), true));
+										writeXMLText(out, equipment.getExtendedWeight().toString());
 									} else if (key.equals("REF")) { //$NON-NLS-1$
 										writeXMLText(out, equipment.getReference());
 									} else if (key.equals("ID")) { //$NON-NLS-1$

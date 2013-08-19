@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -32,7 +32,6 @@ import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
 import com.trollworks.ttk.text.Numbers;
-import com.trollworks.ttk.units.WeightUnits;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Cell;
 import com.trollworks.ttk.widgets.outline.Column;
@@ -60,7 +59,7 @@ public enum EquipmentColumn {
 		@Override
 		public String toString(GURPSCharacter character) {
 			if (character != null) {
-				return MessageFormat.format(MSG_EQUIPMENT_TOTALS, WeightUnits.POUNDS.format(character.getWeightCarried(), true), Numbers.format(character.getWealthCarried()));
+				return MessageFormat.format(MSG_EQUIPMENT_TOTALS, character.getWeightCarried().toString(), Numbers.format(character.getWealthCarried()));
 			}
 			return super.toString(character);
 		}
@@ -277,12 +276,12 @@ public enum EquipmentColumn {
 
 		@Override
 		public Object getData(Equipment equipment) {
-			return new Double(equipment.getWeight());
+			return equipment.getWeight();
 		}
 
 		@Override
 		public String getDataAsText(Equipment equipment) {
-			return Numbers.format(equipment.getWeight());
+			return equipment.getWeight().toString();
 		}
 	},
 	/** The value. */
@@ -341,12 +340,12 @@ public enum EquipmentColumn {
 
 		@Override
 		public Object getData(Equipment equipment) {
-			return new Double(equipment.getExtendedWeight());
+			return equipment.getExtendedWeight();
 		}
 
 		@Override
 		public String getDataAsText(Equipment equipment) {
-			return Numbers.format(equipment.getExtendedWeight());
+			return equipment.getExtendedWeight().toString();
 		}
 	},
 	/** The category. */

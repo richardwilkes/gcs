@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -53,6 +53,8 @@ import com.trollworks.ttk.print.PrintManager;
 import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.undo.StdUndoManager;
 import com.trollworks.ttk.units.LengthUnits;
+import com.trollworks.ttk.units.WeightUnits;
+import com.trollworks.ttk.units.WeightValue;
 import com.trollworks.ttk.utility.Dice;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.OutlineModel;
@@ -96,7 +98,7 @@ public class GURPSCharacter extends DataFile {
 		LocalizedMessages.initialize(GURPSCharacter.class);
 	}
 
-	private static final int					CURRENT_VERSION							= 1;
+	private static final int					CURRENT_VERSION							= 2;
 	private static final String					EMPTY									= "";															//$NON-NLS-1$
 	private static final String					TAG_ROOT								= "character";													//$NON-NLS-1$
 	private static final String					TAG_CREATED_DATE						= "created_date";												//$NON-NLS-1$
@@ -309,7 +311,7 @@ public class GURPSCharacter extends DataFile {
 	private boolean								mNeedSkillPointCalculation;
 	private boolean								mNeedSpellPointCalculation;
 	private boolean								mNeedEquipmentCalculation;
-	private double								mCachedWeightCarried;
+	private WeightValue							mCachedWeightCarried;
 	private double								mCachedWealthCarried;
 	private int									mCachedAttributePoints;
 	private int									mCachedAdvantagePoints;
@@ -363,6 +365,7 @@ public class GURPSCharacter extends DataFile {
 		mIncludePunch = true;
 		mIncludeKick = true;
 		mIncludeKickBoots = true;
+		mCachedWeightCarried = new WeightValue(0, SheetPreferences.getWeightUnits());
 		try {
 			mPageSettings = new PrintManager(PageOrientation.PORTRAIT, 0.5, LengthUnits.INCHES);
 		} catch (Exception exception) {
@@ -528,7 +531,7 @@ public class GURPSCharacter extends DataFile {
 		calculateAdvantagePoints();
 		calculateSkillPoints();
 		calculateSpellPoints();
-		calculateWeightAndWealthCarried();
+		calculateWeightAndWealthCarried(false);
 	}
 
 	@Override
@@ -632,7 +635,7 @@ public class GURPSCharacter extends DataFile {
 		} else if (ID_BASIC_MOVE.equals(id)) {
 			return new Integer(getBasicMove());
 		} else if (ID_BASIC_LIFT.equals(id)) {
-			return new Double(getBasicLift());
+			return getBasicLift();
 		} else if (ID_PERCEPTION.equals(id)) {
 			return new Integer(getPerception());
 		} else if (ID_VISION.equals(id)) {
@@ -664,17 +667,17 @@ public class GURPSCharacter extends DataFile {
 		} else if (ID_EARNED_POINTS.equals(id)) {
 			return new Integer(getEarnedPoints());
 		} else if (ID_ONE_HANDED_LIFT.equals(id)) {
-			return new Double(getOneHandedLift());
+			return getOneHandedLift();
 		} else if (ID_TWO_HANDED_LIFT.equals(id)) {
-			return new Double(getTwoHandedLift());
+			return getTwoHandedLift();
 		} else if (ID_SHOVE_AND_KNOCK_OVER.equals(id)) {
-			return new Double(getShoveAndKnockOver());
+			return getShoveAndKnockOver();
 		} else if (ID_RUNNING_SHOVE_AND_KNOCK_OVER.equals(id)) {
-			return new Double(getRunningShoveAndKnockOver());
+			return getRunningShoveAndKnockOver();
 		} else if (ID_CARRY_ON_BACK.equals(id)) {
-			return new Double(getCarryOnBack());
+			return getCarryOnBack();
 		} else if (ID_SHIFT_SLIGHTLY.equals(id)) {
-			return new Double(getShiftSlightly());
+			return getShiftSlightly();
 		} else if (ID_TOTAL_POINTS.equals(id)) {
 			return new Integer(getTotalPoints());
 		} else if (ID_BASIC_THRUST.equals(id)) {
@@ -728,7 +731,7 @@ public class GURPSCharacter extends DataFile {
 					return new Integer(getMove(i));
 				}
 				if ((MAXIMUM_CARRY_PREFIX + i).equals(id)) {
-					return new Double(getMaximumCarry(i));
+					return getMaximumCarry(i);
 				}
 			}
 			return null;
@@ -840,16 +843,7 @@ public class GURPSCharacter extends DataFile {
 			notify(ID_EARNED_POINTS, new Integer(getEarnedPoints()));
 		}
 		if (mNeedEquipmentCalculation) {
-			double savedWeight = mCachedWeightCarried;
-			double savedWealth = mCachedWealthCarried;
-
-			calculateWeightAndWealthCarried();
-			if (savedWeight != mCachedWeightCarried) {
-				notify(ID_CARRIED_WEIGHT, new Double(mCachedWeightCarried));
-			}
-			if (savedWealth != mCachedWealthCarried) {
-				notify(ID_CARRIED_WEALTH, new Double(mCachedWealthCarried));
-			}
+			calculateWeightAndWealthCarried(true);
 		}
 		if (mDidModify) {
 			long now = System.currentTimeMillis();
@@ -975,10 +969,9 @@ public class GURPSCharacter extends DataFile {
 	private void updateStrengthInfo(int strength, int bonus, int liftingBonus, int strikingBonus) {
 		Dice thrust = getThrust();
 		Dice swing = getSwing();
-		double lift = getBasicLift();
+		WeightValue lift = getBasicLift();
 		boolean notifyST = mStrength != strength || mStrengthBonus != bonus;
 		Dice dice;
-		double newLift;
 
 		mStrength = strength;
 		mStrengthBonus = bonus;
@@ -990,17 +983,17 @@ public class GURPSCharacter extends DataFile {
 			notify(ID_STRENGTH, new Integer(getStrength()));
 			notifyOfBaseHitPointChange();
 		}
-		newLift = getBasicLift();
-		if (newLift != lift) {
-			notify(ID_BASIC_LIFT, new Double(newLift));
-			notify(ID_ONE_HANDED_LIFT, new Double(getOneHandedLift()));
-			notify(ID_TWO_HANDED_LIFT, new Double(getTwoHandedLift()));
-			notify(ID_SHOVE_AND_KNOCK_OVER, new Double(getShoveAndKnockOver()));
-			notify(ID_RUNNING_SHOVE_AND_KNOCK_OVER, new Double(getRunningShoveAndKnockOver()));
-			notify(ID_CARRY_ON_BACK, new Double(getCarryOnBack()));
-			notify(ID_SHIFT_SLIGHTLY, new Double(getShiftSlightly()));
+		WeightValue newLift = getBasicLift();
+		if (!newLift.equals(lift)) {
+			notify(ID_BASIC_LIFT, newLift);
+			notify(ID_ONE_HANDED_LIFT, getOneHandedLift());
+			notify(ID_TWO_HANDED_LIFT, getTwoHandedLift());
+			notify(ID_SHOVE_AND_KNOCK_OVER, getShoveAndKnockOver());
+			notify(ID_RUNNING_SHOVE_AND_KNOCK_OVER, getRunningShoveAndKnockOver());
+			notify(ID_CARRY_ON_BACK, getCarryOnBack());
+			notify(ID_SHIFT_SLIGHTLY, getShiftSlightly());
 			for (int i = 0; i < ENCUMBRANCE_LEVELS; i++) {
-				notify(MAXIMUM_CARRY_PREFIX + i, new Double(getMaximumCarry(i)));
+				notify(MAXIMUM_CARRY_PREFIX + i, getMaximumCarry(i));
 			}
 		}
 
@@ -1096,57 +1089,66 @@ public class GURPSCharacter extends DataFile {
 		return new Dice(value / 8 + 1, value % 8 / 2 - 1);
 	}
 
-	/**
-	 * @return Basic lift.
-	 */
-	public double getBasicLift() {
+	/** @return Basic lift. */
+	public WeightValue getBasicLift() {
+		return getBasicLift(SheetPreferences.getWeightUnits());
+	}
+
+	private WeightValue getBasicLift(WeightUnits desiredUnits) {
 		int strength = getStrength() + mLiftingStrengthBonus;
 		double value = strength * strength / 5.0;
-
 		if (value >= 10.0) {
 			value = Math.round(value);
 		}
-		return value;
+		return new WeightValue(desiredUnits.convert(WeightUnits.POUNDS, value), desiredUnits);
+	}
+
+	private WeightValue getMultipleOfBasicLift(double multiple) {
+		WeightValue lift = getBasicLift();
+		lift.setValue(lift.getValue() * multiple);
+		return lift;
 	}
 
 	/** @return The one-handed lift value. */
-	public double getOneHandedLift() {
-		return getBasicLift() * 2.0;
+	public WeightValue getOneHandedLift() {
+		return getMultipleOfBasicLift(2);
 	}
 
 	/** @return The two-handed lift value. */
-	public double getTwoHandedLift() {
-		return getBasicLift() * 8.0;
+	public WeightValue getTwoHandedLift() {
+		return getMultipleOfBasicLift(8);
 	}
 
 	/** @return The shove and knock over value. */
-	public double getShoveAndKnockOver() {
-		return getBasicLift() * 12.0;
+	public WeightValue getShoveAndKnockOver() {
+		return getMultipleOfBasicLift(12);
 	}
 
 	/** @return The running shove and knock over value. */
-	public double getRunningShoveAndKnockOver() {
-		return getBasicLift() * 24.0;
+	public WeightValue getRunningShoveAndKnockOver() {
+		return getMultipleOfBasicLift(24);
 	}
 
 	/** @return The carry on back value. */
-	public double getCarryOnBack() {
-		return getBasicLift() * 15.0;
+	public WeightValue getCarryOnBack() {
+		return getMultipleOfBasicLift(15);
 	}
 
 	/** @return The shift slightly value. */
-	public double getShiftSlightly() {
-		return getBasicLift() * 50.0;
+	public WeightValue getShiftSlightly() {
+		return getMultipleOfBasicLift(50);
 	}
 
 	/**
 	 * @param level The encumbrance level
 	 * @return The maximum amount the character can carry for the specified encumbrance level.
 	 */
-	public double getMaximumCarry(int level) {
+	public WeightValue getMaximumCarry(int level) {
 		assert level >= ENCUMBRANCE_NONE && level < ENCUMBRANCE_LEVELS;
-
-		return Math.floor(getBasicLift() * ENCUMBRANCE_MULTIPLIER[level] * 10.0) / 10.0;
+		WeightValue lift = getBasicLift(WeightUnits.POUNDS);
+		lift.setValue(Math.floor(lift.getValue() * ENCUMBRANCE_MULTIPLIER[level] * 10.0) / 10.0);
+		WeightUnits desiredUnits = SheetPreferences.getWeightUnits();
+		return new WeightValue(desiredUnits.convert(WeightUnits.POUNDS, lift.getValue()), desiredUnits);
 	}
 
 	/**
@@ -1350,9 +1352,9 @@ public class GURPSCharacter extends DataFile {
 	 * @return The current encumbrance level.
 	 */
 	public int getEncumbranceLevel() {
-		double carried = getWeightCarried();
+		double carried = getWeightCarried().getNormalizedValue();
 		for (int i = ENCUMBRANCE_NONE; i < ENCUMBRANCE_LEVELS; i++) {
-			if (carried <= getMaximumCarry(i)) {
+			if (carried <= getMaximumCarry(i).getNormalizedValue()) {
 				return i;
 			}
 		}
@@ -1360,7 +1362,7 @@ public class GURPSCharacter extends DataFile {
 	}
 
 	/** @return The current weight being carried. */
-	public double getWeightCarried() {
+	public WeightValue getWeightCarried() {
 		return mCachedWeightCarried;
 	}
 
@@ -1369,15 +1371,33 @@ public class GURPSCharacter extends DataFile {
 		return mCachedWealthCarried;
 	}
 
-	private void calculateWeightAndWealthCarried() {
-		mCachedWeightCarried = 0.0;
+	/**
+	 * Calculate the total weight and wealth carried.
+	 * 
+	 * @param notify Whether to send out notifications if the resulting values are different from
+	 *            the previous values.
+	 */
+	public void calculateWeightAndWealthCarried(boolean notify) {
+		WeightValue savedWeight = mCachedWeightCarried.clone();
+		double savedWealth = mCachedWealthCarried;
+		mCachedWeightCarried = new WeightValue(0, SheetPreferences.getWeightUnits());
 		mCachedWealthCarried = 0.0;
 		for (Equipment equipment : getEquipmentIterator()) {
 			int quantity = equipment.getQuantity();
 			if (equipment.isCarried()) {
-				mCachedWeightCarried += quantity * equipment.getWeight();
+				WeightValue weight = equipment.getWeight().clone();
+				weight.setValue(weight.getValue() * quantity);
+				mCachedWeightCarried.add(weight);
 			}
 			mCachedWealthCarried += quantity * equipment.getValue();
+		}
+		if (notify) {
+			if (!savedWeight.equals(mCachedWeightCarried)) {
+				notify(ID_CARRIED_WEIGHT, mCachedWeightCarried);
+			}
+			if (savedWealth != mCachedWealthCarried) {
+				notify(ID_CARRIED_WEALTH, new Double(mCachedWealthCarried));
+			}
 		}
 	}
 

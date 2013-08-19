@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -122,9 +122,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		setHorizontalAlignment(alignment);
 		setEditable(editable);
 		setEnabled(editable);
-		if (!editable) {
-			setForeground(Color.gray);
-		}
+		setForeground(editable ? Color.BLACK : Color.GRAY);
 		if (tooltip != null) {
 			setToolTipText(tooltip);
 			if (tooltip.indexOf("{") != -1) { //$NON-NLS-1$
@@ -274,7 +272,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		FACTORY_MAP.put(GURPSCharacter.ID_BASIC_THRUST, factory);
 		FACTORY_MAP.put(GURPSCharacter.ID_BASIC_SWING, factory);
 
-		FACTORY_MAP.put(Profile.ID_SIZE_MODIFIER, new DefaultFormatterFactory(new IntegerFormatter(-8, 20, true)));
+		FACTORY_MAP.put(Profile.ID_SIZE_MODIFIER, new DefaultFormatterFactory(new IntegerFormatter(-99, 9999, true)));
 		FACTORY_MAP.put(Profile.ID_AGE, new DefaultFormatterFactory(new IntegerFormatter(0, Integer.MAX_VALUE, false)));
 		FACTORY_MAP.put(Profile.ID_HEIGHT, new DefaultFormatterFactory(new HeightFormatter()));
 		FACTORY_MAP.put(GURPSCharacter.ID_CREATED_ON, new DefaultFormatterFactory(new DateFormatter(DateFormat.MEDIUM)));

@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -33,6 +33,7 @@ import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.text.NumberFilter;
 import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.text.TextUtility;
+import com.trollworks.ttk.units.WeightValue;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.LinkedLabel;
@@ -82,7 +83,6 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 	private static String		MSG_NOTES;
 	private static String		MSG_NOTES_TOOLTIP;
 	private static String		MSG_EDITOR_REFERENCE;
-	private static String		MSG_POUNDS;
 	private static String		MSG_STATE_TOOLTIP;
 	private JComboBox			mStateCombo;
 	private JTextField			mDescriptionField;
@@ -102,7 +102,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 	private MeleeWeaponEditor	mMeleeWeapons;
 	private RangedWeaponEditor	mRangedWeapons;
 	private double				mContainedValue;
-	private double				mContainedWeight;
+	private WeightValue			mContainedWeight;
 
 	static {
 		LocalizedMessages.initialize(EquipmentEditor.class);
@@ -191,14 +191,15 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		wrapper.add(new JPanel());
 		parent.add(wrapper);
 
-		wrapper = new JPanel(new ColumnLayout(5));
-		mContainedWeight = mRow.getExtendedWeight() - mRow.getWeight() * mRow.getQuantity();
-		mWeightField = createNumberField(parent, wrapper, MSG_EDITOR_WEIGHT, mRow.getWeight(), MSG_EDITOR_WEIGHT_TOOLTIP, 13);
-		mExtWeightField = createNumberField(wrapper, wrapper, MSG_EDITOR_EXTENDED_WEIGHT, mRow.getExtendedWeight(), MSG_EDITOR_EXTENDED_WEIGHT_TOOLTIP, 13);
+		wrapper = new JPanel(new ColumnLayout(3));
+		mContainedWeight = mRow.getExtendedWeight().clone();
+		WeightValue weight = mRow.getWeight().clone();
+		weight.setValue(weight.getValue() * mRow.getQuantity());
+		mContainedWeight.subtract(weight);
+		mWeightField = createWeightField(parent, wrapper, MSG_EDITOR_WEIGHT, mRow.getWeight(), MSG_EDITOR_WEIGHT_TOOLTIP, 13);
+		mExtWeightField = createWeightField(wrapper, wrapper, MSG_EDITOR_EXTENDED_WEIGHT, mRow.getExtendedWeight(), MSG_EDITOR_EXTENDED_WEIGHT_TOOLTIP, 13);
 		mExtWeightField.setEnabled(false);
 		UIUtilities.adjustToSameSize(new Component[] { first, wrapper.getComponent(1) });
-		wrapper.add(new JLabel(MSG_POUNDS));
-		wrapper.add(new JPanel());
 		parent.add(wrapper);
 	}
 
@@ -229,7 +230,6 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
 	private JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
 		JTextField field = new JTextField(maxChars > 0 ? TextUtility.makeFiller(maxChars, 'M') : text);
-
 		if (maxChars > 0) {
 			UIUtilities.setOnlySize(field, field.getPreferredSize());
 			field.setText(text);
@@ -244,7 +244,6 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
 	private JTextField createIntegerNumberField(Container labelParent, Container fieldParent, String title, int value, String tooltip, int maxDigits) {
 		JTextField field = new JTextField(TextUtility.makeFiller(maxDigits, '9') + TextUtility.makeFiller(maxDigits / 3, ','));
-
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
 		field.setText(Numbers.format(value));
 		field.setToolTipText(tooltip);
@@ -259,12 +258,24 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
 	private JTextField createNumberField(Container labelParent, Container fieldParent, String title, double value, String tooltip, int maxDigits) {
 		JTextField field = new JTextField(TextUtility.makeFiller(maxDigits, '9') + TextUtility.makeFiller(maxDigits / 3, ',') + "."); //$NON-NLS-1$
-
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
 		field.setText(Numbers.format(value));
 		field.setToolTipText(tooltip);
 		field.setEnabled(mIsEditable);
 		new NumberFilter(field, true, false, true, maxDigits);
+		field.addActionListener(this);
+		field.addFocusListener(this);
+		labelParent.add(new LinkedLabel(title, field));
+		fieldParent.add(field);
+		return field;
+	}
+
+	private JTextField createWeightField(Container labelParent, Container fieldParent, String title, WeightValue value, String tooltip, int maxDigits) {
+		JTextField field = new JTextField(TextUtility.makeFiller(maxDigits, '9') + TextUtility.makeFiller(maxDigits / 3, ',') + "."); //$NON-NLS-1$
+		UIUtilities.setOnlySize(field, field.getPreferredSize());
+		field.setText(value.toString());
+		field.setToolTipText(tooltip);
+		field.setEnabled(mIsEditable);
 		field.addActionListener(this);
 		field.addFocusListener(this);
 		labelParent.add(new LinkedLabel(title, field));
@@ -280,7 +291,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		modified |= mRow.setLegalityClass(mLegalityClassField.getText());
 		modified |= mRow.setQuantity(getQty());
 		modified |= mRow.setValue(Numbers.getLocalizedDouble(mValueField.getText(), 0.0));
-		modified |= mRow.setWeight(Numbers.getLocalizedDouble(mWeightField.getText(), 0.0));
+		modified |= mRow.setWeight(WeightValue.extract(mWeightField.getText()));
 		if (showEquipmentState()) {
 			modified |= mRow.setState((EquipmentState) mStateCombo.getSelectedItem());
 		}
@@ -333,15 +344,9 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 	}
 
 	private void weightChanged() {
-		int qty = getQty();
-		double value;
-
-		if (qty < 1) {
-			value = 0;
-		} else {
-			value = qty * Numbers.getLocalizedDouble(mWeightField.getText(), 0.0) + mContainedWeight;
-		}
-		mExtWeightField.setText(Numbers.format(value));
+		WeightValue weight = WeightValue.extract(mWeightField.getText());
+		weight.setValue(weight.getValue() * Math.max(getQty(), 0));
+		mExtWeightField.setText(weight.toString());
 	}
 
 	@Override

@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,7 +23,6 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
@@ -34,9 +33,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.text.MessageFormat;
 
-import javax.swing.JLabel;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 
 /** The character hit location panel. */
 public class HitLocationPanel extends DropPanel {
@@ -140,11 +137,10 @@ public class HitLocationPanel extends DropPanel {
 		addVerticalBackground(panel, Color.black);
 	}
 
-	private JLabel createLabel(Container panel, String title, String tooltip, int alignment) {
-		JLabel label = new JLabel(title, alignment);
-		label.setFont(UIManager.getFont(GCSFonts.KEY_LABEL));
+	private void createLabel(Container panel, String title, String tooltip, int alignment) {
+		PageLabel label = new PageLabel(title, null);
+		label.setHorizontalAlignment(alignment);
 		label.setToolTipText(tooltip);
 		panel.add(label);
-		return label;
 	}
 }

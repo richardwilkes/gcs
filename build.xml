@@ -1,15 +1,7 @@
 <?xml version="1.0"?>
 <project name="gcs" default="dist">
-	<property file="com/trollworks/gcs/app/GCS.properties"/>
 	<property name="BuildDir" value="gcs_build"/>
 	<property name="JavaBuildDir" value="${BuildDir}/java"/>
-	<property name="DistDirName" value="GCS-${APP_VERSION}"/>
-	<property name="DistBuildDir" value="${BuildDir}/${DistDirName}"/>
-	<property name="AppBundle" value="${DistBuildDir}/${APP_NAME}.app/Contents"/>
-	<property name="AppDir" value="${AppBundle}/MacOS"/>
-	<property name="ResourceDir" value="${AppBundle}/Resources"/>
-	<property name="JavaDir" value="${ResourceDir}/Java"/>
-	<property name="ZipFile" value="${DistDirName}.zip"/>
 
 	<target name="clean" description="Clean up after a build">
 		<delete dir="${BuildDir}"/>
@@ -17,16 +9,42 @@
 			<fileset dir="." includes="GCS-*.zip"/>
 		</delete>
 	</target>
-	
+
 	<target name="dist" description="Build GCS" depends="clean">
 		<mkdir dir="${BuildDir}"/>
 		<mkdir dir="${JavaBuildDir}"/>
-		<mkdir dir="${DistBuildDir}"/>
+
+		<!-- Copy the resources over. -->
+		<copy todir="${JavaBuildDir}">
+			<fileset dir="." includes="com/**/*.txt,com/**/*.properties,com/**/*.png,com/**/*.gif"/>
+		</copy>
+
+		<!-- Update the version and copyright values. -->
+		<tstamp>
+			<format property="VERSION_YEAR" pattern="yyyy"/>
+		</tstamp>
+		<tstamp>
+			<format property="VERSION" pattern="yyyy.MM.dd.HHmm"/>
+		</tstamp>
+		<replaceregexp file="${JavaBuildDir}/com/trollworks/gcs/app/GCS.properties" match='(APP_VERSION.+=)(.*)' replace='\1 ${VERSION}'/>
+		<replaceregexp file="${JavaBuildDir}/com/trollworks/gcs/app/GCS.properties" match='(APP_COPYRIGHT_YEARS.+=)(.*)' replace='\1 1998-2002, 2005-${VERSION_YEAR}'/>
+
+		<!-- Load the remaining property values. -->
+		<property file="${JavaBuildDir}/com/trollworks/gcs/app/GCS.properties"/>
+		<property name="DistDirName" value="GCS-${APP_VERSION}"/>
+		<property name="DistBuildDir" value="${BuildDir}/${DistDirName}"/>
+		<property name="AppBundle" value="${DistBuildDir}/${APP_NAME}.app/Contents"/>
+		<property name="AppDir" value="${AppBundle}/MacOS"/>
+		<property name="ResourceDir" value="${AppBundle}/Resources"/>
+		<property name="JavaDir" value="${ResourceDir}/Java"/>
+		<property name="ZipFile" value="${DistDirName}.zip"/>
 
 		<!-- Copy the initial dist files over. -->
+		<mkdir dir="${DistBuildDir}"/>
 		<copy todir="${DistBuildDir}">
 			<fileset dir="dist"/>
 		</copy>
+		<copy file="com/trollworks/gcs/app/images/Splash.gif" todir="${JavaDir}"/>
 		<chmod perm="755" file="${AppDir}/JavaApplicationStub"/>
 		<chmod perm="755" file="${DistBuildDir}/gcs"/>
 		<mkdir dir="${DistBuildDir}/data"/>
@@ -41,26 +59,19 @@
 		</replace>
 
 		<!-- Compile the code. -->
-		<javac destdir="${JavaBuildDir}" includes="com/trollworks/gcs/app/GCS.java" debug="no" optimize="yes" target="1.6" source="1.6">
+		<javac destdir="${JavaBuildDir}" includes="com/trollworks/gcs/app/GCS.java" debug="no" optimize="yes" target="1.6" source="1.6" deprecation="true">
 			<classpath>
 				<pathelement location="../ttk/TrollworksToolkit.jar"/>
 				<pathelement location="../ttk/libraries/Trove.jar"/>
-				<pathelement location="../ttk/libraries/AppleJavaExtensions.jar"/>
 				<pathelement location="libraries/iText.jar"/>
 			</classpath>
 			<src path="."/>
 		</javac>
 
-		<!-- Copy the resources over. -->
-		<copy todir="${JavaBuildDir}">
-			<fileset dir="." includes="com/**/*.txt,com/**/*.properties,com/**/*.png,com/**/*.gif"/>
-		</copy>
-
 		<!-- Create the GCS jar file and copy over the various library jar files. -->
 		<jar destfile="${JavaDir}/GCS.jar" basedir="${JavaBuildDir}" manifest="gcs.mf" duplicate="fail"/>
 		<copy file="../ttk/TrollworksToolkit.jar" todir="${JavaDir}"/>
 		<copy file="../ttk/libraries/Trove.jar" todir="${JavaDir}"/>
-		<copy file="../ttk/libraries/AppleJavaExtensions.jar" todir="${JavaDir}"/>
 		<copy file="libraries/iText.jar" todir="${JavaDir}"/>
 
 		<!-- Create the zip file -->

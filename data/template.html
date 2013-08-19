@@ -18,7 +18,7 @@
    -
    - The Initial Developer of the Original Code is Richard A. Wilkes.
    - Portions created by the Initial Developer are Copyright (C) 1998-2002,
-   - 2005-2009 the Initial Developer. All Rights Reserved.
+   - 2005-2011 the Initial Developer. All Rights Reserved.
    -
    - Contributor(s):
    -
@@ -33,60 +33,65 @@
         	{
         		color: black;
         		background-color: white;
-        		font: normal 9px/11px 'Lucida Sans','Arial',sans-serif;
-        		margin: 5px;
+        		font: normal 7pt/9pt 'Lucida Sans','Arial',sans-serif;
+        		margin: 4pt;
         	}
         	
         	table, tbody, tr, td
         	{
-        		margin: 0px;
-        		border-spacing: 0px;
+        		margin: 0;
+        		border-spacing: 0;
         		border-collapse: collapse;
-        		font: normal 9px/11px 'Lucida Sans','Arial',sans-serif;
+        		font: normal 7pt/9pt 'Lucida Sans','Arial',sans-serif;
         	}
         	
-        	table, tbody, tr { padding: 0px; }
+        	table, tbody, tr { padding: 0; }
         	
         	td
         	{
-        		padding: 1px 2px 0px 2px;
+        		padding: 1pt 1pt 0 1pt;
         		vertical-align: top;
         		white-space: nowrap;
         	}
         	
         	.note
         	{
+        		font: normal 6pt/8pt 'Lucida Sans','Arial',sans-serif;
         		color: gray;
         		display: block-inline;
         		white-space: normal;
         	}
         	
         	.secondary { display: block; }
-        	.top_info { margin: 0px; }
-        	.list, .info { margin: 3px 0px 0px 0px; }
+        	.top_info { margin: 0; }
+        	.list, .info { margin: 2pt 0 0 0; }
         	
         	.list, .info, .top_info
         	{
         		width: 100%;
-        		border: 1px solid black;
+        		border: 1pt solid black;
         	}
         	
-        	.list td { border: 1px solid black; }
+        	#advantages { width: 270pt; }
+        	#skills { width: 269pt; }
+        	#spells, #melee_weapons, #ranged_weapons, #equipment, #notes, #copyright { width: 540pt; }
+        	
+        	.list td { border: 1pt solid black; }
         	.odd { background-color: #FFF; }
         	.even { background-color: #E8FFE8; }
-        	#encumbrance_move_dodge td, #hit_location td, #description td.label { border-left: 1px solid black; }
+        	#encumbrance_move_dodge td, #hit_location td, #description td.label { border-left: 1pt solid black; }
         	#copyright {
         		color: gray;
-         		font: italic 9px/11px 'Lucida Sans','Arial',sans-serif;
+         		font: italic 7pt/9pt 'Lucida Sans','Arial',sans-serif;
          		text-align: center;
          		white-space: normal;
-         		margin: 5px;
+         		margin: 4pt;
         	}
-        	.top_border { border-top: 1px solid black; }
+        	.top_border { border-top: 1pt solid black; }
         	
         	.title
         	{
-        		border: 1px solid black;
+        		border: 1pt solid black;
         		background-color: silver;
         		color: black;
         		text-align: center;
@@ -98,17 +103,17 @@
         	
         	.wrapper
         	{
-        		width: 100%;
+        		width: 540pt;
         		border: none;
         	}
         	
-        	.wrapper > tbody > tr > td { padding: 0px; }
-        	.spacer { width: 3px; }
-        	.rowspacer1 { padding: 1px 0px 0px 0px; }
-        	.rowspacer2 { padding: 2px 0px 0px 0px; }
-        	.rowspacer3 { padding: 3px 0px 0px 0px; }
-        	.rowspacer4 { padding: 4px 0px 0px 0px; }
-        	.rowspacer5 { padding: 5px 0px 0px 0px; }
+        	.wrapper > tbody > tr > td { padding: 0; }
+        	.spacer { width: 2pt; }
+        	.rowspacer1 { padding: 1pt 0 0 0; }
+        	.rowspacer2 { padding: 2pt 0 0 0; }
+        	.rowspacer3 { padding: 3pt 0 0 0; }
+        	.rowspacer4 { padding: 4pt 0 0 0; }
+        	.rowspacer5 { padding: 5pt 0 0 0; }
         	
         	.clabel { text-align: center; }
         	.label { text-align: right; }
@@ -127,15 +132,15 @@
         	
         	#portrait
         	{
-        		width: 75px;
-        		height: 100px;
+        		width: 60pt;
+        		height: 80pt;
         	}
         	
-        	td.portrait { width: 75px; }
+        	td.portrait { width: 60pt; }
         	
         	td.portrait_cell
         	{
-        		padding: 0px;
+        		padding: 0;
         		background-color: black;
         	}
         	
@@ -173,9 +178,6 @@
 							<td class="label">Religion:</td>
 							<td class="value">@RELIGION</td>
 						</tr>
-						<tr>
-							<td class="rowspacer1" colspan=2></td>
-						</tr>
 					</table>
 				</td>
 				<td class="spacer"></td>
@@ -195,9 +197,6 @@
 						<tr>
 							<td class="label">Created On:</td>
 							<td class="value">@CREATED_ON</td>
-						</tr>
-						<tr>
-							<td class="rowspacer1" colspan=2></td>
 						</tr>
 					</table>
 				</td>
@@ -246,7 +245,7 @@
 							<td class="rvalue">@EARNED_POINTS</td>
 						</tr>
 						<tr>
-							<td class="rowspacer2" colspan=2></td>
+							<td class="rowspacer1" colspan=2></td>
 						</tr>
 					</table>
 				</td>
@@ -403,10 +402,10 @@
 						</tr>
 						@HIT_LOCATION_LOOP_END
 						<tr>
-							<td class="rowspacer5"></td>
-							<td class="rowspacer5"></td>
-							<td class="rowspacer5"></td>
-							<td class="rowspacer5"></td>
+							<td class="rowspacer4"></td>
+							<td class="rowspacer4"></td>
+							<td class="rowspacer4"></td>
+							<td class="rowspacer4"></td>
 						</tr>
 					</table>
 				</td>
@@ -650,9 +649,9 @@
                 <td class="title">&radic;</td>
                 <td class="title">#</td>
                 <td class="title">$</td>
-                <td class="title">Lb</td>
+                <td class="title">W</td>
                 <td class="title">&sum; $</td>
-                <td class="title">&sum; Lb</td>
+                <td class="title">&sum; W</td>
                 <td class="title">Ref</td>
             </tr>
             @EQUIPMENT_LOOP_START
@@ -676,6 +675,6 @@
                 <td class="description">@NOTES</td>
             </tr>
         </table>
-        <div id="copyright">@MODIFIED_ON.<br>GURPS Character Sheet is copyright &copy; 1998-2002, 2005-2009 by Richard A. Wilkes &mdash; All rights reserved worldwide.</div>
+        <div id="copyright">@MODIFIED_ON.<br>GURPS Character Sheet is copyright &copy; 1998-2002, 2005-2011 by Richard A. Wilkes &mdash; All rights reserved worldwide.</div>
     </body>
 </html>

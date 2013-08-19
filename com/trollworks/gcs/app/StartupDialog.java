@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -27,11 +27,7 @@ import com.trollworks.gcs.menu.data.DataMenu;
 import com.trollworks.gcs.menu.file.NewCharacterSheetCommand;
 import com.trollworks.gcs.menu.file.NewCharacterTemplateCommand;
 import com.trollworks.gcs.menu.file.NewLibraryCommand;
-import com.trollworks.ttk.layout.Alignment;
-import com.trollworks.ttk.layout.FlexColumn;
-import com.trollworks.ttk.layout.FlexComponent;
-import com.trollworks.ttk.layout.FlexRow;
-import com.trollworks.ttk.layout.FlexSpacer;
+import com.trollworks.ttk.layout.PrecisionLayout;
 import com.trollworks.ttk.menu.file.FileType;
 import com.trollworks.ttk.menu.file.OpenCommand;
 import com.trollworks.ttk.menu.file.RecentFilesMenu;
@@ -45,7 +41,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -67,19 +62,23 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /** The initial dialog user's see upon launch if no files have been specified. */
-public class StartupDialog extends JDialog implements WindowFocusListener, ActionListener, MouseListener, KeyListener {
+public class StartupDialog extends JDialog implements WindowFocusListener, ActionListener, MouseListener, KeyListener, ListSelectionListener {
 	private static String	MSG_TITLE;
-	private static String	MSG_NEW;
-	private static String	MSG_OPEN;
+	private static String	MSG_CREATE;
+	private static String	MSG_RECENT_FILES;
 	private static String	MSG_NEW_CHARACTER_SHEET;
 	private static String	MSG_NEW_LIBRARY;
 	private static String	MSG_NEW_TEMPLATE;
-	private static String	MSG_OTHER;
+	private static String	MSG_CHOOSE_OTHER;
+	private static String	MSG_OPEN;
 	private JButton			mSheetButton;
 	private JButton			mLibraryButton;
 	private JButton			mTemplateButton;
+	private JButton			mChooseOtherButton;
 	private JButton			mOpenButton;
 	private JList			mRecentFilesList;
 
@@ -90,26 +89,31 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 	/** Creates a new {@link StartupDialog}. */
 	public StartupDialog() {
 		super(JOptionPane.getRootFrame(), MSG_TITLE, true);
-
 		Container content = getContentPane();
+		content.setLayout(new PrecisionLayout("margins:10 columns:2")); //$NON-NLS-1$
+		content.add(createCreatePanel(), "vGrab:yes vAlign:fill hAlign:fill"); //$NON-NLS-1$
+		content.add(createRecentFilesPanel(), "vGrab:yes hGrab:yes vAlign:fill hAlign:fill"); //$NON-NLS-1$
+		setResizable(true);
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		new WindowSizeEnforcer(this);
+		addWindowFocusListener(this);
+		pack();
+		setLocationRelativeTo(null);
+	}
 
-		JPanel newPanel = new JPanel();
-		newPanel.setBorder(new TitledBorder(MSG_NEW));
-		mSheetButton = createButton(newPanel, MSG_NEW_CHARACTER_SHEET, GCSImages.getCharacterSheetIcon(true));
-		mLibraryButton = createButton(newPanel, MSG_NEW_LIBRARY, GCSImages.getLibraryIcon(true));
-		mTemplateButton = createButton(newPanel, MSG_NEW_TEMPLATE, GCSImages.getTemplateIcon(true));
-		UIUtilities.adjustToSameSize(newPanel.getComponents());
-		content.add(newPanel);
+	private JPanel createCreatePanel() {
+		JPanel panel = new JPanel(new PrecisionLayout());
+		panel.setBorder(new TitledBorder(MSG_CREATE));
+		mSheetButton = createButton(panel, MSG_NEW_CHARACTER_SHEET, GCSImages.getCharacterSheetIcon(true));
+		mLibraryButton = createButton(panel, MSG_NEW_LIBRARY, GCSImages.getLibraryIcon(true));
+		mTemplateButton = createButton(panel, MSG_NEW_TEMPLATE, GCSImages.getTemplateIcon(true));
+		UIUtilities.adjustToSameSize(panel.getComponents());
+		return panel;
+	}
 
-		FlexColumn column = new FlexColumn();
-		column.add(mSheetButton);
-		column.add(mTemplateButton);
-		column.add(mLibraryButton);
-		column.add(new FlexSpacer(0, 0, false, true));
-		column.apply(newPanel);
-
-		JPanel openPanel = new JPanel();
-		openPanel.setBorder(new TitledBorder(MSG_OPEN));
+	private JPanel createRecentFilesPanel() {
+		JPanel panel = new JPanel(new PrecisionLayout("columns:2 equalColumns:yes")); //$NON-NLS-1$
+		panel.setBorder(new TitledBorder(MSG_RECENT_FILES));
 		mRecentFilesList = new JList(RecentFilesMenu.getRecents().toArray());
 		mRecentFilesList.setCellRenderer(new DefaultListCellRenderer() {
 			@Override
@@ -125,30 +129,19 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 		mRecentFilesList.addKeyListener(this);
 		JScrollPane scrollPane = new JScrollPane(mRecentFilesList);
 		scrollPane.setMinimumSize(new Dimension(150, 75));
-		openPanel.add(scrollPane);
-		mOpenButton = new JButton(MSG_OTHER);
+		panel.add(scrollPane, "hSpan:2 vGrab:yes hGrab:yes vAlign:fill hAlign:fill"); //$NON-NLS-1$
+		mChooseOtherButton = new JButton(MSG_CHOOSE_OTHER);
+		mChooseOtherButton.addActionListener(this);
+		panel.add(mChooseOtherButton, "hAlign:middle"); //$NON-NLS-1$
+		mOpenButton = new JButton(MSG_OPEN);
+		mOpenButton.setEnabled(false);
 		mOpenButton.addActionListener(this);
-		openPanel.add(mOpenButton);
-		content.add(openPanel);
-
-		column = new FlexColumn();
-		column.add(scrollPane);
-		column.add(new FlexComponent(mOpenButton, Alignment.CENTER, Alignment.CENTER));
-		column.apply(openPanel);
-
-		FlexRow row = new FlexRow();
-		row.setInsets(new Insets(10, 10, 10, 10));
-		row.setFill(true);
-		row.add(newPanel);
-		row.add(openPanel);
-		row.apply(content);
-
-		setResizable(true);
-		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		new WindowSizeEnforcer(this);
-		addWindowFocusListener(this);
-		pack();
-		setLocationRelativeTo(null);
+		mOpenButton.setDefaultCapable(true);
+		getRootPane().setDefaultButton(mOpenButton);
+		mRecentFilesList.addListSelectionListener(this);
+		panel.add(mOpenButton, "hAlign:middle"); //$NON-NLS-1$
+		UIUtilities.adjustToSameSize(mChooseOtherButton, mOpenButton);
+		return panel;
 	}
 
 	private JButton createButton(Container panel, String title, BufferedImage image) {
@@ -182,8 +175,10 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 			NewLibraryCommand.INSTANCE.newLibrary();
 		} else if (obj == mTemplateButton) {
 			NewCharacterTemplateCommand.INSTANCE.newTemplate();
-		} else if (obj == mOpenButton) {
+		} else if (obj == mChooseOtherButton) {
 			OpenCommand.INSTANCE.open();
+		} else if (obj == mOpenButton) {
+			openSelectedRecents(false);
 		}
 		if (AppWindow.getAllWindows().isEmpty()) {
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -195,19 +190,21 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 	@Override
 	public void mouseClicked(MouseEvent event) {
 		if (event.getClickCount() > 1 && mRecentFilesList.locationToIndex(event.getPoint()) != -1) {
-			openSelectedRecents();
+			openSelectedRecents(true);
 		}
 	}
 
-	private void openSelectedRecents() {
+	private void openSelectedRecents(boolean performPostAmble) {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		for (Object obj : mRecentFilesList.getSelectedValues()) {
 			OpenCommand.INSTANCE.open((File) obj);
 		}
-		if (AppWindow.getAllWindows().isEmpty()) {
-			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-		} else {
-			dispose();
+		if (performPostAmble) {
+			if (AppWindow.getAllWindows().isEmpty()) {
+				setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			} else {
+				dispose();
+			}
 		}
 	}
 
@@ -235,7 +232,7 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 	public void keyPressed(KeyEvent event) {
 		char key = event.getKeyChar();
 		if (key == '\n' || key == '\r') {
-			openSelectedRecents();
+			openSelectedRecents(true);
 		}
 	}
 
@@ -247,5 +244,10 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 	@Override
 	public void keyTyped(KeyEvent event) {
 		// Not used.
+	}
+
+	@Override
+	public void valueChanged(ListSelectionEvent event) {
+		mOpenButton.setEnabled(!mRecentFilesList.isSelectionEmpty());
 	}
 }

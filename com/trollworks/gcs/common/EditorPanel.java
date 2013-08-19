@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2009 the Initial Developer. All Rights Reserved.
+ * 2005-2011 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -29,8 +29,11 @@ import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.criteria.NumericCriteria;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
+import com.trollworks.gcs.criteria.WeightCriteria;
 import com.trollworks.ttk.text.DoubleFormatter;
 import com.trollworks.ttk.text.IntegerFormatter;
+import com.trollworks.ttk.text.WeightFormatter;
+import com.trollworks.ttk.units.WeightValue;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.ActionPanel;
@@ -83,7 +86,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 	 * @return The button that was added.
 	 */
 	protected IconButton addButton(BufferedImage icon, String command, String tooltip) {
-		IconButton button = new IconButton(icon, tooltip, false);
+		IconButton button = new IconButton(icon, tooltip);
 		button.setActionCommand(command);
 		button.addActionListener(this);
 		add(button);
@@ -205,12 +208,23 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 	 * @param min The minimum value to allow.
 	 * @param max The maximum value to allow.
 	 * @param forceSign Whether to force the sign to be visible.
-	 * @return The {@link EditorField} that allows an double comparison to be changed.
+	 * @return The {@link EditorField} that allows a double comparison to be changed.
 	 */
 	protected EditorField addNumericCompareField(DoubleCriteria compare, double min, double max, boolean forceSign) {
 		EditorField field = new EditorField(new DefaultFormatterFactory(new DoubleFormatter(min, max, forceSign)), this, SwingConstants.LEFT, new Double(compare.getQualifier()), new Double(max), null);
 		field.putClientProperty(DoubleCriteria.class, compare);
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
+		add(field);
+		return field;
+	}
+
+	/**
+	 * @param compare The current compare object.
+	 * @return The {@link EditorField} that allows a weight comparison to be changed.
+	 */
+	protected EditorField addWeightCompareField(WeightCriteria compare) {
+		EditorField field = new EditorField(new DefaultFormatterFactory(new WeightFormatter()), this, SwingConstants.LEFT, compare.getQualifier(), null, null);
+		field.putClientProperty(WeightCriteria.class, compare);
 		add(field);
 		return field;
 	}
@@ -233,6 +247,12 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 					if (doubleCriteria != null) {
 						doubleCriteria.setQualifier(((Double) field.getValue()).doubleValue());
 						notifyActionListeners();
+					} else {
+						WeightCriteria weightCriteria = (WeightCriteria) field.getClientProperty(WeightCriteria.class);
+						if (weightCriteria != null) {
+							weightCriteria.setQualifier(((WeightValue) field.getValue()));
+							notifyActionListeners();
+						}
 					}
 				}
 			}
