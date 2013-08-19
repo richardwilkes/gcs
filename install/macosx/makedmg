@@ -1,0 +1,87 @@
+#!/bin/sh
+#
+# ***** BEGIN LICENSE BLOCK *****
+# Version: MPL 1.1
+#
+# The contents of this file are subject to the Mozilla Public License Version
+# 1.1 (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+# http://www.mozilla.org/MPL/
+#
+# Software distributed under the License is distributed on an "AS IS" basis,
+# WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+# for the specific language governing rights and limitations under the
+# License.
+#
+# The Original Code is GURPS Character Sheet.
+#
+# The Initial Developer of the Original Code is Richard A. Wilkes.
+# Portions created by the Initial Developer are Copyright (C) 1998-2002,
+# 2005-2007 the Initial Developer. All Rights Reserved.
+#
+# Contributor(s):
+#
+# ***** END LICENSE BLOCK *****
+
+if [ $# != 3 ]; then
+	echo "Usage: $0 <Product> <InstalledDir> <DiskImageDir>"
+	exit 1
+fi
+
+PRODUCT="$1"
+INSTALLEDDIR="$2"
+DISKIMAGEDIR="$3"
+
+DESTDMG="$DISKIMAGEDIR/$PRODUCT.dmg"
+BASEDIR=`/usr/bin/mktemp -d -t mkdmg`
+SRCDIR=$BASEDIR/files
+DMGDIR=$BASEDIR/dmg
+/bin/cat - > $BASEDIR/OpenUp.c <<EOF
+#include <strings.h>
+#include <unistd.h>
+#include <sys/attr.h>
+#include <sys/mount.h>
+
+struct directoryinfo {
+	unsigned long length;
+	u_int32_t dirid;
+};
+
+struct volumeinfo {
+	unsigned long length;
+	u_int32_t finderinfo[8];
+};
+
+int main(int argc, char **argv) {
+	char *					path;
+	struct attrlist			alist;
+	struct directoryinfo	dirinfo;
+	struct volumeinfo		volinfo;
+	struct statfs			sfs;
+
+	path					= argv[1];
+	bzero(&alist,sizeof(alist));
+	alist.bitmapcount		= 5;
+	alist.commonattr		= ATTR_CMN_OBJID;
+	getattrlist(path,&alist,&dirinfo,sizeof(dirinfo),0);
+	statfs(path,&sfs);
+	alist.commonattr		= ATTR_CMN_FNDRINFO;
+	alist.volattr			= ATTR_VOL_INFO;
+	getattrlist(sfs.f_mntonname,&alist,&volinfo,sizeof(volinfo),0);
+	volinfo.finderinfo[2]	= dirinfo.dirid;
+	setattrlist(sfs.f_mntonname,&alist,volinfo.finderinfo,sizeof(volinfo.finderinfo),0);
+	return 0;
+}
+EOF
+/usr/bin/gcc -Wall $BASEDIR/OpenUp.c -o $BASEDIR/OpenUp
+/bin/mkdir $DMGDIR
+/usr/bin/ditto --rsrc "$INSTALLEDDIR" "$SRCDIR/$PRODUCT"
+/usr/bin/hdiutil create -quiet -srcfolder $SRCDIR -format UDRW -volname "$PRODUCT" -attach $DMGDIR/first.dmg
+/Developer/Tools/SetFile -a C "/Volumes/$PRODUCT"
+$BASEDIR/OpenUp "/Volumes/$PRODUCT"
+/bin/sync
+/usr/bin/hdiutil detach -quiet `/bin/df | /usr/bin/grep "/Volumes/$PRODUCT" | /usr/bin/awk '{ printf $1 }'`
+/usr/bin/hdiutil convert -quiet -format UDZO -imagekey zlib-level=9 -o $DMGDIR/second.dmg $DMGDIR/first.dmg
+/bin/mkdir -p "$DISKIMAGEDIR"
+/bin/mv -f $DMGDIR/second.dmg "$DESTDMG"
+/bin/rm -rf $BASEDIR

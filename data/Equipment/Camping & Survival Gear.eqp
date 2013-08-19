@@ -1,0 +1,544 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<equipment_list unique_id="e7nqhida:-13c4d4iy8h4yq">
+	<equipment_container open="yes">
+		<description>Backpack, Frame</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>100.0</value>
+		<weight units="lb">10.0</weight>
+		<reference>B288</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="atMost" units="lb">100.0</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment_container open="yes">
+		<description>Backpack, Small</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>60.0</value>
+		<weight units="lb">3.0</weight>
+		<reference>B288</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="atMost" units="lb">40.0</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment_container open="yes">
+		<description>Belt</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>5.0</value>
+		<weight units="lb">0.1</weight>
+		<reference></reference>
+		<notes></notes>
+	</equipment_container>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Blanket</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>20.0</value>
+		<weight units="lb">4.0</weight>
+		<reference>B288</reference>
+		<notes></notes>
+	</equipment>
+	<equipment_container open="yes">
+		<description>Bottle, Ceramic</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>3.0</value>
+		<weight units="lb">1.0</weight>
+		<reference>B288</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="atMost" units="lb">2.0</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Cable, Steel, 1.5", 10 yards</description>
+		<tech_level>5</tech_level>
+		<legality_class>4</legality_class>
+		<value>100.0</value>
+		<weight units="lb">17.0</weight>
+		<reference>B288</reference>
+		<notes>Supports 3,700 lbs.</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Cable, Steel, 1.5", 20 yards</description>
+		<tech_level>5</tech_level>
+		<legality_class>4</legality_class>
+		<value>200.0</value>
+		<weight units="lb">34.0</weight>
+		<reference>B288</reference>
+		<notes>Supports 3,700 lbs.</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Camp Stove, Small</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>50.0</value>
+		<weight units="lb">2.0</weight>
+		<reference>B288</reference>
+		<notes>Uses 1/4 gallon of kerosene per 4 hrs</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Candle, Tallow</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>5.0</value>
+		<weight units="lb">1.0</weight>
+		<reference>B288</reference>
+		<notes>Lasts 12 hours</notes>
+	</equipment>
+	<equipment_container open="yes">
+		<description>Canteen</description>
+		<tech_level>5</tech_level>
+		<legality_class>4</legality_class>
+		<value>10.0</value>
+		<weight units="lb">1.0</weight>
+		<reference>B288</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="atMost" units="lb">2.0</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Cigarette Lighter</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>10.0</value>
+		<weight units="lb">0.01</weight>
+		<reference>B288</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Compass</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>50.0</value>
+		<weight units="lb">0.144</weight>
+		<reference>B288</reference>
+		<notes></notes>
+		<skill_bonus>
+			<name compare="starts with">navigation</name>
+			<specialization compare="is anything"></specialization>
+		</skill_bonus>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Cord, 3/16", 10 yards</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>1.0</value>
+		<weight units="lb">0.5</weight>
+		<reference>B288</reference>
+		<notes>Supports 90 lbs.</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Cord, 3/16", 20 yards</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>2.0</value>
+		<weight units="lb">1.0</weight>
+		<reference>B288</reference>
+		<notes>Supports 90 lbs.</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Fishhooks &amp; Line</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>50.0</value>
+		<weight units="lb">0.01</weight>
+		<reference>B288</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Flashlight, Heavy</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>20.0</value>
+		<weight units="lb">1.0</weight>
+		<reference>B288</reference>
+		<notes>30' beam, lasts 5 hours</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Flashlight, Mini</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>10.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>B288</reference>
+		<notes>15' beam, lasts 1 hour</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Gasoline, 1 Gallon</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>2.0</value>
+		<weight units="lb">6.0</weight>
+		<reference>B288</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>GPS Receiver</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>200.0</value>
+		<weight units="lb">3.0</weight>
+		<reference>B288</reference>
+		<notes>Satellite-updated, lasts 24 hours; Grants Absolute Direction (Requires Signal)</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Grapnel</description>
+		<tech_level>5</tech_level>
+		<legality_class>4</legality_class>
+		<value>20.0</value>
+		<weight units="lb">2.0</weight>
+		<reference>B288</reference>
+		<notes>Supports 300 lbs; throw to STx2 yards</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Iron Spike/Piton</description>
+		<tech_level>2</tech_level>
+		<legality_class>4</legality_class>
+		<value>1.0</value>
+		<weight units="lb">0.5</weight>
+		<reference>B288</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Kerosene, 1 Gallon</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>2.0</value>
+		<weight units="lb">6.0</weight>
+		<reference>B288</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Lantern</description>
+		<tech_level>2</tech_level>
+		<legality_class>4</legality_class>
+		<value>20.0</value>
+		<weight units="lb">2.0</weight>
+		<reference>B288</reference>
+		<notes>Uses 1 pint of oil per 24 hours</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Life Jacket</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>100.0</value>
+		<weight units="lb">6.0</weight>
+		<reference>B288</reference>
+		<notes>Floats up to 350 lbs.</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Match, Single, Waterproof</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>0.3</value>
+		<weight units="lb">0.0010</weight>
+		<reference>B288</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Matches, Waterproof</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>1.5</value>
+		<weight units="lb">0.051</weight>
+		<reference>B288</reference>
+		<notes>Box of 50</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Oil, Lantern, 1 Pint</description>
+		<tech_level>2</tech_level>
+		<legality_class>4</legality_class>
+		<value>2.0</value>
+		<weight units="lb">1.0</weight>
+		<reference>B288</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Parachute</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>1000.0</value>
+		<weight units="lb">30.0</weight>
+		<reference>B288</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Pole, 6'</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>5.0</value>
+		<weight units="lb">3.0</weight>
+		<reference>B288</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Pole, 10'</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>8.0</value>
+		<weight units="lb">5.0</weight>
+		<reference>B288</reference>
+		<notes></notes>
+	</equipment>
+	<equipment_container open="yes">
+		<description>Pouch, Small</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>10.0</value>
+		<weight units="lb">0.5</weight>
+		<reference>B288</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="atMost" units="lb">3.0</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment_container open="yes">
+		<description>Purse, Small</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>10.0</value>
+		<weight units="lb">0.2</weight>
+		<reference>B288</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="atMost" units="lb">1.0</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Rope, 3/4", 10 yards</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>25.0</value>
+		<weight units="lb">5.0</weight>
+		<reference>B288</reference>
+		<notes>Supports 1,100 lbs.</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Rope, 3/4", 20 yards</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>50.0</value>
+		<weight units="lb">10.0</weight>
+		<reference>B288</reference>
+		<notes>Supports 1,100 lbs.</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Rope, 3/8", 10 yards</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>5.0</value>
+		<weight units="lb">1.5</weight>
+		<reference>B288</reference>
+		<notes>Supports 300 lbs.</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Rope, 3/8", 20 yards</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>10.0</value>
+		<weight units="lb">3.0</weight>
+		<reference>B288</reference>
+		<notes>Supports 300 lbs.</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Scuba Gear</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>1500.0</value>
+		<weight units="lb">32.0</weight>
+		<reference>B288</reference>
+		<notes>Includes 2-hour underwater air tank</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Sleeping Bag</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>25.0</value>
+		<weight units="lb">7.0</weight>
+		<reference>B288</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Sleeping Bag, Insulated</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>100.0</value>
+		<weight units="lb">15.0</weight>
+		<reference>B288</reference>
+		<notes>+3 HT to resist freezing</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Sleeping Fur</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>50.0</value>
+		<weight units="lb">8.0</weight>
+		<reference>B288</reference>
+		<notes></notes>
+	</equipment>
+	<equipment_container open="yes">
+		<description>Suitcase, Hard</description>
+		<tech_level>5</tech_level>
+		<legality_class>4</legality_class>
+		<value>250.0</value>
+		<weight units="lb">8.0</weight>
+		<reference>B288</reference>
+		<notes>DR4, with key lock</notes>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="atMost" units="lb">100.0</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Tent, 1-Man</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>50.0</value>
+		<weight units="lb">5.0</weight>
+		<reference>B288</reference>
+		<notes>Includes ropes; no poles needed</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Tent, 2-Man</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>80.0</value>
+		<weight units="lb">12.0</weight>
+		<reference>B288</reference>
+		<notes>Includes ropes; requires one 6' pole</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Tent, 4-Man</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>150.0</value>
+		<weight units="lb">30.0</weight>
+		<reference>B288</reference>
+		<notes>Includes ropes; requires two 6' poles</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Tent, 20-Man</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>300.0</value>
+		<weight units="lb">100.0</weight>
+		<reference>B288</reference>
+		<notes>Includes ropes; requires 12 6' poles, 4 10' poles</notes>
+	</equipment>
+	<equipment_container open="yes">
+		<description>Thermos Bottle</description>
+		<tech_level>5</tech_level>
+		<legality_class>4</legality_class>
+		<value>10.0</value>
+		<weight units="lb">2.0</weight>
+		<reference>B288</reference>
+		<notes>Keeps 1 pint hot [24 hours] or cold [72 hours]</notes>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="atMost" units="lb">1.0</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Torch</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>3.0</value>
+		<weight units="lb">1.0</weight>
+		<reference>B288</reference>
+		<notes>Burns for 1 hour</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Traveler's Rations</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>2.0</value>
+		<weight units="lb">0.5</weight>
+		<reference>B288</reference>
+		<notes>One meal</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Water Purification Tablets</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>5.0</value>
+		<weight units="lb">0.1</weight>
+		<reference>B288</reference>
+		<notes>Bottle of 50; Purifies 1 quart each</notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Water, 1 pint</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>0.0</value>
+		<weight units="lb">2.0</weight>
+		<reference></reference>
+		<notes></notes>
+	</equipment>
+	<equipment_container open="yes">
+		<description>Wineskin</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>10.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>B288</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="atMost" units="lb">8.0</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Wristwatch</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>20.0</value>
+		<weight units="lb">0.075</weight>
+		<reference>B288</reference>
+		<notes></notes>
+	</equipment>
+</equipment_list>

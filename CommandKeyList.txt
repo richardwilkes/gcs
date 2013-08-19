@@ -1,0 +1,58 @@
+-		Decrement (Skill/Spell Points, Advantage Level, Equipment Qty)
+=		Increment (Skill/Spell Points, Advantage Level, Equipment Qty)
+,		Preferences
+'		Toggle equipped state
+
+A		Select All
+B		New Spell
+C		Copy
+D		New ADQ
+E		New Carried Equipment
+F		New Equipment
+G
+H
+I		Open Detail Editor
+J		Jump to Find Field
+K		New Skill
+L		New List
+M
+N		New Character Sheet
+O		Open
+P		Print
+Q		Quit
+R
+S		Save
+T		New Technique
+U		Duplicate
+V		Paste
+W		Close
+X		Cut
+Y		Redo
+Z		Undo
+
+SHIFT+A	Apply Template to Character Sheet
+SHIFT+B	New Spell Container
+SHIFT+C Copy to Character Sheet
+SHIFT+D	New ADQ Container
+SHIFT+E	New Carried Equipment Container
+SHIFT+F	New Equipment Container
+SHIFT+G
+SHIFT+H
+SHIFT+I Randomize Name (Male)
+SHIFT+J
+SHIFT+K	New Skill Container
+SHIFT+L
+SHIFT+M
+SHIFT+N	New Template
+SHIFT+O
+SHIFT+P	Page Setup
+SHIFT+Q
+SHIFT+R
+SHIFT+S
+SHIFT+T	Copy to Template
+SHIFT+U
+SHIFT+V Randomize Name (Female)
+SHIFT+W
+SHIFT+X
+SHIFT+Y
+SHIFT+Z

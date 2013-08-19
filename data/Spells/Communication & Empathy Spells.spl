@@ -1,0 +1,656 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<spell_list unique_id="eea4xo9b:-1lec9begrcez4">
+	<spell>
+		<name>Borrow Language</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>3 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M46</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">lend language</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Borrow Skill</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>3 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M47</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">lend skill</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Communication</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>4</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M48</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">wizard eye</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">far-hearing</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">voices</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">simple illusion</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Compel Lie</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>5 min</duration>
+		<reference>M137</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Compel Truth</name>
+		<college>Communication</college>
+		<spell_class>Info</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>5 min</duration>
+		<reference>M47</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: communication college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+			<spell_prereq has="yes">
+				<name compare="is">truthsayer</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Control Person</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>6</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M49</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<name compare="is">soul rider</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">telepathy</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Dispel Possession</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>10</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M49</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">soul rider</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">possession</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Dream Projection</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>1 min</casting_time>
+		<duration>1 min</duration>
+		<reference>M46</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">dream sending</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Dream Sending</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 min</casting_time>
+		<duration>1 hr</duration>
+		<reference>M45</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<name compare="is">dream viewing</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">sleep</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Dream Viewing</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>1 hr</duration>
+		<reference>M45</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<name compare="is">truthsayer</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">sleep</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Exchange Bodies</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>120</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 hr</casting_time>
+		<duration>Permanent</duration>
+		<reference>M49</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">permanent possession</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">soul jar</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Gift of Letters</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M46</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="starts with">Language</name>
+					<notes compare="contains">Written: Native</notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="starts with">Language</name>
+					<notes compare="contains">Written: Accented</notes>
+				</advantage_prereq>
+			</prereq_list>
+			<spell_prereq has="yes">
+				<name compare="is">borrow language</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Gift of Tongues</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M46</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="starts with">Language</name>
+					<notes compare="contains">Spoken: Native</notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="starts with">Language</name>
+					<notes compare="contains">Spoken: Accented</notes>
+				</advantage_prereq>
+			</prereq_list>
+			<spell_prereq has="yes">
+				<name compare="is">borrow language</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Hide Emotion</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 hr</duration>
+		<reference>M45</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">sense emotion</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Hide Thoughts</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>10 min</duration>
+		<reference>M46</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<name compare="is">truthsayer</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">hide emotion</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Insignificance</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>4</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>1 hr</duration>
+		<reference>M48</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">persuasion</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">avoid</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Lend Language</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>3 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M46</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<college compare="contains">communication</college>
+				<quantity compare="atLeast">3</quantity>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">beast speech</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Lend Skill</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>3 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M47</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<attribute_prereq has="yes" which="IQ" combined_with="IQ" compare="atLeast">11</attribute_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">mind-sending</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Machine Speech/TL</name>
+		<college>Communication/Technological</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>5</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M176</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">machine summoning</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Message</name>
+		<college>Communication/Sound</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/15 sec</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>Varies</casting_time>
+		<duration>Varies</duration>
+		<reference>M174</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">seeker</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">great voice</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Mind-Reading</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M46</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<name compare="is">truthsayer</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">borrow language</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Mind-Search</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>6</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>1 min</casting_time>
+		<duration>1 min</duration>
+		<reference>M46</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">mind-reading</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Mind-Sending</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>4</maintenance_cost>
+		<casting_time>4 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M47</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">mind-reading</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Permanent Possession</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>30</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>5 min</casting_time>
+		<duration>Indefinite</duration>
+		<reference>M49</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: communication college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+			</prereq_list>
+			<spell_prereq has="yes">
+				<name compare="is">possession</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Persuasion</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>Same</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M45</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">sense emotion</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Possession</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>10</casting_cost>
+		<maintenance_cost>4</maintenance_cost>
+		<casting_time>1 min</casting_time>
+		<duration>1 min</duration>
+		<reference>M49</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: communication college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+			</prereq_list>
+			<prereq_list all="no">
+				<spell_prereq has="yes">
+					<name compare="is">control person</name>
+				</spell_prereq>
+				<spell_prereq has="yes">
+					<name compare="is">beast possession</name>
+				</spell_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Presence</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>4</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>1 hr</duration>
+		<reference>M48</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">persuasion</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">lure</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Retrogression</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>5</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>1 sec</duration>
+		<reference>M47</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">mind-reading</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">mind-sending</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Sense Emotion</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M45</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">sense foes</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Sense Foes</name>
+		<college>Communication</college>
+		<spell_class>Info/Area</spell_class>
+		<casting_cost>1/area, min 2</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M44</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Sense Life</name>
+		<college>Communication</college>
+		<spell_class>Info/Area</spell_class>
+		<casting_cost>1/2</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M45</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Soul Rider</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>5</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>3 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M49</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">mind-reading</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Telepathy</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>4</maintenance_cost>
+		<casting_time>4 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M47</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">mind-sending</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Truthsayer</name>
+		<college>Communication</college>
+		<spell_class>Info</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M45</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">sense emotion</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Vexation</name>
+		<college>Communication</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>Same</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M45</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">sense emotion</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+</spell_list>

@@ -1,0 +1,694 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<spell_list unique_id="eh2ovr8g:80vpn1jzbpqf">
+	<spell>
+		<name>Blackout</name>
+		<college>Light</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M112</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">darkness</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Blur</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1-5</casting_cost>
+		<maintenance_cost>Same</maintenance_cost>
+		<casting_time>2 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M113</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">darkness</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">gloom</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Body of Shadows</name>
+		<college>Light</college>
+		<spell_class>Regular/R-HT</spell_class>
+		<casting_cost>6</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>5 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M114</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: light college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+			<spell_prereq has="yes">
+				<name compare="is">shape darkness</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<college compare="is">movement</college>
+				<quantity compare="atLeast">3</quantity>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Bright Vision</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M111</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<advantage_prereq has="no">
+				<name compare="is">blindness</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+			<prereq_list all="no">
+				<spell_prereq has="yes">
+					<name compare="is">keen vision</name>
+				</spell_prereq>
+				<spell_prereq has="yes">
+					<college compare="is">light</college>
+					<quantity compare="atLeast">5</quantity>
+				</spell_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Colors</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M110</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">light</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Continual Light</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2 moon, 4 torch, 6 day</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>2d days</duration>
+		<reference>M110</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">light</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Continual Mage Light</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2 candle, 4 torch, 6 day</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>2d days</duration>
+		<reference>M113</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">mage light</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">continual light</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Continual Sunlight</name>
+		<college>Light</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>2d days</duration>
+		<reference>M114</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">sunlight</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Dark Vision</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>5</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M111</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<name compare="is">night vision</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">infravision</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Darkness</name>
+		<college>Light</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M111</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">continual light</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Flash</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>2 sec</casting_time>
+		<duration>Instant</duration>
+		<melee_weapon>
+			<damage>Blinds</damage>
+			<strength></strength>
+			<usage>Area</usage>
+			<reach>Special</reach>
+			<parry>No</parry>
+			<block></block>
+		</melee_weapon>
+		<reference>M112</reference>
+		<notes>HT roll to resist blinding</notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">continual light</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Gloom</name>
+		<college>Light</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>Varies</casting_time>
+		<duration>2d days</duration>
+		<reference>M112</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">continual light</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Glow</name>
+		<college>Light</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>Varies</casting_time>
+		<duration>2d days</duration>
+		<reference>M112</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">continual light</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Hawk Vision</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2/level</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>2 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M111</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<advantage_prereq has="no">
+				<name compare="is">blindness</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+			<prereq_list all="no">
+				<spell_prereq has="yes">
+					<name compare="is">keen vision</name>
+				</spell_prereq>
+				<spell_prereq has="yes">
+					<college compare="is">light</college>
+					<quantity compare="atLeast">5</quantity>
+				</spell_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Hide</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1-5</casting_cost>
+		<maintenance_cost>Same</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 hour</duration>
+		<reference>M113</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">blur</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">forgetfulness</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Images of the Past</name>
+		<college>Knowledge/Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3#</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M107</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: light college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+			<spell_prereq has="yes">
+				<name compare="is">simple illusion</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">history</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Infravision</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M111</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<name compare="is">keen vision</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<college compare="is">light</college>
+				<quantity compare="atLeast">5</quantity>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Invisibility</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>5</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>3 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M114</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<college compare="is">light</college>
+				<quantity compare="atLeast">6</quantity>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">blur</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Light</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M110</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Light Jet</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<melee_weapon>
+			<damage>Blinds</damage>
+			<strength></strength>
+			<usage>Jet</usage>
+			<reach>10</reach>
+			<parry>No</parry>
+			<block></block>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Innate Attack</name>
+				<specialization>Beam</specialization>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<reference>M112</reference>
+		<notes>blinds only when darkness penalty is -5 or more</notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">continual light</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">shape light</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Mage Light</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1 candle, 2 torch, 3 day</casting_cost>
+		<maintenance_cost>Same</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M113</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">mage sight</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">light</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Mirror</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M112</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">colors</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Night Vision</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M111</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<name compare="is">keen vision</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<college compare="is">light</college>
+				<quantity compare="atLeast">5</quantity>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Remove Reflection</name>
+		<college>Light</college>
+		<spell_class>Regular/R-Will</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M113</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">remove shadow</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Remove Shadow</name>
+		<college>Light</college>
+		<spell_class>Regular/R-Will</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M110</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">light</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>See Invisible</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M113</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<name compare="is">invisibility</name>
+			</spell_prereq>
+			<prereq_list all="yes">
+				<spell_prereq has="yes">
+					<name compare="is">dark vision</name>
+				</spell_prereq>
+				<spell_prereq has="yes">
+					<name compare="is">infravision</name>
+				</spell_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Shade</name>
+		<college>Protection/Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>1 hour</duration>
+		<reference>M169</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">continual light</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">shield</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Shape Darkness</name>
+		<college>Light</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>2#</casting_cost>
+		<maintenance_cost>Same</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M113</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">darkness</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Shape Light</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M111</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">light</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Small Vision</name>
+		<college>Light</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4#</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>2 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M111</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<advantage_prereq has="no">
+				<name compare="is">blindness</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+			<prereq_list all="no">
+				<spell_prereq has="yes">
+					<name compare="is">keen vision</name>
+				</spell_prereq>
+				<spell_prereq has="yes">
+					<college compare="is">light</college>
+					<quantity compare="atLeast">5</quantity>
+				</spell_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Sunbolt</name>
+		<college>Light</college>
+		<spell_class>Missile</spell_class>
+		<casting_cost>1-3xMagery</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1-3 sec</casting_time>
+		<duration>Instant</duration>
+		<ranged_weapon>
+			<damage>1d-1 imp/point</damage>
+			<strength></strength>
+			<usage></usage>
+			<accuracy>2</accuracy>
+			<range>75/150</range>
+			<rate_of_fire></rate_of_fire>
+			<shots></shots>
+			<bulk></bulk>
+			<recoil></recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Innate Attack</name>
+				<specialization>Beam</specialization>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<reference>M114</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<college compare="is">light</college>
+				<quantity compare="atLeast">6</quantity>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">sunlight</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Sunlight</name>
+		<college>Light</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M114</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: light college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+			</prereq_list>
+			<spell_prereq has="yes">
+				<name compare="is">glow</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">colors</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Wall of Light</name>
+		<college>Light</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>1-3</casting_cost>
+		<maintenance_cost>Same</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M113</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">continual light</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+</spell_list>

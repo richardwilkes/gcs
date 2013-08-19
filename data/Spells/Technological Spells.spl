@@ -1,0 +1,1002 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<spell_list unique_id="e9m2fv9u:1jdg5wp39mjva">
+	<spell very_hard="yes">
+		<name>Animate Machine</name>
+		<tech_level/>
+		<college>Technological/Machine</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>sec=cost</casting_time>
+		<duration>1 min</duration>
+		<reference>M177</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="starts with">machine control</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<spell_prereq has="yes">
+					<name compare="is">animation</name>
+				</spell_prereq>
+				<spell_prereq has="yes">
+					<name compare="is">animate object</name>
+				</spell_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Awaken Computer</name>
+		<tech_level/>
+		<college>Technological/Machine</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>8</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>1 hr</duration>
+		<reference>M178</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">animation</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">wisdom</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Body of Metal</name>
+		<college>Technological/Metal</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>12</casting_cost>
+		<maintenance_cost>6</maintenance_cost>
+		<casting_time>5 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M183</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">shape metal</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: technological college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Body of Plastic</name>
+		<college>Technological/Plastic</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>10</casting_cost>
+		<maintenance_cost>5</maintenance_cost>
+		<casting_time>5 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M183</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">shape plastic</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: technological college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Breathe Radiation</name>
+		<college>Technological/Radiation</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1-4</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>2 sec</casting_time>
+		<duration>1 sec</duration>
+		<reference>M182</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">radiation jet</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: technological college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Conduct Power</name>
+		<tech_level/>
+		<college>Technological/Energy</college>
+		<spell_class>Special</spell_class>
+		<casting_cost>0</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M180</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="starts with">seek power</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: technological college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Copy Device</name>
+		<tech_level/>
+		<college>Technological</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1</casting_cost>
+		<maintenance_cost></maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Instant</duration>
+		<reference></reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Create Fuel</name>
+		<tech_level/>
+		<college>Technological/Energy</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>30 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M179</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="contains">transmut</name>
+				<quantity compare="atLeast">2</quantity>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="starts with">seek fuel</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Cure Radiation</name>
+		<college>Technological/Radiation</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/10 rads removed</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>30 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M182</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">resist radiation</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">major healing</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Draw Power</name>
+		<tech_level/>
+		<college>Technological/Energy</college>
+		<spell_class>Special</spell_class>
+		<casting_cost>0</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M180</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<college_count compare="atLeast">10</college_count>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<college_count compare="atLeast">10</college_count>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="starts with">steal power</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Essential Fuel</name>
+		<tech_level/>
+		<college>Technological/Energy</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/lb of fuel</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M179</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<college compare="contains">energy</college>
+				<quantity compare="atLeast">6</quantity>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Extinguish Radiation</name>
+		<college>Technolgoical/Radiation</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/10 rads/hr</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M181</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">extinguish fire</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">earth to air</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">irradiate</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: technological college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Glitch</name>
+		<tech_level/>
+		<college>Technological/Machine</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M176</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="starts with">machine control</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Identify Metal</name>
+		<college>Technological/Metal</college>
+		<spell_class>Info</spell_class>
+		<casting_cost>1</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M182</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">seek earth</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Identify Plastic</name>
+		<college>Technological/Plastic</college>
+		<spell_class>Info</spell_class>
+		<casting_cost>1</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M182</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">seek plastic</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Irradiate</name>
+		<college>Technological/Radiation</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>1/10 rads/hr</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 hr</duration>
+		<reference>M181</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<college compare="contains">earth</college>
+				<quantity compare="atLeast">2</quantity>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<college compare="contains">fire</college>
+				<quantity compare="atLeast">2</quantity>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Lend Power</name>
+		<tech_level/>
+		<college>Technological/Energy</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Indefinite</duration>
+		<reference>M180</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="starts with">seek power</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: technological college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Machine Control</name>
+		<tech_level/>
+		<college>Technological/Machine</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>6</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M176</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="starts with">reveal function</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">locksmith</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">lightning</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Machine Possession</name>
+		<tech_level/>
+		<college>Technological/Machine</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>6</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>30 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M178</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<spell_prereq has="yes">
+					<name compare="is">soul rider</name>
+				</spell_prereq>
+				<spell_prereq has="yes">
+					<name compare="is">rider within</name>
+				</spell_prereq>
+			</prereq_list>
+			<spell_prereq has="yes">
+				<name compare="starts with">machine control</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Machine Speech</name>
+		<tech_level/>
+		<college>Communication &amp; Empathy/Technological/Machine</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>5</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M176</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="starts with">machine summoning</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Machine Summoning</name>
+		<tech_level/>
+		<college>Technological/Machine</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>4 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M176</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="starts with">machine control</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Magnetic Vision</name>
+		<college>Technological/Energy</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M181</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">keen vision</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Malfunction</name>
+		<tech_level/>
+		<college>Technological/Machine</college>
+		<spell_class>Melee</spell_class>
+		<casting_cost>5</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M177</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">glitch</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: technological college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Metal Vision</name>
+		<college>Technological/Metal</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2/5 yds of depth</casting_cost>
+		<maintenance_cost>Same</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>30 sec</duration>
+		<reference>M183</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">shape metal</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Permanent Machine Possession</name>
+		<tech_level/>
+		<college>Technological/Machine</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>30</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>5 min</casting_time>
+		<duration>Indefinite</duration>
+		<reference>M178</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="starts with">machine possession</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: technological college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Plastic Vision</name>
+		<college>Technological/Plastic</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2/5 yds of depth</casting_cost>
+		<maintenance_cost>Same</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>30 sec</duration>
+		<reference>M183</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">shape plastic</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Preserve Fuel</name>
+		<tech_level/>
+		<college>Technological/Energy</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4/lb of fuel</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 week</duration>
+		<reference>M179</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="starts with">test fuel</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Propel</name>
+		<tech_level/>
+		<college>Technological/Energy</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>Same</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>10 min</duration>
+		<reference>M180</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="starts with">create fuel</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">dancing object</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Purify Fuel</name>
+		<tech_level/>
+		<college>Technological/Energy</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/2 per lb of material</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M179</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<name compare="is">decay</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">purify water</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Radiation Jet</name>
+		<college>Technological/Radiation</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1-3</casting_cost>
+		<maintenance_cost>Same</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 sec</duration>
+		<reference>M182</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">resist radiation</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">irradiate</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Radio Hearing</name>
+		<college>Technological/Energy</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M181</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">keen hearing</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Rebuild</name>
+		<tech_level/>
+		<college>Making &amp; Breaking/Technological/Machine</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>30</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>sec=cost</casting_time>
+		<duration>Permanent</duration>
+		<reference>M177</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="starts with">schematic</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<college compare="contains">air</college>
+				<quantity compare="atLeast">3</quantity>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<college compare="contains">earth</college>
+				<quantity compare="atLeast">3</quantity>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<college compare="contains">fire</college>
+				<quantity compare="atLeast">3</quantity>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<college compare="contains">water</college>
+				<quantity compare="atLeast">3</quantity>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">create object</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">repair</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: technological college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Resist Radiation</name>
+		<college>Technological/Radiation</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M182</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<college compare="contains">radiation</college>
+				<quantity compare="atLeast">3</quantity>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Reveal Function</name>
+		<tech_level/>
+		<college>Technological/Machine</college>
+		<spell_class>Info</spell_class>
+		<casting_cost>8</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 min</casting_time>
+		<duration>Instant</duration>
+		<reference>M176</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">seek machine</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Schematic</name>
+		<tech_level/>
+		<college>Technological/Machine</college>
+		<spell_class>Info</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>5 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M177</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">reveal function</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">history</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>See Radiation</name>
+		<college>Technological/Radiation</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M181</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Seek Fuel</name>
+		<tech_level/>
+		<college>Technological/Energy</college>
+		<spell_class>Info</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M179</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Seek Machine</name>
+		<tech_level/>
+		<college>Technological/Machine</college>
+		<spell_class>Info</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M175</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Seek Plastic</name>
+		<college>Technological/Plastic</college>
+		<spell_class>Info</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M182</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Seek Power</name>
+		<tech_level/>
+		<college>Technological/Energy</college>
+		<spell_class>Info</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M179</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Seek Radiation</name>
+		<college>Technological/Radiation</college>
+		<spell_class>Info</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M181</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">see radiation</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Shape Metal</name>
+		<college>Technological/Metal</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>6 or 4</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M182</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<spell_prereq has="yes">
+					<college compare="contains">technological</college>
+					<quantity compare="atLeast">6</quantity>
+				</spell_prereq>
+				<spell_prereq has="yes">
+					<name compare="is">shape earth</name>
+				</spell_prereq>
+			</prereq_list>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: technological college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Shape Plastic</name>
+		<college>Technological/Plastic</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>6</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M183</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<spell_prereq has="yes">
+					<college compare="contains">technological</college>
+					<quantity compare="atLeast">6</quantity>
+				</spell_prereq>
+				<spell_prereq has="yes">
+					<name compare="is">shape plant</name>
+				</spell_prereq>
+			</prereq_list>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: technological college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Spectrum Vision</name>
+		<college>Technological/Energy</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>Same</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M181</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">infravision</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Steal Power</name>
+		<tech_level/>
+		<college>Technological/Energy</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>None</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>5 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M180</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">minor healing</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="starts with">conduct power</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: technological college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Stop Power</name>
+		<college>Technological/Energy</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>3 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M179</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="starts with">seek power</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: technological college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Test Fuel</name>
+		<tech_level/>
+		<college>Technological/Energy</college>
+		<spell_class>Info</spell_class>
+		<casting_cost>1 or 3</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M179</reference>
+		<notes></notes>
+	</spell>
+</spell_list>

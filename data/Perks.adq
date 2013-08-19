@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<advantage_list unique_id="e7e4esm1:15ywkd7qyfgh1">
+	<advantage>
+		<name>Accessory (@Tool@)</name>
+		<type>Physical, Exotic</type>
+		<base_points>1</base_points>
+		<reference>B100</reference>
+		<notes></notes>
+	</advantage>
+	<advantage>
+		<name>Alcohol Tolerance</name>
+		<type>Physical</type>
+		<base_points>1</base_points>
+		<reference>B100</reference>
+		<notes></notes>
+	</advantage>
+	<advantage>
+		<name>Autotrance</name>
+		<type>Mental</type>
+		<base_points>1</base_points>
+		<reference>B101</reference>
+		<notes></notes>
+	</advantage>
+	<advantage>
+		<name>Deep Sleeper</name>
+		<type>Physical</type>
+		<base_points>1</base_points>
+		<reference>B101</reference>
+		<notes></notes>
+	</advantage>
+	<advantage>
+		<name>Fur</name>
+		<type>Physical, Exotic</type>
+		<base_points>1</base_points>
+		<reference>B101</reference>
+		<notes></notes>
+	</advantage>
+	<advantage>
+		<name>Honest Face</name>
+		<type>Physical</type>
+		<base_points>1</base_points>
+		<reference>B101</reference>
+		<notes></notes>
+	</advantage>
+	<advantage>
+		<name>No Hangover</name>
+		<type>Physical</type>
+		<base_points>1</base_points>
+		<reference>B101</reference>
+		<notes></notes>
+	</advantage>
+	<advantage>
+		<name>Penetrating Voice</name>
+		<type>Physical</type>
+		<base_points>1</base_points>
+		<reference>B101</reference>
+		<notes></notes>
+	</advantage>
+	<advantage>
+		<name>Sanitized Metabolism</name>
+		<type>Physical</type>
+		<base_points>1</base_points>
+		<reference>B101</reference>
+		<notes></notes>
+	</advantage>
+	<advantage>
+		<name>Shtick</name>
+		<type>Mental/Physical</type>
+		<base_points>1</base_points>
+		<reference>B101</reference>
+		<notes></notes>
+	</advantage>
+</advantage_list>

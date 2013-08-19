@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="eh7a11dm:kqetel0lpnbo">
+	<advantage_list>
+		<advantage_container open="yes" type="metatrait">
+			<name>Meta-Trait: Ground Vehicle</name>
+			<reference>B263</reference>
+			<notes></notes>
+			<advantage>
+				<name>Horizontal</name>
+				<type>Physical, Exotic</type>
+				<base_points>-10</base_points>
+				<reference>B139</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>No Legs (Wheeled (Any Wheels))</name>
+				<type>Physical, Exotic</type>
+				<base_points>-20</base_points>
+				<reference>B145</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>No Manipulators</name>
+				<type>Physical</type>
+				<base_points>-50</base_points>
+				<reference>B145</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>Numb</name>
+				<type>Physical</type>
+				<base_points>-20</base_points>
+				<reference>B146</reference>
+				<notes></notes>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+	<notes></notes>
+</template>

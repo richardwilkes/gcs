@@ -1,0 +1,704 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- ***** BEGIN LICENSE BLOCK *****
+   - Version: MPL 1.1
+   -
+   - The contents of this file are subject to the Mozilla Public License Version
+   - 1.1 (the "License"); you may not use this file except in compliance with
+   - the License. You may obtain a copy of the License at
+   - http://www.mozilla.org/MPL/
+   -
+   - Software distributed under the License is distributed on an "AS IS" basis,
+   - WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+   - for the specific language governing rights and limitations under the
+   - License.
+   -
+   - The Original Code is GURPS Character Sheet.
+   -
+   - The Initial Developer of the Original Code is Richard A. Wilkes.
+   - Portions created by the Initial Developer are Copyright (C) 1998-2002,
+   - 2005-2007 the Initial Developer. All Rights Reserved.
+   -
+   - Contributor(s):
+   -
+   - ***** END LICENSE BLOCK ***** -->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <title>@NAME</title>
+        <style type="text/css" title="text/css">
+        	/* <![CDATA[ */
+        	body
+        	{
+        		color: black;
+        		background-color: white;
+        		font: normal 9px/11px 'Lucida Sans','Arial',sans-serif;
+        		margin: 5px;
+        	}
+        	
+        	table, tbody, tr, td
+        	{
+        		margin: 0px;
+        		border-spacing: 0px;
+        		border-collapse: collapse;
+        		font: normal 9px/11px 'Lucida Sans','Arial',sans-serif;
+        	}
+        	
+        	table, tbody, tr { padding: 0px; }
+        	
+        	td
+        	{
+        		padding: 1px 2px 0px 2px;
+        		vertical-align: top;
+        		white-space: nowrap;
+        	}
+        	
+        	.note
+        	{
+        		color: gray;
+        		display: block-inline;
+        		white-space: normal;
+        	}
+        	
+        	.secondary { display: block; }
+        	.top_info { margin: 0px; }
+        	.list, .info { margin: 3px 0px 0px 0px; }
+        	
+        	.list, .info, .top_info
+        	{
+        		width: 100%;
+        		border: 1px solid black;
+        	}
+        	
+        	.list td { border: 1px solid black; }
+        	.odd { background-color: #DDF; }
+        	.even { background-color: #DFD; }
+        	#encumbrance_move_dodge td, #hit_location td, #description td.label { border-left: 1px solid black; }
+        	#copyright {
+        		color: gray;
+         		font: italic 9px/11px 'Lucida Sans','Arial',sans-serif;
+         		text-align: center;
+         		white-space: normal;
+         		margin: 5px;
+        	}
+        	.top_border { border-top: 1px solid black; }
+        	
+        	.title
+        	{
+        		border: 1px solid black;
+        		background-color: silver;
+        		color: black;
+        		text-align: center;
+        	}
+        	
+        	.description, .value, .rvalue { width: 100%; }
+        	.quantity, .cost, .weight, .cost_summary, .weight_summary, .ref, .level, .accuracy, .damage, .range, .rof, .shots, .bulk, .recoil, .strength, .block, .reach, .points, .spell_level, .relative_spell_level, .skill_level, .relative_skill_level, .rvalue { text-align: right; }
+        	.equipped, .parry { text-align: center; }
+        	
+        	.wrapper
+        	{
+        		width: 100%;
+        		border: none;
+        	}
+        	
+        	.wrapper > tbody > tr > td { padding: 0px; }
+        	.spacer { width: 3px; }
+        	.rowspacer1 { padding: 1px 0px 0px 0px; }
+        	.rowspacer2 { padding: 2px 0px 0px 0px; }
+        	.rowspacer3 { padding: 3px 0px 0px 0px; }
+        	.rowspacer4 { padding: 4px 0px 0px 0px; }
+        	.rowspacer5 { padding: 5px 0px 0px 0px; }
+        	
+        	.clabel { text-align: center; }
+        	.label { text-align: right; }
+        	
+        	.label, .clabel
+        	{
+        		color: gray;
+        		background-color: inherit;
+        	}
+        	
+        	.encumbrance
+        	{
+        		background-color: #FFB;
+        		color: inherit;
+        	}
+        	
+        	#portrait
+        	{
+        		width: 75px;
+        		height: 100px;
+        	}
+        	
+        	td.portrait { width: 75px; }
+        	
+        	td.portrait_cell
+        	{
+        		padding: 0px;
+        		background-color: black;
+        	}
+        	
+        	/* ]]> */
+</style>
+    </head>
+    <body>
+		<table class="wrapper">
+			<tr>
+				<td class="portrait" rowspan="2">
+					<table class="top_info">
+						<tr>
+							<td class="title">Portrait</td>
+						</tr>
+						<tr>
+							<td class="portrait_cell"><img id="portrait" src="@PORTRAIT" alt="Portrait"/></td>
+						</tr>
+					</table>
+				</td>
+				<td class="spacer" rowspan="2"></td>
+				<td>
+					<table id="identity" class="top_info">
+						<tr>
+							<td class="title" colspan="2">Identity</td>
+						</tr>
+						<tr>
+							<td class="label">Name:</td>
+							<td class="value">@NAME</td>
+						</tr>
+						<tr>
+							<td class="label">Title:</td>
+							<td class="value">@TITLE</td>
+						</tr>
+						<tr>
+							<td class="label">Religion:</td>
+							<td class="value">@RELIGION</td>
+						</tr>
+						<tr>
+							<td class="rowspacer1" colspan=2></td>
+						</tr>
+					</table>
+				</td>
+				<td class="spacer"></td>
+				<td>
+					<table id="player_info" class="top_info">
+						<tr>
+							<td class="title" colspan="2">Player Information</td>
+						</tr>
+						<tr>
+							<td class="label">Player:</td>
+							<td class="value">@PLAYER</td>
+						</tr>
+						<tr>
+							<td class="label">Campaign:</td>
+							<td class="value">@CAMPAIGN</td>
+						</tr>
+						<tr>
+							<td class="label">Created On:</td>
+							<td class="value">@CREATED_ON</td>
+						</tr>
+						<tr>
+							<td class="rowspacer1" colspan=2></td>
+						</tr>
+					</table>
+				</td>
+				<td class="spacer" rowspan="2"></td>
+				<td rowspan="2">
+					<table id="points" class="top_info">
+						<tr>
+							<td class="title" colspan="2">0 Points</td>
+						</tr>
+						<tr>
+							<td class="label">Attributes:</td>
+							<td class="rvalue">@ATTRIBUTE_POINTS</td>
+						</tr>
+						<tr>
+							<td class="label">Advantages:</td>
+							<td class="rvalue">@ADVANTAGE_POINTS</td>
+						</tr>
+						<tr>
+							<td class="label">Disadvantages:</td>
+							<td class="rvalue">@DISADVANTAGE_POINTS</td>
+						</tr>
+						<tr>
+							<td class="label">Quirks:</td>
+							<td class="rvalue">@QUIRK_POINTS</td>
+						</tr>
+						<tr>
+							<td class="label">Skills:</td>
+							<td class="rvalue">@SKILL_POINTS</td>
+						</tr>
+						<tr>
+							<td class="label">Spells:</td>
+							<td class="rvalue">@SPELL_POINTS</td>
+						</tr>
+						<tr>
+							<td class="label">Race:</td>
+							<td class="rvalue">@RACE_POINTS</td>
+						</tr>
+						<tr>
+							<td class="rowspacer2" colspan=2></td>
+						</tr>
+						<tr class="top_border">
+							<td class="rowspacer1" colspan=2></td>
+						</tr>
+						<tr>
+							<td class="label">Earned:</td>
+							<td class="rvalue">@EARNED_POINTS</td>
+						</tr>
+						<tr>
+							<td class="rowspacer2" colspan=2></td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3">
+					<table id="description" class="info">
+						<tr>
+							<td class="title" colspan="6">Description</td>
+						</tr>
+						<tr>
+							<td class="label">Race:</td>
+							<td class="value">@RACE</td>
+							<td class="label">Height:</td>
+							<td class="value">@HEIGHT</td>
+							<td class="label">Hair:</td>
+							<td class="value">@HAIR</td>
+						</tr>
+						<tr>
+							<td class="label">Gender:</td>
+							<td class="value">@GENDER</td>
+							<td class="label">Weight:</td>
+							<td class="value">@WEIGHT</td>
+							<td class="label">Eyes:</td>
+							<td class="value">@EYES</td>
+						</tr>
+						<tr>
+							<td class="label">Age:</td>
+							<td class="value">@AGE</td>
+							<td class="label">Size:</td>
+							<td class="value">@SIZE</td>
+							<td class="label">Skin:</td>
+							<td class="value">@SKIN</td>
+						</tr>
+						<tr>
+							<td class="label">Birthday:</td>
+							<td class="value">@BIRTHDAY</td>
+							<td class="label">TL:</td>
+							<td class="value">@TL</td>
+							<td class="label">Hand:</td>
+							<td class="value">@HAND</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+		<table class="wrapper">
+			<tr>
+				<td rowspan="2">
+					<table id="attributes" class="info">
+						<tr>
+							<td class="title" colspan="2">Attributes</td>
+						</tr>
+						<tr>
+							<td class="label">Strength (ST):</td>
+							<td class="rvalue">@ST</td>
+						</tr>
+						<tr>
+							<td class="label">Dexterity (DX):</td>
+							<td class="rvalue">@DX</td>
+						</tr>
+						<tr>
+							<td class="label">Intelligence (IQ):</td>
+							<td class="rvalue">@IQ</td>
+						</tr>
+						<tr>
+							<td class="label">Health (HT):</td>
+							<td class="rvalue">@HT</td>
+						</tr>
+						<tr class="top_border">
+							<td class="label">Will:</td>
+							<td class="rvalue">@WILL</td>
+						</tr>
+						<tr class="top_border">
+							<td class="label">Basic Speed:</td>
+							<td class="rvalue">@BASIC_SPEED</td>
+						</tr>
+						<tr>
+							<td class="label">Basic Move:</td>
+							<td class="rvalue">@BASIC_MOVE</td>
+						</tr>
+						<tr class="top_border">
+							<td class="label">Perception:</td>
+							<td class="rvalue">@PERCEPTION</td>
+						</tr>
+						<tr>
+							<td class="label">Vision:</td>
+							<td class="rvalue">@VISION</td>
+						</tr>
+						<tr>
+							<td class="label">Hearing:</td>
+							<td class="rvalue">@HEARING</td>
+						</tr>
+						<tr>
+							<td class="label">Taste &amp; Smell:</td>
+							<td class="rvalue">@TASTE_SMELL</td>
+						</tr>
+						<tr>
+							<td class="label">Touch:</td>
+							<td class="rvalue">@TOUCH</td>
+						</tr>
+						<tr class="top_border">
+							<td class="label">Thrust Damage:</td>
+							<td class="rvalue">@THRUST</td>
+						</tr>
+						<tr>
+							<td class="label">Swing Damage:</td>
+							<td class="rvalue">@SWING</td>
+						</tr>
+						<tr>
+							<td class="rowspacer2" colspan=2></td>
+						</tr>
+					</table>
+				</td>
+				<td class="spacer" rowspan="2"></td>
+				<td>
+					<table id="encumbrance_move_dodge" class="info">
+						<tr>
+							<td class="title" colspan="4">Encumbrance, Move &amp; Dodge</td>
+						</tr>
+						<tr>
+							<td class="title">Level</td>
+							<td class="title">Max Load</td>
+							<td class="title">Move</td>
+							<td class="title">Dodge</td>
+						</tr>
+						@ENCUMBRANCE_LOOP_START
+						<tr @CURRENT_MARKER>
+							<td class="label">@LEVEL</td>
+							<td class="rvalue">@MAX_LOAD</td>
+							<td class="rvalue">@MOVE</td>
+							<td class="rvalue">@DODGE</td>
+						</tr>
+						@ENCUMBRANCE_LOOP_END
+					</table>
+				</td>
+				<td class="spacer" rowspan="2"></td>
+				<td rowspan="2">
+					<table id="hit_location" class="info">
+						<tr>
+							<td class="title" colspan="4">Hit Location</td>
+						</tr>
+						<tr>
+							<td class="title">Roll</td>
+							<td class="title">Where</td>
+							<td class="title">-</td>
+							<td class="title">DR</td>
+						</tr>
+						@HIT_LOCATION_LOOP_START
+						<tr>
+							<td class="clabel">@ROLL</td>
+							<td class="clabel">@WHERE</td>
+							<td class="label">@PENALTY</td>
+							<td class="rvalue">@DR</td>
+						</tr>
+						@HIT_LOCATION_LOOP_END
+						<tr>
+							<td class="rowspacer5"></td>
+							<td class="rowspacer5"></td>
+							<td class="rowspacer5"></td>
+							<td class="rowspacer5"></td>
+						</tr>
+					</table>
+				</td>
+				<td class="spacer" rowspan="2"></td>
+				<td rowspan="2">
+					<table id="fp_hp" class="info">
+						<tr>
+							<td class="title" colspan="2">Fatigue/Hit Points</td>
+						</tr>
+						<tr>
+							<td class="label">Current FP:</td>
+							<td class="rvalue">@FP</td>
+						</tr>
+						<tr>
+							<td class="label">Basic FP:</td>
+							<td class="rvalue">@BASIC_FP</td>
+						</tr>
+						<tr>
+							<td class="rowspacer1" colspan=2></td>
+						</tr>
+						<tr class="top_border">
+							<td class="label">Tired:</td>
+							<td class="rvalue">@TIRED</td>
+						</tr>
+						<tr>
+							<td class="label">Collapse:</td>
+							<td class="rvalue">@FP_COLLAPSE</td>
+						</tr>
+						<tr>
+							<td class="label">Unconscious:</td>
+							<td class="rvalue">@UNCONSCIOUS</td>
+						</tr>
+						<tr>
+							<td class="rowspacer1" colspan=2></td>
+						</tr>
+						<tr class="top_border">
+							<td class="label">Current HP:</td>
+							<td class="rvalue">@HP</td>
+						</tr>
+						<tr>
+							<td class="label">Basic HP:</td>
+							<td class="rvalue">@BASIC_HP</td>
+						</tr>
+						<tr>
+							<td class="rowspacer1" colspan=2></td>
+						</tr>
+						<tr class="top_border">
+							<td class="label">Reeling:</td>
+							<td class="rvalue">@REELING</td>
+						</tr>
+						<tr>
+							<td class="label">Collapse:</td>
+							<td class="rvalue">@HP_COLLAPSE</td>
+						</tr>
+						<tr>
+							<td class="label">Check #1:</td>
+							<td class="rvalue">@DEATH_CHECK_1</td>
+						</tr>
+						<tr>
+							<td class="label">Check #2:</td>
+							<td class="rvalue">@DEATH_CHECK_2</td>
+						</tr>
+						<tr>
+							<td class="label">Check #3:</td>
+							<td class="rvalue">@DEATH_CHECK_3</td>
+						</tr>
+						<tr>
+							<td class="label">Check #4:</td>
+							<td class="rvalue">@DEATH_CHECK_4</td>
+						</tr>
+						<tr>
+							<td class="label">Dead:</td>
+							<td class="rvalue">@DEAD</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<table id="lifting" class="info">
+						<tr>
+							<td class="title" colspan="2">Lifting &amp; Moving Things</td>
+						</tr>
+						<tr>
+							<td class="label">Basic Lift:</td>
+							<td class="rvalue">@BASIC_LIFT</td>
+						</tr>
+						<tr>
+							<td class="label">One-Handed Lift:</td>
+							<td class="rvalue">@ONE_HANDED_LIFT</td>
+						</tr>
+						<tr>
+							<td class="label">Two-Handed Lift:</td>
+							<td class="rvalue">@TWO_HANDED_LIFT</td>
+						</tr>
+						<tr>
+							<td class="label">Shove &amp; Knock Over:</td>
+							<td class="rvalue">@SHOVE</td>
+						</tr>
+						<tr>
+							<td class="label">Running Shove &amp; Knock Over:</td>
+							<td class="rvalue">@RUNNING_SHOVE</td>
+						</tr>
+						<tr>
+							<td class="label">Carry On Back:</td>
+							<td class="rvalue">@CARRY_ON_BACK</td>
+						</tr>
+						<tr>
+							<td class="label">Shift Slightly:</td>
+							<td class="rvalue">@SHIFT_SLIGHTLY</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+		<table class="wrapper">
+			<tr>
+				<td>
+					<table id="advantages" class="list">
+						<tr>
+							<td class="title">Advantages &amp; Disadvantages</td>
+							<td class="title">Pts</td>
+							<td class="title">Ref</td>
+						</tr>
+						@ADVANTAGES_LOOP_START
+						<tr class="@EVEN_ODD">
+							<td class="description" @STYLE_INDENT_WARNING>@DESCRIPTION</td>
+							<td class="points">@POINTS</td>
+							<td class="ref">@REF</td>
+						</tr>
+						@ADVANTAGES_LOOP_END
+					</table>
+				</td>
+				<td class="spacer"></td>
+				<td>
+					<table id="skills" class="list">
+						<tr>
+							<td class="title">Skills</td>
+							<td class="title">SL</td>
+							<td class="title">RSL</td>
+							<td class="title">Pts</td>
+							<td class="title">Ref</td>
+						</tr>
+						@SKILLS_LOOP_START
+						<tr class="@EVEN_ODD">
+							<td class="description" @STYLE_INDENT_WARNING>@DESCRIPTION</td>
+							<td class="skill_level">@SL</td>
+							<td class="relative_skill_level">@RSL</td>
+							<td class="points">@POINTS</td>
+							<td class="ref">@REF</td>
+						</tr>
+						@SKILLS_LOOP_END
+					</table>
+				</td>
+			</tr>
+		</table>
+		<table id="spells" class="list">
+            <tr>
+                <td class="title">Spells</td>
+                <td class="title">Class</td>
+                <td class="title">Mana Cost</td>
+                <td class="title">Time</td>
+                <td class="title">SL</td>
+                <td class="title">RSL</td>
+                <td class="title">Pts</td>
+                <td class="title">Ref</td>
+            </tr>
+            @SPELLS_LOOP_START
+            <tr class="@EVEN_ODD">
+				<td class="description" @STYLE_INDENT_WARNING>@DESCRIPTION</td>
+                <td class="spell_class">@CLASS
+                	<div class="secondary">@COLLEGE</div></td>
+                <td class="mana">@MANA_CAST
+                	<div class="secondary">@MANA_MAINTAIN</div></td>
+                <td class="time">@TIME_CAST
+                	<div class="secondary">@DURATION</div></td>
+                <td class="spell_level">@SL</td>
+                <td class="relative_spell_level">@RSL</td>
+                <td class="points">@POINTS</td>
+                <td class="ref">@REF</td>
+            </tr>
+            @SPELLS_LOOP_END
+        </table>
+        <table id="melee_weapons" class="list">
+            <tr>
+                <td class="title">Melee Weapons</td>
+                <td class="title">Usage</td>
+                <td class="title">Lvl</td>
+                <td class="title">Parry</td>
+                <td class="title">Block</td>
+                <td class="title">Damage</td>
+                <td class="title">Reach</td>
+                <td class="title">ST</td>
+            </tr>
+            @MELEE_LOOP_START
+            <tr class="@EVEN_ODD">
+                <td class="description">@DESCRIPTION</td>
+                <td class="usage">@USAGE</td>
+                <td class="level">@LEVEL</td>
+                <td class="parry">@PARRY</td>
+                <td class="block">@BLOCK</td>
+                <td class="damage">@DAMAGE</td>
+                <td class="reach">@REACH</td>
+                <td class="strength">@STRENGTH</td>
+            </tr>
+            @MELEE_LOOP_END
+        </table>
+        <table id="ranged_weapons" class="list">
+            <tr>
+                <td class="title">Ranged Weapons</td>
+                <td class="title">Usage</td>
+                <td class="title">Lvl</td>
+                <td class="title">Acc</td>
+                <td class="title">Damage</td>
+                <td class="title">Range</td>
+                <td class="title">RoF</td>
+                <td class="title">Shots</td>
+                <td class="title">Bulk</td>
+                <td class="title">Rcl</td>
+                <td class="title">ST</td>
+            </tr>
+            @RANGED_LOOP_START
+            <tr class="@EVEN_ODD">
+                <td class="description">@DESCRIPTION</td>
+                <td class="usage">@USAGE</td>
+                <td class="level">@LEVEL</td>
+                <td class="accuracy">@ACCURACY</td>
+                <td class="damage">@DAMAGE</td>
+                <td class="range">@RANGE</td>
+                <td class="rof">@ROF</td>
+                <td class="shots">@SHOTS</td>
+                <td class="bulk">@BULK</td>
+                <td class="recoil">@RECOIL</td>
+                <td class="strength">@STRENGTH</td>
+            </tr>
+            @RANGED_LOOP_END
+        </table>
+        <table id="carried_equipment" class="list">
+            <tr>
+                <td class="title">Carried Equipment (@CARRIED_WEIGHT; @CARRIED_VALUE)</td>
+                <td class="title">&radic;</td>
+                <td class="title">#</td>
+                <td class="title">$</td>
+                <td class="title">Lb</td>
+                <td class="title">&sum; $</td>
+                <td class="title">&sum; Lb</td>
+                <td class="title">Ref</td>
+            </tr>
+            @CARRIED_EQUIPMENT_LOOP_START
+            <tr class="@EVEN_ODD">
+				<td class="description" @STYLE_INDENT_WARNING>@DESCRIPTION</td>
+                <td class="equipped">@EQUIPPED</td>
+                <td class="quantity">@QTY</td>
+                <td class="cost">@COST</td>
+                <td class="weight">@WEIGHT</td>
+                <td class="cost_summary">@COST_SUMMARY</td>
+                <td class="weight_summary">@WEIGHT_SUMMARY</td>
+                <td class="ref">@REF</td>
+            </tr>
+            @CARRIED_EQUIPMENT_LOOP_END
+        </table>
+        <table id="other_equipment" class="list">
+            <tr>
+                <td class="title">Other Equipment</td>
+                <td class="title">#</td>
+                <td class="title">$</td>
+                <td class="title">Lb</td>
+                <td class="title">&sum; $</td>
+                <td class="title">&sum; Lb</td>
+                <td class="title">Ref</td>
+            </tr>
+            @OTHER_EQUIPMENT_LOOP_START
+            <tr class="@EVEN_ODD">
+				<td class="description" @STYLE_INDENT_WARNING>@DESCRIPTION</td>
+                <td class="quantity">@QTY</td>
+                <td class="cost">@COST</td>
+                <td class="weight">@WEIGHT</td>
+                <td class="cost_summary">@COST_SUMMARY</td>
+                <td class="weight_summary">@WEIGHT_SUMMARY</td>
+                <td class="ref">@REF</td>
+            </tr>
+            @OTHER_EQUIPMENT_LOOP_END
+        </table>
+        <table id="notes" class="list">
+            <tr>
+                <td class="title">Notes</td>
+            </tr>
+            <tr>
+                <td class="description">@NOTES</td>
+            </tr>
+        </table>
+        <div id="copyright">GURPS Character Sheet is copyright &copy; 1998-2002, 2005-2006 by Richard A. Wilkes &mdash; All rights reserved worldwide.</div>
+    </body>
+</html>

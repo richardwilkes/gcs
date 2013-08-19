@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<skill_list unique_id="ehjpxfny:-12i9a4ovno0jf">
+	<skill>
+		<name>Symbol Magic: Air</name>
+		<specialization>Noun</specialization>
+		<difficulty>IQ/A</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Animal</name>
+		<specialization>Noun</specialization>
+		<difficulty>IQ/H</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Body</name>
+		<specialization>Noun</specialization>
+		<difficulty>IQ/H</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Communicate</name>
+		<specialization>Verb</specialization>
+		<difficulty>IQ/A</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Control</name>
+		<specialization>Verb</specialization>
+		<difficulty>IQ/H</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Create</name>
+		<specialization>Verb</specialization>
+		<difficulty>IQ/H</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Earth</name>
+		<specialization>Noun</specialization>
+		<difficulty>IQ/H</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Fire</name>
+		<specialization>Noun</specialization>
+		<difficulty>IQ/A</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Food</name>
+		<specialization>Noun</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Heal</name>
+		<specialization>Verb</specialization>
+		<difficulty>IQ/H</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Image</name>
+		<specialization>Noun</specialization>
+		<difficulty>IQ/A</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Light</name>
+		<specialization>Noun</specialization>
+		<difficulty>IQ/A</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Magic</name>
+		<specialization>Noun</specialization>
+		<difficulty>IQ/H</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Mind</name>
+		<specialization>Noun</specialization>
+		<difficulty>IQ/H</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Move</name>
+		<specialization>Verb</specialization>
+		<difficulty>IQ/A</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Plant</name>
+		<specialization>Noun</specialization>
+		<difficulty>IQ/A</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Protect</name>
+		<specialization>Verb</specialization>
+		<difficulty>IQ/A</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Sense</name>
+		<specialization>Verb</specialization>
+		<difficulty>IQ/H</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Sound</name>
+		<specialization>Noun</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Spirit</name>
+		<specialization>Noun</specialization>
+		<difficulty>IQ/H</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Strengthen</name>
+		<specialization>Verb</specialization>
+		<difficulty>IQ/A</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Transform</name>
+		<specialization>Verb</specialization>
+		<difficulty>IQ/H</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Water</name>
+		<specialization>Noun</specialization>
+		<difficulty>IQ/A</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+	<skill>
+		<name>Symbol Magic: Weaken</name>
+		<specialization>Verb</specialization>
+		<difficulty>IQ/A</difficulty>
+		<points>1</points>
+		<reference>M204</reference>
+		<notes></notes>
+	</skill>
+</skill_list>

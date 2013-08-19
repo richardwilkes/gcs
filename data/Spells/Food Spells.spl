@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<spell_list unique_id="eea4il2m:-1hnldmk851wzy">
+	<spell>
+		<name>Cook</name>
+		<college>Food</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>5 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M78</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">test food</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">create fire</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Create Food</name>
+		<college>Food</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>30 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M79</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">cook</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">seek food</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Decay</name>
+		<college>Food</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M77</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">test food</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Distill</name>
+		<college>Food/Water</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/quart</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M46</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">destroy water</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">mature</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Essential Food</name>
+		<college>Food</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3 or 5</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>30 sec</casting_time>
+		<duration>Indefinite</duration>
+		<reference>M79</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<college compare="contains">food</college>
+				<quantity compare="atLeast">5</quantity>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">create food</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Far-Tasting</name>
+		<college>Food/Knowledge</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>3 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M77</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<advantage_prereq has="no">
+				<name compare="contains">no taste/smell</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+			<prereq_list all="no">
+				<spell_prereq has="yes">
+					<name compare="is">seek food</name>
+				</spell_prereq>
+				<spell_prereq has="yes">
+					<name compare="is">seek air</name>
+				</spell_prereq>
+			</prereq_list>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: food college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Fool's Banquet</name>
+		<college>Food</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 day</duration>
+		<reference>M79</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">foolishness</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">cook</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: food college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Foul Water</name>
+		<college>Food/Water</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M185</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">decay</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">purify water</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Hunger</name>
+		<college>Food/Body Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>5 sec</casting_time>
+		<duration>Until eat/rest</duration>
+		<reference>M38</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: food college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+			</prereq_list>
+			<spell_prereq has="yes">
+				<name compare="is">debility</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">decay</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Know Recipe</name>
+		<college>Food/Knowledge</college>
+		<spell_class>Info</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>15 sec</casting_time>
+		<duration>1 day</duration>
+		<reference>M78</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">season</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">far-tasting</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Mature</name>
+		<college>Food</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/lb</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M78</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<name compare="is">decay</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">season</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Monk's Banquet</name>
+		<college>Food</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>6</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>24 hrs</duration>
+		<reference>M79</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">fool's banquet</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">resist pain</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Poison Food</name>
+		<college>Food</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M78</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">purify food</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Prepare Game</name>
+		<college>Food</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M78</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">purify food</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Preserve Food</name>
+		<college>Food</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2/lb</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 week</duration>
+		<reference>M79</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">decay</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Purify Food</name>
+		<college>Food</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/lb</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M78</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">decay</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Scents of the Past</name>
+		<college>Food/Knowledge</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M107</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: food college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+			<spell_prereq has="yes">
+				<name compare="is">history</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">odor</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Season</name>
+		<college>Food</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M77</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">test food</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Seek Food</name>
+		<college>Food</college>
+		<spell_class>Info</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M77</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Test Food</name>
+		<college>Food</college>
+		<spell_class>Info</spell_class>
+		<casting_cost>1 or 3</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M77</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Thirst</name>
+		<college>Food/Body Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>5</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>Until drink/rest</duration>
+		<reference>M38</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">debility</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">destroy water</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: food college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Water to Wine</name>
+		<college>Food</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M79</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">purify water</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">mature</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Wizard Mouth</name>
+		<college>Food/Knowledge/Sound</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>2 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M104</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">apportation</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">far-tasting</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">great voice</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Wizard Nose</name>
+		<college>Food/Knowledge</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>2 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M104</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">apportation</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">far-tasting</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+</spell_list>

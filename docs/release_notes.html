@@ -1,0 +1,1106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>GURPS Character Sheet Release Notes</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<style type="text/css">
+	body { background-color: white; }
+	p.category { font: bold 18px/20px 'Arial',sans-serif; }
+	p.rversion { margin-left: 20px; font: bold 15px/18px 'Arial',sans-serif; }
+	p.rheader { margin-left: 40px; margin-bottom: 5px; font: bold 13px/16px 'Arial',sans-serif; }
+	ul { margin-top: 5px; font: normal 13px/16px 'Arial',sans-serif; }
+	div.indent { margin-left: 30px; }
+</style>
+</head>
+<body>
+	<p class=category>GURPS Character Sheet Release Notes</p>
+	<p class=rversion>Version 3.1.0.12 &mdash; January 2, 2007</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Initial open-source release. GURPS Character Sheet is now
+				licensed under the MPL
+				(<a href="http://www.mozilla.org/MPL/">http://www.mozilla.org/MPL/</a>).</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Move can now be lowered to zero, but not by encumbrance (B17
+				states that encumbrance can't lower it below 1). This allows a
+				character with no legs to be created correctly.</li>
+			<li>Minimum strength of weapons is now taken into account when
+				calculating the skill level with that weapon.</li>
+		</ul>
+	</div>
+	<p class=rheader>Data Files</p>
+	<div class=indent>
+		<ul>
+			<li>Reworked the "Scroll" spell prerequisites to include native
+				language as a possibility.</li>
+			<li>Fixed the prerequisites on the "Teleport" spell.</li>
+			<li>Removed the documentation that had previously been contributed
+				as I was getting feedback that it wasn't useful.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.1.0.11 &mdash; September 24, 2006</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Added support for advantage bonuses given to specifically named
+				spells.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Changes to the custom browser command line are now actually
+				saved and used.</li>
+		</ul>
+	</div>
+	<p class=rheader>Data Files</p>
+	<div class=indent>
+		<ul>
+			<li>Updated various skills that should have had defaults based on
+				Perception rather than Will. Thanks to Scott Ellsworth, Jenny
+				Ellsworth and Ashley Stroupe for discovering this and correcting
+				it.</li>
+			<li>Updated the prerequisites for Research to include Native
+				Language.</li>
+			<li>Added skills for languages when Language Talent is present,
+				provided by Scott Ellsworth.</li>
+			<li>Added some Banestorm-specific data files, provided by Scott
+				Ellsworth.</li>
+			<li>Updated the Magery advantages to take advantage of the new
+				ability to give a bonus to a specific spell (in this case,
+				Recover Energy). Updated by Scott Ellsworth.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.1.0.10 &mdash; September 2, 2006</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Added an HTML output option. You can now use the "Save As..."
+				menu item to save the sheet as HTML, PDF or PNG.  Likewise, the
+				command line options have been updated to support generation of
+				HTML from the command line.  The file 'template.html' in the
+				'Data' directory controls the HTML output and may be modified
+				by end users.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.1.0.9 &mdash; August 12, 2006</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Added three new menu items to the Edit menu that control whether
+				the various "natural" weapons show up on your character sheet.</li>
+			<li>The carried equipment title now also summarizes the character's
+				carried wealth as well as his carried weight.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Fixed a bug that prevented the detail editor for Techniques from
+				saving the difficulty.</li>
+			<li>Fixed a bug that prevented correct redrawing of pages beyond the
+				first when scrolled.  Most evident when trying to select items,
+				as they would fail to highlight, even though they were in fact
+				selected.</li>
+		</ul>
+	</div>
+	<p class=rheader>Data Files</p>
+	<div class=indent>
+		<ul>
+			<li>Added a variant of the skills list with categories, contributed
+				by Sebastien Wilhelmi.</li>
+			<li>Added some new undead meta-trait templates, contributed by
+				Emmanuel Bachmann.</li>
+			<li>Added a placeholder list (in that it only has a few items in it
+				right now) for clerical magic, contributed by Jim O'Neil.</li>
+			<li>Lots of mostly minor corrections to the various data lists,
+				collected by emails sent to me and postings on the GCS mailing
+				list.</li>
+			<li>Added a spell list with all spells in it, categorized by
+				college.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.1.0.8 &mdash; April 9, 2006</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Changed the default fonts &amp; font sizes to more closely
+				match the platform's normal font choices. To see the difference,
+				you may need reset the fonts in the font preference panel.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Fixed an issue that prevented more than one feature from
+				applying to any given thing.</li>
+			<li>Fixed a problem which would prevent a sheet from being loaded if
+				the system the sheet had been saved on didn't have a printer
+				setup that GCS could detect.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.1.0.7 &mdash; April 2, 2006</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Added the ability specify skill specializations when specifying
+				skill bonuses. Updated the four 'Absolute Direction' advantages,
+				as well as 'Talent (Musical Ability)' accordingly.</li>
+			<li>Added the Block stat to Melee Weapons, and updated the various
+				weapons, shields &amp; cloaks appropriately.  If you want an
+				item to display a Block stat, you just need to give it a melee
+				weapon description (you can leave the actual weapon fields
+				empty -- see 'Force Shield' as an example).</li>
+			<li>Unspent points now automatically adjust as a character is
+				modified. Changed the title 'Unspent' to 'Earned' in the points
+				display to reflect that these represent earned but unspent
+				points. This change means that a character's point total (which
+				now includes the 'Earned' points, unlike in the past) won't
+				change unless the user changes the 'Earned' points -- everything
+				else just adjusts the 'Earned' points so that the total remains
+				the same.</li>
+			<li>Integer input fields now respond to the increment/decrement menu
+				items.</li>
+			<li>Implemented a minimalistic XML parser to drastically reduce the
+				RAM requirements during file loads.</li>
+			<li>Added a preference for controlling whether font anti-aliasing is
+				used or not. Some systems (particularly those with older
+				graphics cards) have drastically worse text rendering
+				performance when this was turned on, so I've provided a way for
+				you to turn it off if it is affecting you. Keep in mind that the
+				smaller font sizes may be unreadable on the screen without this
+				enabled, but they should still print fine.</li>
+			<li>Added menu items for jumping to the GCS web site, as well as for
+				jumping to the GCS mailing lists web site.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Fixed a problem which prevented the cost reduction feature from
+				being restored from a saved file.</li>
+			<li>Attempted to fix an issue on some platforms where a window could
+				sometimes come to the foreground but not be the active window.</li>
+			<li>Fixed some issues that were preventing the display from updating
+				to display changes made via features.</li>
+			<li>Fixed issue where case mattered in feature application.</li>
+			<li>Fixed some more focus issues.</li>
+		</ul>
+	</div>
+	<p class=rheader>Data Files</p>
+	<div class=indent>
+		<ul>
+			<li>Added the 'Infinity Equipment' equipment list, contributed by
+				Scott Ellsworth.</li>
+			<li>Various minor tweaks to correct list data, sent in from various
+				users.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.1.0.6 &mdash; March 5, 2006</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Spells can now have weapon descriptions attached to them, just
+				like equipment and advantages.</li>
+			<li>Added automatic update checking. The program will only notify
+				you once for each update newer than the one you're running.
+				There is also a menu item (under the Help menu) that shows the
+				current status -- and, in the case where there is an update,
+				will take you to the web site if you select it.</li>
+			<li>The storage format for preferences has been changed to XML. A
+				side effect of this is that your old preferences will be
+				discarded and you'll have to set them again.</li>
+		</ul>
+	</div>
+	<p class=rheader>Data File Updates</p>
+	<div class=indent>
+		<ul>
+			<li>Updated all spells with weapon statistics, as needed. Contributed by
+				Al Cardenas.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.1.0.5 &mdash; February 26, 2006</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Added command line options to generate PDF and/or PNG files from
+				sheet files without bringing up the user interface. In addition,
+				options were added to override the paper size and margins for
+				the generated files. For those of you running on a Mac, the
+				actual executable is buried down inside the application bundle,
+				so if you want to use this feature, you'll probably want to make
+				a soft link or shell alias to it for convenience.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.1.0.4 &mdash; February 19, 2006</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Added the ability to modify the command keys associated with
+				menu items. Check out the "Menu Keys" tab in preferences...</li>
+			<li>Added direct PDF creation via the "Save As..." menu item.</li>
+			<li>Separated the melee &amp; ranged weapon stats and gave each
+				their own stat line in the weapon list. In addition, weapons
+				that had more than one mode of operation (for example, a sword
+				can be thrust or swung) now list the stats separately. For
+				weapons like a Knife, whose skill values differ depending upon
+				the mode of operation (melee or thrown), you can now specify
+				separate defaults. Old weapon entries are converted as much as
+				possible &mdash; you should carefully review any existing
+				weapons on your character sheet and adjust them as needed.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Restored the automatic resolution of Damage, Range &amp; Parry
+				in the weapon list. When I moved to the new list format, I
+				ended up displaying the raw value rather than the resolved one,
+				which wasn't my intention.</li>
+		</ul>
+	</div>
+	<p class=rheader>Data File Updates</p>
+	<div class=indent>
+		<ul>
+			<li>Added Alchemical Formulas, Ointments, Pastilles, Potions &amp;
+				Powders, contributed by Kevin Michael Smith.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.1.0.3 &mdash; February 5, 2006</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Added another string comparison type, "is anything", to allow
+				a particular field to always match.</li>
+			<li>Added support for modifying the Size Modifier via a Feature.
+				Updated the Dwarfism and Gigantism (dis)advantages
+				appropriately, as well as the Dwarf racial template.</li>
+			<li>Advantage containers can now act in one of three ways:
+				<ol>
+					<li>Group (works as it used to, and is the default)</li>
+					<li>Meta-Trait (acts as one normal trait, listed as an
+						advantage if its point total is positive, or a
+						disadvantage if it is negative)</li>
+					<li>Race (point cost tracked separately from normal
+						advantages and disadvantages)</li>
+				</ol>
+			</li>
+			<li>Added support for specifying a tech level for a spell. Updated
+				the various Technology College spells that required a TL.</li>
+			<li>The total carried weight is now shown in parentheses next to
+				the "Carried Equipment" title.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Altering basic lift (via Strength, for example) will now cause
+				the current encumbrance level highlight to change, if needed.</li>
+			<li>Used the new "is anything" match type to fix the inability to
+				correctly match when the notes field wasn't important.</li>
+			<li>The title of the weapons section is now titled "Weapons" rather
+				than the generic "Description".</li>
+			<li>The "equipped" state of equipment no longer affects your
+				character's encumbrance or whether the item will show up in the
+				weapon list. It now only affects whether features of the
+				equipment (such as a ring that gives +1 to ST) are applied to
+				the character, as originally intended.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.1.0.2 &mdash; January 29, 2006</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Added support for creating skill prerequisites that can make a
+				decision based on the skill specialization.</li>
+			<li>Added support for creating (dis)advantage prerequisites that can
+				make a decision based on its notes (required for most language
+				prerequisites, since I store the spoken/written info in notes).</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Prerequisites that require an advantage be present at level 0 or
+				better will now work again for advantages that don't have levels.</li>
+			<li>Print settings in locales where the number format isn't the same
+				as the U.S. number format should no longer fail to load
+				correctly.</li>
+			<li>Fixed the prerequisites in the "Firearms" equipment list to use
+				specializations.</li>
+			<li>Fixed various language-based skills and spells to use the new
+				support for looking into notes to determine whether the
+				language is sufficient as a prereq.  In at least one case, I
+				still need to provide a way to check for X languages, which is
+				not currently supported.</li>
+			<li>Some text was not using my dynamic font code, which meant the
+				user was unable to change it... fixed.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>The defaults, prerequisites and features tabs are now more
+				vertically oriented.</li>
+			<li>Transitioned from roleplayer.com to trollworks.com, as I will
+				likely be selling the roleplayer.com domain in the near future.</li>
+			<li>New splash screen/about box.</li>
+			<li>Moved all of the html files into a documentation folder.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.1.0.1 &mdash; January 22, 2006</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>The nameable feature (where you can embed @foo@ in a name to
+				have the user prompted to type some text to replace it when it
+				is placed into a sheet) now extends into most (if not all) text
+				fields of (Dis)Advantages, Skills, Spells & Equipment. In
+				addition, if you use the same name in more than one place, it
+				will only be prompted for once and substituted into all
+				occurrences.</li>
+			<li>Removed the ability to directly edit fields within the lists
+				&mdash; you must now bring up the detailed editor to make
+				changes. The detailed editors are now capable of editing all
+				information for the item.</li>
+			<li>Provided a separate field for specializations.</li>
+			<li>Provided a separate field for notes for all list types.</li>
+			<li>New column layout for most items.</li>
+			<li>Added a first pass at a user's manual by Brad Rice. Please be
+				sure to give him some feedback.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>While I haven't experienced this myself, some users were
+				reporting either a failure to load saved sheets, or the sheet
+				being <b>huge</b> (as if the paper were dozens of feet across).
+				The only thing in common with these folks seemed to be inkjet
+				printers (although I may have missed a laser printer in a bug
+				report). Anyway, I've added code that is much more careful about
+				trying to restore printer settings that the printer originally
+				reported as being able to support &mdash; I suspect these
+				printers were reporting some feature as being available, but
+				would then error out when I tried to restore that setting.
+				Should this happen in this release, the code ignores the error
+				and proceeds with the next setting. This should prevent the
+				huge/no paper size from occuring, as I don't think it was ever
+				getting that far before failing. Those of you experiencing
+				the problem, please send me a quick email to let me know if
+				this fixes your problem, as I have no way to test for it.</li>
+			<li>When a file failed to save, there was generally no feedback to
+				the user. Now, if a file fails to save for any reason, a dialog
+				box will be put up to warn the user.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>Firearms, High-Tech &amp; Ultra-Tech Armor added, courtesy of
+				Karl Gunnarsson.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.0.0.25 &mdash; January 2, 2006</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>When launching the program, you now get a file dialog so that
+				you can choose to open an existing file, or create a new window.</li>
+			<li>Implemented a complete replacement for the Sun page setup and
+				print dialogs, along with all the logic that is associated with
+				them. What this means for the end user is that all settings
+				(that I can get to, which I think are most of them) are equally
+				available on all platforms and presented to the end user in the
+				same way. In addition, it allowed me to fix a whole host of bugs
+				that Sun's three(!) different implementations had. As a
+				side-effect, I've removed the preference that would show the
+				minimum printer margins on the displayed character sheet --
+				there was no reliable way to get this data from within Java on
+				anything other than Windows, so I didn't think it was worth
+				keeping. For those that liked it the way it was, you can still
+				use the native page setup/print dialogs by choosing to do so in
+				preferences. If you do so, be aware that most of the print
+				settings in the native dialogs cannot be saved and restored, so
+				you'll have to manually set them up every time you want to
+				print, just like in previous versions of GCS.</li>
+			<li>Spells in templates now allow points to be specified.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Fixed an infinite loop in the layout engine in the case where a
+				cell within a row had so much data that it could not possibly
+				fit on a single page. If this case occurs, I now just display
+				as much as possible of that row and move on.</li>
+			<li>Newly created character sheets and saved character sheets that
+				you've opened but made no changes to are no longer marked as
+				modified until you actually make a change.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>Added an equipment list for Powerstones, in 1 point increments
+				all the way up to 300 points.  The value numbers exactly match
+				those on M20, and the ones that aren't listed on that page were
+				generated using their formula for cost, then applying a scaled
+				rounding similar to what the book did.</li>
+			<li>Fixed some typos in some of the data files, added some entries
+				that were missing, and cleaned up some entries.</li>
+			<li>Added some more templates.</li>
+			<li>Added the command key SHIFT-CMD-P to the Page Setup menu item.</li>
+			<li>The duplicate command now tries to insert the duplicate next to
+				the original (previously, it would put it at the end of the
+				list).</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.0.0.24 &mdash; December 28, 2005</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Added the Duplicate command for easily duplicating rows in
+				lists.</li>
+			<li>Templates now contain a notes field, which will be appended to
+				any existing notes on a character sheet when the template is
+				applied.</li>
+			<li>The detailed editors now remember the last tab that was selected
+				and attempt to restore that tab when you open the next editor.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Techniques stored at the top level of a skill data file would be
+				read in as normal skills. In character sheets, this didn't
+				happen. They now load correctly whether they are at the top
+				level (i.e. not in a container) or not.</li>
+			<li>Spent a lot of time trying to divine just how the Sun code is
+				diverting keyboard focus, causing annoying scroll jumps, poor
+				focus retention, etc.  Solved many problems, but there are still
+				a few lingering issues... Hopefully, I didn't introduce any new
+				ones.</li>
+			<li>Skull DR now includes the 2 points you get naturally.</li>
+			<li>Fixed the menu item "Open Detail Editor" so that it is enabled
+				even when the focused selection is in a continuation of a list.</li>
+			<li>Fixed a problem where drag &amp; drop would occassionally fail,
+				causing all subsequent attempts to start a drag to also fail.</li>
+			<li>Re-opening a sheet that had carried equipment now does an
+				initial calculation for encumbrance. Previously, this wasn't
+				done until something in the carried equipment was altered or
+				moved.</li>
+			<li>The Vitals hit location now tracks with the Torso.  Previously,
+				it was separate, yet there was no longer any way to armor that
+				spot.</li>
+			<li>Reinstated the Defaults editor for equipment and
+				(dis)advantages, as weapons need to be able to specify what
+				skills they default from.</li>
+			<li>The "Equipped" flag, while able to be manipulated while the
+				character sheet was open, was never saved out (it was always set
+				to "yes" on saved equipment).  Fixed.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>Additions and corrections to the Advantages, Disadvantages &amp;
+				Skills lists, contributed by James Patten.</li>
+			<li>Techniques added as their own list, contributed by James Patten.</li>
+			<li>Westerosii money added to the Money equipment list by Jim
+				O'Neil.</li>
+			<li>Lots of templates contributed by Atreyu Hibiki.</li>
+			<li>Lots of spell additions and updates, contributed from a
+				combination of James Patten, James Marchant, and Atreyu Hibiki.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.0.0.23 &mdash; December 11, 2005</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Defaults can now be computed by "Skill name containing", rather
+				than just "Skill named".  This allows specialties like
+				"Mathematics (Applied)" to easily described.</li>
+			<li>Updated the various mathematics skills to actually have defaults
+				specified.</li>
+			<li>Added a simple Windows launcher.</li>
+			<li>Added the Light &amp; Darkness and Food Spells, courtesy of
+				Scott Ellsworth.</li>
+			<li>Added the Centaur, Djinni, and Body of Air templates,
+				courtesy of Bruce Grubb.</li>
+			<li>Miscellaneous changes and corrections to Advantages, courtesy of
+				Bruce Grubb.</li>
+			<li>Added/updated the Body Control, Communication &amp; Empathy,
+				Necromantic, and Protection &amp; Warning Spells, courtesy of
+				James Patten.</li>
+			<li>Miscellaneous changes and corrections to Skills &amp;
+				Disadvantages, courtesy of Matthew Cornell Woods, Jr.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Loading a character with various unspecified description values
+				(name, race, gender, etc.) will no longer cause the randomizer
+				to fill those fields back in.</li>
+			<li>Features that gave a spell bonus based on college name now
+				actually compare against the college name, rather than the
+				spell name, as was happening in previous versions.</li>
+			<li>In the detailed editor, the "Defaults" tab now only shows up for
+				skills and spells, as those are the only items defaults are
+				relevant to.</li>
+			<li>The automatically-added natural weapons (punch, etc.) no longer
+				register themselves as undoable actions.</li>
+			<li>When applying a template, the whole action is now grouped into
+				a single undo.</li>
+			<li>Started work on trying to make keyboard focus behave when the
+				lists in the character sheet are involved.  Still more to be
+				done...</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>Merged the "Save As..." and "Save As PNG..." menu items into a
+				single menu item. The save dialog that comes up now has two
+				file formats that can be saved from it: one is the normal
+				character sheet format, the other is the PNG format.</li>
+			<li>The way column width is chosen for spells has been improved
+				somewhat.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.0.0.22 &mdash; December 4, 2005</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Added the "not" versions of all the different string comparison
+				types.  For example, in addition to "contains", there is now a
+				"does not contain".</li>
+			<li>Added the "Save Copy As PNG..." command. The default resolution
+				is 200 dpi, however, this can be changed in preferences.</li>
+			<li>Calculated weapon damage now takes into account the maximum
+				damage rules on B270.</li>
+			<li>Turned on anti-aliasing for the rest of the platforms (Mac
+				always had it turned on). This was made possible by my switch
+				away from some buggy Sun text layout and rendering code to my
+				own implementation in the last release.</li>
+			<li>Added the Elf, Halfling, Orc, and Intact Undead templates,
+				courtesy of Bruce Grubb.</li>
+			<li>Added the Animal &amp; Movement Spells, courtesy of James
+				Patten.</li>
+			<li>Added shields to the equipment list, courtesy of Patrick
+				O'Neil.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Fixed a range-checking problem in the new text rendering code
+				that would cause an exception to be thrown during mouse drags
+				outside of the text boundaries.</li>
+			<li>Fixed some miscellaneous text issues left over from the last
+				release's overhaul of the text code.</li>
+			<li>Revised the skill default and free point calculation code to
+				take into account some extra rules in SJG's FAQ about
+				Talents.</li>
+			<li>Allow basic speed to be altered in fractional units via
+				Features.</li>
+			<li>Fixed a problem that prevented the page setting for orientation
+				from being read back in correctly (it always ended up in
+				portrait mode, regardless of the actual setting).</li>
+			<li>Fixed a problem that prevented bonuses to HP and FP from being
+				displayed.</li>
+			<li>Revised all of the number handling code to try and deal with
+				differences between formatted numbers in different
+				localizations. Specifically, things like commas and periods are
+				treated differently.  This was dealt with in the user interface
+				previously, but not in the file format, which led to oddities
+				when using a numeric style that didn't match mine.  Non-U.S.
+				users will have to tell me whether I got this right... and,
+				hopefully, I didn't break anything new in the process.</li>
+			<li>Modified all of the various flavors of Magery to give their
+				bonus to the Thaumatology skill.</li>
+			<li>Fixed a problem that would sometimes prevent attribute bonuses
+				from being modified.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>Changed the way menus are implemented so that menus that fit
+				within their owning window don't create a backing window for
+				their content and instead just use the existing window. This
+				should give a cleaner menu display (less flashing) for most
+				cases.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.0.0.21 &mdash; November 27, 2005</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Added support for wildcard skills. The difficulty of "W" is
+				used to denote these skills.</li>
+			<li>Added the 4 wildcard skills listed in the basic set and updated
+				the various melee weapons affected by the Sword! skill.</li>
+			<li>Added a menu option for adding to the top template, similar to
+				the existing one for adding to the top character sheet.</li>
+			<li>Added a menu item for opening the detail editors.</li>
+			<li>Added the points column to skills in templates.</li>
+			<li>Added a menu item to force the cursor into the search field.</li>
+			<li>The equipment Quantity field and skill/spell Points fields now
+				support +/- for increment/decrement, as well as the scroll wheel
+				(just like the Level field for advantages).</li>
+			<li>Those fields that respond to +/- now also respond to the = key,
+				as that's just the unshifted version of the +.</li>
+			<li>Added automatic generation of the "Punch", "Kick", and
+				"Kick w/Boots" weapon entries.</li>
+			<li>Added some more low tech armor entries, contributed by Patrick
+				O'Neil.</li>
+			<li>Spells with a difficulty of Very Hard no longer require their
+				name to end with "(VH)". Instead, there is a checkbox in the
+				detailed editor for setting this attribute. Old data will be
+				transparently upgraded to the new format, with the trailing
+				"(VH)" removed.</li>
+			<li>Added support for non-standard tech levels, such as "4+1".</li>
+			<li>Added a notes field. Until I have a chance to write a robust
+				editor that can deal with multiple views onto the same backing
+				content, you'll have to double-click the notes area to bring up
+				a simple editor to make changes. Not ideal, I know, but the
+				alternative was to go without... for a potentially long time.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Fixed a problem that allowed you to delete items in a data list
+				even though the list was marked as locked.</li>
+			<li>When the new random name generation was put in, I inadverantly
+				disabled the ability to re-randomize the various description
+				fields (the menu item was always disabled). Corrected this.</li>
+			<li>Now that Very Hard spells no longer need special naming, the
+				prequisites that relied on exact name matches are working again
+				for Very Hard spells.</li>
+			<li>Rewrote many of the underlying text drawing classes to ensure
+				better consistency between various UI pieces and how they draw
+				and measure text. This should eliminate many of the one pixel
+				jumping artifacts.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.0.0.20 &mdash; November 21, 2005</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>New character sheets now generate a random name for the
+				character, much like the various other description fields are
+				initially populated.</li>
+			<li>Added two new menu items for randomly generating male and
+				female names. The names are based on the 1990 U.S. census data,
+				so they may or may not be appropriate for your particular
+				character.</li>
+			<li>Page setup settings are now preserved with the character
+				sheet. In addition, although the default margins are set to a
+				half inch on each side, altering them in the page setup dialog
+				will now alter them on the sheet. This particular functionality
+				seems to be partially broken on Mac OS X, as the standard
+				dialog doesn't have a place to enter margins. I may have to
+				resort to building my own page setup dialogs in the future...</li>
+			<li>Added a checkbox in the Sheet preferences that controls whether
+				a light blue line is shown on the character sheet where the
+				minimum margins for your current printer are. This particular
+				functionality doesn't seem to work quite right on both Linux and
+				Mac OS X... not sure what, if anything, can be done to correct
+				it, however, as the data given back to me by the system just
+				seems wrong. By default, this preference is off.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>The display of Basic Lift and a couple of other fields were actually
+				displaying the wrong value. Internally, everything was being done
+				correctly, just a mixup on the final display.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>Changed the display of the version number on the splash screen and
+				about box to include the build number.</li>
+			<li>Due to the confusion caused by the single installation package and
+				the JAR-based installer, I've eliminated it and returned to three
+				separate installation packages (but still without the embedded
+				Java 5 runtimes).</li>
+			<li>Removed the red-blue channel swap hack that I put in last version,
+				since Apple has finally released a working version to the public
+				that doesn't require it.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.0.0.19 &mdash; November 12, 2005</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Added a new preference panel, Fonts, which allows the user to
+				specify the fonts they want to use for various parts of the
+				program. Some fonts and/or sizes will cause very odd behavior.
+				Should you make it so that you can no longer tell what's going
+				on, you'll need to find and remove the GURPS Character Sheet
+				preferences file, 'gcs.prf'.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Changed some text in the Hit Locations panel to make its
+				minimum width a bit smaller, allowing A4 paper sizes to fully
+				contain the character sheet in standard portrait orientation.</li>
+			<li>Restored the temporary fix I put in earlier (and then took out)
+				for the red-blue channel swap issue when loading images on
+				Mac OS X.  Apple has a fix that's been ready for quite some
+				time, but they still haven't released it to non-developers.
+				When they finally do, I'll pull this hack back out.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>Removed the packaged Java runtime environment, all native code
+				(i.e. the launchers, and a bit of JNI that didn't really need
+				to be there), and consolidated all release packages into a
+				single archive.  On OS's that don't support double-clicking of
+				jar files to launch, you'll have to start the installer with:<br>
+				<code>&nbsp;&nbsp;&nbsp;&nbsp;java -jar InstallGCS-3.0.0.19.jar</code></li>
+			<li>Added the Enchantment Spell data, courtesy of Patrick
+				O'Neil.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.0.0.18 &mdash; November 5, 2005</p>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Fixed a notification cascade failure caused by changes to the
+				internal notification system several versions ago. This
+				manifested itself as an incorrect calculation for Basic Move.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>Rebuilt with updated core libraries.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.0.0.17 &mdash; October 1, 2005</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Removed the "two-up" option from (Dis)Advantages &amp; Skills.
+				Instead, those two lists will be displayed side-by-side in the
+				sheet, making for a cleaner interface (in my opinion,
+				anyway).</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Lots of work to try and fix some keyboard focus issues... most
+				now work as expected, however, there are still a few edge cases
+				I've yet to track down.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>Added more spells from Jim and his son, Patrick.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.0.0.16 &mdash; August 14, 2005</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Items in the sheet that are not meeting their prerequisites
+				(those in red) now have a tooltip that describes what is
+				missing.</li>
+			<li>Added support for templates. This is my first pass at it, so if
+				you have suggestions to make it better, or if it is doing
+				something wrong, let me know.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Fixed prerequisites on Zen Archery.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>Renamed the "List" menu to "Data", as that is more appropriate
+				now that templates can be present in that menu.</li>
+			<li>Renamed the "Lists" folder to "Data", to match the menu change.</li>
+			<li>Menus and tooltips are now created in a way that allows me to
+				place them outside of the window where they originated as
+				needed. This makes them feel more like the native OS.</li>
+			<li>Changed the version number scheme to
+				[major].[minor].[bugfix].[build] instead of the old
+				[major].[minor].[bugfix][alpha/beta[build]].</li>
+			<li>Moved to Java 1.5. Those of you using the Mac will need to
+				<a href="http://www.apple.com/support/downloads/java2se50release1.html">download
+				and install Java 1.5 from here</a>. Once Apple starts including
+				this in the OS, like they do with versions 1.3 and 1.4, this
+				won't be necessary. Unfortunately, I can't bundle the JVM like I
+				do for Windows and Linux.</li>
+			<li>Lots of mucking around with the Windows installer to allow
+				upgrading, icons for data files, etc.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.0.0.15 &mdash; July 10, 2005</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>When creating new items in lists, if there is a single selected
+				item or an item that currently has the keyboard focus (i.e. one
+				of its columns is being edited), then the new item will be added
+				directly below that item.  If the item happened to also be an
+				open container, the new item will be added as a child of that
+				container rather than as a sibling.  If, on the other hand,
+				there are multiple items selected, then the last one in the
+				selection is used, as above.  In the case of no selection at
+				all, then the item is added to the end of the list, as
+				before.</li>
+			<li>Various fields in the upper portion of the character sheet, such
+				as attributes, now show the number of character points spent on
+				them in their tooltip.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>The description randomizer was using the randomized height value
+				when trying to set the new weight value. Now it correctly uses the
+				weight value.</li>
+			<li>Most of the column titles for the weapon display were being dropped.</li>
+			<li>Changed the way the wrappable column widths are calculated,
+				resulting in a better display.</li>
+			<li>A long-standing issue where the first item created in a list within
+				the sheet would not appear to select the first column's contents for
+				editing should now be fixed.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<ul>
+		<li>Added Plant Spells contributed by Jim.</li>
+	</ul>
+	<p class=rversion>Version 3.0.0.14 &mdash; June 19, 2005</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Added undo/redo for row add/remove and row rearrangement.</li>
+			<li>Added quick search to each of the list and sheet windows.</li>
+			<li>Some row cells (usually the name/description column) will now
+				auto-wrap. The cell editor for these special cells doesn't do the
+				right thing yet, but I hope to make it work better in the future.
+				In the meantime, editing does still work in these cells -- it's
+				just the display while editing that is incorrect.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Fixed some problems opening/closing rows, especially with the
+				control in the toolbar which opened/closed them all at once.</li>
+			<li>Fixed some problems with selection management in the lists.</li>
+			<li>Fixed some display issues with the lists.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>Added a "Races" list.</li>
+			<li>Refined some more of the Disadvantages.</li>
+			<li>Restored the "not active" selection to lists.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.0.0.13 &mdash; June 5, 2005</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>The weapon damage display now attempts to resolve "sw" and "thr"
+				values appropriately.</li>
+			<li>The weapon range display now attempts to resolve strength
+				multipliers appropriately.</li>
+			<li>All list data types (advantages, skills, equipment) now have a
+				"defaults" list associated with them (editable from the detail
+				panel). Previously, only skills had this, however, anything that can
+				be a weapon (advantages, equipment) also needs this data, since it
+				allows me to determine the skill level you wield the weapon at,
+				along with derived data, such as Parry.</li>
+			<li>The weapon parry display now attempts to resolve the current Parry
+				value.</li>
+			<li>The weapon display now shows the skill level at which the character
+				wields the weapon.</li>
+			<li>Added a new notation to specify things like "+1 per die" for damage.
+				In a weapon damage field, if you would normally have "sw+1", but
+				need to also have it have the +1 per die, write it like this:
+				"sw+1:+1". The "per die" part can be positive or negative.</li>
+			<li>Added the ability to view the release notes, to-do list, and user's
+				manual in a browser by selecting the relevant menu option from the
+				Help menu.</li>
+			<li>Added preferences to control what browser is used.</li>
+			<li>Added the ability to add a Parry or Block bonus.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Fixed various drag &amp; drop issues introduced when I did some
+				of the internal reorganization of the outline table code in
+				prepartion for undo/redo in the last version.</li>
+			<li>Fixed a non-drawing area in the bottom-right section of the
+				display on Linux and Windows.</li>
+			<li>When dragging from one list to another, containers would always
+				end up fully expanded. Now they correctly retain whatever state
+				they had in the original list.</li>
+			<li>Fixed incorrect skill level calculation when 0 points were in
+				the skill.</li>
+			<li>Fixed a problem where the undo logic could cause an exception
+				when adding weapon info.</li>
+			<li>Fixed dodge bonus.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>For container (dis)advantages, no longer display anything in the two
+				point cost columns, as they were always zero (and non-editable)
+				anyway.</li>
+			<li>For container (dis)advantages, no longer allow the type to be set or
+				displayed.</li>
+			<li>Changed the release notes and to-do list into HTML and created a
+				placeholder for the user's manual.</li>
+			<li>I now spell out the ideal portrait dimensions in the tooltip.</li>
+			<li>Updated the combat skills to have the correct defaults. Added
+				defaults to some other skills as well, but the bulk of them don't
+				have this information yet.</li>
+			<li>Updated the weapons (in both equipment and advantages) to contain
+				the correct weapon stats as well as the correct defaults.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.0.0.12 &mdash; May 30, 2005</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Undo/Redo support. There is also a new preference that controls just
+				how many times you can undo on a per-document basis. I may remove
+				this in the future... but for now, it allows you to crudely control
+				how much memory the undo stack can consume. Unfortunately, I've yet
+				to implement undo/redo for row manipulations: add, remove, drag,
+				sort. These will be in a future development release (probably the
+				next).</li>
+			<li>Random age now takes into account "Short Lifespan",
+				"Extended Lifespan", and "Unaging".</li>
+			<li>The "Open" file dialog now comes up with the
+				"GURPS Character Sheet Files" filter selected by default, so you can
+				see all GCS-related files without having to switch the filter first
+				(it used to come up with the type of window you were currently using
+				as the default filter).</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Various minor fixes to the way scrolling &amp; selection edge
+				cases were dealt with in the lists.</li>
+			<li>Turned on font anti-aliasing and fractional font metrics for the Mac
+				version. The other platforms still have it turned off, as they have
+				various issues when these features are enabled, ranging from severe
+				performance degradation to mangled inter-letter spacing.</li>
+			<li>No longer allow skill points to be negative.</li>
+			<li>Techniques checking for their parent skill now do a case-insensitive
+				comparison.</li>
+			<li>The various list cells should now only show their tooltips if their
+				content was truncated (i.e. an ellipse was added and the text was
+				shortened).</li>
+			<li>Various minor fixes that I forgot to keep track of...</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>Incorporated more of Charles' list changes.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.0.0.11 &mdash; May 8, 2005</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Added support for Features that affect base stat (ST, DX, IQ, HT)
+				point cost. Adjusted the entries for "No Fine Manipulators" and
+				"No Manipulators" to take advantage of the new capability.</li>
+			<li>Added support for Techniques.</li>
+			<li>In (dis)advantages lists, renamed the "Pts" column to "Cost" and
+				added a new column labeled "Pts" that contains the calculated cost.
+				The tooltips for the headers of these columns have been updated
+				appropriately.</li>
+			<li>For the "Levels" column in (dis)advantages, I now support using the
+				"+" or "-" keys to increment/decrement the level. In addition, the
+				mouse scroll wheel can also affect this value. In the case of the
+				scroll wheel, however, the cursor must stay over the field in order
+				to operate -- otherwise, the scroll event is handled by the scroll
+				bars of the sheet or list.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Fixed image loading on Mac OS X 10.4 ("Tiger") -- there is a bug in
+				the ImageIO package in that version of the OS that is causing the
+				red and blue channels to be swapped.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 3.0.0.10 &mdash; May 1, 2005</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Skill defaults are now supported. I'm not sure I got this exactly
+				right... although I'm not sure I can get it more "right" than it is
+				currently.</li>
+			<li>Support new DR locations: eyes, vitals, full body, full body except
+				eyes.</li>
+			<li>The checkmark columns now display a checkmark or a blank rather than
+				a Y or N. In addition, they respond to single mouse clicks in
+				addition to the keyboard (Y, y, N, n, or space to toggle). This may
+				be disconcerting if you have a row selected and accidentally hit the
+				checkbox area, as the checkbox will respond and the row will lose
+				its selection. Also, the effect, if any, of the checkmark being on
+				or off will show up immediately, unlike before, where it would wait
+				until you left the field. Let me know how this feels...</li>
+			<li>I now process all nameable "@foo@" directives I find in the nameable
+				section of a row, rather than just the first as in the previous
+				release.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Editing a row with the detailed editor dialog will now always
+				mark the data file as modified.</li>
+			<li>Drag &amp; drop of rows to an Equipment, Skill, or Spell list in
+				the sheet now process nameable "@foo@" directives.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>Incorporated Charles' updates to various lists. While I was at it,
+				rearranged the Lists folder.</li>
+			<li>Added a folder icon to the sub-menus presented in the Lists menu.</li>
+			<li>Tweaked the splash screen some more.</li>
+		</ul>
+	</div>
+	<p class=rversion>Release notes for versions prior to 3.0.0.10 have been removed...</p>
+</body>
+</html>

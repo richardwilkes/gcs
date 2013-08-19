@@ -1,0 +1,1225 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<spell_list unique_id="edufwhvc:1vljqymi5esb">
+	<spell>
+		<name>Accuracy</name>
+		<college>Weapon Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M65</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<college compare="contains">air</college>
+				<quantity compare="atLeast">5</quantity>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Adjustable Clothing</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M58</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">reshape</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Amulet</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>50/ pt MR</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M58</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">talisman (appropriate spell)</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Attune</name>
+		<college>Limiting Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>100</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M69</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">bane</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Bane</name>
+		<college>Weapon Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>100</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M62</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Blank Spell Arrow</name>
+		<college>Weapon Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>30xcapacity#</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M66</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">spell arrow</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Cornucopia</name>
+		<college>Weapon Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>50x$ value#</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M64</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<college compare="contains">weapon enchantment</college>
+				<quantity compare="atLeast">2</quantity>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Crystal Ball</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>1000</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M71</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">divination (crystal gazing)</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Dancing Shield</name>
+		<college>Armor Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>250/lb#</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M67</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">dancing object</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Dancing Weapon</name>
+		<college>Weapon Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>1000/lb#</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M63</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">dancing object</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Defending Shield</name>
+		<college>Armor Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M67</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">grace</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Defending Weapon</name>
+		<college>Weapon Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M64</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">dancing object</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Deflect</name>
+		<college>Armor Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M67</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Doppleganger</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>1000</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Perm#</duration>
+		<reference>M62</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: enchantment college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+			</prereq_list>
+			<spell_prereq has="yes">
+				<name compare="is">golem</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">history</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">enslave</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Effigy</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>1000</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M71</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: enchantment college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+			<spell_prereq has="yes">
+				<name compare="is">scryfool</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">ward</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Enchant</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>Varies</casting_time>
+		<duration>Permanent</duration>
+		<reference>M56</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<college_count compare="atLeast">10</college_count>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: enchantment college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Ensorcel</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>200xspell cost</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M60</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">malefice</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Fortify</name>
+		<college>Armor Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M66</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Ghost Weapon</name>
+		<college>Weapon Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>250/lb #</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M65</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">solidify</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Golem</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>Varies</casting_time>
+		<duration>Permanent</duration>
+		<reference>M59</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">animation</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">shape earth</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Graceful Weapon</name>
+		<college>Weapon Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>150/lb</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M63</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">apportation</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Great Wish</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>2000</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Special</duration>
+		<reference>M62</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<attribute_prereq has="yes" which="IQ" combined_with="DX" compare="atLeast">30</attribute_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: enchantment college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+			</prereq_list>
+			<spell_prereq has="yes">
+				<name compare="is">wish</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Hex</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>200</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M57</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Hideaway</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>50#</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M61</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">create object</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">lighten</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Homunculus</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>800</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M70</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">mind-sending</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: enchantment college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Impression Blocker</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>20/lb</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M60</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">seeker</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">scry wall</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Leak</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>100</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M61</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">hideaway</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Lesser Wish</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>180</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Special</duration>
+		<reference>M58</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Lich</name>
+		<college>Necromantic/Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>Varies</casting_time>
+		<duration>Permanent</duration>
+		<reference>M159</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">soul jar</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">zombie</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: enchantment college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+			</prereq_list>
+			<attribute_prereq has="yes" which="IQ" compare="atLeast">13</attribute_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Lighten</name>
+		<college>Armor Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M67</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Limit</name>
+		<college>Limiting Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>200</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M68</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Link</name>
+		<college>Limiting Enchantment</college>
+		<spell_class>Enchantment/Area</spell_class>
+		<casting_cost>8</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>4 hrs</casting_time>
+		<duration>Special</duration>
+		<reference>M131</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">delay</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Loyal Sword</name>
+		<college>Weapon Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>750/lb</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M63</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">apportation</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Malefice</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>250</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Indefinite#</duration>
+		<reference>M60</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">seeker</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Manastone</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>5</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Indefinite</duration>
+		<reference>M70</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Name</name>
+		<college>Limiting Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>200 or 400#</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M68</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>One-College Powerstone</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>12</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Indefinite</duration>
+		<reference>M70</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Password</name>
+		<college>Limiting Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>400#</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M68</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Penetrating Weapon</name>
+		<college>Weapon Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M63</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">find weakness</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Power</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M57</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">recover energy</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Powerstone</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>20</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>Varies</casting_time>
+		<duration>Permanent</duration>
+		<reference>M69</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Puissance</name>
+		<college>Weapon Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M65</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<college compare="contains">earth</college>
+				<quantity compare="atLeast">5</quantity>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Quick-Aim</name>
+		<college>Weapon Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M65</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">grace</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Quick-Draw</name>
+		<college>Weapon Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>300/lb #</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M63</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">apportation</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Remove Enchant</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>100 #</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>Varies</casting_time>
+		<duration>Permanent</duration>
+		<reference>M58</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Restist Enchantment</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M58</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">any limiting enchantment</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Scroll</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Special</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>days=cost</casting_time>
+		<duration>Varies</duration>
+		<reference>M57</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="starts with">Native Language</name>
+					<notes compare="contains">Written: Native</notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="starts with">Native Language</name>
+					<notes compare="contains">Written: Accented</notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="starts with">Language</name>
+					<notes compare="contains">Written: Accented</notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="starts with">Language</name>
+					<notes compare="contains">Written: Native</notes>
+				</advantage_prereq>
+			</prereq_list>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: enchantment college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Simulacrum</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>2xgolem</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent#</duration>
+		<reference>M61</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: enchantment college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+			</prereq_list>
+			<spell_prereq has="yes">
+				<name compare="is">golem</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">perfect illusion</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">illusion disguise</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Soul Stone</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>500</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M71</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: enchantment college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+			</prereq_list>
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">soul jar</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Speed</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M57</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">haste</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Speed Spell Arrow</name>
+		<college>Weapon Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M66</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">spell arrow</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">speed</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Spell Arrow</name>
+		<college>Weapon Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>30xspell cost</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M65</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">spell stone</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Spell Stone</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>20xspell cost</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Varies</duration>
+		<reference>M60</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">delay</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Staff</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>30</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M70</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+		<default>
+			<type>DX</type>
+			<modifier>0</modifier>
+		</default>
+	</spell>
+	<spell>
+		<name>Suspend Enchantment</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>25 #</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 hr</duration>
+		<reference>M58</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Talisman</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M58</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">spell to be opposed</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Temporary Enchantment</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Indefinite#</duration>
+		<reference>M56</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Weapon Spirit</name>
+		<college>Weapon Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Permanent</duration>
+		<reference>M64</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">summon spirit</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Wish</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>250</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>-</casting_time>
+		<duration>Special</duration>
+		<reference>M61</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<college_count compare="atLeast">15</college_count>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">lesser wish</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Wraith</name>
+		<college>Enchantment</college>
+		<spell_class>Enchantment</spell_class>
+		<casting_cost>500</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M160</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">enchant</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">halt aging</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">soul jar</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: enchantment college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+			</prereq_list>
+			<attribute_prereq has="yes" which="IQ" compare="atLeast">13</attribute_prereq>
+		</prereq_list>
+	</spell>
+</spell_list>

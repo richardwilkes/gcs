@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="eh7bnr90:11x213tgp9c8t">
+	<advantage_list>
+		<advantage_container open="yes" type="metatrait">
+			<name>Meta-Trait: Domestic Animal</name>
+			<reference>B263</reference>
+			<notes></notes>
+			<advantage>
+				<name>Cannot Speak</name>
+				<type>Physical</type>
+				<base_points>-15</base_points>
+				<reference>B125</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>Hidebound</name>
+				<type>Physical</type>
+				<base_points>-5</base_points>
+				<reference>B138</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>Taboo Trait (Fixed IQ)</name>
+				<type>Mental</type>
+				<reference></reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>Valuable Property</name>
+				<type>Social</type>
+				<base_points>-10</base_points>
+				<reference>B156</reference>
+				<notes></notes>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+	<notes></notes>
+</template>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd">
+<plist version="0.9">
+<dict>
+	<key>CFBundleName</key>
+		<string>APP_NAME</string>
+	<key>CFBundleIdentifier</key>
+		<string>com.trollworks.gcs</string>
+	<key>CFBundleVersion</key>
+		<string>APP_VERSION</string>
+	<key>CFBundleAllowMixedLocalizations</key>
+		<string>true</string>
+	<key>CFBundleExecutable</key>
+		<string>APP_NAME</string>
+	<key>CFBundleDevelopmentRegion</key>
+		<string>English</string>
+	<key>CFBundlePackageType</key>
+		<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+		<string>APP_VERSION</string>
+	<key>CFBundleSignature</key>
+		<string>RWGS</string>
+	<key>CFBundleGetInfoString</key>
+		<string>APP_VERSION, Copyright (c) COPYRIGHT_YEARS by APP_COPYRIGHT_OWNER.  All rights reserved worldwide.</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+		<string>6.0</string>
+	<key>CFBundleIconFile</key>
+		<string>app.icns</string>
+	<key>CFBundleDocumentTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleTypeExtensions</key>
+					<array>
+						<string>gcs</string>
+					</array>
+				<key>CFBundleTypeIconFile</key>
+					<string>gcs.icns</string>
+				<key>CFBundleTypeName</key>
+					<string>GURPS Character Sheet</string>
+				<key>CFBundleTypeRole</key>
+					<string>Editor</string>
+			</dict>
+			<dict>
+				<key>CFBundleTypeExtensions</key>
+					<array>
+						<string>gct</string>
+					</array>
+				<key>CFBundleTypeIconFile</key>
+					<string>gct.icns</string>
+				<key>CFBundleTypeName</key>
+					<string>GCS Character Template</string>
+				<key>CFBundleTypeRole</key>
+					<string>Editor</string>
+			</dict>
+			<dict>
+				<key>CFBundleTypeExtensions</key>
+					<array>
+						<string>adq</string>
+					</array>
+				<key>CFBundleTypeIconFile</key>
+					<string>adq.icns</string>
+				<key>CFBundleTypeName</key>
+					<string>GCS Advantages, Disadvantages &amp; Quirks</string>
+				<key>CFBundleTypeRole</key>
+					<string>Editor</string>
+			</dict>
+			<dict>
+				<key>CFBundleTypeExtensions</key>
+					<array>
+						<string>eqp</string>
+					</array>
+				<key>CFBundleTypeIconFile</key>
+					<string>eqp.icns</string>
+				<key>CFBundleTypeName</key>
+					<string>GCS Equipment</string>
+				<key>CFBundleTypeRole</key>
+					<string>Editor</string>
+			</dict>
+			<dict>
+				<key>CFBundleTypeExtensions</key>
+					<array>
+						<string>skl</string>
+					</array>
+				<key>CFBundleTypeIconFile</key>
+					<string>skl.icns</string>
+				<key>CFBundleTypeName</key>
+					<string>GCS Skills</string>
+				<key>CFBundleTypeRole</key>
+					<string>Editor</string>
+			</dict>
+			<dict>
+				<key>CFBundleTypeExtensions</key>
+					<array>
+						<string>spl</string>
+					</array>
+				<key>CFBundleTypeIconFile</key>
+					<string>spl.icns</string>
+				<key>CFBundleTypeName</key>
+					<string>GCS Spells</string>
+				<key>CFBundleTypeRole</key>
+					<string>Editor</string>
+			</dict>
+		</array>
+</dict>
+</plist>

@@ -1,0 +1,1292 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<spell_list unique_id="e9m2fv9u:1jdg5wp39mjva">
+	<spell very_hard="yes">
+		<name>Alertness</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2/pt increase</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>10 min</duration>
+		<reference>M133</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="starts with">keen</name>
+				<quantity compare="atLeast">2</quantity>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Avoid</name>
+		<college>Mind Control</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>1 min</casting_time>
+		<duration>1 hr</duration>
+		<reference>M140</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">hide</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">fear</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">forgetfulness</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Berserker</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>4 sec</casting_time>
+		<duration>10 min</duration>
+		<reference>M134</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">bravery</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Boost Intelligence</name>
+		<college>Mind Control</college>
+		<spell_class>Regular/Blocking</spell_class>
+		<casting_cost>1-5</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M37</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">wisdom</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Bravery</name>
+		<college>Mind Control</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 hr</duration>
+		<reference>M134</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">fear</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Charm</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>6</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>3 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M139</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<college compare="contains">mind control</college>
+				<quantity compare="atLeast">7</quantity>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">loyalty</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: mind control college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Command</name>
+		<college>Mind Control</college>
+		<spell_class>Blocking</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Instant</duration>
+		<reference>M136</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">forgetfulness</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: mind control college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Compel Lie</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>5 min</duration>
+		<reference>M137</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">emotion control</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Daze</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>2 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M134</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">foolishness</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Disorient</name>
+		<college>Mind Control</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>1</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>Varies</duration>
+		<reference>M135</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">foolishness</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Dream Projection</name>
+		<college>Communication &amp; Empathy/Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>1 min</casting_time>
+		<duration>1 min</duration>
+		<reference>M46</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">dream sending</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Dream Sending</name>
+		<college>Communication &amp; Empathy/Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 min</casting_time>
+		<duration>1 hr</duration>
+		<reference>M45</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<name compare="is">dream viewing</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">sleep</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Drunkenness</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/pt of IQ &amp; DX loss</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>2 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M136</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">foolishness</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">clumsiness</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Dull @Sense@</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/2 pts decrease</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>30 min</duration>
+		<reference>M133</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Dull Hearing</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/2 pts decrease</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>30 min</duration>
+		<reference>M133</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Dull Taste and Smell</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/2 pts decrease</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>30 min</duration>
+		<reference>M133</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Dull Touch</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/2 pts decrease</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>30 min</duration>
+		<reference>M133</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Dull Vision</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/2 pts decrease</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>30 min</duration>
+		<reference>M133</reference>
+		<notes></notes>
+	</spell>
+	<spell very_hard="yes">
+		<name>Dullness</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2/pt decrease</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>10 min</duration>
+		<reference>M134</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="starts with">dull</name>
+				<quantity compare="atLeast">2</quantity>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Ecstasy</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>6</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>3 sec</casting_time>
+		<duration>10 sec</duration>
+		<reference>M139</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">emotion control</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: mind control college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Emotion Control</name>
+		<college>Mind Control</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 hr</duration>
+		<reference>M137</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<name compare="is">mental stun</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">loyalty</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Encrypt</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 week</duration>
+		<reference>M135</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">daze</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Enslave</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>30</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Permanent</duration>
+		<reference>M141</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">charm</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">telepathy</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Enthrall</name>
+		<college>Mind Control</college>
+		<spell_class>Special</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 hr</duration>
+		<reference>M139</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">forgetfulness</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">daze</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">slow</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>False Memory</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>Varies</casting_cost>
+		<maintenance_cost>Varies</maintenance_cost>
+		<casting_time>5 sec</casting_time>
+		<duration>Varies</duration>
+		<reference>M139</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">forgetfulness</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<college compare="contains">mind control</college>
+				<quantity compare="atLeast">6</quantity>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Fascinate</name>
+		<college>Mind Control</college>
+		<spell_class>Regular/Blocking</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Indefinite</duration>
+		<reference>M135</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">daze</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Fear</name>
+		<college>Mind Control</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>1</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>10 min</duration>
+		<reference>M134</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<name compare="is">sense emotion</name>
+			</spell_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">empathy</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Foolishness</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1-5</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M134</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<attribute_prereq has="yes" which="IQ" compare="atLeast">12</attribute_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Forgetfulness</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>1 hr</duration>
+		<reference>M135</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">foolishness</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: mind control college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Glib Tongue</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>5 min</duration>
+		<reference>M141</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">suggestion</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Great Geas</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>30</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 min</casting_time>
+		<duration>Permanent</duration>
+		<reference>M141</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<college compare="contains">mind control</college>
+				<quantity compare="atLeast">14</quantity>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">lesser geas</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: mind control college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">3</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Great Hallucination</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>6</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>4 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M141</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">hallucination</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: mind control college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Hallucination</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>2 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M140</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">madness</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">suggestion</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Keen @Sense@</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/pt increase</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>30 min</duration>
+		<reference>M133</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Keen Hearing</name>
+		<college>Mind Control/Sound</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/pt increase</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>30 min</duration>
+		<reference>M133</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Keen Taste and Smell</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/pt increase</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>30 min</duration>
+		<reference>M133</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Keen Touch</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/pt increase</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>30 min</duration>
+		<reference>M133</reference>
+		<notes></notes>
+	</spell>
+	<spell>
+		<name>Keen Vision</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/pt increase</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>30 min</duration>
+		<reference>M133</reference>
+		<notes></notes>
+	</spell>
+	<spell very_hard="yes">
+		<name>Lesser Geas</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>12</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>30 sec</casting_time>
+		<duration>Until fulfilled</duration>
+		<reference>M140</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">command</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<college compare="contains">mind control</college>
+				<quantity compare="atLeast">9</quantity>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: mind control college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Loyalty</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>2 sec</casting_time>
+		<duration>1 hr</duration>
+		<reference>M136</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">bravery</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<college compare="contains">mind control</college>
+				<quantity compare="atLeast">2</quantity>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Lure</name>
+		<college>Mind Control</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>1</casting_cost>
+		<maintenance_cost>Same</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>1 hr</duration>
+		<reference>M137</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">emotion control</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Madness</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2/3/4/6</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>2 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M136</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<name compare="is">forgetfulness</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">drunkenness</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Mass Daze</name>
+		<college>Mind Control</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>sec=cost</casting_time>
+		<duration>1 min</duration>
+		<reference>M137</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">daze</name>
+			</spell_prereq>
+			<attribute_prereq has="yes" which="IQ" compare="atLeast">13</attribute_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Mass Sleep</name>
+		<college>Mind Control</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>sec=cost</casting_time>
+		<duration>Until awakened</duration>
+		<reference>M137</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">sleep</name>
+			</spell_prereq>
+			<attribute_prereq has="yes" which="IQ" compare="atLeast">13</attribute_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Mass Suggesion</name>
+		<college>Mind Control</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>sec=cost</casting_time>
+		<duration>10 min</duration>
+		<reference>M141</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">suggestion</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Memorize</name>
+		<college>Knowledge/Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>2 sec</casting_time>
+		<duration>1 day</duration>
+		<reference>M105</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<college compare="contains">knowledge</college>
+				<quantity compare="atLeast">6</quantity>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">wisdom</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Mental Stun</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>Until recovery roll made</duration>
+		<reference>M135</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<name compare="is">daze</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">stun</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Mindlessness</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>8</casting_cost>
+		<maintenance_cost>4</maintenance_cost>
+		<casting_time>5 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M137</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">forgetfulness</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: mind control college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Nightmare</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>6</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 min</casting_time>
+		<duration>1 hr</duration>
+		<reference>M140</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">death vision</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">fear</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">sleep</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: mind control college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Oath</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 min</casting_time>
+		<duration>Permanent</duration>
+		<reference>M138</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">emotion control</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: mind control college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Panic</name>
+		<college>Mind Control</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>2</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M134</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">fear</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Peaceful Sleep</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>30 sec</casting_time>
+		<duration>8 hrs</duration>
+		<reference>M138</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">sleep</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">silence</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Permanent Forgetfulness</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>15</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 hr</casting_time>
+		<duration>Permanent</duration>
+		<reference>M138</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">forgetfulness</name>
+			</spell_prereq>
+			<attribute_prereq has="yes" which="IQ" compare="atLeast">13</attribute_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: mind control college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Permanent Madness</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>20</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 min</casting_time>
+		<duration>Permanent</duration>
+		<reference>M139</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">madness</name>
+			</spell_prereq>
+			<attribute_prereq has="yes" which="IQ" compare="atLeast">13</attribute_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: mind control college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Rear Vision</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>1</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M134</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">alertness</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Recall</name>
+		<college>Knowledge/Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>1 day</duration>
+		<reference>M106</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">history</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">memorize</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: mind control college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Relieve Madness</name>
+		<college>Healing/Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>10 min</duration>
+		<reference>M92</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">lend vitality</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">wisdom</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Sickness</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>4 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M138</reference>
+		<notes></notes>
+		<prereq_list all="no">
+			<spell_prereq has="yes">
+				<name compare="is">drunkenness</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">pestilence</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Sleep</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>3 sec</casting_time>
+		<duration>Until awakened</duration>
+		<reference>M135</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">daze</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Strengthen Will</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>1/pt of Will increase</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M136</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<college compare="contains">mind control</college>
+				<quantity compare="atLeast">6</quantity>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: mind control college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Suggestion</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>3</maintenance_cost>
+		<casting_time>10 sec</casting_time>
+		<duration>10 min</duration>
+		<reference>M140</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">emotion control</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">forgetfulness</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Terror</name>
+		<college>Mind Control</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>4</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 sec</duration>
+		<reference>M134</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">fear</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell very_hard="yes">
+		<name>Vigil</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>8</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 night</duration>
+		<reference>M138</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">lend energy</name>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">sleep</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: mind control college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">2</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Weaken Will</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>2/pt of Will decrease</casting_cost>
+		<maintenance_cost>Half</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M136</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">foolishness</name>
+			</spell_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery: mind control college</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="atLeast">1</level>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Will Lock</name>
+		<college>Mind Control</college>
+		<spell_class>Area</spell_class>
+		<casting_cost>3</casting_cost>
+		<maintenance_cost>-</maintenance_cost>
+		<casting_time>Varies</casting_time>
+		<duration>1 day</duration>
+		<reference>M138</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">emotion control</name>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+	<spell>
+		<name>Wisdom</name>
+		<college>Mind Control</college>
+		<spell_class>Regular</spell_class>
+		<casting_cost>4/pt of IQ</casting_cost>
+		<maintenance_cost>Same</maintenance_cost>
+		<casting_time>1 sec</casting_time>
+		<duration>1 min</duration>
+		<reference>M135</reference>
+		<notes></notes>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<college compare="contains">mind control</college>
+				<quantity compare="atLeast">6</quantity>
+			</spell_prereq>
+		</prereq_list>
+	</spell>
+</spell_list>

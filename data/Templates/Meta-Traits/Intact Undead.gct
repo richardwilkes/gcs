@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="egmcxzl1:-qbqf464b3o2p">
+	<advantage_list>
+		<advantage_container open="yes" type="metatrait">
+			<name>Meta-trait (Intact Undead)</name>
+			<reference>F133</reference>
+			<notes></notes>
+			<advantage>
+				<name>Doesn't Breathe</name>
+				<type>Physical, Exotic</type>
+				<base_points>20</base_points>
+				<reference>B49</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>Feature (Sterile)</name>
+				<type>Physical</type>
+				<reference></reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>High Pain Threshold</name>
+				<type>Physical</type>
+				<base_points>10</base_points>
+				<reference>B59</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>Injury Tolerance (No Blood)</name>
+				<type>Physical, Exotic</type>
+				<base_points>5</base_points>
+				<reference>B61</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>Injury Tolerance (Unliving)</name>
+				<type>Physical, Exotic</type>
+				<base_points>20</base_points>
+				<reference>B61</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>Resistant (Immune to Metabolic Hazards)</name>
+				<type>Physical</type>
+				<base_points>30</base_points>
+				<reference>B81</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>Supernatural Features (No Body Heat)</name>
+				<type>Physical, Supernatural</type>
+				<base_points>-5</base_points>
+				<reference>B157</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>Supernatural Features (Pallor)</name>
+				<type>Physical, Supernatural</type>
+				<base_points>-10</base_points>
+				<reference>B157</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>Temperature Tolerance</name>
+				<type>Physical</type>
+				<levels>10</levels>
+				<points_per_level>1</points_per_level>
+				<reference>B93</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>Unaging</name>
+				<type>Physical, Exotic</type>
+				<base_points>15</base_points>
+				<reference>B95</reference>
+				<notes></notes>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+	<notes></notes>
+</template>

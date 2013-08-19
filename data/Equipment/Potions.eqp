@@ -1,0 +1,603 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<equipment_list unique_id="ejgkvm7l:-1gmpneyxvd021">
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Aging</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>825.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M214</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Alchemical Antidote</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>400.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M217</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Attractiveness</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>600.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M216</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Awakening</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>500.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M217</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Battle</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>350.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M214</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Beast-Speech</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>850.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M213</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Bird Control</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>550.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M213</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Charisma</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>350.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M218</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Craftsmanship</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>1100.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M219</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Death</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>500.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M215</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Endurance</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>1400.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M214</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Eternal Rest</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>4100.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M217</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Fear</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>225.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M215</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Fertility</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>6000.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M217</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Fetching and Carrying</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>300.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M214</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Fire Risistance</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>500.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M216</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Flight</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>3000.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M216</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Foolishness</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>500.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M215</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Foresight</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>2000.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M218</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Forgetfulness</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>700.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M219</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Friendship</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>550.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M219</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Fustration</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>650.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M215</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Gambling</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>900.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M216</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Gullibility</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>500.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M219</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Hardheartedness</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>500.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M218</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Hatred</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>300.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M215</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Healing</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>120.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M217</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Health</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>750.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M217</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Hybridization</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>2250.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M217</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Invisibility</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>3000.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M216</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Invulnerability</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>2100.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M214</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Jealousy</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>400.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M215</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Leadership</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>1650.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M214</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Lecherousness</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>500.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M215</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Lichdom</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>0.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M160</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Long Slumber</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>9000.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M217</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Luck</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>1300.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M216</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Madness</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>200.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M215</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Magic Resistance</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>1600.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M216</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Memory</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>1500.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M219</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Music</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>300.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M219</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Odium</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>1000.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M215</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Pain Resistance</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>600.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M216</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Resurrection</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>25000.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M218</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Self-Love</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>750.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M215</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Sleep</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>120.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M218</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Speed</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>550.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M214</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Stealth</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>500.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M214</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Strength</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>250.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M214</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Tranquility</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>500.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M218</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Transformation</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>3000.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M216</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: True Sight</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>550.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M216</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Truth</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>1100.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M219</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Universal Antidote</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>750.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M219</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Unluckiness</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>1600.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M215</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Water Breathing</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>600.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M216</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Water-Walking</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>700.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M216</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Weakness</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>400.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M215</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Wisdom</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>1500.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M219</reference>
+		<notes></notes>
+	</equipment>
+	<equipment>
+		<quantity>1</quantity>
+		<description>Potion: Youth</description>
+		<tech_level></tech_level>
+		<legality_class>4</legality_class>
+		<value>25000.0</value>
+		<weight units="lb">0.25</weight>
+		<reference>M218</reference>
+		<notes></notes>
+	</equipment>
+</equipment_list>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="eis1a549:1dek9ztgkwxmv">
+	<advantage_list>
+		<advantage_container open="yes" type="metatrait">
+			<name>Meta-Trait: Artificial Intelligence</name>
+			<reference>B263</reference>
+			<notes></notes>
+			<advantage>
+				<name>Absolute Timing</name>
+				<type>Mental</type>
+				<base_points>2</base_points>
+				<reference>B35</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>Digital Mind</name>
+				<type>Physical, Exotic</type>
+				<base_points>5</base_points>
+				<reference>B49</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>Doesn't Sleep</name>
+				<type>Physical, Exotic</type>
+				<base_points>20</base_points>
+				<reference>B50</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>Eidetic Memory (Photographic)</name>
+				<type>Mental</type>
+				<base_points>10</base_points>
+				<reference>B51</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>Lightning Calculator (Intuitive Mathematician)</name>
+				<type>Mental</type>
+				<base_points>5</base_points>
+				<reference>B66</reference>
+				<notes></notes>
+			</advantage>
+			<advantage>
+				<name>Reprogrammable</name>
+				<type>Mental, Exotic</type>
+				<base_points>-10</base_points>
+				<reference>B150</reference>
+				<notes></notes>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+	<notes></notes>
+</template>

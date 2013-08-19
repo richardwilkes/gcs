@@ -1,0 +1,915 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<skill_list unique_id="ehl4225a:-pji3vsrehrpv">
+	<technique limit="4">
+		<name>Arm Lock</name>
+		<specialization></specialization>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>B230</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<specialization></specialization>
+			<modifier>0</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="4">
+		<name>Arm Lock</name>
+		<specialization></specialization>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>B230</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<specialization></specialization>
+			<modifier>0</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Back Kick</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B230</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<specialization></specialization>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Chariot Archery</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>F136</reference>
+		<default>
+			<type>Skill</type>
+			<name>Bow</name>
+			<specialization></specialization>
+			<modifier>-6</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Choke Hold</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B230</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<specialization></specialization>
+			<modifier>-2</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Choke Hold</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B230</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<specialization></specialization>
+			<modifier>-3</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="5">
+		<name>Disarming</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B230</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<specialization></specialization>
+			<modifier>0</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="5">
+		<name>Disarming</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B230</reference>
+		<default>
+			<type>Skill</type>
+			<name>Broadsword</name>
+			<specialization></specialization>
+			<modifier>0</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="5">
+		<name>Disarming</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B230</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<specialization></specialization>
+			<modifier>0</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="5">
+		<name>Disarming</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B230</reference>
+		<default>
+			<type>Skill</type>
+			<name>Knife</name>
+			<specialization></specialization>
+			<modifier>0</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="5">
+		<name>Disarming</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B230</reference>
+		<default>
+			<type>Skill</type>
+			<name>Shortsword</name>
+			<specialization></specialization>
+			<modifier>0</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique>
+		<name>Dual-Weapon Attack</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B230</reference>
+		<default>
+			<type>Skill</type>
+			<name>Broadsword</name>
+			<specialization></specialization>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Dual-Weapon Attack</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B230</reference>
+		<default>
+			<type>Skill</type>
+			<name>Knife</name>
+			<specialization></specialization>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Dual-Weapon Attack</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B230</reference>
+		<default>
+			<type>Skill</type>
+			<name>Shortsword</name>
+			<specialization></specialization>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Elbow Strike</name>
+		<specialization></specialization>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>B230</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<specialization></specialization>
+			<modifier>-2</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Elbow Strike</name>
+		<specialization></specialization>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>B230</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<specialization></specialization>
+			<modifier>-2</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="4">
+		<name>Feint</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B231</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<specialization></specialization>
+			<modifier>0</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="4">
+		<name>Feint</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B231</reference>
+		<default>
+			<type>Skill</type>
+			<name>Broadsword</name>
+			<specialization></specialization>
+			<modifier>0</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="4">
+		<name>Feint</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B231</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<specialization></specialization>
+			<modifier>0</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="4">
+		<name>Feint</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B231</reference>
+		<default>
+			<type>Skill</type>
+			<name>Knife</name>
+			<specialization></specialization>
+			<modifier>0</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="4">
+		<name>Feint</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B231</reference>
+		<default>
+			<type>Skill</type>
+			<name>Shortsword</name>
+			<specialization></specialization>
+			<modifier>0</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Finger Lock</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B231</reference>
+		<default>
+			<type>Skill</type>
+			<name>Arm Lock</name>
+			<specialization></specialization>
+			<modifier>-3</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Ground Fighting</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B231</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<specialization></specialization>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Ground Fighting</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B231</reference>
+		<default>
+			<type>Skill</type>
+			<name>Broadsword</name>
+			<specialization></specialization>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Ground Fighting</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B231</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<specialization></specialization>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Ground Fighting</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B231</reference>
+		<default>
+			<type>Skill</type>
+			<name>Knife</name>
+			<specialization></specialization>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Ground Fighting</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B231</reference>
+		<default>
+			<type>Skill</type>
+			<name>Shortsword</name>
+			<specialization></specialization>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Hang From Saddle</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>F136</reference>
+		<default>
+			<type>Skill</type>
+			<name>Riding</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Horse Archery</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B231</reference>
+		<default>
+			<type>Skill</type>
+			<name>Bow</name>
+			<specialization></specialization>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">riding</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique limit="0">
+		<name>Impersonate</name>
+		<specialization></specialization>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>B233</reference>
+		<default>
+			<type>Skill</type>
+			<name>Mimicry</name>
+			<specialization>Speech</specialization>
+			<modifier>-3</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Jump Kick</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B231</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<specialization></specialization>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Kicking</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B231</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<specialization></specialization>
+			<modifier>-2</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Kicking</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B231</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<specialization></specialization>
+			<modifier>-2</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Knee Strike</name>
+		<specialization></specialization>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>B232</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<specialization></specialization>
+			<modifier>-1</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Knee Strike</name>
+		<specialization></specialization>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>B232</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<specialization></specialization>
+			<modifier>-1</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Lifesaving</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B233</reference>
+		<default>
+			<type>Skill</type>
+			<name>Swimming</name>
+			<specialization></specialization>
+			<modifier>-5</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique>
+		<name>Motion-Picture Camera</name>
+		<specialization></specialization>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>B233</reference>
+		<default>
+			<type>Skill</type>
+			<name>Photography</name>
+			<specialization></specialization>
+			<modifier>-3</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="3">
+		<name>Neck Snap</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B232</reference>
+		<default>
+			<type>ST</type>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="-1">
+		<name>No-Hands Riding</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>F136</reference>
+		<default>
+			<type>Skill</type>
+			<name>Riding</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>No-Landing Extraction</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B233</reference>
+		<default>
+			<type>Skill</type>
+			<name>Piloting</name>
+			<specialization></specialization>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Off-Hand Weapon Training</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B232</reference>
+		<default>
+			<type>Skill</type>
+			<name>Broadsword</name>
+			<specialization></specialization>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Off-Hand Weapon Training</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B232</reference>
+		<default>
+			<type>Skill</type>
+			<name>Knife</name>
+			<specialization></specialization>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Off-Hand Weapon Training</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B232</reference>
+		<default>
+			<type>Skill</type>
+			<name>Shortsword</name>
+			<specialization></specialization>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique>
+		<name>Purse Cutting</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>F136</reference>
+		<default>
+			<type>Skill</type>
+			<name>Knife</name>
+			<specialization></specialization>
+			<modifier>-5</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="5">
+		<name>Retain Weapon</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B232</reference>
+		<default>
+			<type>Skill</type>
+			<name>Broadsword</name>
+			<specialization></specialization>
+			<modifier>0</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="5">
+		<name>Retain Weapon</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B232</reference>
+		<default>
+			<type>Skill</type>
+			<name>Knife</name>
+			<specialization></specialization>
+			<modifier>0</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="5">
+		<name>Retain Weapon</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B232</reference>
+		<default>
+			<type>Skill</type>
+			<name>Shortsword</name>
+			<specialization></specialization>
+			<modifier>0</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Rope Up</name>
+		<specialization></specialization>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>B233</reference>
+		<default>
+			<type>Skill</type>
+			<name>Climbing</name>
+			<specialization></specialization>
+			<modifier>-2</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Scaling</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B233</reference>
+		<default>
+			<type>Skill</type>
+			<name>Climbing</name>
+			<specialization></specialization>
+			<modifier>-3</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Set Trap</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B233</reference>
+		<default>
+			<type>Skill</type>
+			<name>Explosives</name>
+			<specialization>Demolition</specialization>
+			<modifier>-2</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Sharp Turn</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>F136</reference>
+		<default>
+			<type>Skill</type>
+			<name>Teamster</name>
+			<specialization></specialization>
+			<modifier>-1</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Shoot Backward</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>F136</reference>
+		<default>
+			<type>Skill</type>
+			<name>Bow</name>
+			<specialization></specialization>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="starts with">riding</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique limit="0">
+		<name>Shoot Over Mount</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>F136</reference>
+		<default>
+			<type>Skill</type>
+			<name>Bow</name>
+			<specialization></specialization>
+			<modifier>-4</modifier>
+		</default>
+		<notes></notes>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="starts with">riding</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique limit="0">
+		<name>Slip Handcuffs</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B233</reference>
+		<default>
+			<type>Skill</type>
+			<name>Escape</name>
+			<specialization></specialization>
+			<modifier>-5</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Sweep</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B232</reference>
+		<default>
+			<type>Skill</type>
+			<name>Polearm</name>
+			<specialization></specialization>
+			<modifier>-3</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Sweep</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B232</reference>
+		<default>
+			<type>Skill</type>
+			<name>Spear</name>
+			<specialization></specialization>
+			<modifier>-3</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Sweep</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B232</reference>
+		<default>
+			<type>Skill</type>
+			<name>Staff</name>
+			<specialization></specialization>
+			<modifier>-3</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Sweeping Kick</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B232</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<specialization></specialization>
+			<modifier>-3</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Sweeping Kick</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B232</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<specialization></specialization>
+			<modifier>-3</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Sweeping Kick</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B232</reference>
+		<default>
+			<type>Skill</type>
+			<name>Sumo Wrestling</name>
+			<specialization></specialization>
+			<modifier>-3</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Whirlwind Attack</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B232</reference>
+		<default>
+			<type>Skill</type>
+			<name>Broadsword</name>
+			<specialization></specialization>
+			<modifier>-5</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Whirlwind Attack</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B232</reference>
+		<default>
+			<type>Skill</type>
+			<name>Staff</name>
+			<specialization></specialization>
+			<modifier>-5</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Whirlwind Attack</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B232</reference>
+		<default>
+			<type>Skill</type>
+			<name>Two-Handed Sword</name>
+			<specialization></specialization>
+			<modifier>-5</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+	<technique limit="0">
+		<name>Work by Touch</name>
+		<specialization></specialization>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>B233</reference>
+		<default>
+			<type>Skill</type>
+			<name>Lockpicking</name>
+			<specialization></specialization>
+			<modifier>-5</modifier>
+		</default>
+		<notes></notes>
+	</technique>
+</skill_list>

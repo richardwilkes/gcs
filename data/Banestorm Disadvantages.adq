@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<advantage_list unique_id="eshxippb:1pllkd7ixkttt">
+	<advantage>
+		<name>Code of Honor (Arab)</name>
+		<type>Mental</type>
+		<base_points>-10</base_points>
+		<reference>BS185</reference>
+		<notes></notes>
+	</advantage>
+	<advantage>
+		<name>Code of Honor (Elven)</name>
+		<type>Mental</type>
+		<base_points>-10</base_points>
+		<reference>BS185</reference>
+		<notes></notes>
+	</advantage>
+	<advantage>
+		<name>Code of Honor (Halfling)</name>
+		<type>Mental</type>
+		<base_points>-5</base_points>
+		<reference>BS185</reference>
+		<notes></notes>
+	</advantage>
+	<advantage>
+		<name>Code of Honor (Northman's)</name>
+		<type>Mental</type>
+		<base_points>-10</base_points>
+		<reference>BS185</reference>
+		<notes></notes>
+	</advantage>
+	<advantage>
+		<name>Code of Honor (Sahudese)</name>
+		<type>Mental</type>
+		<base_points>-10</base_points>
+		<reference>BS185</reference>
+		<notes></notes>
+	</advantage>
+	<advantage>
+		<name>Code of Honor (Stay's Bought)</name>
+		<type>Mental</type>
+		<base_points>-5</base_points>
+		<reference>BS185</reference>
+		<notes></notes>
+	</advantage>
+	<advantage>
+		<name>Code of Honor (Theatrical)</name>
+		<type>Mental</type>
+		<base_points>-5</base_points>
+		<reference>B127</reference>
+		<notes></notes>
+	</advantage>
+	<advantage>
+		<name>Social Stigma (Barbarian)</name>
+		<type>Social</type>
+		<base_points>-10</base_points>
+		<reference>BS186</reference>
+		<notes>-2 Reaction from others; +2 Reaction by Barbarians</notes>
+	</advantage>
+	<advantage>
+		<name>Social Stigma (Known Criminal)</name>
+		<type>Social</type>
+		<base_points>-5</base_points>
+		<reference>BS186</reference>
+		<notes>-1 Reaction, -2 for cops &amp; judges after public denouncement or visible sign</notes>
+	</advantage>
+	<advantage>
+		<name>Social Stigma (Perceived as an Animal)</name>
+		<type>Social</type>
+		<base_points>-10</base_points>
+		<reference>BS186</reference>
+		<notes>No intellectual respect; killing you is not a crime</notes>
+	</advantage>
+</advantage_list>

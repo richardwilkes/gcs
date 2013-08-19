@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+<project name="gcs" default="installers">
+	<property file="com/trollworks/gcs/Msgs.properties"/>
+
+	<target name="installers" description="Build GCS">
+		<property name="BuildDir" value="${java.io.tmpdir}/${user.name}/gcs_build"/>
+		<property name="JavaBuildDir" value="${BuildDir}/java"/>
+		<property name="InstallDirParent" value="/usr/local"/>
+		<property name="InstallDirLeaf" value="gcs"/>
+		<property name="InstallDir" value="${InstallDirParent}/${InstallDirLeaf}"/>
+
+		<delete dir="${BuildDir}"/>
+		<delete dir="${JavaBuildDir}"/>
+		<delete dir="${InstallDir}"/>
+		<mkdir dir="${InstallDir}"/>
+		<mkdir dir="${JavaBuildDir}"/>
+		<mkdir dir="${BuildDir}"/>
+
+		<!-- Compile the code. -->
+		<unjar src="itext.jar" dest="${JavaBuildDir}"/>
+		<javac srcdir="." destdir="${JavaBuildDir}"
+			includes="com/trollworks/gcs/CSMain.java,com/apple/eawt/*.java"
+			debug="no" optimize="yes" target="1.5" source="1.5"/>
+
+		<!-- Copy the resources over. -->
+		<copy todir="${JavaBuildDir}">
+			<fileset dir="." includes="com/**/*.txt,com/**/*.properties,com/**/*.png,com/**/*.gif,com/**/*.jpg"/>
+		</copy>
+
+		<!-- Create the jar file and the Java 1.1 entry point. -->
+		<javac srcdir="." destdir="${JavaBuildDir}" includes="com/trollworks/gcs/GCS.java"
+				debug="no" optimize="yes" target="1.1" source="1.1"/>
+		<jar destfile="${InstallDir}/GCS.jar" basedir="${JavaBuildDir}" manifest="install/gcs.mf" duplicate="fail"/>
+
+		<!-- Copy the data dir. -->
+		<mkdir dir="${InstallDir}/data"/>
+		<copy todir="${InstallDir}/data">
+			<fileset dir="data" includes="**/*.adq,**/*.eqp,**/*.gct,**/*.html,**/*.skl,**/*.spl"/>
+		</copy>
+
+		<!-- Copy the documentation. -->
+		<mkdir dir="${InstallDir}/docs"/>
+		<copy todir="${InstallDir}/docs">
+			<fileset dir="docs" includes="**/*.html,**/*.png,**/*.gif,**/*.jpg"/>
+		</copy>
+		<copy file="LICENSE.txt" todir="${InstallDir}"/>
+
+		<!-- Copy the Windows launcher -->
+		<copy file="install/windows/${APP_NAME}.exe" todir="${InstallDir}"/>
+
+		<!-- Copy the Windows icons -->
+		<mkdir dir="${InstallDir}/icons"/>
+		<copy todir="${InstallDir}/icons">
+			<fileset dir="install/windows" includes="*.ico"/>
+		</copy>
+
+		<!-- Create the Windows zip file -->
+		<delete file="${user.home}/Desktop/gcs-${APP_VERSION}.zip"/>
+		<zip basedir="${InstallDirParent}" includes="${InstallDirLeaf}/**" destfile="${user.home}/Desktop/gcs-${APP_VERSION}.zip"/>
+
+		<!-- Remove Windows-specific files -->
+		<delete file="${InstallDir}/${APP_NAME}.exe"/>
+		<delete dir="${InstallDir}/icons"/>
+
+		<!-- Create the Unix launcher script. -->
+		<copy file="install/gcs" todir="${InstallDir}"/>
+		<chmod perm="755" file="${InstallDir}/gcs"/>
+
+		<!-- Create the Unix tbz file -->
+		<delete file="${user.home}/Desktop/gcs-${APP_VERSION}.tbz"/>
+		<exec executable="tar" failonerror="yes">
+			<arg value="cjf"/>
+			<arg value="${user.home}/Desktop/gcs-${APP_VERSION}.tbz"/>
+			<arg value="-C"/>
+			<arg value="${InstallDirParent}"/>
+			<arg value="${InstallDirLeaf}"/>
+		</exec>
+
+		<!-- Remove Unix-specific files -->
+		<delete file="${InstallDir}/gcs"/>
+
+		<!-- Create the Mac OS X application bundle. -->
+		<property name="AppBundle" value="${InstallDir}/${APP_NAME}.app/Contents"/>
+		<property name="AppDir" value="${AppBundle}/MacOS"/>
+		<property name="ResourceDir" value="${AppBundle}/Resources"/>
+		<property name="JavaDir" value="${ResourceDir}/Java"/>
+
+		<mkdir dir="${AppDir}"/>
+		<copy file="install/macosx/${APP_NAME}" todir="${AppDir}"/>
+		<chmod perm="755" file="${AppDir}/${APP_NAME}"/>
+
+		<mkdir dir="${JavaDir}"/>
+
+		<mkdir dir="${ResourceDir}"/>
+		<copy todir="${ResourceDir}">
+			<fileset dir="install/macosx" includes="*.icns"/>
+		</copy>
+
+		<echo file="${AppBundle}/PkgInfo" level="error" message="APPLRWGS"/>
+
+		<copy file="install/macosx/Info.plist" todir="${AppBundle}"/>
+		<replace file="${AppBundle}/Info.plist">
+			<replacefilter token="APP_NAME" value="${APP_NAME}"/>
+			<replacefilter token="APP_VERSION" value="${APP_VERSION}"/>
+			<replacefilter token="COPYRIGHT_YEARS" value="${APP_COPYRIGHT_YEARS}"/>
+			<replacefilter token="COPYRIGHT_OWNER" value="${APP_COPYRIGHT_OWNER}"/>
+		</replace>
+
+		<move file="${InstallDir}/GCS.jar" todir="${JavaDir}"/>
+
+		<!-- Create the Mac disk image. -->
+		<delete file="${user.home}/Desktop/gcs-${APP_VERSION}.dmg"/>
+		<chmod perm="755" file="install/macosx/makedmg"/>
+		<exec executable="install/macosx/makedmg" failonerror="yes">
+			<arg value="${APP_NAME} ${APP_VERSION}"/>
+			<arg value="${InstallDir}"/>
+			<arg value="${user.home}/Desktop"/>
+		</exec>
+		<move file="${user.home}/Desktop/${APP_NAME} ${APP_VERSION}.dmg" tofile="${user.home}/Desktop/gcs-${APP_VERSION}.dmg"/>
+	</target>
+
+	<target name="create_win_launcher" description="Create the Windows launcher">
+		<exec executable="rc.exe" failonerror="yes">
+			<arg value="install/windows/gcs.rc"/>
+		</exec>
+		<exec executable="cl.exe" failonerror="yes">
+			<arg value="/GA"/>
+			<arg value="/O1"/>
+			<arg value="/W3"/>
+			<arg value="/Gd"/>
+			<arg value="/IC:/Program Files/Java/jdk1.5.0_10/include"/>
+			<arg value="/IC:/Program Files/Java/jdk1.5.0_10/include/win32"/>
+			<arg value="/nologo"/>
+			<arg value="/TC"/>
+			<arg value="/Feinstall/windows/${APP_NAME}.exe"/>
+			<arg value="install/windows/win_launcher.c"/>
+			<arg value="/ML"/>
+			<arg value="/link"/>
+			<arg value="User32.lib"/>
+			<arg value="Advapi32.lib"/>
+			<arg value="install/windows/gcs.res"/>
+			<arg value="/MACHINE:X86"/>
+		</exec>
+		<delete file="win_launcher.obj"/>
+		<delete file="install/windows/gcs.res"/>
+	</target>
+
+	<target name="create_mac_launcher" description="Create the Mac launcher">
+		<exec executable="gcc" failonerror="yes">
+			<arg value="-O2"/>
+			<arg value="-Wall"/>
+			<arg value="-arch"/>
+			<arg value="i386"/>
+			<arg value="-arch"/>
+			<arg value="ppc"/>
+			<arg value="-I/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Headers"/>
+			<arg value="install/macosx/mac_launcher.c"/>
+			<arg value="-Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk"/>
+			<arg value="-framework"/>
+			<arg value="JavaVM"/>
+			<arg value="-framework"/>
+			<arg value="CoreFoundation"/>
+			<arg value="-o"/>
+			<arg value="install/macosx/${APP_NAME}"/>
+		</exec>
+	</target>
+</project>

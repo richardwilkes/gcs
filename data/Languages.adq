@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<advantage_list unique_id="e7mnn59m:1b94a8u6ent78">
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Physical</type>
+		<base_points>2</base_points>
+		<reference>B24</reference>
+		<notes>Accented with Language Talent</notes>
+		<prereq_list all="yes">
+			<advantage_prereq has="yes">
+				<name compare="is">Language Talent</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+		</prereq_list>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Physical</type>
+		<base_points>4</base_points>
+		<reference>B24</reference>
+		<notes>Native with Language Talent</notes>
+		<prereq_list all="yes">
+			<advantage_prereq has="yes">
+				<name compare="is">Language Talent</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+		</prereq_list>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>4</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Accented, Written: Accented</notes>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>3</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Accented, Written: Broken</notes>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>5</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Accented, Written: Native</notes>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>3</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Accented, Written: Native with Language Talent</notes>
+		<prereq_list all="yes">
+			<advantage_prereq has="yes">
+				<name compare="is">Language Talent</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+		</prereq_list>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>2</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Accented, Written: None</notes>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>1</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Accented, Written: None with Language Talent</notes>
+		<prereq_list all="yes">
+			<advantage_prereq has="yes">
+				<name compare="is">Language Talent</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+		</prereq_list>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>3</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Broken, Written: Accented</notes>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>2</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Broken, Written: Broken</notes>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>4</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Broken, Written: Native</notes>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>1</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Broken, Written: None</notes>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>5</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Native, Written: Accented</notes>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>3</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Native, Written: Accented with Language Talent</notes>
+		<prereq_list all="yes">
+			<advantage_prereq has="yes">
+				<name compare="is">Language Talent</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+		</prereq_list>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>4</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Native, Written: Broken</notes>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>6</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Native, Written: Native</notes>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>3</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Native, Written: None</notes>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>2</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Native, Written: None with Language Talent</notes>
+		<prereq_list all="yes">
+			<advantage_prereq has="yes">
+				<name compare="is">Language Talent</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+		</prereq_list>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>2</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: None, Written: Accented</notes>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>1</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: None, Written: Accented with Language Talent</notes>
+		<prereq_list all="yes">
+			<advantage_prereq has="yes">
+				<name compare="is">Language Talent</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+		</prereq_list>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>1</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: None, Written: Broken</notes>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>3</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: None, Written: Native</notes>
+	</advantage>
+	<advantage>
+		<name>Language: @Language@</name>
+		<type>Mental</type>
+		<base_points>2</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: None, Written: Native with Language Talent</notes>
+		<prereq_list all="yes">
+			<advantage_prereq has="yes">
+				<name compare="is">Language Talent</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+		</prereq_list>
+	</advantage>
+	<advantage>
+		<name>Native Language: @Native Tongue@</name>
+		<type>Mental</type>
+		<base_points>-2</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Native, Written: Broken</notes>
+	</advantage>
+	<advantage>
+		<name>Native Language: @Native Tongue@</name>
+		<type>Mental</type>
+		<reference>B24</reference>
+		<notes>Spoken: Native, Written: Native</notes>
+	</advantage>
+	<advantage>
+		<name>Native Language: @Native Tongue@</name>
+		<type>Mental</type>
+		<base_points>-3</base_points>
+		<reference>B24</reference>
+		<notes>Spoken: Native, Written: None</notes>
+	</advantage>
+	<advantage>
+		<name>Sign Language</name>
+		<type>Mental</type>
+		<base_points>2</base_points>
+		<reference>B25</reference>
+		<notes>Accented</notes>
+	</advantage>
+	<advantage>
+		<name>Sign Language</name>
+		<type>Mental</type>
+		<base_points>1</base_points>
+		<reference>B25</reference>
+		<notes>Broken</notes>
+	</advantage>
+	<advantage>
+		<name>Sign Language</name>
+		<type>Mental</type>
+		<base_points>3</base_points>
+		<reference>B25</reference>
+		<notes>Native</notes>
+	</advantage>
+</advantage_list>
