@@ -42,8 +42,6 @@
 			<dict>
 				<key>apple.laf.useScreenMenuBar</key>
 					<string>true</string>
-				<key>app.home</key>
-					<string>$APP_PACKAGE</string>
 			</dict>
 	</dict>
 	<key>CFBundleDocumentTypes</key>

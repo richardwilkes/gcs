@@ -74,10 +74,12 @@ public class DRBonus extends Bonus {
 		return false;
 	}
 
+	@Override
 	public String getXMLTag() {
 		return TAG_ROOT;
 	}
 
+	@Override
 	public String getKey() {
 		StringBuffer buffer = new StringBuffer();
 
@@ -86,6 +88,7 @@ public class DRBonus extends Bonus {
 		return buffer.toString();
 	}
 
+	@Override
 	public Feature cloneFeature() {
 		return new DRBonus(this);
 	}
@@ -104,6 +107,7 @@ public class DRBonus extends Bonus {
 	 * 
 	 * @param out The XML writer to use.
 	 */
+	@Override
 	public void save(XMLWriter out) {
 		out.startSimpleTagEOL(TAG_ROOT);
 		out.simpleTag(TAG_LOCATION, mLocation.name().toLowerCase());

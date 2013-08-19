@@ -97,6 +97,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 		return mModified;
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		Object source = event.getSource();
 

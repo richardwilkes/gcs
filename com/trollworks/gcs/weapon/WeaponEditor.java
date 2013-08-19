@@ -173,8 +173,9 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 		Dimension size = mDefaults.getMinimumSize();
 		if (size.height < 50) {
 			size.height = 50;
-			mOutline.setMinimumSize(size);
+			mDefaults.setMinimumSize(size);
 		}
+		scrollPanel.setPreferredSize(new Dimension(50, 50));
 		parent.add(scrollPanel);
 	}
 
@@ -195,6 +196,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 		return field;
 	}
 
+	@Override
 	public final void actionPerformed(ActionEvent event) {
 		Object source = event.getSource();
 		if (mAddButton == source) {
@@ -208,6 +210,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 		}
 	}
 
+	@Override
 	public void propertyChange(PropertyChangeEvent event) {
 		if (mRespond) {
 			Object source = event.getSource();

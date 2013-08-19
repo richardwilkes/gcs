@@ -26,7 +26,6 @@ package com.trollworks.gcs.widgets.search;
 import com.trollworks.ttk.utility.UIUtilities;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -56,7 +55,6 @@ class SearchDropDown extends JPanel implements MouseListener {
 	SearchDropDown(ListCellRenderer renderer, JTextField filterField, SearchTarget target) {
 		super(new BorderLayout());
 		setOpaque(true);
-		setBackground(Color.red);
 		mFilterField = filterField;
 		mTarget = target;
 		mModel = new DefaultListModel();
@@ -67,7 +65,7 @@ class SearchDropDown extends JPanel implements MouseListener {
 		add(new JScrollPane(mList), BorderLayout.CENTER);
 	}
 
-	/** @return The currrently selected values. */
+	/** @return The currently selected values. */
 	public Object[] getSelectedValues() {
 		return mList.getSelectedValues();
 	}
@@ -91,24 +89,29 @@ class SearchDropDown extends JPanel implements MouseListener {
 		revalidate();
 	}
 
+	@Override
 	public void mouseClicked(MouseEvent event) {
 		if (event.getClickCount() > 1) {
 			mTarget.searchSelect(getSelectedValues());
 		}
 	}
 
+	@Override
 	public void mouseEntered(MouseEvent event) {
 		// Not used.
 	}
 
+	@Override
 	public void mouseExited(MouseEvent event) {
 		// Not used.
 	}
 
+	@Override
 	public void mousePressed(MouseEvent event) {
 		// Not used.
 	}
 
+	@Override
 	public void mouseReleased(MouseEvent event) {
 		// Not used.
 	}

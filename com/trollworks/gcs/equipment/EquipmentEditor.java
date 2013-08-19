@@ -308,6 +308,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		}
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		adjustForChange(event.getSource());
 	}
@@ -343,14 +344,17 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		mExtWeightField.setText(Numbers.format(value));
 	}
 
+	@Override
 	public void changedUpdate(DocumentEvent event) {
 		descriptionChanged();
 	}
 
+	@Override
 	public void insertUpdate(DocumentEvent event) {
 		descriptionChanged();
 	}
 
+	@Override
 	public void removeUpdate(DocumentEvent event) {
 		descriptionChanged();
 	}

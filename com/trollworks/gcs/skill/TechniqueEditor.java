@@ -378,6 +378,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 		}
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		Object src = event.getSource();
 
@@ -394,6 +395,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 		}
 	}
 
+	@Override
 	public void changedUpdate(DocumentEvent event) {
 		Document doc = event.getDocument();
 		if (doc == mNameField.getDocument()) {
@@ -403,10 +405,12 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 		}
 	}
 
+	@Override
 	public void insertUpdate(DocumentEvent event) {
 		changedUpdate(event);
 	}
 
+	@Override
 	public void removeUpdate(DocumentEvent event) {
 		changedUpdate(event);
 	}

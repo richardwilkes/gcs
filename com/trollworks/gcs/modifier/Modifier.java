@@ -517,6 +517,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 		}
 	}
 
+	@Override
 	public int compareTo(Modifier other) {
 		if (this == other) {
 			return 0;

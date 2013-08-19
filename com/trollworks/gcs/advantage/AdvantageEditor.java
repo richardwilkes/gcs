@@ -434,6 +434,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		}
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		Object src = event.getSource();
 		if (src == mLevelTypeCombo) {
@@ -506,14 +507,17 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		}
 	}
 
+	@Override
 	public void changedUpdate(DocumentEvent event) {
 		nameChanged();
 	}
 
+	@Override
 	public void insertUpdate(DocumentEvent event) {
 		nameChanged();
 	}
 
+	@Override
 	public void removeUpdate(DocumentEvent event) {
 		nameChanged();
 	}
@@ -522,6 +526,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : MSG_NAME_CANNOT_BE_EMPTY);
 	}
 
+	@Override
 	public void propertyChange(PropertyChangeEvent event) {
 		if ("value".equals(event.getPropertyName())) { //$NON-NLS-1$
 			Object src = event.getSource();

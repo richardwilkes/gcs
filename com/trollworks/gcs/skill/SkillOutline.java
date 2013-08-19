@@ -86,18 +86,22 @@ public class SkillOutline extends ListOutline implements Incrementable {
 		SkillColumn.addColumns(this, dataFile);
 	}
 
+	@Override
 	public String getDecrementTitle() {
 		return MSG_DECREMENT;
 	}
 
+	@Override
 	public String getIncrementTitle() {
 		return MSG_INCREMENT;
 	}
 
+	@Override
 	public boolean canDecrement() {
 		return (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) && selectionHasLeafRows(true);
 	}
 
+	@Override
 	public boolean canIncrement() {
 		return (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) && selectionHasLeafRows(false);
 	}
@@ -111,6 +115,7 @@ public class SkillOutline extends ListOutline implements Incrementable {
 		return false;
 	}
 
+	@Override
 	public void decrement() {
 		ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
 		for (Skill skill : new FilteredIterator<Skill>(getModel().getSelectionAsList(), Skill.class)) {
@@ -132,6 +137,7 @@ public class SkillOutline extends ListOutline implements Incrementable {
 		}
 	}
 
+	@Override
 	public void increment() {
 		ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
 		for (Skill skill : new FilteredIterator<Skill>(getModel().getSelectionAsList(), Skill.class)) {

@@ -100,9 +100,11 @@ public enum SkillDefaultType {
 		public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			int best = Integer.MIN_VALUE;
 			for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
-				int level = skill.getLevel(excludes);
-				if (level > best) {
-					best = level;
+				if (skill.getLevel() > best) {
+					int level = skill.getLevel(excludes);
+					if (level > best) {
+						best = level;
+					}
 				}
 			}
 			return finalLevel(skillDefault, best);
@@ -136,9 +138,11 @@ public enum SkillDefaultType {
 		public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			int best = Integer.MIN_VALUE;
 			for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
-				int level = skill.getLevel(excludes);
-				if (level > best) {
-					best = level;
+				if (skill.getLevel() > best) {
+					int level = skill.getLevel(excludes);
+					if (level > best) {
+						best = level;
+					}
 				}
 			}
 			return finalLevel(skillDefault, best != Integer.MIN_VALUE ? best / 2 + 3 + character.getParryBonus() : best);
@@ -172,9 +176,11 @@ public enum SkillDefaultType {
 		public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			int best = Integer.MIN_VALUE;
 			for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
-				int level = skill.getLevel(excludes);
-				if (level > best) {
-					best = level;
+				if (skill.getLevel() > best) {
+					int level = skill.getLevel(excludes);
+					if (level > best) {
+						best = level;
+					}
 				}
 			}
 			return finalLevel(skillDefault, best != Integer.MIN_VALUE ? best / 2 + 3 + character.getBlockBonus() : best);

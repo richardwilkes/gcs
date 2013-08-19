@@ -33,10 +33,12 @@ import java.awt.LayoutManager2;
 class CharacterSheetLayout implements LayoutManager2 {
 	private static final int	MARGIN	= 1;
 
+	@Override
 	public Dimension minimumLayoutSize(Container target) {
 		return preferredLayoutSize(target);
 	}
 
+	@Override
 	public Dimension preferredLayoutSize(Container target) {
 		Insets insets = target.getInsets();
 		Component[] children = target.getComponents();
@@ -72,10 +74,12 @@ class CharacterSheetLayout implements LayoutManager2 {
 		return new Dimension(insets.left + insets.right + width, insets.top + insets.bottom + height);
 	}
 
+	@Override
 	public Dimension maximumLayoutSize(Container target) {
 		return preferredLayoutSize(target);
 	}
 
+	@Override
 	public void layoutContainer(Container target) {
 		Component[] children = target.getComponents();
 		if (children.length > 0) {
@@ -95,26 +99,32 @@ class CharacterSheetLayout implements LayoutManager2 {
 		}
 	}
 
+	@Override
 	public float getLayoutAlignmentX(Container target) {
 		return Component.LEFT_ALIGNMENT;
 	}
 
+	@Override
 	public float getLayoutAlignmentY(Container target) {
 		return Component.TOP_ALIGNMENT;
 	}
 
+	@Override
 	public void addLayoutComponent(Component comp, Object constraints) {
 		// Not used.
 	}
 
+	@Override
 	public void addLayoutComponent(String name, Component comp) {
 		// Not used.
 	}
 
+	@Override
 	public void removeLayoutComponent(Component comp) {
 		// Not used.
 	}
 
+	@Override
 	public void invalidateLayout(Container target) {
 		// Not used.
 	}

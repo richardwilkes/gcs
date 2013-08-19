@@ -111,10 +111,12 @@ public abstract class Bonus implements Feature {
 		return mAmount;
 	}
 
+	@Override
 	public void fillWithNameableKeys(HashSet<String> set) {
 		// Nothing to do.
 	}
 
+	@Override
 	public void applyNameableKeys(HashMap<String, String> map) {
 		// Nothing to do.
 	}

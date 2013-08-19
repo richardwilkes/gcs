@@ -215,6 +215,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 		return field;
 	}
 
+	@Override
 	public void propertyChange(PropertyChangeEvent event) {
 		if ("value".equals(event.getPropertyName())) { //$NON-NLS-1$
 			EditorField field = (EditorField) event.getSource();
@@ -238,6 +239,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 		}
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
 		if (COMPARISON.equals(command)) {

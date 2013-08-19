@@ -34,6 +34,7 @@ import com.trollworks.ttk.layout.FlexSpacer;
 import com.trollworks.ttk.preferences.PreferencePanel;
 import com.trollworks.ttk.preferences.Preferences;
 import com.trollworks.ttk.preferences.PreferencesWindow;
+import com.trollworks.ttk.print.PrintManager;
 import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.utility.App;
 import com.trollworks.ttk.utility.Dice;
@@ -83,6 +84,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private static String			MSG_HTML_TEMPLATE_PICKER;
 	private static String			MSG_HTML_TEMPLATE_OVERRIDE_TOOLTIP;
 	private static String			MSG_SELECT_HTML_TEMPLATE;
+	private static String			MSG_NATIVE_PRINTER;
+	private static String			MSG_NATIVE_PRINTER_TOOLTIP;
 	private static final String		MODULE								= "Sheet";														//$NON-NLS-1$
 	private static final String		OPTIONAL_DICE_RULES					= "UseOptionDiceRules";										//$NON-NLS-1$
 	/** The optional dice rules preference key. */
@@ -115,6 +118,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private JCheckBox				mUseOptionalDiceRules;
 	private JCheckBox				mUseOptionalIQRules;
 	private JCheckBox				mUseOptionalModifierRules;
+	private JCheckBox				mUseNativePrinter;
 
 	static {
 		LocalizedMessages.initialize(SheetPreferences.class);
@@ -241,6 +245,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		row.add(createLabel(MSG_PNG_RESOLUTION_POST, MSG_PNG_RESOLUTION_TOOLTIP, SwingConstants.LEFT));
 		column.add(row);
 
+		mUseNativePrinter = createCheckBox(MSG_NATIVE_PRINTER, MSG_NATIVE_PRINTER_TOOLTIP, PrintManager.useNativeDialogs());
+		column.add(mUseNativePrinter);
+
 		column.add(new FlexSpacer(0, 0, false, true));
 
 		column.apply(this);
@@ -312,6 +319,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		return field;
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		Object source = event.getSource();
 		if (source == mPortrait) {
@@ -347,11 +355,12 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		mUseOptionalDiceRules.setSelected(DEFAULT_OPTIONAL_DICE_RULES);
 		mUseOptionalIQRules.setSelected(DEFAULT_OPTIONAL_IQ_RULES);
 		mUseOptionalModifierRules.setSelected(DEFAULT_OPTIONAL_MODIFIER_RULES);
+		mUseNativePrinter.setSelected(false);
 	}
 
 	@Override
 	public boolean isSetToDefaults() {
-		return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultCampaign().equals("") && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getInitialPoints() == DEFAULT_INITIAL_POINTS && getPNGResolution() == DEFAULT_PNG_RESOLUTION && isHTMLTemplateOverridden() == false && areOptionalDiceRulesUsed() == DEFAULT_OPTIONAL_DICE_RULES && areOptionalIQRulesUsed() == DEFAULT_OPTIONAL_IQ_RULES && areOptionalModifierRulesUsed() == DEFAULT_OPTIONAL_MODIFIER_RULES; //$NON-NLS-1$ //$NON-NLS-2$
+		return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultCampaign().equals("") && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getInitialPoints() == DEFAULT_INITIAL_POINTS && getPNGResolution() == DEFAULT_PNG_RESOLUTION && isHTMLTemplateOverridden() == false && areOptionalDiceRulesUsed() == DEFAULT_OPTIONAL_DICE_RULES && areOptionalIQRulesUsed() == DEFAULT_OPTIONAL_IQ_RULES && areOptionalModifierRulesUsed() == DEFAULT_OPTIONAL_MODIFIER_RULES && !PrintManager.useNativeDialogs(); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	private void setPortrait(String path) {
@@ -363,6 +372,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		mPortrait.setPortrait(image);
 	}
 
+	@Override
 	public void changedUpdate(DocumentEvent event) {
 		Document document = event.getDocument();
 		if (mPlayerName.getDocument() == document) {
@@ -379,14 +389,17 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		adjustResetButton();
 	}
 
+	@Override
 	public void insertUpdate(DocumentEvent event) {
 		changedUpdate(event);
 	}
 
+	@Override
 	public void removeUpdate(DocumentEvent event) {
 		changedUpdate(event);
 	}
 
+	@Override
 	public void itemStateChanged(ItemEvent event) {
 		Object source = event.getSource();
 		if (source == mUseHTMLTemplateOverride) {
@@ -403,6 +416,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 			Preferences.getInstance().setValue(MODULE, OPTIONAL_IQ_RULES, mUseOptionalIQRules.isSelected());
 		} else if (source == mUseOptionalModifierRules) {
 			Preferences.getInstance().setValue(MODULE, OPTIONAL_MODIFIER_RULES, mUseOptionalModifierRules.isSelected());
+		} else if (source == mUseNativePrinter) {
+			PrintManager.useNativeDialogs(mUseNativePrinter.isSelected());
 		}
 		adjustResetButton();
 	}

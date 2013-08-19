@@ -39,11 +39,14 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.text.ParseException;
 import java.util.HashMap;
 
 import javax.swing.JFormattedTextField;
@@ -54,7 +57,7 @@ import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 
 /** A generic field for a page. */
-public class PageField extends JFormattedTextField implements NotifierTarget, PropertyChangeListener {
+public class PageField extends JFormattedTextField implements NotifierTarget, PropertyChangeListener, ActionListener {
 	private GURPSCharacter	mCharacter;
 	private String			mConsumedType;
 	private String			mCustomToolTip;
@@ -130,6 +133,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		}
 		mCharacter.addTarget(this, mConsumedType);
 		addPropertyChangeListener("value", this); //$NON-NLS-1$
+		addActionListener(this);
 
 		// Reset the selection colors back to what is standard for text fields.
 		// This is necessary, since (at least on the Mac) JFormattedTextField
@@ -157,6 +161,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		return super.getToolTipText();
 	}
 
+	@Override
 	public void handleNotification(Object producer, String name, Object data) {
 		setValue(data);
 		invalidate();
@@ -189,6 +194,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		return mConsumedType;
 	}
 
+	@Override
 	public void propertyChange(PropertyChangeEvent event) {
 		if (isEditable()) {
 			mCharacter.setValueForID(mConsumedType, getValue());
@@ -284,7 +290,17 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		return factory != null ? factory : DEFAULT_FACTORY;
 	}
 
+	@Override
 	public int getNotificationPriority() {
 		return 0;
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent event) {
+		try {
+			commitEdit();
+		} catch (ParseException exception) {
+			invalidEdit();
+		}
 	}
 }

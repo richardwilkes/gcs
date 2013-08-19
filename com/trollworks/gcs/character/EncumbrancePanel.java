@@ -111,6 +111,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 		return panel;
 	}
 
+	@Override
 	public void handleNotification(Object producer, String type, Object data) {
 		int current = mCharacter.getEncumbranceLevel();
 		for (int i = 0; i < GURPSCharacter.ENCUMBRANCE_LEVELS; i++) {
@@ -125,6 +126,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 		repaint();
 	}
 
+	@Override
 	public int getNotificationPriority() {
 		return 0;
 	}

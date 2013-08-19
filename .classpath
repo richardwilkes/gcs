@@ -2,9 +2,9 @@
 <classpath>
 	<classpathentry including="com/" kind="src" path=""/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ttk"/>
+	<classpathentry kind="lib" path="/ttk/libraries/Trove.jar" sourcepath="/ttk/libraries/Trove-src.jar"/>
+	<classpathentry kind="lib" path="libraries/iText.jar" sourcepath="libraries/iText-src.jar"/>
+	<classpathentry kind="lib" path="/ttk/libraries/AppleJavaExtensions.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="libraries/iText-2.1.2u.jar" sourcepath="libraries/iText-src-2.1.2u.zip"/>
-	<classpathentry kind="lib" path="libraries/iTextAsian.jar"/>
-	<classpathentry kind="lib" path="/ttk/libraries/trove-2.1.0.jar" sourcepath="/ttk/libraries/trove-src-2.1.0.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

@@ -100,6 +100,7 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
 		add(panel);
 	}
 
+	@Override
 	public void handleNotification(Object producer, String type, Object data) {
 		getBoxedDropShadowBorder().setTitle(getTitle(mCharacter));
 		invalidate();
@@ -110,6 +111,7 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
 		return MessageFormat.format(MSG_POINTS, Numbers.format(character.getTotalPoints()));
 	}
 
+	@Override
 	public int getNotificationPriority() {
 		return 0;
 	}

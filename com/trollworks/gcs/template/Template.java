@@ -454,10 +454,12 @@ public class Template extends DataFile implements StateEditable {
 		}
 	}
 
+	@Override
 	public void storeState(Hashtable<Object, Object> state) {
 		state.put(ID_NOTES, mNotes);
 	}
 
+	@Override
 	public void restoreState(Hashtable<?, ?> state) {
 		String notes = (String) state.get(ID_NOTES);
 		if (notes != null) {

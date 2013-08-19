@@ -104,16 +104,19 @@ public class TextEditor extends JDialog implements ActionListener, WindowFocusLi
 		return button;
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		mSet = event.getSource() == mSetButton;
 		dispose();
 	}
 
+	@Override
 	public void windowGainedFocus(WindowEvent event) {
 		mEditor.requestFocus();
 		removeWindowFocusListener(this);
 	}
 
+	@Override
 	public void windowLostFocus(WindowEvent event) {
 		// Not used.
 	}

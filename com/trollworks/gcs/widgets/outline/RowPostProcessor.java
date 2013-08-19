@@ -58,6 +58,7 @@ public class RowPostProcessor implements Runnable {
 		mMap.put(outline, list);
 	}
 
+	@Override
 	public void run() {
 		for (Outline outline : mMap.keySet()) {
 			ArrayList<ListRow> rows = mMap.get(outline);

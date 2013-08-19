@@ -63,6 +63,7 @@ public class WeaponDescriptionCell implements Cell {
 		return row.getWeapon().getNotes();
 	}
 
+	@Override
 	public void drawCell(Outline outline, Graphics gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
 		WeaponDisplayRow theRow = (WeaponDisplayRow) row;
 		Rectangle insetBounds = new Rectangle(bounds.x + H_MARGIN, bounds.y, bounds.width - H_MARGIN * 2, bounds.height);
@@ -81,6 +82,7 @@ public class WeaponDescriptionCell implements Cell {
 		}
 	}
 
+	@Override
 	public int getPreferredWidth(Row row, Column column) {
 		WeaponDisplayRow theRow = (WeaponDisplayRow) row;
 		int width = TextDrawing.getWidth(UIManager.getFont(GCSFonts.KEY_FIELD), getPrimaryText(theRow));
@@ -96,6 +98,7 @@ public class WeaponDescriptionCell implements Cell {
 		return width + H_MARGIN * 2;
 	}
 
+	@Override
 	public int getPreferredHeight(Row row, Column column) {
 		WeaponDisplayRow theRow = (WeaponDisplayRow) row;
 		Font font = UIManager.getFont(GCSFonts.KEY_FIELD);
@@ -118,6 +121,7 @@ public class WeaponDescriptionCell implements Cell {
 		return TextDrawing.wrapToPixelWidth(font, text, width - (row.getOwner().getIndentWidth(row, column) + H_MARGIN * 2));
 	}
 
+	@Override
 	public int compare(Column column, Row one, Row two) {
 		WeaponDisplayRow r1 = (WeaponDisplayRow) one;
 		WeaponDisplayRow r2 = (WeaponDisplayRow) two;
@@ -129,18 +133,22 @@ public class WeaponDescriptionCell implements Cell {
 		return result;
 	}
 
+	@Override
 	public Cursor getCursor(MouseEvent event, Rectangle bounds, Row row, Column column) {
 		return Cursor.getDefaultCursor();
 	}
 
+	@Override
 	public String getToolTipText(MouseEvent event, Rectangle bounds, Row row, Column column) {
 		return null;
 	}
 
+	@Override
 	public boolean participatesInDynamicRowLayout() {
 		return true;
 	}
 
+	@Override
 	public void mouseClicked(MouseEvent event, Rectangle bounds, Row row, Column column) {
 		// Does nothing
 	}

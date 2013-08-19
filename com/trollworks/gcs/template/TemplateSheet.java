@@ -124,6 +124,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		setDropTarget(new DropTarget(this, this));
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
 
@@ -143,6 +144,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		if (!mSizePending) {
 			mSizePending = true;
 			EventQueue.invokeLater(new Runnable() {
+				@Override
 				public void run() {
 					mSizePending = false;
 					setSize(getPreferredSize());
@@ -187,15 +189,18 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		return mEquipmentOutline;
 	}
 
+	@Override
 	public void enterBatchMode() {
 		mBatchMode = true;
 	}
 
+	@Override
 	public void leaveBatchMode() {
 		mBatchMode = false;
 		validate();
 	}
 
+	@Override
 	public void handleNotification(Object producer, String type, Object data) {
 		if (type.startsWith(Advantage.PREFIX)) {
 			OutlineSyncer.add(mAdvantageOutline);
@@ -212,22 +217,27 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		}
 	}
 
+	@Override
 	public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
 		return orientation == SwingConstants.VERTICAL ? visibleRect.height : visibleRect.width;
 	}
 
+	@Override
 	public Dimension getPreferredScrollableViewportSize() {
 		return getPreferredSize();
 	}
 
+	@Override
 	public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
 		return 10;
 	}
 
+	@Override
 	public boolean getScrollableTracksViewportHeight() {
 		return false;
 	}
 
+	@Override
 	public boolean getScrollableTracksViewportWidth() {
 		return false;
 	}
@@ -235,6 +245,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 	private boolean			mDragWasAcceptable;
 	private ArrayList<Row>	mDragRows;
 
+	@Override
 	public void dragEnter(DropTargetDragEvent dtde) {
 		mDragWasAcceptable = false;
 
@@ -265,6 +276,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		}
 	}
 
+	@Override
 	public void dragOver(DropTargetDragEvent dtde) {
 		if (mDragWasAcceptable) {
 			dtde.acceptDrag(DnDConstants.ACTION_MOVE);
@@ -273,6 +285,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		}
 	}
 
+	@Override
 	public void dropActionChanged(DropTargetDragEvent dtde) {
 		if (mDragWasAcceptable) {
 			dtde.acceptDrag(DnDConstants.ACTION_MOVE);
@@ -281,6 +294,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		}
 	}
 
+	@Override
 	public void drop(DropTargetDropEvent dtde) {
 		dtde.acceptDrop(dtde.getDropAction());
 		((TemplateWindow) getTopLevelAncestor()).addRows(mDragRows);
@@ -288,10 +302,12 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		dtde.dropComplete(true);
 	}
 
+	@Override
 	public void dragExit(DropTargetEvent dte) {
 		mDragRows = null;
 	}
 
+	@Override
 	public int getNotificationPriority() {
 		return 0;
 	}

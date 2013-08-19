@@ -40,6 +40,7 @@ import javax.swing.JComboBox;
 public class SpellBonusEditor extends FeatureEditor {
 	private static String		MSG_ALL_COLLEGES;
 	private static String		MSG_ONE_COLLEGE;
+	private static String		MSG_POWER_SOURCE_NAME;
 	private static String		MSG_SPELL_NAME;
 	private static final String	COLLEGE_TYPE	= "CollegeType";	//$NON-NLS-1$
 
@@ -71,7 +72,8 @@ public class SpellBonusEditor extends FeatureEditor {
 
 		row = new FlexRow();
 		row.setInsets(new Insets(0, 20, 0, 0));
-		row.add(addComboBox(COLLEGE_TYPE, new Object[] { MSG_ALL_COLLEGES, MSG_ONE_COLLEGE, MSG_SPELL_NAME }, bonus.allColleges() ? MSG_ALL_COLLEGES : bonus.matchesCollegeName() ? MSG_ONE_COLLEGE : MSG_SPELL_NAME));
+
+		row.add(addComboBox(COLLEGE_TYPE, new Object[] { MSG_ALL_COLLEGES, MSG_ONE_COLLEGE, MSG_SPELL_NAME, MSG_POWER_SOURCE_NAME }, getMatchText(bonus.allColleges(), bonus.getMatchType())));
 		if (!bonus.allColleges()) {
 			StringCriteria criteria = bonus.getNameCriteria();
 			row.add(addStringCompareCombo(criteria, "")); //$NON-NLS-1$
@@ -80,6 +82,19 @@ public class SpellBonusEditor extends FeatureEditor {
 			row.add(new FlexSpacer(0, 0, true, false));
 		}
 		grid.add(row, 1, 0);
+	}
+
+	private String getMatchText(boolean allColleges, String matchType) {
+		if (allColleges) {
+			return MSG_ALL_COLLEGES;
+		}
+		if (SpellBonus.TAG_COLLEGE_NAME.equals(matchType)) {
+			return MSG_ONE_COLLEGE;
+		}
+		if (SpellBonus.TAG_POWER_SOURCE_NAME.equals(matchType)) {
+			return MSG_POWER_SOURCE_NAME;
+		}
+		return MSG_SPELL_NAME;
 	}
 
 	@Override
@@ -96,24 +111,26 @@ public class SpellBonusEditor extends FeatureEditor {
 					}
 					break;
 				case 1:
-					if (bonus.allColleges() || !bonus.matchesCollegeName()) {
-						CommitEnforcer.forceFocusToAccept();
-						bonus.allColleges(false);
-						bonus.matchesCollegeName(true);
-						rebuild();
-					}
+					adjustMatchType(bonus, SpellBonus.TAG_COLLEGE_NAME);
 					break;
 				case 2:
-					if (bonus.allColleges() || bonus.matchesCollegeName()) {
-						CommitEnforcer.forceFocusToAccept();
-						bonus.allColleges(false);
-						bonus.matchesCollegeName(false);
-						rebuild();
-					}
+					adjustMatchType(bonus, SpellBonus.TAG_SPELL_NAME);
+					break;
+				case 3:
+					adjustMatchType(bonus, SpellBonus.TAG_POWER_SOURCE_NAME);
 					break;
 			}
 		} else {
 			super.actionPerformed(event);
+		}
+	}
+
+	private void adjustMatchType(SpellBonus bonus, String type) {
+		if (bonus.allColleges() || !type.equals(bonus.getMatchType())) {
+			CommitEnforcer.forceFocusToAccept();
+			bonus.allColleges(false);
+			bonus.setMatchType(type);
+			rebuild();
 		}
 	}
 }

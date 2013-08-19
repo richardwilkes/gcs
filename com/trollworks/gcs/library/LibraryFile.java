@@ -88,6 +88,7 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 			mSuggestedName = Path.getLeafName(file.getName(), false);
 			setFile(null);
 			EventQueue.invokeLater(new Runnable() {
+				@Override
 				public void run() {
 					WindowUtils.showWarning(null, MessageFormat.format(MSG_WARNING, file.getName()));
 				}
@@ -224,6 +225,7 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 		}
 	}
 
+	@Override
 	public void dataModificationStateChanged(Object obj, boolean modified) {
 		setModified(mAdvantages.isModified() | mSkills.isModified() | mSpells.isModified() | mEquipment.isModified());
 	}

@@ -84,6 +84,7 @@ public class Defaults extends BandedPanel implements ActionListener {
 		return list;
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		notifyActionListeners();
 	}

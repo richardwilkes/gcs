@@ -368,6 +368,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 		super.dispose();
 	}
 
+	@Override
 	public String[] getAllowedExtensions() {
 		return new String[] { LibraryFile.EXTENSION };
 	}
@@ -377,14 +378,17 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 		return mFile;
 	}
 
+	@Override
 	public File getBackingFile() {
 		return mFile.getFile();
 	}
 
+	@Override
 	public String getPreferredSavePath() {
 		return Path.getFullPath(Path.getParent(Path.getFullPath(getBackingFile())), getTitle());
 	}
 
+	@Override
 	public File[] saveTo(File file) {
 		if (mFile.save(file)) {
 			mFile.setFile(file);
@@ -395,6 +399,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 		return new File[0];
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		Object src = event.getSource();
 		if (src == mToggleLockButton) {
@@ -463,18 +468,22 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 		return mFile.getAdvantageList();
 	}
 
+	@Override
 	public void jumpToSearchField() {
 		mFilterField.requestFocusInWindow();
 	}
 
+	@Override
 	public void enterBatchMode() {
 		// Not needed.
 	}
 
+	@Override
 	public void leaveBatchMode() {
 		// Not needed.
 	}
 
+	@Override
 	public void handleNotification(Object producer, String name, Object data) {
 		if (Advantage.ID_TYPE.equals(name)) {
 			repaint();
@@ -483,10 +492,12 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 		}
 	}
 
+	@Override
 	public boolean isModified() {
 		return mFile.isModified();
 	}
 
+	@Override
 	public boolean isRowFiltered(Row row) {
 		boolean filtered = false;
 		if (row instanceof ListRow) {
@@ -507,14 +518,17 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 		return filtered;
 	}
 
+	@Override
 	public void changedUpdate(DocumentEvent event) {
 		documentChanged();
 	}
 
+	@Override
 	public void insertUpdate(DocumentEvent event) {
 		documentChanged();
 	}
 
+	@Override
 	public void removeUpdate(DocumentEvent event) {
 		documentChanged();
 	}
@@ -547,6 +561,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 		mFilterField.setText(""); //$NON-NLS-1$
 	}
 
+	@Override
 	public int getNotificationPriority() {
 		return 0;
 	}

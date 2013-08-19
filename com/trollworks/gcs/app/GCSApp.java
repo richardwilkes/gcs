@@ -42,7 +42,6 @@ import com.trollworks.ttk.cmdline.CmdLine;
 import com.trollworks.ttk.menu.StdMenuBar;
 import com.trollworks.ttk.menu.window.WindowMenu;
 import com.trollworks.ttk.preferences.FontPreferences;
-import com.trollworks.ttk.preferences.GeneralPreferences;
 import com.trollworks.ttk.preferences.MenuKeyPreferences;
 import com.trollworks.ttk.preferences.PreferencesWindow;
 import com.trollworks.ttk.utility.App;
@@ -89,13 +88,12 @@ public class GCSApp extends App {
 		map.put(Spell.OLD_SPELL_EXTENSION.substring(1), MSG_SPELLS_DESCRIPTION);
 		WindowsRegistry.register("GCS", map, new File(APP_HOME_DIR, "gcs.bat"), new File(APP_HOME_DIR, "GURPS Character Sheet.app/Contents/Resources")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
-		UpdateChecker.check("gcs", "http://gcs.trollworks.com/current.txt", "http://gcs.trollworks.com"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		UpdateChecker.check("gcs", "http://gurpscharactersheet.com/current.txt", "http://gurpscharactersheet.com"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 		ListCollectionThread.get();
 
 		StdMenuBar.configure(FileMenu.class, EditMenu.class, DataMenu.class, ItemMenu.class, WindowMenu.class, HelpMenu.class);
 		SheetPreferences.initialize();
-		PreferencesWindow.addCategory(GeneralPreferences.class);
 		PreferencesWindow.addCategory(SheetPreferences.class);
 		PreferencesWindow.addCategory(FontPreferences.class);
 		PreferencesWindow.addCategory(MenuKeyPreferences.class);

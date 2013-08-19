@@ -79,14 +79,17 @@ public class AttributeBonus extends Bonus {
 		return false;
 	}
 
+	@Override
 	public Feature cloneFeature() {
 		return new AttributeBonus(this);
 	}
 
+	@Override
 	public String getXMLTag() {
 		return TAG_ROOT;
 	}
 
+	@Override
 	public String getKey() {
 		StringBuffer buffer = new StringBuffer();
 
@@ -113,6 +116,7 @@ public class AttributeBonus extends Bonus {
 	 * 
 	 * @param out The XML writer to use.
 	 */
+	@Override
 	public void save(XMLWriter out) {
 		out.startSimpleTagEOL(TAG_ROOT);
 		out.startTag(TAG_ATTRIBUTE);

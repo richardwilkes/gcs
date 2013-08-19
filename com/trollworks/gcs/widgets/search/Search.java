@@ -114,14 +114,17 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 		return hits;
 	}
 
+	@Override
 	public void changedUpdate(DocumentEvent event) {
 		documentChanged();
 	}
 
+	@Override
 	public void insertUpdate(DocumentEvent event) {
 		documentChanged();
 	}
 
+	@Override
 	public void removeUpdate(DocumentEvent event) {
 		documentChanged();
 	}
@@ -132,6 +135,7 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 		adjustHits();
 	}
 
+	@Override
 	public void keyPressed(KeyEvent event) {
 		switch (event.getKeyCode()) {
 			case KeyEvent.VK_UP:
@@ -146,14 +150,17 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 		}
 	}
 
+	@Override
 	public void keyReleased(KeyEvent event) {
 		// Not used.
 	}
 
+	@Override
 	public void keyTyped(KeyEvent event) {
 		// Not used.
 	}
 
+	@Override
 	public void focusGained(FocusEvent event) {
 		if (mFloater == null) {
 			Point where = new Point(0, mFilterField.getHeight() + 1);
@@ -166,6 +173,7 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 		}
 	}
 
+	@Override
 	public void focusLost(FocusEvent event) {
 		removeFloater();
 	}

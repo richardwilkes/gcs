@@ -25,8 +25,7 @@ package com.trollworks.gcs.menu.help;
 
 import com.trollworks.ttk.menu.DynamicMenuEnabler;
 import com.trollworks.ttk.menu.help.AboutCommand;
-import com.trollworks.ttk.menu.help.OpenLocalFileCommand;
-import com.trollworks.ttk.menu.help.OpenURLCommand;
+import com.trollworks.ttk.menu.help.OpenURICommand;
 import com.trollworks.ttk.menu.help.UpdateCommand;
 import com.trollworks.ttk.utility.App;
 import com.trollworks.ttk.utility.LocalizedMessages;
@@ -60,13 +59,13 @@ public class HelpMenu extends JMenu {
 		}
 		add(new JMenuItem(UpdateCommand.INSTANCE));
 		addSeparator();
-		add(new JMenuItem(new OpenLocalFileCommand(MSG_RELEASE_NOTES, new File(App.APP_HOME_DIR, "Release Notes.html")))); //$NON-NLS-1$
-		add(new JMenuItem(new OpenLocalFileCommand(MSG_LICENSE, new File(App.APP_HOME_DIR, "License.html")))); //$NON-NLS-1$
+		add(new JMenuItem(new OpenURICommand(MSG_RELEASE_NOTES, "http://gurpscharactersheet.com/Release_Notes"))); //$NON-NLS-1$
+		add(new JMenuItem(new OpenURICommand(MSG_LICENSE, new File(App.APP_HOME_DIR, "License.html").toURI()))); //$NON-NLS-1$
 		addSeparator();
-		add(new JMenuItem(new OpenURLCommand(MSG_WEB_SITE, "http://gcs.trollworks.com"))); //$NON-NLS-1$
-		add(new JMenuItem(new OpenURLCommand(MSG_MAILING_LISTS, "http://sourceforge.net/mail/?group_id=185516"))); //$NON-NLS-1$
-		add(new JMenuItem(new OpenURLCommand(MSG_FEATURES, "http://sourceforge.net/tracker/?atid=913592&group_id=185516&func=browse"))); //$NON-NLS-1$
-		add(new JMenuItem(new OpenURLCommand(MSG_BUGS, "http://sourceforge.net/tracker/?atid=913589&group_id=185516&func=browse"))); //$NON-NLS-1$
+		add(new JMenuItem(new OpenURICommand(MSG_WEB_SITE, "http://gurpscharactersheet.com"))); //$NON-NLS-1$
+		add(new JMenuItem(new OpenURICommand(MSG_MAILING_LISTS, "http://sourceforge.net/mail/?group_id=185516"))); //$NON-NLS-1$
+		add(new JMenuItem(new OpenURICommand(MSG_FEATURES, "http://sourceforge.net/tracker/?atid=913592&group_id=185516&func=browse"))); //$NON-NLS-1$
+		add(new JMenuItem(new OpenURICommand(MSG_BUGS, "http://sourceforge.net/tracker/?atid=913589&group_id=185516&func=browse"))); //$NON-NLS-1$
 		DynamicMenuEnabler.add(this);
 	}
 }

@@ -71,6 +71,8 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 	private static String		MSG_TECH_LEVEL_REQUIRED_TOOLTIP;
 	private static String		MSG_COLLEGE;
 	private static String		MSG_COLLEGE_TOOLTIP;
+	private static String		MSG_POWER_SOURCE;
+	private static String		MSG_POWER_SOURCE_TOOLTIP;
 	private static String		MSG_CLASS;
 	private static String		MSG_CLASS_ONLY_TOOLTIP;
 	private static String		MSG_CLASS_CANNOT_BE_EMPTY;
@@ -99,6 +101,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 	private static String		MSG_REFERENCE_TOOLTIP;
 	private JTextField			mNameField;
 	private JTextField			mCollegeField;
+	private JTextField			mPowerSourceField;
 	private JTextField			mClassField;
 	private JTextField			mCastingCostField;
 	private JTextField			mMaintenanceField;
@@ -147,6 +150,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		if (notContainer) {
 			createTechLevelFields(wrapper1);
 			mCollegeField = createField(wrapper2, wrapper2, MSG_COLLEGE, spell.getCollege(), MSG_COLLEGE_TOOLTIP, 0);
+			mPowerSourceField = createField(wrapper2, wrapper2, MSG_POWER_SOURCE, spell.getPowerSource(), MSG_POWER_SOURCE_TOOLTIP, 0);
 			mClassField = createCorrectableField(wrapper2, wrapper2, MSG_CLASS, spell.getSpellClass(), MSG_CLASS_ONLY_TOOLTIP);
 			mCastingCostField = createCorrectableField(wrapper2, wrapper2, MSG_CASTING_COST, spell.getCastingCost(), MSG_CASTING_COST_TOOLTIP);
 			mMaintenanceField = createField(wrapper2, wrapper2, MSG_MAINTENANCE_COST, spell.getMaintenance(), MSG_MAINTENANCE_COST_TOOLTIP, 0);
@@ -351,6 +355,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 				modified |= mRow.setTechLevel(mHasTechLevel.isSelected() ? mTechLevel.getText() : null);
 			}
 			modified |= mRow.setCollege(mCollegeField.getText());
+			modified |= mRow.setPowerSource(mPowerSourceField.getText());
 			modified |= mRow.setSpellClass(mClassField.getText());
 			modified |= mRow.setCastingCost(mCastingCostField.getText());
 			modified |= mRow.setMaintenance(mMaintenanceField.getText());
@@ -382,6 +387,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		}
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		Object src = event.getSource();
 		if (src == mHasTechLevel) {
@@ -402,8 +408,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 
 	private void recalculateLevel() {
 		if (mLevelField != null) {
-			SkillLevel level = Spell.calculateLevel(mRow.getCharacter(), getSpellPoints(), isVeryHard(), mCollegeField.getText(), mNameField.getText());
-
+			SkillLevel level = Spell.calculateLevel(mRow.getCharacter(), getSpellPoints(), isVeryHard(), mCollegeField.getText(), mPowerSourceField.getText(), mNameField.getText());
 			mLevelField.setText(getDisplayLevel(level.mLevel, level.mRelativeLevel));
 		}
 	}
@@ -416,6 +421,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		return mDifficultyCombo.getSelectedIndex() == 1;
 	}
 
+	@Override
 	public void changedUpdate(DocumentEvent event) {
 		Document doc = event.getDocument();
 		if (doc == mNameField.getDocument()) {
@@ -431,10 +437,12 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		}
 	}
 
+	@Override
 	public void insertUpdate(DocumentEvent event) {
 		changedUpdate(event);
 	}
 
+	@Override
 	public void removeUpdate(DocumentEvent event) {
 		changedUpdate(event);
 	}

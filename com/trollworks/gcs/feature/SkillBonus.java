@@ -86,14 +86,17 @@ public class SkillBonus extends Bonus {
 		return false;
 	}
 
+	@Override
 	public Feature cloneFeature() {
 		return new SkillBonus(this);
 	}
 
+	@Override
 	public String getXMLTag() {
 		return TAG_ROOT;
 	}
 
+	@Override
 	public String getKey() {
 		StringBuffer buffer = new StringBuffer();
 
@@ -124,6 +127,7 @@ public class SkillBonus extends Bonus {
 	 * 
 	 * @param out The XML writer to use.
 	 */
+	@Override
 	public void save(XMLWriter out) {
 		out.startSimpleTagEOL(TAG_ROOT);
 		mNameCriteria.save(out, TAG_NAME);

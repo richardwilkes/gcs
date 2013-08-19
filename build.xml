@@ -3,7 +3,7 @@
 	<property file="com/trollworks/gcs/app/GCS.properties"/>
 	<property name="BuildDir" value="gcs_build"/>
 	<property name="JavaBuildDir" value="${BuildDir}/java"/>
-	<property name="DistDirName" value="GCS_${APP_VERSION}"/>
+	<property name="DistDirName" value="GCS-${APP_VERSION}"/>
 	<property name="DistBuildDir" value="${BuildDir}/${DistDirName}"/>
 	<property name="AppBundle" value="${DistBuildDir}/${APP_NAME}.app/Contents"/>
 	<property name="AppDir" value="${AppBundle}/MacOS"/>
@@ -14,7 +14,7 @@
 	<target name="clean" description="Clean up after a build">
 		<delete dir="${BuildDir}"/>
 		<delete>
-			<fileset dir="." includes="**/GCS_*.zip"/>
+			<fileset dir="." includes="GCS-*.zip"/>
 		</delete>
 	</target>
 	
@@ -41,27 +41,27 @@
 		</replace>
 
 		<!-- Compile the code. -->
-		<unjar src="libraries/iText-2.1.2u.jar" dest="${JavaBuildDir}"/>
-		<unjar src="libraries/iTextAsian.jar" dest="${JavaBuildDir}"/>
-		<unjar src="../ttk/libraries/trove-2.1.0.jar" dest="${JavaBuildDir}"/>
 		<javac destdir="${JavaBuildDir}" includes="com/trollworks/gcs/app/GCS.java" debug="no" optimize="yes" target="1.6" source="1.6">
+			<classpath>
+				<pathelement location="../ttk/TrollworksToolkit.jar"/>
+				<pathelement location="../ttk/libraries/Trove.jar"/>
+				<pathelement location="../ttk/libraries/AppleJavaExtensions.jar"/>
+				<pathelement location="libraries/iText.jar"/>
+			</classpath>
 			<src path="."/>
-			<src path="../ttk"/>
 		</javac>
-
-		<!-- Remove invalid signing files from iText. -->
-		<delete file="${JavaBuildDir}/META-INF/BRUNO_LO.RSA"/>
-		<delete file="${JavaBuildDir}/META-INF/BRUNO_LO.SF"/>
 
 		<!-- Copy the resources over. -->
 		<copy todir="${JavaBuildDir}">
 			<fileset dir="." includes="com/**/*.txt,com/**/*.properties,com/**/*.png,com/**/*.gif"/>
-			<fileset dir="../ttk" includes="com/**/*.txt,com/**/*.properties,com/**/*.png,com/**/*.gif"/>
 		</copy>
 
-		<!-- Create the jar file and the Java 1.1 entry point. -->
-		<javac srcdir="../ttk" destdir="${JavaBuildDir}" includes="com/trollworks/ttk/Launcher.java" debug="no" optimize="yes" target="1.1" source="1.1"/>
+		<!-- Create the GCS jar file and copy over the various library jar files. -->
 		<jar destfile="${JavaDir}/GCS.jar" basedir="${JavaBuildDir}" manifest="gcs.mf" duplicate="fail"/>
+		<copy file="../ttk/TrollworksToolkit.jar" todir="${JavaDir}"/>
+		<copy file="../ttk/libraries/Trove.jar" todir="${JavaDir}"/>
+		<copy file="../ttk/libraries/AppleJavaExtensions.jar" todir="${JavaDir}"/>
+		<copy file="libraries/iText.jar" todir="${JavaDir}"/>
 
 		<!-- Create the zip file -->
 		<zip destfile="${ZipFile}">

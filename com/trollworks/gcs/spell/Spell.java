@@ -53,6 +53,7 @@ import java.util.List;
 public class Spell extends ListRow {
 	private static final int		CURRENT_VERSION				= 2;
 	private static String			MSG_DEFAULT_NAME;
+	private static String			MSG_DEFAULT_POWER_SOURCE;
 	private static String			MSG_DEFAULT_SPELL_CLASS;
 	private static String			MSG_DEFAULT_CASTING_COST;
 	private static String			MSG_DEFAULT_CASTING_TIME;
@@ -66,6 +67,7 @@ public class Spell extends ListRow {
 	private static final String		TAG_NAME					= "name";										//$NON-NLS-1$
 	private static final String		TAG_TECH_LEVEL				= "tech_level";								//$NON-NLS-1$
 	private static final String		TAG_COLLEGE					= "college";									//$NON-NLS-1$
+	private static final String		TAG_POWER_SOURCE			= "power_source";								//$NON-NLS-1$
 	private static final String		TAG_SPELL_CLASS				= "spell_class";								//$NON-NLS-1$
 	private static final String		TAG_CASTING_COST			= "casting_cost";								//$NON-NLS-1$
 	private static final String		TAG_MAINTENANCE_COST		= "maintenance_cost";							//$NON-NLS-1$
@@ -82,6 +84,8 @@ public class Spell extends ListRow {
 	public static final String		ID_TECH_LEVEL				= PREFIX + "TechLevel";						//$NON-NLS-1$
 	/** The field ID for college changes. */
 	public static final String		ID_COLLEGE					= PREFIX + "College";							//$NON-NLS-1$
+	/** The field ID for power source changes. */
+	public static final String		ID_POWER_SOURCE				= PREFIX + "PowerSource";						//$NON-NLS-1$
 	/** The field ID for spell class changes. */
 	public static final String		ID_SPELL_CLASS				= PREFIX + "Class";							//$NON-NLS-1$
 	/** The field ID for casting cost changes */
@@ -112,6 +116,7 @@ public class Spell extends ListRow {
 	private String					mName;
 	private String					mTechLevel;
 	private String					mCollege;
+	private String					mPowerSource;
 	private String					mSpellClass;
 	private String					mCastingCost;
 	private String					mMaintenance;
@@ -139,6 +144,7 @@ public class Spell extends ListRow {
 		mName = MSG_DEFAULT_NAME;
 		mTechLevel = null;
 		mCollege = EMPTY;
+		mPowerSource = isContainer ? EMPTY : MSG_DEFAULT_POWER_SOURCE;
 		mSpellClass = isContainer ? EMPTY : MSG_DEFAULT_SPELL_CLASS;
 		mCastingCost = isContainer ? EMPTY : MSG_DEFAULT_CASTING_COST;
 		mMaintenance = EMPTY;
@@ -164,6 +170,7 @@ public class Spell extends ListRow {
 		mName = spell.mName;
 		mTechLevel = spell.mTechLevel;
 		mCollege = spell.mCollege;
+		mPowerSource = spell.mPowerSource;
 		mSpellClass = spell.mSpellClass;
 		mCastingCost = spell.mCastingCost;
 		mMaintenance = spell.mMaintenance;
@@ -220,7 +227,7 @@ public class Spell extends ListRow {
 			Spell row = (Spell) obj;
 			if (mIsVeryHard == row.mIsVeryHard && mPoints == row.mPoints && mLevel == row.mLevel && mRelativeLevel == row.mRelativeLevel) {
 				if (mTechLevel == null ? row.mTechLevel == null : mTechLevel.equals(row.mTechLevel)) {
-					if (mName.equals(row.mName) && mCollege.equals(row.mCollege) && mSpellClass.equals(row.mSpellClass) && mReference.equals(row.mReference)) {
+					if (mName.equals(row.mName) && mCollege.equals(row.mCollege) && mPowerSource.equals(row.mPowerSource) && mSpellClass.equals(row.mSpellClass) && mReference.equals(row.mReference)) {
 						if (mCastingCost.equals(row.mCastingCost) && mMaintenance.equals(row.mMaintenance) && mCastingTime.equals(row.mCastingTime) && mDuration.equals(row.mDuration)) {
 							return mWeapons.equals(row.mWeapons);
 						}
@@ -263,6 +270,7 @@ public class Spell extends ListRow {
 		mName = MSG_DEFAULT_NAME;
 		mTechLevel = null;
 		mCollege = EMPTY;
+		mPowerSource = isContainer ? EMPTY : MSG_DEFAULT_POWER_SOURCE;
 		mSpellClass = isContainer ? EMPTY : MSG_DEFAULT_SPELL_CLASS;
 		mCastingCost = isContainer ? EMPTY : MSG_DEFAULT_CASTING_COST;
 		mMaintenance = EMPTY;
@@ -305,6 +313,8 @@ public class Spell extends ListRow {
 		} else if (!canHaveChildren()) {
 			if (TAG_COLLEGE.equals(name)) {
 				mCollege = reader.readText().replace(NEWLINE, SPACE).replace("/ ", "/"); //$NON-NLS-1$ //$NON-NLS-2$
+			} else if (TAG_POWER_SOURCE.equals(name)) {
+				mPowerSource = reader.readText().replace(NEWLINE, SPACE);
 			} else if (TAG_SPELL_CLASS.equals(name)) {
 				mSpellClass = reader.readText().replace(NEWLINE, SPACE);
 			} else if (TAG_CASTING_COST.equals(name)) {
@@ -355,6 +365,7 @@ public class Spell extends ListRow {
 				}
 			}
 			out.simpleTagNotEmpty(TAG_COLLEGE, mCollege);
+			out.simpleTagNotEmpty(TAG_POWER_SOURCE, mPowerSource);
 			out.simpleTagNotEmpty(TAG_SPELL_CLASS, mSpellClass);
 			out.simpleTagNotEmpty(TAG_CASTING_COST, mCastingCost);
 			out.simpleTagNotEmpty(TAG_MAINTENANCE_COST, mMaintenance);
@@ -427,7 +438,7 @@ public class Spell extends ListRow {
 	public void updateLevel(boolean notify) {
 		int savedLevel = mLevel;
 		int savedRelativeLevel = mRelativeLevel;
-		SkillLevel level = calculateLevel(getCharacter(), mPoints, mIsVeryHard, mCollege, mName);
+		SkillLevel level = calculateLevel(getCharacter(), mPoints, mIsVeryHard, mCollege, mPowerSource, mName);
 
 		mLevel = level.mLevel;
 		mRelativeLevel = level.mRelativeLevel;
@@ -444,10 +455,11 @@ public class Spell extends ListRow {
 	 * @param points The number of points spent in the spell.
 	 * @param isVeryHard Whether the spell is "Very Hard" or not.
 	 * @param college The college the spell belongs to.
+	 * @param powerSource The source of power for the spell.
 	 * @param name The name of the spell.
 	 * @return The calculated spell level.
 	 */
-	public static SkillLevel calculateLevel(GURPSCharacter character, int points, boolean isVeryHard, String college, String name) {
+	public static SkillLevel calculateLevel(GURPSCharacter character, int points, boolean isVeryHard, String college, String powerSource, String name) {
 		int relativeLevel = isVeryHard ? -3 : -2;
 		int level;
 
@@ -465,13 +477,23 @@ public class Spell extends ListRow {
 			}
 
 			if (level != -1) {
-				level += relativeLevel + character.getIntegerBonusFor(ID_COLLEGE) + character.getIntegerBonusFor(ID_COLLEGE + "/" + college.toLowerCase()) + character.getSpellComparedIntegerBonusFor(ID_COLLEGE + "*", college) + character.getIntegerBonusFor(ID_NAME) + character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase()) + character.getSpellComparedIntegerBonusFor(ID_NAME + "*", name); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+				level += relativeLevel;
+				level += getSpellBonusesFor(character, ID_COLLEGE, college);
+				level += getSpellBonusesFor(character, ID_POWER_SOURCE, powerSource);
+				level += getSpellBonusesFor(character, ID_NAME, name);
 			}
 		} else {
 			level = -1;
 		}
 
 		return new SkillLevel(level, relativeLevel);
+	}
+
+	private static int getSpellBonusesFor(GURPSCharacter character, String id, String qualifier) {
+		int level = character.getIntegerBonusFor(id);
+		level += character.getIntegerBonusFor(id + '/' + qualifier.toLowerCase());
+		level += character.getSpellComparedIntegerBonusFor(id + '*', qualifier);
+		return level;
 	}
 
 	/** @return The name. */
@@ -505,6 +527,24 @@ public class Spell extends ListRow {
 		if (!mCollege.equals(college)) {
 			mCollege = college;
 			notifySingle(ID_COLLEGE);
+			return true;
+		}
+		return false;
+	}
+
+	/** @return The power source. */
+	public String getPowerSource() {
+		return mPowerSource;
+	}
+
+	/**
+	 * @param powerSource The college to set.
+	 * @return Whether it was changed.
+	 */
+	public boolean setPowerSource(String powerSource) {
+		if (!mPowerSource.equals(powerSource)) {
+			mPowerSource = powerSource;
+			notifySingle(ID_POWER_SOURCE);
 			return true;
 		}
 		return false;
@@ -711,6 +751,7 @@ public class Spell extends ListRow {
 		super.fillWithNameableKeys(set);
 		extractNameables(set, mName);
 		extractNameables(set, mCollege);
+		extractNameables(set, mPowerSource);
 		extractNameables(set, mCastingCost);
 		extractNameables(set, mMaintenance);
 		extractNameables(set, mCastingTime);
@@ -727,6 +768,7 @@ public class Spell extends ListRow {
 		super.applyNameableKeys(map);
 		mName = nameNameables(map, mName);
 		mCollege = nameNameables(map, mCollege);
+		mPowerSource = nameNameables(map, mPowerSource);
 		mSpellClass = nameNameables(map, mSpellClass);
 		mCastingCost = nameNameables(map, mCastingCost);
 		mMaintenance = nameNameables(map, mMaintenance);

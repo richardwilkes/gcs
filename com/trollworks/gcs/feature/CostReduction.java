@@ -125,18 +125,22 @@ public class CostReduction implements Feature {
 		} while (reader.withinMarker(marker));
 	}
 
+	@Override
 	public String getXMLTag() {
 		return TAG_ROOT;
 	}
 
+	@Override
 	public String getKey() {
 		return GURPSCharacter.ATTRIBUTES_PREFIX + mAttribute.name();
 	}
 
+	@Override
 	public Feature cloneFeature() {
 		return new CostReduction(this);
 	}
 
+	@Override
 	public void save(XMLWriter out) {
 		out.startSimpleTagEOL(TAG_ROOT);
 		out.simpleTag(TAG_ATTRIBUTE, mAttribute.name().toLowerCase());
@@ -144,10 +148,12 @@ public class CostReduction implements Feature {
 		out.endTagEOL(TAG_ROOT, true);
 	}
 
+	@Override
 	public void fillWithNameableKeys(HashSet<String> set) {
 		// Nothing to do.
 	}
 
+	@Override
 	public void applyNameableKeys(HashMap<String, String> map) {
 		// Nothing to do.
 	}

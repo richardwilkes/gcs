@@ -102,10 +102,8 @@ public class Skill extends ListRow {
 	private String					mName;
 	private String					mSpecialization;
 	private String					mTechLevel;
-	/** The level. */
-	protected int					mLevel;
-	/** The relative level. */
-	protected int					mRelativeLevel;
+	private int						mLevel;
+	private int						mRelativeLevel;
 	private SkillAttribute			mAttribute;
 	private SkillDifficulty			mDifficulty;
 	/** The points spent. */

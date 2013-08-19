@@ -188,6 +188,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		return field;
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		Object src = event.getSource();
 		if (src == mCostType) {
@@ -358,14 +359,17 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		return Numbers.getLocalizedInteger(mLevelField.getText(), 0);
 	}
 
+	@Override
 	public void changedUpdate(DocumentEvent event) {
 		nameChanged();
 	}
 
+	@Override
 	public void insertUpdate(DocumentEvent event) {
 		nameChanged();
 	}
 
+	@Override
 	public void removeUpdate(DocumentEvent event) {
 		nameChanged();
 	}

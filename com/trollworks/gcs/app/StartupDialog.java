@@ -161,15 +161,18 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 		return button;
 	}
 
+	@Override
 	public void windowGainedFocus(WindowEvent event) {
 		mRecentFilesList.requestFocus();
 		removeWindowFocusListener(this);
 	}
 
+	@Override
 	public void windowLostFocus(WindowEvent event) {
 		// Not used.
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		Object obj = event.getSource();
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -189,6 +192,7 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 		}
 	}
 
+	@Override
 	public void mouseClicked(MouseEvent event) {
 		if (event.getClickCount() > 1 && mRecentFilesList.locationToIndex(event.getPoint()) != -1) {
 			openSelectedRecents();
@@ -207,22 +211,27 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 		}
 	}
 
+	@Override
 	public void mouseEntered(MouseEvent event) {
 		// Not used.
 	}
 
+	@Override
 	public void mouseExited(MouseEvent event) {
 		// Not used.
 	}
 
+	@Override
 	public void mousePressed(MouseEvent event) {
 		// Not used.
 	}
 
+	@Override
 	public void mouseReleased(MouseEvent event) {
 		// Not used.
 	}
 
+	@Override
 	public void keyPressed(KeyEvent event) {
 		char key = event.getKeyChar();
 		if (key == '\n' || key == '\r') {
@@ -230,10 +239,12 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 		}
 	}
 
+	@Override
 	public void keyReleased(KeyEvent event) {
 		// Not used.
 	}
 
+	@Override
 	public void keyTyped(KeyEvent event) {
 		// Not used.
 	}

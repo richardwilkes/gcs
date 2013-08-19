@@ -179,6 +179,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 		return insertAt;
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		Object source = event.getSource();
 		String command = event.getActionCommand();
@@ -208,6 +209,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 
 	private ArrayList<ListRow>	mRowsToEdit;
 
+	@Override
 	public void run() {
 		if (RowEditor.edit(this, mRowsToEdit)) {
 			if (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) {

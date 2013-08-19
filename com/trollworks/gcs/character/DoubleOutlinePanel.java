@@ -68,42 +68,52 @@ public class DoubleOutlinePanel extends JPanel implements LayoutManager2 {
 		(forRight ? mRightPanel : mLeftPanel).setOutlineRowRange(first, last);
 	}
 
+	@Override
 	public void addLayoutComponent(Component comp, Object constraints) {
 		// Not used.
 	}
 
+	@Override
 	public float getLayoutAlignmentX(Container target) {
 		return CENTER_ALIGNMENT;
 	}
 
+	@Override
 	public float getLayoutAlignmentY(Container target) {
 		return CENTER_ALIGNMENT;
 	}
 
+	@Override
 	public void invalidateLayout(Container target) {
 		// Not used.
 	}
 
+	@Override
 	public void addLayoutComponent(String name, Component comp) {
 		// Not used.
 	}
 
+	@Override
 	public void removeLayoutComponent(Component comp) {
 		// Not used.
 	}
 
+	@Override
 	public Dimension preferredLayoutSize(Container parent) {
 		return getLayoutSize(mLeftPanel.getPreferredSize(), mRightPanel.getPreferredSize());
 	}
 
+	@Override
 	public Dimension minimumLayoutSize(Container parent) {
 		return getLayoutSize(mLeftPanel.getMinimumSize(), mRightPanel.getMinimumSize());
 	}
 
+	@Override
 	public Dimension maximumLayoutSize(Container target) {
 		return getLayoutSize(mLeftPanel.getMaximumSize(), mRightPanel.getMaximumSize());
 	}
 
+	@Override
 	public void layoutContainer(Container parent) {
 		Insets insets = getInsets();
 		Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));

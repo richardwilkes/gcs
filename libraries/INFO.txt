@@ -1,4 +1,8 @@
 This directory contains various third-party libraries that GCS makes use of:
 
-iText, version 2.1.2u
-Obtained from http://www.lowagie.com/iText
+iText
+  Description: A PDF library.
+  Files: iText.jar
+         iText-src.jar
+  Version: 2.1.7
+  Obtained from: http://www.lowagie.com/iText

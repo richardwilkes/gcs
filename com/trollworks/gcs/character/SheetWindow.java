@@ -218,6 +218,7 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 		mSheet.rebuild();
 	}
 
+	@Override
 	public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) {
 		return mSheet.print(graphics, pageFormat, pageIndex);
 	}
@@ -341,14 +342,17 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 		row.add(mSearch);
 	}
 
+	@Override
 	public ListCellRenderer getSearchRenderer() {
 		return new RowItemRenderer();
 	}
 
+	@Override
 	public void jumpToSearchField() {
 		mSearch.requestFocusInWindow();
 	}
 
+	@Override
 	public Object[] search(String text) {
 		ArrayList<Object> list = new ArrayList<Object>();
 
@@ -368,6 +372,7 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 		}
 	}
 
+	@Override
 	public void searchSelect(Object[] selection) {
 		HashMap<OutlineModel, ArrayList<Row>> map = new HashMap<OutlineModel, ArrayList<Row>>();
 		Outline primary = null;
@@ -439,19 +444,23 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 			mOutline = outline;
 		}
 
+		@Override
 		public void run() {
 			mOutline.scrollSelectionIntoView();
 		}
 	}
 
+	@Override
 	public boolean isModified() {
 		return mCharacter != null && mCharacter.isModified();
 	}
 
+	@Override
 	public String[] getAllowedExtensions() {
 		return new String[] { SHEET_EXTENSION, PDF_EXTENSION, HTML_EXTENSION, PNG_EXTENSION };
 	}
 
+	@Override
 	public String getPreferredSavePath() {
 		String path = mCharacter.getDescription().getName();
 		if (path.length() == 0) {
@@ -460,10 +469,12 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 		return Path.getFullPath(Path.getParent(Path.getFullPath(getBackingFile())), path);
 	}
 
+	@Override
 	public File getBackingFile() {
 		return mCharacter.getFile();
 	}
 
+	@Override
 	public File[] saveTo(File file) {
 		ArrayList<File> result = new ArrayList<File>();
 		String extension = Path.getExtension(file.getName());

@@ -247,6 +247,7 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 		}
 	}
 
+	@Override
 	public void handleNotification(Object producer, String type, Object data) {
 		if (SheetPreferences.OPTIONAL_IQ_RULES_PREF_KEY.equals(type)) {
 			mCharacter.updateWillAndPerceptionDueToOptionalIQRuleUseChange();
@@ -256,6 +257,7 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 		markForUpdate();
 	}
 
+	@Override
 	public int getNotificationPriority() {
 		return 0;
 	}

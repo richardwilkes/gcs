@@ -88,6 +88,7 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
 		return width;
 	}
 
+	@Override
 	public void layoutContainer(Container parent) {
 		Insets insets = getInsets();
 		Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
@@ -99,14 +100,17 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
 		ColumnUtils.pack(mOutline, bounds.width);
 	}
 
+	@Override
 	public Dimension minimumLayoutSize(Container parent) {
 		return getLayoutSize(mOutline.getMinimumSize());
 	}
 
+	@Override
 	public Dimension preferredLayoutSize(Container parent) {
 		return getLayoutSize(mOutline.getPreferredSize());
 	}
 
+	@Override
 	public Dimension maximumLayoutSize(Container target) {
 		return getLayoutSize(mOutline.getMaximumSize());
 	}
@@ -116,26 +120,32 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
 		return new Dimension(insets.left + insets.right + size.width, insets.top + insets.bottom + size.height + mHeader.getPreferredSize().height);
 	}
 
+	@Override
 	public float getLayoutAlignmentX(Container target) {
 		return CENTER_ALIGNMENT;
 	}
 
+	@Override
 	public float getLayoutAlignmentY(Container target) {
 		return CENTER_ALIGNMENT;
 	}
 
+	@Override
 	public void invalidateLayout(Container target) {
 		// Nothing to do...
 	}
 
+	@Override
 	public void addLayoutComponent(String name, Component comp) {
 		// Nothing to do...
 	}
 
+	@Override
 	public void addLayoutComponent(Component comp, Object constraints) {
 		// Nothing to do...
 	}
 
+	@Override
 	public void removeLayoutComponent(Component comp) {
 		// Nothing to do...
 	}

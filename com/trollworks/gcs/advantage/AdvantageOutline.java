@@ -112,18 +112,22 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
 		}
 	}
 
+	@Override
 	public String getIncrementTitle() {
 		return MSG_INCREMENT;
 	}
 
+	@Override
 	public String getDecrementTitle() {
 		return MSG_DECREMENT;
 	}
 
+	@Override
 	public boolean canIncrement() {
 		return (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) && selectionHasLeveledRows(false);
 	}
 
+	@Override
 	public boolean canDecrement() {
 		return (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) && selectionHasLeveledRows(true);
 	}
@@ -137,6 +141,7 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
 		return false;
 	}
 
+	@Override
 	public void increment() {
 		ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
 		for (Advantage advantage : new FilteredIterator<Advantage>(getModel().getSelectionAsList(), Advantage.class)) {
@@ -155,6 +160,7 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
 		}
 	}
 
+	@Override
 	public void decrement() {
 		ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
 		for (Advantage advantage : new FilteredIterator<Advantage>(getModel().getSelectionAsList(), Advantage.class)) {

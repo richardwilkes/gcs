@@ -102,6 +102,7 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
 		wrapper.add(mFields[which]);
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		Profile description = mCharacter.getDescription();
 		if (mCheckBoxes[GENDER_INDEX].isSelected()) {

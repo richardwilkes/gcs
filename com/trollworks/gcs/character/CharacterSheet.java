@@ -601,6 +601,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		return getComponentCount();
 	}
 
+	@Override
 	public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) {
 		if (pageIndex >= getComponentCount()) {
 			mLastPage = -1;
@@ -623,15 +624,18 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		return PAGE_EXISTS;
 	}
 
+	@Override
 	public void enterBatchMode() {
 		mBatchMode = true;
 	}
 
+	@Override
 	public void leaveBatchMode() {
 		mBatchMode = false;
 		validate();
 	}
 
+	@Override
 	public void handleNotification(Object producer, String type, Object data) {
 		if (SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY.equals(type) || Fonts.FONT_NOTIFICATION_KEY.equals(type)) {
 			markForRebuild();
@@ -673,6 +677,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		}
 	}
 
+	@Override
 	public void drawPageAdornments(Page page, Graphics gc) {
 		Rectangle bounds = page.getBounds();
 		Insets insets = page.getInsets();
@@ -730,6 +735,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		gc.setFont(savedFont);
 	}
 
+	@Override
 	public Insets getPageAdornmentsInsets(Page page) {
 		FontMetrics fm1 = Fonts.getFontMetrics(UIManager.getFont(GCSFonts.KEY_SECONDARY_FOOTER));
 		FontMetrics fm2 = Fonts.getFontMetrics(UIManager.getFont(GCSFonts.KEY_PRIMARY_FOOTER));
@@ -737,6 +743,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		return new Insets(0, 0, fm1.getAscent() + fm1.getDescent() + fm2.getAscent() + fm2.getDescent(), 0);
 	}
 
+	@Override
 	public PrintManager getPageSettings() {
 		return mCharacter.getPageSettings();
 	}
@@ -746,6 +753,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		return mCharacter;
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
 		if (Outline.CMD_POTENTIAL_CONTENT_SIZE_CHANGE.equals(command)) {
@@ -769,6 +777,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		}
 	}
 
+	@Override
 	public void run() {
 		syncRoots();
 		rebuild();
@@ -799,6 +808,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		mRootsToSync.clear();
 	}
 
+	@Override
 	public void stateChanged(ChangeEvent event) {
 		Dimension size = getLayout().preferredLayoutSize(this);
 		if (!getSize().equals(size)) {
@@ -808,22 +818,27 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		}
 	}
 
+	@Override
 	public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
 		return orientation == SwingConstants.VERTICAL ? visibleRect.height : visibleRect.width;
 	}
 
+	@Override
 	public Dimension getPreferredScrollableViewportSize() {
 		return getPreferredSize();
 	}
 
+	@Override
 	public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
 		return 10;
 	}
 
+	@Override
 	public boolean getScrollableTracksViewportHeight() {
 		return false;
 	}
 
+	@Override
 	public boolean getScrollableTracksViewportWidth() {
 		return false;
 	}
@@ -831,6 +846,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private boolean			mDragWasAcceptable;
 	private ArrayList<Row>	mDragRows;
 
+	@Override
 	public void dragEnter(DropTargetDragEvent dtde) {
 		mDragWasAcceptable = false;
 
@@ -861,6 +877,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		}
 	}
 
+	@Override
 	public void dragOver(DropTargetDragEvent dtde) {
 		if (mDragWasAcceptable) {
 			dtde.acceptDrag(DnDConstants.ACTION_MOVE);
@@ -869,6 +886,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		}
 	}
 
+	@Override
 	public void dropActionChanged(DropTargetDragEvent dtde) {
 		if (mDragWasAcceptable) {
 			dtde.acceptDrag(DnDConstants.ACTION_MOVE);
@@ -877,6 +895,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		}
 	}
 
+	@Override
 	public void drop(DropTargetDropEvent dtde) {
 		dtde.acceptDrop(dtde.getDropAction());
 		((SheetWindow) getTopLevelAncestor()).addRows(mDragRows);
@@ -884,6 +903,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		dtde.dropComplete(true);
 	}
 
+	@Override
 	public void dragExit(DropTargetEvent dte) {
 		mDragRows = null;
 	}
@@ -1881,6 +1901,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		}
 	}
 
+	@Override
 	public int getNotificationPriority() {
 		return 0;
 	}

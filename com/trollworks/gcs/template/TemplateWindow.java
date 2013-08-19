@@ -318,14 +318,17 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 		row.add(mSearch);
 	}
 
+	@Override
 	public ListCellRenderer getSearchRenderer() {
 		return new RowItemRenderer();
 	}
 
+	@Override
 	public void jumpToSearchField() {
 		mSearch.requestFocusInWindow();
 	}
 
+	@Override
 	public Object[] search(String text) {
 		ArrayList<Object> list = new ArrayList<Object>();
 
@@ -345,6 +348,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 		}
 	}
 
+	@Override
 	public void searchSelect(Object[] selection) {
 		HashMap<OutlineModel, ArrayList<Row>> map = new HashMap<OutlineModel, ArrayList<Row>>();
 		Outline primary = null;
@@ -397,22 +401,27 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 		}
 	}
 
+	@Override
 	public boolean isModified() {
 		return mTemplate != null && mTemplate.isModified();
 	}
 
+	@Override
 	public String[] getAllowedExtensions() {
 		return new String[] { EXTENSION };
 	}
 
+	@Override
 	public String getPreferredSavePath() {
 		return Path.getFullPath(Path.getParent(Path.getFullPath(getBackingFile())), getTitle());
 	}
 
+	@Override
 	public File getBackingFile() {
 		return mTemplate.getFile();
 	}
 
+	@Override
 	public File[] saveTo(File file) {
 		if (mTemplate.save(file)) {
 			mTemplate.setFile(file);
@@ -432,15 +441,18 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 			mOutline = outline;
 		}
 
+		@Override
 		public void run() {
 			mOutline.scrollSelectionIntoView();
 		}
 	}
 
+	@Override
 	public void handleNotification(Object producer, String name, Object data) {
 		mTemplate.notifySingle(Advantage.ID_LIST_CHANGED, null);
 	}
 
+	@Override
 	public int getNotificationPriority() {
 		return 0;
 	}

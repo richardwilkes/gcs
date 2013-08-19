@@ -64,30 +64,37 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
 		setLayout(this);
 	}
 
+	@Override
 	public float getLayoutAlignmentX(Container target) {
 		return CENTER_ALIGNMENT;
 	}
 
+	@Override
 	public float getLayoutAlignmentY(Container target) {
 		return CENTER_ALIGNMENT;
 	}
 
+	@Override
 	public void invalidateLayout(Container target) {
 		// Nothing to do...
 	}
 
+	@Override
 	public Dimension maximumLayoutSize(Container target) {
 		return getLayoutSizeForOne(mOutline.getMaximumSize());
 	}
 
+	@Override
 	public void addLayoutComponent(Component comp, Object constraints) {
 		// Nothing to do...
 	}
 
+	@Override
 	public void removeLayoutComponent(Component comp) {
 		// Nothing to do...
 	}
 
+	@Override
 	public void layoutContainer(Container parent) {
 		Insets insets = getInsets();
 		Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
@@ -127,10 +134,12 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
 		mOutline.revalidateView();
 	}
 
+	@Override
 	public void addLayoutComponent(String name, Component comp) {
 		// Nothing to do...
 	}
 
+	@Override
 	public Dimension minimumLayoutSize(Container parent) {
 		Dimension size = mOutline.getMinimumSize();
 		int minHeight = TextDrawing.getPreferredSize(UIManager.getFont(GCSFonts.KEY_FIELD), "Mg").height; //$NON-NLS-1$
@@ -140,6 +149,7 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
 		return getLayoutSizeForOne(size);
 	}
 
+	@Override
 	public Dimension preferredLayoutSize(Container parent) {
 		Dimension size = getLayoutSizeForOne(mOutline.getPreferredSize());
 		Dimension min = getMinimumSize();

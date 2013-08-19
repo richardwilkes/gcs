@@ -29,7 +29,7 @@ target=dummy
 while [ "$target" != '' ]; do
 	target=`ls -l "$name" | grep ' ->' | sed 's/.* -> //'`
 	if [ "$target" != '' ]; then
-		name="`dirname "$name"`/$target"
+		name="$target"
 	fi
 done
 
@@ -40,4 +40,4 @@ esac
 
 GCS_HOME="$(cd "$(dirname "$name")"; pwd)"
 GCS_JAR="$GCS_HOME/GURPS Character Sheet.app/Contents/Resources/Java/GCS.jar"
-java -Xmx256M -jar "$GCS_JAR" $*
+java -Xmx256M -jar "$GCS_JAR" "$@"

@@ -384,6 +384,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 		}
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		Object src = event.getSource();
 
@@ -403,14 +404,17 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 		}
 	}
 
+	@Override
 	public void changedUpdate(DocumentEvent event) {
 		nameChanged();
 	}
 
+	@Override
 	public void insertUpdate(DocumentEvent event) {
 		nameChanged();
 	}
 
+	@Override
 	public void removeUpdate(DocumentEvent event) {
 		nameChanged();
 	}

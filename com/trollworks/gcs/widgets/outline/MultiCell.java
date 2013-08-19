@@ -95,6 +95,7 @@ public class MultiCell implements Cell {
 		return modifierNotes.length() == 0 ? notes : modifierNotes + '\n' + notes;
 	}
 
+	@Override
 	public void drawCell(Outline outline, Graphics gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
 		ListRow theRow = (ListRow) row;
 		Rectangle insetBounds = new Rectangle(bounds.x + H_MARGIN, bounds.y, bounds.width - H_MARGIN * 2, bounds.height);
@@ -126,6 +127,7 @@ public class MultiCell implements Cell {
 		return Color.RED;
 	}
 
+	@Override
 	public int getPreferredWidth(Row row, Column column) {
 		ListRow theRow = (ListRow) row;
 		int width = TextDrawing.getWidth(UIManager.getFont(GCSFonts.KEY_FIELD), getPrimaryText(theRow));
@@ -141,6 +143,7 @@ public class MultiCell implements Cell {
 		return mMaxPreferredWidth != -1 && mMaxPreferredWidth < width ? mMaxPreferredWidth : width;
 	}
 
+	@Override
 	public int getPreferredHeight(Row row, Column column) {
 		ListRow theRow = (ListRow) row;
 		Font font = UIManager.getFont(GCSFonts.KEY_FIELD);
@@ -164,24 +167,29 @@ public class MultiCell implements Cell {
 		return TextDrawing.wrapToPixelWidth(font, text, width - (row.getOwner().getIndentWidth(row, column) + H_MARGIN * 2));
 	}
 
+	@Override
 	public int compare(Column column, Row one, Row two) {
 		return NumericStringComparator.caselessCompareStrings(getSortText((ListRow) one), getSortText((ListRow) two));
 	}
 
+	@Override
 	public Cursor getCursor(MouseEvent event, Rectangle bounds, Row row, Column column) {
 		return Cursor.getDefaultCursor();
 	}
 
+	@Override
 	public String getToolTipText(MouseEvent event, Rectangle bounds, Row row, Column column) {
 		ListRow theRow = (ListRow) row;
 
 		return theRow.isSatisfied() ? null : theRow.getReasonForUnsatisfied();
 	}
 
+	@Override
 	public boolean participatesInDynamicRowLayout() {
 		return true;
 	}
 
+	@Override
 	public void mouseClicked(MouseEvent event, Rectangle bounds, Row row, Column column) {
 		// Does nothing
 	}
