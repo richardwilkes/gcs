@@ -51,7 +51,7 @@ import java.util.List;
 
 /** A GURPS Spell. */
 public class Spell extends ListRow {
-	private static final int		CURRENT_VERSION				= 1;
+	private static final int		CURRENT_VERSION				= 2;
 	private static String			MSG_DEFAULT_NAME;
 	private static String			MSG_DEFAULT_SPELL_CLASS;
 	private static String			MSG_DEFAULT_CASTING_COST;

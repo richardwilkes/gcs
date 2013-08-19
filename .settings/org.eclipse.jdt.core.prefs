@@ -1,4 +1,4 @@
-#Fri Nov 16 21:29:01 PST 2007
+#Fri Dec 14 16:40:29 PST 2007
 eclipse.preferences.version=1
 org.eclipse.jdt.core.builder.cleanOutputFolder=clean
 org.eclipse.jdt.core.builder.duplicateResourceTask=warning
@@ -71,6 +71,7 @@ org.eclipse.jdt.core.compiler.problem.possibleAccidentalBooleanAssignment=warnin
 org.eclipse.jdt.core.compiler.problem.potentialNullReference=warning
 org.eclipse.jdt.core.compiler.problem.rawTypeReference=warning
 org.eclipse.jdt.core.compiler.problem.redundantNullCheck=warning
+org.eclipse.jdt.core.compiler.problem.redundantSuperinterface=warning
 org.eclipse.jdt.core.compiler.problem.specialParameterHidingField=enabled
 org.eclipse.jdt.core.compiler.problem.staticAccessReceiver=warning
 org.eclipse.jdt.core.compiler.problem.suppressWarnings=enabled

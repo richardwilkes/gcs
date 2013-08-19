@@ -76,9 +76,12 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 	public static final String		ID_REFERENCE		= MODIFIER_PREFIX + TAG_REFERENCE;
 	/** The ID for list changed change notification. */
 	public static final String		ID_LIST_CHANGED		= MODIFIER_PREFIX + "ListChanged";		//$NON-NLS-1$
-	private String					mName;
-	private String					mReference;
-	private CostType				mCostType;
+	/** The name of the {@link Modifier}. */
+	protected String				mName;
+	/** The page reference for the {@link Modifier}. */
+	protected String				mReference;
+	/** The cost type of the {@link Modifier}. */
+	protected CostType				mCostType;
 	private int						mCost;
 	private double					mCostMultiplier;
 	private int						mLevels;

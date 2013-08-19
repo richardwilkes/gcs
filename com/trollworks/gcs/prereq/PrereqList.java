@@ -24,10 +24,13 @@
 package com.trollworks.gcs.prereq;
 
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.criteria.IntegerCriteria;
+import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.io.xml.XMLNodeType;
 import com.trollworks.gcs.utility.io.xml.XMLReader;
 import com.trollworks.gcs.utility.io.xml.XMLWriter;
+import com.trollworks.gcs.utility.text.NumberUtils;
 import com.trollworks.gcs.widgets.outline.ListRow;
 
 import java.io.IOException;
@@ -44,8 +47,10 @@ public class PrereqList extends Prereq {
 	private static String		MSG_REQUIRES_ANY;
 	/** The XML tag used for the prereq list. */
 	public static final String	TAG_ROOT		= "prereq_list";	//$NON-NLS-1$
+	private static final String	TAG_WHEN_TL		= "when_tl";		//$NON-NLS-1$
 	private static final String	ATTRIBUTE_ALL	= "all";			//$NON-NLS-1$
 	private boolean				mAll;
+	private IntegerCriteria		mWhenTLCriteria;
 	private ArrayList<Prereq>	mPrereqs;
 
 	static {
@@ -61,6 +66,7 @@ public class PrereqList extends Prereq {
 	public PrereqList(PrereqList parent, boolean all) {
 		super(parent);
 		mAll = all;
+		mWhenTLCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, Integer.MIN_VALUE);
 		mPrereqs = new ArrayList<Prereq>();
 	}
 
@@ -73,15 +79,14 @@ public class PrereqList extends Prereq {
 	 */
 	public PrereqList(PrereqList parent, XMLReader reader) throws IOException {
 		this(parent, true);
-
 		String marker = reader.getMarker();
 		mAll = reader.isAttributeSet(ATTRIBUTE_ALL);
-
 		do {
 			if (reader.next() == XMLNodeType.START_TAG) {
 				String name = reader.getName();
-
-				if (TAG_ROOT.equals(name)) {
+				if (TAG_WHEN_TL.equals(name)) {
+					mWhenTLCriteria.load(reader);
+				} else if (TAG_ROOT.equals(name)) {
 					mPrereqs.add(new PrereqList(this, reader));
 				} else if (AdvantagePrereq.TAG_ROOT.equals(name)) {
 					mPrereqs.add(new AdvantagePrereq(this, reader));
@@ -108,8 +113,8 @@ public class PrereqList extends Prereq {
 	 */
 	public PrereqList(PrereqList parent, PrereqList prereqList) {
 		super(parent);
-
 		mAll = prereqList.mAll;
+		mWhenTLCriteria = new IntegerCriteria(prereqList.mWhenTLCriteria);
 		mPrereqs = new ArrayList<Prereq>(prereqList.mPrereqs.size());
 		for (Prereq prereq : prereqList.mPrereqs) {
 			mPrereqs.add(prereq.clone(this));
@@ -122,8 +127,7 @@ public class PrereqList extends Prereq {
 		}
 		if (obj instanceof PrereqList) {
 			PrereqList other = (PrereqList) obj;
-
-			return mAll == other.mAll && mPrereqs.equals(other.mPrereqs);
+			return mAll == other.mAll && mWhenTLCriteria.equals(other.mWhenTLCriteria) && mPrereqs.equals(other.mPrereqs);
 		}
 		return false;
 	}
@@ -137,6 +141,9 @@ public class PrereqList extends Prereq {
 			out.startTag(TAG_ROOT);
 			out.writeAttribute(ATTRIBUTE_ALL, mAll);
 			out.finishTagEOL();
+			if (isWhenTLEnabled(mWhenTLCriteria)) {
+				mWhenTLCriteria.save(out, TAG_WHEN_TL);
+			}
 			for (Prereq prereq : mPrereqs) {
 				prereq.save(out);
 			}
@@ -144,9 +151,30 @@ public class PrereqList extends Prereq {
 		}
 	}
 
+	/** @return The character's TL criteria. */
+	public IntegerCriteria getWhenTLCriteria() {
+		return mWhenTLCriteria;
+	}
+
 	/**
-	 * @return Whether only one criteria in this list has to be met, or all of them must be met.
+	 * @param criteria The {@link IntegerCriteria} to check.
+	 * @return Whether the character's TL criteria check is enabled.
 	 */
+	public static boolean isWhenTLEnabled(IntegerCriteria criteria) {
+		return criteria.getType() != NumericCompareType.AT_LEAST || criteria.getQualifier() != Integer.MIN_VALUE;
+	}
+
+	/**
+	 * @param criteria The {@link IntegerCriteria} to work on.
+	 * @param enabled Whether the character's TL criteria check is enabled.
+	 */
+	public static void setWhenTLEnabled(IntegerCriteria criteria, boolean enabled) {
+		if (isWhenTLEnabled(criteria) != enabled) {
+			criteria.setQualifier(enabled ? 0 : Integer.MIN_VALUE);
+		}
+	}
+
+	/** @return Whether only one criteria in this list has to be met, or all of them must be met. */
 	public boolean requiresAll() {
 		return mAll;
 	}
@@ -201,12 +229,16 @@ public class PrereqList extends Prereq {
 	}
 
 	@Override public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
+		if (isWhenTLEnabled(mWhenTLCriteria)) {
+			if (!mWhenTLCriteria.matches(NumberUtils.getNonLocalizedInteger(character.getDescription().getTechLevel(), 0))) {
+				return true;
+			}
+		}
+
 		int satisfiedCount = 0;
 		int total = mPrereqs.size();
 		boolean requiresAll = requiresAll();
 		StringBuilder localBuilder = builder != null ? new StringBuilder() : null;
-		boolean satisfied;
-
 		for (Prereq prereq : mPrereqs) {
 			if (prereq.satisfied(character, exclude, localBuilder, prefix)) {
 				satisfiedCount++;
@@ -217,13 +249,11 @@ public class PrereqList extends Prereq {
 			localBuilder.append("</ul>"); //$NON-NLS-1$
 		}
 
-		satisfied = satisfiedCount == total || !requiresAll && satisfiedCount > 0;
-
+		boolean satisfied = satisfiedCount == total || !requiresAll && satisfiedCount > 0;
 		if (!satisfied && localBuilder != null && builder != null) {
 			builder.append(MessageFormat.format(requiresAll ? MSG_REQUIRES_ALL : MSG_REQUIRES_ANY, prefix));
 			builder.append(localBuilder.toString());
 		}
-
 		return satisfied;
 	}
 

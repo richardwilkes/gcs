@@ -40,6 +40,7 @@ import com.trollworks.gcs.feature.SkillBonus;
 import com.trollworks.gcs.feature.SpellBonus;
 import com.trollworks.gcs.feature.WeaponBonus;
 import com.trollworks.gcs.modifier.Modifier;
+import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.Technique;
@@ -351,6 +352,7 @@ public class GURPSCharacter extends DataFile {
 		mSkills = new OutlineModel();
 		mSpells = new OutlineModel();
 		mEquipment = new OutlineModel();
+		mTotalPoints = SheetPreferences.getInitialPoints();
 		mStrength = 10;
 		mDexterity = 10;
 		mIntelligence = 10;
@@ -1691,7 +1693,6 @@ public class GURPSCharacter extends DataFile {
 	private void calculateSingleAdvantagePoints(Advantage advantage) {
 		if (advantage.canHaveChildren()) {
 			AdvantageContainerType type = advantage.getContainerType();
-
 			if (type == AdvantageContainerType.GROUP) {
 				for (Advantage child : new FilteredIterator<Advantage>(advantage.getChildren(), Advantage.class)) {
 					calculateSingleAdvantagePoints(child);
@@ -2253,12 +2254,11 @@ public class GURPSCharacter extends DataFile {
 	 * @param excludes The set of {@link Skill}s to exclude from consideration.
 	 * @return The skill if it is present, or <code>null</code> if its not.
 	 */
-	public ArrayList<Skill> getSkillNamed(String name, String specialization, boolean requirePoints, HashSet<Skill> excludes) {
+	public ArrayList<Skill> getSkillNamed(String name, String specialization, boolean requirePoints, HashSet<String> excludes) {
 		ArrayList<Skill> skills = new ArrayList<Skill>();
 		boolean checkSpecialization = specialization != null && specialization.length() > 0;
-
 		for (Skill skill : getSkillsIterator()) {
-			if (excludes == null || !excludes.contains(skill)) {
+			if (excludes == null || !excludes.contains(skill.toString())) {
 				if (!requirePoints || skill.getPoints() > 0) {
 					if (skill.getName().equalsIgnoreCase(name)) {
 						if (!checkSpecialization || skill.getSpecialization().equalsIgnoreCase(specialization)) {
@@ -2282,7 +2282,7 @@ public class GURPSCharacter extends DataFile {
 	 * @param excludes The set of {@link Skill}s to exclude from consideration.
 	 * @return The {@link Skill} that matches with the highest level.
 	 */
-	public Skill getBestSkillNamed(String name, String specialization, boolean requirePoints, HashSet<Skill> excludes) {
+	public Skill getBestSkillNamed(String name, String specialization, boolean requirePoints, HashSet<String> excludes) {
 		Skill best = null;
 		int level = Integer.MIN_VALUE;
 
@@ -2421,7 +2421,6 @@ public class GURPSCharacter extends DataFile {
 				for (Feature feature : list) {
 					if (feature instanceof WeaponBonus) {
 						WeaponBonus bonus = (WeaponBonus) feature;
-
 						if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.getLevelCriteria().matches(rsl)) {
 							bonuses.add(bonus.getAmount());
 						}
@@ -2441,12 +2440,10 @@ public class GURPSCharacter extends DataFile {
 	public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier) {
 		int total = 0;
 		ArrayList<Feature> list = mFeatureMap.get(id.toLowerCase());
-
 		if (list != null) {
 			for (Feature feature : list) {
 				if (feature instanceof SkillBonus) {
 					SkillBonus bonus = (SkillBonus) feature;
-
 					if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier)) {
 						total += bonus.getAmount().getIntegerAdjustedAmount();
 					}
@@ -2464,12 +2461,10 @@ public class GURPSCharacter extends DataFile {
 	public int getSpellComparedIntegerBonusFor(String id, String qualifier) {
 		int total = 0;
 		ArrayList<Feature> list = mFeatureMap.get(id.toLowerCase());
-
 		if (list != null) {
 			for (Feature feature : list) {
 				if (feature instanceof SpellBonus) {
 					SpellBonus bonus = (SpellBonus) feature;
-
 					if (bonus.getNameCriteria().matches(qualifier)) {
 						total += bonus.getAmount().getIntegerAdjustedAmount();
 					}
@@ -2486,7 +2481,6 @@ public class GURPSCharacter extends DataFile {
 	public double getDoubleBonusFor(String id) {
 		double total = 0;
 		ArrayList<Feature> list = mFeatureMap.get(id.toLowerCase());
-
 		if (list != null) {
 			for (Feature feature : list) {
 				if (feature instanceof Bonus && !(feature instanceof WeaponBonus)) {

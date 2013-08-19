@@ -1,7 +1,7 @@
 -		Decrement (Skill/Spell Points, Advantage Level, Equipment Qty)
 =		Increment (Skill/Spell Points, Advantage Level, Equipment Qty)
 ,		Preferences
-'		Toggle equipped state
+'		Rotate Equipment State
 
 A		Select All
 B		New Spell

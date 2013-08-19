@@ -85,6 +85,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	private static String		MSG_NOTES_TOOLTIP;
 	private static String		MSG_CATEGORIES;
 	private static String		MSG_CATEGORIES_TOOLTIP;
+	private static String		MSG_CR;
+	private static String		MSG_CR_ADJ_TOOLTIP;
 	private static String		MSG_TYPE;
 	private static String		MSG_TYPE_TOOLTIP;
 	private static String		MSG_CONTAINER_TYPE;
@@ -123,6 +125,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	private JCheckBox			mExoticType;
 	private JCheckBox			mSupernaturalType;
 	private JComboBox			mContainerTypeCombo;
+	private JComboBox			mCRCombo;
+	private JComboBox			mCRAdjCombo;
 
 	static {
 		LocalizedMessages.initialize(AdvantageEditor.class);
@@ -206,7 +210,25 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		innerGrid.add(new FlexComponent(createLabel(MSG_CATEGORIES, mCategoriesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
 		innerGrid.add(mCategoriesField, ri++, 1);
 
+		mCRCombo = new JComboBox(SelfControlRoll.values());
+		mCRCombo.setSelectedIndex(mRow.getCR().ordinal());
+		UIUtilities.setOnlySize(mCRCombo, mCRCombo.getPreferredSize());
+		mCRCombo.setEnabled(mIsEditable);
+		mCRCombo.addActionListener(this);
+		add(mCRCombo);
+		mCRAdjCombo = new JComboBox(SelfControlRollAdjustments.values());
+		mCRAdjCombo.setToolTipText(MSG_CR_ADJ_TOOLTIP);
+		mCRAdjCombo.setSelectedIndex(mRow.getCRAdj().ordinal());
+		UIUtilities.setOnlySize(mCRAdjCombo, mCRAdjCombo.getPreferredSize());
+		mCRAdjCombo.setEnabled(mIsEditable && mRow.getCR() != SelfControlRoll.NONE_REQUIRED);
+		add(mCRAdjCombo);
+		innerGrid.add(new FlexComponent(createLabel(MSG_CR, mCRCombo), Alignment.RIGHT_BOTTOM, null), ri, 0);
 		FlexRow row = new FlexRow();
+		row.add(mCRCombo);
+		row.add(mCRAdjCombo);
+		innerGrid.add(row, ri++, 1);
+
+		row = new FlexRow();
 		innerGrid.add(row, ri, 1);
 		if (notContainer) {
 			JLabel label = new JLabel(MSG_TYPE, SwingConstants.RIGHT);
@@ -391,6 +413,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 				modified |= mRow.setWeapons(list);
 			}
 		}
+		mRow.setCR(getCR());
+		mRow.setCRAdj(getCRAdj());
 		if (mModifiers.wasModified()) {
 			modified = true;
 			mRow.setModifiers(mModifiers.getModifiers());
@@ -412,6 +436,15 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		if (src == mLevelTypeCombo) {
 			levelTypeChanged();
 		} else if (src == mModifiers) {
+			updatePoints();
+		} else if (src == mCRCombo) {
+			SelfControlRoll cr = getCR();
+			if (cr == SelfControlRoll.NONE_REQUIRED) {
+				mCRAdjCombo.setSelectedItem(SelfControlRollAdjustments.NONE);
+				mCRAdjCombo.setEnabled(false);
+			} else {
+				mCRAdjCombo.setEnabled(mIsEditable);
+			}
 			updatePoints();
 		}
 	}
@@ -437,6 +470,14 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		updatePoints();
 	}
 
+	private SelfControlRoll getCR() {
+		return (SelfControlRoll) mCRCombo.getSelectedItem();
+	}
+
+	private SelfControlRollAdjustments getCRAdj() {
+		return (SelfControlRollAdjustments) mCRAdjCombo.getSelectedItem();
+	}
+
 	private int getLevels() {
 		return ((Integer) mLevelField.getValue()).intValue();
 	}
@@ -453,7 +494,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		if (mModifiers == null) {
 			return 0;
 		}
-		return Advantage.getAdjustedPoints(getBasePoints(), isLeveled() ? getLevels() : 0, getPointsPerLevel(), mModifiers.getAllModifiers());
+		return Advantage.getAdjustedPoints(getBasePoints(), isLeveled() ? getLevels() : 0, getPointsPerLevel(), getCR(), mModifiers.getAllModifiers());
 	}
 
 	private void updatePoints() {

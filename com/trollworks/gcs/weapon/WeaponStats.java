@@ -403,7 +403,7 @@ public abstract class WeaponStats {
 
 		for (SkillDefault skillDefault : getDefaults()) {
 			SkillDefaultType type = skillDefault.getType();
-			int level = type.getSkillLevelFast(character, skillDefault, new HashSet<Skill>());
+			int level = type.getSkillLevelFast(character, skillDefault, new HashSet<String>());
 
 			if (level > best) {
 				best = level;

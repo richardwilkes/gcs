@@ -29,6 +29,7 @@ import com.trollworks.gcs.utility.io.Images;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.io.Path;
 import com.trollworks.gcs.utility.io.Preferences;
+import com.trollworks.gcs.utility.text.NumberUtils;
 import com.trollworks.gcs.widgets.StdFileDialog;
 import com.trollworks.gcs.widgets.UIUtilities;
 import com.trollworks.gcs.widgets.layout.Alignment;
@@ -65,6 +66,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private static String			MSG_CAMPAIGN_TOOLTIP;
 	private static String			MSG_TECH_LEVEL;
 	private static String			MSG_TECH_LEVEL_TOOLTIP;
+	private static String			MSG_INITIAL_POINTS;
+	private static String			MSG_INITIAL_POINTS_TOOLTIP;
 	private static String			MSG_SELECT_PORTRAIT;
 	private static String			MSG_OPTIONAL_DICE_RULES;
 	private static String			MSG_PNG_RESOLUTION_PRE;
@@ -85,9 +88,12 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private static final int[]		DPI								= { 72, 96, 144, 150, 200, 300 };
 	private static final String		USE_HTML_TEMPLATE_OVERRIDE		= "UseHTMLTemplateOverride";								//$NON-NLS-1$
 	private static final String		HTML_TEMPLATE_OVERRIDE			= "HTMLTemplateOverride";									//$NON-NLS-1$
+	private static final String		INITIAL_POINTS_KEY				= "InitialPoints";											//$NON-NLS-1$
+	private static final int		DEFAULT_INITIAL_POINTS			= 100;
 	private JTextField				mPlayerName;
 	private JTextField				mCampaign;
 	private JTextField				mTechLevel;
+	private JTextField				mInitialPoints;
 	private PortraitPreferencePanel	mPortrait;
 	private JComboBox				mPNGResolutionCombo;
 	private JCheckBox				mUseHTMLTemplateOverride;
@@ -141,6 +147,11 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		return Path.normalizeFullPath(Path.getFullPath(System.getProperty("app.home", "."), "data/template.html")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 
+	/** @return The initial points to start a new character with. */
+	public static int getInitialPoints() {
+		return Preferences.getInstance().getIntValue(MODULE, INITIAL_POINTS_KEY, DEFAULT_INITIAL_POINTS);
+	}
+
 	/**
 	 * Creates a new {@link SheetPreferences}.
 	 * 
@@ -153,24 +164,29 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		FlexGrid grid = new FlexGrid();
 		column.add(grid);
 
+		int rowIndex = 0;
 		mPortrait = createPortrait();
 		FlexComponent comp = new FlexComponent(mPortrait, Alignment.LEFT_TOP, Alignment.LEFT_TOP);
-		grid.add(comp, 0, 0, 4, 1);
+		grid.add(comp, rowIndex, 0, 4, 1);
 
-		grid.add(createFlexLabel(MSG_PLAYER, MSG_PLAYER_TOOLTIP), 0, 1);
+		grid.add(createFlexLabel(MSG_PLAYER, MSG_PLAYER_TOOLTIP), rowIndex, 1);
 		mPlayerName = createTextField(MSG_PLAYER_TOOLTIP, Profile.getDefaultPlayerName());
-		grid.add(mPlayerName, 0, 2);
+		grid.add(mPlayerName, rowIndex++, 2);
 
-		grid.add(createFlexLabel(MSG_CAMPAIGN, MSG_CAMPAIGN_TOOLTIP), 1, 1);
+		grid.add(createFlexLabel(MSG_CAMPAIGN, MSG_CAMPAIGN_TOOLTIP), rowIndex, 1);
 		mCampaign = createTextField(MSG_CAMPAIGN_TOOLTIP, Profile.getDefaultCampaign());
-		grid.add(mCampaign, 1, 2);
+		grid.add(mCampaign, rowIndex++, 2);
 
-		grid.add(createFlexLabel(MSG_TECH_LEVEL, MSG_TECH_LEVEL_TOOLTIP), 2, 1);
+		grid.add(createFlexLabel(MSG_TECH_LEVEL, MSG_TECH_LEVEL_TOOLTIP), rowIndex, 1);
 		mTechLevel = createTextField(MSG_TECH_LEVEL_TOOLTIP, Profile.getDefaultTechLevel());
-		grid.add(mTechLevel, 2, 2);
+		grid.add(mTechLevel, rowIndex++, 2);
 
-		grid.add(new FlexSpacer(0, 0, false, true), 3, 1);
-		grid.add(new FlexSpacer(0, 0, true, true), 3, 2);
+		grid.add(createFlexLabel(MSG_INITIAL_POINTS, MSG_INITIAL_POINTS_TOOLTIP), rowIndex, 1);
+		mInitialPoints = createTextField(MSG_INITIAL_POINTS_TOOLTIP, Integer.toString(getInitialPoints()));
+		grid.add(mInitialPoints, rowIndex++, 2);
+
+		grid.add(new FlexSpacer(0, 0, false, true), rowIndex, 1);
+		grid.add(new FlexSpacer(0, 0, true, true), rowIndex, 2);
 
 		addSeparator(column);
 
@@ -287,6 +303,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		mPlayerName.setText(System.getProperty("user.name")); //$NON-NLS-1$
 		mCampaign.setText(""); //$NON-NLS-1$
 		mTechLevel.setText(Profile.DEFAULT_TECH_LEVEL);
+		mInitialPoints.setText(Integer.toString(DEFAULT_INITIAL_POINTS));
 		setPortrait(Profile.DEFAULT_PORTRAIT);
 		for (int i = 0; i < DPI.length; i++) {
 			if (DPI[i] == DEFAULT_PNG_RESOLUTION) {
@@ -299,7 +316,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	}
 
 	@Override public boolean isSetToDefaults() {
-		return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultCampaign().equals("") && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getPNGResolution() == DEFAULT_PNG_RESOLUTION && isHTMLTemplateOverridden() == false && areOptionalDiceRulesUsed() == DEFAULT_OPTIONAL_DICE_RULES; //$NON-NLS-1$ //$NON-NLS-2$
+		return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultCampaign().equals("") && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getInitialPoints() == DEFAULT_INITIAL_POINTS && getPNGResolution() == DEFAULT_PNG_RESOLUTION && isHTMLTemplateOverridden() == false && areOptionalDiceRulesUsed() == DEFAULT_OPTIONAL_DICE_RULES; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	private void setPortrait(String path) {
@@ -319,6 +336,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 			Profile.setDefaultCampaign(mCampaign.getText());
 		} else if (mTechLevel.getDocument() == document) {
 			Profile.setDefaultTechLevel(mTechLevel.getText());
+		} else if (mInitialPoints.getDocument() == document) {
+			Preferences.getInstance().setValue(MODULE, INITIAL_POINTS_KEY, NumberUtils.getInteger(mInitialPoints.getText(), 0));
 		} else if (mHTMLTemplatePath.getDocument() == document) {
 			Preferences.getInstance().setValue(MODULE, HTML_TEMPLATE_OVERRIDE, mHTMLTemplatePath.getText());
 		}

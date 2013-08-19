@@ -52,7 +52,7 @@ import java.util.List;
 
 /** A GURPS Skill. */
 public class Skill extends ListRow {
-	private static final int		CURRENT_VERSION				= 1;
+	private static final int		CURRENT_VERSION				= 2;
 	/** The extension for Skill lists. */
 	public static final String		OLD_SKILL_EXTENSION			= ".skl";										//$NON-NLS-1$
 	/** The default name. */
@@ -194,14 +194,12 @@ public class Skill extends ListRow {
 		updateLevel(false);
 		if (deep) {
 			int count = skill.getChildCount();
-
 			for (int i = 0; i < count; i++) {
 				Row row = skill.getChild(i);
-
-				if (row instanceof Skill) {
-					addChild(new Skill(dataFile, (Skill) row, true, forSheet));
-				} else {
+				if (row instanceof Technique) {
 					addChild(new Technique(dataFile, (Technique) row, forSheet));
+				} else {
+					addChild(new Skill(dataFile, (Skill) row, true, forSheet));
 				}
 			}
 		}
@@ -453,14 +451,14 @@ public class Skill extends ListRow {
 
 	/** @return The calculated skill level. */
 	protected SkillLevel calculateLevelSelf() {
-		return calculateLevel(getCharacter(), this, getName(), getSpecialization(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), new HashSet<Skill>(), getEncumbrancePenaltyMultiplier());
+		return calculateLevel(getCharacter(), this, getName(), getSpecialization(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), new HashSet<String>(), getEncumbrancePenaltyMultiplier());
 	}
 
 	/**
 	 * @param excludes Skills to exclude, other than this one.
 	 * @return The calculated level.
 	 */
-	public int getLevel(HashSet<Skill> excludes) {
+	public int getLevel(HashSet<String> excludes) {
 		return calculateLevel(getCharacter(), this, getName(), getSpecialization(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), excludes, getEncumbrancePenaltyMultiplier()).mLevel;
 	}
 
@@ -617,7 +615,7 @@ public class Skill extends ListRow {
 	 * @param encPenaltyMult The encumbrance penalty multiplier.
 	 * @return The calculated skill level.
 	 */
-	public static SkillLevel calculateLevel(GURPSCharacter character, Skill exclude, String name, String specialization, List<SkillDefault> defaults, SkillAttribute attribute, SkillDifficulty difficulty, int points, HashSet<Skill> excludes, int encPenaltyMult) {
+	public static SkillLevel calculateLevel(GURPSCharacter character, Skill exclude, String name, String specialization, List<SkillDefault> defaults, SkillAttribute attribute, SkillDifficulty difficulty, int points, HashSet<String> excludes, int encPenaltyMult) {
 		int relativeLevel = difficulty.getBaseRelativeLevel();
 		int level = attribute.getBaseSkillLevel(character);
 
@@ -664,7 +662,7 @@ public class Skill extends ListRow {
 		return new SkillLevel(level, relativeLevel);
 	}
 
-	private static SkillDefault getBestDefaultWithPoints(GURPSCharacter character, Skill exclude, Collection<SkillDefault> defaults, SkillAttribute attribute, SkillDifficulty difficulty, HashSet<Skill> excludes) {
+	private static SkillDefault getBestDefaultWithPoints(GURPSCharacter character, Skill exclude, Collection<SkillDefault> defaults, SkillAttribute attribute, SkillDifficulty difficulty, HashSet<String> excludes) {
 		SkillDefault best = getBestDefault(character, exclude, defaults, excludes);
 		if (best != null) {
 			int baseLine = attribute.getBaseSkillLevel(character) + difficulty.getBaseRelativeLevel();
@@ -688,12 +686,12 @@ public class Skill extends ListRow {
 		return best;
 	}
 
-	private static SkillDefault getBestDefault(GURPSCharacter character, Skill exclude, Collection<SkillDefault> defaults, HashSet<Skill> excludes) {
+	private static SkillDefault getBestDefault(GURPSCharacter character, Skill exclude, Collection<SkillDefault> defaults, HashSet<String> excludes) {
 		if (character != null) {
 			if (!defaults.isEmpty()) {
 				int best = Integer.MIN_VALUE;
 				SkillDefault bestSkill = null;
-				excludes.add(exclude);
+				excludes.add(exclude.toString());
 				for (SkillDefault skillDefault : defaults) {
 					int level = skillDefault.getType().getSkillLevel(character, skillDefault, excludes);
 					if (level > best) {

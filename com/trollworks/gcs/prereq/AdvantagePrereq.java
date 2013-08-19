@@ -128,9 +128,7 @@ public class AdvantagePrereq extends NameLevelPrereq {
 					notes = modifierNotes + '\n' + notes;
 				}
 				if (mNotesCriteria.matches(notes)) {
-
 					int levels = advantage.getLevels();
-
 					if (levels < 0) {
 						levels = 0;
 					}

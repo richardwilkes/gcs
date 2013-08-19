@@ -24,8 +24,10 @@
 package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.advantage.Advantage;
+import com.trollworks.gcs.advantage.SelfControlRoll;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.text.TextUtility;
+import com.trollworks.gcs.widgets.UIUtilities;
 import com.trollworks.gcs.widgets.WindowUtils;
 import com.trollworks.gcs.widgets.layout.ColumnLayout;
 
@@ -38,6 +40,7 @@ import java.util.Arrays;
 
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -57,6 +60,7 @@ public class ModifierEnabler extends JPanel {
 	private Advantage		mAdvantage;
 	private JCheckBox[]		mEnabled;
 	private Modifier[]		mModifiers;
+	private JComboBox		mCRCombo;
 
 	static {
 		LocalizedMessages.initialize(ModifierEnabler.class);
@@ -64,10 +68,10 @@ public class ModifierEnabler extends JPanel {
 
 	/**
 	 * Brings up a modal dialog that allows {@link Modifier}s to be enabled or disabled for the
-	 * specified {@Link CMAdvantage}s.
+	 * specified {@link Advantage}s.
 	 * 
 	 * @param comp The component to open the dialog over.
-	 * @param advantages The {@Link CMAdvantage}s to process.
+	 * @param advantages The {@link Advantage}s to process.
 	 * @return Whether anything was modified.
 	 */
 	static public boolean process(Component comp, ArrayList<Advantage> advantages) {
@@ -76,7 +80,7 @@ public class ModifierEnabler extends JPanel {
 		int count;
 
 		for (Advantage advantage : advantages) {
-			if (!advantage.getModifiers().isEmpty()) {
+			if (advantage.getCR() != SelfControlRoll.NONE_REQUIRED || !advantage.getModifiers().isEmpty()) {
 				list.add(advantage);
 			}
 		}
@@ -115,7 +119,6 @@ public class ModifierEnabler extends JPanel {
 		top.setBorder(new EmptyBorder(0, 0, 15, 0));
 		if (remaining > 0) {
 			String msg;
-
 			if (remaining == 1) {
 				msg = MSG_MODIFIER_ONE_REMAINING;
 			} else {
@@ -132,6 +135,19 @@ public class ModifierEnabler extends JPanel {
 
 	private Container createCenter() {
 		JPanel wrapper = new JPanel(new ColumnLayout());
+		SelfControlRoll cr = mAdvantage.getCR();
+		if (cr != SelfControlRoll.NONE_REQUIRED) {
+			ArrayList<String> possible = new ArrayList<String>();
+			for (SelfControlRoll one : SelfControlRoll.values()) {
+				if (one != SelfControlRoll.NONE_REQUIRED) {
+					possible.add(one.getDescriptionWithCost());
+				}
+			}
+			mCRCombo = new JComboBox(possible.toArray(new String[possible.size()]));
+			mCRCombo.setSelectedItem(cr.getDescriptionWithCost());
+			UIUtilities.setOnlySize(mCRCombo, mCRCombo.getPreferredSize());
+			wrapper.add(mCRCombo);
+		}
 
 		mModifiers = mAdvantage.getModifiers().toArray(new Modifier[0]);
 		Arrays.sort(mModifiers);
@@ -145,6 +161,17 @@ public class ModifierEnabler extends JPanel {
 	}
 
 	private void applyChanges() {
+		if (mAdvantage.getCR() != SelfControlRoll.NONE_REQUIRED) {
+			Object selectedItem = mCRCombo.getSelectedItem();
+			for (SelfControlRoll one : SelfControlRoll.values()) {
+				if (one != SelfControlRoll.NONE_REQUIRED) {
+					if (selectedItem.equals(one.getDescriptionWithCost())) {
+						mAdvantage.setCR(one);
+						break;
+					}
+				}
+			}
+		}
 		for (int i = 0; i < mModifiers.length; i++) {
 			mModifiers[i].setEnabled(mEnabled[i].isSelected());
 		}

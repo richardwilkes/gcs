@@ -100,7 +100,7 @@ public class Technique extends Skill {
 	private static int getBaseLevel(GURPSCharacter character, SkillDefault def) {
 		SkillDefaultType type = def.getType();
 		if (type == SkillDefaultType.Skill) {
-			Skill skill = character != null ? character.getBestSkillNamed(def.getName(), def.getSpecialization(), false, new HashSet<Skill>()) : null;
+			Skill skill = character != null ? character.getBestSkillNamed(def.getName(), def.getSpecialization(), false, new HashSet<String>()) : null;
 			return skill != null ? skill.getLevel() : Integer.MIN_VALUE;
 		}
 		// Take the modifier back out, as we wanted the base, not the final value.
@@ -225,7 +225,7 @@ public class Technique extends Skill {
 	 */
 	public boolean satisfied(StringBuilder builder, String prefix) {
 		if (mDefault.getType().isSkillBased()) {
-			Skill skill = getCharacter().getBestSkillNamed(mDefault.getName(), mDefault.getSpecialization(), true, new HashSet<Skill>());
+			Skill skill = getCharacter().getBestSkillNamed(mDefault.getName(), mDefault.getSpecialization(), true, new HashSet<String>());
 			boolean satisfied = skill != null && skill.getPoints() > 0;
 			if (!satisfied && builder != null) {
 				if (skill != null) {

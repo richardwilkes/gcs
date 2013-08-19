@@ -50,11 +50,21 @@ public enum AdvantageContainerType {
 		@Override public String toString() {
 			return MSG_RACE;
 		}
+	},
+	/**
+	 * The alternative abilities grouping container type. It behaves similar to a {@link #METATRAIT},
+	 * but applies the rules for alternative abilities (see B61 and P11) to its immediate children.
+	 */
+	ALTERNATIVE_ABILITIES {
+		@Override public String toString() {
+			return MSG_ALTERNATIVE_ABILITIES;
+		}
 	};
 
 	static String	MSG_GROUP;
 	static String	MSG_METATRAIT;
 	static String	MSG_RACE;
+	static String	MSG_ALTERNATIVE_ABILITIES;
 
 	static {
 		LocalizedMessages.initialize(AdvantageContainerType.class);

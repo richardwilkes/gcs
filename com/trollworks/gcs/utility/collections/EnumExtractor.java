@@ -40,7 +40,6 @@ public class EnumExtractor {
 	// on that where this class is actually used...
 	@SuppressWarnings("unchecked") public static final Enum extract(String buffer, Enum<?>[] values, Enum<?> defaultValue) {
 		Enum<?> value = extract(buffer, values);
-
 		return value != null ? value : defaultValue;
 	}
 

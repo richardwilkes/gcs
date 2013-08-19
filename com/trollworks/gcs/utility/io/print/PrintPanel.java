@@ -34,7 +34,6 @@ import com.trollworks.gcs.widgets.layout.FlexGrid;
 import com.trollworks.gcs.widgets.layout.FlexRow;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.print.PrintService;
 import javax.print.attribute.PrintRequestAttributeSet;
@@ -47,7 +46,7 @@ import javax.swing.SwingConstants;
 import javax.swing.text.DefaultFormatterFactory;
 
 /** Provides the basic print panel. */
-public class PrintPanel extends PageSetupPanel implements ActionListener {
+public class PrintPanel extends PageSetupPanel {
 	private static String	MSG_COPIES;
 	private static String	MSG_PAGE_RANGE;
 	private static String	MSG_ALL;

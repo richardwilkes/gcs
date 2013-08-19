@@ -96,7 +96,7 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 		mSheet = sheet;
 		mCharacter = sheet.getCharacter();
 		mNeedUpdate = true;
-		mCharacter.addTarget(this, GURPSCharacter.ID_STRENGTH, GURPSCharacter.ID_DEXTERITY, GURPSCharacter.ID_INTELLIGENCE, GURPSCharacter.ID_HEALTH, Spell.ID_NAME, Spell.ID_COLLEGE, Spell.ID_POINTS, Spell.ID_LIST_CHANGED, Skill.ID_NAME, Skill.ID_SPECIALIZATION, Skill.ID_LEVEL, Skill.ID_RELATIVE_LEVEL, Skill.ID_ENCUMBRANCE_PENALTY, Skill.ID_POINTS, Skill.ID_TECH_LEVEL, Skill.ID_LIST_CHANGED, Advantage.ID_NAME, Advantage.ID_LEVELS, Advantage.ID_LIST_CHANGED, Equipment.ID_EXTENDED_WEIGHT, Equipment.ID_STATE, Equipment.ID_QUANTITY, Equipment.ID_LIST_CHANGED);
+		mCharacter.addTarget(this, Profile.ID_TECH_LEVEL, GURPSCharacter.ID_STRENGTH, GURPSCharacter.ID_DEXTERITY, GURPSCharacter.ID_INTELLIGENCE, GURPSCharacter.ID_HEALTH, Spell.ID_NAME, Spell.ID_COLLEGE, Spell.ID_POINTS, Spell.ID_LIST_CHANGED, Skill.ID_NAME, Skill.ID_SPECIALIZATION, Skill.ID_LEVEL, Skill.ID_RELATIVE_LEVEL, Skill.ID_ENCUMBRANCE_PENALTY, Skill.ID_POINTS, Skill.ID_TECH_LEVEL, Skill.ID_LIST_CHANGED, Advantage.ID_NAME, Advantage.ID_LEVELS, Advantage.ID_LIST_CHANGED, Equipment.ID_EXTENDED_WEIGHT, Equipment.ID_STATE, Equipment.ID_QUANTITY, Equipment.ID_LIST_CHANGED);
 		MAP.put(mCharacter, this);
 	}
 
@@ -164,7 +164,6 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 
 			if (row instanceof Equipment) {
 				Equipment equipment = (Equipment) row;
-
 				if (!equipment.isEquipped() || equipment.getQuantity() < 1) {
 					// Don't allow unequipped equipment to affect the character
 					continue;
@@ -172,35 +171,18 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 			}
 
 			for (Feature feature : row.getFeatures()) {
-				String key = feature.getKey().toLowerCase();
-				ArrayList<Feature> list = map.get(key);
-
-				if (list == null) {
-					list = new ArrayList<Feature>(1);
-					map.put(key, list);
-				}
-				if (row instanceof Advantage && feature instanceof Bonus) {
-					((Bonus) feature).getAmount().setLevel(((Advantage) row).getLevels());
-				}
-				list.add(feature);
+				processFeature(map, row instanceof Advantage ? ((Advantage) row).getLevels() : 0, feature);
 			}
 
 			if (row instanceof Advantage) {
 				Advantage advantage = (Advantage) row;
+				for (Bonus bonus : advantage.getCRAdj().getBonuses(advantage.getCR())) {
+					processFeature(map, 0, bonus);
+				}
 				for (Modifier modifier : advantage.getModifiers()) {
 					if (modifier.isEnabled()) {
 						for (Feature feature : modifier.getFeatures()) {
-							String key = feature.getKey().toLowerCase();
-							ArrayList<Feature> list = map.get(key);
-
-							if (list == null) {
-								list = new ArrayList<Feature>(1);
-								map.put(key, list);
-							}
-							if (feature instanceof Bonus) {
-								((Bonus) feature).getAmount().setLevel(modifier.getLevels());
-							}
-							list.add(feature);
+							processFeature(map, modifier.getLevels(), feature);
 						}
 					}
 				}
@@ -208,6 +190,19 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 
 			checkIfUpdated();
 		}
+	}
+
+	private void processFeature(HashMap<String, ArrayList<Feature>> map, int levels, Feature feature) {
+		String key = feature.getKey().toLowerCase();
+		ArrayList<Feature> list = map.get(key);
+		if (list == null) {
+			list = new ArrayList<Feature>(1);
+			map.put(key, list);
+		}
+		if (feature instanceof Bonus) {
+			((Bonus) feature).getAmount().setLevel(levels);
+		}
+		list.add(feature);
 	}
 
 	private void checkIfUpdated() throws Exception {

@@ -25,7 +25,6 @@ package com.trollworks.gcs.weapon;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
-import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
 import com.trollworks.gcs.utility.io.xml.XMLReader;
@@ -192,7 +191,7 @@ public class MeleeWeaponStats extends WeaponStats {
 
 		for (SkillDefault skillDefault : getDefaults()) {
 			SkillDefaultType type = skillDefault.getType();
-			int level = type.getSkillLevelFast(character, skillDefault, new HashSet<Skill>());
+			int level = type.getSkillLevelFast(character, skillDefault, new HashSet<String>());
 
 			if (level > best) {
 				best = level;

@@ -53,70 +53,75 @@ import java.util.List;
 
 /** A GURPS Advantage. */
 public class Advantage extends ListRow {
-	private static final int		CURRENT_VERSION				= 1;
-	private static String			MSG_DEFAULT_NAME;
+	private static final int			CURRENT_VERSION				= 2;
+	private static String				MSG_DEFAULT_NAME;
 	/** The extension for the old Advantage lists. */
-	public static final String		OLD_ADVANTAGE_EXTENSION		= ".adq";											//$NON-NLS-1$
+	public static final String			OLD_ADVANTAGE_EXTENSION		= ".adq";											//$NON-NLS-1$
 	/** The XML tag used for items. */
-	public static final String		TAG_ADVANTAGE				= "advantage";										//$NON-NLS-1$
+	public static final String			TAG_ADVANTAGE				= "advantage";										//$NON-NLS-1$
 	/** The XML tag used for containers. */
-	public static final String		TAG_ADVANTAGE_CONTAINER		= "advantage_container";							//$NON-NLS-1$
-	private static final String		TAG_REFERENCE				= "reference";										//$NON-NLS-1$
-	private static final String		TAG_OLD_POINTS				= "points";										//$NON-NLS-1$
-	private static final String		TAG_BASE_POINTS				= "base_points";									//$NON-NLS-1$
-	private static final String		TAG_POINTS_PER_LEVEL		= "points_per_level";								//$NON-NLS-1$
-	private static final String		TAG_LEVELS					= "levels";										//$NON-NLS-1$
-	private static final String		TAG_TYPE					= "type";											//$NON-NLS-1$
-	private static final String		TAG_NAME					= "name";											//$NON-NLS-1$
-	private static final String		TYPE_MENTAL					= "Mental";										//$NON-NLS-1$
-	private static final String		TYPE_PHYSICAL				= "Physical";										//$NON-NLS-1$
-	private static final String		TYPE_SOCIAL					= "Social";										//$NON-NLS-1$
-	private static final String		TYPE_EXOTIC					= "Exotic";										//$NON-NLS-1$
-	private static final String		TYPE_SUPERNATURAL			= "Supernatural";									//$NON-NLS-1$
+	public static final String			TAG_ADVANTAGE_CONTAINER		= "advantage_container";							//$NON-NLS-1$
+	private static final String			TAG_REFERENCE				= "reference";										//$NON-NLS-1$
+	private static final String			TAG_OLD_POINTS				= "points";										//$NON-NLS-1$
+	private static final String			TAG_BASE_POINTS				= "base_points";									//$NON-NLS-1$
+	private static final String			TAG_POINTS_PER_LEVEL		= "points_per_level";								//$NON-NLS-1$
+	private static final String			TAG_LEVELS					= "levels";										//$NON-NLS-1$
+	private static final String			TAG_TYPE					= "type";											//$NON-NLS-1$
+	private static final String			TAG_NAME					= "name";											//$NON-NLS-1$
+	private static final String			TAG_CR						= "cr";											//$NON-NLS-1$
+	private static final String			TYPE_MENTAL					= "Mental";										//$NON-NLS-1$
+	private static final String			TYPE_PHYSICAL				= "Physical";										//$NON-NLS-1$
+	private static final String			TYPE_SOCIAL					= "Social";										//$NON-NLS-1$
+	private static final String			TYPE_EXOTIC					= "Exotic";										//$NON-NLS-1$
+	private static final String			TYPE_SUPERNATURAL			= "Supernatural";									//$NON-NLS-1$
 	/** The prefix used in front of all IDs for the advantages. */
-	public static final String		PREFIX						= GURPSCharacter.CHARACTER_PREFIX + "advantage.";	//$NON-NLS-1$
+	public static final String			PREFIX						= GURPSCharacter.CHARACTER_PREFIX + "advantage.";	//$NON-NLS-1$
 	/** The field ID for type changes. */
-	public static final String		ID_TYPE						= PREFIX + "Type";									//$NON-NLS-1$
+	public static final String			ID_TYPE						= PREFIX + "Type";									//$NON-NLS-1$
 	/** The field ID for container type changes. */
-	public static final String		ID_CONTAINER_TYPE			= PREFIX + "ContainerType";						//$NON-NLS-1$
+	public static final String			ID_CONTAINER_TYPE			= PREFIX + "ContainerType";						//$NON-NLS-1$
 	/** The field ID for name changes. */
-	public static final String		ID_NAME						= PREFIX + "Name";									//$NON-NLS-1$
+	public static final String			ID_NAME						= PREFIX + "Name";									//$NON-NLS-1$
+	/** The field ID for CR changes. */
+	public static final String			ID_CR						= PREFIX + "CR";									//$NON-NLS-1$
 	/** The field ID for level changes. */
-	public static final String		ID_LEVELS					= PREFIX + "Levels";								//$NON-NLS-1$
+	public static final String			ID_LEVELS					= PREFIX + "Levels";								//$NON-NLS-1$
 	/** The field ID for point changes. */
-	public static final String		ID_POINTS					= PREFIX + "Points";								//$NON-NLS-1$
+	public static final String			ID_POINTS					= PREFIX + "Points";								//$NON-NLS-1$
 	/** The field ID for page reference changes. */
-	public static final String		ID_REFERENCE				= PREFIX + "Reference";							//$NON-NLS-1$
+	public static final String			ID_REFERENCE				= PREFIX + "Reference";							//$NON-NLS-1$
 	/** The field ID for when the categories change. */
-	public static final String		ID_CATEGORY					= PREFIX + "Category";								//$NON-NLS-1$
+	public static final String			ID_CATEGORY					= PREFIX + "Category";								//$NON-NLS-1$
 	/** The field ID for when the row hierarchy changes. */
-	public static final String		ID_LIST_CHANGED				= PREFIX + "ListChanged";							//$NON-NLS-1$
+	public static final String			ID_LIST_CHANGED				= PREFIX + "ListChanged";							//$NON-NLS-1$
 	/** The field ID for when the advantage becomes or stops being a weapon. */
-	public static final String		ID_WEAPON_STATUS_CHANGED	= PREFIX + "WeaponStatus";							//$NON-NLS-1$
+	public static final String			ID_WEAPON_STATUS_CHANGED	= PREFIX + "WeaponStatus";							//$NON-NLS-1$
 	/** The field ID for when the advantage gets Modifiers. */
-	public static final String		ID_MODIFIER_STATUS_CHANGED	= PREFIX + "Modifier";								//$NON-NLS-1$
+	public static final String			ID_MODIFIER_STATUS_CHANGED	= PREFIX + "Modifier";								//$NON-NLS-1$
 	/** The type mask for mental advantages. */
-	public static final int			TYPE_MASK_MENTAL			= 1 << 0;
+	public static final int				TYPE_MASK_MENTAL			= 1 << 0;
 	/** The type mask for physical advantages. */
-	public static final int			TYPE_MASK_PHYSICAL			= 1 << 1;
+	public static final int				TYPE_MASK_PHYSICAL			= 1 << 1;
 	/** The type mask for social advantages. */
-	public static final int			TYPE_MASK_SOCIAL			= 1 << 2;
+	public static final int				TYPE_MASK_SOCIAL			= 1 << 2;
 	/** The type mask for exotic advantages. */
-	public static final int			TYPE_MASK_EXOTIC			= 1 << 3;
+	public static final int				TYPE_MASK_EXOTIC			= 1 << 3;
 	/** The type mask for supernatural advantages. */
-	public static final int			TYPE_MASK_SUPERNATURAL		= 1 << 4;
-	private int						mType;
-	private String					mName;
-	private int						mLevels;
-	private int						mPoints;
-	private int						mPointsPerLevel;
-	private String					mReference;
-	private String					mOldPointsString;
-	private AdvantageContainerType	mContainerType;
-	private ArrayList<WeaponStats>	mWeapons;
-	private ArrayList<Modifier>		mModifiers;
+	public static final int				TYPE_MASK_SUPERNATURAL		= 1 << 4;
+	private int							mType;
+	private String						mName;
+	private SelfControlRoll				mCR;
+	private SelfControlRollAdjustments	mCRAdj;
+	private int							mLevels;
+	private int							mPoints;
+	private int							mPointsPerLevel;
+	private String						mReference;
+	private String						mOldPointsString;
+	private AdvantageContainerType		mContainerType;
+	private ArrayList<WeaponStats>		mWeapons;
+	private ArrayList<Modifier>			mModifiers;
 	// For load-time conversion only
-	private OldWeapon				mOldWeapon;
+	private OldWeapon					mOldWeapon;
 
 	static {
 		LocalizedMessages.initialize(Advantage.class);
@@ -132,6 +137,8 @@ public class Advantage extends ListRow {
 		super(dataFile, isContainer);
 		mType = TYPE_MASK_PHYSICAL;
 		mName = MSG_DEFAULT_NAME;
+		mCR = SelfControlRoll.NONE_REQUIRED;
+		mCRAdj = SelfControlRollAdjustments.NONE;
 		mLevels = -1;
 		mReference = ""; //$NON-NLS-1$
 		mContainerType = AdvantageContainerType.GROUP;
@@ -150,6 +157,8 @@ public class Advantage extends ListRow {
 		super(dataFile, advantage);
 		mType = advantage.mType;
 		mName = advantage.mName;
+		mCR = advantage.mCR;
+		mCRAdj = advantage.mCRAdj;
 		mLevels = advantage.mLevels;
 		mPoints = advantage.mPoints;
 		mPointsPerLevel = advantage.mPointsPerLevel;
@@ -201,6 +210,8 @@ public class Advantage extends ListRow {
 		super.prepareForLoad(state);
 		mType = TYPE_MASK_PHYSICAL;
 		mName = MSG_DEFAULT_NAME;
+		mCR = SelfControlRoll.NONE_REQUIRED;
+		mCRAdj = SelfControlRollAdjustments.NONE;
 		mLevels = -1;
 		mReference = ""; //$NON-NLS-1$
 		mContainerType = AdvantageContainerType.GROUP;
@@ -223,6 +234,9 @@ public class Advantage extends ListRow {
 
 		if (TAG_NAME.equals(name)) {
 			mName = reader.readText().replace("\n", " "); //$NON-NLS-1$ //$NON-NLS-2$
+		} else if (TAG_CR.equals(name)) {
+			mCRAdj = (SelfControlRollAdjustments) EnumExtractor.extract(reader.getAttribute(SelfControlRoll.ATTR_ADJUSTMENT), SelfControlRollAdjustments.values(), SelfControlRollAdjustments.NONE);
+			mCR = SelfControlRoll.get(reader.readText());
 		} else if (TAG_REFERENCE.equals(name)) {
 			mReference = reader.readText().replace("\n", " "); //$NON-NLS-1$ //$NON-NLS-2$
 		} else if (!state.mForUndo && (TAG_ADVANTAGE.equals(name) || TAG_ADVANTAGE_CONTAINER.equals(name))) {
@@ -257,10 +271,8 @@ public class Advantage extends ListRow {
 	@Override protected void finishedLoading() {
 		if (mOldPointsString != null) {
 			// All this is here solely to support loading old data files
-			int slash;
-
 			mOldPointsString = mOldPointsString.trim();
-			slash = mOldPointsString.indexOf('/');
+			int slash = mOldPointsString.indexOf('/');
 			if (slash == -1) {
 				mPoints = getSimpleNumber(mOldPointsString);
 				mPointsPerLevel = 0;
@@ -324,6 +336,7 @@ public class Advantage extends ListRow {
 				weapon.save(out);
 			}
 		}
+		mCR.save(out, TAG_CR, mCRAdj);
 		for (Modifier modifier : mModifiers) {
 			modifier.save(out, forUndo);
 		}
@@ -388,6 +401,42 @@ public class Advantage extends ListRow {
 		return false;
 	}
 
+	/** @return The CR. */
+	public SelfControlRoll getCR() {
+		return mCR;
+	}
+
+	/**
+	 * @param cr The CR to set.
+	 * @return Whether it was changed.
+	 */
+	public boolean setCR(SelfControlRoll cr) {
+		if (mCR != cr) {
+			mCR = cr;
+			notifySingle(ID_CR);
+			return true;
+		}
+		return false;
+	}
+
+	/** @return The CR adjustment. */
+	public SelfControlRollAdjustments getCRAdj() {
+		return mCRAdj;
+	}
+
+	/**
+	 * @param crAdj The CR adjustment to set.
+	 * @return Whether it was changed.
+	 */
+	public boolean setCRAdj(SelfControlRollAdjustments crAdj) {
+		if (mCRAdj != crAdj) {
+			mCRAdj = crAdj;
+			notifySingle(ID_CR);
+			return true;
+		}
+		return false;
+	}
+
 	/** @return Whether this advantage is leveled or not. */
 	public boolean isLeveled() {
 		return mLevels >= 0;
@@ -415,25 +464,47 @@ public class Advantage extends ListRow {
 	public int getAdjustedPoints() {
 		if (canHaveChildren()) {
 			int points = 0;
-			for (Advantage child : new FilteredIterator<Advantage>(getChildren(), Advantage.class)) {
-				points += child.getAdjustedPoints();
+			if (mContainerType == AdvantageContainerType.ALTERNATIVE_ABILITIES) {
+				ArrayList<Integer> values = new ArrayList<Integer>();
+				for (Advantage child : new FilteredIterator<Advantage>(getChildren(), Advantage.class)) {
+					int pts = child.getAdjustedPoints();
+					values.add(new Integer(pts));
+					if (pts > points) {
+						points = pts;
+					}
+				}
+				int max = points;
+				boolean found = false;
+				for (Integer one : values) {
+					int value = one.intValue();
+					if (!found && max == value) {
+						found = true;
+					} else {
+						points += calculateModifierPoints(value, 20);
+					}
+				}
+			} else {
+				for (Advantage child : new FilteredIterator<Advantage>(getChildren(), Advantage.class)) {
+					points += child.getAdjustedPoints();
+				}
 			}
 			return points;
 		}
-		return getAdjustedPoints(mPoints, mLevels, mPointsPerLevel, getAllModifiers());
+		return getAdjustedPoints(mPoints, mLevels, mPointsPerLevel, mCR, getAllModifiers());
 	}
 
 	/**
 	 * @param basePoints The base point cost.
 	 * @param levels The number of levels.
 	 * @param pointsPerLevel The point cost per level.
+	 * @param cr The {@link SelfControlRoll} to apply.
 	 * @param modifiers The {@link Modifier}s to apply.
 	 * @return The total points, taking levels and modifiers into account.
 	 */
-	public static int getAdjustedPoints(int basePoints, int levels, int pointsPerLevel, Collection<Modifier> modifiers) {
+	public static int getAdjustedPoints(int basePoints, int levels, int pointsPerLevel, SelfControlRoll cr, Collection<Modifier> modifiers) {
 		int baseMod = 0;
 		int levelMod = 0;
-		double multiplier = 1.0;
+		double multiplier = cr.getMultiplier();
 
 		for (Modifier one : modifiers) {
 			if (one.isEnabled()) {
@@ -500,13 +571,17 @@ public class Advantage extends ListRow {
 	}
 
 	private static int modifyPoints(int points, int modifier) {
+		return points + calculateModifierPoints(points, modifier);
+	}
+
+	private static int calculateModifierPoints(int points, int modifier) {
 		modifier *= points;
 		if (modifier > 0) {
 			modifier = (modifier + 50) / 100;
 		} else {
 			modifier /= 100;
 		}
-		return points + modifier;
+		return modifier;
 	}
 
 	/** @return The points. */
@@ -648,11 +723,9 @@ public class Advantage extends ListRow {
 
 	@Override public String toString() {
 		StringBuilder builder = new StringBuilder();
-
 		builder.append(getName());
 		if (!canHaveChildren()) {
 			int levels = getLevels();
-
 			if (levels > 0) {
 				builder.append(' ');
 				builder.append(levels);
@@ -743,26 +816,30 @@ public class Advantage extends ListRow {
 		return false;
 	}
 
-	@Override public String getModifierNotes() {
-		ArrayList<Modifier> modifiers = new ArrayList<Modifier>();
+	private static final String	MODIFIER_SEPARATOR	= "; "; //$NON-NLS-1$
 
+	@Override public String getModifierNotes() {
+		StringBuilder builder = new StringBuilder();
+		if (mCR != SelfControlRoll.NONE_REQUIRED) {
+			builder.append(mCR);
+			if (mCRAdj != SelfControlRollAdjustments.NONE) {
+				builder.append(", "); //$NON-NLS-1$
+				builder.append(mCRAdj.getDescription(getCR()));
+			}
+			builder.append(MODIFIER_SEPARATOR);
+		}
 		for (Modifier modifier : mModifiers) {
 			if (modifier.isEnabled()) {
-				modifiers.add(modifier);
-			}
-		}
-		if (!modifiers.isEmpty()) {
-			StringBuilder builder = new StringBuilder();
-
-			for (Modifier modifier : modifiers) {
 				builder.append(modifier.getFullDescription());
-				builder.append("; "); //$NON-NLS-1$
+				builder.append(MODIFIER_SEPARATOR);
 			}
-			builder.setLength(builder.length() - 2); // Remove the trailing "; "
-			builder.append('.');
-			return builder.toString();
 		}
-		return ""; //$NON-NLS-1$
+		if (builder.length() > 0) {
+			// Remove the trailing MODIFIER_SEPARATOR
+			builder.setLength(builder.length() - MODIFIER_SEPARATOR.length());
+			builder.append('.');
+		}
+		return builder.toString();
 	}
 
 	@Override protected String getCategoryID() {

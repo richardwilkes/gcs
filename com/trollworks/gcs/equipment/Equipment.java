@@ -52,7 +52,7 @@ import java.util.List;
 
 /** A piece of equipment. */
 public class Equipment extends ListRow {
-	private static final int		CURRENT_VERSION				= 1;
+	private static final int		CURRENT_VERSION				= 2;
 	private static String			MSG_DEFAULT_NAME;
 	private static final String		NEWLINE						= "\n";											//$NON-NLS-1$
 	private static final String		SPACE						= " ";												//$NON-NLS-1$
