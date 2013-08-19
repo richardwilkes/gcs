@@ -34,7 +34,6 @@
 		<array>
 			<string>-Xmx256m</string>
 			<!-- <string>-splash:$APP_ROOT/Contents/Resources/splash.gif</string> -->
-			<string>-Dapple.laf.useScreenMenuBar=true</string>
 			<string>-Xdock:name=APP_NAME</string>
 		</array>
 	<key>JVMArguments</key>
