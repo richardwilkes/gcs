@@ -2,28 +2,23 @@
 <advantage_list unique_id="e7e56hcl:b5dd8sx59hwt">
 	<advantage_container open="yes">
 		<name>Mental</name>
-		<reference></reference>
-		<notes></notes>
 		<advantage>
 			<name>Attentive</name>
 			<type>Mental</type>
 			<base_points>-1</base_points>
 			<reference>B163</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Broad-Minded</name>
 			<type>Mental</type>
 			<base_points>-1</base_points>
 			<reference>B163</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Careful</name>
 			<type>Mental</type>
 			<base_points>-1</base_points>
 			<reference>B163</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Chauvinistic</name>
@@ -46,7 +41,6 @@
 			<type>Mental</type>
 			<base_points>-1</base_points>
 			<reference>B164</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Delusions</name>
@@ -62,28 +56,24 @@
 			<levels>0</levels>
 			<base_points>-1</base_points>
 			<reference>B164</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Distractible</name>
 			<type>Mental</type>
 			<base_points>-1</base_points>
 			<reference>B164</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Dreamer</name>
 			<type>Mental</type>
 			<base_points>-1</base_points>
 			<reference>B164</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Dull</name>
 			<type>Mental</type>
 			<base_points>-1</base_points>
 			<reference>B164</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Expression</name>
@@ -106,14 +96,12 @@
 			<type>Mental</type>
 			<base_points>-1</base_points>
 			<reference>B164</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Imaginative</name>
 			<type>Mental</type>
 			<base_points>-1</base_points>
 			<reference>B164</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Incompetence at @Skill@</name>
@@ -121,10 +109,10 @@
 			<levels>0</levels>
 			<base_points>-1</base_points>
 			<reference>B164</reference>
-			<notes></notes>
 			<skill_bonus>
 				<name compare="is">@Skill@</name>
 				<specialization compare="is anything"></specialization>
+				<amount per_level="no">-4</amount>
 			</skill_bonus>
 		</advantage>
 		<advantage>
@@ -133,7 +121,6 @@
 			<levels>0</levels>
 			<base_points>-1</base_points>
 			<reference>B164</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Minor Addiction</name>
@@ -148,7 +135,6 @@
 			<type>Mental</type>
 			<base_points>-1</base_points>
 			<reference>B164</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Obsession</name>
@@ -171,21 +157,18 @@
 			<type>Mental</type>
 			<base_points>-1</base_points>
 			<reference>B164</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Responsive</name>
 			<type>Mental</type>
 			<base_points>-1</base_points>
 			<reference>B164</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Staid</name>
 			<type>Mental</type>
 			<base_points>-1</base_points>
 			<reference>B164</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Trademark</name>
@@ -200,7 +183,6 @@
 			<type>Mental</type>
 			<base_points>-1</base_points>
 			<reference>B164</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Vow</name>
@@ -213,49 +195,44 @@
 	</advantage_container>
 	<advantage_container open="yes">
 		<name>Physical</name>
-		<reference></reference>
-		<notes></notes>
 		<advantage>
 			<name>Acceleration Weakness</name>
 			<type>Physical</type>
 			<base_points>-1</base_points>
 			<reference>B165</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Alcohol Intolerance</name>
 			<type>Physical</type>
 			<base_points>-1</base_points>
 			<reference>B165</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Bowlegged</name>
 			<type>Physical</type>
 			<base_points>-1</base_points>
 			<reference>B165</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Cannot Float</name>
 			<type>Physical</type>
 			<base_points>-1</base_points>
 			<reference>B165</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Distinctive Features</name>
 			<type>Physical</type>
 			<base_points>-1</base_points>
 			<reference>B165</reference>
-			<notes></notes>
 			<skill_bonus>
 				<name compare="is">disguise</name>
 				<specialization compare="is anything"></specialization>
+				<amount per_level="no">-1</amount>
 			</skill_bonus>
 			<skill_bonus>
 				<name compare="is">shadowing</name>
 				<specialization compare="is anything"></specialization>
+				<amount per_level="no">-1</amount>
 			</skill_bonus>
 		</advantage>
 		<advantage>
@@ -263,7 +240,6 @@
 			<type>Physical</type>
 			<base_points>-1</base_points>
 			<reference>B165</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Minor Addiction</name>
@@ -286,21 +262,18 @@
 			<type>Physical</type>
 			<base_points>-1</base_points>
 			<reference>B165</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Neutered</name>
 			<type>Physical</type>
 			<base_points>-1</base_points>
 			<reference>B165</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Sexless</name>
 			<type>Physical</type>
 			<base_points>-1</base_points>
 			<reference>B165</reference>
-			<notes></notes>
 		</advantage>
 	</advantage_container>
 </advantage_list>

@@ -4,19 +4,16 @@
 		<advantage_container open="yes" type="metatrait">
 			<name>Meta-trait (Rotting Undead)</name>
 			<reference>F133</reference>
-			<notes></notes>
 			<advantage>
 				<name>Appearance (Monstrous, Universal)</name>
 				<type>Physical</type>
 				<base_points>-25</base_points>
 				<reference>B21</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Bad Smell</name>
 				<type>Physical</type>
 				<base_points>-10</base_points>
-				<reference></reference>
 				<notes>-2 Reaction penalty</notes>
 			</advantage>
 			<advantage>
@@ -24,62 +21,52 @@
 				<type>Physical, Exotic</type>
 				<base_points>20</base_points>
 				<reference>B49</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Doesn't Eat or Drink</name>
 				<type>Physical, Exotic</type>
 				<base_points>10</base_points>
 				<reference>B50</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Feature (Sterile)</name>
 				<type>Physical</type>
-				<reference></reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>High Pain Threshold</name>
 				<type>Physical</type>
 				<base_points>10</base_points>
 				<reference>B59</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Injury Tolerance (No Blood)</name>
 				<type>Physical, Exotic</type>
 				<base_points>5</base_points>
 				<reference>B61</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Injury Tolerance (Unliving)</name>
 				<type>Physical, Exotic</type>
 				<base_points>20</base_points>
 				<reference>B61</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>No Sense of Smell/Taste</name>
 				<type>Physical</type>
 				<base_points>-5</base_points>
 				<reference>B146</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Resistant (Immune to Metabolic Hazards)</name>
 				<type>Physical</type>
 				<base_points>30</base_points>
 				<reference>B81</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Sexless</name>
 				<type>Physical</type>
 				<base_points>-1</base_points>
 				<reference>B165</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Social Stigma (Dead)</name>
@@ -94,16 +81,13 @@
 				<levels>10</levels>
 				<points_per_level>1</points_per_level>
 				<reference>B93</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Unaging</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>
 				<reference>B95</reference>
-				<notes></notes>
 			</advantage>
 		</advantage_container>
 	</advantage_list>
-	<notes></notes>
 </template>

@@ -9,7 +9,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M65</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -29,7 +28,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M58</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -48,7 +46,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M58</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">talisman (appropriate spell)</name>
@@ -64,7 +61,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M69</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">bane</name>
@@ -80,7 +76,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M62</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -96,7 +91,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M66</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">spell arrow</name>
@@ -112,7 +106,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M64</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">weapon enchantment</college>
@@ -132,7 +125,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M71</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">divination (crystal gazing)</name>
@@ -148,7 +140,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M67</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">dancing object</name>
@@ -167,7 +158,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M63</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">dancing object</name>
@@ -186,7 +176,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M67</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -205,7 +194,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M64</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">dancing object</name>
@@ -224,7 +212,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M67</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -240,7 +227,6 @@
 		<casting_time>-</casting_time>
 		<duration>Perm#</duration>
 		<reference>M62</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -274,7 +260,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M71</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -308,7 +293,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>Permanent</duration>
 		<reference>M56</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college_count compare="atLeast">10</college_count>
@@ -336,7 +320,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M60</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">malefice</name>
@@ -352,7 +335,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M66</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -368,7 +350,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M65</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">solidify</name>
@@ -387,7 +368,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>Permanent</duration>
 		<reference>M59</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">animation</name>
@@ -409,7 +389,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M63</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>
@@ -428,7 +407,6 @@
 		<casting_time>-</casting_time>
 		<duration>Special</duration>
 		<reference>M62</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<attribute_prereq has="yes" which="IQ" combined_with="DX" compare="atLeast">30</attribute_prereq>
 			<prereq_list all="no">
@@ -457,7 +435,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M57</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -473,7 +450,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M61</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -495,7 +471,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M70</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">mind-sending</name>
@@ -523,7 +498,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M60</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -545,7 +519,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M61</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">hideaway</name>
@@ -561,7 +534,6 @@
 		<casting_time>-</casting_time>
 		<duration>Special</duration>
 		<reference>M58</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -577,7 +549,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>Permanent</duration>
 		<reference>M159</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -612,7 +583,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M67</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -628,7 +598,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M68</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -644,7 +613,6 @@
 		<casting_time>4 hrs</casting_time>
 		<duration>Special</duration>
 		<reference>M131</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">delay</name>
@@ -660,7 +628,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M63</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -679,7 +646,6 @@
 		<casting_time>-</casting_time>
 		<duration>Indefinite#</duration>
 		<reference>M60</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">seeker</name>
@@ -698,7 +664,6 @@
 		<casting_time>-</casting_time>
 		<duration>Indefinite</duration>
 		<reference>M70</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -714,7 +679,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M68</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -730,7 +694,6 @@
 		<casting_time>-</casting_time>
 		<duration>Indefinite</duration>
 		<reference>M70</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -746,7 +709,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M68</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -762,7 +724,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M63</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -781,7 +742,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M57</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -800,7 +760,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>Permanent</duration>
 		<reference>M69</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -816,7 +775,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M65</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">earth</college>
@@ -836,7 +794,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M65</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -855,7 +812,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M63</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -874,7 +830,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>Permanent</duration>
 		<reference>M58</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -890,7 +845,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M58</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">any limiting enchantment</name>
@@ -906,7 +860,6 @@
 		<casting_time>days=cost</casting_time>
 		<duration>Varies</duration>
 		<reference>M57</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -949,7 +902,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent#</duration>
 		<reference>M61</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -983,7 +935,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M71</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -1014,7 +965,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M57</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -1033,7 +983,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M66</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">spell arrow</name>
@@ -1052,7 +1001,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M65</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">spell stone</name>
@@ -1068,7 +1016,6 @@
 		<casting_time>-</casting_time>
 		<duration>Varies</duration>
 		<reference>M60</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">delay</name>
@@ -1087,7 +1034,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M70</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -1107,7 +1053,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M58</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -1123,7 +1068,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M58</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -1142,7 +1086,6 @@
 		<casting_time>-</casting_time>
 		<duration>Indefinite#</duration>
 		<reference>M56</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -1158,7 +1101,6 @@
 		<casting_time>-</casting_time>
 		<duration>Permanent</duration>
 		<reference>M64</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -1177,7 +1119,6 @@
 		<casting_time>-</casting_time>
 		<duration>Special</duration>
 		<reference>M61</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college_count compare="atLeast">15</college_count>
@@ -1196,7 +1137,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M160</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>

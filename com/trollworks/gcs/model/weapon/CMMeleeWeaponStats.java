@@ -112,9 +112,9 @@ public class CMMeleeWeaponStats extends CMWeaponStats {
 	}
 
 	@Override protected void saveSelf(TKXMLWriter out) {
-		out.simpleTag(TAG_REACH, mReach);
-		out.simpleTag(TAG_PARRY, mParry);
-		out.simpleTag(TAG_BLOCK, mBlock);
+		out.simpleTagNotEmpty(TAG_REACH, mReach);
+		out.simpleTagNotEmpty(TAG_PARRY, mParry);
+		out.simpleTagNotEmpty(TAG_BLOCK, mBlock);
 	}
 
 	/** @return The parry. */

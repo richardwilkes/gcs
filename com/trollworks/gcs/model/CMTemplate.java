@@ -249,7 +249,7 @@ public class CMTemplate extends CMDataFile {
 			}
 			out.endTagEOL(CMEquipmentList.TAG_ROOT, true);
 		}
-		out.simpleTag(TAG_NOTES, mNotes);
+		out.simpleTagNotEmpty(TAG_NOTES, mNotes);
 	}
 
 	/**

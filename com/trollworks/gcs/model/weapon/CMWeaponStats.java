@@ -29,6 +29,7 @@ import com.trollworks.gcs.model.CMDice;
 import com.trollworks.gcs.model.CMRow;
 import com.trollworks.gcs.model.advantage.CMAdvantage;
 import com.trollworks.gcs.model.equipment.CMEquipment;
+import com.trollworks.gcs.model.feature.CMLeveledAmount;
 import com.trollworks.gcs.model.skill.CMSkill;
 import com.trollworks.gcs.model.skill.CMSkillDefault;
 import com.trollworks.gcs.model.skill.CMSkillDefaultType;
@@ -148,9 +149,9 @@ public abstract class CMWeaponStats {
 	 */
 	public void save(TKXMLWriter out) {
 		out.startSimpleTagEOL(getRootTag());
-		out.simpleTag(TAG_DAMAGE, mDamage);
-		out.simpleTag(TAG_STRENGTH, mStrength);
-		out.simpleTag(TAG_USAGE, mUsage);
+		out.simpleTagNotEmpty(TAG_DAMAGE, mDamage);
+		out.simpleTagNotEmpty(TAG_STRENGTH, mStrength);
+		out.simpleTagNotEmpty(TAG_USAGE, mUsage);
 		saveSelf(out);
 		for (CMSkillDefault skillDefault : mDefaults) {
 			skillDefault.save(out);
@@ -200,6 +201,9 @@ public abstract class CMWeaponStats {
 		if (mOwner instanceof CMSpell) {
 			return ((CMSpell) mOwner).getName();
 		}
+		if (mOwner instanceof CMSkill) {
+			return ((CMSkill) mOwner).getName();
+		}
 		return EMPTY;
 	}
 
@@ -223,32 +227,46 @@ public abstract class CMWeaponStats {
 		String damage = mDamage;
 
 		if (df instanceof CMCharacter) {
-			int maxST = getMinStrengthValue() * 3;
 			CMCharacter character = (CMCharacter) df;
-			int st = character.getStrength();
-			CMDice dice;
-			String savedDamage;
+			HashSet<CMLeveledAmount> bonuses = new HashSet<CMLeveledAmount>();
 
-			if (maxST > 0 && maxST < st) {
-				st = maxST;
+			for (CMSkillDefault one : getDefaults()) {
+				if (one.getType() == CMSkillDefaultType.Skill) {
+					bonuses.addAll(character.getWeaponComparedBonusesFor(CMSkill.ID_NAME + "*", one.getName(), one.getSpecialization())); //$NON-NLS-1$
+					bonuses.addAll(character.getWeaponComparedBonusesFor(CMSkill.ID_NAME + "/" + one.getName(), one.getName(), one.getSpecialization())); //$NON-NLS-1$
+				}
 			}
-			dice = CMCharacter.getSwing(st + character.getStrikingStrengthBonus());
-
-			do {
-				savedDamage = damage;
-				damage = resolveDamage(damage, "sw", dice); //$NON-NLS-1$
-			} while (!savedDamage.equals(damage));
-
-			dice = CMCharacter.getThrust(st + character.getStrikingStrengthBonus());
-			do {
-				savedDamage = damage;
-				damage = resolveDamage(damage, "thr", dice); //$NON-NLS-1$
-			} while (!savedDamage.equals(damage));
+			damage = resolveDamage(damage, bonuses);
 		}
+		return damage.trim();
+	}
+
+	private String resolveDamage(String damage, HashSet<CMLeveledAmount> bonuses) {
+		int maxST = getMinStrengthValue() * 3;
+		CMCharacter character = (CMCharacter) mOwner.getDataFile();
+		int st = character.getStrength();
+		CMDice dice;
+		String savedDamage;
+
+		if (maxST > 0 && maxST < st) {
+			st = maxST;
+		}
+
+		dice = CMCharacter.getSwing(st + character.getStrikingStrengthBonus());
+		do {
+			savedDamage = damage;
+			damage = resolveDamage(damage, "sw", dice, bonuses); //$NON-NLS-1$
+		} while (!savedDamage.equals(damage));
+
+		dice = CMCharacter.getThrust(st + character.getStrikingStrengthBonus());
+		do {
+			savedDamage = damage;
+			damage = resolveDamage(damage, "thr", dice, bonuses); //$NON-NLS-1$
+		} while (!savedDamage.equals(damage));
 		return damage;
 	}
 
-	private String resolveDamage(String damage, String type, CMDice dice) {
+	private String resolveDamage(String damage, String type, CMDice dice, HashSet<CMLeveledAmount> bonuses) {
 		int where = damage.indexOf(type);
 
 		if (where != -1) {
@@ -313,6 +331,16 @@ public abstract class CMWeaponStats {
 							dice.add(perDie * dice.getDieCount());
 						}
 					}
+				}
+			}
+
+			for (CMLeveledAmount bonus : bonuses) {
+				int amt = bonus.getIntegerAmount();
+
+				if (bonus.isPerLevel()) {
+					dice.add(amt * dice.getDieCount());
+				} else {
+					dice.add(amt);
 				}
 			}
 

@@ -131,12 +131,12 @@ public class CMRangedWeaponStats extends CMWeaponStats {
 	}
 
 	@Override protected void saveSelf(TKXMLWriter out) {
-		out.simpleTag(TAG_ACCURACY, mAccuracy);
-		out.simpleTag(TAG_RANGE, mRange);
-		out.simpleTag(TAG_RATE_OF_FIRE, mRateOfFire);
-		out.simpleTag(TAG_SHOTS, mShots);
-		out.simpleTag(TAG_BULK, mBulk);
-		out.simpleTag(TAG_RECOIL, mRecoil);
+		out.simpleTagNotEmpty(TAG_ACCURACY, mAccuracy);
+		out.simpleTagNotEmpty(TAG_RANGE, mRange);
+		out.simpleTagNotEmpty(TAG_RATE_OF_FIRE, mRateOfFire);
+		out.simpleTagNotEmpty(TAG_SHOTS, mShots);
+		out.simpleTagNotEmpty(TAG_BULK, mBulk);
+		out.simpleTagNotEmpty(TAG_RECOIL, mRecoil);
 	}
 
 	/** @return The accuracy. */

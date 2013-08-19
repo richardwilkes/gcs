@@ -3,56 +3,47 @@
 	<advantage_list>
 		<advantage_container open="yes" type="metatrait">
 			<name>Meta-Trait: Body of Water</name>
-			<reference></reference>
-			<notes></notes>
 			<advantage>
 				<name>Amphibious</name>
 				<type>Physical, Exotic</type>
 				<base_points>10</base_points>
 				<reference>B40</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Constriction Attack</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>
 				<reference>B43</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Doesn't Breathe</name>
 				<type>Physical, Exotic</type>
 				<base_points>20</base_points>
 				<reference>B49</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Injury Tolerance (Diffuse)</name>
 				<type>Physical, Exotic</type>
 				<base_points>100</base_points>
 				<reference>B60</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Invertebrate</name>
 				<type>Physical, Exotic</type>
 				<base_points>-20</base_points>
 				<reference>B140</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Pressure Support 3 (Immune to high pressure)</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>
 				<reference>B77</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Resistant (Immunity to Metabolic Hazards)</name>
 				<type>Physical</type>
 				<base_points>30</base_points>
 				<reference>B81</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Slippery</name>
@@ -60,7 +51,6 @@
 				<levels>5</levels>
 				<points_per_level>3</points_per_level>
 				<reference>B85</reference>
-				<notes></notes>
 				<skill_bonus>
 					<name compare="is">escape</name>
 					<specialization compare="is anything"></specialization>
@@ -72,9 +62,7 @@
 				<type>Physical, Exotic</type>
 				<base_points>-10</base_points>
 				<reference>B161</reference>
-				<notes></notes>
 			</advantage>
 		</advantage_container>
 	</advantage_list>
-	<notes></notes>
 </template>

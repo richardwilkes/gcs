@@ -4,24 +4,22 @@
 		<advantage_container open="yes" type="race">
 			<name>Elf</name>
 			<reference>B316</reference>
-			<notes></notes>
 			<advantage>
 				<name>Attractive</name>
 				<type>Physical</type>
 				<base_points>4</base_points>
 				<reference>B21</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Attribute modifiers: ST -1, HT +1</name>
 				<type>Physical</type>
-				<reference></reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>ST</attribute>
+					<amount per_level="no">-1</amount>
 				</attribute_bonus>
 				<attribute_bonus>
 					<attribute>HT</attribute>
+					<amount per_level="no">+1</amount>
 				</attribute_bonus>
 			</advantage>
 			<advantage>
@@ -29,7 +27,6 @@
 				<type>Mental</type>
 				<base_points>10</base_points>
 				<reference>B65</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Magery</name>
@@ -37,7 +34,6 @@
 				<base_points>5</base_points>
 				<points_per_level>10</points_per_level>
 				<reference>B66</reference>
-				<notes></notes>
 				<spell_bonus all_colleges="yes">
 					<amount per_level="yes">+1</amount>
 				</spell_bonus>
@@ -52,16 +48,14 @@
 				<type>Physical</type>
 				<base_points>15</base_points>
 				<reference>B74</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Secondary characteristic, Per +1</name>
 				<type>Physical</type>
 				<base_points>5</base_points>
-				<reference></reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>perception</attribute>
+					<amount per_level="no">+1</amount>
 				</attribute_bonus>
 			</advantage>
 			<advantage>
@@ -70,52 +64,57 @@
 				<levels>1</levels>
 				<points_per_level>5</points_per_level>
 				<reference>B92</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Unaging</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>
 				<reference>B95</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Voice</name>
 				<type>Physical</type>
 				<base_points>10</base_points>
 				<reference>B97</reference>
-				<notes></notes>
 				<skill_bonus>
 					<name compare="is">diplomacy</name>
 					<specialization compare="is anything"></specialization>
+					<amount per_level="no">+2</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">fast-talk</name>
 					<specialization compare="is anything"></specialization>
+					<amount per_level="no">+2</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">mimcry</name>
 					<specialization compare="is anything"></specialization>
+					<amount per_level="no">+2</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">performance</name>
 					<specialization compare="is anything"></specialization>
+					<amount per_level="no">+2</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">politics</name>
 					<specialization compare="is anything"></specialization>
+					<amount per_level="no">+2</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">public speaking</name>
 					<specialization compare="is anything"></specialization>
+					<amount per_level="no">+2</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">sex appeal</name>
 					<specialization compare="is anything"></specialization>
+					<amount per_level="no">+2</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">singing</name>
 					<specialization compare="is anything"></specialization>
+					<amount per_level="no">+2</amount>
 				</skill_bonus>
 			</advantage>
 		</advantage_container>
@@ -123,12 +122,9 @@
 	<skill_list>
 		<skill>
 			<name>Connoisseur (Natural Enviroments)</name>
-			<specialization></specialization>
 			<difficulty>IQ/A</difficulty>
 			<points>1</points>
 			<reference>B185</reference>
-			<notes></notes>
 		</skill>
 	</skill_list>
-	<notes></notes>
 </template>

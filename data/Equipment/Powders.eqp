@@ -3,521 +3,417 @@
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Aging</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>825.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Alchemical Antidote</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>400.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M217</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Attractiveness</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>600.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Awakening</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>500.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M217</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Battle</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>350.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Beast-Speech</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>850.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M213</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Bird Control</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>550.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M213</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Charisma</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>350.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M218</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Craftsmanship</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1100.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Death</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>500.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Drunkenness</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>130.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Endurance</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1400.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Fear</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>225.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Fertility</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>6000.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M217</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Fetching and Carrying</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>300.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Fire Risistance</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>500.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Flight</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>3000.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Foolishness</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>500.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Foresight</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>2000.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M218</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Friendship</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>550.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Fustration</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>650.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Gambling</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>900.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Gullibility</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>500.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Hatred</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>300.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Healing</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>120.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M217</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Hybridization</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>2250.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M217</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Invulnerability</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>2100.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Jealousy</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>400.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Leadership</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1650.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Lecherousness</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>500.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Long Slumber</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>9000.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M217</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Luck</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1300.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Madness</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>200.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Magic Resistance</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1600.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Memory</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1500.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Music</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>300.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Odium</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1000.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Pain Resistance</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>600.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Self-Love</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>750.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Sleep</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>120.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M218</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Speed</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>550.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Stealth</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>500.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Strength</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>250.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Tranquility</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>500.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M218</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Transformation</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>3000.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: True Sight</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>550.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Truth</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1100.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Universal Antidote</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>750.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Unluckiness</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1600.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Water-Walking</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>700.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Weakness</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>400.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Powder: Wisdom</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1500.0</value>
 		<weight units="lb">0.025</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 </equipment_list>

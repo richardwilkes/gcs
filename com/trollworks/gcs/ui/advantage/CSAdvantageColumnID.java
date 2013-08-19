@@ -66,9 +66,14 @@ public enum CSAdvantageColumnID {
 
 		@Override public String getDataAsText(CMAdvantage advantage) {
 			StringBuilder builder = new StringBuilder();
-			String notes = advantage.getNotes();
+			String notes = advantage.getModifierNotes();
 
 			builder.append(advantage.toString());
+			if (notes.length() > 0) {
+				builder.append(" - "); //$NON-NLS-1$
+				builder.append(notes);
+			}
+			notes = advantage.getNotes();
 			if (notes.length() > 0) {
 				builder.append(" - "); //$NON-NLS-1$
 				builder.append(notes);

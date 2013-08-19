@@ -5,49 +5,42 @@
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>BS185</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Code of Honor (Elven)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>BS185</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Code of Honor (Halfling)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>BS185</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Code of Honor (Northman's)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>BS185</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Code of Honor (Sahudese)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>BS185</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Code of Honor (Stay's Bought)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>BS185</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Code of Honor (Theatrical)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B127</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Social Stigma (Barbarian)</name>

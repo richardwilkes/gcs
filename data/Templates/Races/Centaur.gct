@@ -4,21 +4,21 @@
 		<advantage_container open="yes" type="race">
 			<name>Centaur</name>
 			<reference>F105</reference>
-			<notes></notes>
 			<advantage>
 				<name>Attribute modifiers: ST +8 (size -10%), IQ-1, HT+2</name>
 				<type>Mental/Physical</type>
 				<base_points>72</base_points>
-				<reference></reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>ST</attribute>
+					<amount per_level="no">+8</amount>
 				</attribute_bonus>
 				<attribute_bonus>
 					<attribute>IQ</attribute>
+					<amount per_level="no">-1</amount>
 				</attribute_bonus>
 				<attribute_bonus>
 					<attribute>HT</attribute>
+					<amount per_level="no">+1</amount>
 				</attribute_bonus>
 			</advantage>
 			<advantage>
@@ -27,11 +27,8 @@
 				<base_points>3</base_points>
 				<melee_weapon>
 					<damage>thr:+1 cr</damage>
-					<strength></strength>
-					<usage></usage>
 					<reach>C,1</reach>
 					<parry>No</parry>
-					<block></block>
 					<default>
 						<type>DX</type>
 						<modifier>-2</modifier>
@@ -39,20 +36,18 @@
 					<default>
 						<type>Skill</type>
 						<name>Brawling</name>
-						<specialization></specialization>
 						<modifier>-2</modifier>
 					</default>
 					<default>
 						<type>Skill</type>
 						<name>Karate</name>
-						<specialization></specialization>
 						<modifier>-2</modifier>
 					</default>
 				</melee_weapon>
 				<reference>B42</reference>
-				<notes></notes>
 				<dr_bonus>
 					<location>feet</location>
+					<amount per_level="no">+1</amount>
 				</dr_bonus>
 			</advantage>
 			<advantage>
@@ -60,7 +55,6 @@
 				<type>Mental</type>
 				<base_points>-1</base_points>
 				<reference>B164</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Enhanced Move (Running)</name>
@@ -68,14 +62,12 @@
 				<levels>1</levels>
 				<points_per_level>20</points_per_level>
 				<reference>B52</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Extra Legs (4 legs)</name>
 				<type>Physical, Exotic</type>
 				<base_points>5</base_points>
 				<reference>B54</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Fearlessness</name>
@@ -83,40 +75,34 @@
 				<levels>1</levels>
 				<points_per_level>2</points_per_level>
 				<reference>B55</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Finds the trappings of domesticated horses particularly odious</name>
 				<type>Mental</type>
 				<base_points>-1</base_points>
 				<reference>B164</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Impulsiveness (CR: 12)</name>
 				<type>Mental</type>
 				<base_points>-10</base_points>
 				<reference>B139</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Overconficence (CR: 12)</name>
 				<type>Mental</type>
 				<base_points>-5</base_points>
 				<reference>B148</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Secondary characteristic, SM+1 Per +1</name>
 				<type>Physical</type>
 				<base_points>5</base_points>
-				<reference></reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>perception</attribute>
+					<amount per_level="no">+1</amount>
 				</attribute_bonus>
 			</advantage>
 		</advantage_container>
 	</advantage_list>
-	<notes></notes>
 </template>

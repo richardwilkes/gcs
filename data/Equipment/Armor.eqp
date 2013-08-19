@@ -7,7 +7,6 @@
 		<value>0.0</value>
 		<weight units="lb">0.0</weight>
 		<reference>B283</reference>
-		<notes></notes>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Bronze Breastplate</description>
@@ -16,9 +15,9 @@
 			<value>400.0</value>
 			<weight units="lb">20.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -29,12 +28,13 @@
 			<value>1300.0</value>
 			<weight units="lb">40.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+5</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+5</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -45,15 +45,17 @@
 			<value>210.0</value>
 			<weight units="lb">16.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -64,12 +66,13 @@
 			<value>30.0</value>
 			<weight units="lb">6.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -80,12 +83,13 @@
 			<value>520.0</value>
 			<weight units="lb">44.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+5</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+5</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -96,9 +100,9 @@
 			<value>10.0</value>
 			<weight units="lb">0.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -109,9 +113,9 @@
 			<value>25.0</value>
 			<weight units="lb">2.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -122,12 +126,13 @@
 			<value>2300.0</value>
 			<weight units="lb">45.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+7</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+7</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -138,12 +143,13 @@
 			<value>100.0</value>
 			<weight units="lb">10.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -154,12 +160,13 @@
 			<value>50.0</value>
 			<weight units="lb">4.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -170,9 +177,9 @@
 			<value>150.0</value>
 			<weight units="lb">15.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+3</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -183,9 +190,9 @@
 			<value>680.0</value>
 			<weight units="lb">26.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+5</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -196,12 +203,13 @@
 			<value>230.0</value>
 			<weight units="lb">25.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -212,9 +220,9 @@
 			<value>150.0</value>
 			<weight units="lb">16.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -225,12 +233,13 @@
 			<value>420.0</value>
 			<weight units="lb">35.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -241,9 +250,9 @@
 			<value>500.0</value>
 			<weight units="lb">18.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+5</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -254,12 +263,13 @@
 			<value>1300.0</value>
 			<weight units="lb">35.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+6</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+6</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -270,12 +280,13 @@
 			<value>900.0</value>
 			<weight units="lb">30.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+5</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+5</amount>
 			</dr_bonus>
 		</equipment>
 	</equipment_container>
@@ -286,7 +297,6 @@
 		<value>0.0</value>
 		<weight units="lb">0.0</weight>
 		<reference>B284</reference>
-		<notes></notes>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Boots</description>
@@ -295,9 +305,9 @@
 			<value>80.0</value>
 			<weight units="lb">3.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -308,7 +318,6 @@
 			<value>25.0</value>
 			<weight units="lb">0.5</weight>
 			<reference>B284</reference>
-			<notes></notes>
 		</equipment>
 		<equipment>
 			<quantity>1</quantity>
@@ -318,9 +327,9 @@
 			<value>40.0</value>
 			<weight units="lb">2.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -331,9 +340,9 @@
 			<value>150.0</value>
 			<weight units="lb">7.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 		</equipment>
 	</equipment_container>
@@ -344,7 +353,6 @@
 		<value>0.0</value>
 		<weight units="lb">0.0</weight>
 		<reference>B284</reference>
-		<notes></notes>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Cloth Gloves</description>
@@ -353,9 +361,9 @@
 			<value>15.0</value>
 			<weight units="lb">0.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -366,9 +374,9 @@
 			<value>100.0</value>
 			<weight units="lb">2.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -379,9 +387,9 @@
 			<value>250.0</value>
 			<weight units="lb">2.5</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+5</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -392,9 +400,9 @@
 			<value>30.0</value>
 			<weight units="lb">0.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 		</equipment>
 	</equipment_container>
@@ -405,7 +413,6 @@
 		<value>0.0</value>
 		<weight units="lb">0.0</weight>
 		<reference>B284</reference>
-		<notes></notes>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Barrel Helm</description>
@@ -414,12 +421,13 @@
 			<value>240.0</value>
 			<weight units="lb">10.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+6</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+6</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -430,12 +438,13 @@
 			<value>160.0</value>
 			<weight units="lb">7.5</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+3</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+3</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -446,9 +455,9 @@
 			<value>60.0</value>
 			<weight units="lb">5.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+3</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -459,9 +468,9 @@
 			<value>5.0</value>
 			<weight units="lb">0.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -472,9 +481,9 @@
 			<value>100.0</value>
 			<weight units="lb">2.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -485,15 +494,17 @@
 			<value>340.0</value>
 			<weight units="lb">10.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+7</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+7</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+7</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -504,9 +515,9 @@
 			<value>32.0</value>
 			<weight units="lb">0.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -517,12 +528,13 @@
 			<value>20.0</value>
 			<weight units="lb">0.5</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -533,12 +545,13 @@
 			<value>150.0</value>
 			<weight units="lb">6.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -549,12 +562,13 @@
 			<value>55.0</value>
 			<weight units="lb">4.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -565,9 +579,9 @@
 			<value>100.0</value>
 			<weight units="lb">5.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 		</equipment>
 	</equipment_container>
@@ -578,7 +592,6 @@
 		<value>0.0</value>
 		<weight units="lb">0.0</weight>
 		<reference>B283</reference>
-		<notes></notes>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Bronze Armbands</description>
@@ -587,9 +600,9 @@
 			<value>180.0</value>
 			<weight units="lb">9.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+3</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -600,9 +613,9 @@
 			<value>270.0</value>
 			<weight units="lb">17.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+3</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -613,9 +626,9 @@
 			<value>20.0</value>
 			<weight units="lb">2.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -626,9 +639,9 @@
 			<value>60.0</value>
 			<weight units="lb">4.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -639,9 +652,9 @@
 			<value>50.0</value>
 			<weight units="lb">2.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -652,9 +665,9 @@
 			<value>1500.0</value>
 			<weight units="lb">20.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+7</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -665,9 +678,9 @@
 			<value>1600.0</value>
 			<weight units="lb">25.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+7</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -678,9 +691,9 @@
 			<value>40.0</value>
 			<weight units="lb">2.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -691,12 +704,13 @@
 			<value>40.0</value>
 			<weight units="lb">3.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -707,9 +721,9 @@
 			<value>110.0</value>
 			<weight units="lb">15.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -720,9 +734,9 @@
 			<value>70.0</value>
 			<weight units="lb">9.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -733,9 +747,9 @@
 			<value>1000.0</value>
 			<weight units="lb">15.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+6</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -746,9 +760,9 @@
 			<value>1100.0</value>
 			<weight units="lb">20.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+6</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -759,9 +773,9 @@
 			<value>250.0</value>
 			<weight units="lb">21.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -772,9 +786,9 @@
 			<value>210.0</value>
 			<weight units="lb">14.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -785,12 +799,13 @@
 			<value>60.0</value>
 			<weight units="lb">4.0</weight>
 			<reference>B283</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+3</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+3</amount>
 			</dr_bonus>
 		</equipment>
 	</equipment_container>

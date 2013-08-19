@@ -9,7 +9,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M133</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="starts with">keen</name>
@@ -26,7 +25,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M140</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">hide</name>
@@ -48,7 +46,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M134</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">bravery</name>
@@ -64,7 +61,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M37</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">wisdom</name>
@@ -80,7 +76,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M134</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">fear</name>
@@ -96,7 +91,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M139</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">mind control</college>
@@ -128,7 +122,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M136</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">forgetfulness</name>
@@ -156,7 +149,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>5 min</duration>
 		<reference>M137</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">emotion control</name>
@@ -172,7 +164,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M134</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">foolishness</name>
@@ -188,7 +179,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Varies</duration>
 		<reference>M135</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">foolishness</name>
@@ -204,7 +194,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 min</duration>
 		<reference>M46</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">dream sending</name>
@@ -220,7 +209,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M45</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">dream viewing</name>
@@ -239,7 +227,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M136</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">foolishness</name>
@@ -258,7 +245,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>30 min</duration>
 		<reference>M133</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Dull Hearing</name>
@@ -269,7 +255,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>30 min</duration>
 		<reference>M133</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Dull Taste and Smell</name>
@@ -280,7 +265,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>30 min</duration>
 		<reference>M133</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Dull Touch</name>
@@ -291,7 +275,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>30 min</duration>
 		<reference>M133</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Dull Vision</name>
@@ -302,7 +285,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>30 min</duration>
 		<reference>M133</reference>
-		<notes></notes>
 	</spell>
 	<spell very_hard="yes">
 		<name>Dullness</name>
@@ -313,7 +295,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M134</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="starts with">dull</name>
@@ -330,7 +311,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>10 sec</duration>
 		<reference>M139</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">emotion control</name>
@@ -358,7 +338,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M137</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">mental stun</name>
@@ -377,7 +356,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 week</duration>
 		<reference>M135</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">daze</name>
@@ -393,7 +371,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M141</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">charm</name>
@@ -412,7 +389,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M139</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">forgetfulness</name>
@@ -434,7 +410,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>Varies</duration>
 		<reference>M139</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">forgetfulness</name>
@@ -454,7 +429,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Indefinite</duration>
 		<reference>M135</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">daze</name>
@@ -470,7 +444,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M134</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">sense emotion</name>
@@ -490,7 +463,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M134</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<attribute_prereq has="yes" which="IQ" compare="atLeast">12</attribute_prereq>
 		</prereq_list>
@@ -504,7 +476,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M135</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">foolishness</name>
@@ -532,7 +503,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>5 min</duration>
 		<reference>M141</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">suggestion</name>
@@ -548,7 +518,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>Permanent</duration>
 		<reference>M141</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">mind control</college>
@@ -580,7 +549,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M141</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">hallucination</name>
@@ -608,7 +576,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M140</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">madness</name>
@@ -627,7 +594,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>30 min</duration>
 		<reference>M133</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Keen Hearing</name>
@@ -638,7 +604,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>30 min</duration>
 		<reference>M133</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Keen Taste and Smell</name>
@@ -649,7 +614,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>30 min</duration>
 		<reference>M133</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Keen Touch</name>
@@ -660,7 +624,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>30 min</duration>
 		<reference>M133</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Keen Vision</name>
@@ -671,7 +634,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>30 min</duration>
 		<reference>M133</reference>
-		<notes></notes>
 	</spell>
 	<spell very_hard="yes">
 		<name>Lesser Geas</name>
@@ -682,7 +644,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>Until fulfilled</duration>
 		<reference>M140</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">command</name>
@@ -714,7 +675,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M136</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">bravery</name>
@@ -734,7 +694,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M137</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">emotion control</name>
@@ -750,7 +709,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M136</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">forgetfulness</name>
@@ -769,7 +727,6 @@
 		<casting_time>sec=cost</casting_time>
 		<duration>1 min</duration>
 		<reference>M137</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">daze</name>
@@ -786,7 +743,6 @@
 		<casting_time>sec=cost</casting_time>
 		<duration>Until awakened</duration>
 		<reference>M137</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sleep</name>
@@ -803,7 +759,6 @@
 		<casting_time>sec=cost</casting_time>
 		<duration>10 min</duration>
 		<reference>M141</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">suggestion</name>
@@ -819,7 +774,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 day</duration>
 		<reference>M105</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<college compare="contains">knowledge</college>
@@ -839,7 +793,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Until recovery roll made</duration>
 		<reference>M135</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">daze</name>
@@ -858,7 +811,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M137</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">forgetfulness</name>
@@ -886,7 +838,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M140</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">death vision</name>
@@ -920,7 +871,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>Permanent</duration>
 		<reference>M138</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">emotion control</name>
@@ -948,7 +898,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M134</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">fear</name>
@@ -964,7 +913,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>8 hrs</duration>
 		<reference>M138</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sleep</name>
@@ -983,7 +931,6 @@
 		<casting_time>1 hr</casting_time>
 		<duration>Permanent</duration>
 		<reference>M138</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">forgetfulness</name>
@@ -1012,7 +959,6 @@
 		<casting_time>10 min</casting_time>
 		<duration>Permanent</duration>
 		<reference>M139</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">madness</name>
@@ -1041,7 +987,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M134</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">alertness</name>
@@ -1057,7 +1002,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 day</duration>
 		<reference>M106</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">history</name>
@@ -1088,7 +1032,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M92</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lend vitality</name>
@@ -1107,7 +1050,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M138</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">drunkenness</name>
@@ -1126,7 +1068,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>Until awakened</duration>
 		<reference>M135</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">daze</name>
@@ -1142,7 +1083,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M136</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">mind control</college>
@@ -1171,7 +1111,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M140</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">emotion control</name>
@@ -1190,7 +1129,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 sec</duration>
 		<reference>M134</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">fear</name>
@@ -1206,7 +1144,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 night</duration>
 		<reference>M138</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lend energy</name>
@@ -1237,7 +1174,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M136</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">foolishness</name>
@@ -1265,7 +1201,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>1 day</duration>
 		<reference>M138</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">emotion control</name>
@@ -1281,7 +1216,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M135</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">mind control</college>

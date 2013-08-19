@@ -4,31 +4,25 @@
 		<advantage_container open="yes" type="race">
 			<name>Zombie</name>
 			<reference>M152</reference>
-			<notes></notes>
 			<advantage_container open="yes">
 				<name>Advantages</name>
-				<reference></reference>
-				<notes></notes>
 				<advantage>
 					<name>Doesn't Breathe</name>
 					<type>Physical, Exotic</type>
 					<base_points>20</base_points>
 					<reference>B49</reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Doesn't Eat or Drink</name>
 					<type>Physical, Exotic</type>
 					<base_points>10</base_points>
 					<reference>B50</reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Doesn't Sleep</name>
 					<type>Physical, Exotic</type>
 					<base_points>20</base_points>
 					<reference>B50</reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Extra Hit Points</name>
@@ -36,7 +30,6 @@
 					<levels>4</levels>
 					<points_per_level>2</points_per_level>
 					<reference>B16</reference>
-					<notes></notes>
 					<attribute_bonus>
 						<attribute>HP</attribute>
 						<amount per_level="yes">+1</amount>
@@ -55,7 +48,6 @@
 					<levels>1</levels>
 					<points_per_level>10</points_per_level>
 					<reference>B14</reference>
-					<notes></notes>
 					<attribute_bonus>
 						<attribute>ST</attribute>
 						<amount per_level="yes">+1</amount>
@@ -66,42 +58,36 @@
 					<type>Mental</type>
 					<base_points>15</base_points>
 					<reference>B60</reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Injury Tolerance (No Blood)</name>
 					<type>Physical, Exotic</type>
 					<base_points>5</base_points>
 					<reference>B61</reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Injury Tolerance (Unliving)</name>
 					<type>Physical, Exotic</type>
 					<base_points>20</base_points>
 					<reference>B61</reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Resistant (Immune to all Mind Control)</name>
 					<type>Physical</type>
 					<base_points>30</base_points>
 					<reference>B80</reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Resistant (Immune to Metabolic Hazards)</name>
 					<type>Physical</type>
 					<base_points>30</base_points>
 					<reference>B81</reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Single-Minded</name>
 					<type>Mental</type>
 					<base_points>5</base_points>
 					<reference>B85</reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Temperature Tolerance</name>
@@ -109,39 +95,32 @@
 					<levels>10</levels>
 					<points_per_level>1</points_per_level>
 					<reference>B93</reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Unaging</name>
 					<type>Physical, Exotic</type>
 					<base_points>15</base_points>
 					<reference>B95</reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Unfazeable</name>
 					<type>Mental</type>
 					<base_points>15</base_points>
 					<reference>B95</reference>
-					<notes></notes>
 				</advantage>
 			</advantage_container>
 			<advantage_container open="yes">
 				<name>Disadvantages</name>
-				<reference></reference>
-				<notes></notes>
 				<advantage>
 					<name>Appearance (Monstrous, Universal)</name>
 					<type>Physical</type>
 					<base_points>-25</base_points>
 					<reference>B21</reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Bad Smell</name>
 					<type>Physical</type>
 					<base_points>-10</base_points>
-					<reference></reference>
 					<notes>-2 Reaction penalty</notes>
 				</advantage>
 				<advantage>
@@ -149,7 +128,6 @@
 					<type>Mental</type>
 					<base_points>-30</base_points>
 					<reference>B125</reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Decreased Intelligence</name>
@@ -157,7 +135,6 @@
 					<levels>2</levels>
 					<points_per_level>-20</points_per_level>
 					<reference>B15</reference>
-					<notes></notes>
 					<attribute_bonus>
 						<attribute>IQ</attribute>
 						<amount per_level="yes">-1</amount>
@@ -168,14 +145,12 @@
 					<type>Physical, Exotic</type>
 					<base_points>-50</base_points>
 					<reference>B130</reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Disturbing Voice</name>
 					<type>Physical</type>
 					<base_points>-10</base_points>
 					<reference>B132</reference>
-					<notes></notes>
 					<prereq_list all="yes">
 						<advantage_prereq has="no">
 							<name compare="is">voice</name>
@@ -188,95 +163,106 @@
 					<type>Physical, Exotic</type>
 					<base_points>-50</base_points>
 					<reference>B137</reference>
-					<notes></notes>
 				</advantage>
 				<advantage_container open="yes" type="metatrait">
 					<name>Meta-Trait: Automaton</name>
 					<reference>B263</reference>
-					<notes></notes>
 					<advantage>
 						<name>Hidebound</name>
 						<type>Physical</type>
 						<base_points>-5</base_points>
 						<reference>B138</reference>
-						<notes></notes>
 					</advantage>
 					<advantage>
 						<name>Incurious (CR: 6)</name>
 						<type>Mental</type>
 						<base_points>-10</base_points>
 						<reference>B140</reference>
-						<notes></notes>
 					</advantage>
 					<advantage>
 						<name>Low Empathy</name>
 						<type>Mental</type>
 						<base_points>-20</base_points>
 						<reference>B142</reference>
-						<notes></notes>
 						<skill_bonus>
 							<name compare="is">acting</name>
 							<specialization compare="is anything"></specialization>
+							<amount per_level="no">-3</amount>
 						</skill_bonus>
 						<skill_bonus>
 							<name compare="is">carousing</name>
 							<specialization compare="is anything"></specialization>
+							<amount per_level="no">-3</amount>
 						</skill_bonus>
 						<skill_bonus>
 							<name compare="is">criminology</name>
 							<specialization compare="is anything"></specialization>
+							<amount per_level="no">-3</amount>
 						</skill_bonus>
 						<skill_bonus>
 							<name compare="is">detect lies</name>
 							<specialization compare="is anything"></specialization>
+							<amount per_level="no">-3</amount>
 						</skill_bonus>
 						<skill_bonus>
 							<name compare="is">diplomacy</name>
 							<specialization compare="is anything"></specialization>
+							<amount per_level="no">-3</amount>
 						</skill_bonus>
 						<skill_bonus>
 							<name compare="is">enthrallment</name>
 							<specialization compare="is anything"></specialization>
+							<amount per_level="no">-3</amount>
 						</skill_bonus>
 						<skill_bonus>
 							<name compare="is">fast-talk</name>
 							<specialization compare="is anything"></specialization>
+							<amount per_level="no">-3</amount>
 						</skill_bonus>
 						<skill_bonus>
 							<name compare="is">interrogation</name>
 							<specialization compare="is anything"></specialization>
+							<amount per_level="no">-3</amount>
 						</skill_bonus>
 						<skill_bonus>
 							<name compare="is">leadership</name>
 							<specialization compare="is anything"></specialization>
+							<amount per_level="no">-3</amount>
 						</skill_bonus>
 						<skill_bonus>
 							<name compare="is">merchant</name>
 							<specialization compare="is anything"></specialization>
+							<amount per_level="no">-3</amount>
 						</skill_bonus>
 						<skill_bonus>
 							<name compare="is">politics</name>
 							<specialization compare="is anything"></specialization>
+							<amount per_level="no">-3</amount>
 						</skill_bonus>
 						<skill_bonus>
 							<name compare="contains">psychology</name>
 							<specialization compare="is anything"></specialization>
+							<amount per_level="no">-3</amount>
 						</skill_bonus>
 						<skill_bonus>
 							<name compare="contains">savoir-faire</name>
 							<specialization compare="is anything"></specialization>
+							<amount per_level="no">-3</amount>
 						</skill_bonus>
 						<skill_bonus>
 							<name compare="is">sex appeal</name>
 							<specialization compare="is anything"></specialization>
+							<amount per_level="no">-3</amount>
 						</skill_bonus>
 						<skill_bonus>
 							<name compare="is">sociology</name>
 							<specialization compare="is anything"></specialization>
+							<amount per_level="no">-3</amount>
 						</skill_bonus>
 						<skill_bonus>
 							<name compare="is">streetwise</name>
 							<specialization compare="is anything"></specialization>
+							<amount per_level="no">-3</amount>
 						</skill_bonus>
 						<prereq_list all="yes">
 							<advantage_prereq has="no">
@@ -305,7 +291,6 @@
 						<type>Physical</type>
 						<base_points>-40</base_points>
 						<reference>B154</reference>
-						<notes></notes>
 					</advantage>
 				</advantage_container>
 				<advantage>
@@ -313,14 +298,12 @@
 					<type>Physical</type>
 					<base_points>-5</base_points>
 					<reference>B146</reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Reprogrammable</name>
 					<type>Mental, Exotic</type>
 					<base_points>-10</base_points>
 					<reference>B150</reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Social Stigma (Dead)</name>
@@ -334,52 +317,38 @@
 					<type>Physical, Exotic</type>
 					<base_points>-30</base_points>
 					<reference>B160</reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Wealth (Dead Broke)</name>
 					<type>Social</type>
 					<base_points>-25</base_points>
 					<reference>B25</reference>
-					<notes></notes>
 				</advantage>
 			</advantage_container>
 			<advantage_container open="yes">
 				<name>Features</name>
-				<reference></reference>
-				<notes></notes>
 				<advantage>
 					<name>Affected by Control Zombie, Pentagram, and Turn Zombie</name>
 					<type>Mental, Supernatural</type>
-					<reference></reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>No Mental Skills</name>
 					<type>Mental, Supernatural</type>
-					<reference></reference>
-					<notes></notes>
 				</advantage>
 				<advantage>
 					<name>Will turn into a skeleton eventually</name>
 					<type>Physical, Supernatural</type>
-					<reference></reference>
-					<notes></notes>
 				</advantage>
 			</advantage_container>
 			<advantage_container open="yes">
 				<name>Quirks</name>
-				<reference></reference>
-				<notes></notes>
 				<advantage>
 					<name>Sexless</name>
 					<type>Physical</type>
 					<base_points>-1</base_points>
 					<reference>B165</reference>
-					<notes></notes>
 				</advantage>
 			</advantage_container>
 		</advantage_container>
 	</advantage_list>
-	<notes></notes>
 </template>

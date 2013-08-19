@@ -4,14 +4,12 @@
 		<advantage_container open="yes" type="race">
 			<name>Felinoid</name>
 			<reference>B261</reference>
-			<notes></notes>
 			<advantage>
 				<name>Acute Hearing</name>
 				<type>Physical</type>
 				<levels>2</levels>
 				<points_per_level>2</points_per_level>
 				<reference>B35</reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>hearing</attribute>
 					<amount per_level="yes">+1</amount>
@@ -23,7 +21,6 @@
 				<levels>1</levels>
 				<points_per_level>2</points_per_level>
 				<reference>B35</reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>taste,smell</attribute>
 					<amount per_level="yes">+1</amount>
@@ -34,26 +31,28 @@
 				<type>Physical, Exotic</type>
 				<base_points>10</base_points>
 				<reference>B41</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Combat Reflexes</name>
 				<type>Mental</type>
 				<base_points>15</base_points>
 				<reference>B43</reference>
-				<notes></notes>
 				<skill_bonus>
 					<name compare="starts with">fast-draw</name>
 					<specialization compare="is anything"></specialization>
+					<amount per_level="no">+1</amount>
 				</skill_bonus>
 				<attribute_bonus>
 					<attribute>dodge</attribute>
+					<amount per_level="no">+1</amount>
 				</attribute_bonus>
 				<attribute_bonus>
 					<attribute>parry</attribute>
+					<amount per_level="no">+1</amount>
 				</attribute_bonus>
 				<attribute_bonus>
 					<attribute>block</attribute>
+					<amount per_level="no">+1</amount>
 				</attribute_bonus>
 			</advantage>
 			<advantage>
@@ -62,7 +61,6 @@
 				<levels>1</levels>
 				<points_per_level>5</points_per_level>
 				<reference>B46</reference>
-				<notes></notes>
 				<dr_bonus>
 					<location>full_body_except_eyes</location>
 					<amount per_level="yes">+1</amount>
@@ -74,7 +72,6 @@
 				<levels>1</levels>
 				<points_per_level>-10</points_per_level>
 				<reference>B15</reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>ST</attribute>
 					<amount per_level="yes">-1</amount>
@@ -84,20 +81,17 @@
 				<name>Feature: Purring Voice</name>
 				<type>Physical</type>
 				<reference>B261</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Feature: Tail</name>
 				<type>Physical</type>
 				<reference>B261</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Impulsiveness (CR: 12)</name>
 				<type>Mental</type>
 				<base_points>-10</base_points>
 				<reference>B139</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Increased Dexterity</name>
@@ -105,7 +99,6 @@
 				<levels>1</levels>
 				<points_per_level>20</points_per_level>
 				<reference>B15</reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>DX</attribute>
 					<amount per_level="yes">+1</amount>
@@ -116,11 +109,8 @@
 				<type>Physical</type>
 				<melee_weapon>
 					<damage>thr cut</damage>
-					<strength></strength>
-					<usage></usage>
 					<reach>C,1</reach>
 					<parry>No</parry>
-					<block></block>
 					<default>
 						<type>DX</type>
 						<modifier>-2</modifier>
@@ -128,18 +118,15 @@
 					<default>
 						<type>Skill</type>
 						<name>Brawling</name>
-						<specialization></specialization>
 						<modifier>-2</modifier>
 					</default>
 					<default>
 						<type>Skill</type>
 						<name>Karate</name>
-						<specialization></specialization>
 						<modifier>-2</modifier>
 					</default>
 				</melee_weapon>
 				<reference>B42</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Sharp Claws (Hands)</name>
@@ -147,11 +134,8 @@
 				<base_points>5</base_points>
 				<melee_weapon>
 					<damage>thr-1 cut</damage>
-					<strength></strength>
-					<usage></usage>
 					<reach>C</reach>
 					<parry>0</parry>
-					<block></block>
 					<default>
 						<type>DX</type>
 						<modifier>0</modifier>
@@ -159,24 +143,20 @@
 					<default>
 						<type>Skill</type>
 						<name>Brawling</name>
-						<specialization></specialization>
 						<modifier>0</modifier>
 					</default>
 					<default>
 						<type>Skill</type>
 						<name>Boxing</name>
-						<specialization></specialization>
 						<modifier>0</modifier>
 					</default>
 					<default>
 						<type>Skill</type>
 						<name>Karate</name>
-						<specialization></specialization>
 						<modifier>0</modifier>
 					</default>
 				</melee_weapon>
 				<reference>B42</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Sharp Teeth</name>
@@ -184,15 +164,11 @@
 				<base_points>1</base_points>
 				<melee_weapon>
 					<damage>thr-1 cut</damage>
-					<strength></strength>
-					<usage></usage>
 					<reach>C</reach>
 					<parry>No</parry>
-					<block></block>
 					<default>
 						<type>Skill</type>
 						<name>Brawling</name>
-						<specialization></specialization>
 						<modifier>0</modifier>
 					</default>
 					<default>
@@ -201,14 +177,12 @@
 					</default>
 				</melee_weapon>
 				<reference>B91</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Sleepy ( 1/2 time)</name>
 				<type>Physical, Exotic</type>
 				<base_points>-8</base_points>
 				<reference>B154</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Temperature Tolerance</name>
@@ -216,9 +190,7 @@
 				<levels>1</levels>
 				<points_per_level>1</points_per_level>
 				<reference>B93</reference>
-				<notes></notes>
 			</advantage>
 		</advantage_container>
 	</advantage_list>
-	<notes></notes>
 </template>

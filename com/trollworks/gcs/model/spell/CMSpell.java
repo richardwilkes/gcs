@@ -295,20 +295,18 @@ public class CMSpell extends CMRow {
 		if (!canHaveChildren()) {
 			if (mTechLevel != null) {
 				if (getCharacter() != null) {
-					if (mTechLevel.length() > 0) {
-						out.simpleTag(TAG_TECH_LEVEL, mTechLevel);
-					}
+					out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
 				} else {
 					out.startTag(TAG_TECH_LEVEL);
 					out.finishEmptyTagEOL();
 				}
 			}
-			out.simpleTag(TAG_COLLEGE, mCollege);
-			out.simpleTag(TAG_SPELL_CLASS, mSpellClass);
-			out.simpleTag(TAG_CASTING_COST, mCastingCost);
-			out.simpleTag(TAG_MAINTENANCE_COST, mMaintenance);
-			out.simpleTag(TAG_CASTING_TIME, mCastingTime);
-			out.simpleTag(TAG_DURATION, mDuration);
+			out.simpleTagNotEmpty(TAG_COLLEGE, mCollege);
+			out.simpleTagNotEmpty(TAG_SPELL_CLASS, mSpellClass);
+			out.simpleTagNotEmpty(TAG_CASTING_COST, mCastingCost);
+			out.simpleTagNotEmpty(TAG_MAINTENANCE_COST, mMaintenance);
+			out.simpleTagNotEmpty(TAG_CASTING_TIME, mCastingTime);
+			out.simpleTagNotEmpty(TAG_DURATION, mDuration);
 			if (mPoints != 1) {
 				out.simpleTag(TAG_POINTS, mPoints);
 			}
@@ -316,7 +314,7 @@ public class CMSpell extends CMRow {
 				weapon.save(out);
 			}
 		}
-		out.simpleTag(TAG_REFERENCE, mReference);
+		out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
 	}
 
 	/** @return The weapon list. */

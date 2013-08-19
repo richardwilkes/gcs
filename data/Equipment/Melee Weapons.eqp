@@ -22,23 +22,19 @@
 			<default>
 				<type>Skill</type>
 				<name>Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Flail</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -62,43 +58,36 @@
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -116,47 +105,39 @@
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -180,25 +161,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -216,25 +193,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -262,55 +235,46 @@
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Jitte/Sai</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Knife</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Smallsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Tonfa</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -328,59 +292,49 @@
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Jitte/Sai</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Knife</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Smallsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Tonfa</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -400,7 +354,6 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
@@ -408,7 +361,6 @@
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -420,7 +372,6 @@
 		<reference>B271</reference>
 		<melee_weapon>
 			<damage>thr cr</damage>
-			<strength></strength>
 			<usage>Punch</usage>
 			<reach>C</reach>
 			<parry>0</parry>
@@ -432,23 +383,19 @@
 			<default>
 				<type>Skill</type>
 				<name>Boxing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -472,43 +419,36 @@
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -526,47 +466,39 @@
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -590,59 +522,49 @@
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Jitte/Sai</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Knife</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Smallsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Tonfa</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -666,43 +588,36 @@
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -720,47 +635,39 @@
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -773,7 +680,6 @@
 		<melee_weapon>
 			<damage>sw+1d cut</damage>
 			<strength>10&#8225;</strength>
-			<usage></usage>
 			<reach>1</reach>
 			<parry>No</parry>
 			<block>No</block>
@@ -784,29 +690,24 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Flail</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -830,55 +731,46 @@
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Jitte/Sai</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Knife</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Smallsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Tonfa</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -896,59 +788,49 @@
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Jitte/Sai</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Knife</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Smallsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Tonfa</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -972,31 +854,26 @@
 			<default>
 				<type>Skill</type>
 				<name>Knife</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Main-Gauche</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -1009,7 +886,6 @@
 			<rate_of_fire>1</rate_of_fire>
 			<shots>T(1)</shots>
 			<bulk>-1</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1021,7 +897,6 @@
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1045,29 +920,24 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Flail</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Flail</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Kusari</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1091,47 +961,39 @@
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Smallsword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1143,15 +1005,12 @@
 		<reference>B272</reference>
 		<melee_weapon>
 			<damage>see B405</damage>
-			<strength></strength>
-			<usage></usage>
 			<reach>C</reach>
 			<parry>No</parry>
 			<block>No</block>
 			<default>
 				<type>Skill</type>
 				<name>Garrote</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
@@ -1159,7 +1018,6 @@
 				<modifier>-4</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1183,25 +1041,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</melee_weapon>
@@ -1219,29 +1073,24 @@
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1265,29 +1114,24 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Flail</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1311,25 +1155,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -1347,29 +1187,24 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1393,25 +1228,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</melee_weapon>
@@ -1429,25 +1260,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</melee_weapon>
@@ -1465,29 +1292,24 @@
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1511,19 +1333,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Flail</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
@@ -1536,7 +1355,6 @@
 			<rate_of_fire>1</rate_of_fire>
 			<shots>T(1)</shots>
 			<bulk>-2</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1548,7 +1366,6 @@
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1572,19 +1389,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</melee_weapon>
@@ -1597,7 +1411,6 @@
 			<rate_of_fire>1</rate_of_fire>
 			<shots>T(1)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1611,7 +1424,6 @@
 			<default>
 				<type>Skill</type>
 				<name>Spear Thrower</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
@@ -1621,7 +1433,6 @@
 				<modifier>-2</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1645,43 +1456,36 @@
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -1699,47 +1503,39 @@
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1763,25 +1559,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -1799,25 +1591,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -1845,29 +1633,24 @@
 			<default>
 				<type>Skill</type>
 				<name>Kusari</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Monowire Whip</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Flail</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Whip</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1891,17 +1674,14 @@
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Lance</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1925,31 +1705,26 @@
 			<default>
 				<type>Skill</type>
 				<name>Knife</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Main-Gauche</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -1967,31 +1742,26 @@
 			<default>
 				<type>Skill</type>
 				<name>Knife</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Main-Gauche</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -2004,7 +1774,6 @@
 			<rate_of_fire>1</rate_of_fire>
 			<shots>T(1)</shots>
 			<bulk>-2</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -2016,7 +1785,6 @@
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -2040,43 +1808,36 @@
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -2094,47 +1855,39 @@
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -2158,19 +1911,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</melee_weapon>
@@ -2188,23 +1938,19 @@
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -2228,32 +1974,27 @@
 			<default>
 				<type>Skill</type>
 				<name>Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Flail</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
 		<ranged_weapon>
 			<damage>sw+3 cr</damage>
 			<strength>12</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>x0.5/x1</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>T(1)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -2265,7 +2006,6 @@
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -2289,29 +2029,24 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Flail</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -2324,7 +2059,6 @@
 		<melee_weapon>
 			<damage>sw+1d-2(10) cut</damage>
 			<strength>5</strength>
-			<usage></usage>
 			<reach>1-7*</reach>
 			<parry>-2U</parry>
 			<block>No</block>
@@ -2335,23 +2069,19 @@
 			<default>
 				<type>Skill</type>
 				<name>Monowire Whip</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Kusari</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Whip</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -2375,23 +2105,19 @@
 			<default>
 				<type>Skill</type>
 				<name>Flail</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Flail</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -2415,25 +2141,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</melee_weapon>
@@ -2451,29 +2173,24 @@
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -2497,19 +2214,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</melee_weapon>
@@ -2527,19 +2241,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</melee_weapon>
@@ -2567,25 +2278,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -2603,25 +2310,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -2645,19 +2348,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Flail</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Flail</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
@@ -2665,7 +2365,6 @@
 				<modifier>-6</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -2689,19 +2388,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Flail</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
@@ -2729,25 +2425,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</melee_weapon>
@@ -2765,29 +2457,24 @@
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -2811,19 +2498,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</melee_weapon>
@@ -2841,23 +2525,19 @@
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -2881,25 +2561,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -2917,25 +2593,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -2963,41 +2635,34 @@
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Main-Gauche</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Smallsword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -3021,43 +2686,36 @@
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Main-Gauche</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Smallsword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -3075,47 +2733,39 @@
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Main-Gauche</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Smallsword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -3139,11 +2789,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment_container open="yes">
 		<description>Scabbard, Knife</description>
@@ -3151,8 +2799,6 @@
 		<legality_class>4</legality_class>
 		<value>3.0</value>
 		<weight units="lb">0.3</weight>
-		<reference></reference>
-		<notes></notes>
 	</equipment_container>
 	<equipment_container open="yes">
 		<description>Scabbard, Sword</description>
@@ -3160,8 +2806,6 @@
 		<legality_class>4</legality_class>
 		<value>5.0</value>
 		<weight units="lb">0.5</weight>
-		<reference></reference>
-		<notes></notes>
 	</equipment_container>
 	<equipment>
 		<quantity>1</quantity>
@@ -3185,25 +2829,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Flail</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</melee_weapon>
@@ -3221,25 +2861,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Flail</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</melee_weapon>
@@ -3267,37 +2903,31 @@
 			<default>
 				<type>Skill</type>
 				<name>Smallsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Main-Gauche</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -3315,41 +2945,34 @@
 			<default>
 				<type>Skill</type>
 				<name>Smallsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Main-Gauche</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -3373,55 +2996,46 @@
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Jitte/Sai</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Knife</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Smallsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Tonfa</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -3439,59 +3053,49 @@
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Jitte/Sai</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Knife</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Smallsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Tonfa</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -3515,31 +3119,26 @@
 			<default>
 				<type>Skill</type>
 				<name>Knife</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Main-Gauche</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -3557,31 +3156,26 @@
 			<default>
 				<type>Skill</type>
 				<name>Knife</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Main-Gauche</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -3594,7 +3188,6 @@
 			<rate_of_fire>1</rate_of_fire>
 			<shots>T(1)</shots>
 			<bulk>-1</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -3606,7 +3199,6 @@
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -3630,19 +3222,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Flail</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
@@ -3655,7 +3244,6 @@
 			<rate_of_fire>1</rate_of_fire>
 			<shots>T(1)</shots>
 			<bulk>-3</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -3667,7 +3255,6 @@
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -3691,41 +3278,34 @@
 			<default>
 				<type>Skill</type>
 				<name>Smallsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Main-Gauche</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -3749,19 +3329,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</melee_weapon>
@@ -3779,19 +3356,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Spear</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Staff</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</melee_weapon>
@@ -3804,7 +3378,6 @@
 			<rate_of_fire>1</rate_of_fire>
 			<shots>T(1)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -3818,7 +3391,6 @@
 			<default>
 				<type>Skill</type>
 				<name>Spear Thrower</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
@@ -3828,7 +3400,6 @@
 				<modifier>-2</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -3841,14 +3412,12 @@
 		<melee_weapon>
 			<damage>HT-3(0.5) aff</damage>
 			<strength>2</strength>
-			<usage></usage>
 			<reach>C,1</reach>
 			<parry>No</parry>
 			<block>No</block>
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
@@ -3856,7 +3425,6 @@
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -3880,19 +3448,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Flail</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
@@ -3905,7 +3470,6 @@
 			<rate_of_fire>1</rate_of_fire>
 			<shots>T(1)</shots>
 			<bulk>-3</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -3917,7 +3481,6 @@
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -3941,43 +3504,36 @@
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -3995,47 +3551,39 @@
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -4059,25 +3607,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -4095,25 +3639,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -4141,43 +3681,36 @@
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -4195,47 +3728,39 @@
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Rapier</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Saber</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -4259,25 +3784,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -4295,29 +3816,24 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Sword</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -4341,25 +3857,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Axe/Mace</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Polearm</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Two-Handed Flail</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</melee_weapon>
@@ -4376,7 +3888,6 @@
 		<melee_weapon>
 			<damage>sw-2(0.5) cr</damage>
 			<strength>6</strength>
-			<usage></usage>
 			<reach>1</reach>
 			<parry>-2U</parry>
 			<block>No</block>
@@ -4387,23 +3898,19 @@
 			<default>
 				<type>Skill</type>
 				<name>Whip</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Kusari</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Monowire Whip</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -4416,7 +3923,6 @@
 		<melee_weapon>
 			<damage>sw-2(0.5) cr</damage>
 			<strength>7</strength>
-			<usage></usage>
 			<reach>1-2*</reach>
 			<parry>-2U</parry>
 			<block>No</block>
@@ -4427,23 +3933,19 @@
 			<default>
 				<type>Skill</type>
 				<name>Whip</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Kusari</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Monowire Whip</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -4456,7 +3958,6 @@
 		<melee_weapon>
 			<damage>sw-2(0.5) cr</damage>
 			<strength>8</strength>
-			<usage></usage>
 			<reach>1-3*</reach>
 			<parry>-2U</parry>
 			<block>No</block>
@@ -4467,23 +3968,19 @@
 			<default>
 				<type>Skill</type>
 				<name>Whip</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Kusari</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Monowire Whip</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -4496,7 +3993,6 @@
 		<melee_weapon>
 			<damage>sw-2(0.5) cr</damage>
 			<strength>9</strength>
-			<usage></usage>
 			<reach>1-4*</reach>
 			<parry>-2U</parry>
 			<block>No</block>
@@ -4507,23 +4003,19 @@
 			<default>
 				<type>Skill</type>
 				<name>Whip</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Kusari</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Monowire Whip</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -4536,7 +4028,6 @@
 		<melee_weapon>
 			<damage>sw-2(0.5) cr</damage>
 			<strength>10</strength>
-			<usage></usage>
 			<reach>1-5*</reach>
 			<parry>-2U</parry>
 			<block>No</block>
@@ -4547,23 +4038,19 @@
 			<default>
 				<type>Skill</type>
 				<name>Whip</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Kusari</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Monowire Whip</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -4576,7 +4063,6 @@
 		<melee_weapon>
 			<damage>sw-2(0.5) cr</damage>
 			<strength>11</strength>
-			<usage></usage>
 			<reach>1-6*</reach>
 			<parry>-2U</parry>
 			<block>No</block>
@@ -4587,23 +4073,19 @@
 			<default>
 				<type>Skill</type>
 				<name>Whip</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Kusari</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Monowire Whip</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -4616,7 +4098,6 @@
 		<melee_weapon>
 			<damage>sw-2(0.5) cr</damage>
 			<strength>12</strength>
-			<usage></usage>
 			<reach>1-7*</reach>
 			<parry>-2U</parry>
 			<block>No</block>
@@ -4627,23 +4108,19 @@
 			<default>
 				<type>Skill</type>
 				<name>Whip</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Kusari</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Monowire Whip</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -4667,31 +4144,26 @@
 			<default>
 				<type>Skill</type>
 				<name>Knife</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Force Sword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Main-Gauche</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Shortsword</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sword!</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -4704,7 +4176,6 @@
 			<rate_of_fire>1</rate_of_fire>
 			<shots>T(1)</shots>
 			<bulk>-2</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -4716,6 +4187,5 @@
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 </equipment_list>

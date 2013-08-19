@@ -135,6 +135,8 @@ class Msgs {
 	/** Used by {@link CSSheetPreferences}. */
 	public static String	IMAGE_FILES;
 	/** Used by {@link CSSheetPreferences}. */
+	public static String	HTML_FILES;
+	/** Used by {@link CSSheetPreferences}. */
 	public static String	TECH_LEVEL;
 	/** Used by {@link CSSheetPreferences}. */
 	public static String	TECH_LEVEL_TOOLTIP;
@@ -144,6 +146,12 @@ class Msgs {
 	public static String	PNG_RESOLUTION_TOOLTIP;
 	/** Used by {@link CSSheetPreferences}. */
 	public static String	DPI;
+	/** Used by {@link CSSheetPreferences}. */
+	public static String	OPTIONAL_DICE_RULES;
+	/** Used by {@link CSSheetPreferences}. */
+	public static String	HTML_TEMPLATE_OVERRIDE;
+	/** Used by {@link CSSheetPreferences}. */
+	public static String	HTML_TEMPLATE_OVERRIDE_TOOLTIP;
 
 	/** Used by {@link CSGeneralPreferences} and {@link CSSheetPreferences}. */
 	public static String	MISCELLANEOUS;

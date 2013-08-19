@@ -32,6 +32,10 @@ class Msgs {
 	/** Used by {@link CSMain}. */
 	public static String	HTML_OPTION;
 	/** Used by {@link CSMain}. */
+	public static String	HTML_TEMPLATE_OPTION;
+	/** Used by {@link CSMain}. */
+	public static String	HTML_TEMPLATE_ARG;
+	/** Used by {@link CSMain}. */
 	public static String	PNG_OPTION;
 	/** Used by {@link CSMain}. */
 	public static String	SIZE_OPTION;
@@ -66,6 +70,8 @@ class Msgs {
 	public static String	INVALID_PAPER_SIZE;
 	/** Used by {@link CSBatchApplication}. */
 	public static String	INVALID_PAPER_MARGINS;
+	/** Used by {@link CSBatchApplication}. */
+	public static String	TEMPLATE_USED;
 
 	/** Used by {@link CSApplication}. */
 	public static String	SHEET_DESCRIPTION;

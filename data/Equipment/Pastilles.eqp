@@ -3,291 +3,233 @@
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Aging</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1650.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Awakening</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1000.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M217</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Craftsmanship</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>2200.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Death</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1000.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Dragonslaying</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>2600.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M213</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Endurance</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>2800.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Fear</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>450.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Fetching and Carrying</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>600.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Foolishness</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1000.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Foresight</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>4000.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M218</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Friendship</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1100.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Fustration</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1300.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Hatred</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>600.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Jealousy</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>800.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Leadership</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>3300.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Lecherousness</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1000.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Long Slumber</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>18000.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M217</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Luck</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>2600.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Madness</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>400.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Magic Resistance</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>3200.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Memory</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>3000.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Music</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>600.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Odium</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>2000.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Self-Love</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1500.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Sleep</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>240.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M218</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Stealth</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1000.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Tranquility</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1000.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M218</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Truth</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>2200.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Pastille: Weakness</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>800.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 </equipment_list>

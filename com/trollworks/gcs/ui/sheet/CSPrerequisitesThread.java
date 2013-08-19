@@ -29,6 +29,7 @@ import com.trollworks.gcs.model.advantage.CMAdvantage;
 import com.trollworks.gcs.model.equipment.CMEquipment;
 import com.trollworks.gcs.model.feature.CMBonus;
 import com.trollworks.gcs.model.feature.CMFeature;
+import com.trollworks.gcs.model.modifier.CMModifier;
 import com.trollworks.gcs.model.skill.CMSkill;
 import com.trollworks.gcs.model.skill.CMTechnique;
 import com.trollworks.gcs.model.spell.CMSpell;
@@ -96,7 +97,7 @@ public class CSPrerequisitesThread extends Thread implements TKNotifierTarget {
 		mSheet = sheet;
 		mCharacter = sheet.getCharacter();
 		mNeedUpdate = true;
-		mCharacter.addTarget(this, CMCharacter.ID_STRENGTH, CMCharacter.ID_DEXTERITY, CMCharacter.ID_INTELLIGENCE, CMCharacter.ID_HEALTH, CMSpell.ID_NAME, CMSpell.ID_COLLEGE, CMSpell.ID_POINTS, CMSpell.ID_LIST_CHANGED, CMSkill.ID_NAME, CMSkill.ID_SPECIALIZATION, CMSkill.ID_LEVEL, CMSkill.ID_RELATIVE_LEVEL, CMSkill.ID_POINTS, CMSkill.ID_TECH_LEVEL, CMSkill.ID_LIST_CHANGED, CMAdvantage.ID_NAME, CMAdvantage.ID_LEVELS, CMAdvantage.ID_LIST_CHANGED, CMEquipment.ID_EXTENDED_WEIGHT, CMEquipment.ID_EQUIPPED, CMEquipment.ID_QUANTITY, CMEquipment.ID_LIST_CHANGED);
+		mCharacter.addTarget(this, CMCharacter.ID_STRENGTH, CMCharacter.ID_DEXTERITY, CMCharacter.ID_INTELLIGENCE, CMCharacter.ID_HEALTH, CMSpell.ID_NAME, CMSpell.ID_COLLEGE, CMSpell.ID_POINTS, CMSpell.ID_LIST_CHANGED, CMSkill.ID_NAME, CMSkill.ID_SPECIALIZATION, CMSkill.ID_LEVEL, CMSkill.ID_RELATIVE_LEVEL, CMSkill.ID_ENCUMBRANCE_PENALTY, CMSkill.ID_POINTS, CMSkill.ID_TECH_LEVEL, CMSkill.ID_LIST_CHANGED, CMAdvantage.ID_NAME, CMAdvantage.ID_LEVELS, CMAdvantage.ID_LIST_CHANGED, CMEquipment.ID_EXTENDED_WEIGHT, CMEquipment.ID_EQUIPPED, CMEquipment.ID_QUANTITY, CMEquipment.ID_LIST_CHANGED);
 		MAP.put(mCharacter, this);
 	}
 
@@ -184,6 +185,26 @@ public class CSPrerequisitesThread extends Thread implements TKNotifierTarget {
 				}
 				list.add(feature);
 			}
+
+			if (row instanceof CMAdvantage) {
+				CMAdvantage advantage = (CMAdvantage) row;
+				for (CMModifier modifier : advantage.getModifiers()) {
+					for (CMFeature feature : modifier.getFeatures()) {
+						String key = feature.getKey().toLowerCase();
+						ArrayList<CMFeature> list = map.get(key);
+
+						if (list == null) {
+							list = new ArrayList<CMFeature>(1);
+							map.put(key, list);
+						}
+						if (feature instanceof CMBonus) {
+							((CMBonus) feature).getAmount().setLevel(modifier.getLevels());
+						}
+						list.add(feature);
+					}
+				}
+			}
+
 			checkIfUpdated();
 		}
 	}

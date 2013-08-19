@@ -4,14 +4,12 @@
 		<advantage_container open="yes" type="metatrait">
 			<name>Meta-Trait: Body of Fire</name>
 			<reference>B262</reference>
-			<notes></notes>
 			<advantage>
 				<name>Attribute Modifier: Decreased ST</name>
 				<type>Physical</type>
 				<levels>10</levels>
 				<points_per_level>-10</points_per_level>
 				<reference>B14</reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>ST</attribute>
 					<amount per_level="yes">-1</amount>
@@ -23,21 +21,18 @@
 				<levels>10</levels>
 				<points_per_level>3</points_per_level>
 				<reference>B47</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Doesn't Breathe (Oxygen Consumption, -50%)</name>
 				<type>Physical, Exotic</type>
 				<base_points>10</base_points>
 				<reference>B49</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Injury Tolerance (Diffuse)</name>
 				<type>Physical, Exotic</type>
 				<base_points>100</base_points>
 				<reference>B60</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Innate Attack (Burn, always on, -40%; aura, +80%; melee attack, reach C, -30%)</name>
@@ -45,21 +40,18 @@
 				<levels>1</levels>
 				<points_per_level>6</points_per_level>
 				<reference>B61</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>No Manipulators</name>
 				<type>Physical</type>
 				<base_points>-50</base_points>
 				<reference>B145</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Resistant (Immunity to Metabolic Hazards)</name>
 				<type>Physical</type>
 				<base_points>30</base_points>
 				<reference>B81</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Secondary Attribute Modifier: HP</name>
@@ -67,7 +59,6 @@
 				<levels>10</levels>
 				<points_per_level>2</points_per_level>
 				<reference>B16</reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>HP</attribute>
 					<amount per_level="yes">+1</amount>
@@ -78,9 +69,7 @@
 				<type>Physical, Exotic</type>
 				<base_points>-40</base_points>
 				<reference>B161</reference>
-				<notes></notes>
 			</advantage>
 		</advantage_container>
 	</advantage_list>
-	<notes></notes>
 </template>

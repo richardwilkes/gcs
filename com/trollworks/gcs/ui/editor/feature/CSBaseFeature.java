@@ -34,6 +34,7 @@ import com.trollworks.gcs.model.feature.CMFeature;
 import com.trollworks.gcs.model.feature.CMLeveledAmount;
 import com.trollworks.gcs.model.feature.CMSkillBonus;
 import com.trollworks.gcs.model.feature.CMSpellBonus;
+import com.trollworks.gcs.model.feature.CMWeaponBonus;
 import com.trollworks.gcs.ui.common.CSImage;
 import com.trollworks.toolkit.text.TKNumberFilter;
 import com.trollworks.toolkit.text.TKTextUtility;
@@ -90,6 +91,9 @@ public abstract class CSBaseFeature extends TKPanel implements ActionListener, T
 		}
 		if (feature instanceof CMSpellBonus) {
 			return new CSSpellBonus(row, (CMSpellBonus) feature);
+		}
+		if (feature instanceof CMWeaponBonus) {
+			return new CSWeaponBonus(row, (CMWeaponBonus) feature);
 		}
 		if (feature instanceof CMCostReduction) {
 			return new CSCostReduction(row, (CMCostReduction) feature);
@@ -163,8 +167,8 @@ public abstract class CSBaseFeature extends TKPanel implements ActionListener, T
 	 * @param parent The panel to add the popup to.
 	 */
 	protected void addChangeBaseTypePopup(TKPanel parent) {
-		String[] keys = { CMAttributeBonus.TAG_ROOT, CMDRBonus.TAG_ROOT, CMSkillBonus.TAG_ROOT, CMSpellBonus.TAG_ROOT, CMCostReduction.TAG_ROOT };
-		String[] titles = { Msgs.ATTRIBUTE_BONUS, Msgs.DR_BONUS, Msgs.SKILL_BONUS, Msgs.SPELL_BONUS, Msgs.COST_REDUCTION };
+		String[] keys = { CMAttributeBonus.TAG_ROOT, CMDRBonus.TAG_ROOT, CMSkillBonus.TAG_ROOT, CMSpellBonus.TAG_ROOT, CMWeaponBonus.TAG_ROOT, CMCostReduction.TAG_ROOT };
+		String[] titles = { Msgs.ATTRIBUTE_BONUS, Msgs.DR_BONUS, Msgs.SKILL_BONUS, Msgs.SPELL_BONUS, Msgs.WEAPON_BONUS, Msgs.COST_REDUCTION };
 		TKMenu menu = new TKMenu();
 		int selection = 0;
 		String current = mFeature.getXMLTag();
@@ -197,6 +201,19 @@ public abstract class CSBaseFeature extends TKPanel implements ActionListener, T
 	 * @param decimal Whether decimal values need to be allowed.
 	 */
 	protected void addLeveledAmountPopups(TKPanel parent, CMLeveledAmount amt, int maxDigits, boolean decimal) {
+		addLeveledAmountPopups(parent, amt, maxDigits, decimal, false);
+	}
+
+	/**
+	 * Adds the popup that allows an integer comparison to be changed.
+	 * 
+	 * @param parent The panel to add the text field and popup to.
+	 * @param amt The current leveled amount object.
+	 * @param maxDigits The maximum number of digits to allow.
+	 * @param decimal Whether decimal values need to be allowed.
+	 * @param usePerDie Whether to use the "per die" message or the "per level" message.
+	 */
+	protected void addLeveledAmountPopups(TKPanel parent, CMLeveledAmount amt, int maxDigits, boolean decimal, boolean usePerDie) {
 		TKMenu menu = new TKMenu();
 		TKTextField field = new TKTextField((decimal ? "+." : "+") + TKTextUtility.makeFiller(maxDigits, 'M')); //$NON-NLS-1$ //$NON-NLS-2$
 		TKPopupMenu popup;
@@ -209,7 +226,7 @@ public abstract class CSBaseFeature extends TKPanel implements ActionListener, T
 		parent.add(field);
 
 		addLeveledAmountMenuItem(menu, " ", Boolean.FALSE); //$NON-NLS-1$
-		addLeveledAmountMenuItem(menu, Msgs.PER_LEVEL, Boolean.TRUE);
+		addLeveledAmountMenuItem(menu, usePerDie ? Msgs.PER_DIE : Msgs.PER_LEVEL, Boolean.TRUE);
 		popup = new TKPopupMenu(menu, this, false, amt.isPerLevel() ? 1 : 0);
 		popup.setOnlySize(popup.getPreferredSize());
 		parent.add(popup);
@@ -325,6 +342,8 @@ public abstract class CSBaseFeature extends TKPanel implements ActionListener, T
 			feature = new CMSkillBonus();
 		} else if (CMSpellBonus.TAG_ROOT.equals(to)) {
 			feature = new CMSpellBonus();
+		} else if (CMWeaponBonus.TAG_ROOT.equals(to)) {
+			feature = new CMWeaponBonus();
 		} else if (CMCostReduction.TAG_ROOT.equals(to)) {
 			feature = new CMCostReduction();
 		} else {
@@ -348,6 +367,8 @@ public abstract class CSBaseFeature extends TKPanel implements ActionListener, T
 				feature = new CMSkillBonus();
 			} else if (CMSpellBonus.TAG_ROOT == sLastItemType) {
 				feature = new CMSpellBonus();
+			} else if (CMWeaponBonus.TAG_ROOT == sLastItemType) {
+				feature = new CMWeaponBonus();
 			} else if (CMCostReduction.TAG_ROOT == sLastItemType) {
 				feature = new CMCostReduction();
 			} else {

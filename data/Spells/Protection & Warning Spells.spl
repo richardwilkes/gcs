@@ -9,7 +9,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M167</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shield</name>
@@ -25,7 +24,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>6 hrs</duration>
 		<reference>M169</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">purify air</name>
@@ -44,7 +42,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M168</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">shield\</name>
@@ -63,7 +60,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M166</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<advantage_prereq has="yes">
 				<name compare="is">magery: protection college</name>
@@ -86,7 +82,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M168</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">deflect missile</name>
@@ -102,7 +97,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M187</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">cold</name>
@@ -118,7 +112,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M143</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>
@@ -134,7 +127,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>-</duration>
 		<reference>M166</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">sense danger</name>
@@ -153,7 +145,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M170</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -184,7 +175,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M170</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">force dome</name>
@@ -200,7 +190,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M148</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">body control</college>
@@ -225,7 +214,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M167</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">block</name>
@@ -241,7 +229,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M169</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">resist pain</name>
@@ -258,7 +245,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>6 hrs</duration>
 		<reference>M166</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="yes">
 				<name compare="contains">magery</name>
@@ -276,7 +262,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M168</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>
@@ -295,7 +280,6 @@
 		<casting_time>5 min</casting_time>
 		<duration>10 hr</duration>
 		<reference>M168</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<spell_prereq has="yes">
@@ -328,7 +312,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 hrs</duration>
 		<reference>M167</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sense danger</name>
@@ -344,7 +327,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M168</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">mirror</name>
@@ -360,7 +342,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M190</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">create acid</name>
@@ -376,7 +357,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M90</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">remove contagion</name>
@@ -395,7 +375,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M196</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">air</college>
@@ -412,7 +391,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M91</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">vigor</name>
@@ -428,7 +406,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M169</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">weather dome</name>
@@ -444,7 +421,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M182</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">radiation</college>
@@ -461,7 +437,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M173</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">sound</college>
@@ -478,7 +453,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M186</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<prereq_list all="yes">
 				<spell_prereq has="yes">
@@ -502,7 +476,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M168</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">catch missile</name>
@@ -518,7 +491,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M168</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">missile shield</name>
@@ -537,7 +509,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M166</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">sense foes</name>
@@ -557,7 +528,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M167</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">sense danger</name>
@@ -576,7 +546,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M169</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">continual light</name>
@@ -595,7 +564,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M167</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<advantage_prereq has="yes">
 				<name compare="is">magery: protection college</name>
@@ -618,7 +586,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M170</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">watchdog</name>
@@ -642,7 +609,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M167</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>
@@ -661,7 +627,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M185</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">shield</name>
@@ -680,7 +645,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M170</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">force dome</name>
@@ -711,7 +675,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M170</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">utter dome</name>
@@ -730,7 +693,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M74</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">heat</name>
@@ -746,7 +708,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>10 hrs</duration>
 		<reference>M167</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sense danger</name>
@@ -762,7 +723,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>6 hrs</duration>
 		<reference>M169</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">water</college>

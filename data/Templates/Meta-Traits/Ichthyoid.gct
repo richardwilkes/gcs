@@ -4,21 +4,17 @@
 		<advantage_container open="yes" type="metatrait">
 			<name>Meta-Trait: Ichthyoid</name>
 			<reference>B263</reference>
-			<notes></notes>
 			<advantage>
 				<name>No Legs (Aquatic)</name>
 				<type>Physical, Exotic</type>
 				<reference>B145</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>No Manipulators</name>
 				<type>Physical</type>
 				<base_points>-50</base_points>
 				<reference>B145</reference>
-				<notes></notes>
 			</advantage>
 		</advantage_container>
 	</advantage_list>
-	<notes></notes>
 </template>

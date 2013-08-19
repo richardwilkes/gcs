@@ -3,21 +3,17 @@
 	<advantage_list>
 		<advantage_container open="yes" type="race">
 			<name>Vampire</name>
-			<reference></reference>
-			<notes></notes>
 			<advantage>
 				<name>Alternate Form (Bat)</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>
 				<reference>B83</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Alternate Form (Wolf)</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>
 				<reference>B83</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Attribute Modifier: ST</name>
@@ -25,7 +21,6 @@
 				<levels>6</levels>
 				<points_per_level>10</points_per_level>
 				<reference>B14</reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>ST</attribute>
 					<amount per_level="yes">+1</amount>
@@ -36,63 +31,54 @@
 				<type>Physical, Exotic</type>
 				<base_points>-60</base_points>
 				<reference>B130</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Divine Curse (Cannot enter dwelling for the first time unless invited))</name>
 				<type>Mental, Supernatural</type>
 				<base_points>-10</base_points>
 				<reference>B132</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Doesn't Breathe</name>
 				<type>Physical, Exotic</type>
 				<base_points>20</base_points>
 				<reference>B49</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Draining (Human blood, illegal)</name>
 				<type>Physical, Supernatural</type>
 				<base_points>-10</base_points>
 				<reference>B132</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Dread (Garlic)</name>
 				<type>Mental, Supernatural</type>
 				<base_points>-10</base_points>
 				<reference>B132</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Dread (Religious symbols, 5 yards)</name>
 				<type>Mental, Supernatural</type>
 				<base_points>-14</base_points>
 				<reference>B132</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Dread (Running Water)</name>
 				<type>Mental, Supernatural</type>
 				<base_points>-20</base_points>
 				<reference>B132</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Injury Tolerance (Unliving)</name>
 				<type>Physical, Exotic</type>
 				<base_points>20</base_points>
 				<reference>B61</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Insubstantiality (Costs 2 FP, -10%)</name>
 				<type>Mental/Physical, Exotic</type>
 				<base_points>72</base_points>
 				<reference>B62</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Night Vision</name>
@@ -100,35 +86,30 @@
 				<levels>1</levels>
 				<points_per_level>1</points_per_level>
 				<reference>B71</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>No Body Heat (Temporary)</name>
 				<type>Physical, Supernatural</type>
 				<base_points>-1</base_points>
 				<reference>B157</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>No Reflection</name>
 				<type>Physical, Supernatural</type>
 				<base_points>-10</base_points>
 				<reference>B157</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Pallor (Temporary)</name>
 				<type>Physical, Supernatural</type>
 				<base_points>-5</base_points>
 				<reference>B157</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Resistant (Immunity to Metabolic Hazards)</name>
 				<type>Physical</type>
 				<base_points>30</base_points>
 				<reference>B81</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Secondary Attribute Modifier: HP</name>
@@ -136,7 +117,6 @@
 				<levels>4</levels>
 				<points_per_level>2</points_per_level>
 				<reference>B16</reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>HP</attribute>
 					<amount per_level="yes">+1</amount>
@@ -148,64 +128,53 @@
 				<levels>3</levels>
 				<points_per_level>5</points_per_level>
 				<reference>B16</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Speak With Animals (Wolves and Bats, -60%)</name>
 				<type>Mental, Exotic</type>
 				<base_points>10</base_points>
 				<reference>B87</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Sterile</name>
 				<type>Physical</type>
-				<reference></reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Unaging</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>
 				<reference>B95</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Uncontrollable Appetite (Blood, CR: 12)</name>
 				<type>Mental, Supernatural</type>
 				<base_points>-15</base_points>
 				<reference>B159</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Unhealing (Partial)</name>
 				<type>Physical, Exotic</type>
 				<base_points>-20</base_points>
 				<reference>B160</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Unkillable 2 (Achilles' Heel: Wood, -50%)</name>
 				<type>Physical, Exotic</type>
 				<base_points>100</base_points>
 				<reference>B95</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Vampiric Bite</name>
 				<type>Physical, Exotic</type>
 				<base_points>30</base_points>
 				<reference>B96</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Weakness (Sunlight, 1D/Min)</name>
 				<type>Physical, Exotic</type>
 				<base_points>-40</base_points>
 				<reference>B161</reference>
-				<notes></notes>
 			</advantage>
 		</advantage_container>
 	</advantage_list>
-	<notes></notes>
 </template>

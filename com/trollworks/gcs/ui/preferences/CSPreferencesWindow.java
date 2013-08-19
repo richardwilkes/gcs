@@ -45,6 +45,7 @@ public class CSPreferencesWindow extends CSWindow implements ActionListener {
 	/** Initializes the services controlled by these preferences. */
 	public static void initialize() {
 		CSGeneralPreferences.initialize();
+		CSSheetPreferences.initialize();
 		CSFontPreferences.initialize();
 	}
 

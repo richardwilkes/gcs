@@ -6,8 +6,6 @@
 		<legality_class>-</legality_class>
 		<value>5.0</value>
 		<weight units="lb">0.25</weight>
-		<reference></reference>
-		<notes></notes>
 	</equipment_container>
 	<equipment>
 		<quantity>1</quantity>
@@ -16,8 +14,6 @@
 		<legality_class>-</legality_class>
 		<value>25.0</value>
 		<weight units="lb">1.0</weight>
-		<reference></reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -26,8 +22,6 @@
 		<legality_class>-</legality_class>
 		<value>15.0</value>
 		<weight units="lb">1.0</weight>
-		<reference></reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -36,7 +30,5 @@
 		<legality_class>-</legality_class>
 		<value>20.0</value>
 		<weight units="lb">0.5</weight>
-		<reference></reference>
-		<notes></notes>
 	</equipment>
 </equipment_list>

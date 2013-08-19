@@ -10,14 +10,10 @@
 		<duration>1 min</duration>
 		<melee_weapon>
 			<damage>1d-1 burn ex/point</damage>
-			<strength></strength>
-			<usage></usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M197</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lightning</name>
@@ -37,11 +33,9 @@
 		<duration>1 min</duration>
 		<melee_weapon>
 			<damage>1d burn</damage>
-			<strength></strength>
 			<usage>Punch</usage>
 			<reach>C</reach>
 			<parry>0</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>0</modifier>
@@ -49,24 +43,20 @@
 			<default>
 				<type>Skill</type>
 				<name>Boxing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
 		<reference>M198</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lightning</name>
@@ -94,7 +84,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 sec/100 miles</duration>
 		<reference>M148</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">walk on air</name>
@@ -125,7 +114,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M148</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">walk on air</name>
@@ -144,7 +132,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M194</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">air</college>
@@ -165,7 +152,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M195</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">air</college>
@@ -185,7 +171,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M194</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">water</college>
@@ -203,14 +188,8 @@
 		<duration>Instant</duration>
 		<ranged_weapon>
 			<damage>1d-1 burn ex/2points</damage>
-			<strength></strength>
-			<usage></usage>
 			<accuracy>3</accuracy>
 			<range>50/100</range>
-			<rate_of_fire></rate_of_fire>
-			<shots></shots>
-			<bulk></bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -223,7 +202,6 @@
 			</default>
 		</ranged_weapon>
 		<reference>M196</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lightning</name>
@@ -239,7 +217,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M193</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape water</name>
@@ -255,7 +232,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Indef</duration>
 		<reference>M193</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">cold</name>
@@ -275,11 +251,9 @@
 		<duration>1 min</duration>
 		<melee_weapon>
 			<damage>1d-2 cr</damage>
-			<strength></strength>
 			<usage>Area</usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M195</reference>
 		<notes>base cost 1 for damaging hail</notes>
@@ -299,14 +273,8 @@
 		<duration>Instant</duration>
 		<ranged_weapon>
 			<damage>1d-1 burn/point</damage>
-			<strength></strength>
-			<usage></usage>
 			<accuracy>3</accuracy>
 			<range>50/100</range>
-			<rate_of_fire></rate_of_fire>
-			<shots></shots>
-			<bulk></bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -319,7 +287,6 @@
 			</default>
 		</ranged_weapon>
 		<reference>M196</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -348,7 +315,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M198</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="contains">lightning</name>
@@ -385,11 +351,9 @@
 		<duration>1 sec</duration>
 		<melee_weapon>
 			<damage>1d burn/point</damage>
-			<strength></strength>
 			<usage>Gaze</usage>
 			<reach>2/point</reach>
 			<parry>No</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -402,7 +366,6 @@
 			</default>
 		</melee_weapon>
 		<reference>M198</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">resist lightning</name>
@@ -450,11 +413,8 @@
 		<duration>10 sec</duration>
 		<melee_weapon>
 			<damage>1d burn</damage>
-			<strength></strength>
-			<usage></usage>
 			<reach>2/point</reach>
 			<parry>No</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>-5</modifier>
@@ -462,24 +422,20 @@
 			<default>
 				<type>Skill</type>
 				<name>Whip</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Kusari</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Monowire Whip</name>
-				<specialization></specialization>
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
 		<reference>M196</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lightning</name>
@@ -495,7 +451,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M193</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">air</college>
@@ -512,7 +467,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M195</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">clouds</name>
@@ -528,7 +482,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M196</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">air</college>
@@ -546,11 +499,9 @@
 		<duration>Instant</duration>
 		<melee_weapon>
 			<damage>thr-1 cr +1d+1 burn/point</damage>
-			<strength></strength>
 			<usage>Punch</usage>
 			<reach>C</reach>
 			<parry>0</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>0</modifier>
@@ -558,24 +509,20 @@
 			<default>
 				<type>Skill</type>
 				<name>Boxing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
 		<reference>M196</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lightning</name>
@@ -591,7 +538,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M195</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">frost</name>
@@ -611,14 +557,11 @@
 		<duration>10 sec</duration>
 		<melee_weapon>
 			<damage>1 point burn/second</damage>
-			<strength></strength>
 			<usage>Area</usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M196</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lightning</name>
@@ -638,14 +581,11 @@
 		<duration>1 min</duration>
 		<melee_weapon>
 			<damage>1d-1 burn/2 points</damage>
-			<strength></strength>
 			<usage>Area</usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M197</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lightning</name>
@@ -664,7 +604,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M195</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">hail</name>
@@ -683,7 +622,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M194</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">water</college>
@@ -701,14 +639,11 @@
 		<duration>1 min</duration>
 		<melee_weapon>
 			<damage>1d-1 burn/2 points</damage>
-			<strength></strength>
 			<usage>Area</usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M197</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lightning</name>
@@ -724,7 +659,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M195</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">heat</name>
@@ -744,7 +678,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M194</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape water</name>
@@ -760,7 +693,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>6 hrs</duration>
 		<reference>M169</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">air</college>
@@ -789,7 +721,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M195</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">windstorm</name>

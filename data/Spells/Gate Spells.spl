@@ -9,10 +9,10 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M86</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is"></name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
@@ -45,7 +45,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>24 hrs</duration>
 		<reference>M83</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">teleport</name>
@@ -67,7 +66,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M148</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">teleport</name>
@@ -83,7 +81,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M148</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">blink</name>
@@ -99,7 +96,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M85</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -127,7 +123,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>10 sec</duration>
 		<reference>M84</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="contains">walk through</name>
@@ -146,7 +141,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>1 min</duration>
 		<reference>M85</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<spell_prereq has="yes">
@@ -173,7 +167,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M84</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -201,7 +194,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M86</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">teleport</name>
@@ -220,7 +212,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M83</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -253,7 +244,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M83</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">phase</name>
@@ -269,7 +259,6 @@
 		<casting_time>5 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M82</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -297,7 +286,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M82</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<spell_prereq has="yes">
@@ -330,7 +318,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M83</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">planar summons (@plane@)</name>
@@ -346,7 +333,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M83</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -374,7 +360,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M82</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<spell_prereq has="yes">
@@ -407,7 +392,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M86</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">hideaway</name>
@@ -426,7 +410,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M85</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">seek gate</name>
@@ -442,7 +425,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M85</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -473,7 +455,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M86</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college_count compare="atLeast">10</college_count>
@@ -505,7 +486,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 day</duration>
 		<reference>M86</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">slow time</name>
@@ -533,7 +513,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M147</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">hawk flight</name>
@@ -541,7 +520,7 @@
 			<prereq_list all="yes">
 				<attribute_prereq has="yes" which="IQ" compare="atLeast">13</attribute_prereq>
 				<spell_prereq has="yes">
-					<name compare="is">from 10 colleges</name>
+					<college_count compare="atLeast">10</college_count>
 				</spell_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -555,7 +534,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M147</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -583,7 +561,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M170</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">watchdog</name>
@@ -607,7 +584,6 @@
 		<casting_time>5 min</casting_time>
 		<duration>Instant</duration>
 		<reference>M87</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -635,7 +611,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M81</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">teleport</name>
@@ -663,7 +638,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M81</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">timeport</name>
@@ -679,7 +653,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M81</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">timeport</name>
@@ -695,7 +668,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M81</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">timeport</name>
@@ -711,7 +683,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M84</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">teleport</name>

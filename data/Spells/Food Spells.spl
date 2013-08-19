@@ -9,7 +9,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M78</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">test food</name>
@@ -28,7 +27,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M79</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">cook</name>
@@ -47,7 +45,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M77</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">test food</name>
@@ -63,7 +60,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M46</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">destroy water</name>
@@ -82,7 +78,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>Indefinite</duration>
 		<reference>M79</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">food</college>
@@ -102,7 +97,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M77</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
 				<name compare="contains">no taste/smell</name>
@@ -139,7 +133,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 day</duration>
 		<reference>M79</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">foolishness</name>
@@ -170,7 +163,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M185</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">decay</name>
@@ -189,7 +181,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>Until eat/rest</duration>
 		<reference>M38</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -220,7 +211,6 @@
 		<casting_time>15 sec</casting_time>
 		<duration>1 day</duration>
 		<reference>M78</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">season</name>
@@ -239,7 +229,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M78</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">decay</name>
@@ -258,7 +247,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>24 hrs</duration>
 		<reference>M79</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">fool's banquet</name>
@@ -277,7 +265,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M78</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">purify food</name>
@@ -293,7 +280,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M78</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">purify food</name>
@@ -309,7 +295,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 week</duration>
 		<reference>M79</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">decay</name>
@@ -325,7 +310,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M78</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">decay</name>
@@ -341,7 +325,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M107</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -372,7 +355,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M77</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">test food</name>
@@ -388,7 +370,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M77</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Test Food</name>
@@ -399,7 +380,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M77</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Thirst</name>
@@ -410,7 +390,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Until drink/rest</duration>
 		<reference>M38</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">debility</name>
@@ -441,7 +420,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M79</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">purify water</name>
@@ -460,7 +438,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M104</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>
@@ -482,7 +459,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M104</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>

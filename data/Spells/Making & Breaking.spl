@@ -9,7 +9,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M117</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="contains">shape</name>
@@ -38,7 +37,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M115</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">inspired creation</name>
@@ -57,7 +55,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M116</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">clean</name>
@@ -73,7 +70,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M120</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">transform object</name>
@@ -101,7 +97,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M116</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -128,11 +123,8 @@
 		<duration>Permanent</duration>
 		<melee_weapon>
 			<damage>1d/point</damage>
-			<strength></strength>
-			<usage></usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M120</reference>
 		<notes>affects only inanimate objects</notes>
@@ -175,7 +167,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>2d days</duration>
 		<reference>M116</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">restore</name>
@@ -194,7 +185,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M120</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">extend object</name>
@@ -211,11 +201,8 @@
 		<duration>Instant</duration>
 		<melee_weapon>
 			<damage>1d frag/2 points</damage>
-			<strength></strength>
-			<usage></usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M118</reference>
 		<notes>affects only inanimate objects</notes>
@@ -249,7 +236,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M120</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">transform object</name>
@@ -277,7 +263,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M118</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">knot</name>
@@ -293,7 +278,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M116</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">air</college>
@@ -318,7 +302,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M97</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">simple illusion</name>
@@ -337,7 +320,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>Permanent</duration>
 		<reference>M115</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Knot</name>
@@ -348,7 +330,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>Varies</duration>
 		<reference>M117</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">stiffen</name>
@@ -364,7 +345,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M118</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">inscribe</name>
@@ -383,7 +363,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Varies</duration>
 		<reference>M119</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">dye</name>
@@ -402,7 +381,6 @@
 		<casting_time>cost=sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M177</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">air</college>
@@ -449,7 +427,6 @@
 		<casting_time>4 sec/10 lbs</casting_time>
 		<duration>10 min</duration>
 		<reference>M116</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">weaken</name>
@@ -468,7 +445,6 @@
 		<casting_time>1 sec/lb</casting_time>
 		<duration>Permanent</duration>
 		<reference>M118</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">rejoin</name>
@@ -496,7 +472,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M117</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<spell_prereq has="yes">
@@ -532,7 +507,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M116</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">find weakness</name>
@@ -552,11 +526,8 @@
 		<duration>Instant</duration>
 		<melee_weapon>
 			<damage>1d (pi ++)/point</damage>
-			<strength></strength>
-			<usage></usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M117</reference>
 		<notes>only affects inanimate objects</notes>
@@ -587,7 +558,6 @@
 		<casting_time>5 sec/lb</casting_time>
 		<duration>1 min</duration>
 		<reference>M118</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">weaken</name>
@@ -618,7 +588,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M118</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">repair</name>
@@ -635,11 +604,8 @@
 		<duration>Instant</duration>
 		<melee_weapon>
 			<damage>1d/point</damage>
-			<strength></strength>
-			<usage></usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M116</reference>
 		<notes>only affects inanimate objects</notes>
@@ -670,7 +636,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M118</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">repair</name>
@@ -689,7 +654,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M120</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">contract object</name>
@@ -705,7 +669,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M116</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">clean</name>
@@ -721,7 +684,6 @@
 		<casting_time>2 sec/lb</casting_time>
 		<duration>10 min</duration>
 		<reference>M117</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">rejoin</name>
@@ -737,7 +699,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M119</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shatterproof</name>
@@ -753,7 +714,6 @@
 		<casting_time>cost=sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M120</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="contains">create</name>
@@ -785,7 +745,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M119</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">dye</name>
@@ -805,11 +764,8 @@
 		<duration>Permanent</duration>
 		<melee_weapon>
 			<damage>1d/2 points</damage>
-			<strength></strength>
-			<usage></usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M116</reference>
 		<notes>affects only inanimate objects</notes>
@@ -828,7 +784,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M119</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">making &amp; breaking</college>

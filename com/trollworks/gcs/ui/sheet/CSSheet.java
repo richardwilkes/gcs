@@ -53,25 +53,26 @@ import com.trollworks.gcs.ui.skills.CSSkillOutline;
 import com.trollworks.gcs.ui.spell.CSSpellColumnID;
 import com.trollworks.gcs.ui.spell.CSSpellOutline;
 import com.trollworks.toolkit.collections.TKFilteredIterator;
-import com.trollworks.toolkit.io.TKPath;
 import com.trollworks.toolkit.io.TKImage;
+import com.trollworks.toolkit.io.TKPath;
+import com.trollworks.toolkit.io.TKPreferences;
 import com.trollworks.toolkit.io.xml.TKXMLWriter;
 import com.trollworks.toolkit.notification.TKBatchNotifierTarget;
 import com.trollworks.toolkit.print.TKPrintManager;
 import com.trollworks.toolkit.utility.TKApp;
-import com.trollworks.toolkit.utility.TKDebug;
-import com.trollworks.toolkit.utility.TKNumberUtils;
 import com.trollworks.toolkit.utility.TKColor;
+import com.trollworks.toolkit.utility.TKDebug;
 import com.trollworks.toolkit.utility.TKFont;
 import com.trollworks.toolkit.utility.TKGraphics;
+import com.trollworks.toolkit.utility.TKNumberUtils;
 import com.trollworks.toolkit.utility.units.TKLengthUnits;
 import com.trollworks.toolkit.utility.units.TKWeightUnits;
 import com.trollworks.toolkit.widget.TKPanel;
 import com.trollworks.toolkit.widget.border.TKLineBorder;
 import com.trollworks.toolkit.widget.layout.TKColumnLayout;
 import com.trollworks.toolkit.widget.layout.TKRowDistribution;
-import com.trollworks.toolkit.widget.outline.TKOutline;
 import com.trollworks.toolkit.widget.outline.TKColumn;
+import com.trollworks.toolkit.widget.outline.TKOutline;
 import com.trollworks.toolkit.widget.outline.TKOutlineHeader;
 import com.trollworks.toolkit.widget.outline.TKOutlineModel;
 import com.trollworks.toolkit.widget.outline.TKRow;
@@ -121,6 +122,7 @@ import java.util.HashSet;
 public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTarget, CSPageOwner, Printable, ActionListener, Runnable, DropTargetListener {
 	private static final String	BOXING_SKILL_NAME	= "Boxing";	//$NON-NLS-1$
 	private static final String	KARATE_SKILL_NAME	= "Karate";	//$NON-NLS-1$
+	private static final String	JUDO_SKILL_NAME		= "Judo";		//$NON-NLS-1$
 	private static final String	BRAWLING_SKILL_NAME	= "Brawling";	//$NON-NLS-1$
 	private CMCharacter			mCharacter;
 	private int					mLastPage;
@@ -152,10 +154,12 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 		if (!TKGraphics.inHeadlessPrintMode()) {
 			setDropTarget(new DropTarget(this, this));
 		}
+		TKPreferences.getInstance().getNotifier().add(this, CSSheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY);
 	}
 
 	/** Call when the sheet is no longer in use. */
 	public void dispose() {
+		TKPreferences.getInstance().getNotifier().remove(this);
 		mCharacter.resetNotifier();
 		mDisposed = true;
 	}
@@ -390,8 +394,9 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 				outlineModel.addRow(row);
 			}
 			outlineModel.applySortConfig(sortConfig);
+			initOutline(mMeleeWeaponOutline);
 		} else {
-			mMeleeWeaponOutline.clearProxies();
+			resetOutline(mMeleeWeaponOutline);
 		}
 	}
 
@@ -412,8 +417,9 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 				outlineModel.addRow(row);
 			}
 			outlineModel.applySortConfig(sortConfig);
+			initOutline(mRangedWeaponOutline);
 		} else {
-			mRangedWeaponOutline.clearProxies();
+			resetOutline(mRangedWeaponOutline);
 		}
 	}
 
@@ -433,6 +439,7 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 				defaults.add(new CMSkillDefault(CMSkillDefaultType.Skill, BOXING_SKILL_NAME, null, 0));
 				defaults.add(new CMSkillDefault(CMSkillDefaultType.Skill, BRAWLING_SKILL_NAME, null, 0));
 				defaults.add(new CMSkillDefault(CMSkillDefaultType.Skill, KARATE_SKILL_NAME, null, 0));
+				defaults.add(new CMSkillDefault(CMSkillDefaultType.Skill, JUDO_SKILL_NAME, null, 0));
 				weapon = new CMMeleeWeaponStats(phantom);
 				weapon.setUsage(Msgs.PUNCH);
 				weapon.setDefaults(defaults);
@@ -498,6 +505,14 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 
 		for (CMSpell spell : mCharacter.getSpellsIterator()) {
 			for (CMWeaponStats weapon : spell.getWeapons()) {
+				if (weaponClass.isInstance(weapon)) {
+					weaponMap.put(new CSHashedWeapon(weapon), new CMWeaponDisplayRow(weapon));
+				}
+			}
+		}
+
+		for (CMSkill skill : mCharacter.getSkillsIterator()) {
+			for (CMWeaponStats weapon : skill.getWeapons()) {
 				if (weaponClass.isInstance(weapon)) {
 					weaponMap.put(new CSHashedWeapon(weapon), new CMWeaponDisplayRow(weapon));
 				}
@@ -602,41 +617,45 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 	}
 
 	public void handleNotification(Object producer, String type, Object data) {
-		if (type.startsWith(CMAdvantage.PREFIX)) {
-			CSOutlineSyncer.add(mAdvantageOutline);
-		} else if (type.startsWith(CMSkill.PREFIX)) {
-			CSOutlineSyncer.add(mSkillOutline);
-		} else if (type.startsWith(CMSpell.PREFIX)) {
-			CSOutlineSyncer.add(mSpellOutline);
-		} else if (type.startsWith(CMEquipment.PREFIX)) {
-			CSOutlineSyncer.add(mCarriedEquipmentOutline);
-			CSOutlineSyncer.add(mOtherEquipmentOutline);
-		}
-
-		if (CMCharacter.ID_LAST_MODIFIED.equals(type)) {
-			int count = getComponentCount();
-
-			for (int i = 0; i < count; i++) {
-				CSPage page = (CSPage) getComponent(i);
-				Rectangle bounds = page.getBounds();
-				Insets insets = page.getInsets();
-
-				bounds.y = bounds.y + bounds.height - insets.bottom;
-				bounds.height = insets.bottom;
-				repaint(bounds);
-			}
-		} else if (CMEquipment.ID_QUANTITY.equals(type) || CMEquipment.ID_WEAPON_STATUS_CHANGED.equals(type) || CMAdvantage.ID_WEAPON_STATUS_CHANGED.equals(type) || CMSpell.ID_WEAPON_STATUS_CHANGED.equals(type) || CMCharacter.ID_INCLUDE_PUNCH.equals(type) || CMCharacter.ID_INCLUDE_KICK.equals(type) || CMCharacter.ID_INCLUDE_BOOTS.equals(type)) {
-			mSyncWeapons = true;
+		if (CSSheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY.equals(type)) {
 			markForRebuild();
-		} else if (CMCharacter.ID_PARRY_BONUS.equals(type) || CMSkill.ID_LEVEL.equals(type)) {
-			CSOutlineSyncer.add(mMeleeWeaponOutline);
-			CSOutlineSyncer.add(mRangedWeaponOutline);
-		} else if (CMCharacter.ID_CARRIED_WEIGHT.equals(type) || CMCharacter.ID_CARRIED_WEALTH.equals(type)) {
-			TKColumn column = mCarriedEquipmentOutline.getModel().getColumnWithID(CSEquipmentColumnID.DESCRIPTION.ordinal());
+		} else {
+			if (type.startsWith(CMAdvantage.PREFIX)) {
+				CSOutlineSyncer.add(mAdvantageOutline);
+			} else if (type.startsWith(CMSkill.PREFIX)) {
+				CSOutlineSyncer.add(mSkillOutline);
+			} else if (type.startsWith(CMSpell.PREFIX)) {
+				CSOutlineSyncer.add(mSpellOutline);
+			} else if (type.startsWith(CMEquipment.PREFIX)) {
+				CSOutlineSyncer.add(mCarriedEquipmentOutline);
+				CSOutlineSyncer.add(mOtherEquipmentOutline);
+			}
 
-			column.setName(CSEquipmentColumnID.DESCRIPTION.toString(mCharacter, true));
-		} else if (!mBatchMode) {
-			validate();
+			if (CMCharacter.ID_LAST_MODIFIED.equals(type)) {
+				int count = getComponentCount();
+
+				for (int i = 0; i < count; i++) {
+					CSPage page = (CSPage) getComponent(i);
+					Rectangle bounds = page.getBounds();
+					Insets insets = page.getInsets();
+
+					bounds.y = bounds.y + bounds.height - insets.bottom;
+					bounds.height = insets.bottom;
+					repaint(bounds);
+				}
+			} else if (CMEquipment.ID_QUANTITY.equals(type) || CMEquipment.ID_WEAPON_STATUS_CHANGED.equals(type) || CMAdvantage.ID_WEAPON_STATUS_CHANGED.equals(type) || CMSpell.ID_WEAPON_STATUS_CHANGED.equals(type) || CMSkill.ID_WEAPON_STATUS_CHANGED.equals(type) || CMCharacter.ID_INCLUDE_PUNCH.equals(type) || CMCharacter.ID_INCLUDE_KICK.equals(type) || CMCharacter.ID_INCLUDE_BOOTS.equals(type)) {
+				mSyncWeapons = true;
+				markForRebuild();
+			} else if (CMCharacter.ID_PARRY_BONUS.equals(type) || CMSkill.ID_LEVEL.equals(type)) {
+				CSOutlineSyncer.add(mMeleeWeaponOutline);
+				CSOutlineSyncer.add(mRangedWeaponOutline);
+			} else if (CMCharacter.ID_CARRIED_WEIGHT.equals(type) || CMCharacter.ID_CARRIED_WEALTH.equals(type)) {
+				TKColumn column = mCarriedEquipmentOutline.getModel().getColumnWithID(CSEquipmentColumnID.DESCRIPTION.ordinal());
+
+				column.setName(CSEquipmentColumnID.DESCRIPTION.toString(mCharacter, true));
+			} else if (!mBatchMode) {
+				validate();
+			}
 		}
 	}
 
@@ -736,7 +755,7 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 	}
 
 	private void syncRoots() {
-		if (mSyncWeapons || mRootsToSync.contains(mCarriedEquipmentOutline) || mRootsToSync.contains(mAdvantageOutline) || mRootsToSync.contains(mSpellOutline)) {
+		if (mSyncWeapons || mRootsToSync.contains(mCarriedEquipmentOutline) || mRootsToSync.contains(mAdvantageOutline) || mRootsToSync.contains(mSpellOutline) || mRootsToSync.contains(mSkillOutline)) {
 			TKOutlineModel outlineModel = mMeleeWeaponOutline.getModel();
 			String sortConfig = outlineModel.getSortConfig();
 
@@ -893,9 +912,12 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 
 	/**
 	 * @param file The file to save to.
+	 * @param template The template file to use.
+	 * @param templateUsed A buffer to store the path actually used for the template. Use
+	 *            <code>null</code> if this isn't wanted.
 	 * @return <code>true</code> on success.
 	 */
-	public boolean saveAsHTML(File file) {
+	public boolean saveAsHTML(File file, File template, StringBuilder templateUsed) {
 		BufferedReader in = null;
 		BufferedWriter out = null;
 
@@ -904,7 +926,16 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 			int state = 0;
 			StringBuilder keyBuffer = new StringBuilder();
 
-			in = new BufferedReader(new InputStreamReader(new FileInputStream(new File(new File(System.getProperty("app.home", "."), "data"), "template.html")))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+			if (template == null || !template.isFile() || !template.canRead()) {
+				template = new File(CSSheetPreferences.getHTMLTemplate());
+				if (!template.isFile() || !template.canRead()) {
+					template = new File(CSSheetPreferences.getDefaultHTMLTemplate());
+				}
+			}
+			if (templateUsed != null) {
+				templateUsed.append(TKPath.getFullPath(template));
+			}
+			in = new BufferedReader(new InputStreamReader(new FileInputStream(template)));
 			out = new BufferedWriter(new FileWriter(file));
 
 			while (in.read(buffer) != -1) {
@@ -1307,14 +1338,9 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 									out.write(style.toString());
 								}
 							} else if (key.equals("DESCRIPTION")) { //$NON-NLS-1$
-								String notes = advantage.getNotes();
-
 								writeXMLText(out, advantage.toString());
-								if (notes.length() > 0) {
-									out.write("<div class=\"note\">"); //$NON-NLS-1$
-									writeXMLText(out, notes);
-									out.write("</div>"); //$NON-NLS-1$
-								}
+								writeNote(out, advantage.getModifierNotes());
+								writeNote(out, advantage.getNotes());
 							} else if (key.equals("POINTS")) { //$NON-NLS-1$
 								writeXMLText(out, CSAdvantageColumnID.POINTS.getDataAsText(advantage));
 							} else if (key.equals("REF")) { //$NON-NLS-1$
@@ -1327,6 +1353,14 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 				}
 			}
 			odd = !odd;
+		}
+	}
+
+	private void writeNote(BufferedWriter out, String notes) throws IOException {
+		if (notes != null && notes.length() > 0) {
+			out.write("<div class=\"note\">"); //$NON-NLS-1$
+			writeXMLText(out, notes);
+			out.write("</div>"); //$NON-NLS-1$
 		}
 	}
 
@@ -1380,14 +1414,8 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 									out.write(style.toString());
 								}
 							} else if (key.equals("DESCRIPTION")) { //$NON-NLS-1$
-								String notes = skill.getNotes();
-
 								writeXMLText(out, skill.toString());
-								if (notes.length() > 0) {
-									out.write("<div class=\"note\">"); //$NON-NLS-1$
-									writeXMLText(out, notes);
-									out.write("</div>"); //$NON-NLS-1$
-								}
+								writeNote(out, skill.getNotes());
 							} else if (key.equals("SL")) { //$NON-NLS-1$
 								writeXMLText(out, CSSkillColumnID.LEVEL.getDataAsText(skill));
 							} else if (key.equals("RSL")) { //$NON-NLS-1$
@@ -1457,14 +1485,8 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 									out.write(style.toString());
 								}
 							} else if (key.equals("DESCRIPTION")) { //$NON-NLS-1$
-								String notes = spell.getNotes();
-
 								writeXMLText(out, spell.toString());
-								if (notes.length() > 0) {
-									out.write("<div class=\"note\">"); //$NON-NLS-1$
-									writeXMLText(out, notes);
-									out.write("</div>"); //$NON-NLS-1$
-								}
+								writeNote(out, spell.getNotes());
 							} else if (key.equals("CLASS")) { //$NON-NLS-1$
 								writeXMLText(out, spell.getSpellClass());
 							} else if (key.equals("COLLEGE")) { //$NON-NLS-1$
@@ -1529,14 +1551,8 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 							if (key.equals("EVEN_ODD")) { //$NON-NLS-1$
 								out.write(odd ? "odd" : "even"); //$NON-NLS-1$  //$NON-NLS-2$
 							} else if (key.equals("DESCRIPTION")) { //$NON-NLS-1$
-								String notes = weapon.getNotes();
-
 								writeXMLText(out, weapon.toString());
-								if (notes.length() > 0) {
-									out.write("<div class=\"note\">"); //$NON-NLS-1$
-									writeXMLText(out, notes);
-									out.write("</div>"); //$NON-NLS-1$
-								}
+								writeNote(out, weapon.getNotes());
 							} else if (key.equals("USAGE")) { //$NON-NLS-1$
 								writeXMLText(out, weapon.getUsage());
 							} else if (key.equals("LEVEL")) { //$NON-NLS-1$
@@ -1595,14 +1611,8 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 							if (key.equals("EVEN_ODD")) { //$NON-NLS-1$
 								out.write(odd ? "odd" : "even"); //$NON-NLS-1$ //$NON-NLS-2$
 							} else if (key.equals("DESCRIPTION")) { //$NON-NLS-1$
-								String notes = weapon.getNotes();
-
 								writeXMLText(out, weapon.toString());
-								if (notes.length() > 0) {
-									out.write("<div class=\"note\">"); //$NON-NLS-1$
-									writeXMLText(out, notes);
-									out.write("</div>"); //$NON-NLS-1$
-								}
+								writeNote(out, weapon.getNotes());
 							} else if (key.equals("USAGE")) { //$NON-NLS-1$
 								writeXMLText(out, weapon.getUsage());
 							} else if (key.equals("LEVEL")) { //$NON-NLS-1$
@@ -1684,14 +1694,8 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 									out.write(style.toString());
 								}
 							} else if (key.equals("DESCRIPTION")) { //$NON-NLS-1$
-								String notes = equipment.getNotes();
-
 								writeXMLText(out, equipment.toString());
-								if (notes.length() > 0) {
-									out.write("<div class=\"note\">"); //$NON-NLS-1$
-									writeXMLText(out, notes);
-									out.write("</div>"); //$NON-NLS-1$
-								}
+								writeNote(out, equipment.getNotes());
 							} else if (carried && key.equals("EQUIPPED")) { //$NON-NLS-1$
 								if (equipment.isEquipped()) {
 									out.write("&radic;"); //$NON-NLS-1$

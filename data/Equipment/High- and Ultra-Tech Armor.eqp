@@ -7,7 +7,6 @@
 		<value>0.0</value>
 		<weight units="lb">0.0</weight>
 		<reference>B284</reference>
-		<notes></notes>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Ballistic Suit</description>
@@ -16,15 +15,17 @@
 			<value>1000.0</value>
 			<weight units="lb">6.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -35,15 +36,17 @@
 			<value>1000.0</value>
 			<weight units="lb">6.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+18</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+18</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+18</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -54,15 +57,17 @@
 			<value>1000.0</value>
 			<weight units="lb">6.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+24</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+24</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+24</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -73,9 +78,9 @@
 			<value>400.0</value>
 			<weight units="lb">2.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+8</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -86,9 +91,9 @@
 			<value>400.0</value>
 			<weight units="lb">2.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -99,9 +104,9 @@
 			<value>400.0</value>
 			<weight units="lb">2.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+16</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -112,9 +117,9 @@
 			<value>400.0</value>
 			<weight units="lb">2.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+24</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -125,9 +130,9 @@
 			<value>500.0</value>
 			<weight units="lb">20.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+7</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -138,12 +143,13 @@
 			<value>350.0</value>
 			<weight units="lb">9.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+5</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+5</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -154,9 +160,9 @@
 			<value>300.0</value>
 			<weight units="lb">15.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+20</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -167,30 +173,37 @@
 			<value>3000.0</value>
 			<weight units="lb">15.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+20</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+20</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+20</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+20</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+20</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+20</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+20</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+20</amount>
 			</dr_bonus>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -207,30 +220,37 @@
 			<value>3000.0</value>
 			<weight units="lb">15.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -247,30 +267,37 @@
 			<value>3000.0</value>
 			<weight units="lb">15.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+40</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+40</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+40</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+40</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+40</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+40</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+40</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+40</amount>
 			</dr_bonus>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -287,12 +314,13 @@
 			<value>900.0</value>
 			<weight units="lb">9.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -303,12 +331,13 @@
 			<value>900.0</value>
 			<weight units="lb">9.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+18</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+18</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -319,12 +348,13 @@
 			<value>900.0</value>
 			<weight units="lb">9.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+24</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+24</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -335,12 +365,13 @@
 			<value>900.0</value>
 			<weight units="lb">9.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+32</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+32</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -351,9 +382,9 @@
 			<value>600.0</value>
 			<weight units="lb">9.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+23</amount>
 			</dr_bonus>
 		</equipment>
 	</equipment_container>
@@ -364,7 +395,6 @@
 		<value>0.0</value>
 		<weight units="lb">0.0</weight>
 		<reference>B285</reference>
-		<notes></notes>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Battle Suit</description>
@@ -373,33 +403,41 @@
 			<value>80000.0</value>
 			<weight units="lb">150.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+50</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+70</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+50</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+50</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+50</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+50</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+50</amount>
 			</dr_bonus>
 			<attribute_bonus>
 				<attribute limitation="striking_only">ST</attribute>
+				<amount per_level="no">+10</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute limitation="lifting_only">ST</attribute>
+				<amount per_level="no">+10</amount>
 			</attribute_bonus>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -416,33 +454,41 @@
 			<value>80000.0</value>
 			<weight units="lb">150.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+75</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+105</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+75</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+75</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+75</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+75</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+75</amount>
 			</dr_bonus>
 			<attribute_bonus>
 				<attribute limitation="striking_only">ST</attribute>
+				<amount per_level="no">+15</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute limitation="lifting_only">ST</attribute>
+				<amount per_level="no">+15</amount>
 			</attribute_bonus>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -459,33 +505,41 @@
 			<value>80000.0</value>
 			<weight units="lb">150.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+100</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+140</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+100</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+100</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+100</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+100</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+100</amount>
 			</dr_bonus>
 			<attribute_bonus>
 				<attribute limitation="striking_only">ST</attribute>
+				<amount per_level="no">+20</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute limitation="lifting_only">ST</attribute>
+				<amount per_level="no">+20</amount>
 			</attribute_bonus>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -502,15 +556,17 @@
 			<value>10000.0</value>
 			<weight units="lb">15.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+50</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+70</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+50</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -521,15 +577,17 @@
 			<value>10000.0</value>
 			<weight units="lb">15.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+75</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+105</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+75</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -540,15 +598,17 @@
 			<value>10000.0</value>
 			<weight units="lb">15.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+100</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+140</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+100</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -559,27 +619,33 @@
 			<value>10000.0</value>
 			<weight units="lb">30.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+50</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -596,27 +662,33 @@
 			<value>10000.0</value>
 			<weight units="lb">30.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+45</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+75</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+45</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+45</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+45</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+45</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+45</amount>
 			</dr_bonus>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -633,27 +705,33 @@
 			<value>10000.0</value>
 			<weight units="lb">30.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+60</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+100</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+60</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+60</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+60</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+60</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+60</amount>
 			</dr_bonus>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -670,15 +748,17 @@
 			<value>2000.0</value>
 			<weight units="lb">4.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+18</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -689,15 +769,17 @@
 			<value>2000.0</value>
 			<weight units="lb">4.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+18</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+27</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+18</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -708,15 +790,17 @@
 			<value>2000.0</value>
 			<weight units="lb">4.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+24</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+36</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+24</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -727,30 +811,37 @@
 			<value>150.0</value>
 			<weight units="lb">3.5</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -767,27 +858,33 @@
 			<value>20000.0</value>
 			<weight units="lb">45.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+50</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -804,27 +901,33 @@
 			<value>20000.0</value>
 			<weight units="lb">45.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+45</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+75</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+45</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+45</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+45</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+45</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+45</amount>
 			</dr_bonus>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -841,27 +944,33 @@
 			<value>20000.0</value>
 			<weight units="lb">45.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+60</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+100</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+60</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+60</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+60</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+60</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+60</amount>
 			</dr_bonus>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -878,15 +987,17 @@
 			<value>3000.0</value>
 			<weight units="lb">7.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+40</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -897,15 +1008,17 @@
 			<value>3000.0</value>
 			<weight units="lb">7.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+45</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+60</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+45</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -916,15 +1029,17 @@
 			<value>3000.0</value>
 			<weight units="lb">7.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+60</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+80</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+60</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -935,15 +1050,17 @@
 			<value>25000.0</value>
 			<weight units="lb">10.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+3</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+3</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+3</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -954,27 +1071,33 @@
 			<value>2000000.0</value>
 			<weight units="lb">225.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -991,27 +1114,33 @@
 			<value>10000.0</value>
 			<weight units="lb">25.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+6</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+6</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+6</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+6</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+6</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+6</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+6</amount>
 			</dr_bonus>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -1028,27 +1157,33 @@
 			<value>10000.0</value>
 			<weight units="lb">25.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+9</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+9</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+9</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+9</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+9</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+9</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+9</amount>
 			</dr_bonus>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -1065,27 +1200,33 @@
 			<value>10000.0</value>
 			<weight units="lb">25.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>neck</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>torso</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>groin</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>arms</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>legs</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -1102,15 +1243,17 @@
 			<value>2000.0</value>
 			<weight units="lb">5.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+6</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+6</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+6</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1121,15 +1264,17 @@
 			<value>2000.0</value>
 			<weight units="lb">5.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+9</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+9</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+9</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1140,15 +1285,17 @@
 			<value>2000.0</value>
 			<weight units="lb">5.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 		</equipment>
 	</equipment_container>
@@ -1159,7 +1306,6 @@
 		<value>0.0</value>
 		<weight units="lb">0.0</weight>
 		<reference>B284</reference>
-		<notes></notes>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Assault Boots</description>
@@ -1168,9 +1314,9 @@
 			<value>150.0</value>
 			<weight units="lb">3.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+6</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1181,9 +1327,9 @@
 			<value>150.0</value>
 			<weight units="lb">3.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+9</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1194,9 +1340,9 @@
 			<value>150.0</value>
 			<weight units="lb">3.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1207,9 +1353,9 @@
 			<value>150.0</value>
 			<weight units="lb">0.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+8</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1220,9 +1366,9 @@
 			<value>150.0</value>
 			<weight units="lb">0.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1233,9 +1379,9 @@
 			<value>150.0</value>
 			<weight units="lb">0.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>hands</location>
+				<amount per_level="no">+16</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1246,9 +1392,9 @@
 			<value>75.0</value>
 			<weight units="lb">3.0</weight>
 			<reference>B284</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>feet</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 		</equipment>
 	</equipment_container>
@@ -1259,7 +1405,6 @@
 		<value>0.0</value>
 		<weight units="lb">0.0</weight>
 		<reference>B285</reference>
-		<notes></notes>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Ballistic Helmet</description>
@@ -1268,9 +1413,9 @@
 			<value>250.0</value>
 			<weight units="lb">3.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+12</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1281,9 +1426,9 @@
 			<value>250.0</value>
 			<weight units="lb">3.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+18</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1294,9 +1439,9 @@
 			<value>250.0</value>
 			<weight units="lb">3.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+24</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1307,9 +1452,9 @@
 			<value>250.0</value>
 			<weight units="lb">3.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+36</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1320,12 +1465,13 @@
 			<value>100.0</value>
 			<weight units="lb">3.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+10</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+10</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1336,12 +1482,13 @@
 			<value>100.0</value>
 			<weight units="lb">3.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+15</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+15</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1352,12 +1499,13 @@
 			<value>100.0</value>
 			<weight units="lb">3.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+20</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+20</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1368,12 +1516,13 @@
 			<value>100.0</value>
 			<weight units="lb">3.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+30</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1384,9 +1533,9 @@
 			<value>125.0</value>
 			<weight units="lb">3.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+5</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1397,12 +1546,13 @@
 			<value>25.0</value>
 			<weight units="lb">1.5</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+1</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1413,12 +1563,13 @@
 			<value>100.0</value>
 			<weight units="lb">4.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>face</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 			<dr_bonus>
 				<location>eyes</location>
+				<amount per_level="no">+2</amount>
 			</dr_bonus>
 		</equipment>
 		<equipment>
@@ -1429,9 +1580,9 @@
 			<value>60.0</value>
 			<weight units="lb">3.0</weight>
 			<reference>B285</reference>
-			<notes></notes>
 			<dr_bonus>
 				<location>skull</location>
+				<amount per_level="no">+4</amount>
 			</dr_bonus>
 		</equipment>
 	</equipment_container>

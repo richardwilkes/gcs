@@ -100,9 +100,7 @@ public class CMLeveledAmount {
 	 * @param tag The tag to use.
 	 */
 	public void save(TKXMLWriter out, String tag) {
-		if (mPerLevel != false) {
-			out.simpleTagWithAttribute(tag, getAmountAsString(), ATTRIBUTE_PER_LEVEL, mPerLevel);
-		}
+		out.simpleTagWithAttribute(tag, getAmountAsString(), ATTRIBUTE_PER_LEVEL, mPerLevel);
 	}
 
 	/** @return Whether the amount should be applied per level. */

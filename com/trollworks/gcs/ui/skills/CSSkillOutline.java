@@ -157,10 +157,10 @@ public class CSSkillOutline extends CSOutline {
 		for (TKRow element : rows) {
 			CMRow row;
 
-			if (element instanceof CMSkill) {
-				row = new CMSkill(mDataFile, (CMSkill) element, true, forSheetOrTemplate);
-			} else {
+			if (element instanceof CMTechnique) {
 				row = new CMTechnique(mDataFile, (CMTechnique) element, forSheetOrTemplate);
+			} else {
+				row = new CMSkill(mDataFile, (CMSkill) element, true, forSheetOrTemplate);
 			}
 
 			model.collectRowsAndSetOwner(list, row, false);

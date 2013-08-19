@@ -9,7 +9,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M30</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">beast soother</name>
@@ -25,7 +24,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M30</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">beast soother</name>
@@ -41,7 +39,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M30</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">beast soother</name>
@@ -57,7 +54,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M30</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">beast soother</name>
@@ -73,7 +69,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M30</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">beast soother</name>
@@ -89,7 +84,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M30</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">beast soother</name>
@@ -105,7 +99,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>Until next call</duration>
 		<reference>M30</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">beast summoning</name>
@@ -121,7 +114,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M32</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">possession</name>
@@ -140,7 +132,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M32</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<prereq_list all="yes">
 				<spell_prereq has="yes">
@@ -165,7 +156,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M29</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<advantage_prereq has="yes">
 				<name compare="is">animal friend</name>
@@ -190,7 +180,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M31</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">beast summoning</name>
@@ -206,7 +195,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M30</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">beast soother</name>
@@ -222,7 +210,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 hr or reaction roll</duration>
 		<reference>M30</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<advantage_prereq has="yes">
 				<name compare="is">animal friend</name>
@@ -247,7 +234,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M32</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">Alter Body</name>
@@ -283,7 +269,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M30</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="starts with">animal control</name>
@@ -300,7 +285,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Indefinite</duration>
 		<reference>M30</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">beast soother</name>
@@ -316,7 +300,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M32</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -347,7 +330,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>Indefinite</duration>
 		<reference>M32</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">beast possession</name>
@@ -375,7 +357,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>Indefinite</duration>
 		<reference>M33</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">Shapeshifting (@Specialty@)</name>
@@ -403,7 +384,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 min</duration>
 		<reference>M32</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">animal</college>
@@ -426,7 +406,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M31</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">Animal Control (@Animal@)</name>
@@ -442,7 +421,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M31</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">animal control (@animal@)</name>
@@ -458,7 +436,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M31</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">animal control (@animal@)</name>
@@ -474,7 +451,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M31</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">animal control (@animal@)</name>
@@ -490,7 +466,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M31</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">animal control (@animal@)</name>
@@ -506,7 +481,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M31</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">animal control (@animal@)</name>
@@ -522,7 +496,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M31</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">hybrid control</name>
@@ -538,7 +511,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>5 min</duration>
 		<reference>M31</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">Animal Control (@Animal@)</name>
@@ -554,7 +526,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M31</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">animal control (@animal@)</name>
@@ -571,7 +542,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M33</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -599,7 +569,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M32</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -629,14 +598,8 @@
 		<duration>1 min</duration>
 		<ranged_weapon>
 			<damage>grapple ST 10/strand</damage>
-			<strength></strength>
-			<usage></usage>
 			<accuracy>3</accuracy>
 			<range>5/point</range>
-			<rate_of_fire></rate_of_fire>
-			<shots></shots>
-			<bulk></bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>

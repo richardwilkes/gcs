@@ -61,7 +61,9 @@ public class CSMultiCell implements TKCell {
 	 * @return The secondary text to display.
 	 */
 	protected String getSecondaryText(CMRow row) {
-		return row.getNotes();
+		String modifierNotes = row.getModifierNotes();
+		String notes = row.getNotes();
+		return modifierNotes == null ? notes : modifierNotes + '\n' + notes;
 	}
 
 	public void drawCell(Graphics2D g2d, Rectangle bounds, TKRow row, TKColumn column, boolean selected, boolean active) {

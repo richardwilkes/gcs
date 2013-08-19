@@ -9,7 +9,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M46</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lend language</name>
@@ -25,7 +24,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M47</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lend skill</name>
@@ -41,7 +39,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M48</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">wizard eye</name>
@@ -66,7 +63,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>5 min</duration>
 		<reference>M137</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Compel Truth</name>
@@ -77,7 +73,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>5 min</duration>
 		<reference>M47</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -105,7 +100,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M49</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">soul rider</name>
@@ -124,7 +118,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M49</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">soul rider</name>
@@ -143,7 +136,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 min</duration>
 		<reference>M46</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">dream sending</name>
@@ -159,7 +151,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M45</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">dream viewing</name>
@@ -178,7 +169,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M45</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">truthsayer</name>
@@ -197,7 +187,6 @@
 		<casting_time>1 hr</casting_time>
 		<duration>Permanent</duration>
 		<reference>M49</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">permanent possession</name>
@@ -216,7 +205,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M46</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -242,7 +230,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M46</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -268,7 +255,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M45</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sense emotion</name>
@@ -284,7 +270,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M46</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">truthsayer</name>
@@ -303,7 +288,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M48</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">persuasion</name>
@@ -322,7 +306,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M46</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<college compare="contains">communication</college>
@@ -342,7 +325,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M47</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<attribute_prereq has="yes" which="IQ" combined_with="IQ" compare="atLeast">11</attribute_prereq>
 			<spell_prereq has="yes">
@@ -359,7 +341,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M176</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">machine summoning</name>
@@ -375,7 +356,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>Varies</duration>
 		<reference>M174</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">seeker</name>
@@ -394,7 +374,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M46</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">truthsayer</name>
@@ -413,7 +392,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 min</duration>
 		<reference>M46</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">mind-reading</name>
@@ -429,7 +407,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M47</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">mind-reading</name>
@@ -445,7 +422,6 @@
 		<casting_time>5 min</casting_time>
 		<duration>Indefinite</duration>
 		<reference>M49</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -473,7 +449,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M45</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sense emotion</name>
@@ -489,7 +464,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 min</duration>
 		<reference>M49</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -522,7 +496,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M48</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">persuasion</name>
@@ -541,7 +514,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 sec</duration>
 		<reference>M47</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">mind-reading</name>
@@ -560,7 +532,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M45</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sense foes</name>
@@ -576,7 +547,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M44</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Sense Life</name>
@@ -587,7 +557,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M45</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Soul Rider</name>
@@ -598,7 +567,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M49</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">mind-reading</name>
@@ -614,7 +582,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M47</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">mind-sending</name>
@@ -630,7 +597,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M45</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sense emotion</name>
@@ -646,7 +612,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M45</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sense emotion</name>

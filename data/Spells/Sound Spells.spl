@@ -9,7 +9,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M41</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="contains">body</name>
@@ -31,14 +30,8 @@
 		<duration>Instant</duration>
 		<ranged_weapon>
 			<damage>1d cr ex/2 points</damage>
-			<strength></strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>20/40</range>
-			<rate_of_fire></rate_of_fire>
-			<shots></shots>
-			<bulk></bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -51,7 +44,6 @@
 			</default>
 		</ranged_weapon>
 		<reference>M26</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape air</name>
@@ -70,7 +62,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Indef #</duration>
 		<reference>M173</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -101,7 +92,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>Indef #</duration>
 		<reference>M173</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sense life</name>
@@ -132,7 +122,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M107</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -163,7 +152,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M173</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">sound</college>
@@ -200,7 +188,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M172</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">voices</name>
@@ -216,7 +203,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M173</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">thunderclap</name>
@@ -235,7 +221,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>10 sec#</duration>
 		<reference>M172</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">silence</name>
@@ -251,7 +236,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M172</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">voices</name>
@@ -267,7 +251,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M174</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">invisibility</name>
@@ -286,7 +269,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>30 min</duration>
 		<reference>M133</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Mage-Stealth</name>
@@ -297,7 +279,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M172</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">hush</name>
@@ -313,7 +294,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>Varies</duration>
 		<reference>M174</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">seeker</name>
@@ -332,7 +312,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M174</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">scribe</name>
@@ -348,7 +327,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>5 sec</duration>
 		<reference>M173</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">wall of silence</name>
@@ -364,7 +342,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M173</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">sound</college>
@@ -381,7 +358,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M174</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="yes">
 				<name compare="is">accented language</name>
@@ -404,7 +380,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M171</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sound</name>
@@ -420,7 +395,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M174</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">emotion control</name>
@@ -439,7 +413,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Varies</duration>
 		<reference>M171</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Sound Jet</name>
@@ -451,11 +424,9 @@
 		<duration>1 sec</duration>
 		<melee_weapon>
 			<damage>Stuns</damage>
-			<strength></strength>
 			<usage>Jet</usage>
 			<reach>1/point</reach>
 			<parry>No</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -468,7 +439,6 @@
 			</default>
 		</melee_weapon>
 		<reference>M173</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">great voice</name>
@@ -484,7 +454,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M171</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<advantage_prereq has="yes">
 				<name compare="is">acute hearing</name>
@@ -505,7 +474,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M171</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sound</name>
@@ -521,7 +489,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M172</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sound</name>
@@ -537,7 +504,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M172</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">silence</name>
@@ -553,7 +519,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M174</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sound vision</name>
@@ -575,7 +540,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M104</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>

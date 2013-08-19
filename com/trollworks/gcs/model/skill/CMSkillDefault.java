@@ -162,8 +162,8 @@ public class CMSkillDefault {
 		out.startSimpleTagEOL(TAG_ROOT);
 		out.simpleTag(TAG_TYPE, mType.name());
 		if (mType == CMSkillDefaultType.Skill) {
-			out.simpleTag(TAG_NAME, mName);
-			out.simpleTag(TAG_SPECIALIZATION, mSpecialization);
+			out.simpleTagNotEmpty(TAG_NAME, mName);
+			out.simpleTagNotEmpty(TAG_SPECIALIZATION, mSpecialization);
 		}
 		out.simpleTag(TAG_MODIFIER, mModifier);
 		out.endTagEOL(TAG_ROOT, true);

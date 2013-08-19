@@ -29,20 +29,23 @@ import com.trollworks.gcs.model.skill.CMSkillDefaultType;
 import com.trollworks.gcs.model.skill.CMSkillDifficulty;
 import com.trollworks.gcs.model.skill.CMSkillLevel;
 import com.trollworks.gcs.model.skill.CMTechnique;
+import com.trollworks.gcs.model.weapon.CMWeaponStats;
 import com.trollworks.gcs.ui.editor.CSRowEditor;
 import com.trollworks.gcs.ui.editor.feature.CSFeatures;
 import com.trollworks.gcs.ui.editor.prereq.CSPrereqs;
+import com.trollworks.gcs.ui.weapon.CSMeleeWeaponEditor;
+import com.trollworks.gcs.ui.weapon.CSRangedWeaponEditor;
 import com.trollworks.toolkit.text.TKNumberFilter;
 import com.trollworks.toolkit.text.TKTextUtility;
 import com.trollworks.toolkit.utility.TKAlignment;
-import com.trollworks.toolkit.utility.TKNumberUtils;
 import com.trollworks.toolkit.utility.TKFont;
+import com.trollworks.toolkit.utility.TKNumberUtils;
 import com.trollworks.toolkit.widget.TKCorrectableField;
 import com.trollworks.toolkit.widget.TKCorrectableLabel;
 import com.trollworks.toolkit.widget.TKLabel;
 import com.trollworks.toolkit.widget.TKLinkedLabel;
-import com.trollworks.toolkit.widget.TKPopupMenu;
 import com.trollworks.toolkit.widget.TKPanel;
+import com.trollworks.toolkit.widget.TKPopupMenu;
 import com.trollworks.toolkit.widget.TKTextField;
 import com.trollworks.toolkit.widget.border.TKLineBorder;
 import com.trollworks.toolkit.widget.button.TKBaseButton;
@@ -60,24 +63,26 @@ import java.util.ArrayList;
 
 /** The detailed editor for {@link CMTechnique}s. */
 public class CSTechniqueEditor extends CSRowEditor<CMTechnique> implements ActionListener {
-	private TKCorrectableField	mNameField;
-	private TKTextField			mNotesField;
-	private TKTextField			mReferenceField;
-	private TKPopupMenu			mDifficultyPopup;
-	private TKTextField			mPointsField;
-	private TKTextField			mLevelField;
-	private TKPanel				mDefaultPanel;
-	private TKCorrectableLabel	mDefaultPanelLabel;
-	private TKPopupMenu			mDefaultTypePopup;
-	private TKCorrectableField	mDefaultNameField;
-	private TKTextField			mDefaultSpecializationField;
-	private TKTextField			mDefaultModifierField;
-	private TKCheckbox			mLimitCheckbox;
-	private TKTextField			mLimitField;
-	private TKTabbedPanel		mTabPanel;
-	private CSPrereqs			mPrereqs;
-	private CSFeatures			mFeatures;
-	private CMSkillDefaultType	mLastDefaultType;
+	private TKCorrectableField		mNameField;
+	private TKTextField				mNotesField;
+	private TKTextField				mReferenceField;
+	private TKPopupMenu				mDifficultyPopup;
+	private TKTextField				mPointsField;
+	private TKTextField				mLevelField;
+	private TKPanel					mDefaultPanel;
+	private TKCorrectableLabel		mDefaultPanelLabel;
+	private TKPopupMenu				mDefaultTypePopup;
+	private TKCorrectableField		mDefaultNameField;
+	private TKTextField				mDefaultSpecializationField;
+	private TKTextField				mDefaultModifierField;
+	private TKCheckbox				mLimitCheckbox;
+	private TKTextField				mLimitField;
+	private TKTabbedPanel			mTabPanel;
+	private CSPrereqs				mPrereqs;
+	private CSFeatures				mFeatures;
+	private CMSkillDefaultType		mLastDefaultType;
+	private CSMeleeWeaponEditor		mMeleeWeapons;
+	private CSRangedWeaponEditor	mRangedWeapons;
 
 	/**
 	 * Creates a new {@link CMTechnique} editor.
@@ -108,8 +113,12 @@ public class CSTechniqueEditor extends CSRowEditor<CMTechnique> implements Actio
 
 		mPrereqs = new CSPrereqs(mRow, mRow.getPrereqs());
 		mFeatures = new CSFeatures(mRow, mRow.getFeatures());
+		mMeleeWeapons = CSMeleeWeaponEditor.createEditor(mRow);
+		mRangedWeapons = CSRangedWeaponEditor.createEditor(mRow);
 		panels.add(embedEditor(mPrereqs));
 		panels.add(embedEditor(mFeatures));
+		panels.add(mMeleeWeapons);
+		panels.add(mRangedWeapons);
 		mTabPanel = new TKTabbedPanel(panels);
 		mTabPanel.setSelectedPanelByName(getLastTabName());
 		add(mTabPanel);
@@ -353,6 +362,11 @@ public class CSTechniqueEditor extends CSRowEditor<CMTechnique> implements Actio
 		modified |= mRow.setDifficulty(getSkillDifficulty());
 		modified |= mRow.setPrereqs(mPrereqs.getPrereqList());
 		modified |= mRow.setFeatures(mFeatures.getFeatures());
+
+		ArrayList<CMWeaponStats> list = new ArrayList<CMWeaponStats>(mMeleeWeapons.getWeapons());
+		list.addAll(mRangedWeapons.getWeapons());
+		modified |= mRow.setWeapons(list);
+
 		return modified;
 	}
 

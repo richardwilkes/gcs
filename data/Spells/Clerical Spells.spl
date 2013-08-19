@@ -5,11 +5,9 @@
 		<college>Clerical</college>
 		<spell_class>Regular</spell_class>
 		<casting_cost>10 per Item, 100 per Hex</casting_cost>
-		<maintenance_cost></maintenance_cost>
 		<casting_time>5 min per item;1 Hour per hex</casting_time>
 		<duration>Permanent</duration>
 		<reference>3e R110</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="yes">
 				<name compare="is">Power Investiture</name>
@@ -23,7 +21,6 @@
 		<college>Clerical</college>
 		<spell_class>Regular</spell_class>
 		<casting_cost>0</casting_cost>
-		<maintenance_cost></maintenance_cost>
 		<casting_time>30 minutes</casting_time>
 		<duration>Instant</duration>
 		<reference>3e R108</reference>
@@ -41,10 +38,8 @@
 		<college>Clerical</college>
 		<spell_class>Regular</spell_class>
 		<casting_cost>1</casting_cost>
-		<maintenance_cost></maintenance_cost>
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
-		<reference></reference>
 		<notes>Throws the touched person away with a 3D+1 ST</notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="yes">
@@ -63,7 +58,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>Turned undead will avoid caster for 1 day</duration>
 		<reference>M152</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<advantage_prereq has="yes">
 				<name compare="is">Power Investiture</name>

@@ -10,7 +10,6 @@
 		<casting_time>sec=cost</casting_time>
 		<duration>1 min</duration>
 		<reference>M177</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="starts with">machine control</name>
@@ -35,7 +34,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M178</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">animation</name>
@@ -54,7 +52,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M183</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape metal</name>
@@ -82,7 +79,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M183</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape plastic</name>
@@ -110,7 +106,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 sec</duration>
 		<reference>M182</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">radiation jet</name>
@@ -139,7 +134,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M180</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="starts with">seek power</name>
@@ -164,11 +158,8 @@
 		<college>Technological</college>
 		<spell_class>Regular</spell_class>
 		<casting_cost>1</casting_cost>
-		<maintenance_cost></maintenance_cost>
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
-		<reference></reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Create Fuel</name>
@@ -180,7 +171,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M179</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="contains">transmut</name>
@@ -200,7 +190,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M182</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">resist radiation</name>
@@ -220,7 +209,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M180</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college_count compare="atLeast">10</college_count>
@@ -243,7 +231,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M179</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">energy</college>
@@ -260,7 +247,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M181</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">extinguish fire</name>
@@ -295,7 +281,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M176</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="starts with">machine control</name>
@@ -311,7 +296,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M182</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">seek earth</name>
@@ -327,7 +311,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M182</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">seek plastic</name>
@@ -343,7 +326,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M181</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">earth</college>
@@ -365,7 +347,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Indefinite</duration>
 		<reference>M180</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="starts with">seek power</name>
@@ -394,7 +375,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M176</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="starts with">reveal function</name>
@@ -417,7 +397,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M178</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<spell_prereq has="yes">
@@ -442,7 +421,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M176</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="starts with">machine summoning</name>
@@ -459,7 +437,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M176</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="starts with">machine control</name>
@@ -475,7 +452,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M181</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">keen vision</name>
@@ -492,7 +468,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M177</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">glitch</name>
@@ -520,7 +495,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>30 sec</duration>
 		<reference>M183</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape metal</name>
@@ -537,7 +511,6 @@
 		<casting_time>5 min</casting_time>
 		<duration>Indefinite</duration>
 		<reference>M178</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="starts with">machine possession</name>
@@ -565,7 +538,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>30 sec</duration>
 		<reference>M183</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape plastic</name>
@@ -582,7 +554,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 week</duration>
 		<reference>M179</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="starts with">test fuel</name>
@@ -599,7 +570,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M180</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="starts with">create fuel</name>
@@ -619,7 +589,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M179</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">decay</name>
@@ -638,7 +607,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 sec</duration>
 		<reference>M182</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">resist radiation</name>
@@ -657,7 +625,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M181</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">keen hearing</name>
@@ -674,7 +641,6 @@
 		<casting_time>sec=cost</casting_time>
 		<duration>Permanent</duration>
 		<reference>M177</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="starts with">schematic</name>
@@ -724,7 +690,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M182</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">radiation</college>
@@ -742,7 +707,6 @@
 		<casting_time>10 min</casting_time>
 		<duration>Instant</duration>
 		<reference>M176</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">seek machine</name>
@@ -759,7 +723,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M177</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">reveal function</name>
@@ -778,7 +741,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M181</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Seek Fuel</name>
@@ -790,7 +752,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M179</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Seek Machine</name>
@@ -802,7 +763,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M175</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Seek Plastic</name>
@@ -813,7 +773,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M182</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Seek Power</name>
@@ -825,7 +784,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M179</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Seek Radiation</name>
@@ -836,7 +794,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M181</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">see radiation</name>
@@ -852,7 +809,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M182</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<spell_prereq has="yes">
@@ -886,7 +842,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M183</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<spell_prereq has="yes">
@@ -920,7 +875,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M181</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">infravision</name>
@@ -937,7 +891,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M180</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">minor healing</name>
@@ -968,7 +921,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M179</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="starts with">seek power</name>
@@ -997,6 +949,5 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M179</reference>
-		<notes></notes>
 	</spell>
 </spell_list>

@@ -9,7 +9,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>10 sec</duration>
 		<reference>M26</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -41,11 +40,9 @@
 		<college>Movement</college>
 		<spell_class>Regular</spell_class>
 		<casting_cost>Varies</casting_cost>
-		<maintenance_cost></maintenance_cost>
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M142</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -70,7 +67,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>24 hrs</duration>
 		<reference>M83</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">timeport</name>
@@ -92,7 +88,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M148</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">teleport</name>
@@ -108,7 +103,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M148</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">blink</name>
@@ -124,7 +118,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 sec per 1000 miles</duration>
 		<reference>M148</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -155,7 +148,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M148</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">walk on water</name>
@@ -174,7 +166,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M144</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -202,7 +193,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M143</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>
@@ -218,7 +208,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>5 sec</duration>
 		<reference>M144</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -246,7 +235,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M84</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -274,7 +262,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>10 sec</duration>
 		<reference>M146</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<prereq_list all="yes">
 				<prereq_list all="no">
@@ -308,7 +295,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M145</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -336,7 +322,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M146</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<prereq_list all="yes">
 				<prereq_list all="no">
@@ -369,7 +354,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M148</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">protection &amp; warning</college>
@@ -394,7 +378,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M142</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">haste</name>
@@ -410,7 +393,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M142</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">haste</name>
@@ -426,7 +408,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>10 sec</duration>
 		<reference>M146</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">haste</name>
@@ -455,7 +436,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M142</reference>
-		<notes></notes>
 	</spell>
 	<spell very_hard="yes">
 		<name>Hawk Flight</name>
@@ -466,7 +446,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M146</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">flight</name>
@@ -482,7 +461,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M143</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>
@@ -498,7 +476,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M143</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>
@@ -514,7 +491,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M143</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>
@@ -530,7 +506,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M143</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>
@@ -546,7 +521,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M145</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>
@@ -565,7 +539,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M143</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>
@@ -581,7 +554,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M144</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">locksmith</name>
@@ -614,7 +586,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M143</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>
@@ -630,7 +601,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 day</duration>
 		<reference>M143</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<spell_prereq has="yes">
@@ -663,7 +633,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M145</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">locksmith</name>
@@ -680,14 +649,8 @@
 		<duration>Instant</duration>
 		<ranged_weapon>
 			<damage>Special cr</damage>
-			<strength></strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>20/60</range>
-			<rate_of_fire></rate_of_fire>
-			<shots></shots>
-			<bulk></bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -695,7 +658,6 @@
 			<default>
 				<type>Skill</type>
 				<name>Throwing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
@@ -712,11 +674,9 @@
 		<college>Movement</college>
 		<spell_class>Regular</spell_class>
 		<casting_cost>1 per 2 ST of pull</casting_cost>
-		<maintenance_cost></maintenance_cost>
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M146</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -748,7 +708,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 day</duration>
 		<reference>M144</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -776,7 +735,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M82</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<spell_prereq has="yes">
@@ -805,11 +763,9 @@
 		<college>Movement</college>
 		<spell_class>Regular</spell_class>
 		<casting_cost>1 per 2 ST of repulsion</casting_cost>
-		<maintenance_cost></maintenance_cost>
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M147</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">movement</college>
@@ -841,7 +797,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M145</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>
@@ -860,7 +815,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>10 sec</duration>
 		<reference>M145</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -891,7 +845,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M144</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>
@@ -907,7 +860,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M147</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">levitation</name>
@@ -926,7 +878,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M147</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">hawk flight</name>
@@ -948,7 +899,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M147</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -976,7 +926,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M84</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">teleport</name>
@@ -998,7 +947,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M145</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">locksmith</name>
@@ -1014,7 +962,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M144</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">apportation</name>
@@ -1031,14 +978,8 @@
 		<duration>Instant</duration>
 		<ranged_weapon>
 			<damage>per weapon</damage>
-			<strength></strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>20/40</range>
-			<rate_of_fire></rate_of_fire>
-			<shots></shots>
-			<bulk></bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1046,7 +987,6 @@
 			<default>
 				<type>Skill</type>
 				<name>Throwing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
@@ -1067,7 +1007,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M104</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">far-feeling</name>

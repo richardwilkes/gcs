@@ -101,7 +101,7 @@ public class CSApplication extends TKAppWithUI implements Runnable {
 		File appDir = new File(System.getProperty("app.home", ".")); //$NON-NLS-1$ //$NON-NLS-2$
 		TKWindowsRegistry.register("GCS", map, new File(appDir, "GURPS Character Sheet.exe"), new File(appDir, "icons")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
-		TKUpdateChecker.check("gcs", "http://trollworks.com/downloads/current.txt", "http://trollworks.com"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		TKUpdateChecker.check("gcs", "http://gcs.trollworks.com/current.txt", "http://gcs.trollworks.com"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 		CSListCollectionThread.get();
 	}

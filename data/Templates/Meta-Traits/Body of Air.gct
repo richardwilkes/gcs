@@ -4,15 +4,13 @@
 		<advantage_container open="yes" type="metatrait">
 			<name>Meta-Trait: Body of Air</name>
 			<reference>B262</reference>
-			<notes></notes>
 			<advantage>
 				<name>Attribute modifiers: ST 0</name>
 				<type>Mental/Physical</type>
 				<base_points>-100</base_points>
-				<reference></reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>ST</attribute>
+					<amount per_level="no">-10</amount>
 				</attribute_bonus>
 			</advantage>
 			<advantage>
@@ -20,27 +18,23 @@
 				<type>Physical, Exotic</type>
 				<base_points>20</base_points>
 				<reference>B49</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Flight (Light than Air: -10%)</name>
 				<type>Physical, Exotic</type>
 				<base_points>36</base_points>
 				<reference>B56</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Injury Tolerance (Diffuse)</name>
 				<type>Physical, Exotic</type>
 				<base_points>100</base_points>
 				<reference>B60</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>No Legs (Aerial)</name>
 				<type>Physical, Exotic</type>
 				<reference>B145</reference>
-				<notes></notes>
 				<prereq_list all="yes">
 					<advantage_prereq has="yes">
 						<name compare="contains">flight</name>
@@ -53,39 +47,32 @@
 				<type>Physical</type>
 				<base_points>-50</base_points>
 				<reference>B145</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Resistant (Immune to Metabolic Hazards)</name>
 				<type>Physical</type>
 				<base_points>30</base_points>
 				<reference>B81</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Secondary characteristic, HP+10</name>
 				<type>Physical</type>
 				<base_points>20</base_points>
-				<reference></reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>HP</attribute>
+					<amount per_level="no">+10</amount>
 				</attribute_bonus>
 			</advantage>
 			<advantage>
 				<name>Taboo Trait (Fixed Strength)</name>
 				<type>Physical</type>
-				<reference></reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Vulnerability (Vaccum and wind based attacks, Damage x2)</name>
 				<type>Physical, Exotic</type>
 				<base_points>-20</base_points>
 				<reference>B161</reference>
-				<notes></notes>
 			</advantage>
 		</advantage_container>
 	</advantage_list>
-	<notes></notes>
 </template>

@@ -32,8 +32,8 @@ import com.trollworks.toolkit.io.TKPath;
 import com.trollworks.toolkit.io.cmdline.TKCmdLine;
 import com.trollworks.toolkit.print.TKPrintManager;
 import com.trollworks.toolkit.utility.TKApp;
-import com.trollworks.toolkit.utility.TKNumberUtils;
 import com.trollworks.toolkit.utility.TKGraphics;
+import com.trollworks.toolkit.utility.TKNumberUtils;
 import com.trollworks.toolkit.utility.TKTiming;
 import com.trollworks.toolkit.utility.units.TKLengthUnits;
 
@@ -73,7 +73,12 @@ public class CSBatchApplication extends TKApp {
 			double[] paperSize = getPaperSize(cmdLine);
 			double[] margins = getMargins(cmdLine);
 			TKTiming timing = new TKTiming();
+			String htmlTemplateOption = cmdLine.getOptionArgument(CSMain.HTML_TEMPLATE_OPTION);
+			File htmlTemplate = null;
 
+			if (htmlTemplateOption != null) {
+				htmlTemplate = new File(htmlTemplateOption);
+			}
 			TKGraphics.setHeadlessPrintMode(true);
 			for (File file : cmdLine.getArgumentsAsFiles()) {
 				if (CSSheetOpener.EXTENSION.equals(TKPath.getExtension(file.getName())) && file.canRead()) {
@@ -104,12 +109,15 @@ public class CSBatchApplication extends TKApp {
 
 						System.out.println(timing.toSeconds());
 						if (html) {
+							StringBuilder builder = new StringBuilder();
+
 							System.out.print(Msgs.CREATING_HTML);
 							System.out.flush();
 							output = new File(file.getParentFile(), TKPath.getLeafName(file.getName(), false) + CSSheetWindow.HTML_EXTENSION);
 							timing.reset();
-							success = sheet.saveAsHTML(output);
+							success = sheet.saveAsHTML(output, htmlTemplate, builder);
 							System.out.println(timing.toSeconds());
+							System.out.println(MessageFormat.format(Msgs.TEMPLATE_USED, builder));
 							if (success) {
 								System.out.println(MessageFormat.format(Msgs.CREATED, output));
 								count++;

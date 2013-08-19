@@ -9,7 +9,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M40</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -37,7 +36,6 @@
 		<casting_time>2 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M41</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">alter visage</name>
@@ -53,7 +51,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M41</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<spell_prereq has="yes">
@@ -78,7 +75,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M41</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">body</college>
@@ -99,7 +95,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M39</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">grace</name>
@@ -115,7 +110,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M39</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">grace</name>
@@ -131,7 +125,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M37</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">grace</name>
@@ -147,7 +140,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M37</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">vigor</name>
@@ -163,7 +155,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M37</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">might</name>
@@ -179,7 +170,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M39</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">grace</name>
@@ -198,7 +188,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>30 sec</duration>
 		<reference>M40</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -230,7 +219,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M35</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Clumsiness</name>
@@ -241,7 +229,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M36</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">spasm</name>
@@ -257,7 +244,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>5 sec</duration>
 		<reference>M40</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">body control</college>
@@ -289,7 +275,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M43</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -328,11 +313,9 @@
 		<duration>Instant</duration>
 		<melee_weapon>
 			<damage>thr-1 cr +1d/point</damage>
-			<strength></strength>
 			<usage>Punch</usage>
 			<reach>C</reach>
 			<parry>0</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>0</modifier>
@@ -340,24 +323,20 @@
 			<default>
 				<type>Skill</type>
 				<name>Boxing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
 		<reference>M41</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">wither limb</name>
@@ -373,7 +352,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M36</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Decapitation</name>
@@ -384,7 +362,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>Semi-permanent</duration>
 		<reference>M42</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -412,7 +389,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M42</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -440,7 +416,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M43</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -468,7 +443,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M37</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lend energy</name>
@@ -484,7 +458,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M38</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">clumsiness</name>
@@ -500,7 +473,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M43</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">earth to air</name>
@@ -538,7 +510,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M37</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">clumsiness</name>
@@ -554,7 +525,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>5 sec</duration>
 		<reference>M39</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">body control</college>
@@ -571,7 +541,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M39</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">hair growth</name>
@@ -587,7 +556,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M36</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">clumsiness</name>
@@ -606,7 +574,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M39</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -634,7 +601,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>Until eat/rest</duration>
 		<reference>M38</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -665,7 +631,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Until scratched</duration>
 		<reference>M35</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Lengthen Limb</name>
@@ -676,7 +641,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M41</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -704,7 +668,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M37</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lend energy</name>
@@ -720,7 +683,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 sec</duration>
 		<reference>M38</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">body control</college>
@@ -739,7 +701,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 sec</duration>
 		<reference>M36</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">spasm</name>
@@ -755,7 +716,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M40</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -787,7 +747,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M35</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">odor</name>
@@ -803,7 +762,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M39</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">grace</name>
@@ -822,7 +780,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M38</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -850,7 +807,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M38</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">nauseate</name>
@@ -869,7 +825,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min or until free</duration>
 		<reference>M36</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">hinder</name>
@@ -885,7 +840,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M36</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">tanglefoot</name>
@@ -901,7 +855,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M39</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -929,7 +882,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M42</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -957,7 +909,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M42</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -985,7 +936,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M138</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">pestilence</name>
@@ -1004,7 +954,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M35</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">itch</name>
@@ -1020,7 +969,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Until a new Spasm is triggered</duration>
 		<reference>M35</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">spasm</name>
@@ -1039,7 +987,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M41</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -1070,7 +1017,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 sec</duration>
 		<reference>M38</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">light</college>
@@ -1090,7 +1036,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 sec</duration>
 		<reference>M38</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">sound</college>
@@ -1110,7 +1055,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 sec</duration>
 		<reference>M38</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">spasm</name>
@@ -1126,7 +1070,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 sec</duration>
 		<reference>M40</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">resist pain</name>
@@ -1142,7 +1085,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M37</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">pain</name>
@@ -1158,7 +1100,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M36</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">clumsiness</name>
@@ -1174,7 +1115,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Until drink/rest</duration>
 		<reference>M38</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">debility</name>
@@ -1205,7 +1145,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M36</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">itch</name>
@@ -1222,11 +1161,9 @@
 		<duration>1 min</duration>
 		<melee_weapon>
 			<damage>thr-1 cr + Paralysis</damage>
-			<strength></strength>
 			<usage>Punch</usage>
 			<reach>C</reach>
 			<parry>0</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>0</modifier>
@@ -1234,24 +1171,20 @@
 			<default>
 				<type>Skill</type>
 				<name>Boxing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
 		<reference>M40</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">paralyze limb</name>
@@ -1267,7 +1200,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M35</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Transform Body (@Race@)</name>
@@ -1278,7 +1210,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M43</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">alter body</name>
@@ -1298,7 +1229,6 @@
 		<casting_time>2 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M43</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">transform body (@race@)</name>
@@ -1317,7 +1247,6 @@
 		<casting_time>2 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M43</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -1351,7 +1280,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M37</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">lend vitality</name>
@@ -1370,7 +1298,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 day</duration>
 		<reference>M40</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">sickness</name>
@@ -1390,11 +1317,9 @@
 		<duration>Permanent</duration>
 		<melee_weapon>
 			<damage>thr-1 cr +1d</damage>
-			<strength></strength>
 			<usage>Punch</usage>
 			<reach>C</reach>
 			<parry>0</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>0</modifier>
@@ -1402,24 +1327,20 @@
 			<default>
 				<type>Skill</type>
 				<name>Boxing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
 		<reference>M40</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">

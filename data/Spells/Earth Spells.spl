@@ -9,7 +9,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>2d days</duration>
 		<reference>M55</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape earth</name>
@@ -50,7 +49,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M54</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">stone to flesh</name>
@@ -66,7 +64,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M28</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">summon earth elemental</name>
@@ -82,7 +79,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M51</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">earth to stone</name>
@@ -98,7 +94,6 @@
 		<casting_time>Special</casting_time>
 		<duration>Permanent</duration>
 		<reference>M28</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -126,7 +121,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M25</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape earth</name>
@@ -145,7 +139,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M51</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -173,7 +166,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M52</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape earth</name>
@@ -204,7 +196,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>30 sec</duration>
 		<reference>M51</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape earth</name>
@@ -220,7 +211,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M54</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -252,7 +242,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M53</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">earth</college>
@@ -281,7 +270,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M53</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">earth</college>
@@ -298,7 +286,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M31</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">earth to stone</name>
@@ -314,7 +301,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M55</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">hide object</name>
@@ -334,11 +320,9 @@
 		<duration>1 sec</duration>
 		<melee_weapon>
 			<damage>1d kb/point - Blinds</damage>
-			<strength></strength>
 			<usage>Jet</usage>
 			<reach>1/point</reach>
 			<parry>No</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -351,7 +335,6 @@
 			</default>
 		</melee_weapon>
 		<reference>M52</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sand jet</name>
@@ -371,11 +354,9 @@
 		<duration>Permanent</duration>
 		<melee_weapon>
 			<damage>Petrification</damage>
-			<strength></strength>
 			<usage>Punch</usage>
 			<reach>C</reach>
 			<parry>0</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>0</modifier>
@@ -383,24 +364,20 @@
 			<default>
 				<type>Skill</type>
 				<name>Boxing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
 		<reference>M52</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -428,7 +405,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>Instant</duration>
 		<reference>M51</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">earth</college>
@@ -465,14 +441,11 @@
 		<duration>1 min</duration>
 		<melee_weapon>
 			<damage>1d-1 cr/point</damage>
-			<strength></strength>
 			<usage>Area</usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M53</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -501,11 +474,9 @@
 		<duration>1 sec</duration>
 		<melee_weapon>
 			<damage>Blinds</damage>
-			<strength></strength>
 			<usage>Jet</usage>
 			<reach>1/point</reach>
 			<parry>No</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -518,7 +489,6 @@
 			</default>
 		</melee_weapon>
 		<reference>M52</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">create earth</name>
@@ -534,7 +504,6 @@
 		<casting_time>Instant#</casting_time>
 		<duration>1 min#</duration>
 		<reference>M27</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">create earth</name>
@@ -553,7 +522,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M50</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Seek Pass</name>
@@ -564,7 +532,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M51</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">seek earth</name>
@@ -580,7 +547,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M50</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">seek earth</name>
@@ -596,7 +562,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M54</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -625,14 +590,8 @@
 		<duration>Instant</duration>
 		<ranged_weapon>
 			<damage>1d+1 cr/point</damage>
-			<strength></strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>40/80</range>
-			<rate_of_fire></rate_of_fire>
-			<shots></shots>
-			<bulk></bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -645,7 +604,6 @@
 			</default>
 		</ranged_weapon>
 		<reference>M52</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">create earth</name>
@@ -661,7 +619,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M51</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<college compare="is">earth</college>
@@ -681,7 +638,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M53</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -712,7 +668,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>1hr</duration>
 		<reference>M27</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<prereq_list all="yes">
@@ -760,7 +715,6 @@
 		<casting_time>1 hr #</casting_time>
 		<duration>1 day</duration>
 		<reference>M54</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">fire</college>
@@ -780,7 +734,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 sec</duration>
 		<reference>M52</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">earth</college>

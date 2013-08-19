@@ -266,12 +266,12 @@ public class CMEquipment extends CMRow {
 		if (!canHaveChildren()) {
 			out.simpleTag(TAG_QUANTITY, mQuantity);
 		}
-		out.simpleTag(TAG_DESCRIPTION, mDescription);
-		out.simpleTag(TAG_TECH_LEVEL, mTechLevel);
-		out.simpleTag(TAG_LEGALITY_CLASS, mLegalityClass);
+		out.simpleTagNotEmpty(TAG_DESCRIPTION, mDescription);
+		out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
+		out.simpleTagNotEmpty(TAG_LEGALITY_CLASS, mLegalityClass);
 		out.simpleTag(TAG_VALUE, mValue);
 		out.simpleTagWithAttribute(TAG_WEIGHT, Double.toString(mWeight), ATTRIBUTE_UNITS, TKWeightUnits.POUNDS.toString());
-		out.simpleTag(TAG_REFERENCE, mReference);
+		out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
 		for (CMWeaponStats weapon : mWeapons) {
 			weapon.save(out);
 		}

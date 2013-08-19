@@ -26,6 +26,7 @@ package com.trollworks.gcs.model.advantage;
 import com.trollworks.gcs.model.CMCharacter;
 import com.trollworks.gcs.model.CMDataFile;
 import com.trollworks.gcs.model.CMRow;
+import com.trollworks.gcs.model.modifier.CMModifier;
 import com.trollworks.gcs.model.skill.CMSkillDefault;
 import com.trollworks.gcs.model.weapon.CMMeleeWeaponStats;
 import com.trollworks.gcs.model.weapon.CMOldWeapon;
@@ -39,6 +40,7 @@ import com.trollworks.toolkit.collections.TKEnumExtractor;
 import com.trollworks.toolkit.collections.TKFilteredIterator;
 import com.trollworks.toolkit.io.xml.TKXMLReader;
 import com.trollworks.toolkit.io.xml.TKXMLWriter;
+import com.trollworks.toolkit.utility.TKNumberUtils;
 import com.trollworks.toolkit.widget.outline.TKColumn;
 
 import java.awt.image.BufferedImage;
@@ -85,6 +87,8 @@ public class CMAdvantage extends CMRow {
 	public static final String			ID_LIST_CHANGED				= PREFIX + "ListChanged";						//$NON-NLS-1$
 	/** The field ID for when the advantage becomes or stops being a weapon. */
 	public static final String			ID_WEAPON_STATUS_CHANGED	= PREFIX + "WeaponStatus";						//$NON-NLS-1$
+	/** The field ID for when the advantage gets Modifiers. */
+	public static final String			ID_MODIFIER_STATUS_CHANGED	= PREFIX + "Modifier";							//$NON-NLS-1$
 	/** The type mask for mental (dis)advantages. */
 	public static final int				TYPE_MASK_MENTAL			= 1 << 0;
 	/** The type mask for physical (dis)advantages. */
@@ -104,6 +108,7 @@ public class CMAdvantage extends CMRow {
 	private String						mOldPointsString;
 	private CMAdvantageContainerType	mContainerType;
 	private ArrayList<CMWeaponStats>	mWeapons;
+	private ArrayList<CMModifier>		mModifiers;
 	// For load-time conversion only
 	private CMOldWeapon					mOldWeapon;
 
@@ -121,6 +126,7 @@ public class CMAdvantage extends CMRow {
 		mReference = ""; //$NON-NLS-1$
 		mContainerType = CMAdvantageContainerType.GROUP;
 		mWeapons = new ArrayList<CMWeaponStats>();
+		mModifiers = new ArrayList<CMModifier>();
 	}
 
 	/**
@@ -146,6 +152,10 @@ public class CMAdvantage extends CMRow {
 			} else if (weapon instanceof CMRangedWeaponStats) {
 				mWeapons.add(new CMRangedWeaponStats(this, (CMRangedWeaponStats) weapon));
 			}
+		}
+		mModifiers = new ArrayList<CMModifier>(advantage.mModifiers.size());
+		for (CMModifier modifier : advantage.mModifiers) {
+			mModifiers.add(new CMModifier(mDataFile, modifier));
 		}
 		if (deep) {
 			int count = advantage.getChildCount();
@@ -222,6 +232,8 @@ public class CMAdvantage extends CMRow {
 				mWeapons.add(new CMRangedWeaponStats(this, reader));
 			} else if (CMOldWeapon.TAG_ROOT.equals(name)) {
 				mOldWeapon = new CMOldWeapon(reader);
+			} else if (CMModifier.TAG_MODIFIER.equals(name)) {
+				mModifiers.add(new CMModifier(getDataFile(), reader));
 			} else {
 				super.loadSubElement(reader, forUndo);
 			}
@@ -291,11 +303,14 @@ public class CMAdvantage extends CMRow {
 			if (mPointsPerLevel != 0) {
 				out.simpleTag(TAG_POINTS_PER_LEVEL, mPointsPerLevel);
 			}
+			for (CMModifier modifier : mModifiers) {
+				modifier.save(out, forUndo);
+			}
 			for (CMWeaponStats weapon : mWeapons) {
 				weapon.save(out);
 			}
 		}
-		out.simpleTag(TAG_REFERENCE, mReference);
+		out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
 	}
 
 	/** @return The container type. */
@@ -381,15 +396,29 @@ public class CMAdvantage extends CMRow {
 
 	/** @return The total points, taking levels into account. */
 	public int getAdjustedPoints() {
-		if (canHaveChildren()) {
-			int points = 0;
+		int points = 0;
 
+		if (canHaveChildren()) {
 			for (CMAdvantage child : new TKFilteredIterator<CMAdvantage>(getChildren(), CMAdvantage.class)) {
 				points += child.getAdjustedPoints();
 			}
 			return points;
 		}
-		return mLevels >= 0 ? mPoints + mPointsPerLevel * mLevels : mPoints;
+
+		points = mLevels >= 0 ? mPoints + mPointsPerLevel * mLevels : mPoints;
+		int modifier = 0;
+
+		for (CMModifier one : mModifiers) {
+			modifier += one.getCostModifier();
+		}
+
+		if (modifier != 0) {
+			if (modifier < -80) {
+				modifier = -80;
+			}
+			points = (int) Math.round(Math.ceil(points * (1.0 + modifier / 100.0)));
+		}
+		return points;
 	}
 
 	/** @return The points. */
@@ -588,5 +617,49 @@ public class CMAdvantage extends CMRow {
 				one.applyNameableKeys(map);
 			}
 		}
+	}
+
+	/** @return The modifiers. */
+	public List<CMModifier> getModifiers() {
+		return Collections.unmodifiableList(mModifiers);
+	}
+
+	/**
+	 * @param modifiers The value to set for modifiers.
+	 * @return {@code true} if modifiers changed
+	 */
+	public boolean setModifiers(List<CMModifier> modifiers) {
+		if (!mModifiers.equals(modifiers)) {
+			mModifiers = new ArrayList<CMModifier>(modifiers);
+			notifySingle(ID_MODIFIER_STATUS_CHANGED);
+			return true;
+		}
+		return false;
+	}
+
+	@Override public String getModifierNotes() {
+		if (!canHaveChildren()) {
+			if (!mModifiers.isEmpty()) {
+				StringBuilder builder = new StringBuilder();
+
+				for (CMModifier modifier : mModifiers) {
+					String modNote = modifier.getNotes();
+
+					builder.append(modifier.toString());
+					if (modNote.length() > 0) {
+						builder.append(" ("); //$NON-NLS-1$
+						builder.append(modNote);
+						builder.append(')');
+					}
+					builder.append(", "); //$NON-NLS-1$
+					builder.append(TKNumberUtils.format(modifier.getCostModifier(), true));
+					builder.append("%; "); //$NON-NLS-1$
+				}
+				builder.setLength(builder.length() - 2); // Remove the trailing "; "
+				builder.append('.');
+				return builder.toString();
+			}
+		}
+		return null;
 	}
 }

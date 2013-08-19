@@ -4,13 +4,11 @@
 		<advantage_container open="yes" type="race">
 			<name>Dwarf</name>
 			<reference>B261</reference>
-			<notes></notes>
 			<advantage>
 				<name>Detect (Gold, Vague)</name>
 				<type>Mental/Physical, Exotic</type>
 				<base_points>3</base_points>
 				<reference>B48</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Extended Lifespan</name>
@@ -18,7 +16,6 @@
 				<levels>1</levels>
 				<points_per_level>2</points_per_level>
 				<reference>B53</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Increased Health</name>
@@ -26,7 +23,6 @@
 				<levels>1</levels>
 				<points_per_level>10</points_per_level>
 				<reference>B15</reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>HT</attribute>
 					<amount per_level="yes">+1</amount>
@@ -38,7 +34,6 @@
 				<levels>1</levels>
 				<points_per_level>5</points_per_level>
 				<reference>B16</reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>will</attribute>
 					<amount per_level="yes">+1</amount>
@@ -50,14 +45,11 @@
 				<levels>5</levels>
 				<points_per_level>1</points_per_level>
 				<reference>B71</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Reduced Size</name>
 				<type>Physical</type>
 				<levels>1</levels>
-				<reference></reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>SM</attribute>
 					<amount per_level="yes">-1</amount>
@@ -69,7 +61,6 @@
 				<levels>1</levels>
 				<points_per_level>10</points_per_level>
 				<reference>B90</reference>
-				<notes></notes>
 				<skill_bonus>
 					<name compare="starts with">armoury</name>
 					<specialization compare="is anything"></specialization>
@@ -118,5 +109,4 @@
 			</advantage>
 		</advantage_container>
 	</advantage_list>
-	<notes></notes>
 </template>

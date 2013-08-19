@@ -346,6 +346,20 @@ public class TKXMLWriter extends PrintWriter {
 	 * @param name The name of the tag.
 	 * @param value The data to place between the tags.
 	 */
+	public void simpleTagNotEmpty(String name, String value) {
+		if (value.length() != 0) {
+			startSimpleTag(name);
+			writeEncodedData(value);
+			endTagEOL(name, false);
+		}
+	}
+
+	/**
+	 * Write out a simple XML tag (i.e. no children or attributes).
+	 * 
+	 * @param name The name of the tag.
+	 * @param value The data to place between the tags.
+	 */
 	public void simpleTag(String name, Object value) {
 		if (value != null) {
 			simpleTag(name, value.toString());

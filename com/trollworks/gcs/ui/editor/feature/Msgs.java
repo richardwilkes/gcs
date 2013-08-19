@@ -85,7 +85,11 @@ class Msgs {
 	/** Used by {@link CSBaseFeature}. */
 	public static String	SPELL_BONUS;
 	/** Used by {@link CSBaseFeature}. */
+	public static String	WEAPON_BONUS;
+	/** Used by {@link CSBaseFeature}. */
 	public static String	PER_LEVEL;
+	/** Used by {@link CSBaseFeature}. */
+	public static String	PER_DIE;
 
 	/** Used by {@link CSCostReduction}. */
 	public static String	BY;
@@ -129,6 +133,15 @@ class Msgs {
 	public static String	ONE_COLLEGE;
 	/** Used by {@link CSSpellBonus}. */
 	public static String	SPELL_NAME;
+
+	/** Used by {@link CSWeaponBonus}. */
+	public static String	WEAPON_SKILL;
+	/** Used by {@link CSWeaponBonus}. */
+	public static String	IS;
+	/** Used by {@link CSWeaponBonus}. */
+	public static String	AT_LEAST;
+	/** Used by {@link CSWeaponBonus}. */
+	public static String	AT_MOST;
 
 	static {
 		TKMessages.initialize(Msgs.class);

@@ -5,7 +5,6 @@
 		<type>Physical, Exotic</type>
 		<base_points>25</base_points>
 		<reference>B34</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>360&#176; Vision</name>
@@ -19,22 +18,25 @@
 		<type>Mental/Physical</type>
 		<base_points>5</base_points>
 		<reference>B34</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">body sense</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">navigation</name>
 			<specialization compare="is">air</specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">navigation</name>
 			<specialization compare="is">land</specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">navigation</name>
 			<specialization compare="is">sea</specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -46,18 +48,22 @@
 		<skill_bonus>
 			<name compare="is">body sense</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">navigation</name>
 			<specialization compare="is">air</specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">navigation</name>
 			<specialization compare="is">land</specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">navigation</name>
 			<specialization compare="is">sea</specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -65,42 +71,50 @@
 		<type>Mental/Physical</type>
 		<base_points>10</base_points>
 		<reference>B34</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">body sense</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">navigation</name>
 			<specialization compare="is">air</specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">navigation</name>
 			<specialization compare="is">land</specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">navigation</name>
 			<specialization compare="is">sea</specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="starts with">piloting</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">aerobatics</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">free fall</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">navigation</name>
 			<specialization compare="is">hyperspace</specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">navigation</name>
 			<specialization compare="is">space</specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -112,38 +126,47 @@
 		<skill_bonus>
 			<name compare="is">body sense</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">navigation</name>
 			<specialization compare="is">air</specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">navigation</name>
 			<specialization compare="is">land</specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">navigation</name>
 			<specialization compare="is">sea</specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="starts with">piloting</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">aerobatics</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">free fall</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">navigation</name>
 			<specialization compare="is">hyperspace</specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">navigation</name>
 			<specialization compare="is">space</specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -151,14 +174,12 @@
 		<type>Mental</type>
 		<base_points>2</base_points>
 		<reference>B35</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Absolute Timing (Chronolocation)</name>
 		<type>Mental</type>
 		<base_points>5</base_points>
 		<reference>B35</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Acute Hearing</name>
@@ -166,7 +187,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B35</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>hearing</attribute>
 			<amount per_level="yes">+1</amount>
@@ -178,7 +198,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>F128</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Acute Sense (@Special Sense@)</name>
@@ -186,7 +205,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B35</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Acute Taste &amp; Smell</name>
@@ -194,7 +212,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B35</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>taste,smell</attribute>
 			<amount per_level="yes">+1</amount>
@@ -206,7 +223,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B35</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>touch</attribute>
 			<amount per_level="yes">+1</amount>
@@ -218,7 +234,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B35</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>vision</attribute>
 			<amount per_level="yes">+1</amount>
@@ -230,7 +245,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B35</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Ally (@Person@, FR: 12)</name>
@@ -259,102 +273,87 @@
 		<levels>1</levels>
 		<points_per_level>100</points_per_level>
 		<reference>B38</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Alternate Identity (Illegal)</name>
 		<type>Social</type>
 		<base_points>15</base_points>
 		<reference>B39</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Alternate Identity (Legal)</name>
 		<type>Social</type>
 		<base_points>5</base_points>
 		<reference>B39</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Ambidexterity</name>
 		<type>Physical</type>
 		<base_points>5</base_points>
 		<reference>B39</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Amphibious</name>
 		<type>Physical, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B40</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Animal Empathy</name>
 		<type>Mental</type>
 		<base_points>5</base_points>
 		<reference>B40</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Appearance (Androgynous)</name>
 		<type>Physical</type>
 		<reference>B21</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Appearance (Attractive)</name>
 		<type>Physical</type>
 		<base_points>4</base_points>
 		<reference>B21</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Appearance (Average)</name>
 		<type>Physical</type>
 		<reference>B21</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Appearance (Beautiful)</name>
 		<type>Physical</type>
 		<base_points>12</base_points>
 		<reference>B21</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Appearance (Handsome)</name>
 		<type>Physical</type>
 		<base_points>12</base_points>
 		<reference>B21</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Appearance (Impressive)</name>
 		<type>Physical</type>
 		<reference>B21</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Appearance (Transcendant)</name>
 		<type>Physical</type>
 		<base_points>20</base_points>
 		<reference>B21</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Appearance (Very Beautiful)</name>
 		<type>Physical</type>
 		<base_points>16</base_points>
 		<reference>B21</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Appearance (Very Handsome)</name>
 		<type>Physical</type>
 		<base_points>16</base_points>
 		<reference>B21</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Arm DX (@One@ arm)</name>
@@ -362,7 +361,6 @@
 		<levels>1</levels>
 		<points_per_level>12</points_per_level>
 		<reference>B40</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Arm DX (Both arms)</name>
@@ -370,7 +368,6 @@
 		<levels>1</levels>
 		<points_per_level>16</points_per_level>
 		<reference>B40</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Arm ST (@More@ arms)</name>
@@ -378,7 +375,6 @@
 		<levels>1</levels>
 		<points_per_level>8</points_per_level>
 		<reference>B40</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Arm ST (@One@ arm)</name>
@@ -386,7 +382,6 @@
 		<levels>1</levels>
 		<points_per_level>3</points_per_level>
 		<reference>B40</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Arm ST (Both arms)</name>
@@ -394,7 +389,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B40</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Binding</name>
@@ -402,52 +396,46 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B40</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Blessed</name>
 		<type>Mental, Supernatural</type>
 		<base_points>10</base_points>
 		<reference>B40</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Blessed (Armor of Faith)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>11</base_points>
 		<reference>F128</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Blessed (Heroic Feats)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>10</base_points>
 		<reference>B41</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Blessed (The King's Two Bodies)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>10</base_points>
 		<reference>F128</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Blessed (Very Blessed)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>20</base_points>
 		<reference>B41</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Brachiator</name>
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B41</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">climbing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -456,14 +444,12 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B41</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Catfall</name>
 		<type>Physical, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B41</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Chameleon</name>
@@ -471,14 +457,12 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B41</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Channeling</name>
 		<type>Mental, Supernatural</type>
 		<base_points>10</base_points>
 		<reference>B41</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Charisma</name>
@@ -486,7 +470,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B41</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">fortune-telling</name>
 			<specialization compare="is anything"></specialization>
@@ -573,28 +556,24 @@
 		<type>Mental, Supernatural</type>
 		<base_points>50</base_points>
 		<reference>B42</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Clairsentience (Clairaudience)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>35</base_points>
 		<reference>B42</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Clairsentience (Clairosmia)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>20</base_points>
 		<reference>B42</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Clairsentience (Clairvoyance)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>45</base_points>
 		<reference>B42</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Claws, Blunt (Feet)</name>
@@ -602,7 +581,6 @@
 		<base_points>3</base_points>
 		<melee_weapon>
 			<damage>thr:+1 cr</damage>
-			<strength></strength>
 			<usage>Kick</usage>
 			<reach>C,1</reach>
 			<parry>No</parry>
@@ -614,13 +592,11 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</melee_weapon>
@@ -633,7 +609,6 @@
 		<base_points>3</base_points>
 		<melee_weapon>
 			<damage>thr-1:+1 cr</damage>
-			<strength></strength>
 			<usage>Punch</usage>
 			<reach>C</reach>
 			<parry>0</parry>
@@ -645,19 +620,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Boxing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -670,7 +642,6 @@
 		<base_points>3</base_points>
 		<melee_weapon>
 			<damage>thr:+1 cr</damage>
-			<strength></strength>
 			<usage>Trample</usage>
 			<reach>C,1</reach>
 			<parry>No</parry>
@@ -682,13 +653,11 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</melee_weapon>
@@ -696,6 +665,7 @@
 		<notes>Only pay for hands or feet, not both</notes>
 		<dr_bonus>
 			<location>feet</location>
+			<amount per_level="no">+1</amount>
 		</dr_bonus>
 	</advantage>
 	<advantage>
@@ -704,7 +674,6 @@
 		<base_points>11</base_points>
 		<melee_weapon>
 			<damage>thr:+1 cut</damage>
-			<strength></strength>
 			<usage>Slash</usage>
 			<reach>C,1</reach>
 			<parry>No</parry>
@@ -716,19 +685,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</melee_weapon>
 		<melee_weapon>
 			<damage>thr:+1 imp</damage>
-			<strength></strength>
 			<usage>Stab</usage>
 			<reach>C,1</reach>
 			<parry>No</parry>
@@ -740,13 +706,11 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</melee_weapon>
@@ -759,7 +723,6 @@
 		<base_points>11</base_points>
 		<melee_weapon>
 			<damage>thr-1:+1 cut</damage>
-			<strength></strength>
 			<usage>Slash</usage>
 			<reach>C</reach>
 			<parry>0</parry>
@@ -771,25 +734,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Boxing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
 		<melee_weapon>
 			<damage>thr-1:+1 imp</damage>
-			<strength></strength>
 			<usage>Stab</usage>
 			<reach>C</reach>
 			<parry>0</parry>
@@ -801,19 +760,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Boxing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -826,7 +782,6 @@
 		<base_points>5</base_points>
 		<melee_weapon>
 			<damage>thr cut</damage>
-			<strength></strength>
 			<usage>Kick</usage>
 			<reach>C,1</reach>
 			<parry>No</parry>
@@ -838,13 +793,11 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</melee_weapon>
@@ -857,7 +810,6 @@
 		<base_points>5</base_points>
 		<melee_weapon>
 			<damage>thr-1 cut</damage>
-			<strength></strength>
 			<usage>Slash</usage>
 			<reach>C</reach>
 			<parry>0</parry>
@@ -869,19 +821,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Boxing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -894,7 +843,6 @@
 		<base_points>8</base_points>
 		<melee_weapon>
 			<damage>thr cut</damage>
-			<strength></strength>
 			<usage>Trample</usage>
 			<reach>C,1</reach>
 			<parry>No</parry>
@@ -906,19 +854,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</melee_weapon>
 		<melee_weapon>
 			<damage>thr imp</damage>
-			<strength></strength>
 			<usage>Kick</usage>
 			<reach>C,1</reach>
 			<parry>No</parry>
@@ -930,13 +875,11 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</melee_weapon>
@@ -949,7 +892,6 @@
 		<base_points>8</base_points>
 		<melee_weapon>
 			<damage>thr-1 cut</damage>
-			<strength></strength>
 			<usage>Slash</usage>
 			<reach>C</reach>
 			<parry>0</parry>
@@ -961,25 +903,21 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Boxing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
 		<melee_weapon>
 			<damage>thr-1 imp</damage>
-			<strength></strength>
 			<usage>Stab</usage>
 			<reach>C</reach>
 			<parry>0</parry>
@@ -991,19 +929,16 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Boxing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
@@ -1015,14 +950,12 @@
 		<type>Social</type>
 		<base_points>5</base_points>
 		<reference>B43</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Clinging</name>
 		<type>Physical, Exotic</type>
 		<base_points>20</base_points>
 		<reference>B43</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Combat Reflexes</name>
@@ -1033,15 +966,19 @@
 		<skill_bonus>
 			<name compare="starts with">fast-draw</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 		<attribute_bonus>
 			<attribute>dodge</attribute>
+			<amount per_level="no">+1</amount>
 		</attribute_bonus>
 		<attribute_bonus>
 			<attribute>parry</attribute>
+			<amount per_level="no">+1</amount>
 		</attribute_bonus>
 		<attribute_bonus>
 			<attribute>block</attribute>
+			<amount per_level="no">+1</amount>
 		</attribute_bonus>
 	</advantage>
 	<advantage>
@@ -1049,7 +986,6 @@
 		<type>Mental</type>
 		<base_points>10</base_points>
 		<reference>B43</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compartmentalized Mind</name>
@@ -1057,14 +993,12 @@
 		<levels>1</levels>
 		<points_per_level>50</points_per_level>
 		<reference>B43</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Constriction Attack</name>
 		<type>Physical, Exotic</type>
 		<base_points>15</base_points>
 		<reference>B43</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Contact Group (@Group@, FR: 6)</name>
@@ -1113,34 +1047,29 @@
 		<type>Mental</type>
 		<base_points>20</base_points>
 		<reference>B46</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Cultural Adaptability</name>
 		<type>Mental</type>
 		<base_points>10</base_points>
 		<reference>B46</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Cultural Familiarity (@Alien Culture@)</name>
 		<type>Mental</type>
 		<base_points>2</base_points>
 		<reference>B23</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Cultural Familiarity (@Culture@)</name>
 		<type>Mental</type>
 		<base_points>1</base_points>
 		<reference>B23</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Cybernetics</name>
 		<type>Physical</type>
 		<reference>B46</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Ablative)</name>
@@ -1148,7 +1077,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Absorption)</name>
@@ -1156,7 +1084,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B46</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Absorption: @Trait@)</name>
@@ -1164,7 +1091,6 @@
 		<levels>1</levels>
 		<points_per_level>9</points_per_level>
 		<reference>B46</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Arms)</name>
@@ -1172,7 +1098,6 @@
 		<levels>1</levels>
 		<points_per_level>4</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 		<dr_bonus>
 			<location>arms</location>
 			<amount per_level="yes">+1</amount>
@@ -1184,7 +1109,6 @@
 		<levels>1</levels>
 		<points_per_level>3</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Face)</name>
@@ -1192,7 +1116,6 @@
 		<levels>1</levels>
 		<points_per_level>3</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 		<dr_bonus>
 			<location>face</location>
 			<amount per_level="yes">+1</amount>
@@ -1204,7 +1127,6 @@
 		<levels>1</levels>
 		<points_per_level>3</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 		<dr_bonus>
 			<location>feet</location>
 			<amount per_level="yes">+1</amount>
@@ -1216,7 +1138,6 @@
 		<levels>1</levels>
 		<points_per_level>4</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Force Field)</name>
@@ -1224,7 +1145,6 @@
 		<levels>1</levels>
 		<points_per_level>6</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Groin)</name>
@@ -1232,7 +1152,6 @@
 		<levels>1</levels>
 		<points_per_level>4</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 		<dr_bonus>
 			<location>groin</location>
 			<amount per_level="yes">+1</amount>
@@ -1244,7 +1163,6 @@
 		<levels>1</levels>
 		<points_per_level>3</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 		<dr_bonus>
 			<location>hands</location>
 			<amount per_level="yes">+1</amount>
@@ -1256,7 +1174,6 @@
 		<levels>1</levels>
 		<points_per_level>6</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Hardened: 2)</name>
@@ -1264,7 +1181,6 @@
 		<levels>1</levels>
 		<points_per_level>7</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Hardened: 3)</name>
@@ -1272,7 +1188,6 @@
 		<levels>1</levels>
 		<points_per_level>8</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Hardened: 4)</name>
@@ -1280,7 +1195,6 @@
 		<levels>1</levels>
 		<points_per_level>9</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Hardened: 5)</name>
@@ -1288,7 +1202,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Hardened: 6)</name>
@@ -1296,7 +1209,6 @@
 		<levels>1</levels>
 		<points_per_level>11</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Legs)</name>
@@ -1304,7 +1216,6 @@
 		<levels>1</levels>
 		<points_per_level>4</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 		<dr_bonus>
 			<location>legs</location>
 			<amount per_level="yes">+1</amount>
@@ -1316,7 +1227,6 @@
 		<levels>1</levels>
 		<points_per_level>3</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Limited @Occasional@)</name>
@@ -1324,7 +1234,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Limited @Rare@)</name>
@@ -1332,7 +1241,6 @@
 		<levels>1</levels>
 		<points_per_level>1</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Limited @Very Common@)</name>
@@ -1340,7 +1248,6 @@
 		<levels>1</levels>
 		<points_per_level>4</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Neck)</name>
@@ -1348,7 +1255,6 @@
 		<levels>1</levels>
 		<points_per_level>3</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 		<dr_bonus>
 			<location>neck</location>
 			<amount per_level="yes">+1</amount>
@@ -1360,7 +1266,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Semi-Ablative)</name>
@@ -1368,7 +1273,6 @@
 		<levels>1</levels>
 		<points_per_level>4</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Damage Resistance (Skull)</name>
@@ -1376,7 +1280,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 		<dr_bonus>
 			<location>skull</location>
 			<amount per_level="yes">+1</amount>
@@ -1388,7 +1291,6 @@
 		<levels>1</levels>
 		<points_per_level>4</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 		<dr_bonus>
 			<location>torso</location>
 			<amount per_level="yes">+1</amount>
@@ -1400,7 +1302,6 @@
 		<levels>1</levels>
 		<points_per_level>3</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 		<dr_bonus>
 			<location>full_body_except_eyes</location>
 			<amount per_level="yes">+1</amount>
@@ -1412,7 +1313,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B46</reference>
-		<notes></notes>
 		<dr_bonus>
 			<location>full_body_except_eyes</location>
 			<amount per_level="yes">+1</amount>
@@ -1424,35 +1324,30 @@
 		<levels>1</levels>
 		<points_per_level>4</points_per_level>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Danger Sense</name>
 		<type>Mental</type>
 		<base_points>15</base_points>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Danger Sense (ESP)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>13</base_points>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Daredevil</name>
 		<type>Mental</type>
 		<base_points>15</base_points>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dark Vision</name>
 		<type>Physical, Exotic</type>
 		<base_points>25</base_points>
 		<reference>B47</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dark Vision</name>
@@ -1487,84 +1382,72 @@
 		<type>Mental/Physical, Exotic</type>
 		<base_points>20</base_points>
 		<reference>B48</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Detect (@Occasional@)</name>
 		<type>Mental/Physical, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B48</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Detect (@Rare@)</name>
 		<type>Mental/Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B48</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Detect (@Very Common@)</name>
 		<type>Mental/Physical, Exotic</type>
 		<base_points>30</base_points>
 		<reference>B48</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Digital Mind</name>
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B49</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Discriminitory Hearing</name>
 		<type>Physical, Exotic</type>
 		<base_points>15</base_points>
 		<reference>B49</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Discriminitory Smell</name>
 		<type>Physical, Exotic</type>
 		<base_points>15</base_points>
 		<reference>B49</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Discriminitory Taste</name>
 		<type>Physical, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B49</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Doesn't Breathe</name>
 		<type>Physical, Exotic</type>
 		<base_points>20</base_points>
 		<reference>B49</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Doesn't Eat or Drink</name>
 		<type>Physical, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B50</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Doesn't Sleep</name>
 		<type>Physical, Exotic</type>
 		<base_points>20</base_points>
 		<reference>B50</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dominance</name>
 		<type>Mental, Exotic</type>
 		<base_points>20</base_points>
 		<reference>B50</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Duplication</name>
@@ -1572,31 +1455,28 @@
 		<levels>1</levels>
 		<points_per_level>35</points_per_level>
 		<reference>B50</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Eidetic Memory</name>
 		<type>Mental</type>
 		<base_points>5</base_points>
 		<reference>B51</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Eidetic Memory (Photographic)</name>
 		<type>Mental</type>
 		<base_points>10</base_points>
 		<reference>B51</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Elastic Skin</name>
 		<type>Physical, Exotic</type>
 		<base_points>20</base_points>
 		<reference>B51</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">disguise</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+4</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -1604,18 +1484,20 @@
 		<type>Mental</type>
 		<base_points>15</base_points>
 		<reference>B51</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">detect lies</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">fortune-telling</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">psychology</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -1623,18 +1505,20 @@
 		<type>Mental</type>
 		<base_points>5</base_points>
 		<reference>B51</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">detect lies</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">fortune-telling</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">psychology</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -1642,9 +1526,9 @@
 		<type>Mental</type>
 		<base_points>5</base_points>
 		<reference>B51</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>block</attribute>
+			<amount per_level="no">+1</amount>
 		</attribute_bonus>
 	</advantage>
 	<advantage>
@@ -1652,9 +1536,9 @@
 		<type>Mental</type>
 		<base_points>15</base_points>
 		<reference>B51</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>dodge</attribute>
+			<amount per_level="no">+1</amount>
 		</attribute_bonus>
 	</advantage>
 	<advantage>
@@ -1663,16 +1547,15 @@
 		<levels>1</levels>
 		<points_per_level>20</points_per_level>
 		<reference>B52</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Enhanced Parry</name>
 		<type>Mental</type>
 		<base_points>10</base_points>
 		<reference>B51</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>parry</attribute>
+			<amount per_level="no">+1</amount>
 		</attribute_bonus>
 	</advantage>
 	<advantage>
@@ -1680,10 +1563,10 @@
 		<type>Mental, Exotic</type>
 		<base_points>45</base_points>
 		<reference>B52</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="contains">fast-draw</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -1692,7 +1575,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B53</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Extended Lifespan</name>
@@ -1700,7 +1582,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B53</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Extra Arm (Flexible)</name>
@@ -1708,7 +1589,6 @@
 		<levels>1</levels>
 		<points_per_level>15</points_per_level>
 		<reference>B53</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Extra Arm (Long)</name>
@@ -1716,7 +1596,6 @@
 		<levels>1</levels>
 		<points_per_level>20</points_per_level>
 		<reference>B53</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Extra Arm (No Physical Attack)</name>
@@ -1724,7 +1603,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B53</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Extra Arm (Short)</name>
@@ -1732,7 +1610,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B53</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Extra Arm (Weak 1/2ST)</name>
@@ -1740,7 +1617,6 @@
 		<levels>1</levels>
 		<points_per_level>7</points_per_level>
 		<reference>B53</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Extra Arm (Weak 1/4ST)</name>
@@ -1748,7 +1624,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B53</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Extra Arm</name>
@@ -1756,7 +1631,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B53</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Extra Attack</name>
@@ -1764,7 +1638,6 @@
 		<levels>1</levels>
 		<points_per_level>25</points_per_level>
 		<reference>B53</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Extra Fatigue Points</name>
@@ -1772,7 +1645,6 @@
 		<levels>1</levels>
 		<points_per_level>3</points_per_level>
 		<reference>B16</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>FP</attribute>
 			<amount per_level="yes">+1</amount>
@@ -1784,7 +1656,6 @@
 		<levels>1</levels>
 		<points_per_level>15</points_per_level>
 		<reference>B54</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Extra Hit Points</name>
@@ -1792,7 +1663,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B16</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>HP</attribute>
 			<amount per_level="yes">+1</amount>
@@ -1803,21 +1673,18 @@
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B54</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Extra Legs (@5 or 6@ legs)</name>
 		<type>Physical, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B55</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Extra Legs (@7+@ legs)</name>
 		<type>Physical, Exotic</type>
 		<base_points>15</base_points>
 		<reference>B55</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Extra Life</name>
@@ -1825,7 +1692,6 @@
 		<levels>1</levels>
 		<points_per_level>25</points_per_level>
 		<reference>B55</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Extra Life</name>
@@ -1849,20 +1715,17 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B55</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Fashion Sense</name>
 		<type>Mental</type>
 		<base_points>5</base_points>
 		<reference>B21</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Favor</name>
 		<type>Social</type>
 		<reference>B55</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Fearlessness</name>
@@ -1870,14 +1733,12 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B55</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Filter Lungs</name>
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B55</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Fit</name>
@@ -1898,14 +1759,15 @@
 		<type>Physical</type>
 		<base_points>5</base_points>
 		<reference>B56</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">climbing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">erotic art</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -1913,14 +1775,15 @@
 		<type>Physical</type>
 		<base_points>15</base_points>
 		<reference>B56</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">climbing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+5</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">erotic art</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+5</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -1928,77 +1791,66 @@
 		<type>Physical, Exotic</type>
 		<base_points>40</base_points>
 		<reference>B56</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Flight (Cannot Hover: @Move@)</name>
 		<type>Physical, Exotic</type>
 		<base_points>34</base_points>
 		<reference>B56</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Flight (Controlled Gliding: @Move@)</name>
 		<type>Physical, Exotic</type>
 		<base_points>22</base_points>
 		<reference>B56</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Flight (Gliding: @Move@)</name>
 		<type>Physical, Exotic</type>
 		<base_points>20</base_points>
 		<reference>B56</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Flight (Light than Air: @Move@)</name>
 		<type>Physical, Exotic</type>
 		<base_points>36</base_points>
 		<reference>B56</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Flight (Low Ceiling 30ft: @Move@)</name>
 		<type>Physical, Exotic</type>
 		<base_points>36</base_points>
 		<reference>B56</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Flight (Newtonian Space: @Delta-V@)</name>
 		<type>Physical, Exotic</type>
 		<base_points>50</base_points>
 		<reference>B56</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Flight (Small Wings: @Move@)</name>
 		<type>Physical, Exotic</type>
 		<base_points>36</base_points>
 		<reference>B56</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Flight (Space only: @Move@)</name>
 		<type>Physical, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B56</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Flight (Space: @Move@)</name>
 		<type>Physical, Exotic</type>
 		<base_points>75</base_points>
 		<reference>B56</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Flight (Wings: @Move@)</name>
 		<type>Physical, Exotic</type>
 		<base_points>30</base_points>
 		<reference>B56</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Foot Manipulator</name>
@@ -2006,14 +1858,12 @@
 		<levels>1</levels>
 		<points_per_level>7</points_per_level>
 		<reference>B53</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>G-Experience (All)</name>
 		<type>Mental</type>
 		<base_points>10</base_points>
 		<reference>B57</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>G-Experience</name>
@@ -2021,21 +1871,18 @@
 		<levels>1</levels>
 		<points_per_level>1</points_per_level>
 		<reference>B57</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Gadgeteer</name>
 		<type>Mental</type>
 		<base_points>25</base_points>
 		<reference>B57</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Gadgeteer (Quick)</name>
 		<type>Mental</type>
 		<base_points>50</base_points>
 		<reference>B57</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Gizmo</name>
@@ -2043,7 +1890,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B57</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Growth</name>
@@ -2051,14 +1897,12 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B58</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Gunslinger</name>
 		<type>Mental</type>
 		<base_points>25</base_points>
 		<reference>B58</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Hard to Kill</name>
@@ -2066,7 +1910,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B58</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Hard to Subdue</name>
@@ -2074,21 +1917,18 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B59</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Healing</name>
 		<type>Mental, Exotic</type>
 		<base_points>30</base_points>
 		<reference>B59</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Hermaphromorph</name>
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B59</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>High Manual Dexterity</name>
@@ -2096,7 +1936,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B59</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="contains">artist</name>
 			<specialization compare="is anything"></specialization>
@@ -2166,21 +2005,18 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B23</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Higher Purpose</name>
 		<type>Mental, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B59</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Hyperspectral Vision</name>
 		<type>Physical, Exotic</type>
 		<base_points>25</base_points>
 		<reference>B60</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
 				<name compare="is">infravision</name>
@@ -2197,42 +2033,36 @@
 		<type>Mental, Supernatural</type>
 		<base_points>15</base_points>
 		<reference>B60</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Improved G-Tolerance (0.3G)</name>
 		<type>Physical</type>
 		<base_points>5</base_points>
 		<reference>B60</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Improved G-Tolerance (0.5G)</name>
 		<type>Physical</type>
 		<base_points>10</base_points>
 		<reference>B60</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Improved G-Tolerance (1G)</name>
 		<type>Physical</type>
 		<base_points>15</base_points>
 		<reference>B60</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Improved G-Tolerance (5G)</name>
 		<type>Physical</type>
 		<base_points>20</base_points>
 		<reference>B60</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Improved G-Tolerance (10G)</name>
 		<type>Physical</type>
 		<base_points>25</base_points>
 		<reference>B60</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Increased Dexterity</name>
@@ -2240,7 +2070,6 @@
 		<levels>1</levels>
 		<points_per_level>20</points_per_level>
 		<reference>B15</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>DX</attribute>
 			<amount per_level="yes">+1</amount>
@@ -2252,7 +2081,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B14</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>HT</attribute>
 			<amount per_level="yes">+1</amount>
@@ -2264,7 +2092,6 @@
 		<levels>1</levels>
 		<points_per_level>20</points_per_level>
 		<reference>B15</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>IQ</attribute>
 			<amount per_level="yes">+1</amount>
@@ -2276,7 +2103,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B14</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>ST</attribute>
 			<amount per_level="yes">+1</amount>
@@ -2288,7 +2114,6 @@
 		<levels>1</levels>
 		<points_per_level>1</points_per_level>
 		<reference>B26</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Independant Income</name>
@@ -2296,84 +2121,72 @@
 		<levels>1</levels>
 		<points_per_level>1</points_per_level>
 		<reference>B26</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Indomitable</name>
 		<type>Mental</type>
 		<base_points>15</base_points>
 		<reference>B60</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Infravision</name>
 		<type>Physical, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B60</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Injury Tolerance (Diffuse)</name>
 		<type>Physical, Exotic</type>
 		<base_points>100</base_points>
 		<reference>B60</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Injury Tolerance (Homogenous)</name>
 		<type>Physical, Exotic</type>
 		<base_points>40</base_points>
 		<reference>B60</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Injury Tolerance (No Blood)</name>
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B61</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Injury Tolerance (No Brain)</name>
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B61</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Injury Tolerance (No Eyes)</name>
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B61</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Injury Tolerance (No Head)</name>
 		<type>Physical, Exotic</type>
 		<base_points>7</base_points>
 		<reference>B61</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Injury Tolerance (No Neck)</name>
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B61</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Injury Tolerance (No Vitals)</name>
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B61</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Injury Tolerance (Unliving)</name>
 		<type>Physical, Exotic</type>
 		<base_points>20</base_points>
 		<reference>B61</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Innate Attack (Burn)</name>
@@ -2381,7 +2194,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B61</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Innate Attack (Corrosion)</name>
@@ -2389,7 +2201,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B61</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Innate Attack (Crush)</name>
@@ -2397,7 +2208,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B61</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Innate Attack (Cut)</name>
@@ -2405,7 +2215,6 @@
 		<levels>1</levels>
 		<points_per_level>7</points_per_level>
 		<reference>B61</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Innate Attack (Fatigue)</name>
@@ -2413,7 +2222,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B61</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Innate Attack (Huge Pierce)</name>
@@ -2421,7 +2229,6 @@
 		<levels>1</levels>
 		<points_per_level>8</points_per_level>
 		<reference>B62</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Innate Attack (Impaling)</name>
@@ -2429,7 +2236,6 @@
 		<levels>1</levels>
 		<points_per_level>8</points_per_level>
 		<reference>B61</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Innate Attack (Large Pierce)</name>
@@ -2437,7 +2243,6 @@
 		<levels>1</levels>
 		<points_per_level>6</points_per_level>
 		<reference>B62</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Innate Attack (Piercing)</name>
@@ -2445,7 +2250,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B62</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Innate Attack (Small Pierce)</name>
@@ -2453,7 +2257,6 @@
 		<levels>1</levels>
 		<points_per_level>3</points_per_level>
 		<reference>B62</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Innate Attack (Toxic)</name>
@@ -2461,14 +2264,12 @@
 		<levels>1</levels>
 		<points_per_level>4</points_per_level>
 		<reference>B62</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Insubstantiality</name>
 		<type>Mental/Physical, Exotic</type>
 		<base_points>80</base_points>
 		<reference>B62</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Insubstantiality</name>
@@ -2531,14 +2332,12 @@
 		<type>Mental</type>
 		<base_points>15</base_points>
 		<reference>B63</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Invisibility</name>
 		<type>Mental/Physical, Exotic</type>
 		<base_points>40</base_points>
 		<reference>B63</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Invisibility</name>
@@ -2629,7 +2428,6 @@
 		<type>Mental, Supernatural</type>
 		<base_points>100</base_points>
 		<reference>B64</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Jumper</name>
@@ -2741,35 +2539,30 @@
 		<type>Mental</type>
 		<base_points>10</base_points>
 		<reference>B65</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Legal Enforcement Powers (@FBI Agent@)</name>
 		<type>Social</type>
 		<base_points>10</base_points>
 		<reference>B65</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Legal Enforcement Powers (@KGB@)</name>
 		<type>Social</type>
 		<base_points>15</base_points>
 		<reference>B65</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Legal Enforcement Powers (@Local Cop@)</name>
 		<type>Social</type>
 		<base_points>5</base_points>
 		<reference>B65</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Legal Immunity (Bard)</name>
 		<type>Social</type>
 		<base_points>10</base_points>
 		<reference>B65</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<skill_prereq has="yes">
 				<name compare="is">performance</name>
@@ -2790,21 +2583,18 @@
 		<type>Social</type>
 		<base_points>20</base_points>
 		<reference>B65</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Legal Immunity (Petty Diplomat)</name>
 		<type>Social</type>
 		<base_points>15</base_points>
 		<reference>B65</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Legal Immunity (UN Observer)</name>
 		<type>Social</type>
 		<base_points>5</base_points>
 		<reference>B65</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Less Sleep</name>
@@ -2812,7 +2602,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B65</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Lifting ST</name>
@@ -2820,7 +2609,6 @@
 		<levels>1</levels>
 		<points_per_level>3</points_per_level>
 		<reference>B65</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute limitation="lifting_only">ST</attribute>
 			<amount per_level="yes">+1</amount>
@@ -2831,21 +2619,18 @@
 		<type>Mental</type>
 		<base_points>2</base_points>
 		<reference>B66</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Lightning Calculator (Intuitive Mathematician)</name>
 		<type>Mental</type>
 		<base_points>5</base_points>
 		<reference>B66</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Longevity</name>
 		<type>Physical</type>
 		<base_points>2</base_points>
 		<reference>B66</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Luck</name>
@@ -2882,7 +2667,6 @@
 		<base_points>5</base_points>
 		<points_per_level>10</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus all_colleges="yes">
 			<amount per_level="yes">+1</amount>
 		</spell_bonus>
@@ -2899,7 +2683,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">air</college_name>
 			<amount per_level="yes">+1</amount>
@@ -2921,7 +2704,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">animal</college_name>
 			<amount per_level="yes">+1</amount>
@@ -2943,7 +2725,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">body control</college_name>
 			<amount per_level="yes">+1</amount>
@@ -2965,7 +2746,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">communication &amp; empathy</college_name>
 			<amount per_level="yes">+1</amount>
@@ -2987,7 +2767,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus all_colleges="yes">
 			<amount per_level="yes">+1</amount>
 		</spell_bonus>
@@ -3004,7 +2783,6 @@
 		<base_points>5</base_points>
 		<points_per_level>5</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus all_colleges="yes">
 			<amount per_level="yes">+1</amount>
 		</spell_bonus>
@@ -3021,7 +2799,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus all_colleges="yes">
 			<amount per_level="yes">+1</amount>
 		</spell_bonus>
@@ -3038,7 +2815,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">earth</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3060,7 +2836,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">enchantment</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3082,7 +2857,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">fire</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3104,7 +2878,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">food</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3126,7 +2899,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">gate</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3148,7 +2920,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">healing</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3166,7 +2937,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">illusion &amp; creation</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3188,7 +2958,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">knowledge</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3210,7 +2979,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">light &amp; darkness</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3232,7 +3000,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">making &amp; breaking</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3254,7 +3021,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">meta-spells</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3276,7 +3042,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">mind control</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3298,7 +3063,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">movement</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3320,7 +3084,6 @@
 		<base_points>5</base_points>
 		<points_per_level>5</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus all_colleges="yes">
 			<amount per_level="yes">+1</amount>
 		</spell_bonus>
@@ -3337,7 +3100,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">necromantic</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3359,7 +3121,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus all_colleges="yes">
 			<amount per_level="yes">+1</amount>
 		</spell_bonus>
@@ -3376,7 +3137,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">plant</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3398,7 +3158,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">protection &amp; warning</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3420,7 +3179,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus all_colleges="yes">
 			<amount per_level="yes">+1</amount>
 		</spell_bonus>
@@ -3437,7 +3195,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus all_colleges="yes">
 			<amount per_level="yes">+1</amount>
 		</spell_bonus>
@@ -3454,7 +3211,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">sound</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3476,7 +3232,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">technological</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3498,7 +3253,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">water</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3520,7 +3274,6 @@
 		<base_points>5</base_points>
 		<points_per_level>6</points_per_level>
 		<reference>B66</reference>
-		<notes></notes>
 		<spell_bonus>
 			<college_name compare="is">weather</college_name>
 			<amount per_level="yes">+1</amount>
@@ -3541,7 +3294,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B67</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Magic Resistance</name>
@@ -3549,7 +3301,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B67</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mana Damper (Area Effect: @Area@)</name>
@@ -3557,7 +3308,6 @@
 		<levels>1</levels>
 		<points_per_level>15</points_per_level>
 		<reference>B67</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mana Damper (Switchable)</name>
@@ -3565,7 +3315,6 @@
 		<levels>1</levels>
 		<points_per_level>20</points_per_level>
 		<reference>B67</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mana Damper</name>
@@ -3573,7 +3322,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B67</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mana Enhancer (Area Effect: @Area@)</name>
@@ -3581,7 +3329,6 @@
 		<levels>1</levels>
 		<points_per_level>75</points_per_level>
 		<reference>B68</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mana Enhancer (Switchable)</name>
@@ -3589,7 +3336,6 @@
 		<levels>1</levels>
 		<points_per_level>100</points_per_level>
 		<reference>B68</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mana Enhancer</name>
@@ -3597,14 +3343,12 @@
 		<levels>1</levels>
 		<points_per_level>50</points_per_level>
 		<reference>B68</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Medium</name>
 		<type>Mental, Supernatural</type>
 		<base_points>10</base_points>
 		<reference>B68</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Metabolism Control</name>
@@ -3612,7 +3356,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B68</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Microscopic Vision</name>
@@ -3620,133 +3363,114 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B68</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mimicry</name>
 		<type>Mental, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B68</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Control</name>
 		<type>Mental, Exotic</type>
 		<base_points>50</base_points>
 		<reference>B68</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Control (Conditioning)</name>
 		<type>Mental, Exotic</type>
 		<base_points>75</base_points>
 		<reference>B68</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Control (No Memory)</name>
 		<type>Mental, Exotic</type>
 		<base_points>55</base_points>
 		<reference>B68</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Link (@2-9 People@)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>10</base_points>
 		<reference>B70</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Link (@10-99 People@)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>20</base_points>
 		<reference>B70</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Link (@100-999 People@)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>30</base_points>
 		<reference>B70</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Link (@One Person@)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>5</base_points>
 		<reference>B70</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Probe</name>
 		<type>Mental, Exotic</type>
 		<base_points>20</base_points>
 		<reference>B69</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Reading</name>
 		<type>Mental, Exotic</type>
 		<base_points>30</base_points>
 		<reference>B69</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Reading (Cybernetic Only)</name>
 		<type>Mental, Exotic</type>
 		<base_points>15</base_points>
 		<reference>B70</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Reading (Cybernetic)</name>
 		<type>Mental, Exotic</type>
 		<base_points>45</base_points>
 		<reference>B69</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Reading (One Race: @Race@)</name>
 		<type>Mental, Exotic</type>
 		<base_points>24</base_points>
 		<reference>B70</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Reading (Sensory Only)</name>
 		<type>Mental, Exotic</type>
 		<base_points>24</base_points>
 		<reference>B70</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Reading (Sensory)</name>
 		<type>Mental, Exotic</type>
 		<base_points>36</base_points>
 		<reference>B69</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Reading (Telecommunication)</name>
 		<type>Mental, Exotic</type>
 		<base_points>24</base_points>
 		<reference>B70</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Reading (Telepathic)</name>
 		<type>Mental, Exotic</type>
 		<base_points>27</base_points>
 		<reference>B70</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Reading (Universal)</name>
 		<type>Mental, Exotic</type>
 		<base_points>45</base_points>
 		<reference>B69</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Shield (Cybernetic)</name>
@@ -3754,7 +3478,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B70</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Shield (Telepathic)</name>
@@ -3762,7 +3485,6 @@
 		<levels>1</levels>
 		<points_per_level>4</points_per_level>
 		<reference>B70</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mind Shield</name>
@@ -3770,7 +3492,6 @@
 		<levels>1</levels>
 		<points_per_level>4</points_per_level>
 		<reference>B70</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Modular Abilities (Chip Slots)</name>
@@ -3779,7 +3500,6 @@
 		<base_points>5</base_points>
 		<points_per_level>3</points_per_level>
 		<reference>B71</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Modular Abilities (Computer Brain)</name>
@@ -3788,7 +3508,6 @@
 		<base_points>6</base_points>
 		<points_per_level>4</points_per_level>
 		<reference>B71</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Modular Abilities (Cosmic Power)</name>
@@ -3796,7 +3515,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B71</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Modular Abilities (Spirit Trapping)</name>
@@ -3805,7 +3523,6 @@
 		<base_points>6</base_points>
 		<points_per_level>4</points_per_level>
 		<reference>F130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Modular Abilities (Spirit Trapping)</name>
@@ -3823,21 +3540,18 @@
 		<base_points>5</base_points>
 		<points_per_level>3</points_per_level>
 		<reference>B71</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Neutralize</name>
 		<type>Mental, Exotic</type>
 		<base_points>50</base_points>
 		<reference>B71</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Neutralize (Power Theft)</name>
 		<type>Mental, Exotic</type>
 		<base_points>150</base_points>
 		<reference>B71</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Nictitating Membrane</name>
@@ -3845,7 +3559,6 @@
 		<levels>1</levels>
 		<points_per_level>1</points_per_level>
 		<reference>B71</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Night Vision</name>
@@ -3853,7 +3566,6 @@
 		<levels>1</levels>
 		<points_per_level>1</points_per_level>
 		<reference>B71</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Obscure (@Sense@)</name>
@@ -3861,7 +3573,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B72</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Obscure (Always On: @Sense@)</name>
@@ -3869,7 +3580,6 @@
 		<levels>1</levels>
 		<points_per_level>1</points_per_level>
 		<reference>B72</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Obscure (Defensive: @Sense@</name>
@@ -3877,7 +3587,6 @@
 		<levels>1</levels>
 		<points_per_level>3</points_per_level>
 		<reference>B72</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Obscure (Extended: @Sense@)</name>
@@ -3885,7 +3594,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B72</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Obscure (Ranged: @Sense@)</name>
@@ -3893,7 +3601,6 @@
 		<levels>1</levels>
 		<points_per_level>3</points_per_level>
 		<reference>B72</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Obscure (Stealthy: @Sense@)</name>
@@ -3901,14 +3608,12 @@
 		<levels>1</levels>
 		<points_per_level>4</points_per_level>
 		<reference>B72</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Oracle</name>
 		<type>Mental, Supernatural</type>
 		<base_points>15</base_points>
 		<reference>B72</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Parabolic Hearing</name>
@@ -3916,7 +3621,6 @@
 		<levels>1</levels>
 		<points_per_level>4</points_per_level>
 		<reference>B72</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Patron (@Extremely Powerful Org.@, FR: 12)</name>
@@ -3930,7 +3634,6 @@
 		<type>Social</type>
 		<base_points>45</base_points>
 		<reference>B72</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Patron (@Powerful Person@, FR: 12)</name>
@@ -3945,7 +3648,6 @@
 		<levels>1</levels>
 		<points_per_level>1</points_per_level>
 		<reference>B74</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Penetrating Vision</name>
@@ -3953,25 +3655,26 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B74</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Perfect Balance</name>
 		<type>Physical</type>
 		<base_points>15</base_points>
 		<reference>B74</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="starts with">piloting</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">acrobatics</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">climbing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -3979,56 +3682,48 @@
 		<type>Physical</type>
 		<base_points>15</base_points>
 		<reference>B74</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Permeation (Common)</name>
 		<type>Physical, Exotic</type>
 		<base_points>20</base_points>
 		<reference>B75</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Permeation (Occasional)</name>
 		<type>Physical, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B75</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Permeation (Rare)</name>
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B75</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Permeation (Very Common)</name>
 		<type>Physical, Exotic</type>
 		<base_points>40</base_points>
 		<reference>B75</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Pitiable</name>
 		<type>Physical, Social</type>
 		<base_points>5</base_points>
 		<reference>B22</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Plant Empathy</name>
 		<type>Mental</type>
 		<base_points>5</base_points>
 		<reference>B75</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Possesion</name>
 		<type>Mental, Exotic</type>
 		<base_points>100</base_points>
 		<reference>B75</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Power Investiture</name>
@@ -4036,28 +3731,24 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B77</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Precognition</name>
 		<type>Mental, Supernatural</type>
 		<base_points>25</base_points>
 		<reference>B77</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Precognition (Can't See Own Death)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>10</base_points>
 		<reference>B77</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Precognition (ESP)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>23</base_points>
 		<reference>B77</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Pressure Support 1</name>
@@ -4085,56 +3776,48 @@
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B78</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psi Static</name>
 		<type>Mental, Supernatural</type>
 		<base_points>30</base_points>
 		<reference>B78</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psi Static (Area Effect: @Area@)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>45</base_points>
 		<reference>B78</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psi Static (Resistable)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>15</base_points>
 		<reference>B78</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psi Static (Switchable)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>60</base_points>
 		<reference>B78</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psychometry</name>
 		<type>Mental, Supernatural</type>
 		<base_points>20</base_points>
 		<reference>B78</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psychometry (ESP)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>23</base_points>
 		<reference>B78</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Puppet (@Ally Group@)</name>
 		<type>Mental, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B78</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="yes">
 				<name compare="is">possession</name>
@@ -4157,7 +3840,6 @@
 		<type>Mental, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B78</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -4180,77 +3862,66 @@
 		<type>Mental, Exotic</type>
 		<base_points>40</base_points>
 		<reference>B78</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Racial Memory (Passive)</name>
 		<type>Mental, Exotic</type>
 		<base_points>15</base_points>
 		<reference>B78</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Radiation Tolerance (PF: 2)</name>
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B79</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Radiation Tolerance (PF: 5)</name>
 		<type>Physical, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B79</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Radiation Tolerance (PF: 10)</name>
 		<type>Physical, Exotic</type>
 		<base_points>15</base_points>
 		<reference>B79</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Radiation Tolerance (PF: 20)</name>
 		<type>Physical, Exotic</type>
 		<base_points>20</base_points>
 		<reference>B79</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Radiation Tolerance (PF: 50)</name>
 		<type>Physical, Exotic</type>
 		<base_points>25</base_points>
 		<reference>B79</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Radiation Tolerance (PF: 100)</name>
 		<type>Physical, Exotic</type>
 		<base_points>30</base_points>
 		<reference>B79</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Radiation Tolerance (PF: 200)</name>
 		<type>Physical, Exotic</type>
 		<base_points>35</base_points>
 		<reference>B79</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Radiation Tolerance (PF: 500)</name>
 		<type>Physical, Exotic</type>
 		<base_points>40</base_points>
 		<reference>B79</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Radiation Tolerance (PF: 1000)</name>
 		<type>Physical, Exotic</type>
 		<base_points>45</base_points>
 		<reference>B79</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Rank, (@Variety@)</name>
@@ -4258,7 +3929,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B29</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Rank, (@Variety@)</name>
@@ -4274,7 +3944,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B29</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Rank, Courtesy (@Variety@)</name>
@@ -4282,7 +3951,6 @@
 		<levels>1</levels>
 		<points_per_level>1</points_per_level>
 		<reference>B29</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Rank, Merchant</name>
@@ -4290,7 +3958,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B29</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Rank, Military</name>
@@ -4298,7 +3965,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B29</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Rank, Police</name>
@@ -4306,7 +3972,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B29</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Rank, Religious</name>
@@ -4314,14 +3979,12 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B29</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Rapid Healing</name>
 		<type>Physical</type>
 		<base_points>5</base_points>
 		<reference>B79</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<attribute_prereq has="yes" which="HT" compare="atLeast">10</attribute_prereq>
 		</prereq_list>
@@ -4331,7 +3994,6 @@
 		<type>Physical</type>
 		<base_points>15</base_points>
 		<reference>B79</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<attribute_prereq has="yes" which="HT" compare="atLeast">12</attribute_prereq>
 		</prereq_list>
@@ -4341,49 +4003,42 @@
 		<type>Mental</type>
 		<base_points>5</base_points>
 		<reference>B79</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Reawakened</name>
 		<type>Mental, Supernatural</type>
 		<base_points>10</base_points>
 		<reference>B80</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Recovery</name>
 		<type>Physical, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B80</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Reduced Consumption (1% normal)</name>
 		<type>Physical</type>
 		<base_points>8</base_points>
 		<reference>B80</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Reduced Consumption (1/3 normal)</name>
 		<type>Physical</type>
 		<base_points>4</base_points>
 		<reference>B80</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Reduced Consumption (2/3 normal)</name>
 		<type>Physical</type>
 		<base_points>2</base_points>
 		<reference>B80</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Reduced Consumption (5% normal)</name>
 		<type>Physical</type>
 		<base_points>6</base_points>
 		<reference>B80</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Regeneration (Extreme)</name>
@@ -4425,7 +4080,6 @@
 		<type>Physical, Exotic</type>
 		<base_points>40</base_points>
 		<reference>B80</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Reputation (FR: 7)</name>
@@ -4456,182 +4110,156 @@
 		<type>Physical</type>
 		<base_points>5</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Resistant (@Common@ +8)</name>
 		<type>Physical</type>
 		<base_points>7</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Resistant (@Occasional@ +3)</name>
 		<type>Physical</type>
 		<base_points>3</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Resistant (@Occasional@ +8)</name>
 		<type>Physical</type>
 		<base_points>5</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Resistant (@Rare@ +3)</name>
 		<type>Physical</type>
 		<base_points>1</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Resistant (@Rare@ +8)</name>
 		<type>Physical</type>
 		<base_points>2</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Resistant (@Very Common@ +3)</name>
 		<type>Physical</type>
 		<base_points>10</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Resistant (@Very Common@ +8)</name>
 		<type>Physical</type>
 		<base_points>15</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Resistant (Disease +3)</name>
 		<type>Physical</type>
 		<base_points>3</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Resistant (Disease +8)</name>
 		<type>Physical</type>
 		<base_points>5</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Resistant (Immune to @Common@)</name>
 		<type>Physical</type>
 		<base_points>15</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Resistant (Immune to @Occasional@)</name>
 		<type>Physical</type>
 		<base_points>10</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Resistant (Immune to @Rare@)</name>
 		<type>Physical</type>
 		<base_points>5</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Resistant (Immune to @Very Common@)</name>
 		<type>Physical</type>
 		<base_points>30</base_points>
 		<reference>B80</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Resistant (Immune to Metabolic Hazards)</name>
 		<type>Physical</type>
 		<base_points>30</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Scanning Sense (Imaging Radar)</name>
 		<type>Physical, Exotic</type>
 		<base_points>20</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Scanning Sense (Ladar)</name>
 		<type>Physical, Exotic</type>
 		<base_points>20</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Scanning Sense (Para-Radar)</name>
 		<type>Physical, Exotic</type>
 		<base_points>40</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Scanning Sense (Radar)</name>
 		<type>Physical, Exotic</type>
 		<base_points>20</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Scanning Sense (Sonar)</name>
 		<type>Physical, Exotic</type>
 		<base_points>20</base_points>
 		<reference>B81</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Sealed</name>
 		<type>Physical, Exotic</type>
 		<base_points>15</base_points>
 		<reference>B82</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Security Clearance (@Moderate Clearnace@)</name>
 		<type>Social</type>
 		<base_points>10</base_points>
 		<reference>B82</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Security Clearance (@Narrow Clearance@)</name>
 		<type>Social</type>
 		<base_points>5</base_points>
 		<reference>B82</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Security Clearance (@Wide CLearance@)</name>
 		<type>Social</type>
 		<base_points>15</base_points>
 		<reference>B82</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>See Invisible</name>
 		<type>Physical, Exotic</type>
 		<base_points>15</base_points>
 		<reference>B83</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Sensitive Touch</name>
 		<type>Physical, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B83</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Serendipity</name>
@@ -4639,20 +4267,17 @@
 		<levels>1</levels>
 		<points_per_level>15</points_per_level>
 		<reference>B83</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Shadow Form</name>
 		<type>Physical, Exotic</type>
 		<base_points>50</base_points>
 		<reference>B83</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Shapeshifting</name>
 		<type>Physical, Exotic</type>
 		<reference>B83</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Shrinking</name>
@@ -4660,13 +4285,11 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B85</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Signature Gear</name>
 		<type>Social</type>
 		<reference>B85</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Silence</name>
@@ -4674,10 +4297,10 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B85</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">stealth</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -4685,7 +4308,6 @@
 		<type>Mental</type>
 		<base_points>5</base_points>
 		<reference>B85</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Slippery</name>
@@ -4693,7 +4315,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B85</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">escape</name>
 			<specialization compare="is anything"></specialization>
@@ -4705,14 +4326,12 @@
 		<type>Mental, Supernatural</type>
 		<base_points>80</base_points>
 		<reference>B86</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Social Chameleon</name>
 		<type>Mental</type>
 		<base_points>5</base_points>
 		<reference>B86</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Social Regard (@Reason@)</name>
@@ -4720,7 +4339,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B87</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Social Regard (Feared: @Reason@)</name>
@@ -4728,7 +4346,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B87</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Social Regard (Respected: @Reason@)</name>
@@ -4736,7 +4353,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B87</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Social Regard (Venerated: @Reason@)</name>
@@ -4744,35 +4360,30 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B87</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Speak Unerwater</name>
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B87</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Speak With Animals</name>
 		<type>Mental, Exotic</type>
 		<base_points>25</base_points>
 		<reference>B87</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Speak With Plants</name>
 		<type>Mental, Exotic</type>
 		<base_points>15</base_points>
 		<reference>B87</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Special Rapport (@Person@)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>5</base_points>
 		<reference>B88</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Spines, Long</name>
@@ -4780,7 +4391,6 @@
 		<base_points>3</base_points>
 		<melee_weapon>
 			<damage>1d imp</damage>
-			<strength></strength>
 			<usage>Stab</usage>
 			<reach>C</reach>
 			<parry>No</parry>
@@ -4791,7 +4401,6 @@
 			</default>
 		</melee_weapon>
 		<reference>B88</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Spines, Short</name>
@@ -4799,7 +4408,6 @@
 		<base_points>1</base_points>
 		<melee_weapon>
 			<damage>1d-2 imp</damage>
-			<strength></strength>
 			<usage>Stab</usage>
 			<reach>C</reach>
 			<parry>No</parry>
@@ -4810,14 +4418,12 @@
 			</default>
 		</melee_weapon>
 		<reference>B88</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Spirit Empathy</name>
 		<type>Mental, Supernatural</type>
 		<base_points>10</base_points>
 		<reference>B88</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Status (@Description@)</name>
@@ -4825,7 +4431,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B28</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Stretching</name>
@@ -4833,7 +4438,6 @@
 		<levels>1</levels>
 		<points_per_level>6</points_per_level>
 		<reference>B88</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Striker, Crushing (@Body Part@)</name>
@@ -4841,8 +4445,6 @@
 		<base_points>5</base_points>
 		<melee_weapon>
 			<damage>thr:+1 cr</damage>
-			<strength></strength>
-			<usage></usage>
 			<reach>C</reach>
 			<parry>0</parry>
 			<block>No</block>
@@ -4853,12 +4455,10 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
 		<reference>B88</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Striker, Cutting (@Body Part@)</name>
@@ -4866,15 +4466,12 @@
 		<base_points>7</base_points>
 		<melee_weapon>
 			<damage>thr:+1 cut</damage>
-			<strength></strength>
-			<usage></usage>
 			<reach>C</reach>
 			<parry>0</parry>
 			<block>No</block>
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
@@ -4883,7 +4480,6 @@
 			</default>
 		</melee_weapon>
 		<reference>B88</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Striker, Impaling (@Body Part@)</name>
@@ -4891,8 +4487,6 @@
 		<base_points>8</base_points>
 		<melee_weapon>
 			<damage>thr:+1 imp</damage>
-			<strength></strength>
-			<usage></usage>
 			<reach>C</reach>
 			<parry>0</parry>
 			<block>No</block>
@@ -4903,12 +4497,10 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
 		<reference>B88</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Striker, Large Piercing (@Body Part@)</name>
@@ -4916,8 +4508,6 @@
 		<base_points>6</base_points>
 		<melee_weapon>
 			<damage>thr:+1 pi+</damage>
-			<strength></strength>
-			<usage></usage>
 			<reach>C</reach>
 			<parry>0</parry>
 			<block>No</block>
@@ -4928,12 +4518,10 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
 		<reference>B88</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Striker, Piercing (@Body Part@)</name>
@@ -4941,15 +4529,12 @@
 		<base_points>5</base_points>
 		<melee_weapon>
 			<damage>thr:+1 pi</damage>
-			<strength></strength>
-			<usage></usage>
 			<reach>C</reach>
 			<parry>0</parry>
 			<block>No</block>
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
@@ -4958,7 +4543,6 @@
 			</default>
 		</melee_weapon>
 		<reference>B88</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Striking ST</name>
@@ -4966,7 +4550,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B88</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute limitation="striking_only">ST</attribute>
 			<amount per_level="yes">+1</amount>
@@ -4977,14 +4560,12 @@
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B89</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Subsonic Speech</name>
 		<type>Physical, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B89</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Super Climbing</name>
@@ -5007,7 +4588,6 @@
 		<type>Physical, Supernatural</type>
 		<base_points>150</base_points>
 		<reference>B89</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Talent (Allure)</name>
@@ -5015,7 +4595,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>F132</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">dancing</name>
 			<specialization compare="is anything"></specialization>
@@ -5024,18 +4603,22 @@
 		<skill_bonus>
 			<name compare="starts with">erotic art</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">makeup</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sex appeal</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">singing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -5044,7 +4627,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B90</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="contains">animal handling</name>
 			<specialization compare="is anything"></specialization>
@@ -5082,7 +4664,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B90</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="starts with">armoury</name>
 			<specialization compare="is anything"></specialization>
@@ -5135,7 +4716,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>F132</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">heraldry</name>
 			<specialization compare="is anything"></specialization>
@@ -5173,7 +4753,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B90</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">accounting</name>
 			<specialization compare="is anything"></specialization>
@@ -5221,7 +4800,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>F132</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">autohypnosis</name>
 			<specialization compare="is anything"></specialization>
@@ -5249,7 +4827,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B90</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="contains">artist</name>
 			<specialization compare="is anything"></specialization>
@@ -5282,7 +4859,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>F132</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">cooking</name>
 			<specialization compare="is anything"></specialization>
@@ -5315,7 +4891,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B90</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="contains">biology</name>
 			<specialization compare="is anything"></specialization>
@@ -5348,7 +4923,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B90</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">diagnosis</name>
 			<specialization compare="is anything"></specialization>
@@ -5401,7 +4975,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>F132</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="starts with">boating</name>
 			<specialization compare="is anything"></specialization>
@@ -5444,7 +5017,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>F132</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">architecture</name>
 			<specialization compare="is anything"></specialization>
@@ -5477,7 +5049,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B90</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">accounting</name>
 			<specialization compare="is anything"></specialization>
@@ -5525,7 +5096,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B91</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">group performance</name>
 			<specialization compare="is">conducting</specialization>
@@ -5558,7 +5128,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>B91</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">camouflage</name>
 			<specialization compare="is anything"></specialization>
@@ -5601,7 +5170,6 @@
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
 		<reference>F132</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">archaeology</name>
 			<specialization compare="is anything"></specialization>
@@ -5669,7 +5237,6 @@
 		<levels>1</levels>
 		<points_per_level>15</points_per_level>
 		<reference>B91</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">acting</name>
 			<specialization compare="is anything"></specialization>
@@ -5741,14 +5308,12 @@
 		<type>Physical, Exotic</type>
 		<melee_weapon>
 			<damage>thr-1 cr</damage>
-			<strength></strength>
 			<usage>Bite</usage>
 			<reach>C</reach>
 			<parry>No</parry>
 			<block>No</block>
 		</melee_weapon>
 		<reference>B91</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Teeth, Fangs</name>
@@ -5756,7 +5321,6 @@
 		<base_points>2</base_points>
 		<melee_weapon>
 			<damage>thr-1 imp</damage>
-			<strength></strength>
 			<usage>Bite</usage>
 			<reach>C</reach>
 			<parry>No</parry>
@@ -5764,7 +5328,6 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
@@ -5773,7 +5336,6 @@
 			</default>
 		</melee_weapon>
 		<reference>B91</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Teeth, Sharp</name>
@@ -5781,7 +5343,6 @@
 		<base_points>1</base_points>
 		<melee_weapon>
 			<damage>thr-1 cut</damage>
-			<strength></strength>
 			<usage>Bite</usage>
 			<reach>C</reach>
 			<parry>No</parry>
@@ -5789,7 +5350,6 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
@@ -5798,7 +5358,6 @@
 			</default>
 		</melee_weapon>
 		<reference>B91</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Teeth, Sharp Beak</name>
@@ -5806,7 +5365,6 @@
 		<base_points>1</base_points>
 		<melee_weapon>
 			<damage>thr-1 pi+</damage>
-			<strength></strength>
 			<usage>Peck</usage>
 			<reach>C</reach>
 			<parry>No</parry>
@@ -5818,12 +5376,10 @@
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
 		<reference>B91</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Telecommunication (Infrared Communication)</name>
@@ -5844,7 +5400,6 @@
 		<type>Mental/Physical, Exotic</type>
 		<base_points>19</base_points>
 		<reference>B91</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Telecommunication (Radio - Video)</name>
@@ -5865,21 +5420,18 @@
 		<type>Mental/Physical, Exotic</type>
 		<base_points>15</base_points>
 		<reference>B91</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Telecommunication (Telesend)</name>
 		<type>Mental/Physical, Exotic</type>
 		<base_points>30</base_points>
 		<reference>B91</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Telecommunication (Telesend, Broadcast)</name>
 		<type>Mental/Physical, Exotic</type>
 		<base_points>45</base_points>
 		<reference>B91</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Telekinesis</name>
@@ -5887,7 +5439,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B92</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Telescopic Vision</name>
@@ -5895,7 +5446,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B92</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Temperature Control</name>
@@ -5903,7 +5453,6 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<reference>B92</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Temperature Tolerance</name>
@@ -5911,28 +5460,24 @@
 		<levels>1</levels>
 		<points_per_level>1</points_per_level>
 		<reference>B93</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Temporal Inertia</name>
 		<type>Mental, Supernatural</type>
 		<base_points>15</base_points>
 		<reference>B93</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Tenure</name>
 		<type>Social</type>
 		<base_points>5</base_points>
 		<reference>B93</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Terrain Adaptation (@Terrain Type@)</name>
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B93</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Terror</name>
@@ -5941,21 +5486,18 @@
 		<base_points>30</base_points>
 		<points_per_level>10</points_per_level>
 		<reference>B93</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Trained by a Master</name>
 		<type>Mental</type>
 		<base_points>30</base_points>
 		<reference>B93</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>True Faith</name>
 		<type>Mental, Supernatural</type>
 		<base_points>15</base_points>
 		<reference>B94</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Tunneling (@Tunnel Move@)</name>
@@ -5964,70 +5506,60 @@
 		<base_points>30</base_points>
 		<points_per_level>5</points_per_level>
 		<reference>B94</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Ultrahearing</name>
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B94</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Ultrasonic Speech</name>
 		<type>Physical, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B94</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Ultravision</name>
 		<type>Physical, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B94</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Unaging</name>
 		<type>Physical, Exotic</type>
 		<base_points>15</base_points>
 		<reference>B95</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Unfazeable</name>
 		<type>Mental</type>
 		<base_points>15</base_points>
 		<reference>B95</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Universal Digestion</name>
 		<type>Physical</type>
 		<base_points>5</base_points>
 		<reference>B95</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Unkillable 1</name>
 		<type>Physical, Exotic</type>
 		<base_points>50</base_points>
 		<reference>B95</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Unkillable 2</name>
 		<type>Physical, Exotic</type>
 		<base_points>100</base_points>
 		<reference>B95</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Unkillable 3</name>
 		<type>Physical, Exotic</type>
 		<base_points>150</base_points>
 		<reference>B95</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Unusual Background</name>
@@ -6040,7 +5572,6 @@
 		<type>Physical, Exotic</type>
 		<base_points>5</base_points>
 		<reference>B96</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Vampiric Bite</name>
@@ -6048,66 +5579,69 @@
 		<base_points>30</base_points>
 		<points_per_level>5</points_per_level>
 		<reference>B96</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Versatile</name>
 		<type>Mental</type>
 		<base_points>5</base_points>
 		<reference>B96</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Vibration Sense</name>
 		<type>Physical, Exotic</type>
 		<base_points>10</base_points>
 		<reference>B96</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Visualization</name>
 		<type>Mental, Supernatural</type>
 		<base_points>10</base_points>
 		<reference>B96</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Voice</name>
 		<type>Physical</type>
 		<base_points>10</base_points>
 		<reference>B97</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">diplomacy</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">fast-talk</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="starts with">mimcry</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">performance</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">politics</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">public speaking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sex appeal</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">singing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+2</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -6115,27 +5649,23 @@
 		<type>Physical, Exotic</type>
 		<base_points>20</base_points>
 		<reference>B97</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Walk On Liquid</name>
 		<type>Physical, Exotic</type>
 		<base_points>15</base_points>
 		<reference>B97</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Warp</name>
 		<type>Mental, Supernatural</type>
 		<base_points>100</base_points>
 		<reference>B97</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Wealth, Average</name>
 		<type>Social</type>
 		<reference>B25</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Wealth, Comfortable</name>
@@ -6158,7 +5688,6 @@
 		<base_points>50</base_points>
 		<points_per_level>25</points_per_level>
 		<reference>B25</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
 				<name compare="is">filthy rich</name>
@@ -6228,7 +5757,6 @@
 		<levels>1</levels>
 		<points_per_level>2</points_per_level>
 		<reference>B53</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Wild Talent</name>
@@ -6236,13 +5764,11 @@
 		<levels>1</levels>
 		<points_per_level>20</points_per_level>
 		<reference>B99</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Zeroed</name>
 		<type>Social</type>
 		<base_points>10</base_points>
 		<reference>B100</reference>
-		<notes></notes>
 	</advantage>
 </advantage_list>

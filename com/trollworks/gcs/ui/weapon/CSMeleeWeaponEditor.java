@@ -26,6 +26,7 @@ package com.trollworks.gcs.ui.weapon;
 import com.trollworks.gcs.model.CMRow;
 import com.trollworks.gcs.model.advantage.CMAdvantage;
 import com.trollworks.gcs.model.equipment.CMEquipment;
+import com.trollworks.gcs.model.skill.CMSkill;
 import com.trollworks.gcs.model.skill.CMSkillDefault;
 import com.trollworks.gcs.model.spell.CMSpell;
 import com.trollworks.gcs.model.weapon.CMMeleeWeaponStats;
@@ -92,6 +93,8 @@ public class CSMeleeWeaponEditor extends TKPanel implements ActionListener, TKMe
 			return new CSMeleeWeaponEditor(row, ((CMAdvantage) row).getWeapons());
 		} else if (row instanceof CMSpell) {
 			return new CSMeleeWeaponEditor(row, ((CMSpell) row).getWeapons());
+		} else if (row instanceof CMSkill) {
+			return new CSMeleeWeaponEditor(row, ((CMSkill) row).getWeapons());
 		}
 		return null;
 	}

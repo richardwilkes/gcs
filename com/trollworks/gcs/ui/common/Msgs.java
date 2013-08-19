@@ -166,13 +166,15 @@ class Msgs {
 	/** Used by {@link CSMenuKeys}. */
 	public static String	RELEASE_NOTES;
 	/** Used by {@link CSMenuKeys}. */
-	public static String	TODO_LIST;
-	/** Used by {@link CSMenuKeys}. */
 	public static String	USERS_MANUAL;
 	/** Used by {@link CSMenuKeys}. */
 	public static String	LICENSE;
 	/** Used by {@link CSMenuKeys}. */
 	public static String	WEB_SITE;
+	/** Used by {@link CSMenuKeys}. */
+	public static String	FEATURES;
+	/** Used by {@link CSMenuKeys}. */
+	public static String	BUGS;
 	/** Used by {@link CSMenuKeys}. */
 	public static String	MAILING_LISTS;
 

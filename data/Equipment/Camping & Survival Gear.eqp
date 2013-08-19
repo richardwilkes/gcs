@@ -7,7 +7,6 @@
 		<value>100.0</value>
 		<weight units="lb">10.0</weight>
 		<reference>B288</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<contained_weight_prereq has="yes" compare="atMost" units="lb">100.0</contained_weight_prereq>
 		</prereq_list>
@@ -19,7 +18,6 @@
 		<value>60.0</value>
 		<weight units="lb">3.0</weight>
 		<reference>B288</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<contained_weight_prereq has="yes" compare="atMost" units="lb">40.0</contained_weight_prereq>
 		</prereq_list>
@@ -30,8 +28,6 @@
 		<legality_class>4</legality_class>
 		<value>5.0</value>
 		<weight units="lb">0.1</weight>
-		<reference></reference>
-		<notes></notes>
 	</equipment_container>
 	<equipment>
 		<quantity>1</quantity>
@@ -41,7 +37,6 @@
 		<value>20.0</value>
 		<weight units="lb">4.0</weight>
 		<reference>B288</reference>
-		<notes></notes>
 	</equipment>
 	<equipment_container open="yes">
 		<description>Bottle, Ceramic</description>
@@ -50,7 +45,6 @@
 		<value>3.0</value>
 		<weight units="lb">1.0</weight>
 		<reference>B288</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<contained_weight_prereq has="yes" compare="atMost" units="lb">2.0</contained_weight_prereq>
 		</prereq_list>
@@ -102,7 +96,6 @@
 		<value>10.0</value>
 		<weight units="lb">1.0</weight>
 		<reference>B288</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<contained_weight_prereq has="yes" compare="atMost" units="lb">2.0</contained_weight_prereq>
 		</prereq_list>
@@ -115,7 +108,6 @@
 		<value>10.0</value>
 		<weight units="lb">0.01</weight>
 		<reference>B288</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -125,10 +117,10 @@
 		<value>50.0</value>
 		<weight units="lb">0.144</weight>
 		<reference>B288</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="starts with">navigation</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 	</equipment>
 	<equipment>
@@ -159,7 +151,6 @@
 		<value>50.0</value>
 		<weight units="lb">0.01</weight>
 		<reference>B288</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -189,7 +180,6 @@
 		<value>2.0</value>
 		<weight units="lb">6.0</weight>
 		<reference>B288</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -219,7 +209,6 @@
 		<value>1.0</value>
 		<weight units="lb">0.5</weight>
 		<reference>B288</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -229,7 +218,6 @@
 		<value>2.0</value>
 		<weight units="lb">6.0</weight>
 		<reference>B288</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -259,7 +247,6 @@
 		<value>0.3</value>
 		<weight units="lb">0.0010</weight>
 		<reference>B288</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -279,7 +266,6 @@
 		<value>2.0</value>
 		<weight units="lb">1.0</weight>
 		<reference>B288</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -289,7 +275,6 @@
 		<value>1000.0</value>
 		<weight units="lb">30.0</weight>
 		<reference>B288</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -299,7 +284,6 @@
 		<value>5.0</value>
 		<weight units="lb">3.0</weight>
 		<reference>B288</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -309,7 +293,6 @@
 		<value>8.0</value>
 		<weight units="lb">5.0</weight>
 		<reference>B288</reference>
-		<notes></notes>
 	</equipment>
 	<equipment_container open="yes">
 		<description>Pouch, Small</description>
@@ -318,7 +301,6 @@
 		<value>10.0</value>
 		<weight units="lb">0.5</weight>
 		<reference>B288</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<contained_weight_prereq has="yes" compare="atMost" units="lb">3.0</contained_weight_prereq>
 		</prereq_list>
@@ -330,7 +312,6 @@
 		<value>10.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>B288</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<contained_weight_prereq has="yes" compare="atMost" units="lb">1.0</contained_weight_prereq>
 		</prereq_list>
@@ -393,7 +374,6 @@
 		<value>25.0</value>
 		<weight units="lb">7.0</weight>
 		<reference>B288</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -413,7 +393,6 @@
 		<value>50.0</value>
 		<weight units="lb">8.0</weight>
 		<reference>B288</reference>
-		<notes></notes>
 	</equipment>
 	<equipment_container open="yes">
 		<description>Suitcase, Hard</description>
@@ -512,12 +491,9 @@
 	<equipment>
 		<quantity>1</quantity>
 		<description>Water, 1 pint</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>0.0</value>
 		<weight units="lb">2.0</weight>
-		<reference></reference>
-		<notes></notes>
 	</equipment>
 	<equipment_container open="yes">
 		<description>Wineskin</description>
@@ -526,7 +502,6 @@
 		<value>10.0</value>
 		<weight units="lb">0.25</weight>
 		<reference>B288</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<contained_weight_prereq has="yes" compare="atMost" units="lb">8.0</contained_weight_prereq>
 		</prereq_list>
@@ -539,6 +514,5 @@
 		<value>20.0</value>
 		<weight units="lb">0.075</weight>
 		<reference>B288</reference>
-		<notes></notes>
 	</equipment>
 </equipment_list>

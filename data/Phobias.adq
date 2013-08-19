@@ -5,895 +5,767 @@
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Acrophobia (Heights, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Acrophobia (Heights, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Acrophobia (Heights, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Agoraphobia (Open Spaces, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Agoraphobia (Open Spaces, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Agoraphobia (Open Spaces, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Agoraphobia (Open Spaces, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Aichmophobia/TL5- (Sharp Things, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Aichmophobia/TL5- (Sharp Things, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Aichmophobia/TL5- (Sharp Things, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Aichmophobia/TL5- (Sharp Things, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Aichmophobia/TL6+ (Sharp Things, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Aichmophobia/TL6+ (Sharp Things, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-17</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Aichmophobia/TL6+ (Sharp Things, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Aichmophobia/TL6+ (Sharp Things, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Ailurophobia (Cats, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Ailurophobia (Cats, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Ailurophobia (Cats, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Ailurophobia (Cats, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Arachnophobia (Spiders, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Arachnophobia (Spiders, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Arachnophobia (Spiders, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Arachnophobia (Spiders, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Autophobia (Being Alone, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Autophobia (Being Alone, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Autophobia (Being Alone, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Autophobia (Being Alone, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Brontophobia (Loud Noises, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Brontophobia (Loud Noises, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Brontophobia (Loud Noises, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Brontophobia (Loud Noises, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Claustrophobia (Enclosed Spaces, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Claustrophobia (Enclosed Spaces, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Claustrophobia (Enclosed Spaces, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Claustrophobia (Enclosed Spaces, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Coitophobia (Sex, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Coitophobia (Sex, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Coitophobia (Sex, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Coitophobia (Sex, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Cynophobia (Dogs, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Cynophobia (Dogs, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Cynophobia (Dogs, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Cynophobia (Dogs, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Demophobia (Crowds, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Demophobia (Crowds, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Demophobia (Crowds, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Demophobia (Crowds, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Entomophobia (Insects, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Entomophobia (Insects, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Entomophobia (Insects, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Entomophobia (Insects, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Heliophobia (Sun, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Heliophobia (Sun, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Heliophobia (Sun, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Heliophobia (Sun, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Hemophobia (Blood, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Hemophobia (Blood, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Hemophobia (Blood, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Hemophobia (Blood, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Herpetophobia (Reptiles, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Herpetophobia (Reptiles, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Herpetophobia (Reptiles, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Herpetophobia (Reptiles, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Hoplophobia (Weapons, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-40</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Hoplophobia (Weapons, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Hoplophobia (Weapons, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Hoplophobia (Weapons, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Manaphobia (Magic, Common, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Manaphobia (Magic, Common, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Manaphobia (Magic, Common, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Manaphobia (Magic, Common, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Manaphobia (Magic, Ucommon, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Manaphobia (Magic, Uncommon , CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Manaphobia (Magic, Uncommon, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Manaphobia (Magic, Uncommon, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Manaphobia (Magic, Unknown, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Manaphobia (Magic, Unknown, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Manaphobia (Magic, Unknown, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Manaphobia (Magic, Unkown, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mysophobia (Dirt, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mysophobia (Dirt, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mysophobia (Dirt, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mysophobia (Dirt, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Necrophobia (Death, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Necrophobia (Death, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Necrophobia (Death, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Necrophobia (Death, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psionophobia (Psionics, Common, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psionophobia (Psionics, Common, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psionophobia (Psionics, Common, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psionophobia (Psionics, Common, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psionophobia (Psionics, Uncommon, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psionophobia (Psionics, Uncommon, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psionophobia (Psionics, Uncommon, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psionophobia (Psionics, Uncommon, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psionophobia (Psionics, Unknown, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psionophobia (Psionics, Unknown, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psionophobia (Psionics, Unknown, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Psionophobia (Psionics, Unknown, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Pyrophobia (Fire, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Pyrophobia (Fire, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Pyrophobia (Fire, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Pyrophobia (Fire, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Scotophobia (Darkness, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Scotophobia (Darkness, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Scotophobia (Darkness, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Scotophobia (Darkness, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B149</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Technophobia/TL4- (Machinery, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Technophobia/TL4- (Machinery, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Technophobia/TL4- (Machinery, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Technophobia/TL4- (Machinery, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Technophobia/TL5+ (Machinery, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Technophobia/TL5+ (Machinery, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Technophobia/TL5+ (Machinery, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Technophobia/TL5+ (Machinery, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Teratophobia (Monsters, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Teratophobia (Monsters, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Teratophobia (Monsters, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Teratophobia (Monsters, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Thalassophobia (Oceans, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Thalassophobia (Oceans, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Thalassophobia (Oceans, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Thalassophobia (Oceans, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Xenophobia (Strange and Unknown Things, CR: 6, penalty -4)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Xenophobia (Strange and Unknown Things, CR: 9, penalty -3)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Xenophobia (Strange and Unknown Things, CR: 12, penalty -2)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Xenophobia (Strange and Unknown Things, CR: 15, penalty -1)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 </advantage_list>

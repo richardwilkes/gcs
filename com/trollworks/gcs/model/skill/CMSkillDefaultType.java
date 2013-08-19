@@ -112,7 +112,6 @@ public enum CMSkillDefaultType {
 	 *         found.
 	 */
 	public static final CMSkillDefaultType getByName(String name) {
-		// We must do this the hard way, due to obfuscation
 		for (CMSkillDefaultType type : values()) {
 			if (type.name().equalsIgnoreCase(name) || type.toString().equalsIgnoreCase(name)) {
 				return type;

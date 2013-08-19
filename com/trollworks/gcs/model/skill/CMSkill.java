@@ -27,6 +27,9 @@ import com.trollworks.gcs.model.CMCharacter;
 import com.trollworks.gcs.model.CMDataFile;
 import com.trollworks.gcs.model.CMListFile;
 import com.trollworks.gcs.model.CMRow;
+import com.trollworks.gcs.model.weapon.CMMeleeWeaponStats;
+import com.trollworks.gcs.model.weapon.CMRangedWeaponStats;
+import com.trollworks.gcs.model.weapon.CMWeaponStats;
 import com.trollworks.gcs.ui.common.CSImage;
 import com.trollworks.gcs.ui.editor.CSRowEditor;
 import com.trollworks.gcs.ui.skills.CSSkillColumnID;
@@ -39,7 +42,9 @@ import com.trollworks.toolkit.widget.outline.TKRow;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,52 +52,59 @@ import java.util.List;
 /** A GURPS Skill. */
 public class CMSkill extends CMRow {
 	/** The XML tag used for items. */
-	public static final String	TAG_SKILL			= "skill";									//$NON-NLS-1$
+	public static final String			TAG_SKILL					= "skill";									//$NON-NLS-1$
 	/** The XML tag used for containers. */
-	public static final String	TAG_SKILL_CONTAINER	= "skill_container";						//$NON-NLS-1$
-	private static final String	TAG_NAME			= "name";									//$NON-NLS-1$
-	private static final String	TAG_SPECIALIZATION	= "specialization";						//$NON-NLS-1$
-	private static final String	TAG_TECH_LEVEL		= "tech_level";							//$NON-NLS-1$
-	private static final String	TAG_DIFFICULTY		= "difficulty";							//$NON-NLS-1$
-	private static final String	TAG_POINTS			= "points";								//$NON-NLS-1$
-	private static final String	TAG_REFERENCE		= "reference";								//$NON-NLS-1$
+	public static final String			TAG_SKILL_CONTAINER			= "skill_container";						//$NON-NLS-1$
+	private static final String			TAG_NAME					= "name";									//$NON-NLS-1$
+	private static final String			TAG_SPECIALIZATION			= "specialization";						//$NON-NLS-1$
+	private static final String			TAG_TECH_LEVEL				= "tech_level";							//$NON-NLS-1$
+	private static final String			TAG_DIFFICULTY				= "difficulty";							//$NON-NLS-1$
+	private static final String			TAG_POINTS					= "points";								//$NON-NLS-1$
+	private static final String			TAG_REFERENCE				= "reference";								//$NON-NLS-1$
+	private static final String			TAG_ENCUMBRANCE_PENALTY		= "encumbrance_penalty_multiplier";		//$NON-NLS-1$
 	/** The prefix used in front of all IDs for the skills. */
-	public static final String	PREFIX				= CMCharacter.CHARACTER_PREFIX + "skill.";	//$NON-NLS-1$
+	public static final String			PREFIX						= CMCharacter.CHARACTER_PREFIX + "skill.";	//$NON-NLS-1$
 	/** The field ID for name changes. */
-	public static final String	ID_NAME				= PREFIX + "Name";							//$NON-NLS-1$
+	public static final String			ID_NAME						= PREFIX + "Name";							//$NON-NLS-1$
 	/** The field ID for specialization changes. */
-	public static final String	ID_SPECIALIZATION	= PREFIX + "Specialization";				//$NON-NLS-1$
+	public static final String			ID_SPECIALIZATION			= PREFIX + "Specialization";				//$NON-NLS-1$
 	/** The field ID for tech level changes. */
-	public static final String	ID_TECH_LEVEL		= PREFIX + "TechLevel";					//$NON-NLS-1$
+	public static final String			ID_TECH_LEVEL				= PREFIX + "TechLevel";					//$NON-NLS-1$
 	/** The field ID for level changes. */
-	public static final String	ID_LEVEL			= PREFIX + "Level";						//$NON-NLS-1$
+	public static final String			ID_LEVEL					= PREFIX + "Level";						//$NON-NLS-1$
 	/** The field ID for relative level changes. */
-	public static final String	ID_RELATIVE_LEVEL	= PREFIX + "RelativeLevel";				//$NON-NLS-1$
+	public static final String			ID_RELATIVE_LEVEL			= PREFIX + "RelativeLevel";				//$NON-NLS-1$
 	/** The field ID for difficulty changes. */
-	public static final String	ID_DIFFICULTY		= PREFIX + "Difficulty";					//$NON-NLS-1$
+	public static final String			ID_DIFFICULTY				= PREFIX + "Difficulty";					//$NON-NLS-1$
 	/** The field ID for point changes. */
-	public static final String	ID_POINTS			= PREFIX + "Points";						//$NON-NLS-1$
+	public static final String			ID_POINTS					= PREFIX + "Points";						//$NON-NLS-1$
 	/** The field ID for page reference changes. */
-	public static final String	ID_REFERENCE		= PREFIX + "Reference";					//$NON-NLS-1$
+	public static final String			ID_REFERENCE				= PREFIX + "Reference";					//$NON-NLS-1$
+	/** The field ID for enumbrance penalty multiplier changes. */
+	public static final String			ID_ENCUMBRANCE_PENALTY		= PREFIX + "EncMultplier";					//$NON-NLS-1$
 	/** The field ID for when the row hierarchy changes. */
-	public static final String	ID_LIST_CHANGED		= PREFIX + "ListChanged";					//$NON-NLS-1$
-	private static final String	NEWLINE				= "\n";									//$NON-NLS-1$
-	private static final String	SPACE				= " ";										//$NON-NLS-1$
-	private static final String	EMPTY				= "";										//$NON-NLS-1$
-	private static final String	ASTERISK			= "*";										//$NON-NLS-1$
-	private static final String	SLASH				= "/";										//$NON-NLS-1$
-	private String				mName;
-	private String				mSpecialization;
-	private String				mTechLevel;
+	public static final String			ID_LIST_CHANGED				= PREFIX + "ListChanged";					//$NON-NLS-1$
+	/** The field ID for when the skill becomes or stops being a weapon. */
+	public static final String			ID_WEAPON_STATUS_CHANGED	= PREFIX + "WeaponStatus";					//$NON-NLS-1$
+	private static final String			NEWLINE						= "\n";									//$NON-NLS-1$
+	private static final String			SPACE						= " ";										//$NON-NLS-1$
+	private static final String			EMPTY						= "";										//$NON-NLS-1$
+	private static final String			ASTERISK					= "*";										//$NON-NLS-1$
+	private static final String			SLASH						= "/";										//$NON-NLS-1$
+	private String						mName;
+	private String						mSpecialization;
+	private String						mTechLevel;
 	/** The level. */
-	protected int				mLevel;
+	protected int						mLevel;
 	/** The relative level. */
-	protected int				mRelativeLevel;
-	private CMSkillAttribute	mAttribute;
-	private CMSkillDifficulty	mDifficulty;
+	protected int						mRelativeLevel;
+	private CMSkillAttribute			mAttribute;
+	private CMSkillDifficulty			mDifficulty;
 	/** The points spent. */
-	protected int				mPoints;
-	private String				mReference;
+	protected int						mPoints;
+	private String						mReference;
+	private int							mEncumbrancePenaltyMultiplier;
+	private ArrayList<CMWeaponStats>	mWeapons;
 
 	/**
 	 * Creates a string suitable for displaying the level.
@@ -128,6 +140,7 @@ public class CMSkill extends CMRow {
 		mDifficulty = CMSkillDifficulty.A;
 		mPoints = 1;
 		mReference = EMPTY;
+		mWeapons = new ArrayList<CMWeaponStats>();
 		updateLevel(false);
 	}
 
@@ -148,6 +161,7 @@ public class CMSkill extends CMRow {
 		mDifficulty = skill.mDifficulty;
 		mPoints = forSheet ? skill.mPoints : 1;
 		mReference = skill.mReference;
+		mEncumbrancePenaltyMultiplier = skill.mEncumbrancePenaltyMultiplier;
 		if (forSheet && dataFile instanceof CMCharacter) {
 			if (mTechLevel != null) {
 				mTechLevel = ((CMCharacter) dataFile).getTechLevel();
@@ -155,6 +169,14 @@ public class CMSkill extends CMRow {
 		} else {
 			if (mTechLevel != null && mTechLevel.trim().length() > 0) {
 				mTechLevel = EMPTY;
+			}
+		}
+		mWeapons = new ArrayList<CMWeaponStats>(skill.mWeapons.size());
+		for (CMWeaponStats weapon : skill.mWeapons) {
+			if (weapon instanceof CMMeleeWeaponStats) {
+				mWeapons.add(new CMMeleeWeaponStats(this, (CMMeleeWeaponStats) weapon));
+			} else if (weapon instanceof CMRangedWeaponStats) {
+				mWeapons.add(new CMRangedWeaponStats(this, (CMRangedWeaponStats) weapon));
 			}
 		}
 		updateLevel(false);
@@ -210,6 +232,8 @@ public class CMSkill extends CMRow {
 		mDifficulty = CMSkillDifficulty.A;
 		mPoints = 1;
 		mReference = EMPTY;
+		mEncumbrancePenaltyMultiplier = 0;
+		mWeapons = new ArrayList<CMWeaponStats>();
 	}
 
 	@Override protected void loadSubElement(TKXMLReader reader, boolean forUndo) throws IOException {
@@ -235,6 +259,12 @@ public class CMSkill extends CMRow {
 				setDifficultyFromText(reader.readText().replace(NEWLINE, SPACE));
 			} else if (TAG_POINTS.equals(name)) {
 				mPoints = reader.readInteger(1);
+			} else if (TAG_ENCUMBRANCE_PENALTY.equals(name)) {
+				mEncumbrancePenaltyMultiplier = Math.min(Math.max(reader.readInteger(0), 0), 9);
+			} else if (CMMeleeWeaponStats.TAG_ROOT.equals(name)) {
+				mWeapons.add(new CMMeleeWeaponStats(this, reader));
+			} else if (CMRangedWeaponStats.TAG_ROOT.equals(name)) {
+				mWeapons.add(new CMRangedWeaponStats(this, reader));
 			} else {
 				super.loadSubElement(reader, forUndo);
 			}
@@ -250,21 +280,46 @@ public class CMSkill extends CMRow {
 	@Override public void saveSelf(TKXMLWriter out, boolean forUndo) {
 		out.simpleTag(TAG_NAME, mName);
 		if (!canHaveChildren()) {
-			out.simpleTag(TAG_SPECIALIZATION, mSpecialization);
+			out.simpleTagNotEmpty(TAG_SPECIALIZATION, mSpecialization);
 			if (mTechLevel != null) {
 				if (getCharacter() != null) {
-					if (mTechLevel.length() > 0) {
-						out.simpleTag(TAG_TECH_LEVEL, mTechLevel);
-					}
+					out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
 				} else {
 					out.startTag(TAG_TECH_LEVEL);
 					out.finishEmptyTagEOL();
 				}
 			}
+			if (mEncumbrancePenaltyMultiplier != 0) {
+				out.simpleTag(TAG_ENCUMBRANCE_PENALTY, mEncumbrancePenaltyMultiplier);
+			}
 			out.simpleTag(TAG_DIFFICULTY, getDifficultyAsText());
 			out.simpleTag(TAG_POINTS, mPoints);
+			for (CMWeaponStats weapon : mWeapons) {
+				weapon.save(out);
+			}
 		}
-		out.simpleTag(TAG_REFERENCE, mReference);
+		out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
+	}
+
+	/** @return The weapon list. */
+	public List<CMWeaponStats> getWeapons() {
+		return Collections.unmodifiableList(mWeapons);
+	}
+
+	/**
+	 * @param weapons The weapons to set.
+	 * @return Whether it was modified.
+	 */
+	public boolean setWeapons(List<CMWeaponStats> weapons) {
+		if (!mWeapons.equals(weapons)) {
+			mWeapons = new ArrayList<CMWeaponStats>(weapons);
+			for (CMWeaponStats weapon : mWeapons) {
+				weapon.setOwner(this);
+			}
+			notifySingle(ID_WEAPON_STATUS_CHANGED);
+			return true;
+		}
+		return false;
 	}
 
 	/** @return The level. */
@@ -379,7 +434,7 @@ public class CMSkill extends CMRow {
 
 	/** @return The calculated skill level. */
 	protected CMSkillLevel calculateLevelSelf() {
-		return calculateLevel(getCharacter(), this, getName(), getSpecialization(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), new HashSet<CMSkill>());
+		return calculateLevel(getCharacter(), this, getName(), getSpecialization(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), new HashSet<CMSkill>(), getEncumbrancePenaltyMultiplier());
 	}
 
 	/**
@@ -387,7 +442,7 @@ public class CMSkill extends CMRow {
 	 * @return The calculated level.
 	 */
 	public int getLevel(HashSet<CMSkill> excludes) {
-		return calculateLevel(getCharacter(), this, getName(), getSpecialization(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), excludes).mLevel;
+		return calculateLevel(getCharacter(), this, getName(), getSpecialization(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), excludes, getEncumbrancePenaltyMultiplier()).mLevel;
 	}
 
 	/** @return The attribute. */
@@ -413,6 +468,25 @@ public class CMSkill extends CMRow {
 			notify(ID_DIFFICULTY, this);
 			updateLevel(true);
 			endNotify();
+			return true;
+		}
+		return false;
+	}
+
+	/** @return The encumbrance penalty multiplier. */
+	public int getEncumbrancePenaltyMultiplier() {
+		return mEncumbrancePenaltyMultiplier;
+	}
+
+	/**
+	 * @param multiplier The multiplier to set.
+	 * @return Whether it was changed.
+	 */
+	public boolean setEncumbrancePenaltyMultiplier(int multiplier) {
+		multiplier = Math.min(Math.max(multiplier, 0), 9);
+		if (mEncumbrancePenaltyMultiplier != multiplier) {
+			mEncumbrancePenaltyMultiplier = multiplier;
+			notifySingle(ID_ENCUMBRANCE_PENALTY);
 			return true;
 		}
 		return false;
@@ -518,9 +592,10 @@ public class CMSkill extends CMRow {
 	 * @param difficulty The difficulty of the skill.
 	 * @param points The number of points spent in the skill.
 	 * @param excludes The set of skills to exclude from any default calculations.
+	 * @param encPenaltyMult The encumbrance penalty multiplier.
 	 * @return The calculated skill level.
 	 */
-	public static CMSkillLevel calculateLevel(CMCharacter character, CMSkill exclude, String name, String specialization, List<CMSkillDefault> defaults, CMSkillAttribute attribute, CMSkillDifficulty difficulty, int points, HashSet<CMSkill> excludes) {
+	public static CMSkillLevel calculateLevel(CMCharacter character, CMSkill exclude, String name, String specialization, List<CMSkillDefault> defaults, CMSkillAttribute attribute, CMSkillDifficulty difficulty, int points, HashSet<CMSkill> excludes, int encPenaltyMult) {
 		int relativeLevel = difficulty.getBaseRelativeLevel();
 		int level = attribute.getBaseSkillLevel(character);
 
@@ -557,10 +632,11 @@ public class CMSkill extends CMRow {
 				level += character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, specialization);
 				level += character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
 				if (best != null) {
-					if (level < best.getLevel()) {
-						level = best.getLevel();
+					if (level < best.getAdjLevel()) {
+						level = best.getAdjLevel();
 					}
 				}
+				level += character.getEncumbrancePenalty(character.getEncumbranceLevel()) * encPenaltyMult;
 			}
 		}
 		return new CMSkillLevel(level, relativeLevel);
@@ -620,11 +696,21 @@ public class CMSkill extends CMRow {
 		super.fillWithNameableKeys(set);
 		extractNameables(set, mName);
 		extractNameables(set, mSpecialization);
+		for (CMWeaponStats weapon : mWeapons) {
+			for (CMSkillDefault one : weapon.getDefaults()) {
+				one.fillWithNameableKeys(set);
+			}
+		}
 	}
 
 	@Override public void applyNameableKeys(HashMap<String, String> map) {
 		super.applyNameableKeys(map);
 		mName = nameNameables(map, mName);
 		mSpecialization = nameNameables(map, mSpecialization);
+		for (CMWeaponStats weapon : mWeapons) {
+			for (CMSkillDefault one : weapon.getDefaults()) {
+				one.applyNameableKeys(map);
+			}
+		}
 	}
 }

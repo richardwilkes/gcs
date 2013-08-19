@@ -11,13 +11,11 @@
 		<ranged_weapon>
 			<damage>sw-1 imp</damage>
 			<strength>5</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>x3/x4</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(1)</shots>
 			<bulk>-3</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-5</modifier>
@@ -25,17 +23,14 @@
 			<default>
 				<type>Skill</type>
 				<name>Spear Thrower</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Thrown Weapon (Spear)</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -48,13 +43,11 @@
 		<ranged_weapon>
 			<damage>sw+1 imp</damage>
 			<strength>6</strength>
-			<usage></usage>
 			<accuracy>3</accuracy>
 			<range>x2/x3</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(1)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-5</modifier>
@@ -62,17 +55,14 @@
 			<default>
 				<type>Skill</type>
 				<name>Spear Thrower</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Thrown Weapon (Spear)</name>
-				<specialization></specialization>
 				<modifier>-4</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -85,13 +75,11 @@
 		<ranged_weapon>
 			<damage>1d-3 pi-</damage>
 			<strength>2</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>x4</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(2)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-6</modifier>
@@ -99,11 +87,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Blowpipe</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -116,21 +102,17 @@
 		<ranged_weapon>
 			<damage>thr-1 cr (see B411)</damage>
 			<strength>7</strength>
-			<usage></usage>
 			<accuracy>0</accuracy>
 			<range>x3</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>T(1)</shots>
 			<bulk>-2</bulk>
-			<recoil></recoil>
 			<default>
 				<type>Skill</type>
 				<name>Bolas</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -143,13 +125,11 @@
 		<ranged_weapon>
 			<damage>thr+3 imp</damage>
 			<strength>10&#8224;</strength>
-			<usage></usage>
 			<accuracy>3</accuracy>
 			<range>x20/x25</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(2)</shots>
 			<bulk>-7</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-5</modifier>
@@ -157,11 +137,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Bow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -174,13 +152,11 @@
 		<ranged_weapon>
 			<damage>1d+1 imp</damage>
 			<strength>7&#8224;</strength>
-			<usage></usage>
 			<accuracy>4</accuracy>
 			<range>140/175</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -188,11 +164,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -205,13 +179,11 @@
 		<ranged_weapon>
 			<damage>1d+1 imp</damage>
 			<strength>8&#8224;</strength>
-			<usage></usage>
 			<accuracy>4</accuracy>
 			<range>160/200</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -219,11 +191,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -236,13 +206,11 @@
 		<ranged_weapon>
 			<damage>1d+2 imp</damage>
 			<strength>9&#8224;</strength>
-			<usage></usage>
 			<accuracy>4</accuracy>
 			<range>180/225</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -250,11 +218,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -267,13 +233,11 @@
 		<ranged_weapon>
 			<damage>1d+2 imp</damage>
 			<strength>10&#8224;</strength>
-			<usage></usage>
 			<accuracy>4</accuracy>
 			<range>200/250</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -281,11 +245,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -298,13 +260,11 @@
 		<ranged_weapon>
 			<damage>1d+3 imp</damage>
 			<strength>11&#8224;</strength>
-			<usage></usage>
 			<accuracy>4</accuracy>
 			<range>220/275</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -312,11 +272,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -329,13 +287,11 @@
 		<ranged_weapon>
 			<damage>1d+3 imp</damage>
 			<strength>12&#8224;</strength>
-			<usage></usage>
 			<accuracy>4</accuracy>
 			<range>240/300</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -343,11 +299,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -360,13 +314,11 @@
 		<ranged_weapon>
 			<damage>2d imp</damage>
 			<strength>13&#8224;</strength>
-			<usage></usage>
 			<accuracy>4</accuracy>
 			<range>260/325</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -374,11 +326,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -391,13 +341,11 @@
 		<ranged_weapon>
 			<damage>2d imp</damage>
 			<strength>14&#8224;</strength>
-			<usage></usage>
 			<accuracy>4</accuracy>
 			<range>280/350</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -405,11 +353,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -422,13 +368,11 @@
 		<ranged_weapon>
 			<damage>2d+1 imp</damage>
 			<strength>15&#8224;</strength>
-			<usage></usage>
 			<accuracy>4</accuracy>
 			<range>300/375</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -436,11 +380,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -453,13 +395,11 @@
 		<ranged_weapon>
 			<damage>2d+1 imp</damage>
 			<strength>16&#8224;</strength>
-			<usage></usage>
 			<accuracy>4</accuracy>
 			<range>320/400</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -467,11 +407,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -484,13 +422,11 @@
 		<ranged_weapon>
 			<damage>2d+2 imp</damage>
 			<strength>17&#8224;</strength>
-			<usage></usage>
 			<accuracy>4</accuracy>
 			<range>340/425</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -498,11 +434,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -515,13 +449,11 @@
 		<ranged_weapon>
 			<damage>2d+2 imp</damage>
 			<strength>18&#8224;</strength>
-			<usage></usage>
 			<accuracy>4</accuracy>
 			<range>360/450</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -529,11 +461,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -546,13 +476,11 @@
 		<ranged_weapon>
 			<damage>2d+3 imp</damage>
 			<strength>19&#8224;</strength>
-			<usage></usage>
 			<accuracy>4</accuracy>
 			<range>380/475</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -560,11 +488,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -577,13 +503,11 @@
 		<ranged_weapon>
 			<damage>2d+3 imp</damage>
 			<strength>20&#8224;</strength>
-			<usage></usage>
 			<accuracy>4</accuracy>
 			<range>400/500</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -591,11 +515,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -608,17 +530,14 @@
 		<ranged_weapon>
 			<damage>thr+5 imp</damage>
 			<strength>11</strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>x1/x1.5</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>T(1)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>Skill</type>
 				<name>Thrown Weapon (Harpoon)</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
@@ -628,11 +547,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Thrown Weapon (Spear)</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -645,27 +562,22 @@
 		<ranged_weapon>
 			<damage>see B411</damage>
 			<strength>11</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>spec</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>T(1)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>Skill</type>
 				<name>Net</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Cloak</name>
-				<specialization></specialization>
 				<modifier>-5</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -678,21 +590,17 @@
 		<ranged_weapon>
 			<damage>see B411</damage>
 			<strength>7&#8224;</strength>
-			<usage></usage>
 			<accuracy>0</accuracy>
 			<range>spec</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>T(spec)</shots>
 			<bulk>-2</bulk>
-			<recoil></recoil>
 			<default>
 				<type>Skill</type>
 				<name>Lasso</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -705,13 +613,11 @@
 		<ranged_weapon>
 			<damage>thr+2 imp</damage>
 			<strength>11&#8224;</strength>
-			<usage></usage>
 			<accuracy>3</accuracy>
 			<range>x15/x20</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(2)</shots>
 			<bulk>-8</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-5</modifier>
@@ -719,11 +625,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Bow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -736,27 +640,22 @@
 		<ranged_weapon>
 			<damage>see B411</damage>
 			<strength>8</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>spec</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>T(1)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>Skill</type>
 				<name>Net</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Cloak</name>
-				<specialization></specialization>
 				<modifier>-5</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -769,13 +668,11 @@
 		<ranged_weapon>
 			<damage>1d-1 imp</damage>
 			<strength>7</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>105/140</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -783,11 +680,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -800,13 +695,11 @@
 		<ranged_weapon>
 			<damage>1d-1 imp</damage>
 			<strength>8</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>120/160</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -814,11 +707,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -831,13 +722,11 @@
 		<ranged_weapon>
 			<damage>1d imp</damage>
 			<strength>9</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>135/180</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -845,11 +734,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -862,13 +749,11 @@
 		<ranged_weapon>
 			<damage>1d imp</damage>
 			<strength>10</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>150/200</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -876,11 +761,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -893,13 +776,11 @@
 		<ranged_weapon>
 			<damage>1d+1 imp</damage>
 			<strength>11</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>165/220</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -907,11 +788,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -924,13 +803,11 @@
 		<ranged_weapon>
 			<damage>1d+1 imp</damage>
 			<strength>12</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>180/240</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -938,11 +815,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -955,13 +830,11 @@
 		<ranged_weapon>
 			<damage>1d+2 imp</damage>
 			<strength>13</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>195/260</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -969,11 +842,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -986,13 +857,11 @@
 		<ranged_weapon>
 			<damage>1d+2 imp</damage>
 			<strength>14</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>210/280</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1000,11 +869,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1017,13 +884,11 @@
 		<ranged_weapon>
 			<damage>1d+3 imp</damage>
 			<strength>15</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>225/300</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1031,11 +896,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1048,13 +911,11 @@
 		<ranged_weapon>
 			<damage>1d+3 imp</damage>
 			<strength>16</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>240/320</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1062,11 +923,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1079,13 +938,11 @@
 		<ranged_weapon>
 			<damage>2d imp</damage>
 			<strength>17</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>255/340</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1093,11 +950,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1110,13 +965,11 @@
 		<ranged_weapon>
 			<damage>2d imp</damage>
 			<strength>18</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>270/360</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1124,11 +977,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1141,13 +992,11 @@
 		<ranged_weapon>
 			<damage>2d+1 imp</damage>
 			<strength>19</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>285/380</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1155,11 +1004,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1172,13 +1019,11 @@
 		<ranged_weapon>
 			<damage>2d+1 imp</damage>
 			<strength>20</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>300/400</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1186,11 +1031,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1203,13 +1046,11 @@
 		<ranged_weapon>
 			<damage>1d+1 pi</damage>
 			<strength>7&#8224;</strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>140/175</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1217,11 +1058,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1234,13 +1073,11 @@
 		<ranged_weapon>
 			<damage>1d+1 pi</damage>
 			<strength>8&#8224;</strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>160/200</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1248,11 +1085,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1265,13 +1100,11 @@
 		<ranged_weapon>
 			<damage>1d+2 pi</damage>
 			<strength>9&#8224;</strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>180/225</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1279,11 +1112,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1296,13 +1127,11 @@
 		<ranged_weapon>
 			<damage>1d+2 pi</damage>
 			<strength>10&#8224;</strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>200/250</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1310,11 +1139,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1327,13 +1154,11 @@
 		<ranged_weapon>
 			<damage>1d+3 pi</damage>
 			<strength>11&#8224;</strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>220/275</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1341,11 +1166,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1358,13 +1181,11 @@
 		<ranged_weapon>
 			<damage>1d+3 pi</damage>
 			<strength>12&#8224;</strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>240/300</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1372,11 +1193,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1389,13 +1208,11 @@
 		<ranged_weapon>
 			<damage>2d pi</damage>
 			<strength>13&#8224;</strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>260/325</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1403,11 +1220,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1420,13 +1235,11 @@
 		<ranged_weapon>
 			<damage>2d pi</damage>
 			<strength>14&#8224;</strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>280/350</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1434,11 +1247,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1451,13 +1262,11 @@
 		<ranged_weapon>
 			<damage>2d+1 pi</damage>
 			<strength>15&#8224;</strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>300/375</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1465,11 +1274,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1482,13 +1289,11 @@
 		<ranged_weapon>
 			<damage>2d+1 pi</damage>
 			<strength>16&#8224;</strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>320/400</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1496,11 +1301,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1513,13 +1316,11 @@
 		<ranged_weapon>
 			<damage>2d+2 pi</damage>
 			<strength>17&#8224;</strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>340/425</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1527,11 +1328,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1544,13 +1343,11 @@
 		<ranged_weapon>
 			<damage>2d+2 pi</damage>
 			<strength>18&#8224;</strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>360/450</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1558,11 +1355,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1575,13 +1370,11 @@
 		<ranged_weapon>
 			<damage>2d+3 pi</damage>
 			<strength>19&#8224;</strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>380/475</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1589,11 +1382,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1606,13 +1397,11 @@
 		<ranged_weapon>
 			<damage>2d+3 pi</damage>
 			<strength>20&#8224;</strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>400/500</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(4)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1620,11 +1409,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Crossbow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1637,13 +1424,11 @@
 		<ranged_weapon>
 			<damage>thr+1 imp</damage>
 			<strength>10&#8224;</strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>x15/x20</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(2)</shots>
 			<bulk>-7</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-5</modifier>
@@ -1651,11 +1436,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Bow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1668,13 +1451,11 @@
 		<ranged_weapon>
 			<damage>thr imp</damage>
 			<strength>7&#8224;</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>x10/x15</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(2)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-5</modifier>
@@ -1682,11 +1463,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Bow</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1699,13 +1478,11 @@
 		<ranged_weapon>
 			<damage>thr-1 cut</damage>
 			<strength>5</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>x0.5/x1</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>T(1)</shots>
 			<bulk>0</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1713,17 +1490,14 @@
 			<default>
 				<type>Skill</type>
 				<name>Thrown Weapon (Shuriken)</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Throwing</name>
-				<specialization></specialization>
 				<modifier>-2</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1736,13 +1510,11 @@
 		<ranged_weapon>
 			<damage>sw pi</damage>
 			<strength>6</strength>
-			<usage></usage>
 			<accuracy>0</accuracy>
 			<range>x6/x10</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(2)</shots>
 			<bulk>-4</bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-6</modifier>
@@ -1750,11 +1522,9 @@
 			<default>
 				<type>Skill</type>
 				<name>Sling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -1767,17 +1537,14 @@
 		<ranged_weapon>
 			<damage>sw+1 pi</damage>
 			<strength>7&#8224;</strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>x10/x15</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(2)</shots>
 			<bulk>-6</bulk>
-			<recoil></recoil>
 			<default>
 				<type>Skill</type>
 				<name>Sling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
@@ -1785,6 +1552,5 @@
 				<modifier>-6</modifier>
 			</default>
 		</ranged_weapon>
-		<notes></notes>
 	</equipment>
 </equipment_list>

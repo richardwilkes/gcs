@@ -116,8 +116,10 @@ public class CSWindow extends TKWindow {
 	private static final String	CMD_UPDATE_CHECK					= "UpdateCheck";					//$NON-NLS-1$
 	/** The command for showing the release notes. */
 	public static final String	CMD_RELEASE_NOTES					= "ShowReleaseNotes";				//$NON-NLS-1$
-	/** The command for showing the todo list. */
-	public static final String	CMD_TODO_LIST						= "ShowToDoList";					//$NON-NLS-1$
+	/** The command for showing the bugs list. */
+	public static final String	CMD_BUGS						= "ShowBugList";					//$NON-NLS-1$
+	/** The command for showing the features list. */
+	public static final String	CMD_FEATURES						= "ShowFeaturesList";					//$NON-NLS-1$
 	/** The command for showing the user's manual. */
 	public static final String	CMD_USERS_MANUAL					= "ShowUsersManual";				//$NON-NLS-1$
 	/** The command for showing the license. */
@@ -235,12 +237,13 @@ public class CSWindow extends TKWindow {
 		addMenuItem(menu, CMD_UPDATE_CHECK);
 		menu.addSeparator();
 		addMenuItem(menu, CMD_RELEASE_NOTES);
-		addMenuItem(menu, CMD_TODO_LIST);
 		addMenuItem(menu, CMD_USERS_MANUAL);
 		addMenuItem(menu, CMD_LICENSE);
 		menu.addSeparator();
 		addMenuItem(menu, CMD_WEB_SITE);
 		addMenuItem(menu, CMD_MAILING_LISTS);
+		addMenuItem(menu, CMD_FEATURES);
+		addMenuItem(menu, CMD_BUGS);
 		bar.add(menu);
 
 		bar.installQAMenu(true);
@@ -381,7 +384,7 @@ public class CSWindow extends TKWindow {
 
 		if (!handled) {
 			handled = true;
-			if (CMD_NEW_SHEET.equals(command) || CMD_NEW_TEMPLATE.equals(command) || CMD_NEW_LIST.equals(command) || CMD_SAVE_AS.equals(command) || CMD_PREFERENCES.equals(command) || CMD_OPEN_LIST.equals(command) || CMD_RELEASE_NOTES.equals(command) || CMD_TODO_LIST.equals(command) || CMD_USERS_MANUAL.equals(command) || CMD_LICENSE.equals(command) || CMD_WEB_SITE.equals(command) || CMD_MAILING_LISTS.equals(command)) {
+			if (CMD_NEW_SHEET.equals(command) || CMD_NEW_TEMPLATE.equals(command) || CMD_NEW_LIST.equals(command) || CMD_SAVE_AS.equals(command) || CMD_PREFERENCES.equals(command) || CMD_OPEN_LIST.equals(command) || CMD_RELEASE_NOTES.equals(command) || CMD_BUGS.equals(command) || CMD_FEATURES.equals(command) || CMD_USERS_MANUAL.equals(command) || CMD_LICENSE.equals(command) || CMD_WEB_SITE.equals(command) || CMD_MAILING_LISTS.equals(command)) {
 				item.setEnabled(true);
 			} else if (CMD_UPDATE_CHECK.equals(command)) {
 				item.setTitle(TKUpdateChecker.getResult());
@@ -454,8 +457,10 @@ public class CSWindow extends TKWindow {
 				TKUpdateChecker.goToUpdate();
 			} else if (CMD_RELEASE_NOTES.equals(command)) {
 				showHTMLFile("release_notes.html"); //$NON-NLS-1$
-			} else if (CMD_TODO_LIST.equals(command)) {
-				showHTMLFile("todo.html"); //$NON-NLS-1$
+			} else if (CMD_BUGS.equals(command)) {
+				TKBrowser.getPreferredBrowser().openURL("http://sourceforge.net/tracker/?atid=913589&group_id=185516&func=browse"); //$NON-NLS-1$
+			} else if (CMD_FEATURES.equals(command)) {
+				TKBrowser.getPreferredBrowser().openURL("http://sourceforge.net/tracker/?atid=913592&group_id=185516&func=browse"); //$NON-NLS-1$
 			} else if (CMD_USERS_MANUAL.equals(command)) {
 				showHTMLFile("guide.html"); //$NON-NLS-1$
 			} else if (CMD_LICENSE.equals(command)) {
@@ -463,7 +468,7 @@ public class CSWindow extends TKWindow {
 			} else if (CMD_WEB_SITE.equals(command)) {
 				TKBrowser.getPreferredBrowser().openURL("http://gcs.trollworks.com"); //$NON-NLS-1$
 			} else if (CMD_MAILING_LISTS.equals(command)) {
-				TKBrowser.getPreferredBrowser().openURL("http://www.trollworks.com/mailman/listinfo"); //$NON-NLS-1$
+				TKBrowser.getPreferredBrowser().openURL("http://sourceforge.net/mail/?group_id=185516"); //$NON-NLS-1$
 			} else if (CMD_OPEN_EDITOR.equals(command)) {
 				TKOutline outline = getFocusedOutline();
 

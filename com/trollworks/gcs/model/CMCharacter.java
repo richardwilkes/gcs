@@ -33,8 +33,10 @@ import com.trollworks.gcs.model.feature.CMBonus;
 import com.trollworks.gcs.model.feature.CMCostReduction;
 import com.trollworks.gcs.model.feature.CMDRBonus;
 import com.trollworks.gcs.model.feature.CMFeature;
+import com.trollworks.gcs.model.feature.CMLeveledAmount;
 import com.trollworks.gcs.model.feature.CMSkillBonus;
 import com.trollworks.gcs.model.feature.CMSpellBonus;
+import com.trollworks.gcs.model.feature.CMWeaponBonus;
 import com.trollworks.gcs.model.names.USCensusNames;
 import com.trollworks.gcs.model.skill.CMSkill;
 import com.trollworks.gcs.model.skill.CMSkillList;
@@ -866,29 +868,29 @@ public class CMCharacter extends CMDataFile {
 	@Override protected void saveSelf(TKXMLWriter out) {
 		Iterator<TKRow> iterator;
 
-		out.simpleTag(TAG_PLAYER_NAME, mPlayerName);
-		out.simpleTag(TAG_CAMPAIGN, mCampaign);
-		out.simpleTag(TAG_NAME, mName);
-		out.simpleTag(TAG_TITLE, mTitle);
+		out.simpleTagNotEmpty(TAG_PLAYER_NAME, mPlayerName);
+		out.simpleTagNotEmpty(TAG_CAMPAIGN, mCampaign);
+		out.simpleTagNotEmpty(TAG_NAME, mName);
+		out.simpleTagNotEmpty(TAG_TITLE, mTitle);
 		out.simpleTag(TAG_AGE, mAge);
-		out.simpleTag(TAG_BIRTHDAY, mBirthday);
-		out.simpleTag(TAG_EYES, mEyeColor);
-		out.simpleTag(TAG_HAIR, mHair);
-		out.simpleTag(TAG_SKIN, mSkinColor);
-		out.simpleTag(TAG_HANDEDNESS, mHandedness);
+		out.simpleTagNotEmpty(TAG_BIRTHDAY, mBirthday);
+		out.simpleTagNotEmpty(TAG_EYES, mEyeColor);
+		out.simpleTagNotEmpty(TAG_HAIR, mHair);
+		out.simpleTagNotEmpty(TAG_SKIN, mSkinColor);
+		out.simpleTagNotEmpty(TAG_HANDEDNESS, mHandedness);
 		out.simpleTagWithAttribute(TAG_HEIGHT, Integer.toString(mHeight), ATTRIBUTE_UNITS, TKLengthUnits.INCHES.toString());
 		out.simpleTagWithAttribute(TAG_WEIGHT, Double.toString(mWeight), ATTRIBUTE_UNITS, TKWeightUnits.POUNDS.toString());
 		out.simpleTag(CMAttributeBonus.SM, mSizeModifier);
-		out.simpleTag(TAG_GENDER, mGender);
-		out.simpleTag(TAG_RACE, mRace);
-		out.simpleTag(TAG_TECH_LEVEL, mTechLevel);
-		out.simpleTag(TAG_RELIGION, mReligion);
+		out.simpleTagNotEmpty(TAG_GENDER, mGender);
+		out.simpleTagNotEmpty(TAG_RACE, mRace);
+		out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
+		out.simpleTagNotEmpty(TAG_RELIGION, mReligion);
 		out.simpleTag(TAG_CREATED_DATE, DateFormat.getDateInstance(DateFormat.MEDIUM).format(new Date(mCreatedOn)));
 		out.simpleTag(TAG_MODIFIED_DATE, DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(mLastModified)));
 		out.simpleTag(CMAttributeBonus.HP, mHitPoints);
-		out.simpleTag(TAG_CURRENT_HP, mCurrentHitPoints);
+		out.simpleTagNotEmpty(TAG_CURRENT_HP, mCurrentHitPoints);
 		out.simpleTag(CMAttributeBonus.FP, mFatiguePoints);
-		out.simpleTag(TAG_CURRENT_FP, mCurrentFatiguePoints);
+		out.simpleTagNotEmpty(TAG_CURRENT_FP, mCurrentFatiguePoints);
 		out.simpleTag(TAG_TOTAL_POINTS, mTotalPoints);
 		out.simpleTag(CMAttributeBonus.ST, mStrength);
 		out.simpleTag(CMAttributeBonus.DX, mDexterity);
@@ -901,7 +903,7 @@ public class CMCharacter extends CMDataFile {
 		out.simpleTag(TAG_INCLUDE_PUNCH, mIncludePunch);
 		out.simpleTag(TAG_INCLUDE_KICK, mIncludeKick);
 		out.simpleTag(TAG_INCLUDE_BOOTS, mIncludeKickBoots);
-		out.simpleTag(TAG_NOTES, mNotes);
+		out.simpleTagNotEmpty(TAG_NOTES, mNotes);
 		mPageSettings.save(out, TKLengthUnits.INCHES);
 
 		if (mAdvantages.getRowCount() > 0) {
@@ -3342,7 +3344,7 @@ public class CMCharacter extends CMDataFile {
 		boolean checkSpecialization = specialization != null && specialization.length() > 0;
 
 		for (CMSkill skill : getSkillsIterator()) {
-			if (!excludes.contains(skill)) {
+			if (excludes == null || !excludes.contains(skill)) {
 				if (!requirePoints || skill.getPoints() > 0) {
 					if (skill.getName().equalsIgnoreCase(name)) {
 						if (!checkSpecialization || skill.getSpecialization().equalsIgnoreCase(specialization)) {
@@ -3495,15 +3497,49 @@ public class CMCharacter extends CMDataFile {
 	public int getIntegerBonusFor(String id) {
 		int total = 0;
 		ArrayList<CMFeature> list = mFeatureMap.get(id.toLowerCase());
-
 		if (list != null) {
 			for (CMFeature feature : list) {
-				if (feature instanceof CMBonus) {
+				if ((feature instanceof CMBonus)  && !(feature instanceof CMWeaponBonus)) {
 					total += ((CMBonus) feature).getAmount().getIntegerAdjustedAmount();
 				}
 			}
 		}
 		return total;
+	}
+
+	/**
+	 * @param id The feature ID to search for.
+	 * @param nameQualifier The name qualifier.
+	 * @param specializationQualifier The specialization qualifier.
+	 * @return The bonus.
+	 */
+	public ArrayList<CMLeveledAmount> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier) {
+		ArrayList<CMLeveledAmount> bonuses = new ArrayList<CMLeveledAmount>();
+		int rsl = Integer.MIN_VALUE;
+
+		for (CMSkill skill : getSkillNamed(nameQualifier, specializationQualifier, true, null)) {
+			int srsl = skill.getRelativeLevel();
+
+			if (srsl > rsl) {
+				rsl = srsl;
+			}
+		}
+
+		if (rsl != Integer.MIN_VALUE) {
+			ArrayList<CMFeature> list = mFeatureMap.get(id.toLowerCase());
+			if (list != null) {
+				for (CMFeature feature : list) {
+					if (feature instanceof CMWeaponBonus) {
+						CMWeaponBonus bonus = (CMWeaponBonus) feature;
+
+						if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.getLevelCriteria().matches(rsl)) {
+							bonuses.add(bonus.getAmount());
+						}
+					}
+				}
+			}
+		}
+		return bonuses;
 	}
 
 	/**
@@ -3563,7 +3599,7 @@ public class CMCharacter extends CMDataFile {
 
 		if (list != null) {
 			for (CMFeature feature : list) {
-				if (feature instanceof CMBonus) {
+				if ((feature instanceof CMBonus)  && !(feature instanceof CMWeaponBonus)) {
 					total += ((CMBonus) feature).getAmount().getAdjustedAmount();
 				}
 			}

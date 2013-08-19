@@ -9,7 +9,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M112</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">darkness</name>
@@ -25,7 +24,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M113</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">darkness</name>
@@ -44,7 +42,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M114</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -76,7 +73,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M111</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
 				<name compare="is">blindness</name>
@@ -102,7 +98,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M110</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">light</name>
@@ -118,7 +113,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>2d days</duration>
 		<reference>M110</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">light</name>
@@ -134,7 +128,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>2d days</duration>
 		<reference>M113</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">mage light</name>
@@ -153,7 +146,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>2d days</duration>
 		<reference>M114</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sunlight</name>
@@ -169,7 +161,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M111</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">night vision</name>
@@ -188,7 +179,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M111</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">continual light</name>
@@ -205,11 +195,9 @@
 		<duration>Instant</duration>
 		<melee_weapon>
 			<damage>Blinds</damage>
-			<strength></strength>
 			<usage>Area</usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M112</reference>
 		<notes>HT roll to resist blinding</notes>
@@ -228,7 +216,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>2d days</duration>
 		<reference>M112</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">continual light</name>
@@ -244,7 +231,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>2d days</duration>
 		<reference>M112</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">continual light</name>
@@ -260,7 +246,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M111</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
 				<name compare="is">blindness</name>
@@ -286,7 +271,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 hour</duration>
 		<reference>M113</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">blur</name>
@@ -305,7 +289,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M107</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -336,7 +319,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M111</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">keen vision</name>
@@ -356,7 +338,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M114</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">light</college>
@@ -376,7 +357,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M110</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Light Jet</name>
@@ -388,11 +368,9 @@
 		<duration>1 min</duration>
 		<melee_weapon>
 			<damage>Blinds</damage>
-			<strength></strength>
 			<usage>Jet</usage>
 			<reach>10</reach>
 			<parry>No</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -424,7 +402,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M113</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">mage sight</name>
@@ -443,7 +420,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M112</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">colors</name>
@@ -459,7 +435,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M111</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">keen vision</name>
@@ -479,7 +454,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M113</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">remove shadow</name>
@@ -495,7 +469,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M110</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">light</name>
@@ -511,7 +484,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M113</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">invisibility</name>
@@ -535,7 +507,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hour</duration>
 		<reference>M169</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">continual light</name>
@@ -554,7 +525,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M113</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">darkness</name>
@@ -570,7 +540,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M111</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">light</name>
@@ -586,7 +555,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M111</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
 				<name compare="is">blindness</name>
@@ -613,14 +581,8 @@
 		<duration>Instant</duration>
 		<ranged_weapon>
 			<damage>1d-1 imp/point</damage>
-			<strength></strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>75/150</range>
-			<rate_of_fire></rate_of_fire>
-			<shots></shots>
-			<bulk></bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -633,7 +595,6 @@
 			</default>
 		</ranged_weapon>
 		<reference>M114</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">light</college>
@@ -653,7 +614,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M114</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -684,7 +644,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M113</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">continual light</name>

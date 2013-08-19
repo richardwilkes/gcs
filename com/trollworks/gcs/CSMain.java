@@ -38,15 +38,17 @@ import java.util.ArrayList;
 /** The main entry point for the character sheet. */
 public class CSMain {
 	/** The command-line option for generating PDF's from the sheets. */
-	public static final TKCmdLineOption	PDF_OPTION		= new TKCmdLineOption(Msgs.PDF_OPTION, null, "pdf");				//$NON-NLS-1$
+	public static final TKCmdLineOption	PDF_OPTION				= new TKCmdLineOption(Msgs.PDF_OPTION, null, "pdf");						//$NON-NLS-1$
 	/** The command-line option for generating HTML from the sheets. */
-	public static final TKCmdLineOption	HTML_OPTION		= new TKCmdLineOption(Msgs.HTML_OPTION, null, "html");				//$NON-NLS-1$
+	public static final TKCmdLineOption	HTML_OPTION				= new TKCmdLineOption(Msgs.HTML_OPTION, null, "html");						//$NON-NLS-1$
+	/** The command-line option for specifying the HTML template to use. */
+	public static final TKCmdLineOption	HTML_TEMPLATE_OPTION	= new TKCmdLineOption(Msgs.HTML_TEMPLATE_OPTION, Msgs.HTML_TEMPLATE_ARG, "html_template");	//$NON-NLS-1$
 	/** The command-line option for generating PNG's from the sheets. */
-	public static final TKCmdLineOption	PNG_OPTION		= new TKCmdLineOption(Msgs.PNG_OPTION, null, "png");				//$NON-NLS-1$
+	public static final TKCmdLineOption	PNG_OPTION				= new TKCmdLineOption(Msgs.PNG_OPTION, null, "png");						//$NON-NLS-1$
 	/** The command-line option for forcing a particular paper size. */
-	public static final TKCmdLineOption	SIZE_OPTION		= new TKCmdLineOption(Msgs.SIZE_OPTION, "SIZE", "paper");			//$NON-NLS-1$ //$NON-NLS-2$
+	public static final TKCmdLineOption	SIZE_OPTION				= new TKCmdLineOption(Msgs.SIZE_OPTION, "SIZE", "paper");					//$NON-NLS-1$ //$NON-NLS-2$
 	/** The command-line option for forcing particular paper margins. */
-	public static final TKCmdLineOption	MARGIN_OPTION	= new TKCmdLineOption(Msgs.MARGIN_OPTION, "MARGINS", "margins");	//$NON-NLS-1$ //$NON-NLS-2$
+	public static final TKCmdLineOption	MARGIN_OPTION			= new TKCmdLineOption(Msgs.MARGIN_OPTION, "MARGINS", "margins");			//$NON-NLS-1$ //$NON-NLS-2$
 
 	/**
 	 * The main entry point for the character sheet.
@@ -61,6 +63,7 @@ public class CSMain {
 
 		ArrayList<TKCmdLineOption> options = new ArrayList<TKCmdLineOption>();
 		options.add(HTML_OPTION);
+		options.add(HTML_TEMPLATE_OPTION);
 		options.add(PDF_OPTION);
 		options.add(PNG_OPTION);
 		options.add(SIZE_OPTION);

@@ -9,7 +9,6 @@
 		<casting_time>min=cost</casting_time>
 		<duration>Varies</duration>
 		<reference>M129</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college_count compare="atLeast">10</college_count>
@@ -37,7 +36,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M123</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">return missile</name>
@@ -66,7 +64,6 @@
 		<casting_time>10 min</casting_time>
 		<duration>until used</duration>
 		<reference>M126</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">powerstone</name>
@@ -97,7 +94,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>10 hrs</duration>
 		<reference>M122</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">detect magic</name>
@@ -121,11 +117,9 @@
 		<college>Meta</college>
 		<spell_class>Regular</spell_class>
 		<casting_cost>Half countered spell</casting_cost>
-		<maintenance_cost></maintenance_cost>
 		<casting_time>5 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M121</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<advantage_prereq has="yes">
 				<name compare="is">magery: meta college</name>
@@ -148,7 +142,6 @@
 		<casting_time>2/4/6 sec</casting_time>
 		<duration>Varies</duration>
 		<reference>M129</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college_count compare="atLeast">10</college_count>
@@ -176,7 +169,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>2 hrs</duration>
 		<reference>M130</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is"></name>
@@ -205,7 +197,6 @@
 		<casting_time>sec=cost</casting_time>
 		<duration>Permanent</duration>
 		<reference>M126</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is"></name>
@@ -225,7 +216,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>Varies</duration>
 		<reference>M124</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">suspend magic</name>
@@ -241,7 +231,6 @@
 		<casting_time>10 min</casting_time>
 		<duration>Permanent</duration>
 		<reference>M130</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">suspend magery</name>
@@ -269,7 +258,6 @@
 		<casting_time>1 hr</casting_time>
 		<duration>Permanent</duration>
 		<reference>M127</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">dispel magic</name>
@@ -288,7 +276,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>10 hrs</duration>
 		<reference>M122</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">conceal magic</name>
@@ -307,7 +294,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M122</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">ward</name>
@@ -335,7 +321,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M128</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">delay</name>
@@ -351,7 +336,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M126</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college_count compare="atLeast">6</college_count>
@@ -382,7 +366,6 @@
 		<casting_time>4 hrs</casting_time>
 		<duration>Until triggered</duration>
 		<reference>M131</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">delay</name>
@@ -398,7 +381,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M123</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college_count compare="atLeast">7</college_count>
@@ -426,7 +408,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>Varies</duration>
 		<reference>M128</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">link</name>
@@ -442,7 +423,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>Varies</duration>
 		<reference>M123</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">delay</name>
@@ -461,7 +441,6 @@
 		<casting_time>1 sec/sq foot</casting_time>
 		<duration>Permanent</duration>
 		<reference>M124</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">spell shield</name>
@@ -477,7 +456,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M122</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">ward</name>
@@ -493,7 +471,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M132</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">delay</name>
@@ -512,7 +489,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M127</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">aura</name>
@@ -531,7 +507,6 @@
 		<casting_time>1 hr</casting_time>
 		<duration>Permanent</duration>
 		<reference>M126</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college_count compare="atLeast">15</college_count>
@@ -559,7 +534,6 @@
 		<casting_time>1 hr</casting_time>
 		<duration>Permanent</duration>
 		<reference>M127</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">dispel magic</name>
@@ -578,7 +552,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>10 hrs</duration>
 		<reference>M123</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sense observation</name>
@@ -609,7 +582,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>10 hrs</duration>
 		<reference>M121</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -634,7 +606,6 @@
 		<casting_time>sec=cost</casting_time>
 		<duration>10 hrs</duration>
 		<reference>M122</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">scryguard</name>
@@ -650,7 +621,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M102</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">detect magic</name>
@@ -666,7 +636,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M124</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">scryguard</name>
@@ -697,7 +666,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M124</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">spell shield</name>
@@ -713,7 +681,6 @@
 		<casting_time>sec=cost</casting_time>
 		<duration>10 hrs</duration>
 		<reference>M127</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">dispel magic</name>
@@ -729,7 +696,6 @@
 		<casting_time>sec=cost</casting_time>
 		<duration>Permanent</duration>
 		<reference>M127</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lend spell</name>
@@ -748,7 +714,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>10 min</duration>
 		<reference>M125</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college_count compare="atLeast">12</college_count>
@@ -776,7 +741,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M130</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college_count compare="atLeast">10</college_count>
@@ -807,7 +771,6 @@
 		<casting_time>1 sec/pt</casting_time>
 		<duration>1 min</duration>
 		<reference>M123</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is"></name>
@@ -827,7 +790,6 @@
 		<casting_time>10 min</casting_time>
 		<duration>Varies</duration>
 		<reference>M125</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college_count compare="atLeast">10</college_count>
@@ -846,7 +808,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M121</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">counterspell</name>
@@ -874,7 +835,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>5 sec</duration>
 		<reference>M128</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college_count compare="atLeast">10</college_count>
@@ -909,14 +869,8 @@
 		<duration>Until thrown</duration>
 		<ranged_weapon>
 			<damage>Special</damage>
-			<strength></strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>80</range>
-			<rate_of_fire></rate_of_fire>
-			<shots></shots>
-			<bulk></bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -948,7 +902,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M122</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<advantage_prereq has="yes">
 				<name compare="is">magery: meta college</name>

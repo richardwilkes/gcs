@@ -28,21 +28,24 @@ import com.trollworks.gcs.model.skill.CMSkill;
 import com.trollworks.gcs.model.skill.CMSkillAttribute;
 import com.trollworks.gcs.model.skill.CMSkillDifficulty;
 import com.trollworks.gcs.model.skill.CMSkillLevel;
+import com.trollworks.gcs.model.weapon.CMWeaponStats;
 import com.trollworks.gcs.ui.editor.CSRowEditor;
 import com.trollworks.gcs.ui.editor.defaults.CSDefaults;
 import com.trollworks.gcs.ui.editor.feature.CSFeatures;
 import com.trollworks.gcs.ui.editor.prereq.CSPrereqs;
+import com.trollworks.gcs.ui.weapon.CSMeleeWeaponEditor;
+import com.trollworks.gcs.ui.weapon.CSRangedWeaponEditor;
 import com.trollworks.toolkit.text.TKNumberFilter;
 import com.trollworks.toolkit.text.TKTextUtility;
 import com.trollworks.toolkit.utility.TKAlignment;
-import com.trollworks.toolkit.utility.TKNumberUtils;
 import com.trollworks.toolkit.utility.TKFont;
+import com.trollworks.toolkit.utility.TKNumberUtils;
 import com.trollworks.toolkit.widget.TKCorrectableField;
 import com.trollworks.toolkit.widget.TKCorrectableLabel;
 import com.trollworks.toolkit.widget.TKLabel;
 import com.trollworks.toolkit.widget.TKLinkedLabel;
-import com.trollworks.toolkit.widget.TKPopupMenu;
 import com.trollworks.toolkit.widget.TKPanel;
+import com.trollworks.toolkit.widget.TKPopupMenu;
 import com.trollworks.toolkit.widget.TKTextField;
 import com.trollworks.toolkit.widget.border.TKLineBorder;
 import com.trollworks.toolkit.widget.button.TKBaseButton;
@@ -57,26 +60,30 @@ import com.trollworks.toolkit.widget.tab.TKTabbedPanel;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 
 /** The detailed editor for {@link CMSkill}s. */
 public class CSSkillEditor extends CSRowEditor<CMSkill> implements ActionListener {
-	private TKCorrectableField	mNameField;
-	private TKTextField			mSpecializationField;
-	private TKTextField			mNotesField;
-	private TKTextField			mReferenceField;
-	private TKCheckbox			mHasTechLevel;
-	private TKTextField			mTechLevel;
-	private String				mSavedTechLevel;
-	private TKPopupMenu			mAttributePopup;
-	private TKPopupMenu			mDifficultyPopup;
-	private TKTextField			mPointsField;
-	private TKTextField			mLevelField;
-	private TKTabbedPanel		mTabPanel;
-	private CSPrereqs			mPrereqs;
-	private CSFeatures			mFeatures;
-	private CSDefaults			mDefaults;
+	private TKCorrectableField		mNameField;
+	private TKTextField				mSpecializationField;
+	private TKTextField				mNotesField;
+	private TKTextField				mReferenceField;
+	private TKCheckbox				mHasTechLevel;
+	private TKTextField				mTechLevel;
+	private String					mSavedTechLevel;
+	private TKPopupMenu				mAttributePopup;
+	private TKPopupMenu				mDifficultyPopup;
+	private TKTextField				mPointsField;
+	private TKTextField				mLevelField;
+	private TKPopupMenu				mEncPenaltyPopup;
+	private TKTabbedPanel			mTabPanel;
+	private CSPrereqs				mPrereqs;
+	private CSFeatures				mFeatures;
+	private CSDefaults				mDefaults;
+	private CSMeleeWeaponEditor		mMeleeWeapons;
+	private CSRangedWeaponEditor	mRangedWeapons;
 
 	/**
 	 * Creates a new {@link CMSkill} editor.
@@ -98,6 +105,7 @@ public class CSSkillEditor extends CSRowEditor<CMSkill> implements ActionListene
 			mSpecializationField = createField(fields, wrapper, Msgs.SPECIALIZATION, skill.getSpecialization(), Msgs.SPECIALIZATION_TOOLTIP, 0);
 			createTechLevelFields(wrapper);
 			fields.add(wrapper);
+			mEncPenaltyPopup = createEncumbrancePenaltyMultiplierPopup(fields);
 		}
 		mNotesField = createField(fields, fields, Msgs.NOTES, skill.getNotes(), Msgs.NOTES_TITLE, 0);
 		if (notContainer) {
@@ -116,12 +124,20 @@ public class CSSkillEditor extends CSRowEditor<CMSkill> implements ActionListene
 			ArrayList<TKPanel> panels = new ArrayList<TKPanel>();
 
 			mPrereqs = new CSPrereqs(mRow, mRow.getPrereqs());
+			mMeleeWeapons = CSMeleeWeaponEditor.createEditor(mRow);
+			mRangedWeapons = CSRangedWeaponEditor.createEditor(mRow);
 			mFeatures = new CSFeatures(mRow, mRow.getFeatures());
 			mDefaults = new CSDefaults(mRow.getDefaults());
 			mDefaults.addActionListener(this);
 			panels.add(embedEditor(mDefaults));
 			panels.add(embedEditor(mPrereqs));
 			panels.add(embedEditor(mFeatures));
+			panels.add(mMeleeWeapons);
+			panels.add(mRangedWeapons);
+			if (!mIsEditable) {
+				disableControls(mMeleeWeapons);
+				disableControls(mRangedWeapons);
+			}
 			mTabPanel = new TKTabbedPanel(panels);
 			mTabPanel.setSelectedPanelByName(getLastTabName());
 			add(mTabPanel);
@@ -233,6 +249,31 @@ public class CSSkillEditor extends CSRowEditor<CMSkill> implements ActionListene
 		}
 	}
 
+	private TKPopupMenu createEncumbrancePenaltyMultiplierPopup(TKPanel parent) {
+		TKMenu menu = new TKMenu();
+		TKMenuItem item = new TKMenuItem(Msgs.NO_ENC_PENALTY);
+		item.setUserObject(new Integer(0));
+		menu.add(item);
+		item = new TKMenuItem(Msgs.ONE_ENC_PENALTY);
+		item.setUserObject(new Integer(1));
+		menu.add(item);
+		for (int i = 2; i < 10; i++) {
+			Integer value = new Integer(i);
+			item = new TKMenuItem(MessageFormat.format(Msgs.ENC_PENALTY_FORMAT, value));
+			item.setUserObject(value);
+			menu.add(item);
+		}
+		TKPopupMenu popup = new TKPopupMenu(menu);
+		popup.setSelectedUserObject(new Integer(mRow.getEncumbrancePenaltyMultiplier()));
+		popup.setOnlySize(popup.getPreferredSize());
+		popup.setToolTipText(Msgs.ENC_PENALTY_MULT_TOOLTIP);
+		popup.setEnabled(mIsEditable);
+		popup.addActionListener(this);
+		parent.add(new TKLinkedLabel(popup, Msgs.ENC_PENALTY_MULT));
+		parent.add(popup);
+		return popup;
+	}
+
 	private TKPanel createDifficultyPopups(TKPanel parent) {
 		CMCharacter character = mRow.getCharacter();
 		boolean forCharacterOrTemplate = character != null || mRow.getTemplate() != null;
@@ -285,7 +326,7 @@ public class CSSkillEditor extends CSRowEditor<CMSkill> implements ActionListene
 	private void recalculateLevel() {
 		if (mLevelField != null) {
 			CMSkillAttribute attribute = getSkillAttribute();
-			CMSkillLevel level = CMSkill.calculateLevel(mRow.getCharacter(), mRow, mNameField.getText(), mSpecializationField.getText(), mDefaults.getDefaults(), attribute, getSkillDifficulty(), getSkillPoints(), new HashSet<CMSkill>());
+			CMSkillLevel level = CMSkill.calculateLevel(mRow.getCharacter(), mRow, mNameField.getText(), mSpecializationField.getText(), mDefaults.getDefaults(), attribute, getSkillDifficulty(), getSkillPoints(), new HashSet<CMSkill>(), getEncumbrancePenaltyMultiplier());
 
 			mLevelField.setText(CMSkill.getSkillDisplayLevel(level.mLevel, level.mRelativeLevel, attribute, false));
 		}
@@ -303,6 +344,10 @@ public class CSSkillEditor extends CSRowEditor<CMSkill> implements ActionListene
 		return TKNumberUtils.getInteger(mPointsField.getText(), 0);
 	}
 
+	private int getEncumbrancePenaltyMultiplier() {
+		return ((Integer) mEncPenaltyPopup.getSelectedItemUserObject()).intValue();
+	}
+
 	@Override public boolean applyChangesSelf() {
 		boolean modified = mRow.setName(mNameField.getText());
 
@@ -317,6 +362,9 @@ public class CSSkillEditor extends CSRowEditor<CMSkill> implements ActionListene
 		if (mAttributePopup != null) {
 			modified |= mRow.setDifficulty(getSkillAttribute(), getSkillDifficulty());
 		}
+		if (mEncPenaltyPopup != null) {
+			modified |= mRow.setEncumbrancePenaltyMultiplier(getEncumbrancePenaltyMultiplier());
+		}
 		if (mPointsField != null) {
 			modified |= mRow.setPoints(getSkillPoints());
 		}
@@ -328,6 +376,12 @@ public class CSSkillEditor extends CSRowEditor<CMSkill> implements ActionListene
 		}
 		if (mFeatures != null) {
 			modified |= mRow.setFeatures(mFeatures.getFeatures());
+		}
+		if (mMeleeWeapons != null) {
+			ArrayList<CMWeaponStats> list = new ArrayList<CMWeaponStats>(mMeleeWeapons.getWeapons());
+
+			list.addAll(mRangedWeapons.getWeapons());
+			modified |= mRow.setWeapons(list);
 		}
 		return modified;
 	}
@@ -361,7 +415,7 @@ public class CSSkillEditor extends CSRowEditor<CMSkill> implements ActionListene
 				mSavedTechLevel = mTechLevel.getText();
 				mTechLevel.setText(""); //$NON-NLS-1$
 			}
-		} else if (src == mAttributePopup || src == mDifficultyPopup || src == mPointsField || src == mDefaults) {
+		} else if (src == mAttributePopup || src == mDifficultyPopup || src == mPointsField || src == mDefaults || src == mEncPenaltyPopup) {
 			recalculateLevel();
 		}
 	}

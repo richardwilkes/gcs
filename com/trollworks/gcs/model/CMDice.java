@@ -32,12 +32,19 @@ public class CMDice implements Cloneable {
 	 * the GURPS style of dice display (i.e. 6-sided dice are assumed and therefore the "6" is
 	 * omitted in the description).
 	 */
-	public static final String	DISPLAY_D6	= "com.trollworks.gcs.model.CMDice.DisplayD6";	//$NON-NLS-1$
-	private static final Random	RANDOM		= new Random();
+	public static final String	DISPLAY_D6						= "com.trollworks.gcs.model.CMDice.DisplayD6";				//$NON-NLS-1$
+	/**
+	 * If this system property exists, then the optional method on B269 will be used to modify the
+	 * actual die count + modifiers.
+	 */
+	public static final String	USE_OPTIONAL_GURPS_DICE_ADDS	= "com.trollworks.gcs.model.CMDice.OptionalGURPSDiceAdds";	//$NON-NLS-1$
+	private static final Random	RANDOM							= new Random();
 	private int					mCount;
 	private int					mSides;
 	private int					mModifier;
 	private int					mMultiplier;
+	private int					mAltCount;
+	private int					mAltModifier;
 
 	/**
 	 * Creates a new 1d6 dice object.
@@ -117,10 +124,12 @@ public class CMDice implements Cloneable {
 	public int roll() {
 		int result = 0;
 
-		for (int i = 0; i < mCount; i++) {
+		updateAlt();
+
+		for (int i = 0; i < mAltCount; i++) {
 			result += 1 + RANDOM.nextInt(mSides);
 		}
-		return (result + mModifier) * mMultiplier;
+		return (result + mAltModifier) * mMultiplier;
 	}
 
 	@Override public boolean equals(Object obj) {
@@ -138,21 +147,40 @@ public class CMDice implements Cloneable {
 	@Override public String toString() {
 		StringBuffer buffer = new StringBuffer();
 
-		buffer.append(mCount);
+		updateAlt();
+
+		buffer.append(mAltCount);
 		buffer.append('d');
 		if (mSides != 6 || System.getProperty(DISPLAY_D6) != null) {
 			buffer.append(mSides);
 		}
-		if (mModifier > 0) {
+		if (mAltModifier > 0) {
 			buffer.append('+');
-			buffer.append(mModifier);
-		} else if (mModifier < 0) {
-			buffer.append(mModifier);
+			buffer.append(mAltModifier);
+		} else if (mAltModifier < 0) {
+			buffer.append(mAltModifier);
 		}
 		if (mMultiplier != 1) {
 			buffer.append('x');
 			buffer.append(mMultiplier);
 		}
 		return buffer.toString();
+	}
+
+	private void updateAlt() {
+		mAltCount = mCount;
+		mAltModifier = mModifier;
+
+		if (System.getProperty(USE_OPTIONAL_GURPS_DICE_ADDS) != null) {
+			while (mAltModifier > 3) {
+				if (mAltModifier > 6) {
+					mAltModifier -= 7;
+					mAltCount += 2;
+				} else {
+					mAltModifier -= 4;
+					mAltCount++;
+				}
+			}
+		}
 	}
 }

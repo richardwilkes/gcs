@@ -9,7 +9,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M151</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">solidify</name>
@@ -25,7 +24,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>Permanent</duration>
 		<reference>M154</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">youth</name>
@@ -45,7 +43,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>5 sec</duration>
 		<reference>M154</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">skull-spirit</name>
@@ -64,7 +61,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M150</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">summon spirit</name>
@@ -80,7 +76,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M159</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">repel spirits</name>
@@ -99,7 +94,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M105</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sense spirit</name>
@@ -118,7 +112,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M115</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">inspired creation</name>
@@ -137,7 +130,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M156</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -165,7 +157,6 @@
 		<casting_time>5 min</casting_time>
 		<duration>Permanent</duration>
 		<reference>M158</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">command spirit (@spirit@)</name>
@@ -185,11 +176,9 @@
 		<duration>1sec</duration>
 		<melee_weapon>
 			<damage>thr-1 cr +1d-1 burn/second</damage>
-			<strength></strength>
 			<usage>Punch</usage>
 			<reach>C</reach>
 			<parry>0</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>0</modifier>
@@ -197,24 +186,20 @@
 			<default>
 				<type>Skill</type>
 				<name>Boxing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
 		<reference>M76</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sickness</name>
@@ -245,7 +230,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M153</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">summon spirit</name>
@@ -260,11 +244,9 @@
 		<college>Necromancy</college>
 		<spell_class>Regular</spell_class>
 		<casting_cost>3</casting_cost>
-		<maintenance_cost></maintenance_cost>
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M152</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">zombie</name>
@@ -280,7 +262,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 sec</duration>
 		<reference>M149</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<advantage_prereq has="yes">
 				<name compare="is">magery: necromancy college</name>
@@ -303,7 +284,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>5 min</duration>
 		<reference>M157</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">soul jar</name>
@@ -335,11 +315,9 @@
 		<duration>Instant</duration>
 		<melee_weapon>
 			<damage>removes vital organ</damage>
-			<strength></strength>
 			<usage>Grapple</usage>
 			<reach>C</reach>
 			<parry>0</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>0</modifier>
@@ -347,24 +325,20 @@
 			<default>
 				<type>Skill</type>
 				<name>Judo</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Sumo Wrestling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Wrestling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
 		<reference>M154</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">steal vitality</name>
@@ -395,7 +369,6 @@
 		<casting_time>10 min</casting_time>
 		<duration>Permanent</duration>
 		<reference>M89</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<advantage_prereq has="yes">
 				<name compare="is">spirit empathy</name>
@@ -424,7 +397,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>Permanent</duration>
 		<reference>M159</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">enchant</name>
@@ -459,7 +431,6 @@
 		<casting_time>1 min per area</casting_time>
 		<duration>Permanent</duration>
 		<reference>M153</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="yes">
 				<name compare="is">charisma</name>
@@ -480,7 +451,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M150</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">summon spirit</name>
@@ -496,7 +466,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M154</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -527,7 +496,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M158</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">banish</name>
@@ -546,7 +514,6 @@
 		<casting_time>2 Hours</casting_time>
 		<duration>Permanent until killed again</duration>
 		<reference>M94</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">instant regeneration</name>
@@ -568,11 +535,9 @@
 		<duration>1 sec</duration>
 		<melee_weapon>
 			<damage>thr-1 cr +1d-1 tox/second</damage>
-			<strength></strength>
 			<usage>Punch</usage>
 			<reach>C</reach>
 			<parry>0</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>0</modifier>
@@ -580,24 +545,20 @@
 			<default>
 				<type>Skill</type>
 				<name>Boxing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
 		<reference>M154</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -628,7 +589,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M149</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<prereq_list all="yes">
 				<prereq_list all="no">
@@ -661,7 +621,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>24 hrs</duration>
 		<reference>M151</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">necromancy</college>
@@ -678,7 +637,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>1 day</duration>
 		<reference>M153</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">frailty</name>
@@ -709,7 +667,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M151</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">materialize</name>
@@ -725,7 +682,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>Permanent</duration>
 		<reference>M154</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">necromancy</college>
@@ -756,7 +712,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>24 hrs</duration>
 		<reference>M159</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -787,7 +742,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 day</duration>
 		<reference>M158</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">steal vitality</name>
@@ -818,7 +772,6 @@
 		<casting_time>1 min per 3 FP drained</casting_time>
 		<duration>Permanent</duration>
 		<reference>M150</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">minor healing</name>
@@ -834,7 +787,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 day</duration>
 		<reference>M158</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -865,7 +817,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>24 hrs</duration>
 		<reference>M158</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -896,7 +847,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 day</duration>
 		<reference>M158</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">steal energy</name>
@@ -927,7 +877,6 @@
 		<casting_time>1 min per 3 HP drained</casting_time>
 		<duration>Permanent</duration>
 		<reference>M150</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">steal energy</name>
@@ -943,7 +892,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 day</duration>
 		<reference>M158</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -974,7 +922,6 @@
 		<casting_time>1 hr</casting_time>
 		<duration>Permanent</duration>
 		<reference>M158</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">youth</name>
@@ -996,7 +943,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Until spell dissipates</duration>
 		<reference>M153</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">slow healing</name>
@@ -1012,7 +958,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M41</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -1043,7 +988,6 @@
 		<casting_time>5 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M155</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -1071,7 +1015,6 @@
 		<casting_time>5 min</casting_time>
 		<duration>1 min</duration>
 		<reference>M150</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">death vision</name>
@@ -1099,7 +1042,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 sec</duration>
 		<reference>M151</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">fear</name>
@@ -1118,7 +1060,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>Turned undead will avoid caster for 1 day</duration>
 		<reference>M152</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">zombie</name>
@@ -1134,7 +1075,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 day</duration>
 		<reference>M40</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">sickness</name>
@@ -1153,7 +1093,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>Permanent</duration>
 		<reference>M160</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -1188,7 +1127,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>until destroyed</duration>
 		<reference>M151</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">summon spirit</name>
@@ -1207,7 +1145,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M152</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">zombie</name>

@@ -79,6 +79,16 @@ class Msgs {
 	public static String	ATTRIBUTE_POPUP_TOOLTIP;
 	/** Used by {@link CSSkillEditor}. */
 	public static String	EDITOR_POINTS_TOOLTIP;
+	/** Used by {@link CSSkillEditor}. */
+	public static String	ENC_PENALTY_MULT;
+	/** Used by {@link CSSkillEditor}. */
+	public static String	ENC_PENALTY_MULT_TOOLTIP;
+	/** Used by {@link CSSkillEditor}. */
+	public static String	NO_ENC_PENALTY;
+	/** Used by {@link CSSkillEditor}. */
+	public static String	ONE_ENC_PENALTY;
+	/** Used by {@link CSSkillEditor}. */
+	public static String	ENC_PENALTY_FORMAT;
 
 	/** Used by {@link CSSkillListWindow}. */
 	public static String	UNTITLED;

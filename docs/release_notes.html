@@ -14,6 +14,77 @@
 </head>
 <body>
 	<p class=category>GURPS Character Sheet Release Notes</p>
+	<p class=rversion>Version 3.1.0.13 &mdash; January 31, 2007</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>There is now a preference (in the "Sheet" tab) that controls
+				whether the standard method of calculating dice of damage is
+				used, or the optional method from B269 is used.</li>
+			<li><a href="http://sourceforge.net/tracker/?func=detail&atid=913592&aid=1635546&group_id=185516">Feature #1635546</a>:
+				Encumbrance not reflected in skills.</li>
+			<li>Skills can now provide weapons.</li>
+			<li><a href="http://sourceforge.net/tracker/?func=detail&atid=913592&aid=1640629&group_id=185516">Feature #1640629</a>:
+				Weaponmaster damage. Added the ability to specify weapon damage
+				bonuses as a feature attached to an item. Note that the
+				Weaponmaster advantage, if taken, will still need to be updated
+				to reflect just which weapons it grants damage bonuses to.</li>
+			<li>Added an option to specify the HTML template file to use when
+				generating HTML from the command line.</li>
+			<li>Added a preference to control which HTML template file is used
+				by default.</li>
+			<li>Partial implementation of <a href="http://sourceforge.net/tracker/?func=detail&atid=913592&aid=1641005&group_id=185516">Feature #1641005</a>:
+				Support for enhancements and limitations. This feature is
+				partially implemented in that you can now add enhancements and
+				limitations to (dis)advantages... however there still needs to
+				be support for creating stock versions and a way to easily
+				select from them for application to a (dis)advantage. Thanks to
+				Sebastien Wilhelmi for initial contributions in this area!</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li><a href="http://sourceforge.net/tracker/?func=detail&atid=913589&aid=1648935&group_id=185516">Bug #1648935</a>:
+				DR drops to 1. This was actually a more fundamental screw-up on
+				my part... when prepping the code for the initial open-source
+				release, I somehow managed to mangle the leveled bonus class,
+				which, in turn, mangled the data files.</li>
+			<li><a href="http://sourceforge.net/tracker/?func=detail&atid=913589&aid=1635547&group_id=185516">Bug #1635547</a>:
+				Techniques do not drag-and-drop right.</li>
+			<li><a href="http://sourceforge.net/tracker/?func=detail&atid=913589&aid=1642308&group_id=185516">Bug #1642308</a>:
+				Miscalculated defaults.</li>
+			<li><a href="http://sourceforge.net/tracker/?func=detail&atid=913589&aid=1646281&group_id=185516">Bug #1646281</a>:
+				Items "slide off" weapon list.</li>
+			<li><a href="http://sourceforge.net/tracker/?func=detail&atid=913589&aid=1643782&group_id=185516">Bug #1643782</a>:
+				Damage bonus due to high skill when kicking. Actually fixed by
+				virtue of adding <a href="http://sourceforge.net/tracker/?func=detail&atid=913592&aid=1640629&group_id=185516">Feature #1640629</a>.</li>
+		</ul>
+	</div>
+	<p class=rheader>Data Files</p>
+	<div class=indent>
+		<ul>
+			<li>Due to <a href="http://sourceforge.net/tracker/?func=detail&atid=913589&aid=1648935&group_id=185516">Bug #1648935</a>
+				reverted the data files to their state as of the 3.1.0.11
+				release, then tried to reinstate changes made since then.</li>
+			<li>Updated the Boxing, Brawling, Karate, Judo, Climbing, Swimming
+				&amp Stealth skills to use the new capabilities.</li>
+			<li>Fixed various mathematics and navigation skill prerequisites.
+				Contributed by Zachary St. Lawrence.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>Updated URLs used for the mailing lists to use the new
+				SourceForge site.</li>
+			<li>Added menu items to take users to the bug and feature trackers
+				on SourceForge.</li>
+			<li>Updated the version checker to use the new SourceForge site.</li>
+			<li>Eliminated the "todo" docs, as I've created entries for them in
+				the <a href="http://sourceforge.net/tracker/?group_id=185516">SourceForge tracker system</a>.</li>
+		</ul>
+	</div>
 	<p class=rversion>Version 3.1.0.12 &mdash; January 2, 2007</p>
 	<p class=rheader>Features</p>
 	<div class=indent>

@@ -10,14 +10,8 @@
 		<duration>Instant</duration>
 		<ranged_weapon>
 			<damage>1d cor/point</damage>
-			<strength></strength>
-			<usage></usage>
 			<accuracy>1</accuracy>
 			<range>20/40</range>
-			<rate_of_fire></rate_of_fire>
-			<shots></shots>
-			<bulk></bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -30,7 +24,6 @@
 			</default>
 		</ranged_weapon>
 		<reference>M191</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">create acid</name>
@@ -59,11 +52,9 @@
 		<duration>1 sec</duration>
 		<melee_weapon>
 			<damage>1d-1 cor/point</damage>
-			<strength></strength>
 			<usage>Jet</usage>
 			<reach>1/point</reach>
 			<parry>No</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -76,7 +67,6 @@
 			</default>
 		</melee_weapon>
 		<reference>M192</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -107,7 +97,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M189</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -138,7 +127,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M185</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape water</name>
@@ -154,7 +142,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M189</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">heat</name>
@@ -173,7 +160,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M26</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">destroy air</name>
@@ -193,11 +179,9 @@
 		<duration>1 sec</duration>
 		<melee_weapon>
 			<damage>1d burn/point</damage>
-			<strength></strength>
 			<usage>Breath</usage>
 			<reach>1/point</reach>
 			<parry>No</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -210,7 +194,6 @@
 			</default>
 		</melee_weapon>
 		<reference>M192</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -241,7 +224,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M189</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">destroy water</name>
@@ -260,7 +242,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M189</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">boil water</name>
@@ -279,7 +260,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M28</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">summon water elemental</name>
@@ -295,7 +275,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 hour</duration>
 		<reference>M187</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">cold</name>
@@ -311,7 +290,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M190</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">create earth</name>
@@ -330,7 +308,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M188</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">freeze</name>
@@ -346,7 +323,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>Permanent</duration>
 		<reference>M190</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape water</name>
@@ -365,7 +341,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>5 min #</duration>
 		<reference>M190</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">boil water</name>
@@ -381,7 +356,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M184</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">purify water</name>
@@ -397,7 +371,6 @@
 		<casting_time>Special</casting_time>
 		<duration>Permanent</duration>
 		<reference>M28</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -425,7 +398,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M194</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">water</college>
@@ -443,14 +415,10 @@
 		<duration>Permanent</duration>
 		<melee_weapon>
 			<damage>1d-1 dehydrate/point</damage>
-			<strength></strength>
-			<usage></usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M188</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">destroy water</name>
@@ -470,7 +438,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M185</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">create water</name>
@@ -486,7 +453,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M46</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">destroy water</name>
@@ -505,7 +471,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>Permanent</duration>
 		<reference>M188</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape earth</name>
@@ -524,7 +489,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M52</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -555,7 +519,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M192</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">acid</college>
@@ -572,7 +535,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M189</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">water</college>
@@ -593,7 +555,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M190</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -624,7 +585,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M193</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape water</name>
@@ -640,7 +600,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M185</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">decay</name>
@@ -659,7 +618,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M185</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape water</name>
@@ -675,7 +633,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Indef</duration>
 		<reference>M193</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">cold</name>
@@ -695,14 +652,10 @@
 		<duration>Permanent</duration>
 		<melee_weapon>
 			<damage>1d freezing/point</damage>
-			<strength></strength>
-			<usage></usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M189</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">freeze</name>
@@ -721,7 +674,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 sec</duration>
 		<reference>M190</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">water</college>
@@ -752,11 +704,9 @@
 		<duration>1 min</duration>
 		<melee_weapon>
 			<damage>1d-2 cr</damage>
-			<strength></strength>
 			<usage>Area</usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M195</reference>
 		<notes>base cost 1 for damaging hail</notes>
@@ -776,14 +726,8 @@
 		<duration>Instant</duration>
 		<ranged_weapon>
 			<damage>1d-1 imp/point</damage>
-			<strength></strength>
-			<usage></usage>
 			<accuracy>3</accuracy>
 			<range>30/60</range>
-			<rate_of_fire></rate_of_fire>
-			<shots></shots>
-			<bulk></bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -796,7 +740,6 @@
 			</default>
 		</ranged_weapon>
 		<reference>M188</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">water jet</name>
@@ -815,7 +758,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>Permanent</duration>
 		<reference>M186</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">frost</name>
@@ -832,14 +774,8 @@
 		<duration>Instant</duration>
 		<ranged_weapon>
 			<damage>1d cr/point</damage>
-			<strength></strength>
-			<usage></usage>
 			<accuracy>2</accuracy>
 			<range>40/80</range>
-			<rate_of_fire></rate_of_fire>
-			<shots></shots>
-			<bulk></bulk>
-			<recoil></recoil>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -852,7 +788,6 @@
 			</default>
 		</ranged_weapon>
 		<reference>M186</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape water</name>
@@ -869,11 +804,9 @@
 		<duration>1 sec</duration>
 		<melee_weapon>
 			<damage>1d+1 freezing/point</damage>
-			<strength></strength>
 			<usage>Breath</usage>
 			<reach>1/point</reach>
 			<parry>No</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -886,7 +819,6 @@
 			</default>
 		</melee_weapon>
 		<reference>M192</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -934,11 +866,9 @@
 		<duration>Permanent</duration>
 		<melee_weapon>
 			<damage>thr-1 +paralysis</damage>
-			<strength></strength>
 			<usage>Punch</usage>
 			<reach>C</reach>
 			<parry>0</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>0</modifier>
@@ -946,24 +876,20 @@
 			<default>
 				<type>Skill</type>
 				<name>Boxing</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Brawling</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Karate</name>
-				<specialization></specialization>
 				<modifier>0</modifier>
 			</default>
 		</melee_weapon>
 		<reference>M188</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -1008,7 +934,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Perm #</duration>
 		<reference>M186</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">freeze</name>
@@ -1028,11 +953,9 @@
 		<duration>1 sec</duration>
 		<melee_weapon>
 			<damage>1d kb/point - Blinds</damage>
-			<strength></strength>
 			<usage>Jet</usage>
 			<reach>1/point</reach>
 			<parry>No</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1045,7 +968,6 @@
 			</default>
 		</melee_weapon>
 		<reference>M52</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sand jet</name>
@@ -1064,7 +986,6 @@
 		<casting_time>5-10/gal#</casting_time>
 		<duration>Permanent</duration>
 		<reference>M184</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">seek water</name>
@@ -1080,7 +1001,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M195</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">clouds</name>
@@ -1097,14 +1017,11 @@
 		<duration>1 min</duration>
 		<melee_weapon>
 			<damage>1d-2 imp</damage>
-			<strength></strength>
 			<usage>Area</usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M192</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">ice dagger</name>
@@ -1136,14 +1053,11 @@
 		<duration>1 min</duration>
 		<melee_weapon>
 			<damage>1d-1 cor</damage>
-			<strength></strength>
 			<usage>Area</usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M191</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -1174,7 +1088,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M190</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">create acid</name>
@@ -1190,7 +1103,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M186</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<spell_prereq has="yes">
@@ -1214,7 +1126,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M184</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">seek water</name>
@@ -1230,7 +1141,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M184</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Shape Water</name>
@@ -1241,7 +1151,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M185</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">create water</name>
@@ -1257,7 +1166,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M195</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">frost</name>
@@ -1277,11 +1185,9 @@
 		<duration>1 sec</duration>
 		<melee_weapon>
 			<damage>1d kb/point - Blinds</damage>
-			<strength></strength>
 			<usage>Jet</usage>
 			<reach>1/point</reach>
 			<parry>No</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1294,7 +1200,6 @@
 			</default>
 		</melee_weapon>
 		<reference>M189</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">freeze</name>
@@ -1313,7 +1218,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M186</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape water</name>
@@ -1330,11 +1234,9 @@
 		<duration>1 sec</duration>
 		<melee_weapon>
 			<damage>1d cor/point</damage>
-			<strength></strength>
 			<usage>Breath</usage>
 			<reach>1/point</reach>
 			<parry>No</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1347,7 +1249,6 @@
 			</default>
 		</melee_weapon>
 		<reference>M192</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -1379,11 +1280,9 @@
 		<duration>1 sec</duration>
 		<melee_weapon>
 			<damage>1d-1 burn/point</damage>
-			<strength></strength>
 			<usage>Jet</usage>
 			<reach>1/point</reach>
 			<parry>No</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1396,7 +1295,6 @@
 			</default>
 		</melee_weapon>
 		<reference>M191</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">boil water</name>
@@ -1415,7 +1313,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M195</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">hail</name>
@@ -1434,7 +1331,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>1 hr</duration>
 		<reference>M27</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<prereq_list all="yes">
@@ -1482,7 +1378,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M147</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">levitation</name>
@@ -1501,7 +1396,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M194</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">water</name>
@@ -1518,7 +1412,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M185</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">shield</name>
@@ -1537,7 +1430,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M186</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape water</name>
@@ -1553,7 +1445,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>1 sec</duration>
 		<reference>M188</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -1582,11 +1473,9 @@
 		<duration>1 sec</duration>
 		<melee_weapon>
 			<damage>1d cr/point</damage>
-			<strength></strength>
 			<usage>Jet</usage>
 			<reach>1/point</reach>
 			<parry>No</parry>
-			<block></block>
 			<default>
 				<type>DX</type>
 				<modifier>-4</modifier>
@@ -1599,7 +1488,6 @@
 			</default>
 		</melee_weapon>
 		<reference>M187</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape water</name>
@@ -1615,7 +1503,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>30 sec</duration>
 		<reference>M187</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape water</name>
@@ -1631,7 +1518,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>1 hr</duration>
 		<reference>M194</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape water</name>
@@ -1647,7 +1533,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>1 min#</duration>
 		<reference>M187</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape water</name>

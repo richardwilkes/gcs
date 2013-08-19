@@ -9,7 +9,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M90</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lend vitality</name>
@@ -25,7 +24,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>-</duration>
 		<reference>M88</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">awaken</name>
@@ -44,7 +42,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M94</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">minor healing</name>
@@ -63,7 +60,6 @@
 		<casting_time>10 min</casting_time>
 		<duration>Permanent</duration>
 		<reference>M91</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">relieve sickness</name>
@@ -82,7 +78,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M182</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">major healing</name>
@@ -103,7 +98,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>-</duration>
 		<reference>M166</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">sense danger</name>
@@ -122,7 +116,6 @@
 		<casting_time>10 min</casting_time>
 		<duration>Permanent</duration>
 		<reference>M89</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -151,7 +144,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>Permanent</duration>
 		<reference>M91</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -179,7 +171,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 month</duration>
 		<reference>M94</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -208,7 +199,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>Up to 8 hrs</duration>
 		<reference>M94</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -239,7 +229,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M92</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -267,7 +256,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M93</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -296,7 +284,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M93</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -324,7 +311,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M89</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -353,7 +339,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 Hour</duration>
 		<reference>M89</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lend energy</name>
@@ -369,7 +354,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M91</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -397,7 +381,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M91</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lend vitality</name>
@@ -413,7 +396,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M92</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<skill_prereq has="yes">
 				<name compare="is">poisons</name>
@@ -450,7 +432,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Special</duration>
 		<reference>M89</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -478,7 +459,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>Permanent</duration>
 		<reference>M93</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -507,7 +487,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 day</duration>
 		<reference>M92</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">neutralize poison</name>
@@ -523,7 +502,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M92</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lend vitality</name>
@@ -542,7 +520,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M93</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">stop paralysis</name>
@@ -558,7 +535,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>10 min</duration>
 		<reference>M90</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lend vitality</name>
@@ -574,7 +550,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M90</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">decay</name>
@@ -596,7 +571,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 Hour</duration>
 		<reference>M90</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">remove contagion</name>
@@ -615,7 +589,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 Hour</duration>
 		<reference>M91</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">vigor</name>
@@ -631,7 +604,6 @@
 		<casting_time>2 Hours</casting_time>
 		<duration>Permanent</duration>
 		<reference>M94</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">instant regeneration</name>
@@ -652,7 +624,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>Permanent</duration>
 		<reference>M93</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">major healing</name>
@@ -678,7 +649,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 Hour</duration>
 		<reference>M92</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">minor healing</name>
@@ -702,7 +672,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M92</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<attribute_prereq has="yes" which="IQ" compare="atLeast">11</attribute_prereq>
 			<spell_prereq has="yes">
@@ -719,7 +688,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 hour</duration>
 		<reference>M92</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">minor healing</name>
@@ -743,7 +711,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 Hour</duration>
 		<reference>M93</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<spell_prereq has="yes">
@@ -767,7 +734,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 sec</duration>
 		<reference>M89</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lend energy</name>
@@ -783,7 +749,6 @@
 		<casting_time>1 sec/HP</casting_time>
 		<duration>Permanent</duration>
 		<reference>M90</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lend vitality</name>
@@ -799,7 +764,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M91</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">lend vitality</name>
@@ -815,7 +779,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M93</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<spell_prereq has="yes">
@@ -843,7 +806,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M35</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
 				<name compare="is">spasm</name>
@@ -862,7 +824,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>Until Awakened</duration>
 		<reference>M94</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">sleep</name>
@@ -883,7 +844,6 @@
 		<casting_time>1 min</casting_time>
 		<duration>Instant; aging starts immediately</duration>
 		<reference>M94</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">

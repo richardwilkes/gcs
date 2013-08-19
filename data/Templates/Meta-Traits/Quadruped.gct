@@ -4,29 +4,24 @@
 		<advantage_container open="yes" type="metatrait">
 			<name>Meta-Trait: Quadruped</name>
 			<reference>B263</reference>
-			<notes></notes>
 			<advantage>
 				<name>Extra Legs (4 legs)</name>
 				<type>Physical, Exotic</type>
 				<base_points>5</base_points>
 				<reference>B54</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Horizontal</name>
 				<type>Physical, Exotic</type>
 				<base_points>-10</base_points>
 				<reference>B139</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>No Fine Manipulators</name>
 				<type>Physical</type>
 				<base_points>-30</base_points>
 				<reference>B145</reference>
-				<notes></notes>
 			</advantage>
 		</advantage_container>
 	</advantage_list>
-	<notes></notes>
 </template>

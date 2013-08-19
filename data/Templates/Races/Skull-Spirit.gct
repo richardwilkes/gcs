@@ -4,14 +4,12 @@
 		<advantage_container open="yes" type="race">
 			<name>Skull-Spirit</name>
 			<reference>M150</reference>
-			<notes></notes>
 			<advantage>
 				<name>Attribute Modifier: Decreased ST</name>
 				<type>Physical</type>
 				<levels>10</levels>
 				<points_per_level>-10</points_per_level>
 				<reference>B14</reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>ST</attribute>
 					<amount per_level="yes">-1</amount>
@@ -23,7 +21,6 @@
 				<levels>4</levels>
 				<points_per_level>20</points_per_level>
 				<reference>B15</reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>DX</attribute>
 					<amount per_level="yes">+1</amount>
@@ -34,41 +31,34 @@
 				<type>Physical, Exotic</type>
 				<base_points>20</base_points>
 				<reference>B49</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Doesn't Eat or Drink</name>
 				<type>Physical, Exotic</type>
 				<base_points>10</base_points>
 				<reference>B50</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Doesn't Sleep</name>
 				<type>Physical, Exotic</type>
 				<base_points>20</base_points>
 				<reference>B50</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Fixed ST</name>
 				<type>Physical</type>
-				<reference></reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Injury Tolerance (Diffuse)</name>
 				<type>Physical, Exotic</type>
 				<base_points>100</base_points>
 				<reference>B60</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Resistant (Immunity to Metabolic Hazards)</name>
 				<type>Physical</type>
 				<base_points>30</base_points>
 				<reference>B81</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Secondary Attribute Modifier: HP</name>
@@ -76,7 +66,6 @@
 				<levels>20</levels>
 				<points_per_level>2</points_per_level>
 				<reference>B16</reference>
-				<notes></notes>
 				<attribute_bonus>
 					<attribute>HP</attribute>
 					<amount per_level="yes">+1</amount>
@@ -88,26 +77,21 @@
 				<levels>1</levels>
 				<points_per_level>11</points_per_level>
 				<reference>B62</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Unaging</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>
 				<reference>B95</reference>
-				<notes></notes>
 			</advantage>
 		</advantage_container>
 	</advantage_list>
 	<skill_list>
 		<skill>
 			<name>Innate Attack (Toxic)</name>
-			<specialization></specialization>
 			<difficulty>DX/E</difficulty>
 			<points>8</points>
 			<reference>B201</reference>
-			<notes></notes>
 		</skill>
 	</skill_list>
-	<notes></notes>
 </template>

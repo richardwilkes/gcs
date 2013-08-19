@@ -3,15 +3,12 @@
 	<advantage_list>
 		<advantage_container open="yes" type="metatrait">
 			<name>Meta-Trait: Body of Ice</name>
-			<reference></reference>
-			<notes></notes>
 			<advantage>
 				<name>Damage Resistance</name>
 				<type>Physical, Exotic</type>
 				<levels>3</levels>
 				<points_per_level>5</points_per_level>
 				<reference>B46</reference>
-				<notes></notes>
 				<dr_bonus>
 					<location>full_body_except_eyes</location>
 					<amount per_level="yes">+1</amount>
@@ -22,49 +19,42 @@
 				<type>Physical, Exotic</type>
 				<base_points>20</base_points>
 				<reference>B49</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Fragile (Brittle)</name>
 				<type>Physical, Exotic</type>
 				<base_points>-15</base_points>
 				<reference>B136</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Injury Tolerance (Homogenous)</name>
 				<type>Physical, Exotic</type>
 				<base_points>40</base_points>
 				<reference>B60</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Injury Tolerance (No Blood)</name>
 				<type>Physical, Exotic</type>
 				<base_points>5</base_points>
 				<reference>B61</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Pressure Support 3 (Immune to high pressure)</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>
 				<reference>B77</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Resistant (Immunity to Metabolic Hazards)</name>
 				<type>Physical</type>
 				<base_points>30</base_points>
 				<reference>B81</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Sealed</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>
 				<reference>B82</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Slippery</name>
@@ -72,7 +62,6 @@
 				<levels>3</levels>
 				<points_per_level>2</points_per_level>
 				<reference>B85</reference>
-				<notes></notes>
 				<skill_bonus>
 					<name compare="is">escape</name>
 					<specialization compare="is anything"></specialization>
@@ -84,30 +73,25 @@
 				<type>Physical, Exotic</type>
 				<base_points>5</base_points>
 				<reference>B93</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Vacuum Support</name>
 				<type>Physical, Exotic</type>
 				<base_points>5</base_points>
 				<reference>B96</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Vulnerability (Heat and Fire Attacks, Damage x2)</name>
 				<type>Physical, Exotic</type>
 				<base_points>-30</base_points>
 				<reference>B161</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Weakness (Intense normal heat, 1D/Min; Variable, -40%)</name>
 				<type>Physical, Exotic</type>
 				<base_points>-12</base_points>
 				<reference>B161</reference>
-				<notes></notes>
 			</advantage>
 		</advantage_container>
 	</advantage_list>
-	<notes></notes>
 </template>

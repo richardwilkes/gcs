@@ -2,12 +2,9 @@
 <equipment_list unique_id="egl7a7v9:10rp2dzs9ijfq">
 	<equipment_container open="yes">
 		<description>Buckler</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>0.0</value>
 		<weight units="lb">0.0</weight>
-		<reference></reference>
-		<notes></notes>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Light Buckler</description>
@@ -19,7 +16,6 @@
 			<melee_weapon>
 				<damage>thr cr</damage>
 				<strength>0</strength>
-				<usage></usage>
 				<reach>1</reach>
 				<parry>No</parry>
 				<block>+0</block>
@@ -46,7 +42,6 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
-			<notes></notes>
 		</equipment>
 		<equipment>
 			<quantity>1</quantity>
@@ -59,7 +54,6 @@
 			<melee_weapon>
 				<damage>thr+1 cr</damage>
 				<strength>0</strength>
-				<usage></usage>
 				<reach>1</reach>
 				<parry>No</parry>
 				<block>+0</block>
@@ -86,7 +80,6 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
-			<notes></notes>
 		</equipment>
 		<equipment>
 			<quantity>1</quantity>
@@ -99,7 +92,6 @@
 			<melee_weapon>
 				<damage>thr cr</damage>
 				<strength>0</strength>
-				<usage></usage>
 				<reach>1</reach>
 				<parry>No</parry>
 				<block>+0</block>
@@ -126,7 +118,6 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
-			<notes></notes>
 		</equipment>
 		<equipment>
 			<quantity>1</quantity>
@@ -139,7 +130,6 @@
 			<melee_weapon>
 				<damage>thr cr</damage>
 				<strength>0</strength>
-				<usage></usage>
 				<reach>1</reach>
 				<parry>No</parry>
 				<block>+0</block>
@@ -166,7 +156,6 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
-			<notes></notes>
 		</equipment>
 		<equipment>
 			<quantity>1</quantity>
@@ -179,7 +168,6 @@
 			<melee_weapon>
 				<damage>thr+1 cr</damage>
 				<strength>0</strength>
-				<usage></usage>
 				<reach>1</reach>
 				<parry>No</parry>
 				<block>+0</block>
@@ -206,17 +194,13 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
-			<notes></notes>
 		</equipment>
 	</equipment_container>
 	<equipment_container open="yes">
 		<description>Cloak</description>
-		<tech_level></tech_level>
 		<legality_class>-</legality_class>
 		<value>0.0</value>
 		<weight units="lb">0.0</weight>
-		<reference></reference>
-		<notes></notes>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Heavy Cloak</description>
@@ -228,7 +212,6 @@
 			<melee_weapon>
 				<damage>-</damage>
 				<strength>-</strength>
-				<usage></usage>
 				<reach>-</reach>
 				<parry>No</parry>
 				<block>+0</block>
@@ -242,23 +225,19 @@
 				<rate_of_fire>1</rate_of_fire>
 				<shots>T(1)</shots>
 				<bulk>-6</bulk>
-				<recoil></recoil>
 				<default>
 					<type>Skill</type>
 					<name>Cloak</name>
-					<specialization></specialization>
 					<modifier>0</modifier>
 				</default>
 				<default>
 					<type>Skill</type>
 					<name>Net</name>
-					<specialization></specialization>
 					<modifier>-4</modifier>
 				</default>
 				<default>
 					<type>Skill</type>
 					<name>Shield</name>
-					<specialization></specialization>
 					<modifier>-4</modifier>
 				</default>
 				<default>
@@ -266,15 +245,17 @@
 					<modifier>-5</modifier>
 				</default>
 			</ranged_weapon>
-			<notes></notes>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
+				<amount per_level="no">+2</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
+				<amount per_level="no">+2</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
+				<amount per_level="no">+2</amount>
 			</attribute_bonus>
 		</equipment>
 		<equipment>
@@ -288,7 +269,6 @@
 			<melee_weapon>
 				<damage>-</damage>
 				<strength>-</strength>
-				<usage></usage>
 				<reach>-</reach>
 				<parry>No</parry>
 				<block>+0</block>
@@ -302,7 +282,6 @@
 				<rate_of_fire>1</rate_of_fire>
 				<shots>T(1)</shots>
 				<bulk>-4</bulk>
-				<recoil></recoil>
 				<default>
 					<type>DX</type>
 					<modifier>-5</modifier>
@@ -310,42 +289,38 @@
 				<default>
 					<type>Skill</type>
 					<name>Cloak</name>
-					<specialization></specialization>
 					<modifier>0</modifier>
 				</default>
 				<default>
 					<type>Skill</type>
 					<name>Net</name>
-					<specialization></specialization>
 					<modifier>-4</modifier>
 				</default>
 				<default>
 					<type>Skill</type>
 					<name>Shield</name>
-					<specialization></specialization>
 					<modifier>-4</modifier>
 				</default>
 			</ranged_weapon>
-			<notes></notes>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
+				<amount per_level="no">+1</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
+				<amount per_level="no">+1</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
+				<amount per_level="no">+1</amount>
 			</attribute_bonus>
 		</equipment>
 	</equipment_container>
 	<equipment_container open="yes">
 		<description>Force Shield</description>
-		<tech_level></tech_level>
 		<legality_class>-</legality_class>
 		<value>0.0</value>
 		<weight units="lb">0.0</weight>
-		<reference></reference>
-		<notes></notes>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Force Shield</description>
@@ -357,31 +332,29 @@
 			<melee_weapon>
 				<damage>-</damage>
 				<strength>-</strength>
-				<usage></usage>
 				<reach>-</reach>
 				<parry>No</parry>
 				<block>+0</block>
 			</melee_weapon>
-			<notes></notes>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
+				<amount per_level="no">+3</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
+				<amount per_level="no">+3</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
+				<amount per_level="no">+3</amount>
 			</attribute_bonus>
 		</equipment>
 	</equipment_container>
 	<equipment_container open="yes">
 		<description>Shield</description>
-		<tech_level></tech_level>
 		<legality_class>-</legality_class>
 		<value>0.0</value>
 		<weight units="lb">0.0</weight>
-		<reference></reference>
-		<notes></notes>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Large Shield</description>
@@ -393,7 +366,6 @@
 			<melee_weapon>
 				<damage>thr cr</damage>
 				<strength>0</strength>
-				<usage></usage>
 				<reach>1</reach>
 				<parry>No</parry>
 				<block>+0</block>
@@ -420,15 +392,17 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
-			<notes></notes>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
+				<amount per_level="no">+3</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
+				<amount per_level="no">+3</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
+				<amount per_level="no">+3</amount>
 			</attribute_bonus>
 		</equipment>
 		<equipment>
@@ -442,7 +416,6 @@
 			<melee_weapon>
 				<damage>thr +1 cr</damage>
 				<strength>0</strength>
-				<usage></usage>
 				<reach>1</reach>
 				<parry>No</parry>
 				<block>+0</block>
@@ -469,15 +442,17 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
-			<notes></notes>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
+				<amount per_level="no">+3</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
+				<amount per_level="no">+3</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
+				<amount per_level="no">+3</amount>
 			</attribute_bonus>
 		</equipment>
 		<equipment>
@@ -491,7 +466,6 @@
 			<melee_weapon>
 				<damage>thr cr</damage>
 				<strength>0</strength>
-				<usage></usage>
 				<reach>1</reach>
 				<parry>No</parry>
 				<block>+0</block>
@@ -518,15 +492,17 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
-			<notes></notes>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
+				<amount per_level="no">+1</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
+				<amount per_level="no">+1</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
+				<amount per_level="no">+1</amount>
 			</attribute_bonus>
 		</equipment>
 		<equipment>
@@ -540,7 +516,6 @@
 			<melee_weapon>
 				<damage>thr+1 cr</damage>
 				<strength>0</strength>
-				<usage></usage>
 				<reach>1</reach>
 				<parry>No</parry>
 				<block>+0</block>
@@ -567,7 +542,6 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
-			<notes></notes>
 		</equipment>
 		<equipment>
 			<quantity>1</quantity>
@@ -580,7 +554,6 @@
 			<melee_weapon>
 				<damage>thr cr</damage>
 				<strength>0</strength>
-				<usage></usage>
 				<reach>1</reach>
 				<parry>No</parry>
 				<block>+0</block>
@@ -607,15 +580,17 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
-			<notes></notes>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
+				<amount per_level="no">+2</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
+				<amount per_level="no">+2</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
+				<amount per_level="no">+2</amount>
 			</attribute_bonus>
 		</equipment>
 		<equipment>
@@ -629,7 +604,6 @@
 			<melee_weapon>
 				<damage>thr+1 cr</damage>
 				<strength>0</strength>
-				<usage></usage>
 				<reach>1</reach>
 				<parry>No</parry>
 				<block>+0</block>
@@ -656,15 +630,17 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
-			<notes></notes>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
+				<amount per_level="no">+2</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
+				<amount per_level="no">+2</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
+				<amount per_level="no">+2</amount>
 			</attribute_bonus>
 		</equipment>
 		<equipment>
@@ -678,7 +654,6 @@
 			<melee_weapon>
 				<damage>thr cr</damage>
 				<strength>0</strength>
-				<usage></usage>
 				<reach>1</reach>
 				<parry>No</parry>
 				<block>+0</block>
@@ -705,15 +680,17 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
-			<notes></notes>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
+				<amount per_level="no">+1</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
+				<amount per_level="no">+1</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
+				<amount per_level="no">+1</amount>
 			</attribute_bonus>
 		</equipment>
 		<equipment>
@@ -727,7 +704,6 @@
 			<melee_weapon>
 				<damage>thr+1 cr</damage>
 				<strength>0</strength>
-				<usage></usage>
 				<reach>1</reach>
 				<parry>No</parry>
 				<block>+0</block>
@@ -754,15 +730,17 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
-			<notes></notes>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
+				<amount per_level="no">+1</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
+				<amount per_level="no">+1</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
+				<amount per_level="no">+1</amount>
 			</attribute_bonus>
 		</equipment>
 	</equipment_container>

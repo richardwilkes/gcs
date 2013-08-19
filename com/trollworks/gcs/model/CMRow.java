@@ -29,6 +29,7 @@ import com.trollworks.gcs.model.feature.CMDRBonus;
 import com.trollworks.gcs.model.feature.CMFeature;
 import com.trollworks.gcs.model.feature.CMSkillBonus;
 import com.trollworks.gcs.model.feature.CMSpellBonus;
+import com.trollworks.gcs.model.feature.CMWeaponBonus;
 import com.trollworks.gcs.model.prereq.CMPrereqList;
 import com.trollworks.gcs.model.skill.CMSkillDefault;
 import com.trollworks.gcs.model.skill.CMTechnique;
@@ -226,6 +227,8 @@ public abstract class CMRow extends TKRow {
 					mFeatures.add(new CMSkillBonus(reader));
 				} else if (CMSpellBonus.TAG_ROOT.equals(name)) {
 					mFeatures.add(new CMSpellBonus(reader));
+				} else if (CMWeaponBonus.TAG_ROOT.equals(name)) {
+					mFeatures.add(new CMWeaponBonus(reader));
 				} else if (CMCostReduction.TAG_ROOT.equals(name)) {
 					mFeatures.add(new CMCostReduction(reader));
 				} else if (CMPrereqList.TAG_ROOT.equals(name)) {
@@ -297,7 +300,7 @@ public abstract class CMRow extends TKRow {
 		saveAttributes(out, forUndo);
 		out.finishTagEOL();
 		saveSelf(out, forUndo);
-		out.simpleTag(TAG_NOTES, mNotes);
+		out.simpleTagNotEmpty(TAG_NOTES, mNotes);
 
 		if (!mFeatures.isEmpty()) {
 			for (CMFeature feature : mFeatures) {
@@ -496,6 +499,11 @@ public abstract class CMRow extends TKRow {
 	/** @return The notes. */
 	public String getNotes() {
 		return mNotes;
+	}
+
+	/** @return The notes due to modifiers. */
+	public String getModifierNotes() {
+		return null;
 	}
 
 	/**

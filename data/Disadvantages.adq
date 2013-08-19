@@ -5,7 +5,6 @@
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B122</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Addiction to @Substance@</name>
@@ -138,84 +137,72 @@
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B122</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Alcoholism (Illegal)</name>
 		<type>Physical</type>
 		<base_points>-20</base_points>
 		<reference>B122</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Amnesia (Partial)</name>
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B123</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Amnesia (Total)</name>
 		<type>Physical</type>
 		<base_points>-25</base_points>
 		<reference>B123</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Appearance (Hideous)</name>
 		<type>Physical</type>
 		<base_points>-16</base_points>
 		<reference>B21</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Appearance (Horrific)</name>
 		<type>Physical</type>
 		<base_points>-24</base_points>
 		<reference>B21</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Appearance (Monstrous)</name>
 		<type>Physical</type>
 		<base_points>-20</base_points>
 		<reference>B21</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Appearance (Monstrous, Universal)</name>
 		<type>Physical</type>
 		<base_points>-25</base_points>
 		<reference>B21</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Appearance (Ugly)</name>
 		<type>Physical</type>
 		<base_points>-8</base_points>
 		<reference>B21</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Appearance (Unattractive)</name>
 		<type>Physical</type>
 		<base_points>-4</base_points>
 		<reference>B21</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Bad Back (Mild)</name>
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B123</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Bad Back (Severe)</name>
 		<type>Physical</type>
 		<base_points>-25</base_points>
 		<reference>B123</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Bad Grip</name>
@@ -223,7 +210,6 @@
 		<levels>1</levels>
 		<points_per_level>-5</points_per_level>
 		<reference>B123</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
 				<name compare="is">no fine manipulators</name>
@@ -263,7 +249,6 @@
 		<name>Bad Smell</name>
 		<type>Physical</type>
 		<base_points>-10</base_points>
-		<reference></reference>
 		<notes>-2 Reaction penalty</notes>
 	</advantage>
 	<advantage>
@@ -271,63 +256,54 @@
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B124</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Bad Temper (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B124</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Bad Temper (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B124</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Bad Temper (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B124</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Berserk (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B124</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Berserk (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B124</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Berserk (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B124</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Berserk (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B124</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Bestial</name>
 		<type>Mental, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B124</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Blindness</name>
@@ -341,70 +317,63 @@
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B125</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Bloodlust (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B125</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Bloodlust (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B125</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Bloodlust (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B125</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Bully (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B125</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Bully (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B125</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Bully (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B125</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Bully (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B125</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Callous</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B125</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">psychology</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">teaching</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -412,14 +381,12 @@
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B125</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Cannot Speak</name>
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B125</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
 				<name compare="is">stuttering</name>
@@ -432,63 +399,54 @@
 		<type>Physical</type>
 		<base_points>-25</base_points>
 		<reference>B125</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Charitable (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B125</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Charitable (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B125</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Charitable (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B125</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Charitable (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B125</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Chronic Depression (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B126</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Chronic Depression (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B126</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Chronic Depression (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B126</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Chronic Depression (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B126</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Chronic Pain (Agonizing, FR: 6)</name>
@@ -845,10 +803,10 @@
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B126</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="starts with">savoir-faire</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -856,42 +814,36 @@
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B127</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Code of Honor (Gentleman's)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B127</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Code of Honor (Highwayman's)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>F132</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Code of Honor (Pirate's)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B127</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Code of Honor (Professional)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B127</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Code of Honor (Soldier's)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B127</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Cold-Blooded</name>
@@ -912,30 +864,35 @@
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B127</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="contains">artist</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="contains">chemistry</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="contains">driving</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">merchant</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="contains">piloting</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="contains">tracking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -943,91 +900,78 @@
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B127</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Carousing, CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B128</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Carousing, CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B128</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Carousing, CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B128</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Carousing, CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B128</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Debating, CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>F219</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Debating, CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>F219</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Debating, CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>F219</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Debating, CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>F219</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Gambling, CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B128</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Gambling, CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B128</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Gambling, CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B128</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Gambling, CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B128</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Generosity, CR: 6)</name>
@@ -1086,28 +1030,24 @@
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B128</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Lying, CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B128</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Lying, CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B128</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Lying, CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B128</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Spending, CR: 6)</name>
@@ -1118,6 +1058,7 @@
 		<skill_bonus>
 			<name compare="is">merchant</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
@@ -1135,6 +1076,7 @@
 		<skill_bonus>
 			<name compare="is">merchant</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
@@ -1152,6 +1094,7 @@
 		<skill_bonus>
 			<name compare="is">merchant</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
@@ -1169,6 +1112,7 @@
 		<skill_bonus>
 			<name compare="is">merchant</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
@@ -1182,56 +1126,48 @@
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B129</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Vowing, CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B129</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Vowing, CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B129</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Compulsive Behavior (Vowing, CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B129</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Confused (CR: 6)</name>
 		<type>Physical</type>
 		<base_points>-20</base_points>
 		<reference>B129</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Confused (CR: 9)</name>
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B129</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Confused (CR: 12)</name>
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B129</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Confused (CR: 15)</name>
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B129</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Cowardice (CR: 6)</name>
@@ -1266,42 +1202,36 @@
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B129</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Curious (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B129</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Curious (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B129</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Curious (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B129</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Cursed</name>
 		<type>Mental, Supernatural</type>
 		<base_points>-75</base_points>
 		<reference>B129</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Deafness</name>
 		<type>Physical</type>
 		<base_points>-20</base_points>
 		<reference>B129</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Debt</name>
@@ -1309,7 +1239,6 @@
 		<levels>1</levels>
 		<points_per_level>-1</points_per_level>
 		<reference>B26</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Decreased Dexterity</name>
@@ -1317,7 +1246,6 @@
 		<levels>1</levels>
 		<points_per_level>-20</points_per_level>
 		<reference>B15</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>DX</attribute>
 			<amount per_level="yes">-1</amount>
@@ -1329,7 +1257,6 @@
 		<levels>1</levels>
 		<points_per_level>-10</points_per_level>
 		<reference>B14</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>HT</attribute>
 			<amount per_level="yes">-1</amount>
@@ -1341,7 +1268,6 @@
 		<levels>1</levels>
 		<points_per_level>-20</points_per_level>
 		<reference>B15</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>IQ</attribute>
 			<amount per_level="yes">-1</amount>
@@ -1353,7 +1279,6 @@
 		<levels>1</levels>
 		<points_per_level>-10</points_per_level>
 		<reference>B14</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>ST</attribute>
 			<amount per_level="yes">-1</amount>
@@ -1364,222 +1289,190 @@
 		<type>Mental, Exotic</type>
 		<base_points>-100</base_points>
 		<reference>B129</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Delusion (Major: @Belief@)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Delusion (Minor: @Belief@)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Delusion (Severe: @Belief@)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Common substance@, Constantly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-50</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Common substance@, Daily)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-30</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Common substance@, Hourly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-40</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Common substance@, Monthly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Common substance@, Seasonally)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-3</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Common substance@, Weekly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-20</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Common substance@, Yearly)</name>
 		<type>Physical, Exotic</type>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Occasional substance@, Constantly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-100</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Occasional substance@, Daily)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-60</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Occasional substance@, Hourly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-80</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Occasional substance@, Monthly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-20</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Occasional substance@, Seasonally)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-7</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Occasional substance@, Weekly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-40</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Occasional substance@, Yearly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-1</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Rare substance@, Constantly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-150</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Rare substance@, Daily)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-90</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Rare substance@, Hourly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-120</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Rare substance@, Monthly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-30</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Rare substance@, Seasonally)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Rare substance@, Weekly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-60</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Rare substance@, Yearly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-3</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Very Common substance@, Constantly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-25</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Very Common substance@, Daily)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-15</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Very Common substance@, Hourly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-20</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Very Common substance@, Monthly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-5</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Very Common substance@, Seasonally)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-1</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Very Common substance@, Weekly)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependency (@Very Common substance@, Yearly)</name>
 		<type>Physical, Exotic</type>
 		<reference>B130</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dependent (@Person@, FR: 6)</name>
@@ -1635,56 +1528,48 @@
 		<type>Mental, Supernatural</type>
 		<base_points>-15</base_points>
 		<reference>B132</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Destiny (@Major Disadvantage@)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>-10</base_points>
 		<reference>B132</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Destiny (@Minor Disadvantage@)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>-5</base_points>
 		<reference>B131</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Disciplines of Faith (Asceticism)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B132</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Disciplines of Faith (Monasticism)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B132</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Disciplines of Faith (Mysticism)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B132</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Disciplines of Faith (Ritualism)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B132</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Disturbing Voice</name>
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B132</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
 				<name compare="is">voice</name>
@@ -1696,42 +1581,36 @@
 		<name>Divine Curse (@Curse@)</name>
 		<type>Mental, Supernatural</type>
 		<reference>B132</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Divine Curse (All children die young)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>-5</base_points>
 		<reference>B132</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Divine Curse (Never sleep at night)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>-10</base_points>
 		<reference>B132</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Draining (@Common substance@)</name>
 		<type>Physical, Supernatural</type>
 		<base_points>-5</base_points>
 		<reference>B132</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Draining (@Occasional substance@)</name>
 		<type>Physical, Supernatural</type>
 		<base_points>-10</base_points>
 		<reference>B132</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Draining (@Rare substance@)</name>
 		<type>Physical, Supernatural</type>
 		<base_points>-15</base_points>
 		<reference>B132</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Dread (@Occasional Item@)</name>
@@ -1913,20 +1792,23 @@
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B19</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>move</attribute>
+			<amount per_level="no">-1</amount>
 		</attribute_bonus>
 		<skill_bonus>
 			<name compare="is">disguise</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">shadowing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<attribute_bonus>
 			<attribute>SM</attribute>
+			<amount per_level="no">-1</amount>
 		</attribute_bonus>
 	</advantage>
 	<advantage>
@@ -1934,7 +1816,6 @@
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B134</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Easy to Kill</name>
@@ -1942,104 +1823,89 @@
 		<levels>1</levels>
 		<points_per_level>-2</points_per_level>
 		<reference>B134</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Easy to Read</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B134</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Electrical</name>
 		<type>Physical, Exotic</type>
 		<base_points>-20</base_points>
 		<reference>B134</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Enemy (@Large Group@, Watcher, FR: 15)</name>
 		<type>Social</type>
 		<base_points>-22</base_points>
 		<reference>B135</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Enemy (@Person, Power, Intent, Freq. App.@)</name>
 		<type>Social</type>
 		<reference>B135</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Enemy (@Person@, 50% Start Points, Rival, FR: 6)</name>
 		<type>Physical</type>
 		<base_points>-1</base_points>
 		<reference>B135</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Enemy (@Person@, 50% Start Points, Rival, FR: 9)</name>
 		<type>Physical</type>
 		<base_points>-2</base_points>
 		<reference>B135</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Enemy (@Person@, 50% Start Points, Rival, FR: 12)</name>
 		<type>Social</type>
 		<base_points>-5</base_points>
 		<reference>B135</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Enemy (@Person@, 50% Start Points, Rival, FR: 15)</name>
 		<type>Physical</type>
 		<base_points>-7</base_points>
 		<reference>B135</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Enemy (@Person@, 50% Start Points, Watcher, FR: 6)</name>
 		<type>Physical</type>
 		<base_points>-1</base_points>
 		<reference>B135</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Enemy (@Person@, 50% Start Points, Watcher, FR: 9)</name>
 		<type>Physical</type>
 		<base_points>-1</base_points>
 		<reference>B135</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Enemy (@Person@, 50% Start Points, Watcher, FR: 12)</name>
 		<type>Physical</type>
 		<base_points>-2</base_points>
 		<reference>B135</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Enemy (@Person@, 50% Start Points, Watcher, FR: 15)</name>
 		<type>Physical</type>
 		<base_points>-3</base_points>
 		<reference>B135</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Enemy (@Person@, 150% Start Points, Hunter, FR: 9)</name>
 		<type>Social</type>
 		<base_points>-20</base_points>
 		<reference>B135</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Epilipsy</name>
 		<type>Physical</type>
 		<base_points>-30</base_points>
 		<reference>B136</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Extra Sleep</name>
@@ -2047,14 +1913,12 @@
 		<levels>1</levels>
 		<points_per_level>-2</points_per_level>
 		<reference>B136</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Fanatacism</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B136</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Fat</name>
@@ -2065,14 +1929,17 @@
 		<skill_bonus>
 			<name compare="is">disguise</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">shadowing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">swimming</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
 			<attribute_prereq has="yes" which="HT" compare="atMost">15</attribute_prereq>
@@ -2084,7 +1951,6 @@
 		<levels>1</levels>
 		<points_per_level>-2</points_per_level>
 		<reference>B136</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
 				<name compare="is">fearlessness</name>
@@ -2097,96 +1963,88 @@
 		<type>Physical</type>
 		<base_points>-20</base_points>
 		<reference>B136</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Flashbacks (Mild-2, 2D seconds)</name>
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B136</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Flashbacks (Severe, -5, 1D minutes)</name>
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B136</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Fragile (Brittle)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-15</base_points>
 		<reference>B136</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Fragile (Combustible)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-5</base_points>
 		<reference>B136</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Fragile (Explosive)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-15</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Fragile (Flammable)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Fragile (Unnatural)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-50</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Frightens Animals</name>
 		<type>Mental, Supernatural</type>
 		<base_points>-10</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>G-Intolerance (0.05G increment)</name>
 		<type>Physical</type>
 		<base_points>-20</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>G-Intolerance (0.1G increment)</name>
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Gigantism</name>
 		<type>Physical</type>
 		<reference>B20</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>move</attribute>
+			<amount per_level="no">+1</amount>
 		</attribute_bonus>
 		<skill_bonus>
 			<name compare="is">disguise</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">shadowing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<attribute_bonus>
 			<attribute>SM</attribute>
+			<amount per_level="no">+1</amount>
 		</attribute_bonus>
 	</advantage>
 	<advantage>
@@ -2194,73 +2052,64 @@
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Gluttony (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Gluttony (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Gluttony (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Greed (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Greed (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Greed (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Greed (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Guilt Complex</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Gullibility (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">merchant</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
 			<skill_prereq has="no">
@@ -2274,10 +2123,10 @@
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">merchant</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
 			<skill_prereq has="no">
@@ -2291,10 +2140,10 @@
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">merchant</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
 			<skill_prereq has="no">
@@ -2308,10 +2157,10 @@
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B137</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">merchant</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
 			<skill_prereq has="no">
@@ -2325,54 +2174,65 @@
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B138</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="contains">artist</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">jeweler</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">knot-tying</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">leatherworking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">lockpicking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">pickpocket</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sewing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sleight of hand</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">surgery</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">machnist</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="contains">mechanic</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="contains">fast-draw</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
@@ -2386,54 +2246,65 @@
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B138</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="contains">artist</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">jeweler</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">knot-tying</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">letherworking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">lockpicking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">pickpocket</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sewing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sleight of hand</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">surgery</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="contains">fast-draw</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">machinist</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="contains">mechanic</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
@@ -2447,9 +2318,9 @@
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B138</reference>
-		<notes></notes>
 		<attribute_bonus>
 			<attribute>hearing</attribute>
+			<amount per_level="no">-4</amount>
 		</attribute_bonus>
 	</advantage>
 	<advantage>
@@ -2457,7 +2328,6 @@
 		<type>Physical</type>
 		<base_points>-30</base_points>
 		<reference>B138</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<attribute_prereq has="yes" which="HT" compare="atMost">10</attribute_prereq>
 		</prereq_list>
@@ -2467,56 +2337,51 @@
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B138</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Honesty (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B138</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Honesty (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B138</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Honesty (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B138</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Honesty (CR:6)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B138</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Horizontal</name>
 		<type>Physical, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B139</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Hunchback</name>
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B139</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">disguise</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">shadowing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -2524,154 +2389,132 @@
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B139</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Impulsiveness (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B139</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Impulsiveness (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B139</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Impulsiveness (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B139</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Increased Consumption (Consumption x2)</name>
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B139</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Increased Consumption (Consumption x4)</name>
 		<type>Physical</type>
 		<base_points>-20</base_points>
 		<reference>B139</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Increased Consumption (Consumption x8)</name>
 		<type>Physical</type>
 		<base_points>-30</base_points>
 		<reference>B139</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Increased Life Support (Extreme Cold, below 0)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B139</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Increased Life Support (Extreme Heat, above 200)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B139</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Increased Life Support (Massive)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B139</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Increased Life Support (Pressurized)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B139</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Increased Life Support (Radioactive)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B139</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Incurious (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Incurious (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Incurious (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Incurious (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Indecisive (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Indecisive (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Indecisive (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Indecisive (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Infectious Attack</name>
 		<type>Physical, Supernatural</type>
 		<base_points>-5</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Innumerate</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<skill_prereq has="no">
 				<name compare="contains">physics</name>
@@ -2720,78 +2563,73 @@
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Insomniac (Severe)</name>
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Intolerance (@Common Victim@)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Intolerance (@Occasional Victim@)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Intolerance (@Rare Victim@)</name>
 		<type>Mental</type>
 		<base_points>-1</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Intolerance (Anyone unlike you)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Invertebrate</name>
 		<type>Physical, Exotic</type>
 		<base_points>-20</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Jealousy</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Killjoy</name>
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B140</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">carousing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="contains">connoisseur</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">erotic art</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">gambling</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -2799,35 +2637,30 @@
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B141</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Kleptomania (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B141</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Kleptomania (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B141</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Kleptomania (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B141</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Klutz</name>
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B141</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<attribute_prereq has="yes" which="DX" compare="atMost">13</attribute_prereq>
 		</prereq_list>
@@ -2837,7 +2670,6 @@
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B141</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<attribute_prereq has="yes" which="DX" compare="atMost">13</attribute_prereq>
 		</prereq_list>
@@ -2847,175 +2679,175 @@
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B141</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Lame (Legless)</name>
 		<type>Physical</type>
 		<base_points>-30</base_points>
 		<reference>B141</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Lame (Missing Legs)</name>
 		<type>Physical</type>
 		<base_points>-20</base_points>
 		<reference>B141</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Lame (Paraplegic)</name>
 		<type>Physical</type>
 		<base_points>-30</base_points>
 		<reference>B141</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Laziness</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B142</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Lecherousness (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B142</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Lecherousness (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B142</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Lecherousness (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B142</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Lecherousness (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B142</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Lifebane</name>
 		<type>Mental, Supernatural</type>
 		<base_points>-10</base_points>
 		<reference>B142</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Light Sleeper</name>
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B142</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Loner (CR: 6, Reac -4)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B142</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Loner (CR: 9, Reac -3)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B142</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Loner (CR: 12, Reac -2)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B142</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Loner (CR: 15, Reac -1)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B142</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Low Empathy</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B142</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">acting</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">carousing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">criminology</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">detect lies</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">diplomacy</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">enthrallment</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">fast-talk</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">interrogation</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">leadership</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">merchant</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">politics</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="contains">psychology</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="contains">savoir-faire</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sex appeal</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sociology</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">streetwise</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
@@ -3037,7 +2869,6 @@
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B142</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
 				<name compare="is">high pain threshold</name>
@@ -3050,7 +2881,6 @@
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Low TL</name>
@@ -3058,14 +2888,12 @@
 		<levels>1</levels>
 		<points_per_level>-5</points_per_level>
 		<reference>B22</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Lunacy</name>
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Magic Suceptibility</name>
@@ -3073,7 +2901,6 @@
 		<levels>1</levels>
 		<points_per_level>-3</points_per_level>
 		<reference>B143</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
 				<name compare="is">magic resistance</name>
@@ -3086,217 +2913,186 @@
 		<type>Physical</type>
 		<base_points>-30</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (1 person, Bi-weekly)</name>
 		<type>Physical</type>
 		<base_points>-3</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (1 person, Contstant)</name>
 		<type>Physical</type>
 		<base_points>-50</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (1 person, Daily)</name>
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (1 person, Every other day)</name>
 		<type>Physical</type>
 		<base_points>-7</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (1 person, Monthly)</name>
 		<type>Physical</type>
 		<base_points>-2</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (1 person, Twice Daily)</name>
 		<type>Physical</type>
 		<base_points>-20</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (1 person, Weekly)</name>
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (2 people, Bi-Weekly)</name>
 		<type>Physical</type>
 		<base_points>-7</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (3-5 people, Weekly)</name>
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (6-10 people, Every other day)</name>
 		<type>Physical</type>
 		<base_points>-30</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (11-20 people, Daily)</name>
 		<type>Physical</type>
 		<base_points>-50</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (21-50 people, Twice Daily)</name>
 		<type>Physical</type>
 		<base_points>-120</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (51-100 people, 3-5 times Daily)</name>
 		<type>Physical</type>
 		<base_points>-210</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (51-100 people, Bi-weekly)</name>
 		<type>Physical</type>
 		<base_points>-23</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (51-100 people, Constant)</name>
 		<type>Physical</type>
 		<base_points>-350</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (51-100 people, Daily)</name>
 		<type>Physical</type>
 		<base_points>-70</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (51-100 people, Every other day)</name>
 		<type>Physical</type>
 		<base_points>-52</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (51-100 people, Monthly)</name>
 		<type>Physical</type>
 		<base_points>-14</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (51-100 people, Twice Daily</name>
 		<type>Physical</type>
 		<base_points>-140</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Maintenance (51-100 people, Weekly)</name>
 		<type>Physical</type>
 		<base_points>-35</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Manic-Depressive</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B143</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Megalomania</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Miserliness (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Miserliness (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Miserliness (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Miserliness (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Missing Digit (Finger)</name>
 		<type>Physical</type>
 		<base_points>-2</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Missing Digit (Thumb)</name>
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Mistaken Identity</name>
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B21</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Motion Sickness</name>
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<skill_prereq has="yes">
 				<name compare="is">submariner</name>
@@ -3345,69 +3141,81 @@
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Neurological Disorder (Crippling)</name>
 		<type>Physical</type>
 		<base_points>-55</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">artist</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">jeweler</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">knot-tying</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">leatherworking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">lockpicking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">pickpocket</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sewing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sleight of hand</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">surgery</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">acting</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">leadership</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">performance</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">pubic speaking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sex appeal</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-6</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -3415,62 +3223,75 @@
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">artist</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">jeweler</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">knot-tying</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">leatherworking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">lockpicking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">pickpocket</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sewing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sleight of hand</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">surgery</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">acting</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">leadership</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">performance</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">pubic speaking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sex appeal</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -3478,62 +3299,75 @@
 		<type>Physical</type>
 		<base_points>-35</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">artist</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">jeweler</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">knot-tying</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">leatherworking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">lockpicking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">pickpocket</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sewing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sleight of hand</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">surgery</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">acting</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">leadership</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">performance</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">pubic speaking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sex appeal</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -3541,7 +3375,6 @@
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
 				<name compare="is">dark vision</name>
@@ -3558,35 +3391,30 @@
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Nightmares (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Nightmares (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Nightmares (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>No Depth Perception</name>
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B144</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
 				<name compare="is">one eye</name>
@@ -3599,13 +3427,11 @@
 		<type>Physical</type>
 		<base_points>-30</base_points>
 		<reference>B145</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>No Legs (Aerial)</name>
 		<type>Physical, Exotic</type>
 		<reference>B145</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="yes">
 				<name compare="is">flight</name>
@@ -3617,7 +3443,6 @@
 		<name>No Legs (Aquatic)</name>
 		<type>Physical, Exotic</type>
 		<reference>B145</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>No Legs (Aquatic)</name>
@@ -3644,32 +3469,27 @@
 		<name>No Legs (Bounces)</name>
 		<type>Physical, Exotic</type>
 		<reference>B145</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>No Legs (Rolls)</name>
 		<type>Physical, Exotic</type>
 		<reference>B145</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>No Legs (Semi-Aquatic)</name>
 		<type>Physical, Exotic</type>
 		<reference>B145</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>No Legs (Sessile)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-50</base_points>
 		<reference>B145</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>No Legs (Slithers)</name>
 		<type>Physical, Exotic</type>
 		<reference>B145</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>No Legs (Tracked)</name>
@@ -3690,7 +3510,6 @@
 		<type>Physical</type>
 		<base_points>-50</base_points>
 		<reference>B145</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>No Sense of Humor</name>
@@ -3704,14 +3523,12 @@
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B146</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Nocturnal</name>
 		<type>Physical, Exotic</type>
 		<base_points>-20</base_points>
 		<reference>B146</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Noisy</name>
@@ -3719,7 +3536,6 @@
 		<levels>1</levels>
 		<points_per_level>-2</points_per_level>
 		<reference>B146</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">stealth</name>
 			<specialization compare="is anything"></specialization>
@@ -3731,7 +3547,6 @@
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B146</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<skill_prereq has="no">
 				<name compare="is">symbol drawing</name>
@@ -3752,37 +3567,41 @@
 		<type>Physical</type>
 		<base_points>-20</base_points>
 		<reference>B146</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Oblivious</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B146</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">diplomacy</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">fast-talk</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">intimidation</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="starts with">savoir-faire</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sex appeal</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">streetwise</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -3825,77 +3644,66 @@
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B146</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>On the Edge (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B146</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>On the Edge (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B146</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>On the Edge (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B146</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>One Arm</name>
 		<type>Physical</type>
 		<base_points>-20</base_points>
 		<reference>B147</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>One Eye</name>
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B147</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>One Hand</name>
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B147</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Overconficence (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B148</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Overconficence (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B148</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Overconficence (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B148</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Overconficence (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B148</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Overweight</name>
@@ -3906,14 +3714,17 @@
 		<skill_bonus>
 			<name compare="is">disguise</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">shadowing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">swimming</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -3921,133 +3732,114 @@
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B148</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Pacifism: Cannot Kill</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B148</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Pacifism: Reluctant Killer</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B148</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Pacifism: Self-Defense Only</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B148</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Pacifism: Total Nonviolence</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B148</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Paranoia</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B148</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Phantom Voices (Annoying)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B148</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Phantom Voices (Diabolical)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B148</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Phantom Voices (Disturbing)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B148</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Post-Combat Shakes (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Post-Combat Shakes (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Post-Combat Shakes (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Post-Combat Shakes (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Pyromania (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Pyromania (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Pyromania (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Pyromania (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Quadriplegic</name>
 		<type>Physical</type>
 		<base_points>-80</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Reprogrammable</name>
 		<type>Mental, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B150</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Reputation (FR: 7)</name>
@@ -4078,154 +3870,132 @@
 		<type>Physical</type>
 		<base_points>-20</base_points>
 		<reference>B151</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Restricted Diet (@Occasional food@)</name>
 		<type>Physical</type>
 		<base_points>-30</base_points>
 		<reference>B151</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Restricted Diet (@Rare food@)</name>
 		<type>Physical</type>
 		<base_points>-40</base_points>
 		<reference>B151</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Restricted Diet (@Very Common food@)</name>
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B151</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Restricted Vision (No Peripheral Vision)</name>
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B151</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Restricted Vision (Tunnel Vision)</name>
 		<type>Physical</type>
 		<base_points>-30</base_points>
 		<reference>B151</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Revulsion (@Common substance@)</name>
 		<type>Physical, Supernatural</type>
 		<base_points>-10</base_points>
 		<reference>B151</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Revulsion (@Occasional substance@)</name>
 		<type>Physical, Supernatural</type>
 		<base_points>-5</base_points>
 		<reference>B151</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Revulsion (@Very Common substance@)</name>
 		<type>Physical, Supernatural</type>
 		<base_points>-15</base_points>
 		<reference>B151</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Sadism (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B152</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Sadism (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B152</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Sadism (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B152</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Sadism (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B152</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Secret (@Secret@ Imprisonment)</name>
 		<type>Social</type>
 		<base_points>-20</base_points>
 		<reference>B152</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Secret (@Secret@ Possible Death)</name>
 		<type>Social</type>
 		<base_points>-30</base_points>
 		<reference>B152</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Secret (@Secret@ Serious Embarrassment)</name>
 		<type>Social</type>
 		<base_points>-5</base_points>
 		<reference>B152</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Secret (@Secret@ Utter Rejection)</name>
 		<type>Social</type>
 		<base_points>-10</base_points>
 		<reference>B152</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Secret Identity (@Secret ID@ Imprisonment)</name>
 		<type>Social</type>
 		<base_points>-20</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Secret Identity (@Secret ID@ Possible Death)</name>
 		<type>Social</type>
 		<base_points>-30</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Secret Identity (@Secret ID@ Serious Embarrassment)</name>
 		<type>Social</type>
 		<base_points>-5</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Secret Identity (@Secret ID@ Utter Rejection)</name>
 		<type>Social</type>
 		<base_points>-10</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Self-Destruct</name>
 		<type>Physical, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
 				<name compare="starts with">terminally ill</name>
@@ -4238,63 +4008,54 @@
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Selfish (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Selfish (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Selfish (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Selfless (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Selfless (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Selfless (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Selfless (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Semi-Upright</name>
 		<type>Physical, Exotic</type>
 		<base_points>-5</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Sense of Duty</name>
@@ -4343,35 +4104,30 @@
 		<type>Physical, Exotic</type>
 		<base_points>-20</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Short Attention Span (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Short Attention Span (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Short Attention Span (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Short Attention Span (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B153</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Short Lifespan</name>
@@ -4379,73 +4135,86 @@
 		<levels>1</levels>
 		<points_per_level>-10</points_per_level>
 		<reference>B154</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Shyness (Crippling)</name>
 		<type>Mental</type>
 		<base_points>-20</base_points>
 		<reference>B154</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">acting</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">carousing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">diplomacy</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">fast-talk</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">intimidation</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">leadership</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">merchant</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">panhandling</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">performance</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">politics</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">public speaking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="contains">savoir-faire</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sex appeal</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">streetwise</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">teaching</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-4</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -4453,66 +4222,80 @@
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B154</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">acting</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">carousing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">diplomacy</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">fast-talk</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">intimidation</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">leadership</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">merchant</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">panhandling</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">performance</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">politics</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">public speaking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="contains">savoir-faire</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sex appeal</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">streetwise</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">teaching</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -4520,66 +4303,80 @@
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B154</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">acting</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">carousing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">diplomacy</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">fast-talk</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">intimidation</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">leadership</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">merchant</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">panhandling</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">performance</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">politics</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">public speaking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="contains">savoir-faire</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sex appeal</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">streetwise</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">teaching</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -4591,10 +4388,12 @@
 		<skill_bonus>
 			<name compare="is">disguise</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">shadowing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
 			<attribute_prereq has="yes" which="HT" compare="atMost">14</attribute_prereq>
@@ -4605,70 +4404,60 @@
 		<type>Physical</type>
 		<base_points>-40</base_points>
 		<reference>B154</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Sleepwalker (CR: -2)</name>
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B154</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Sleepwalker (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B154</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Sleepwalker (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B154</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Sleepwalker (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B154</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Sleepy ( 1/2 time)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-8</base_points>
 		<reference>B154</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Sleepy ( 2/3 time)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-16</base_points>
 		<reference>B154</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Sleepy ( 3/4 time)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-20</base_points>
 		<reference>B154</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Sleepy ( 7/8 time)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-26</base_points>
 		<reference>B154</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Slow Eater</name>
 		<type>Physical, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B155</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Slow Healing</name>
@@ -4676,21 +4465,18 @@
 		<levels>1</levels>
 		<points_per_level>-5</points_per_level>
 		<reference>B155</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Slow Riser</name>
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B155</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Social Disease</name>
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B155</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Social Stigma (Criminal Record)</name>
@@ -4743,6 +4529,7 @@
 		<skill_bonus>
 			<name compare="is">@Skill@</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-1</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -4768,6 +4555,7 @@
 		<skill_bonus>
 			<name compare="is">intimidation</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -4796,7 +4584,6 @@
 		<type>Social</type>
 		<base_points>-10</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Social Stigma (Vermin)</name>
@@ -4810,7 +4597,6 @@
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<skill_prereq has="no">
 				<name compare="is">free fall</name>
@@ -4823,56 +4609,48 @@
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Split Personality (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Split Personality (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Split Personality (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Squeamish (CR: 6)</name>
 		<type>Physical</type>
 		<base_points>-20</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Squeamish (CR: 9)</name>
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Squeamish (CR: 12)</name>
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Squeamish (CR: 15)</name>
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Status (@Description@)</name>
@@ -4880,128 +4658,119 @@
 		<levels>1</levels>
 		<points_per_level>-5</points_per_level>
 		<reference>B28</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Stress Atavism (CR: 6, Mild)</name>
 		<type>Mental, Exotic</type>
 		<base_points>-20</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Stress Atavism (CR: 6, Moderate)</name>
 		<type>Mental, Exotic</type>
 		<base_points>-30</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Stress Atavism (CR: 6, Severe)</name>
 		<type>Mental, Exotic</type>
 		<base_points>-40</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Stress Atavism (CR: 9, Mild)</name>
 		<type>Mental, Exotic</type>
 		<base_points>-15</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Stress Atavism (CR: 9, Moderate)</name>
 		<type>Mental, Exotic</type>
 		<base_points>-22</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Stress Atavism (CR: 9, Severe)</name>
 		<type>Mental, Exotic</type>
 		<base_points>-30</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Stress Atavism (CR: 12, Mild)</name>
 		<type>Mental, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Stress Atavism (CR: 12, Moderate)</name>
 		<type>Mental, Exotic</type>
 		<base_points>-15</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Stress Atavism (CR: 12, Severe)</name>
 		<type>Mental, Exotic</type>
 		<base_points>-20</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Stress Atavism (CR: 15, Mild)</name>
 		<type>Mental, Exotic</type>
 		<base_points>-5</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Stress Atavism (CR: 15, Moderate)</name>
 		<type>Mental, Exotic</type>
 		<base_points>-7</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Stress Atavism (CR: 15, Severe)</name>
 		<type>Mental, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B156</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Stubbornness</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B157</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Stuttering</name>
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B157</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">diplomacy</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">fast-talk</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">performance</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">public speaking</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">sex appeal</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">singing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-2</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -5009,49 +4778,42 @@
 		<type>Physical, Supernatural</type>
 		<base_points>-5</base_points>
 		<reference>B157</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Supernatural Features (No Body Heat; Temporary)</name>
 		<type>Physical, Supernatural</type>
 		<base_points>-1</base_points>
 		<reference>B157</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Supernatural Features (No Reflection)</name>
 		<type>Physical, Supernatural</type>
 		<base_points>-10</base_points>
 		<reference>B157</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Supernatural Features (No Shadow)</name>
 		<type>Physical, Supernatural</type>
 		<base_points>-10</base_points>
 		<reference>B157</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Supernatural Features (Pallor)</name>
 		<type>Physical, Supernatural</type>
 		<base_points>-10</base_points>
 		<reference>B157</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Supernatural Features (Pallor; Temporary)</name>
 		<type>Physical, Supernatural</type>
 		<base_points>-5</base_points>
 		<reference>B157</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Supersensitive</name>
 		<type>Mental, Supernatural</type>
 		<base_points>-15</base_points>
 		<reference>B158</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Susceptible (@Common Substance@)</name>
@@ -5059,7 +4821,6 @@
 		<levels>1</levels>
 		<points_per_level>-2</points_per_level>
 		<reference>B158</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Susceptible (@Occasional Substance@)</name>
@@ -5067,7 +4828,6 @@
 		<levels>1</levels>
 		<points_per_level>-1</points_per_level>
 		<reference>B158</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Susceptible (@Very Common Substance@)</name>
@@ -5075,94 +4835,82 @@
 		<levels>1</levels>
 		<points_per_level>-4</points_per_level>
 		<reference>B158</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Terminally Ill (1 month to live)</name>
 		<type>Physical</type>
 		<base_points>-100</base_points>
 		<reference>B158</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Terminally Ill (1 year to live)</name>
 		<type>Physical</type>
 		<base_points>-75</base_points>
 		<reference>B158</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Terminally Ill (2 years to live)</name>
 		<type>Physical</type>
 		<base_points>-50</base_points>
 		<reference>B158</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Timesickness</name>
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B158</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Trademark (@Complex@)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B159</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Trademark (@Elaborate@)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B159</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Trademark (@Simple@)</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B159</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Trickster (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
 		<reference>B159</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Trickster (CR: 9)</name>
 		<type>Mental</type>
 		<base_points>-22</base_points>
 		<reference>B159</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Trickster (CR: 12)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
 		<reference>B159</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Trickster (CR: 15)</name>
 		<type>Mental</type>
 		<base_points>-7</base_points>
 		<reference>B159</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Truthfulness (CR: 6)</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B159</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">fast talk</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-5</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -5170,10 +4918,10 @@
 		<type>Mental</type>
 		<base_points>7</base_points>
 		<reference>B159</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">fast talk</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-5</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -5181,10 +4929,10 @@
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B159</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">fast talk</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-5</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -5192,10 +4940,10 @@
 		<type>Mental</type>
 		<base_points>-2</base_points>
 		<reference>B159</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">fast talk</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-5</amount>
 		</skill_bonus>
 	</advantage>
 	<advantage>
@@ -5203,42 +4951,36 @@
 		<type>Mental, Supernatural</type>
 		<base_points>-30</base_points>
 		<reference>B159</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Uncontrollable Appetite (@Craving@, CR: 9)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>-22</base_points>
 		<reference>B159</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Uncontrollable Appetite (@Craving@, CR: 12)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>-15</base_points>
 		<reference>B159</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Uncontrollable Appetite (@Craving@, CR: 15)</name>
 		<type>Mental, Supernatural</type>
 		<base_points>-7</base_points>
 		<reference>B159</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Unfit</name>
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B160</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Unfit (Very)</name>
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B160</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<advantage_prereq has="no">
 				<name compare="contains">resistant</name>
@@ -5251,28 +4993,24 @@
 		<type>Physical, Exotic</type>
 		<base_points>-20</base_points>
 		<reference>B160</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Unhealing (Total)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-30</base_points>
 		<reference>B160</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Unique</name>
 		<type>Mental, Supernatural</type>
 		<base_points>-5</base_points>
 		<reference>B160</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Unluckiness</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
 		<reference>B160</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Unnatural Features (@Description@)</name>
@@ -5280,7 +5018,6 @@
 		<levels>1</levels>
 		<points_per_level>-1</points_per_level>
 		<reference>B22</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">disguise</name>
 			<specialization compare="is anything"></specialization>
@@ -5297,7 +5034,6 @@
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B160</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Very Fat</name>
@@ -5308,14 +5044,17 @@
 		<skill_bonus>
 			<name compare="is">disguise</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">shadowing</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">-3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">swimming</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+5</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
 			<attribute_prereq has="yes" which="HT" compare="atMost">13</attribute_prereq>
@@ -5326,203 +5065,174 @@
 		<type>Physical</type>
 		<base_points>-15</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Vow (@Major@)</name>
 		<type>Physical</type>
 		<base_points>-10</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Vow (@Minor@)</name>
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Vulnerability (@Common attack@, Damage x2)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-30</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Vulnerability (@Common attack@, Damage x3)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-45</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Vulnerability (@Common attack@, Damage x4)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-60</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Vulnerability (@Occasional attack@, Damage x2)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-20</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Vulnerability (@Occasional attack@, Damage x3)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-30</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Vulnerability (@Occasional attack@, Damage x4)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-40</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Vulnerability (@Rare attack@, Damage x2)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Vulnerability (@Rare attack@, Damage x3)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-15</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Vulnerability (@Rare attack@, Damage x4)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-20</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Vulnerability (@Very Common attack@, Damage x2)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-40</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Vulnerability (@Very Common attack@, Damage x3)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-60</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Vulnerability (@Very Common attack@, Damage x4)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-80</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Weak Bite</name>
 		<type>Physical, Exotic</type>
 		<base_points>-2</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Weakness (@Common substance@, 1D/5 Min)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-20</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Weakness (@Common substance@, 1D/30 Min)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Weakness (@Common substance@, 1D/Min)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-40</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Weakness (@Occasional substance@, 1D/5 Min)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Weakness (@Occasional substance@, 1D/30 Min)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-5</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Weakness (@Occasional substance@, 1D/Min)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-20</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Weakness (@Rare substance@, 1D/5 Min)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-5</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Weakness (@Rare substance@, 1D/30 Min)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-2</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Weakness (@Rare substance@, 1D/Min)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-10</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Weakness (@Very Common substance@, 1D/5 Min)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-30</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Weakness (@Very Common substance@, 1D/30 Min)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-15</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Weakness (@Very Common substance@, 1D/Min)</name>
 		<type>Physical, Exotic</type>
 		<base_points>-60</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Wealth (Dead Broke)</name>
 		<type>Social</type>
 		<base_points>-25</base_points>
 		<reference>B25</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Wealth (Debt)</name>
@@ -5530,74 +5240,63 @@
 		<levels>1</levels>
 		<points_per_level>-1</points_per_level>
 		<reference>B26</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Wealth (Poor)</name>
 		<type>Social</type>
 		<base_points>-15</base_points>
 		<reference>B25</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Wealth (Struggling)</name>
 		<type>Social</type>
 		<base_points>-10</base_points>
 		<reference>B25</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Weirdness Magnet</name>
 		<type>Mental, Supernatural</type>
 		<base_points>-15</base_points>
 		<reference>B161</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Workaholic</name>
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B162</reference>
-		<notes></notes>
 	</advantage>
 	<advantage>
 		<name>Wounded</name>
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B162</reference>
-		<notes></notes>
 	</advantage>
 	<advantage_container open="no">
 		<name>Xenophilia</name>
 		<reference>B162</reference>
-		<notes></notes>
 		<advantage>
 			<name>Xenophilia (CR: 6, FC: +4)</name>
 			<type>Mental</type>
 			<base_points>-20</base_points>
 			<reference>B162</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Xenophilia (CR: 9, FC: +3)</name>
 			<type>Mental</type>
 			<base_points>-15</base_points>
 			<reference>B162</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Xenophilia (CR: 12, FC: +2)</name>
 			<type>Mental</type>
 			<base_points>-10</base_points>
 			<reference>B162</reference>
-			<notes></notes>
 		</advantage>
 		<advantage>
 			<name>Xenophilia (CR: 15, FC: +1)</name>
 			<type>Mental</type>
 			<base_points>-5</base_points>
 			<reference>B162</reference>
-			<notes></notes>
 		</advantage>
 	</advantage_container>
 </advantage_list>

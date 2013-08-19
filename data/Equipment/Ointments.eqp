@@ -3,541 +3,433 @@
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Aging</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>825.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Alchemical Antidote</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>400.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M217</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Attractiveness</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>600.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Awakening</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>500.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M217</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Battle</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>350.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Beast-Speech</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>850.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M213</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Bird Control</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>550.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M213</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Charisma</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>350.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M218</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Craftsmanship</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1100.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Death</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>500.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Endurance</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1400.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Eternal Rest</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>4100.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M217</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Fear</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>225.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Fertility</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>6000.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M217</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Fetching and Carrying</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>300.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Fire Risistance</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>500.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Flight</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>3000.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Foolishness</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>500.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Foresight</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>2000.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M218</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Friendship</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>550.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Fustration</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>650.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Gullibility</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>500.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Hatred</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>300.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Healing</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>120.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M217</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Hearing</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>300.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Horsemanship</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>250.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Invisibility</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>3000.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Invulnerability</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>2100.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Jealousy</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>400.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Keen Sight</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>400.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Leadership</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1650.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Lecherousness</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>500.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Long Slumber</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>9000.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M217</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Luck</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1300.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Madness</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>200.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Magic Resistance</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1600.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Memory</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1500.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Music</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>300.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Odium</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1000.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Pain Resistance</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>600.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Reanimation</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>4100.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M217</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Regeneration</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>5000.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M218</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Self-Love</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>750.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Sleep</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>120.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M218</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Speed</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>550.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Stealth</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>500.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Strength</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>250.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M214</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Tranquility</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>500.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M218</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Transformation</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>3000.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: True Sight</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>550.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Truth</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1100.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M219</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Unluckiness</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>1600.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Water-Walking</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>700.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M216</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
 		<description>Ointment: Weakness</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>400.0</value>
 		<weight units="lb">0.2</weight>
 		<reference>M215</reference>
-		<notes></notes>
 	</equipment>
 </equipment_list>

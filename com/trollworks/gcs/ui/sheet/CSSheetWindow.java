@@ -214,7 +214,7 @@ public class CSSheetWindow extends CSWindow implements Printable, TKSearchTarget
 		String extension = TKPath.getExtension(file.getName());
 
 		if (HTML_EXTENSION.equals(extension)) {
-			if (mSheet.saveAsHTML(file)) {
+			if (mSheet.saveAsHTML(file, null, null)) {
 				result.add(file);
 			} else {
 				TKOptionDialog.error(this, Msgs.SAVE_AS_HTML_ERROR);

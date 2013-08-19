@@ -26,7 +26,6 @@
 		<casting_time>3 sec</casting_time>
 		<duration>Indefinite</duration>
 		<reference>M165</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -54,7 +53,6 @@
 		<casting_time>5 min</casting_time>
 		<duration>1 Crop or Season</duration>
 		<reference>M161</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">heal plant</name>
@@ -70,7 +68,6 @@
 		<casting_time>5 min</casting_time>
 		<duration>1 Crop or Season</duration>
 		<reference>M162</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">plant growth</name>
@@ -86,7 +83,6 @@
 		<casting_time>5 min</casting_time>
 		<duration>1 hour</duration>
 		<reference>M162</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">plant growth</name>
@@ -102,7 +98,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M165</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape water</name>
@@ -133,7 +128,6 @@
 		<casting_time>5 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M165</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">plant form</name>
@@ -161,7 +155,6 @@
 		<casting_time>4 sec</casting_time>
 		<duration>1 hour</duration>
 		<reference>M162</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Create Plants</name>
@@ -172,7 +165,6 @@
 		<casting_time>Varies</casting_time>
 		<duration>Permanent</duration>
 		<reference>M163</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">plant growth</name>
@@ -200,7 +192,6 @@
 		<casting_time>30 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M164</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">plant</college>
@@ -217,7 +208,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M163</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape earth</name>
@@ -236,7 +226,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>10 hours</duration>
 		<reference>M162</reference>
-		<notes></notes>
 		<prereq_list all="no">
 			<advantage_prereq has="yes">
 				<name compare="is"></name>
@@ -257,7 +246,6 @@
 		<casting_time>1 Min</casting_time>
 		<duration>Permanent</duration>
 		<reference>M161</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">identify plant</name>
@@ -273,7 +261,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M162</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">Heal Plant</name>
@@ -289,14 +276,15 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Instant</duration>
 		<reference>M161</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is">naturalist</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<skill_bonus>
 			<name compare="is">physician</name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+3</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
@@ -313,7 +301,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M164</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">plant sense</name>
@@ -329,7 +316,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 hour</duration>
 		<reference>M164</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">plant</college>
@@ -358,10 +344,10 @@
 		<casting_time>30 sec</casting_time>
 		<duration>1 hour</duration>
 		<reference>M165</reference>
-		<notes></notes>
 		<skill_bonus>
 			<name compare="is"></name>
 			<specialization compare="is anything"></specialization>
+			<amount per_level="no">+1</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
@@ -394,7 +380,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M162</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">heal plant</name>
@@ -410,7 +395,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M163</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">forest warning</name>
@@ -429,7 +413,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M164</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -457,7 +440,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>30 sec</duration>
 		<reference>M162</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape plant</name>
@@ -474,14 +456,11 @@
 		<duration>5 min#</duration>
 		<melee_weapon>
 			<damage>Cough/Sneeze</damage>
-			<strength></strength>
 			<usage>Area</usage>
 			<reach>Special</reach>
 			<parry>No</parry>
-			<block></block>
 		</melee_weapon>
 		<reference>M162</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape plant</name>
@@ -516,7 +495,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M165</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">shape plant</name>
@@ -548,7 +526,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M163</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">plant growth</name>
@@ -576,7 +553,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M161</reference>
-		<notes></notes>
 	</spell>
 	<spell>
 		<name>Shape Plant</name>
@@ -587,7 +563,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M161</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">identify plant</name>
@@ -603,7 +578,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M162</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">plant growth</name>
@@ -619,7 +593,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M163</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">hide path</name>
@@ -638,7 +611,6 @@
 		<casting_time>1 sec</casting_time>
 		<duration>1 sec</duration>
 		<reference>M164</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">walk through plants</name>
@@ -654,7 +626,6 @@
 		<casting_time>10 sec</casting_time>
 		<duration>Permanent</duration>
 		<reference>M163</reference>
-		<notes></notes>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">blight</name>

@@ -110,10 +110,11 @@ public class CSMenuKeys {
 		// Help menu
 		TITLE_MAP.put(TKWindow.CMD_ABOUT, MessageFormat.format(Msgs.ABOUT, TKApp.getName()));
 		TITLE_MAP.put(CSWindow.CMD_RELEASE_NOTES, Msgs.RELEASE_NOTES);
-		TITLE_MAP.put(CSWindow.CMD_TODO_LIST, Msgs.TODO_LIST);
 		TITLE_MAP.put(CSWindow.CMD_USERS_MANUAL, Msgs.USERS_MANUAL);
 		TITLE_MAP.put(CSWindow.CMD_LICENSE, Msgs.LICENSE);
 		TITLE_MAP.put(CSWindow.CMD_WEB_SITE, Msgs.WEB_SITE);
+		TITLE_MAP.put(CSWindow.CMD_FEATURES, Msgs.FEATURES);
+		TITLE_MAP.put(CSWindow.CMD_BUGS, Msgs.BUGS);
 		TITLE_MAP.put(CSWindow.CMD_MAILING_LISTS, Msgs.MAILING_LISTS);
 
 		reset();
@@ -203,10 +204,11 @@ public class CSMenuKeys {
 		// Help menu
 		put(TKWindow.CMD_ABOUT, null);
 		put(CSWindow.CMD_RELEASE_NOTES, null);
-		put(CSWindow.CMD_TODO_LIST, null);
 		put(CSWindow.CMD_USERS_MANUAL, null);
 		put(CSWindow.CMD_LICENSE, null);
 		put(CSWindow.CMD_WEB_SITE, null);
+		put(CSWindow.CMD_FEATURES, null);
+		put(CSWindow.CMD_BUGS, null);
 		put(CSWindow.CMD_MAILING_LISTS, null);
 	}
 

@@ -4,57 +4,48 @@
 		<advantage_container open="yes" type="metatrait">
 			<name>Meta-Trait: Spirit</name>
 			<reference>B263</reference>
-			<notes></notes>
 			<advantage>
 				<name>Doesn't Breathe</name>
 				<type>Physical, Exotic</type>
 				<base_points>20</base_points>
 				<reference>B49</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Doesn't Eat or Drink</name>
 				<type>Physical, Exotic</type>
 				<base_points>10</base_points>
 				<reference>B50</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Doesn't Sleep</name>
 				<type>Physical, Exotic</type>
 				<base_points>20</base_points>
 				<reference>B50</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Insubstantiality (Affect Substantial, Usually On)</name>
 				<type>Mental/Physical, Exotic</type>
 				<base_points>128</base_points>
 				<reference>B62</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Invisibility (Substantial Only, Usually On)</name>
 				<type>Mental/Physical, Exotic</type>
 				<base_points>38</base_points>
 				<reference>B63</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Resistant (Immunity to Metabolic Hazards)</name>
 				<type>Physical</type>
 				<base_points>30</base_points>
 				<reference>B81</reference>
-				<notes></notes>
 			</advantage>
 			<advantage>
 				<name>Unaging</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>
 				<reference>B95</reference>
-				<notes></notes>
 			</advantage>
 		</advantage_container>
 	</advantage_list>
-	<notes></notes>
 </template>

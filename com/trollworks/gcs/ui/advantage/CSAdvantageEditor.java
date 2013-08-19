@@ -31,6 +31,7 @@ import com.trollworks.gcs.ui.editor.CSRowEditor;
 import com.trollworks.gcs.ui.editor.defaults.CSDefaults;
 import com.trollworks.gcs.ui.editor.feature.CSFeatures;
 import com.trollworks.gcs.ui.editor.prereq.CSPrereqs;
+import com.trollworks.gcs.ui.modifiers.CSModifierListEditor;
 import com.trollworks.gcs.ui.weapon.CSMeleeWeaponEditor;
 import com.trollworks.gcs.ui.weapon.CSRangedWeaponEditor;
 import com.trollworks.toolkit.text.TKNumberFilter;
@@ -76,6 +77,7 @@ public class CSAdvantageEditor extends CSRowEditor<CMAdvantage> implements Actio
 	private CSDefaults				mDefaults;
 	private CSMeleeWeaponEditor		mMeleeWeapons;
 	private CSRangedWeaponEditor	mRangedWeapons;
+	private CSModifierListEditor	mModifiers;
 	private int						mLastLevel;
 	private int						mLastPointsPerLevel;
 	private TKToggleButton			mMentalType;
@@ -139,16 +141,21 @@ public class CSAdvantageEditor extends CSRowEditor<CMAdvantage> implements Actio
 			mDefaults = new CSDefaults(mRow.getDefaults());
 			mMeleeWeapons = CSMeleeWeaponEditor.createEditor(mRow);
 			mRangedWeapons = CSRangedWeaponEditor.createEditor(mRow);
+			mModifiers = CSModifierListEditor.createEditor(mRow);
 			mDefaults.addActionListener(this);
 			panels.add(embedEditor(mDefaults));
 			panels.add(embedEditor(mPrereqs));
 			panels.add(embedEditor(mFeatures));
+			panels.add(mModifiers);
 			panels.add(mMeleeWeapons);
 			panels.add(mRangedWeapons);
+
 			if (!mIsEditable) {
 				disableControls(mMeleeWeapons);
 				disableControls(mRangedWeapons);
+				disableControls(mModifiers);
 			}
+
 			mTabPanel = new TKTabbedPanel(panels);
 			mTabPanel.setSelectedPanelByName(getLastTabName());
 			add(mTabPanel);
@@ -323,24 +330,27 @@ public class CSAdvantageEditor extends CSRowEditor<CMAdvantage> implements Actio
 				modified |= mRow.setPointsPerLevel(0);
 				modified |= mRow.setLevels(-1);
 			}
+			if (mDefaults != null) {
+				modified |= mRow.setDefaults(mDefaults.getDefaults());
+			}
+			if (mPrereqs != null) {
+				modified |= mRow.setPrereqs(mPrereqs.getPrereqList());
+			}
+			if (mFeatures != null) {
+				modified |= mRow.setFeatures(mFeatures.getFeatures());
+			}
+			if (mMeleeWeapons != null) {
+				ArrayList<CMWeaponStats> list = new ArrayList<CMWeaponStats>(mMeleeWeapons.getWeapons());
+
+				list.addAll(mRangedWeapons.getWeapons());
+				modified |= mRow.setWeapons(list);
+			}
+			if (mModifiers != null) {
+				modified |= mRow.setModifiers(mModifiers.getModifiers());
+			}
 		}
 		modified |= mRow.setReference(mReferenceField.getText());
 		modified |= mRow.setNotes(mNotesField.getText());
-		if (mDefaults != null) {
-			modified |= mRow.setDefaults(mDefaults.getDefaults());
-		}
-		if (mPrereqs != null) {
-			modified |= mRow.setPrereqs(mPrereqs.getPrereqList());
-		}
-		if (mFeatures != null) {
-			modified |= mRow.setFeatures(mFeatures.getFeatures());
-		}
-		if (mMeleeWeapons != null) {
-			ArrayList<CMWeaponStats> list = new ArrayList<CMWeaponStats>(mMeleeWeapons.getWeapons());
-
-			list.addAll(mRangedWeapons.getWeapons());
-			modified |= mRow.setWeapons(list);
-		}
 		return modified;
 	}
 
@@ -358,6 +368,8 @@ public class CSAdvantageEditor extends CSRowEditor<CMAdvantage> implements Actio
 		} else if (src == mLevelType) {
 			levelTypeChanged();
 		} else if (src == mBasePointsField || src == mLevelField || src == mLevelPointsField) {
+			updatePoints();
+		} else if (src == mModifiers) {
 			updatePoints();
 		}
 	}

@@ -8,7 +8,6 @@
 		<value>2.0</value>
 		<weight units="lb">0.1</weight>
 		<reference>B276</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -18,15 +17,12 @@
 		<value>0.1</value>
 		<weight units="lb">0.05</weight>
 		<reference>B276</reference>
-		<notes></notes>
 	</equipment>
 	<equipment_container open="yes">
 		<description>Bolt Case</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>20.0</value>
 		<weight units="lb">1.0</weight>
-		<reference></reference>
 		<notes>Holds 20 bolts</notes>
 		<prereq_list all="yes">
 			<contained_weight_prereq has="yes" compare="atMost" units="lb">1.21</contained_weight_prereq>
@@ -40,7 +36,6 @@
 		<value>2.0</value>
 		<weight units="lb">0.06</weight>
 		<reference>B276</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -50,7 +45,6 @@
 		<value>0.1</value>
 		<weight units="lb">0.06</weight>
 		<reference>B276</reference>
-		<notes></notes>
 	</equipment>
 	<equipment>
 		<quantity>1</quantity>
@@ -64,11 +58,9 @@
 	</equipment>
 	<equipment_container open="yes">
 		<description>Quiver</description>
-		<tech_level></tech_level>
 		<legality_class>4</legality_class>
 		<value>20.0</value>
 		<weight units="lb">1.0</weight>
-		<reference></reference>
 		<notes>Holds 20 arrows</notes>
 		<prereq_list all="yes">
 			<contained_weight_prereq has="yes" compare="atMost" units="lb">2.0</contained_weight_prereq>
@@ -82,6 +74,5 @@
 		<value>0.0</value>
 		<weight units="lb">0.05</weight>
 		<reference>B276</reference>
-		<notes></notes>
 	</equipment>
 </equipment_list>
