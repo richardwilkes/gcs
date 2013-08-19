@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2007 the Initial Developer. All Rights Reserved.
+ * 2005-2008 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -27,6 +27,7 @@ import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.text.NumberUtils;
 import com.trollworks.gcs.widgets.UIUtilities;
+import com.trollworks.gcs.widgets.Wrapper;
 import com.trollworks.gcs.widgets.layout.ColumnLayout;
 
 import java.awt.Color;
@@ -34,7 +35,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.text.MessageFormat;
 
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 /** The character encumbrance panel. */
@@ -85,7 +85,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 		createHeader(this, MSG_DODGE, MSG_DODGE_TOOLTIP);
 		int current = character.getEncumbranceLevel();
 		for (int i = 0; i < GURPSCharacter.ENCUMBRANCE_LEVELS; i++) {
-			mMarkers[i] = new PageLabel(MessageFormat.format(i == current ? MSG_CURRENT_ENCUMBRANCE_FORMAT : MSG_ENCUMBRANCE_FORMAT, ENCUMBRANCE_TITLES[i], NumberUtils.format(i)), header);
+			mMarkers[i] = new PageLabel(getMarkerText(i, current), header);
 			add(mMarkers[i]);
 			if (current == i) {
 				addHorizontalBackground(mMarkers[i], CURRENT_ENCUMBRANCE_COLOR);
@@ -100,9 +100,12 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 		character.addTarget(this, GURPSCharacter.ID_CARRIED_WEIGHT, GURPSCharacter.ID_BASIC_LIFT);
 	}
 
+	private String getMarkerText(int which, int current) {
+		return MessageFormat.format(which == current ? MSG_CURRENT_ENCUMBRANCE_FORMAT : MSG_ENCUMBRANCE_FORMAT, ENCUMBRANCE_TITLES[which], NumberUtils.format(which));
+	}
+
 	private Container createDivider() {
-		JPanel panel = new JPanel();
-		panel.setOpaque(false);
+		Wrapper panel = new Wrapper();
 		UIUtilities.setOnlySize(panel, new Dimension(1, 1));
 		add(panel);
 		return panel;
@@ -116,7 +119,9 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 			} else {
 				removeHorizontalBackground(mMarkers[i]);
 			}
+			mMarkers[i].setText(getMarkerText(i, current));
 		}
+		revalidate();
 		repaint();
 	}
 }

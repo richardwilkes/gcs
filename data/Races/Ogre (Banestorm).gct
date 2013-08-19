@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="faegrs41:gazocel4uyeu" version="1">
+	<advantage_list>
+		<advantage version="2">
+			<name>Increased Strength</name>
+			<type>Physical</type>
+			<levels>10</levels>
+			<points_per_level>10</points_per_level>
+			<modifier version="1">
+				<name>SM+1</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+			</modifier>
+			<reference>B14</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>st</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Decreased Intelligence</name>
+			<type>Physical</type>
+			<levels>3</levels>
+			<points_per_level>-20</points_per_level>
+			<reference>B15</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>iq</attribute>
+				<amount per_level="yes">-1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Decreased Dexterity</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<points_per_level>-20</points_per_level>
+			<reference>B15</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>dx</attribute>
+				<amount per_level="yes">-1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Increased Health</name>
+			<type>Physical</type>
+			<levels>3</levels>
+			<points_per_level>10</points_per_level>
+			<reference>B14</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>ht</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Acute Taste &amp; Smell</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<points_per_level>2</points_per_level>
+			<reference>B35</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>taste_smell</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Damage Resistance</name>
+			<type>Physical, Exotic</type>
+			<levels>3</levels>
+			<points_per_level>5</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Ablative</name>
+				<cost type="percentage">-80</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Absorbtion</name>
+				<cost type="percentage">80</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>Enhances @Trait@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Absorbtion</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>Enhances any trait</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Absorbtion</name>
+				<cost type="percentage">80</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>Healing only</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Can't wear armor</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Directional</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+				<notes>@Direction: Back, Right, Left, Top or Underside@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Directional</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+				<notes>Front</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Flexible</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hardened</name>
+				<cost type="percentage">20</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Common Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-60</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Occasional Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-80</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Rare Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Very Common Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Reflection</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Semi-Ablative</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1">
+				<name>Tough Skin</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<reference>B47</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<dr_bonus>
+				<location>full_body_except_eyes</location>
+				<amount per_level="yes">1</amount>
+			</dr_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>High Pain Threshold</name>
+			<type>Physical</type>
+			<base_points>10</base_points>
+			<reference>B59</reference>
+			<notes>Never suffer shock penalties when injured; +3 on all HT rolls to avoid knockdown and stunning; +3 to resist torture</notes>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Magic Resistance</name>
+			<type>Physical</type>
+			<levels>2</levels>
+			<points_per_level>2</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Improved</name>
+				<cost type="percentage">150</cost>
+				<affects>total</affects>
+				<reference>B67</reference>
+			</modifier>
+			<reference>B67</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Night Vision</name>
+			<type>Physical</type>
+			<levels>9</levels>
+			<points_per_level>1</points_per_level>
+			<reference>B71</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Appearance (Hideous)</name>
+			<type>Physical</type>
+			<base_points>-16</base_points>
+			<reference>B21</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Odious Personal Habit</name>
+			<type>Physical</type>
+			<base_points>-15</base_points>
+			<reference>B22</reference>
+			<notes>Eats other sapients; -3 Reaction</notes>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Social Stigma (Barbarian)</name>
+			<type>Social</type>
+			<base_points>-10</base_points>
+			<reference>BS186</reference>
+			<notes>-2 Reaction from others; +2 Reaction by Barbarians</notes>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Social Stigma (Uneducated)</name>
+			<type>Social</type>
+			<base_points>-5</base_points>
+			<reference>B156</reference>
+			<notes>-1 Reaction</notes>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+	</advantage_list>
+	<notes>  Ogres stand 7 to 8 feet tall; they are half a ton or more of pure muscle.
+Most are just lone wanderers, haunting the wilderness and eating whatever
+they can kill. Unlike, say, minotaurs, ogres have no particular innate 
+hostility to other races. In the wild, they will react normally to chance 
+encounters unless they are hungry. However, few people wait to see if an 
+ogre wants to be friends. Ogre personalities are as one would expect from
+large, stupid humans; some are sullen, some just want to be liked. Most 
+enjoy fighting.
+  To figure height, take ST before the +10 racial modifier, and increase 
+it by 60%. Average weight is 5 times that of a human of the same 
+(pre-modifier) ST.
+  Some ogres are smarter or more social than the norm, and a minority 
+understand that eating other people is frowned upon. Unfortunately, many of
+them have a lot more mental disadvantages than listed here, including
+everything from Bad Temper to Sadism. A tiny number are much smarter than 
+the norm; these ogre geniuses are likely to have Magery instead of Magic 
+Resistance.</notes>
+</template>

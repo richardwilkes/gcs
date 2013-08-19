@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2007 the Initial Developer. All Rights Reserved.
+ * 2005-2008 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -27,6 +27,7 @@ import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.text.NumberUtils;
 import com.trollworks.gcs.widgets.UIUtilities;
+import com.trollworks.gcs.widgets.Wrapper;
 import com.trollworks.gcs.widgets.layout.ColumnLayout;
 import com.trollworks.gcs.widgets.layout.RowDistribution;
 
@@ -34,7 +35,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.text.MessageFormat;
 
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 /** The character points panel. */
@@ -90,13 +90,11 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
 	}
 
 	private void createDivider() {
-		JPanel panel = new JPanel();
-		panel.setOpaque(false);
+		Wrapper panel = new Wrapper();
 		UIUtilities.setOnlySize(panel, new Dimension(1, 1));
 		add(panel);
 		addHorizontalBackground(panel, Color.black);
-		panel = new JPanel();
-		panel.setOpaque(false);
+		panel = new Wrapper();
 		UIUtilities.setOnlySize(panel, new Dimension(1, 1));
 		add(panel);
 	}

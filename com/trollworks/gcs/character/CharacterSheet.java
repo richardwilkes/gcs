@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2007 the Initial Developer. All Rights Reserved.
+ * 2005-2008 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -64,6 +64,7 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.AppWindow;
 import com.trollworks.gcs.widgets.GraphicsUtilities;
 import com.trollworks.gcs.widgets.UIUtilities;
+import com.trollworks.gcs.widgets.Wrapper;
 import com.trollworks.gcs.widgets.layout.ColumnLayout;
 import com.trollworks.gcs.widgets.layout.RowDistribution;
 import com.trollworks.gcs.widgets.outline.Column;
@@ -178,7 +179,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		if (!GraphicsUtilities.inHeadlessPrintMode()) {
 			setDropTarget(new DropTarget(this, this));
 		}
-		Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY);
+		Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY, Fonts.FONT_NOTIFICATION_KEY);
 	}
 
 	/** Call when the sheet is no longer in use. */
@@ -548,8 +549,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	private Container hwrap(Component left, Component right) {
-		JPanel wrapper = new JPanel(new ColumnLayout(2, 2, 2));
-
+		Wrapper wrapper = new Wrapper(new ColumnLayout(2, 2, 2));
 		wrapper.add(left);
 		wrapper.add(right);
 		wrapper.setAlignmentY(-1f);
@@ -557,8 +557,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	private Container hwrap(Component left, Component center, Component right) {
-		JPanel wrapper = new JPanel(new ColumnLayout(3, 2, 2));
-
+		Wrapper wrapper = new Wrapper(new ColumnLayout(3, 2, 2));
 		wrapper.add(left);
 		wrapper.add(center);
 		wrapper.add(right);
@@ -567,8 +566,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	private Container hwrap(Component left, Component center, Component center2, Component right) {
-		JPanel wrapper = new JPanel(new ColumnLayout(4, 2, 2));
-
+		Wrapper wrapper = new Wrapper(new ColumnLayout(4, 2, 2));
 		wrapper.add(left);
 		wrapper.add(center);
 		wrapper.add(center2);
@@ -578,8 +576,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	private Container vwrap(Component top, Component bottom) {
-		JPanel wrapper = new JPanel(new ColumnLayout(1, 2, 2));
-
+		Wrapper wrapper = new Wrapper(new ColumnLayout(1, 2, 2));
 		wrapper.add(top);
 		wrapper.add(bottom);
 		wrapper.setAlignmentY(-1f);
@@ -587,8 +584,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	private Container vwrap(Component top, Component bottom, RowDistribution distribution) {
-		JPanel wrapper = new JPanel(new ColumnLayout(1, 2, 2, distribution));
-
+		Wrapper wrapper = new Wrapper(new ColumnLayout(1, 2, 2, distribution));
 		wrapper.add(top);
 		wrapper.add(bottom);
 		wrapper.setAlignmentY(-1f);
@@ -632,7 +628,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	public void handleNotification(Object producer, String type, Object data) {
-		if (SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY.equals(type)) {
+		if (SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY.equals(type) || Fonts.FONT_NOTIFICATION_KEY.equals(type)) {
 			markForRebuild();
 		} else {
 			if (type.startsWith(Advantage.PREFIX)) {
@@ -862,7 +858,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 	public void dragOver(DropTargetDragEvent dtde) {
 		if (mDragWasAcceptable) {
-// setBorder(new LineBorder(Colors.HIGHLIGHT, 2, LineBorder.ALL_EDGES, false));
 			dtde.acceptDrag(DnDConstants.ACTION_MOVE);
 		} else {
 			dtde.rejectDrag();
@@ -881,13 +876,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		dtde.acceptDrop(dtde.getDropAction());
 		((SheetWindow) getTopLevelAncestor()).addRows(mDragRows);
 		mDragRows = null;
-// setBorder(null);
 		dtde.dropComplete(true);
 	}
 
 	public void dragExit(DropTargetEvent dte) {
 		mDragRows = null;
-// setBorder(null);
 	}
 
 	private PageFormat createDefaultPageFormat() {
@@ -1360,43 +1353,52 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 							keyBuffer.setLength(0);
 							state = 0;
 
-							if (key.equals("EVEN_ODD")) { //$NON-NLS-1$
-								out.write(odd ? "odd" : "even"); //$NON-NLS-1$ //$NON-NLS-2$
-							} else if (key.equals("STYLE_INDENT_WARNING")) { //$NON-NLS-1$
-								StringBuilder style = new StringBuilder();
-								int depth = advantage.getDepth();
-
-								if (depth > 0) {
-									style.append(" style=\"padding-left: "); //$NON-NLS-1$
-									style.append(depth * 12);
-									style.append("px;"); //$NON-NLS-1$
-								}
-								if (!advantage.isSatisfied()) {
-									if (style.length() == 0) {
-										style.append(" style=\""); //$NON-NLS-1$
+							if (!processStyleIndentWarning(key, out, advantage, odd)) {
+								if (!processDescription(key, out, advantage)) {
+									if (key.equals("POINTS")) { //$NON-NLS-1$
+										writeXMLText(out, AdvantageColumn.POINTS.getDataAsText(advantage));
+									} else if (key.equals("REF")) { //$NON-NLS-1$
+										writeXMLText(out, AdvantageColumn.REFERENCE.getDataAsText(advantage));
+									} else {
+										writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 									}
-									style.append(" color: red;"); //$NON-NLS-1$
 								}
-								if (style.length() > 0) {
-									style.append("\" "); //$NON-NLS-1$
-									out.write(style.toString());
-								}
-							} else if (key.equals("DESCRIPTION")) { //$NON-NLS-1$
-								writeXMLText(out, advantage.toString());
-								writeNote(out, advantage.getModifierNotes());
-								writeNote(out, advantage.getNotes());
-							} else if (key.equals("POINTS")) { //$NON-NLS-1$
-								writeXMLText(out, AdvantageColumn.POINTS.getDataAsText(advantage));
-							} else if (key.equals("REF")) { //$NON-NLS-1$
-								writeXMLText(out, AdvantageColumn.REFERENCE.getDataAsText(advantage));
-							} else {
-								writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 							}
 						}
 						break;
 				}
 			}
 			odd = !odd;
+		}
+	}
+
+	private boolean processDescription(String key, BufferedWriter out, ListRow row) throws IOException {
+		if (key.equals("DESCRIPTION")) { //$NON-NLS-1$
+			writeXMLText(out, row.toString());
+			writeNote(out, row.getModifierNotes());
+			writeNote(out, row.getNotes());
+		} else if (key.equals("DESCRIPTION_PRIMARY")) { //$NON-NLS-1$
+			writeXMLText(out, row.toString());
+		} else if (key.startsWith("DESCRIPTION_MODIFIER_NOTES")) { //$NON-NLS-1$
+			writeXMLTextWithOptionalParens(key, out, row.getModifierNotes());
+		} else if (key.startsWith("DESCRIPTION_NOTES")) { //$NON-NLS-1$
+			writeXMLTextWithOptionalParens(key, out, row.getNotes());
+		} else {
+			return false;
+		}
+		return true;
+	}
+
+	private void writeXMLTextWithOptionalParens(String key, BufferedWriter out, String text) throws IOException {
+		if (text.length() > 0) {
+			boolean parenVersion = key.endsWith("_PAREN"); //$NON-NLS-1$
+			if (parenVersion) {
+				out.write(" ("); //$NON-NLS-1$
+			}
+			writeXMLText(out, text);
+			if (parenVersion) {
+				out.write(')');
+			}
 		}
 	}
 
@@ -1436,40 +1438,20 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 							keyBuffer.setLength(0);
 							state = 0;
 
-							if (key.equals("EVEN_ODD")) { //$NON-NLS-1$
-								out.write(odd ? "odd" : "even"); //$NON-NLS-1$ //$NON-NLS-2$
-							} else if (key.equals("STYLE_INDENT_WARNING")) { //$NON-NLS-1$
-								StringBuilder style = new StringBuilder();
-								int depth = skill.getDepth();
-
-								if (depth > 0) {
-									style.append(" style=\"padding-left: "); //$NON-NLS-1$
-									style.append(depth * 12);
-									style.append("px;"); //$NON-NLS-1$
-								}
-								if (!skill.isSatisfied()) {
-									if (style.length() == 0) {
-										style.append(" style=\""); //$NON-NLS-1$
+							if (!processStyleIndentWarning(key, out, skill, odd)) {
+								if (!processDescription(key, out, skill)) {
+									if (key.equals("SL")) { //$NON-NLS-1$
+										writeXMLText(out, SkillColumn.LEVEL.getDataAsText(skill));
+									} else if (key.equals("RSL")) { //$NON-NLS-1$
+										writeXMLText(out, SkillColumn.RELATIVE_LEVEL.getDataAsText(skill));
+									} else if (key.equals("POINTS")) { //$NON-NLS-1$
+										writeXMLText(out, SkillColumn.POINTS.getDataAsText(skill));
+									} else if (key.equals("REF")) { //$NON-NLS-1$
+										writeXMLText(out, SkillColumn.REFERENCE.getDataAsText(skill));
+									} else {
+										writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 									}
-									style.append(" color: red;"); //$NON-NLS-1$
 								}
-								if (style.length() > 0) {
-									style.append("\" "); //$NON-NLS-1$
-									out.write(style.toString());
-								}
-							} else if (key.equals("DESCRIPTION")) { //$NON-NLS-1$
-								writeXMLText(out, skill.toString());
-								writeNote(out, skill.getNotes());
-							} else if (key.equals("SL")) { //$NON-NLS-1$
-								writeXMLText(out, SkillColumn.LEVEL.getDataAsText(skill));
-							} else if (key.equals("RSL")) { //$NON-NLS-1$
-								writeXMLText(out, SkillColumn.RELATIVE_LEVEL.getDataAsText(skill));
-							} else if (key.equals("POINTS")) { //$NON-NLS-1$
-								writeXMLText(out, SkillColumn.POINTS.getDataAsText(skill));
-							} else if (key.equals("REF")) { //$NON-NLS-1$
-								writeXMLText(out, SkillColumn.REFERENCE.getDataAsText(skill));
-							} else {
-								writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 							}
 						}
 						break;
@@ -1477,6 +1459,38 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			}
 			odd = !odd;
 		}
+	}
+
+	private boolean processStyleIndentWarning(String key, BufferedWriter out, ListRow row, boolean odd) throws IOException {
+		if (key.equals("EVEN_ODD")) { //$NON-NLS-1$
+			out.write(odd ? "odd" : "even"); //$NON-NLS-1$ //$NON-NLS-2$
+		} else if (key.equals("STYLE_INDENT_WARNING")) { //$NON-NLS-1$
+			StringBuilder style = new StringBuilder();
+			int depth = row.getDepth();
+			if (depth > 0) {
+				style.append(" style=\"padding-left: "); //$NON-NLS-1$
+				style.append(depth * 12);
+				style.append("px;"); //$NON-NLS-1$
+			}
+			if (!row.isSatisfied()) {
+				if (style.length() == 0) {
+					style.append(" style=\""); //$NON-NLS-1$
+				}
+				style.append(" color: red;"); //$NON-NLS-1$
+			}
+			if (style.length() > 0) {
+				style.append("\" "); //$NON-NLS-1$
+				out.write(style.toString());
+			}
+		} else if (key.startsWith("DEPTHx")) { //$NON-NLS-1$
+			int amt = NumberUtils.getNonLocalizedInteger(key.substring(6), 1);
+			out.write("" + amt * row.getDepth()); //$NON-NLS-1$
+		} else if (key.equals("SATISFIED")) { //$NON-NLS-1$
+			out.write(row.isSatisfied() ? "Y" : "N"); //$NON-NLS-1$ //$NON-NLS-2$
+		} else {
+			return false;
+		}
+		return true;
 	}
 
 	private void processSpellsLoop(BufferedWriter out, String contents) throws IOException {
@@ -1507,52 +1521,32 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 							keyBuffer.setLength(0);
 							state = 0;
 
-							if (key.equals("EVEN_ODD")) { //$NON-NLS-1$
-								out.write(odd ? "odd" : "even"); //$NON-NLS-1$ //$NON-NLS-2$
-							} else if (key.equals("STYLE_INDENT_WARNING")) { //$NON-NLS-1$
-								StringBuilder style = new StringBuilder();
-								int depth = spell.getDepth();
-
-								if (depth > 0) {
-									style.append(" style=\"padding-left: "); //$NON-NLS-1$
-									style.append(depth * 12);
-									style.append("px;"); //$NON-NLS-1$
-								}
-								if (!spell.isSatisfied()) {
-									if (style.length() == 0) {
-										style.append(" style=\""); //$NON-NLS-1$
+							if (!processStyleIndentWarning(key, out, spell, odd)) {
+								if (!processDescription(key, out, spell)) {
+									if (key.equals("CLASS")) { //$NON-NLS-1$
+										writeXMLText(out, spell.getSpellClass());
+									} else if (key.equals("COLLEGE")) { //$NON-NLS-1$
+										writeXMLText(out, spell.getCollege());
+									} else if (key.equals("MANA_CAST")) { //$NON-NLS-1$
+										writeXMLText(out, spell.getCastingCost());
+									} else if (key.equals("MANA_MAINTAIN")) { //$NON-NLS-1$
+										writeXMLText(out, spell.getMaintenance());
+									} else if (key.equals("TIME_CAST")) { //$NON-NLS-1$
+										writeXMLText(out, spell.getCastingTime());
+									} else if (key.equals("DURATION")) { //$NON-NLS-1$
+										writeXMLText(out, spell.getDuration());
+									} else if (key.equals("SL")) { //$NON-NLS-1$
+										writeXMLText(out, SpellColumn.LEVEL.getDataAsText(spell));
+									} else if (key.equals("RSL")) { //$NON-NLS-1$
+										writeXMLText(out, SpellColumn.RELATIVE_LEVEL.getDataAsText(spell));
+									} else if (key.equals("POINTS")) { //$NON-NLS-1$
+										writeXMLText(out, SpellColumn.POINTS.getDataAsText(spell));
+									} else if (key.equals("REF")) { //$NON-NLS-1$
+										writeXMLText(out, SpellColumn.REFERENCE.getDataAsText(spell));
+									} else {
+										writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 									}
-									style.append(" color: red;"); //$NON-NLS-1$
 								}
-								if (style.length() > 0) {
-									style.append("\" "); //$NON-NLS-1$
-									out.write(style.toString());
-								}
-							} else if (key.equals("DESCRIPTION")) { //$NON-NLS-1$
-								writeXMLText(out, spell.toString());
-								writeNote(out, spell.getNotes());
-							} else if (key.equals("CLASS")) { //$NON-NLS-1$
-								writeXMLText(out, spell.getSpellClass());
-							} else if (key.equals("COLLEGE")) { //$NON-NLS-1$
-								writeXMLText(out, spell.getCollege());
-							} else if (key.equals("MANA_CAST")) { //$NON-NLS-1$
-								writeXMLText(out, spell.getCastingCost());
-							} else if (key.equals("MANA_MAINTAIN")) { //$NON-NLS-1$
-								writeXMLText(out, spell.getMaintenance());
-							} else if (key.equals("TIME_CAST")) { //$NON-NLS-1$
-								writeXMLText(out, spell.getCastingTime());
-							} else if (key.equals("DURATION")) { //$NON-NLS-1$
-								writeXMLText(out, spell.getDuration());
-							} else if (key.equals("SL")) { //$NON-NLS-1$
-								writeXMLText(out, SpellColumn.LEVEL.getDataAsText(spell));
-							} else if (key.equals("RSL")) { //$NON-NLS-1$
-								writeXMLText(out, SpellColumn.RELATIVE_LEVEL.getDataAsText(spell));
-							} else if (key.equals("POINTS")) { //$NON-NLS-1$
-								writeXMLText(out, SpellColumn.POINTS.getDataAsText(spell));
-							} else if (key.equals("REF")) { //$NON-NLS-1$
-								writeXMLText(out, SpellColumn.REFERENCE.getDataAsText(spell));
-							} else {
-								writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 							}
 						}
 						break;
@@ -1716,46 +1710,26 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 							keyBuffer.setLength(0);
 							state = 0;
 
-							if (key.equals("EVEN_ODD")) { //$NON-NLS-1$
-								out.write(odd ? "odd" : "even"); //$NON-NLS-1$ //$NON-NLS-2$
-							} else if (key.equals("STYLE_INDENT_WARNING")) { //$NON-NLS-1$
-								StringBuilder style = new StringBuilder();
-								int depth = equipment.getDepth();
-
-								if (depth > 0) {
-									style.append(" style=\"padding-left: "); //$NON-NLS-1$
-									style.append(depth * 12);
-									style.append("px;"); //$NON-NLS-1$
-								}
-								if (!equipment.isSatisfied()) {
-									if (style.length() == 0) {
-										style.append(" style=\""); //$NON-NLS-1$
+							if (!processStyleIndentWarning(key, out, equipment, odd)) {
+								if (!processDescription(key, out, equipment)) {
+									if (key.equals("STATE")) { //$NON-NLS-1$
+										out.write(equipment.getState().toShortString());
+									} else if (key.equals("QTY")) { //$NON-NLS-1$
+										writeXMLText(out, NumberUtils.format(equipment.getQuantity()));
+									} else if (key.equals("COST")) { //$NON-NLS-1$
+										writeXMLText(out, NumberUtils.format(equipment.getValue()));
+									} else if (key.equals("WEIGHT")) { //$NON-NLS-1$
+										writeXMLText(out, WeightUnits.POUNDS.format(equipment.getWeight()));
+									} else if (key.equals("COST_SUMMARY")) { //$NON-NLS-1$
+										writeXMLText(out, NumberUtils.format(equipment.getExtendedValue()));
+									} else if (key.equals("WEIGHT_SUMMARY")) { //$NON-NLS-1$
+										writeXMLText(out, WeightUnits.POUNDS.format(equipment.getExtendedWeight()));
+									} else if (key.equals("REF")) { //$NON-NLS-1$
+										writeXMLText(out, equipment.getReference());
+									} else {
+										writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 									}
-									style.append(" color: red;"); //$NON-NLS-1$
 								}
-								if (style.length() > 0) {
-									style.append("\" "); //$NON-NLS-1$
-									out.write(style.toString());
-								}
-							} else if (key.equals("DESCRIPTION")) { //$NON-NLS-1$
-								writeXMLText(out, equipment.toString());
-								writeNote(out, equipment.getNotes());
-							} else if (key.equals("STATE")) { //$NON-NLS-1$
-								out.write(equipment.getState().toShortString());
-							} else if (key.equals("QTY")) { //$NON-NLS-1$
-								writeXMLText(out, NumberUtils.format(equipment.getQuantity()));
-							} else if (key.equals("COST")) { //$NON-NLS-1$
-								writeXMLText(out, NumberUtils.format(equipment.getValue()));
-							} else if (key.equals("WEIGHT")) { //$NON-NLS-1$
-								writeXMLText(out, WeightUnits.POUNDS.format(equipment.getWeight()));
-							} else if (key.equals("COST_SUMMARY")) { //$NON-NLS-1$
-								writeXMLText(out, NumberUtils.format(equipment.getExtendedValue()));
-							} else if (key.equals("WEIGHT_SUMMARY")) { //$NON-NLS-1$
-								writeXMLText(out, WeightUnits.POUNDS.format(equipment.getExtendedWeight()));
-							} else if (key.equals("REF")) { //$NON-NLS-1$
-								writeXMLText(out, equipment.getReference());
-							} else {
-								writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 							}
 						}
 						break;

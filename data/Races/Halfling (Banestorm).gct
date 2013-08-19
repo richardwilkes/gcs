@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="fac47lrf:-dj7wv4gu8cmp">
+	<advantage_list>
+		<advantage>
+			<name>Attribute Modifiers (ST-3; DX+1; HT+1)</name>
+			<type>Physical</type>
+			<attribute_bonus>
+				<attribute>st</attribute>
+				<amount>-3</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>dx</attribute>
+				<amount>1</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>ht</attribute>
+				<amount>1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage>
+			<name>Dislikes large bodies of water</name>
+			<type>Physical</type>
+			<base_points>-1</base_points>
+		</advantage>
+		<advantage>
+			<name>Secondary Attribute Modifiers (SM-1; HP+1; Basic Move-1)</name>
+			<type>Physical</type>
+			<base_points>-3</base_points>
+			<attribute_bonus>
+				<attribute>hp</attribute>
+				<amount>1</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>move</attribute>
+				<amount>-1</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>sm</attribute>
+				<amount>-1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage>
+			<name>Talent (Halfling Ranged Weapon)</name>
+			<type>Physical</type>
+			<levels>2</levels>
+			<points_per_level>5</points_per_level>
+			<reference>BS184</reference>
+			<skill_bonus>
+				<name compare="is">Bow</name>
+				<specialization compare="is anything"></specialization>
+				<amount per_level="yes">1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">Sling</name>
+				<specialization compare="is anything"></specialization>
+				<amount>1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">Thrown Weapon</name>
+				<specialization compare="is anything"></specialization>
+				<amount per_level="yes">1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">Throwing</name>
+				<specialization compare="is anything"></specialization>
+				<amount per_level="yes">1</amount>
+			</skill_bonus>
+		</advantage>
+		<advantage>
+			<name>Silence</name>
+			<type>Physical, Exotic</type>
+			<levels>1</levels>
+			<points_per_level>5</points_per_level>
+			<reference>B85</reference>
+			<skill_bonus>
+				<name compare="is">stealth</name>
+				<specialization compare="is anything"></specialization>
+				<amount>2</amount>
+			</skill_bonus>
+		</advantage>
+		<advantage>
+			<name>Social Regard</name>
+			<type>Social</type>
+			<levels>1</levels>
+			<points_per_level>5</points_per_level>
+			<reference>B87</reference>
+			<notes>Good Neighbor</notes>
+		</advantage>
+		<advantage>
+			<name>Chummy</name>
+			<type>Mental</type>
+			<base_points>-5</base_points>
+			<reference>B126</reference>
+			<notes>React to others at +2; -1 to IQ-based skills when alone</notes>
+		</advantage>
+		<advantage>
+			<name>Code of Honor (Halfling)</name>
+			<type>Mental</type>
+			<base_points>-5</base_points>
+			<reference>BS185</reference>
+		</advantage>
+		<advantage>
+			<name>Gluttony (CR: 12)</name>
+			<type>Mental</type>
+			<base_points>-5</base_points>
+			<reference>B137</reference>
+		</advantage>
+		<advantage>
+			<name>Dislikes large bodies of water</name>
+			<type>Physical</type>
+			<base_points>-1</base_points>
+		</advantage>
+		<advantage>
+			<name>Staid</name>
+			<type>Mental</type>
+			<base_points>-1</base_points>
+			<reference>B164</reference>
+		</advantage>
+	</advantage_list>
+	<notes>  These small, peaceful folk are mainly interested in farming, eating,
+drinking, and living the &#8220;good life,&#8221; but they make determined warriors
+when pushed. Halflings are stocky and round-faced; they almost never wear
+beards.
+  They react well to anyone who sets a generous table or offers to share his
+ale. Anyone who seems &#8220;wild&#8221; or &#8220;dangerous&#8221; will get a cool reception from
+a village halfling, though city-bred or adventuring cousins will be less timid.
+A bad reaction usually means snubs and closed doors rather than combat.
+Rare is the halfling who will attack someone who hasn&#8217;t threatened his
+life or home.
+  Halflings are 1 1/2 feet shorter than normal humans of their ST but have
+normal weight for humans of their ST.
+  Many halflings have an Addiction to tobacco; a small minority have
+Alcoholism. Some replace Chummy and Staid with Xenophobia. Many,
+even if they have no need for it, have higher levels of Silence.</notes>
+</template>

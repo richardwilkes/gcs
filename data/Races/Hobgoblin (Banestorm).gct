@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="faef2bh3:and36qpo3ih1" version="1">
+	<advantage_list>
+		<advantage version="2">
+			<name>Increased Strength</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<points_per_level>10</points_per_level>
+			<reference>B14</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>st</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Increased Dexterity</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<points_per_level>20</points_per_level>
+			<reference>B15</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>dx</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Decreased Intelligence</name>
+			<type>Physical</type>
+			<levels>2</levels>
+			<points_per_level>-20</points_per_level>
+			<reference>B15</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>iq</attribute>
+				<amount per_level="yes">-1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Night Vision</name>
+			<type>Physical</type>
+			<levels>9</levels>
+			<points_per_level>1</points_per_level>
+			<reference>B71</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Bad Temper</name>
+			<type>Mental</type>
+			<base_points>-10</base_points>
+			<cr>12</cr>
+			<reference>B124</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Stubbornness</name>
+			<type>Mental</type>
+			<base_points>-5</base_points>
+			<reference>B157</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+	</advantage_list>
+	<skill_list>
+		<skill version="2">
+			<name>Brawling</name>
+			<difficulty>DX/E</difficulty>
+			<points>1</points>
+			<reference>B182</reference>
+			<weapon_bonus>
+				<name compare="is">Brawling</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at_least">2</level>
+				<amount per_level="yes">1</amount>
+			</weapon_bonus>
+		</skill>
+	</skill_list>
+	<notes>  These ancestral kinfolk of the goblins are large, brutish, and savage.
+In the wilderness, a typical hobgoblin owns nothing but a weapon (stolen
+or handmade) and some rags or ratty furs. They are brutal and direct but
+not as cruel or malicious as orcs. They speak either a human language or a
+pidgin version of the old goblin tongue. They have simple tastes. They
+like food and loot, and dislike anyone outside their immediate band.
+  Hobgoblins often have a tough time hanging on to wealth; many are
+Poor or worse, and very few have Miserliness. Some have more mental
+disadvantages, possibly including Intolerance. However, some have a
+higher IQ and lack Bad Temper or Stubbornness; they can be quite
+reasonable individuals, and often rise to positions of power within 
+their band.</notes>
+</template>

@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2007 the Initial Developer. All Rights Reserved.
+ * 2005-2008 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -413,8 +413,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 				modified |= mRow.setWeapons(list);
 			}
 		}
-		mRow.setCR(getCR());
-		mRow.setCRAdj(getCRAdj());
+		modified |= mRow.setCR(getCR());
+		modified |= mRow.setCRAdj(getCRAdj());
 		if (mModifiers.wasModified()) {
 			modified = true;
 			mRow.setModifiers(mModifiers.getModifiers());

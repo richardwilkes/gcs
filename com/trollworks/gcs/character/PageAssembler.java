@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2007 the Initial Developer. All Rights Reserved.
+ * 2005-2008 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,6 +23,7 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.widgets.Wrapper;
 import com.trollworks.gcs.widgets.layout.ColumnLayout;
 import com.trollworks.gcs.widgets.layout.RowDistribution;
 
@@ -30,13 +31,11 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Insets;
 
-import javax.swing.JPanel;
-
 /** Assembles pages in a sheet. */
 public class PageAssembler {
 	private CharacterSheet	mSheet;
 	private Page			mPage;
-	private JPanel			mContent;
+	private Wrapper			mContent;
 	private int				mRemaining;
 	private int				mContentHeight;
 	private int				mContentWidth;
@@ -84,7 +83,7 @@ public class PageAssembler {
 			mContentWidth = size.width - (insets.left + insets.right);
 			mContentHeight = size.height - (insets.top + insets.bottom);
 		}
-		mContent = new JPanel(new ColumnLayout(1, 2, 2, RowDistribution.GIVE_EXCESS_TO_LAST));
+		mContent = new Wrapper(new ColumnLayout(1, 2, 2, RowDistribution.GIVE_EXCESS_TO_LAST));
 		mContent.setAlignmentY(-1f);
 		mRemaining = mContentHeight;
 		mPage.add(mContent);

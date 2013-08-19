@@ -9,7 +9,20 @@
 				<name>Easy to hit </name>
 				<cost type="percentage">-20</cost>
 				<affects>total</affects>
+				<reference>B34</reference>
 				<notes>Others can target your eyes at -6</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Panoptic 1</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>P39</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Panoptic 2</name>
+				<cost type="percentage">60</cost>
+				<affects>total</affects>
+				<reference>P39</reference>
 			</modifier>
 			<reference>B34</reference>
 			<categories>
@@ -33,11 +46,13 @@
 				<name>Requires signal</name>
 				<cost type="percentage">-20</cost>
 				<affects>total</affects>
+				<reference>B34</reference>
 			</modifier>
 			<modifier version="1" enabled="no">
 				<name>3D Spatial Sense</name>
 				<cost type="points">5</cost>
 				<affects>total</affects>
+				<reference>B34</reference>
 				<skill_bonus>
 					<name compare="starts with">piloting</name>
 					<specialization compare="is anything"></specialization>
@@ -413,35 +428,35 @@
 			<base_points>1</base_points>
 			<modifier version="1" enabled="no">
 				<name>Point total</name>
-				<cost type="points">0</cost>
+				<cost type="points">1</cost>
 				<affects>total</affects>
 				<reference>B37</reference>
 				<notes>25% of your starting points</notes>
 			</modifier>
 			<modifier version="1" enabled="no">
 				<name>Point total</name>
-				<cost type="points">1</cost>
+				<cost type="points">2</cost>
 				<affects>total</affects>
 				<reference>B37</reference>
 				<notes>50% of your starting points</notes>
 			</modifier>
 			<modifier version="1" enabled="no">
 				<name>Point total</name>
-				<cost type="points">2</cost>
+				<cost type="points">3</cost>
 				<affects>total</affects>
 				<reference>B37</reference>
 				<notes>75% of your starting points</notes>
 			</modifier>
 			<modifier version="1" enabled="no">
 				<name>Point total</name>
-				<cost type="points">4</cost>
+				<cost type="points">5</cost>
 				<affects>total</affects>
 				<reference>B37</reference>
 				<notes>100% of your starting points</notes>
 			</modifier>
 			<modifier version="1" enabled="no">
 				<name>Point total</name>
-				<cost type="points">9</cost>
+				<cost type="points">10</cost>
 				<affects>total</affects>
 				<reference>B37</reference>
 				<notes>150% of your starting points</notes>
@@ -585,6 +600,18 @@
 			<type>Physical, Exotic</type>
 			<levels>1</levels>
 			<points_per_level>100</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Super-Speed</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>P42</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Non-Combat Speed</name>
+				<cost type="percentage">-60</cost>
+				<affects>total</affects>
+				<reference>P42</reference>
+			</modifier>
 			<reference>B38</reference>
 			<categories>
 				<category>Advantage</category>
@@ -697,6 +724,47 @@
 			<name>Animal Empathy</name>
 			<type>Mental</type>
 			<base_points>5</base_points>
+			<modifier version="1" enabled="no">
+				<name>Remote</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>P48</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Specialized</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B87</reference>
+				<notes>All aquatic animals</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Specialized</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B87</reference>
+				<notes>All land animals</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Specialized</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B87</reference>
+				<notes>@One class: Mammals, Birds, etc.@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Specialized</name>
+				<cost type="percentage">-60</cost>
+				<affects>total</affects>
+				<reference>B87</reference>
+				<notes>@One family: Felines, Parrots, etc.@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Specialized</name>
+				<cost type="percentage">-80</cost>
+				<affects>total</affects>
+				<reference>B87</reference>
+				<notes>@One species: House Cats, Macaws, etc.@</notes>
+			</modifier>
 			<reference>B40</reference>
 			<categories>
 				<category>Advantage</category>
@@ -925,60 +993,6 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
-			<name>Appearance (Hideous)</name>
-			<type>Physical</type>
-			<base_points>-16</base_points>
-			<reference>B21</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Appearance (Horrific)</name>
-			<type>Physical</type>
-			<base_points>-24</base_points>
-			<reference>B21</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Appearance (Monstrous)</name>
-			<type>Physical</type>
-			<base_points>-20</base_points>
-			<reference>B21</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Appearance (Monstrous, Universal)</name>
-			<type>Physical</type>
-			<base_points>-25</base_points>
-			<reference>B21</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Appearance (Ugly)</name>
-			<type>Physical</type>
-			<base_points>-8</base_points>
-			<reference>B21</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Appearance (Unattractive)</name>
-			<type>Physical</type>
-			<base_points>-4</base_points>
-			<reference>B21</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
 			<name>Arachnophobia (Spiders)</name>
 			<type>Mental</type>
 			<base_points>-5</base_points>
@@ -1034,6 +1048,12 @@
 				<cost type="points">3</cost>
 				<affects>levels_only</affects>
 				<reference>B40</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Size</name>
+				<cost type="percentage">-10</cost>
+				<levels>1</levels>
+				<affects>total</affects>
 			</modifier>
 			<reference>B40</reference>
 			<categories>
@@ -1220,6 +1240,11 @@
 			<type>Mental</type>
 			<base_points>-10</base_points>
 			<cr>12</cr>
+			<modifier version="1" enabled="no">
+				<name>Battle Rage</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+			</modifier>
 			<reference>B124</reference>
 			<categories>
 				<category>Disadvantage</category>
@@ -1239,6 +1264,48 @@
 			<type>Physical, Exotic</type>
 			<levels>1</levels>
 			<points_per_level>2</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Engulphing</name>
+				<cost type="percentage">60</cost>
+				<affects>total</affects>
+				<reference>B40</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Only Damaged by @Burning/Cutting/Crushing@</name>
+				<cost type="percentage">30</cost>
+				<affects>total</affects>
+				<reference>B40</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Only Damaged by @Burning/Cutting/Crushing@ or @Burning/Cutting/Crushing@</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B40</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Only Damaged by Burning, Cutting or Crushing</name>
+				<cost type="percentage">10</cost>
+				<affects>total</affects>
+				<reference>B40</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Sticky</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B40</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Unbreakable</name>
+				<cost type="percentage">40</cost>
+				<affects>total</affects>
+				<reference>B40</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>One Shot</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B40</reference>
+			</modifier>
 			<reference>B40</reference>
 			<categories>
 				<category>Advantage</category>
@@ -1590,6 +1657,18 @@
 			<name>Catfall</name>
 			<type>Physical, Exotic</type>
 			<base_points>10</base_points>
+			<modifier version="1" enabled="no">
+				<name>Feather Fall</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>P43</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Parachute</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>P43</reference>
+			</modifier>
 			<reference>B41</reference>
 			<categories>
 				<category>Advantage</category>
@@ -1600,6 +1679,31 @@
 			<type>Physical, Exotic</type>
 			<levels>1</levels>
 			<points_per_level>5</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Extended</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B41</reference>
+				<notes>@Sense@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Always On</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B41</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Controllable</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>P43</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Dynamic</name>
+				<cost type="percentage">40</cost>
+				<affects>total</affects>
+				<reference>P43</reference>
+			</modifier>
 			<reference>B41</reference>
 			<categories>
 				<category>Advantage</category>
@@ -1609,6 +1713,19 @@
 			<name>Channeling</name>
 			<type>Mental, Supernatural</type>
 			<base_points>10</base_points>
+			<modifier version="1" enabled="no">
+				<name>Aware</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>P43</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Specialized</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>P44</reference>
+				<notes>@Type@</notes>
+			</modifier>
 			<reference>B41</reference>
 			<categories>
 				<category>Advantage</category>
@@ -1665,6 +1782,7 @@
 			<levels>1</levels>
 			<points_per_level>5</points_per_level>
 			<reference>B41</reference>
+			<notes>+1 to Influence rolls</notes>
 			<categories>
 				<category>Advantage</category>
 			</categories>
@@ -1732,481 +1850,127 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
-			<name>Chronic Pain (Agonizing, FR: 6)</name>
+			<name>Chronic Pain (Agonizing)</name>
 			<type>Physical</type>
-			<base_points>-3</base_points>
+			<base_points>5</base_points>
+			<modifier version="1" enabled="no">
+				<name>1 Hour</name>
+				<cost type="multiplier">0.5</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>2 Hours</name>
+				<cost type="multiplier">1</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>4 Hours</name>
+				<cost type="multiplier">1.5</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>8 Hours</name>
+				<cost type="multiplier">2</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>FR: 6</name>
+				<cost type="multiplier">0.5</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>FR: 9</name>
+				<cost type="multiplier">1</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>FR: 12</name>
+				<cost type="multiplier">2</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>FR: 15</name>
+				<cost type="multiplier">3</cost>
+			</modifier>
 			<reference>B126</reference>
-			<notes>-6 to DX, IQ and self-control rolls for 1 hour</notes>
+			<notes>-2 to DX, IQ and self-control rolls</notes>
 			<categories>
 				<category>Disadvantage</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
-			<name>Chronic Pain (Agonizing, FR: 6)</name>
+			<name>Chronic Pain (Mild)</name>
 			<type>Physical</type>
-			<base_points>-7</base_points>
+			<base_points>5</base_points>
+			<modifier version="1" enabled="no">
+				<name>1 Hour</name>
+				<cost type="multiplier">0.5</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>2 Hours</name>
+				<cost type="multiplier">1</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>4 Hours</name>
+				<cost type="multiplier">1.5</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>8 Hours</name>
+				<cost type="multiplier">2</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>FR: 6</name>
+				<cost type="multiplier">0.5</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>FR: 9</name>
+				<cost type="multiplier">1</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>FR: 12</name>
+				<cost type="multiplier">2</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>FR: 15</name>
+				<cost type="multiplier">3</cost>
+			</modifier>
 			<reference>B126</reference>
-			<notes>-6 to DX, IQ and self-control rolls for 2 hours</notes>
+			<notes>-2 to DX, IQ and self-control rolls</notes>
 			<categories>
 				<category>Disadvantage</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
-			<name>Chronic Pain (Agonizing, FR: 6)</name>
+			<name>Chronic Pain (Severe)</name>
 			<type>Physical</type>
-			<base_points>-11</base_points>
+			<base_points>10</base_points>
+			<modifier version="1" enabled="no">
+				<name>1 Hour</name>
+				<cost type="multiplier">0.5</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>2 Hours</name>
+				<cost type="multiplier">1</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>4 Hours</name>
+				<cost type="multiplier">1.5</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>8 Hours</name>
+				<cost type="multiplier">2</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>FR: 6</name>
+				<cost type="multiplier">0.5</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>FR: 9</name>
+				<cost type="multiplier">1</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>FR: 12</name>
+				<cost type="multiplier">2</cost>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>FR: 15</name>
+				<cost type="multiplier">3</cost>
+			</modifier>
 			<reference>B126</reference>
-			<notes>-6 to DX, IQ and self-control rolls for 4 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Agonizing, FR: 6)</name>
-			<type>Physical</type>
-			<base_points>-15</base_points>
-			<reference>B126</reference>
-			<notes>-6 to DX, IQ and self-control rolls for 8 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Agonizing, FR: 9)</name>
-			<type>Physical</type>
-			<base_points>-7</base_points>
-			<reference>B126</reference>
-			<notes>-6 to DX, IQ and self-control rolls for 1 hour</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Agonizing, FR: 9)</name>
-			<type>Physical</type>
-			<base_points>-15</base_points>
-			<reference>B126</reference>
-			<notes>-6 to DX, IQ and self-control rolls for 2 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Agonizing, FR: 9)</name>
-			<type>Physical</type>
-			<base_points>-22</base_points>
-			<reference>B126</reference>
-			<notes>-6 to DX, IQ and self-control rolls for 4 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Agonizing, FR: 9)</name>
-			<type>Physical</type>
-			<base_points>-30</base_points>
-			<reference>B126</reference>
-			<notes>-6 to DX, IQ and self-control rolls for 8 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Agonizing, FR: 12)</name>
-			<type>Physical</type>
-			<base_points>-15</base_points>
-			<reference>B126</reference>
-			<notes>-6 to DX, IQ and self-control rolls for 1 hour</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Agonizing, FR: 12)</name>
-			<type>Physical</type>
-			<base_points>-30</base_points>
-			<reference>B126</reference>
-			<notes>-6 to DX, IQ and self-control rolls for 2 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Agonizing, FR: 12)</name>
-			<type>Physical</type>
-			<base_points>-45</base_points>
-			<reference>B126</reference>
-			<notes>-6 to DX, IQ and self-control rolls for 4 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Agonizing, FR: 12)</name>
-			<type>Physical</type>
-			<base_points>-60</base_points>
-			<reference>B126</reference>
-			<notes>-6 to DX, IQ and self-control rolls for 8 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Agonizing, FR: 15)</name>
-			<type>Physical</type>
-			<base_points>-22</base_points>
-			<reference>B126</reference>
-			<notes>-6 to DX, IQ and self-control rolls for 1 hour</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Agonizing, FR: 15)</name>
-			<type>Physical</type>
-			<base_points>-45</base_points>
-			<reference>B126</reference>
-			<notes>-6 to DX, IQ and self-control rolls for 2 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Agonizing, FR: 15)</name>
-			<type>Physical</type>
-			<base_points>-67</base_points>
-			<reference>B126</reference>
-			<notes>-6 to DX, IQ and self-control rolls for 4 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Agonizing, FR: 15)</name>
-			<type>Physical</type>
-			<base_points>-90</base_points>
-			<reference>B126</reference>
-			<notes>-6 to DX, IQ and self-control rolls for 8 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Mild, FR: 6)</name>
-			<type>Physical</type>
-			<base_points>-1</base_points>
-			<reference>B126</reference>
-			<notes>-2 to DX, IQ and self-control rolls for 1 hour</notes>
-			<categories>
-				<category>Quirk</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Mild, FR: 6)</name>
-			<type>Physical</type>
-			<base_points>-2</base_points>
-			<reference>B126</reference>
-			<notes>-2 to DX, IQ and self-control rolls for 2 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Mild, FR: 6)</name>
-			<type>Physical</type>
-			<base_points>-3</base_points>
-			<reference>B126</reference>
-			<notes>-2 to DX, IQ and self-control rolls for 4 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Mild, FR: 6)</name>
-			<type>Physical</type>
-			<base_points>-5</base_points>
-			<reference>B126</reference>
-			<notes>-2 to DX, IQ and self-control rolls for 8 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Mild, FR: 9)</name>
-			<type>Physical</type>
-			<base_points>-2</base_points>
-			<reference>B126</reference>
-			<notes>-2 to DX, IQ and self-control rolls for 1 hour</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Mild, FR: 9)</name>
-			<type>Physical</type>
-			<base_points>-5</base_points>
-			<reference>B126</reference>
-			<notes>-2 to DX, IQ and self-control rolls for 2 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Mild, FR: 9)</name>
-			<type>Physical</type>
-			<base_points>-7</base_points>
-			<reference>B126</reference>
-			<notes>-2 to DX, IQ and self-control rolls for 4 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Mild, FR: 9)</name>
-			<type>Physical</type>
-			<base_points>-10</base_points>
-			<reference>B126</reference>
-			<notes>-2 to DX, IQ and self-control rolls for 8 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Mild, FR: 12)</name>
-			<type>Physical</type>
-			<base_points>-4</base_points>
-			<reference>B126</reference>
-			<notes>-2 to DX, IQ and self-control rolls for 1 hour</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Mild, FR: 12)</name>
-			<type>Physical</type>
-			<base_points>-10</base_points>
-			<reference>B126</reference>
-			<notes>-2 to DX, IQ and self-control rolls for 2 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Mild, FR: 12)</name>
-			<type>Physical</type>
-			<base_points>-15</base_points>
-			<reference>B126</reference>
-			<notes>-2 to DX, IQ and self-control rolls for 4 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Mild, FR: 12)</name>
-			<type>Physical</type>
-			<base_points>-20</base_points>
-			<reference>B126</reference>
-			<notes>-2 to DX, IQ and self-control rolls for 8 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Mild, FR: 15)</name>
-			<type>Physical</type>
-			<base_points>-8</base_points>
-			<reference>B126</reference>
-			<notes>-2 to DX, IQ and self-control rolls for 1 hour</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Mild, FR: 15)</name>
-			<type>Physical</type>
-			<base_points>-15</base_points>
-			<reference>B126</reference>
-			<notes>-2 to DX, IQ and self-control rolls for 2 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Mild, FR: 15)</name>
-			<type>Physical</type>
-			<base_points>-22</base_points>
-			<reference>B126</reference>
-			<notes>-2 to DX, IQ and self-control rolls for 4 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Mild, FR: 15)</name>
-			<type>Physical</type>
-			<base_points>-30</base_points>
-			<reference>B126</reference>
-			<notes>-2 to DX, IQ and self-control rolls for 8 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Severe, FR: 6)</name>
-			<type>Physical</type>
-			<base_points>-2</base_points>
-			<reference>B126</reference>
-			<notes>-4 to DX, IQ and self-control rolls for 1 hour</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Severe, FR: 6)</name>
-			<type>Physical</type>
-			<base_points>-5</base_points>
-			<reference>B126</reference>
-			<notes>-4 to DX, IQ and self-control rolls for 2 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Severe, FR: 6)</name>
-			<type>Physical</type>
-			<base_points>-7</base_points>
-			<reference>B126</reference>
-			<notes>-4 to DX, IQ and self-control rolls for 4 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Severe, FR: 6)</name>
-			<type>Physical</type>
-			<base_points>-10</base_points>
-			<reference>B126</reference>
-			<notes>-4 to DX, IQ and self-control rolls for 8 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Severe, FR: 9)</name>
-			<type>Physical</type>
-			<base_points>-5</base_points>
-			<reference>B126</reference>
-			<notes>-4 to DX, IQ and self-control rolls for 1 hour</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Severe, FR: 9)</name>
-			<type>Physical</type>
-			<base_points>-10</base_points>
-			<reference>B126</reference>
-			<notes>-4 to DX, IQ and self-control rolls for 2 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Severe, FR: 9)</name>
-			<type>Physical</type>
-			<base_points>-15</base_points>
-			<reference>B126</reference>
-			<notes>-4 to DX, IQ and self-control rolls for 4 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Severe, FR: 9)</name>
-			<type>Physical</type>
-			<base_points>-20</base_points>
-			<reference>B126</reference>
-			<notes>-4 to DX, IQ and self-control rolls for 8 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Severe, FR: 12)</name>
-			<type>Physical</type>
-			<base_points>-10</base_points>
-			<reference>B126</reference>
-			<notes>-4 to DX, IQ and self-control rolls for 1 hour</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Severe, FR: 12)</name>
-			<type>Physical</type>
-			<base_points>-20</base_points>
-			<reference>B126</reference>
-			<notes>-4 to DX, IQ and self-control rolls for 2 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Severe, FR: 12)</name>
-			<type>Physical</type>
-			<base_points>-30</base_points>
-			<reference>B126</reference>
-			<notes>-4 to DX, IQ and self-control rolls for 4 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Severe, FR: 12)</name>
-			<type>Physical</type>
-			<base_points>-40</base_points>
-			<reference>B126</reference>
-			<notes>-4 to DX, IQ and self-control rolls for 8 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Severe, FR: 15)</name>
-			<type>Physical</type>
-			<base_points>-15</base_points>
-			<reference>B126</reference>
-			<notes>-4 to DX, IQ and self-control rolls for 1 hour</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Severe, FR: 15)</name>
-			<type>Physical</type>
-			<base_points>-30</base_points>
-			<reference>B126</reference>
-			<notes>-4 to DX, IQ and self-control rolls for 2 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Severe, FR: 15)</name>
-			<type>Physical</type>
-			<base_points>-45</base_points>
-			<reference>B126</reference>
-			<notes>-4 to DX, IQ and self-control rolls for 4 hours</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Chronic Pain (Severe, FR: 15)</name>
-			<type>Physical</type>
-			<base_points>-60</base_points>
-			<reference>B126</reference>
-			<notes>-4 to DX, IQ and self-control rolls for 8 hours</notes>
+			<notes>-4 to DX, IQ and self-control rolls</notes>
 			<categories>
 				<category>Disadvantage</category>
 			</categories>
@@ -2234,30 +1998,29 @@
 		<advantage version="2">
 			<name>Claim to Hospitality</name>
 			<type>Social</type>
-			<base_points>1</base_points>
 			<modifier version="1" enabled="no">
 				<name>@Friend with crash space@ (crash space)</name>
-				<cost type="points">0</cost>
-				<affects>total</affects>
-			</modifier>
-			<modifier version="1" enabled="no">
-				<name>@Group@ - @Services@</name>
-				<cost type="points">0</cost>
-				<affects>total</affects>
-			</modifier>
-			<modifier version="1" enabled="no">
-				<name>@Group@ - Has @Resources@</name>
 				<cost type="points">1</cost>
 				<affects>total</affects>
 			</modifier>
 			<modifier version="1" enabled="no">
+				<name>@Group@ - @Services@</name>
+				<cost type="points">1</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>@Group@ - Has @Resources@</name>
+				<cost type="points">2</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
 				<name>@Large Group@ - Has @Lots of Services@</name>
-				<cost type="points">4</cost>
+				<cost type="points">5</cost>
 				<affects>total</affects>
 			</modifier>
 			<modifier version="1" enabled="no">
 				<name>@Vast Group@ - @Complete Services@</name>
-				<cost type="points">9</cost>
+				<cost type="points">10</cost>
 				<affects>total</affects>
 			</modifier>
 			<reference>B41</reference>
@@ -2285,14 +2048,35 @@
 				<affects>total</affects>
 			</modifier>
 			<modifier version="1" enabled="no">
-				<name>ESP</name>
+				<name>Visible</name>
 				<cost type="percentage">-10</cost>
 				<affects>total</affects>
 			</modifier>
 			<modifier version="1" enabled="no">
-				<name>Visible</name>
-				<cost type="percentage">-10</cost>
+				<name>Aware</name>
+				<cost type="percentage">50</cost>
 				<affects>total</affects>
+				<reference>P44</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Projection</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>P43</reference>
+				<notes>Only affects insubstantial world</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Projection</name>
+				<cost type="percentage">140</cost>
+				<affects>total</affects>
+				<reference>P44</reference>
+				<notes>Can use abilities on material world</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Second Nature</name>
+				<cost type="percentage">70</cost>
+				<affects>total</affects>
+				<reference>P44</reference>
 			</modifier>
 			<reference>B42</reference>
 			<categories>
@@ -2719,6 +2503,40 @@
 			<name>Clinging</name>
 			<type>Physical, Exotic</type>
 			<base_points>20</base_points>
+			<modifier version="1" enabled="no">
+				<name>Specific</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B43</reference>
+				<notes>@Common Material@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Specific</name>
+				<cost type="percentage">-60</cost>
+				<affects>total</affects>
+				<reference>B43</reference>
+				<notes>@Uncommon Material@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Specific</name>
+				<cost type="percentage">-80</cost>
+				<affects>total</affects>
+				<reference>B43</reference>
+				<notes>@Absurd Material@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Attraction</name>
+				<cost type="percentage">25</cost>
+				<affects>total</affects>
+				<reference>P45</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Requires Low Gravity</name>
+				<cost type="percentage">-5</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>P45</reference>
+			</modifier>
 			<reference>B43</reference>
 			<categories>
 				<category>Advantage</category>
@@ -3017,6 +2835,32 @@
 			<name>Common Sense</name>
 			<type>Mental</type>
 			<base_points>10</base_points>
+			<modifier version="1" enabled="no">
+				<name>Concious</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>P45</reference>
+			</modifier>
+			<reference>B43</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Compartmentalized Mind (Controls)</name>
+			<type>Mental, Exotic</type>
+			<levels>1</levels>
+			<points_per_level>25</points_per_level>
+			<reference>B43</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Compartmentalized Mind (Dedicated Controls)</name>
+			<type>Mental, Exotic</type>
+			<levels>1</levels>
+			<points_per_level>10</points_per_level>
 			<reference>B43</reference>
 			<categories>
 				<category>Advantage</category>
@@ -3137,6 +2981,12 @@
 			<name>Constriction Attack</name>
 			<type>Physical, Exotic</type>
 			<base_points>15</base_points>
+			<modifier version="1" enabled="no">
+				<name>Engulphing</name>
+				<cost type="percentage">60</cost>
+				<affects>total</affects>
+				<reference>P45</reference>
+			</modifier>
 			<reference>B43</reference>
 			<categories>
 				<category>Advantage</category>
@@ -3145,28 +2995,27 @@
 		<advantage version="2">
 			<name>Contact (@Who@)</name>
 			<type>Social</type>
-			<base_points>1</base_points>
 			<modifier version="1" enabled="no">
 				<name>Effective skill</name>
-				<cost type="points">0</cost>
+				<cost type="points">1</cost>
 				<affects>total</affects>
 				<notes>12</notes>
 			</modifier>
 			<modifier version="1" enabled="no">
 				<name>Effective skill</name>
-				<cost type="points">1</cost>
+				<cost type="points">2</cost>
 				<affects>total</affects>
 				<notes>15</notes>
 			</modifier>
 			<modifier version="1" enabled="no">
 				<name>Effective skill</name>
-				<cost type="points">2</cost>
+				<cost type="points">3</cost>
 				<affects>total</affects>
 				<notes>18</notes>
 			</modifier>
 			<modifier version="1" enabled="no">
 				<name>Effective skill</name>
-				<cost type="points">3</cost>
+				<cost type="points">4</cost>
 				<affects>total</affects>
 				<notes>21</notes>
 			</modifier>
@@ -3597,6 +3446,12 @@
 				<cost type="percentage">20</cost>
 				<affects>total</affects>
 			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hypersensory</name>
+				<cost type="percentage">40</cost>
+				<affects>total</affects>
+				<reference>P46</reference>
+			</modifier>
 			<reference>B47</reference>
 			<categories>
 				<category>Advantage</category>
@@ -3827,6 +3682,93 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Dependant (@Who@)</name>
+			<type>Social</type>
+			<modifier version="1" enabled="no">
+				<name>Point total</name>
+				<cost type="points">-1</cost>
+				<affects>total</affects>
+				<reference>B131</reference>
+				<notes>100% of your starting points</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Point total</name>
+				<cost type="points">-2</cost>
+				<affects>total</affects>
+				<reference>B131</reference>
+				<notes>75% of your starting points</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Point total</name>
+				<cost type="points">-5</cost>
+				<affects>total</affects>
+				<reference>B131</reference>
+				<notes>50% of your starting points</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Point total</name>
+				<cost type="points">-10</cost>
+				<affects>total</affects>
+				<reference>B131</reference>
+				<notes>25% of your starting points</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Point total</name>
+				<cost type="points">-15</cost>
+				<affects>total</affects>
+				<reference>B131</reference>
+				<notes>0 or fewer points</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Appears almost all the time</name>
+				<cost type="multiplier">3</cost>
+				<reference>B36</reference>
+				<notes>15-</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Appears quite often</name>
+				<cost type="multiplier">2</cost>
+				<reference>B36</reference>
+				<notes>12-</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Appears fairly often</name>
+				<cost type="multiplier">1</cost>
+				<reference>B36</reference>
+				<notes>9-</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Appears quite rarely</name>
+				<cost type="multiplier">0.5</cost>
+				<reference>B36</reference>
+				<notes>6-</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Group</name>
+				<cost type="multiplier">2</cost>
+				<reference>B131</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Acquaintance</name>
+				<cost type="multiplier">0.5</cost>
+				<reference>B131</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Friend</name>
+				<cost type="multiplier">1</cost>
+				<reference>B131</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Loved one</name>
+				<cost type="multiplier">2</cost>
+				<reference>B131</reference>
+			</modifier>
+			<reference>B131</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Dependency (@Substance@)</name>
 			<type>Physical, Exotic</type>
 			<modifier version="1" enabled="no">
@@ -3909,76 +3851,6 @@
 				<notes>Age 2 years for each HP lost due to this dependency</notes>
 			</modifier>
 			<reference>B130</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dependent (@Person@, FR: 6)</name>
-			<type>Social</type>
-			<base_points>-4</base_points>
-			<reference>B131</reference>
-			<notes>Acquaintence, 0 or less points</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dependent (@Person@, FR: 6)</name>
-			<type>Social</type>
-			<base_points>-3</base_points>
-			<reference>B131</reference>
-			<notes>Acquaintence, no more than 25% of your point total</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dependent (@Person@, FR: 9)</name>
-			<type>Social</type>
-			<base_points>-7</base_points>
-			<reference>B131</reference>
-			<notes>Acquaintence, 0 or less points</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dependent (@Person@, FR: 12)</name>
-			<type>Social</type>
-			<base_points>-15</base_points>
-			<reference>B131</reference>
-			<notes>Acquaintence, 0 or less points</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dependent (@Person@, FR: 15)</name>
-			<type>Social</type>
-			<base_points>-22</base_points>
-			<reference>B131</reference>
-			<notes>Acquaintence, 0 or less points</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dependent (@Person@, FR: 15)</name>
-			<type>Social</type>
-			<base_points>-30</base_points>
-			<reference>B131</reference>
-			<notes>Friend, no more than 25% of your point total</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dependent (@Person@, FR: Constantly)</name>
-			<type>Social</type>
-			<base_points>-8</base_points>
-			<reference>B131</reference>
-			<notes>Loved one; no more than 100% of your point total</notes>
 			<categories>
 				<category>Disadvantage</category>
 			</categories>
@@ -4080,6 +3952,12 @@
 				<cost type="percentage">50</cost>
 				<affects>total</affects>
 				<reference>B48</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Analyzing</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>P47</reference>
 			</modifier>
 			<reference>B48</reference>
 			<categories>
@@ -4193,6 +4071,12 @@
 				<affects>total</affects>
 				<reference>B49</reference>
 			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Profiling</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>P47</reference>
+			</modifier>
 			<reference>B49</reference>
 			<categories>
 				<category>Advantage</category>
@@ -4208,6 +4092,12 @@
 				<affects>total</affects>
 				<reference>B49</reference>
 			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Profiling</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>P47</reference>
+			</modifier>
 			<reference>B49</reference>
 			<categories>
 				<category>Advantage</category>
@@ -4217,6 +4107,12 @@
 			<name>Discriminitory Taste</name>
 			<type>Physical, Exotic</type>
 			<base_points>10</base_points>
+			<modifier version="1" enabled="no">
+				<name>Profiling</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>P47</reference>
+			</modifier>
 			<reference>B49</reference>
 			<categories>
 				<category>Advantage</category>
@@ -4373,6 +4269,12 @@
 				<reference>B49</reference>
 				<notes>Can hold breath 300 times as long as normal</notes>
 			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Combustion</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+			</modifier>
 			<reference>B49</reference>
 			<categories>
 				<category>Advantage</category>
@@ -4406,138 +4308,67 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
-			<name>Draining (@Common substance@)</name>
+			<name>Draining (@Substance@)</name>
 			<type>Physical, Supernatural</type>
 			<base_points>-5</base_points>
+			<modifier version="1" enabled="no">
+				<name>Common</name>
+				<cost type="points">-5</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Occational</name>
+				<cost type="points">-10</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Rare</name>
+				<cost type="points">-15</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Illegal</name>
+				<cost type="points">-5</cost>
+				<affects>total</affects>
+			</modifier>
 			<reference>B132</reference>
 			<categories>
 				<category>Disadvantage</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
-			<name>Draining (@Occasional substance@)</name>
-			<type>Physical, Supernatural</type>
-			<base_points>-10</base_points>
-			<reference>B132</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Draining (@Rare substance@)</name>
-			<type>Physical, Supernatural</type>
-			<base_points>-15</base_points>
-			<reference>B132</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dread (@Occasional Item@)</name>
+			<name>Dread (@Item@)</name>
 			<type>Mental, Supernatural</type>
-			<base_points>-10</base_points>
+			<levels>1</levels>
+			<base_points>-9</base_points>
+			<points_per_level>-1</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Very Common</name>
+				<cost type="multiplier">3</cost>
+				<reference>B161</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Common</name>
+				<cost type="multiplier">2</cost>
+				<reference>B161</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Occational</name>
+				<cost type="multiplier">1</cost>
+				<reference>B161</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Rare</name>
+				<cost type="multiplier">0.5</cost>
+				<reference>B161</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cannot be trapped</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B133</reference>
+			</modifier>
 			<reference>B132</reference>
-			<notes>1 yd radius</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dread (@Occasional Item@)</name>
-			<type>Mental, Supernatural</type>
-			<base_points>-11</base_points>
-			<reference>B132</reference>
-			<notes>2 yd radius</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dread (@Occasional Item@)</name>
-			<type>Mental, Supernatural</type>
-			<base_points>-12</base_points>
-			<reference>B132</reference>
-			<notes>3 yd radius</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dread (@Occasional Item@)</name>
-			<type>Mental, Supernatural</type>
-			<base_points>-13</base_points>
-			<reference>B132</reference>
-			<notes>4 yd radius</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dread (@Occasional Item@)</name>
-			<type>Mental, Supernatural</type>
-			<base_points>-14</base_points>
-			<reference>B132</reference>
-			<notes>5 yd radius</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dread (@Occasional Item@)</name>
-			<type>Mental, Supernatural</type>
-			<base_points>-15</base_points>
-			<reference>B132</reference>
-			<notes>6 yd radius</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dread (@Occasional Item@)</name>
-			<type>Mental, Supernatural</type>
-			<base_points>-16</base_points>
-			<reference>B132</reference>
-			<notes>7 yd radius</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dread (@Occasional Item@)</name>
-			<type>Mental, Supernatural</type>
-			<base_points>-17</base_points>
-			<reference>B132</reference>
-			<notes>8 yd radius</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dread (@Occasional Item@)</name>
-			<type>Mental, Supernatural</type>
-			<base_points>-18</base_points>
-			<reference>B132</reference>
-			<notes>9 yd radius</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dread (@Occasional Item@)</name>
-			<type>Mental, Supernatural</type>
-			<base_points>-19</base_points>
-			<reference>B132</reference>
-			<notes>10 yd radius</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Dread (@Occasional Item@)</name>
-			<type>Mental, Supernatural</type>
-			<base_points>-20</base_points>
-			<reference>B132</reference>
-			<notes>11 yd radius</notes>
 			<categories>
 				<category>Disadvantage</category>
 			</categories>
@@ -4600,147 +4431,62 @@
 				<affects>total</affects>
 				<reference>B51</reference>
 			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Construct</name>
+				<cost type="percentage">60</cost>
+				<affects>total</affects>
+				<reference>P48</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Sequential</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>P48</reference>
+			</modifier>
 			<reference>B50</reference>
 			<categories>
 				<category>Advantage</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
-			<name>Duty (FR: 6)</name>
+			<name>Duty (@Duty@)</name>
 			<type>Social</type>
-			<base_points>-2</base_points>
+			<modifier version="1" enabled="no">
+				<name>FR: 6</name>
+				<cost type="points">-2</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>FR: 9</name>
+				<cost type="points">-5</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>FR: 12</name>
+				<cost type="points">-10</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>FR: 15</name>
+				<cost type="points">-15</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Extremely Hazardous</name>
+				<cost type="points">-5</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Involuntary</name>
+				<cost type="points">-5</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Nonhazardous</name>
+				<cost type="points">5</cost>
+				<affects>total</affects>
+			</modifier>
 			<reference>B133</reference>
-			<notes>@Duty@</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Duty (FR: 6)</name>
-			<type>Social</type>
-			<base_points>-7</base_points>
-			<reference>B133</reference>
-			<notes>@Duty@; Extremely Hazardous</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Duty (FR: 6)</name>
-			<type>Social</type>
-			<base_points>-7</base_points>
-			<reference>B133</reference>
-			<notes>@Duty@; Involuntary</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Duty (FR: 9)</name>
-			<type>Social</type>
-			<base_points>-5</base_points>
-			<reference>B133</reference>
-			<notes>@Duty@</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Duty (FR: 9)</name>
-			<type>Social</type>
-			<base_points>-10</base_points>
-			<reference>B133</reference>
-			<notes>@Duty@; Extremely Hazardous</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Duty (FR: 9)</name>
-			<type>Social</type>
-			<base_points>-10</base_points>
-			<reference>B133</reference>
-			<notes>@Duty@; Involuntary</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Duty (FR: 12)</name>
-			<type>Social</type>
-			<base_points>-10</base_points>
-			<reference>B133</reference>
-			<notes>@Duty@</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Duty (FR: 12)</name>
-			<type>Social</type>
-			<base_points>-15</base_points>
-			<reference>B133</reference>
-			<notes>@Duty@; Extremely Hazardous</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Duty (FR: 12)</name>
-			<type>Social</type>
-			<base_points>-15</base_points>
-			<reference>B133</reference>
-			<notes>@Duty@; Involuntary</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Duty (FR: 12)</name>
-			<type>Social</type>
-			<base_points>-5</base_points>
-			<reference>B133</reference>
-			<notes>@Duty@; Nonhazardous</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Duty (FR: 15)</name>
-			<type>Social</type>
-			<base_points>-15</base_points>
-			<reference>B133</reference>
-			<notes>@Duty@</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Duty (FR: 15)</name>
-			<type>Social</type>
-			<base_points>-20</base_points>
-			<reference>B133</reference>
-			<notes>@Duty@; Extremely Hazardous</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Duty (FR: 15)</name>
-			<type>Social</type>
-			<base_points>-20</base_points>
-			<reference>B133</reference>
-			<notes>@Duty@; Involuntary</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Duty (FR: 15)</name>
-			<type>Social</type>
-			<base_points>-10</base_points>
-			<reference>B133</reference>
-			<notes>@Duty@; Nonhazardous</notes>
 			<categories>
 				<category>Disadvantage</category>
 			</categories>
@@ -4963,6 +4709,12 @@
 			<name>Empathy</name>
 			<type>Mental</type>
 			<base_points>15</base_points>
+			<modifier version="1" enabled="no">
+				<name>Remote</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>P48</reference>
+			</modifier>
 			<reference>B51</reference>
 			<categories>
 				<category>Advantage</category>
@@ -4987,6 +4739,12 @@
 			<name>Empathy (Sensitive)</name>
 			<type>Mental</type>
 			<base_points>5</base_points>
+			<modifier version="1" enabled="no">
+				<name>Remote</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>P48</reference>
+			</modifier>
 			<reference>B51</reference>
 			<categories>
 				<category>Advantage</category>
@@ -5008,98 +4766,118 @@
 			</skill_bonus>
 		</advantage>
 		<advantage version="2">
-			<name>Enemy (@Large Group@, Watcher, FR: 15)</name>
+			<name>Enemy (@Who@)</name>
 			<type>Social</type>
-			<base_points>-22</base_points>
-			<reference>B135</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Enemy (@Person, Power, Intent, Freq. App.@)</name>
-			<type>Social</type>
-			<reference>B135</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Enemy (@Person@, 50% Start Points, Rival, FR: 6)</name>
-			<type>Physical</type>
-			<base_points>-1</base_points>
-			<reference>B135</reference>
-			<categories>
-				<category>Quirk</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Enemy (@Person@, 50% Start Points, Rival, FR: 9)</name>
-			<type>Physical</type>
-			<base_points>-2</base_points>
-			<reference>B135</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Enemy (@Person@, 50% Start Points, Rival, FR: 12)</name>
-			<type>Social</type>
-			<base_points>-5</base_points>
-			<reference>B135</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Enemy (@Person@, 50% Start Points, Rival, FR: 15)</name>
-			<type>Physical</type>
-			<base_points>-7</base_points>
-			<reference>B135</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Enemy (@Person@, 50% Start Points, Watcher, FR: 6)</name>
-			<type>Physical</type>
-			<base_points>-1</base_points>
-			<reference>B135</reference>
-			<categories>
-				<category>Quirk</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Enemy (@Person@, 50% Start Points, Watcher, FR: 9)</name>
-			<type>Physical</type>
-			<base_points>-1</base_points>
-			<reference>B135</reference>
-			<categories>
-				<category>Quirk</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Enemy (@Person@, 50% Start Points, Watcher, FR: 12)</name>
-			<type>Physical</type>
-			<base_points>-2</base_points>
-			<reference>B135</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Enemy (@Person@, 50% Start Points, Watcher, FR: 15)</name>
-			<type>Physical</type>
-			<base_points>-3</base_points>
-			<reference>B135</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Enemy (@Person@, 150% Start Points, Hunter, FR: 9)</name>
-			<type>Social</type>
-			<base_points>-20</base_points>
+			<modifier version="1" enabled="no">
+				<name>Weak Individual</name>
+				<cost type="points">-5</cost>
+				<affects>total</affects>
+				<reference>B135</reference>
+				<notes>50% of your starting points</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Equal Individual</name>
+				<cost type="points">-10</cost>
+				<affects>total</affects>
+				<reference>B135</reference>
+				<notes>100% of your starting points</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Powerful Individual</name>
+				<cost type="points">-20</cost>
+				<affects>total</affects>
+				<reference>B135</reference>
+				<notes>&gt;150% of your starting points</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Weak Group</name>
+				<cost type="points">-10</cost>
+				<affects>total</affects>
+				<reference>B135</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Medium Group</name>
+				<cost type="points">-20</cost>
+				<affects>total</affects>
+				<reference>B135</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Appears almost all the time</name>
+				<cost type="multiplier">3</cost>
+				<reference>B36</reference>
+				<notes>15-</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Appears quite often</name>
+				<cost type="multiplier">2</cost>
+				<reference>B36</reference>
+				<notes>12-</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Appears fairly often</name>
+				<cost type="multiplier">1</cost>
+				<reference>B36</reference>
+				<notes>9-</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Appears quite rarely</name>
+				<cost type="multiplier">0.5</cost>
+				<reference>B36</reference>
+				<notes>6-</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Large/Powerful Group</name>
+				<cost type="points">-30</cost>
+				<affects>total</affects>
+				<reference>B135</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Utterly Formidible Group</name>
+				<cost type="points">-40</cost>
+				<affects>total</affects>
+				<reference>B135</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Unknown</name>
+				<cost type="points">-5</cost>
+				<affects>total</affects>
+				<reference>B135</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Evil Twin</name>
+				<cost type="points">0</cost>
+				<affects>total</affects>
+				<reference>B135</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Evil Twin</name>
+				<cost type="points">-5</cost>
+				<affects>total</affects>
+				<reference>B135</reference>
+				<notes>More skilled or extra abilities</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Evil Twin</name>
+				<cost type="points">-10</cost>
+				<affects>total</affects>
+				<reference>B135</reference>
+				<notes>More skilled and extra abilities</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Watcher</name>
+				<cost type="multiplier">0.25</cost>
+				<reference>B135</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Rival</name>
+				<cost type="multiplier">0.5</cost>
+				<reference>B135</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hunter</name>
+				<cost type="multiplier">1</cost>
+				<reference>B135</reference>
+			</modifier>
 			<reference>B135</reference>
 			<categories>
 				<category>Disadvantage</category>
@@ -5162,6 +4940,12 @@
 				<affects>total</affects>
 				<reference>B52</reference>
 			</modifier>
+			<modifier version="1" enabled="no">
+				<name>All-Out</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>P49</reference>
+			</modifier>
 			<reference>B52</reference>
 			<categories>
 				<category>Advantage</category>
@@ -5199,6 +4983,12 @@
 			<type>Physical, Exotic</type>
 			<levels>1</levels>
 			<points_per_level>5</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Multiple Lock-Ons</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>P49</reference>
+			</modifier>
 			<reference>B53</reference>
 			<categories>
 				<category>Advantage</category>
@@ -5415,6 +5205,19 @@
 			<type>Physical</type>
 			<levels>1</levels>
 			<points_per_level>25</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Multi-Strike</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>P49</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Single Skill</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>P49</reference>
+				<notes>@Skill@</notes>
+			</modifier>
 			<reference>B53</reference>
 			<categories>
 				<category>Advantage</category>
@@ -5455,6 +5258,12 @@
 			<type>Physical</type>
 			<levels>1</levels>
 			<points_per_level>2</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Size</name>
+				<cost type="percentage">-10</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+			</modifier>
 			<reference>B16</reference>
 			<categories>
 				<category>Advantage</category>
@@ -5556,6 +5365,12 @@
 			<name>Fanatacism</name>
 			<type>Mental</type>
 			<base_points>-15</base_points>
+			<modifier version="1" enabled="no">
+				<name>Extreme</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B136</reference>
+			</modifier>
 			<reference>B136</reference>
 			<categories>
 				<category>Disadvantage</category>
@@ -5694,7 +5509,7 @@
 				<amount>3</amount>
 			</skill_bonus>
 			<skill_bonus>
-				<name compare="is">erotic art</name>
+				<name compare="is">escape</name>
 				<specialization compare="is anything"></specialization>
 				<amount>3</amount>
 			</skill_bonus>
@@ -5713,7 +5528,7 @@
 				<amount>5</amount>
 			</skill_bonus>
 			<skill_bonus>
-				<name compare="is">erotic art</name>
+				<name compare="is">escape</name>
 				<specialization compare="is anything"></specialization>
 				<amount>5</amount>
 			</skill_bonus>
@@ -5796,6 +5611,18 @@
 				<cost type="percentage">-25</cost>
 				<affects>total</affects>
 				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Planetary</name>
+				<cost type="percentage">-5</cost>
+				<affects>total</affects>
+				<reference>P50</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Requires Surface</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>P50</reference>
 			</modifier>
 			<reference>B56</reference>
 			<categories>
@@ -6488,6 +6315,65 @@
 				<affects>total</affects>
 				<reference>B59</reference>
 			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Affects Self</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>P51</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cure Affliction</name>
+				<cost type="percentage">60</cost>
+				<affects>total</affects>
+				<reference>P51</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Affliction Only</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>P51</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Capped</name>
+				<cost type="percentage">-25</cost>
+				<affects>total</affects>
+				<reference>P51</reference>
+				<notes>2 FP</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Capped</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>P51</reference>
+				<notes>4 FP</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Capped</name>
+				<cost type="percentage">-15</cost>
+				<affects>total</affects>
+				<reference>P51</reference>
+				<notes>6 FP</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Capped</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>P51</reference>
+				<notes>8 FP</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Capped</name>
+				<cost type="percentage">-5</cost>
+				<affects>total</affects>
+				<reference>P51</reference>
+				<notes>10 FP</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Empathic</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>P51</reference>
+			</modifier>
 			<reference>B59</reference>
 			<categories>
 				<category>Advantage</category>
@@ -6793,6 +6679,13 @@
 				<cost type="percentage">30</cost>
 				<affects>total</affects>
 				<reference>B60</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Extended</name>
+				<cost type="percentage">30</cost>
+				<affects>total</affects>
+				<reference>P52</reference>
+				<notes>@Special@</notes>
 			</modifier>
 			<reference>B60</reference>
 			<categories>
@@ -7151,9 +7044,66 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Injury Tolerance (Damage Reduction)</name>
+			<type>Physical, Exotic</type>
+			<levels>2</levels>
+			<points_per_level>25</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Common Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-60</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Occasional Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-80</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Rare Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Very Common Attack Form@</notes>
+			</modifier>
+			<reference>P53</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Injury Tolerance (Diffuse)</name>
 			<type>Physical, Exotic</type>
 			<base_points>100</base_points>
+			<modifier version="1" enabled="no">
+				<name>Infiltration</name>
+				<cost type="percentage">40</cost>
+				<affects>total</affects>
+				<reference>P53</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Swarm</name>
+				<cost type="percentage">80</cost>
+				<affects>total</affects>
+				<reference>P53</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Swarm</name>
+				<cost type="percentage">160</cost>
+				<affects>total</affects>
+				<reference>P53</reference>
+				<notes>Can Affect Substantial</notes>
+			</modifier>
 			<reference>B60</reference>
 			<categories>
 				<category>Advantage</category>
@@ -7164,6 +7114,39 @@
 			<type>Physical, Exotic</type>
 			<base_points>40</base_points>
 			<reference>B60</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Injury Tolerance (Independant Body Parts)</name>
+			<type>Physical, Exotic</type>
+			<base_points>35</base_points>
+			<modifier version="1" enabled="no">
+				<name>Detachable Head</name>
+				<cost type="percentage">15</cost>
+				<affects>total</affects>
+				<reference>P52</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Instant Reattachment</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>P52</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Reattachment</name>
+				<cost type="percentage">-60</cost>
+				<affects>total</affects>
+				<reference>P52</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Reattachment Only</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>P52</reference>
+			</modifier>
+			<reference>P53</reference>
 			<categories>
 				<category>Advantage</category>
 			</categories>
@@ -7223,6 +7206,15 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Injury Tolerance (Unbreakable Bones)</name>
+			<type>Physical</type>
+			<base_points>10</base_points>
+			<reference>P53</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Injury Tolerance (Unliving)</name>
 			<type>Physical, Exotic</type>
 			<base_points>20</base_points>
@@ -7236,6 +7228,232 @@
 			<type>Physical, Exotic</type>
 			<levels>1</levels>
 			<points_per_level>5</points_per_level>
+			<ranged_weapon>
+				<damage>1d burn</damage>
+				<accuracy>3</accuracy>
+				<range>100/10</range>
+				<rate_of_fire>1</rate_of_fire>
+				<recoil>1</recoil>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<specialization>@Attack Type@</specialization>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>DX</type>
+					<modifier>-4</modifier>
+				</default>
+			</ranged_weapon>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">100</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 sec</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>10 sec</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">40</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 min</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">20</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 hr</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">10</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 day</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 sec; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">25</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>10 sec; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">20</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 min; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">10</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 hr; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">5</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 day; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Contagious</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>Mildly</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Contagious</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>Highly</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Double Blunt Trauma</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>1HP per 10 dmg</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Explosion</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>Hot</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Radiation</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Surge</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>3</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">150</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">200</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>10</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Side Effect</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Symptoms</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-70</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.1</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Wounding</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
 			<reference>B61</reference>
 			<categories>
 				<category>Advantage</category>
@@ -7246,6 +7464,232 @@
 			<type>Physical, Exotic</type>
 			<levels>1</levels>
 			<points_per_level>10</points_per_level>
+			<ranged_weapon>
+				<damage>1d cor</damage>
+				<accuracy>3</accuracy>
+				<range>100/10</range>
+				<rate_of_fire>1</rate_of_fire>
+				<recoil>1</recoil>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<specialization>@Attack Type@</specialization>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>DX</type>
+					<modifier>-4</modifier>
+				</default>
+			</ranged_weapon>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">100</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 sec</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>10 sec</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">40</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 min</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">20</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 hr</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">10</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 day</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 sec; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">25</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>10 sec; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">20</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 min; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">10</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 hr; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">5</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 day; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Contagious</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>Mildly</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Contagious</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>Highly</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Double Blunt Trauma</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>1HP per 10 dmg</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Explosion</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>Hot</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Surge</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>3</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">150</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">200</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>10</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Side Effect</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Symptoms</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-70</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.1</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Wounding</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Incendiary</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
 			<reference>B61</reference>
 			<categories>
 				<category>Advantage</category>
@@ -7256,6 +7700,149 @@
 			<type>Physical, Exotic</type>
 			<levels>1</levels>
 			<points_per_level>5</points_per_level>
+			<ranged_weapon>
+				<damage>1d cr</damage>
+				<accuracy>3</accuracy>
+				<range>100/10</range>
+				<rate_of_fire>1</rate_of_fire>
+				<recoil>1</recoil>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<specialization>@Attack Type@</specialization>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>DX</type>
+					<modifier>-4</modifier>
+				</default>
+			</ranged_weapon>
+			<modifier version="1" enabled="no">
+				<name>Explosion</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>Hot</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Surge</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>3</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">150</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">200</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>10</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Side Effect</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Symptoms</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-70</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.1</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Blunt Trauma</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Knockback</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Wounding</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Double Knockback</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Incendiary</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
 			<reference>B61</reference>
 			<categories>
 				<category>Advantage</category>
@@ -7266,6 +7853,150 @@
 			<type>Physical, Exotic</type>
 			<levels>1</levels>
 			<points_per_level>7</points_per_level>
+			<ranged_weapon>
+				<damage>1d cut</damage>
+				<accuracy>3</accuracy>
+				<range>100/10</range>
+				<rate_of_fire>1</rate_of_fire>
+				<recoil>1</recoil>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<specialization>@Attack Type@</specialization>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>DX</type>
+					<modifier>-4</modifier>
+				</default>
+			</ranged_weapon>
+			<modifier version="1" enabled="no">
+				<name>Double Blunt Trauma</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>BT as for Crushing</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Explosion</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>Hot</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Surge</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>3</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">150</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">200</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>10</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Side Effect</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Symptoms</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-70</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.1</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Blunt Trauma</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Knockback</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Wounding</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Incendiary</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
 			<reference>B61</reference>
 			<categories>
 				<category>Advantage</category>
@@ -7276,6 +8007,261 @@
 			<type>Physical, Exotic</type>
 			<levels>1</levels>
 			<points_per_level>10</points_per_level>
+			<ranged_weapon>
+				<damage>1d fat</damage>
+				<accuracy>3</accuracy>
+				<range>100/10</range>
+				<rate_of_fire>1</rate_of_fire>
+				<recoil>1</recoil>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<specialization>@Attack Type@</specialization>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>DX</type>
+					<modifier>-4</modifier>
+				</default>
+			</ranged_weapon>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">100</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 sec</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>10 sec</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">40</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 min</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">20</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 hr</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">10</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 day</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 sec; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">25</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>10 sec; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">20</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 min; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">10</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 hr; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">5</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 day; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Contagious</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>Mildly</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Contagious</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>Highly</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Explosion</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>Hot</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Surge</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>3</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">150</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">200</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>10</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Side Effect</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Symptoms</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-70</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.1</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Wounding</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hazard: Dehydration</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hazard: Drowning</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hazard: Freezing</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hazard: Missed Sleep</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hazard: Starvation</name>
+				<cost type="percentage">40</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hazard: Suffocation</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Incendiary</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
 			<reference>B61</reference>
 			<categories>
 				<category>Advantage</category>
@@ -7286,6 +8272,143 @@
 			<type>Physical, Exotic</type>
 			<levels>1</levels>
 			<points_per_level>8</points_per_level>
+			<ranged_weapon>
+				<damage>1d pi++</damage>
+				<accuracy>3</accuracy>
+				<range>100/10</range>
+				<rate_of_fire>1</rate_of_fire>
+				<recoil>1</recoil>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<specialization>@Attack Type@</specialization>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>DX</type>
+					<modifier>-4</modifier>
+				</default>
+			</ranged_weapon>
+			<modifier version="1" enabled="no">
+				<name>Double Blunt Trauma</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Explosion</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>Hot</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Surge</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>3</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">150</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">200</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>10</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Side Effect</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Symptoms</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-70</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.1</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Blunt Trauma</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Wounding</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Incendiary</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
 			<reference>B62</reference>
 			<categories>
 				<category>Advantage</category>
@@ -7296,6 +8419,149 @@
 			<type>Physical, Exotic</type>
 			<levels>1</levels>
 			<points_per_level>8</points_per_level>
+			<ranged_weapon>
+				<damage>1d imp</damage>
+				<accuracy>3</accuracy>
+				<range>100/10</range>
+				<rate_of_fire>1</rate_of_fire>
+				<recoil>1</recoil>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<specialization>@Attack Type@</specialization>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>DX</type>
+					<modifier>-4</modifier>
+				</default>
+			</ranged_weapon>
+			<modifier version="1" enabled="no">
+				<name>Double Blunt Trauma</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Explosion</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>Hot</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Surge</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>3</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">150</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">200</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>10</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Side Effect</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Symptoms</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-70</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.1</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Blunt Trauma</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Knockback</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Wounding</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Incendiary</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
 			<reference>B61</reference>
 			<categories>
 				<category>Advantage</category>
@@ -7306,6 +8572,144 @@
 			<type>Physical, Exotic</type>
 			<levels>1</levels>
 			<points_per_level>6</points_per_level>
+			<ranged_weapon>
+				<damage>1d pi+</damage>
+				<accuracy>3</accuracy>
+				<range>100/10</range>
+				<rate_of_fire>1</rate_of_fire>
+				<recoil>1</recoil>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<specialization>@Attack Type@</specialization>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>DX</type>
+					<modifier>-4</modifier>
+				</default>
+			</ranged_weapon>
+			<modifier version="1" enabled="no">
+				<name>Double Blunt Trauma</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>1HP per 10 dmg</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Explosion</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>Hot</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Surge</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>3</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">150</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">200</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>10</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Side Effect</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Symptoms</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-70</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.1</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Blunt Trauma</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Wounding</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Incendiary</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
 			<reference>B62</reference>
 			<categories>
 				<category>Advantage</category>
@@ -7316,6 +8720,144 @@
 			<type>Physical, Exotic</type>
 			<levels>1</levels>
 			<points_per_level>5</points_per_level>
+			<ranged_weapon>
+				<damage>1d pi</damage>
+				<accuracy>3</accuracy>
+				<range>100/10</range>
+				<rate_of_fire>1</rate_of_fire>
+				<recoil>1</recoil>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<specialization>@Attack Type@</specialization>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>DX</type>
+					<modifier>-4</modifier>
+				</default>
+			</ranged_weapon>
+			<modifier version="1" enabled="no">
+				<name>Double Blunt Trauma</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>1HP per 10 dmg</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Explosion</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>Hot</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Surge</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>3</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">150</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">200</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>10</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Side Effect</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Symptoms</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-70</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.1</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Blunt Trauma</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Wounding</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Incendiary</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
 			<reference>B62</reference>
 			<categories>
 				<category>Advantage</category>
@@ -7326,6 +8868,144 @@
 			<type>Physical, Exotic</type>
 			<levels>1</levels>
 			<points_per_level>3</points_per_level>
+			<ranged_weapon>
+				<damage>1d pi-</damage>
+				<accuracy>3</accuracy>
+				<range>100/10</range>
+				<rate_of_fire>1</rate_of_fire>
+				<recoil>1</recoil>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<specialization>@Attack Type@</specialization>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>DX</type>
+					<modifier>-4</modifier>
+				</default>
+			</ranged_weapon>
+			<modifier version="1" enabled="no">
+				<name>Double Blunt Trauma</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>1HP per 10 dmg</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Explosion</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>Hot</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Surge</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>3</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">150</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">200</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>10</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Side Effect</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Symptoms</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-70</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.1</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Blunt Trauma</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Wounding</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Incendiary</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
 			<reference>B62</reference>
 			<categories>
 				<category>Advantage</category>
@@ -7336,6 +9016,238 @@
 			<type>Physical, Exotic</type>
 			<levels>1</levels>
 			<points_per_level>4</points_per_level>
+			<ranged_weapon>
+				<damage>1d tox</damage>
+				<accuracy>3</accuracy>
+				<range>100/10</range>
+				<rate_of_fire>1</rate_of_fire>
+				<recoil>1</recoil>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<specialization>@Attack Type@</specialization>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>DX</type>
+					<modifier>-4</modifier>
+				</default>
+			</ranged_weapon>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">100</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 sec</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>10 sec</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">40</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 min</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">20</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 hr</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">10</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 day</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 sec; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">25</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>10 sec; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">20</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 min; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">10</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 hr; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">5</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 day; Resistable</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Contagious</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>Mildly</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Contagious</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>Highly</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Double Blunt Trauma</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>1HP per 10 dmg</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Explosion</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>Hot</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Radiation</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Surge</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>3</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">150</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">200</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>10</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Side Effect</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Symptoms</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-70</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.1</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Wounding</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Incendiary</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
 			<reference>B62</reference>
 			<categories>
 				<category>Advantage</category>
@@ -8076,6 +9988,117 @@
 			<reference>B142</reference>
 			<categories>
 				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Leech</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<base_points>21</base_points>
+			<points_per_level>4</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Accelerated Healing</name>
+				<cost type="percentage">25</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Heals FP</name>
+				<cost type="percentage">30</cost>
+				<affects>total</affects>
+				<notes>After HP</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Heals FP</name>
+				<cost type="percentage">60</cost>
+				<affects>total</affects>
+				<notes>Player Chooses</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Steal FP</name>
+				<cost type="percentage">-25</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Steal FP then HP</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Steal ST</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Steal HT</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Steal DX</name>
+				<cost type="percentage">300</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Steal IQ</name>
+				<cost type="percentage">300</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Steal Youth</name>
+				<cost type="percentage">300</cost>
+				<affects>total</affects>
+				<notes>Temporary</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Steal Youth</name>
+				<cost type="percentage">450</cost>
+				<affects>total</affects>
+				<notes>Permanent</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Only Heals FP</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hazard: Dehydration</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hazard: Drowning</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hazard: Freezing</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hazard: Missed Sleep</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hazard: Starvation</name>
+				<cost type="percentage">40</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hazard: Suffocation</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<reference>P96</reference>
+			<categories>
+				<category>Advantage</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -9788,6 +11811,14 @@
 			<categories>
 				<category>Disadvantage</category>
 			</categories>
+			<cost_reduction>
+				<attribute>st</attribute>
+				<percentage>40</percentage>
+			</cost_reduction>
+			<cost_reduction>
+				<attribute>dx</attribute>
+				<percentage>40</percentage>
+			</cost_reduction>
 		</advantage>
 		<advantage version="2">
 			<name>No Hangover</name>
@@ -9919,6 +11950,14 @@
 			<categories>
 				<category>Disadvantage</category>
 			</categories>
+			<cost_reduction>
+				<attribute>st</attribute>
+				<percentage>40</percentage>
+			</cost_reduction>
+			<cost_reduction>
+				<attribute>dx</attribute>
+				<percentage>40</percentage>
+			</cost_reduction>
 		</advantage>
 		<advantage version="2">
 			<name>No Sense of Humor</name>
@@ -9943,6 +11982,12 @@
 			<name>Nocturnal</name>
 			<type>Physical, Exotic</type>
 			<base_points>-20</base_points>
+			<modifier version="1" enabled="no">
+				<name>Permanent Paralysis</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B146</reference>
+			</modifier>
 			<reference>B146</reference>
 			<categories>
 				<category>Disadvantage</category>
@@ -10543,6 +12588,39 @@
 				<category>Perk</category>
 			</categories>
 		</advantage>
+		<advantage_container version="2" open="yes">
+			<name>Perception</name>
+			<reference>B16</reference>
+			<advantage version="2">
+				<name>Oblivious</name>
+				<type>Mental/Physical</type>
+				<levels>1</levels>
+				<points_per_level>5</points_per_level>
+				<reference>B16</reference>
+				<notes>Minus 1 per level to perception.</notes>
+				<attribute_bonus>
+					<attribute>perception</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Perceptive</name>
+				<type>Mental/Physical</type>
+				<levels>1</levels>
+				<points_per_level>5</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>Modifier</name>
+					<cost type="percentage">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B16</reference>
+				<notes>Adds 1 per level to perception checks</notes>
+				<attribute_bonus>
+					<attribute>perception</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+		</advantage_container>
 		<advantage version="2">
 			<name>Perfect Balance</name>
 			<type>Physical</type>
@@ -10742,6 +12820,40 @@
 			<name>Plant Empathy</name>
 			<type>Mental</type>
 			<base_points>5</base_points>
+			<modifier version="1" enabled="no">
+				<name>Remote</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>P48</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Specialized</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>P77</reference>
+				<notes>All terrestrial plants</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Specialized</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>P77</reference>
+				<notes>All aquatic plants</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Specialized</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>P77</reference>
+				<notes>@Large Subset: Herbs, Trees@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Specialized</name>
+				<cost type="percentage">-60</cost>
+				<affects>total</affects>
+				<reference>P77</reference>
+				<notes>@Small Subset: Evergreens, Medicinals@</notes>
+			</modifier>
 			<reference>B75</reference>
 			<categories>
 				<category>Advantage</category>
@@ -11732,6 +13844,11 @@
 			<name>Restricted Diet (@Common food@)</name>
 			<type>Physical</type>
 			<base_points>-20</base_points>
+			<modifier version="1" enabled="no">
+				<name>Substitution</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+			</modifier>
 			<reference>B151</reference>
 			<categories>
 				<category>Disadvantage</category>
@@ -11741,6 +13858,11 @@
 			<name>Restricted Diet (@Occasional food@)</name>
 			<type>Physical</type>
 			<base_points>-30</base_points>
+			<modifier version="1" enabled="no">
+				<name>Substitution</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+			</modifier>
 			<reference>B151</reference>
 			<categories>
 				<category>Disadvantage</category>
@@ -11750,6 +13872,11 @@
 			<name>Restricted Diet (@Rare food@)</name>
 			<type>Physical</type>
 			<base_points>-40</base_points>
+			<modifier version="1" enabled="no">
+				<name>Substitution</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+			</modifier>
 			<reference>B151</reference>
 			<categories>
 				<category>Disadvantage</category>
@@ -11759,6 +13886,11 @@
 			<name>Restricted Diet (@Very Common food@)</name>
 			<type>Physical</type>
 			<base_points>-10</base_points>
+			<modifier version="1" enabled="no">
+				<name>Substitution</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+			</modifier>
 			<reference>B151</reference>
 			<categories>
 				<category>Disadvantage</category>
@@ -13288,6 +15420,34 @@
 			<name>Speak With Plants</name>
 			<type>Mental, Exotic</type>
 			<base_points>15</base_points>
+			<modifier version="1" enabled="no">
+				<name>Specialized</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>P77</reference>
+				<notes>All terrestrial plants</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Specialized</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>P77</reference>
+				<notes>All aquatic plants</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Specialized</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>P77</reference>
+				<notes>@Large Subset: Herbs, Trees@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Specialized</name>
+				<cost type="percentage">-60</cost>
+				<affects>total</affects>
+				<reference>P77</reference>
+				<notes>@Small Subset: Evergreens, Medicinals@</notes>
+			</modifier>
 			<reference>B87</reference>
 			<categories>
 				<category>Advantage</category>
@@ -13400,6 +15560,12 @@
 				<affects>total</affects>
 				<reference>B87</reference>
 				<notes>@Type: Angels, Demons, Elementals, Faerie, Ghosts, etc.@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Remote</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>P48</reference>
 			</modifier>
 			<reference>B88</reference>
 			<categories>
@@ -16428,6 +18594,34 @@
 				<category>Advantage</category>
 			</categories>
 		</advantage>
+		<advantage_container version="2" open="yes">
+			<name>Will</name>
+			<reference>B16</reference>
+			<advantage version="2">
+				<name>Strong Will</name>
+				<type>Mental</type>
+				<levels>1</levels>
+				<points_per_level>5</points_per_level>
+				<reference>B16</reference>
+				<notes>Plus 1 to will rolls per level</notes>
+				<attribute_bonus>
+					<attribute>will</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Weak Will</name>
+				<type>Mental</type>
+				<levels>1</levels>
+				<points_per_level>-5</points_per_level>
+				<reference>B16</reference>
+				<notes>Gives -1 per level to will rolls</notes>
+				<attribute_bonus>
+					<attribute>will</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
+			</advantage>
+		</advantage_container>
 		<advantage version="2">
 			<name>Workaholic</name>
 			<type>Physical</type>
@@ -22642,6 +24836,17 @@
 			<default>
 				<type>Skill</type>
 				<name>Broadsword</name>
+				<modifier>0</modifier>
+			</default>
+		</technique>
+		<technique version="2" limit="4">
+			<name>Feint</name>
+			<difficulty>H</difficulty>
+			<points>2</points>
+			<reference>B231</reference>
+			<default>
+				<type>Skill</type>
+				<name>Force Sword</name>
 				<modifier>0</modifier>
 			</default>
 		</technique>
@@ -33353,17 +35558,6 @@
 				<modifier>-3</modifier>
 			</default>
 		</technique>
-		<skill version="2">
-			<name>Swimming</name>
-			<encumbrance_penalty_multiplier>2</encumbrance_penalty_multiplier>
-			<difficulty>HT/E</difficulty>
-			<points>1</points>
-			<reference>B224</reference>
-			<default>
-				<type>HT</type>
-				<modifier>-4</modifier>
-			</default>
-		</skill>
 		<skill version="2">
 			<name>Swimming</name>
 			<encumbrance_penalty_multiplier>2</encumbrance_penalty_multiplier>

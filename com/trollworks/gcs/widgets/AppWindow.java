@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2007 the Initial Developer. All Rights Reserved.
+ * 2005-2008 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -82,7 +82,6 @@ public class AppWindow extends JFrame implements Comparable<AppWindow>, WindowLi
 	private BufferedImage									mWindowIcon;
 	private PrintManager									mPrintManager;
 	private StdUndoManager									mUndoManager;
-	private boolean											mInForeground;
 	private boolean											mIsClosed;
 	private BufferedImage									mTitleIcon;
 	private boolean											mWasAlive;
@@ -352,41 +351,15 @@ public class AppWindow extends JFrame implements Comparable<AppWindow>, WindowLi
 		return list;
 	}
 
-	/** @return <code>true</code> if the window is in the foreground. */
-	public boolean isInForeground() {
-		return mInForeground;
-	}
-
-	private void setInForeground(boolean inForeground) {
-		if (inForeground != mInForeground) {
-			mInForeground = inForeground;
-			foregroundStateChanged(inForeground);
-		}
-	}
-
-	/**
-	 * Called when the window changes its foreground state.
-	 * 
-	 * @param inForeground <code>true</code> will be passed in when the window is in the
-	 *            foreground. <code>false</code> will be passed in when the window is not in the
-	 *            foreground.
-	 */
-	protected void foregroundStateChanged(boolean inForeground) {
-		// Nothing to do...
-	}
-
 	public void windowGainedFocus(WindowEvent event) {
 		if (event.getWindow() == this) {
 			WINDOW_LIST.remove(this);
 			WINDOW_LIST.add(0, this);
-			setInForeground(true);
 		}
 	}
 
 	public void windowLostFocus(WindowEvent event) {
-		if (event.getWindow() == this) {
-			setInForeground(false);
-		}
+		// Nothing to do...
 	}
 
 	public void windowActivated(WindowEvent event) {

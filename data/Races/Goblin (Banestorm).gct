@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="fac3yb9r:1rcrt8qcmymaq">
+	<advantage_list>
+		<advantage>
+			<name>Attribute Modifiers (ST-2; DX+1; IQ+1)</name>
+			<type>Physical</type>
+			<base_points>20</base_points>
+			<attribute_bonus>
+				<attribute>st</attribute>
+				<amount>-2</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>dx</attribute>
+				<amount>1</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>iq</attribute>
+				<amount>1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage>
+			<name>Night Vision</name>
+			<type>Physical</type>
+			<levels>9</levels>
+			<points_per_level>1</points_per_level>
+			<reference>B71</reference>
+		</advantage>
+		<advantage>
+			<name>Impulsiveness (CR: 12)</name>
+			<type>Mental</type>
+			<base_points>-10</base_points>
+			<reference>B139</reference>
+		</advantage>
+	</advantage_list>
+	<notes>  Goblins have green skin, pointed ears, and small, sharp, white teeth.
+Magic fascinates many goblins, and they respect mages. There are few
+mighty goblin wizards, but the race produces a remarkable number of
+hedge magicians and dabblers. They are great traders and merchants. They
+travel everywhere, trading where they travel, and wherever they go, a few settle
+down. There are no exclusively goblin nations in Ytarria, but they are
+the majority in several parts of Megalos, particularly in the Duchy of
+Yibyorak (p. 100).
+  Goblins are small and slender; height is normal for their ST, but
+weight is 10 pounds less.
+  Many but not all goblins have the quirk &#8220;Interested in magic and
+mages.&#8221; For some this is a Compulsive Behavior (Hang around with wizards).
+Goblins are quite likely to have the Talents of Business Acumen or
+Smooth Operator, and their most successful merchants do not have
+Impulsiveness.</notes>
+</template>

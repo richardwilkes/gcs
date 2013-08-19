@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2007 the Initial Developer. All Rights Reserved.
+ * 2005-2008 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -28,9 +28,11 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.feature.Bonus;
 import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.modifier.Modifier;
+import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
+import com.trollworks.gcs.utility.io.Preferences;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.widgets.outline.ListRow;
 
@@ -55,7 +57,9 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 	 * @return The thread that does the processing.
 	 */
 	public static PrerequisitesThread getThread(GURPSCharacter character) {
-		return MAP.get(character);
+		synchronized (MAP) {
+			return MAP.get(character);
+		}
 	}
 
 	/**
@@ -97,7 +101,10 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 		mCharacter = sheet.getCharacter();
 		mNeedUpdate = true;
 		mCharacter.addTarget(this, Profile.ID_TECH_LEVEL, GURPSCharacter.ID_STRENGTH, GURPSCharacter.ID_DEXTERITY, GURPSCharacter.ID_INTELLIGENCE, GURPSCharacter.ID_HEALTH, Spell.ID_NAME, Spell.ID_COLLEGE, Spell.ID_POINTS, Spell.ID_LIST_CHANGED, Skill.ID_NAME, Skill.ID_SPECIALIZATION, Skill.ID_LEVEL, Skill.ID_RELATIVE_LEVEL, Skill.ID_ENCUMBRANCE_PENALTY, Skill.ID_POINTS, Skill.ID_TECH_LEVEL, Skill.ID_LIST_CHANGED, Advantage.ID_NAME, Advantage.ID_LEVELS, Advantage.ID_LIST_CHANGED, Equipment.ID_EXTENDED_WEIGHT, Equipment.ID_STATE, Equipment.ID_QUANTITY, Equipment.ID_LIST_CHANGED);
-		MAP.put(mCharacter, this);
+		Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_IQ_RULES_PREF_KEY);
+		synchronized (MAP) {
+			MAP.put(mCharacter, this);
+		}
 	}
 
 	@Override public void run() {
@@ -145,12 +152,14 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 			// Someone is tring to terminate us... let them.
 		}
 		mNeedUpdate = mIsProcessing = false;
-		MAP.remove(mCharacter);
+		Preferences.getInstance().getNotifier().remove(this);
+		synchronized (MAP) {
+			MAP.remove(mCharacter);
+		}
 	}
 
 	private void processFeatures() throws Exception {
 		HashMap<String, ArrayList<Feature>> map = new HashMap<String, ArrayList<Feature>>();
-
 		buildFeatureMap(map, mCharacter.getAdvantagesIterator());
 		buildFeatureMap(map, mCharacter.getSkillsIterator());
 		buildFeatureMap(map, mCharacter.getSpellsIterator());
@@ -251,6 +260,9 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 	}
 
 	public void handleNotification(Object producer, String type, Object data) {
+		if (SheetPreferences.OPTIONAL_IQ_RULES_PREF_KEY.equals(type)) {
+			mCharacter.updateWillAndPerceptionDueToOptionalIQRuleUseChange();
+		}
 		markForUpdate();
 	}
 }

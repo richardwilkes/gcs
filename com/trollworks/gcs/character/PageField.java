@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2007 the Initial Developer. All Rights Reserved.
+ * 2005-2008 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -122,9 +122,11 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		if (!editable) {
 			setForeground(Color.gray);
 		}
-		setToolTipText(tooltip);
-		if (tooltip != null && tooltip.indexOf("{") != -1) { //$NON-NLS-1$
-			mCustomToolTip = tooltip;
+		if (tooltip != null) {
+			setToolTipText(tooltip);
+			if (tooltip.indexOf("{") != -1) { //$NON-NLS-1$
+				mCustomToolTip = tooltip;
+			}
 		}
 		mCharacter.addTarget(this, mConsumedType);
 		addPropertyChangeListener("value", this); //$NON-NLS-1$

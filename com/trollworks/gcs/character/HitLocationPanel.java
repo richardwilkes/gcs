@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2007 the Initial Developer. All Rights Reserved.
+ * 2005-2008 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -26,6 +26,7 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.utility.Fonts;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.widgets.UIUtilities;
+import com.trollworks.gcs.widgets.Wrapper;
 import com.trollworks.gcs.widgets.layout.ColumnLayout;
 
 import java.awt.Color;
@@ -34,7 +35,6 @@ import java.awt.Dimension;
 import java.text.MessageFormat;
 
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
@@ -86,8 +86,7 @@ public class HitLocationPanel extends DropPanel {
 
 		int i;
 
-		JPanel wrapper = new JPanel(new ColumnLayout(1, 2, 0));
-		wrapper.setOpaque(false);
+		Wrapper wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
 		PageHeader header = createHeader(wrapper, MSG_ROLL, null);
 		addHorizontalBackground(header, Color.black);
 		for (i = 0; i < LOCATIONS.length; i++) {
@@ -98,8 +97,7 @@ public class HitLocationPanel extends DropPanel {
 
 		createDivider();
 
-		wrapper = new JPanel(new ColumnLayout(1, 2, 0));
-		wrapper.setOpaque(false);
+		wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
 		header = createHeader(wrapper, MSG_LOCATION, null);
 		for (i = 0; i < LOCATIONS.length; i++) {
 			wrapper.add(new PageLabel(LOCATIONS[i], header, SwingConstants.CENTER));
@@ -109,8 +107,7 @@ public class HitLocationPanel extends DropPanel {
 
 		createDivider();
 
-		wrapper = new JPanel(new ColumnLayout(1, 2, 0));
-		wrapper.setOpaque(false);
+		wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
 		header = createHeader(wrapper, MSG_PENALTY, MSG_PENALTY_TITLE_TOOLTIP);
 		for (i = 0; i < LOCATIONS.length; i++) {
 			createLabel(wrapper, PENALTIES[i], MessageFormat.format(MSG_PENALTY_TOOLTIP, LOCATIONS[i]), SwingConstants.RIGHT);
@@ -120,8 +117,7 @@ public class HitLocationPanel extends DropPanel {
 
 		createDivider();
 
-		wrapper = new JPanel(new ColumnLayout(1, 2, 0));
-		wrapper.setOpaque(false);
+		wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
 		header = createHeader(wrapper, MSG_DR, null);
 		for (i = 0; i < LOCATIONS.length; i++) {
 			createDisabledField(wrapper, character, DR_KEYS[i], MessageFormat.format(MSG_DR_TOOLTIP, LOCATIONS[i]), SwingConstants.RIGHT);
@@ -137,8 +133,7 @@ public class HitLocationPanel extends DropPanel {
 	}
 
 	private void createDivider() {
-		JPanel panel = new JPanel();
-		panel.setOpaque(false);
+		Wrapper panel = new Wrapper();
 		UIUtilities.setOnlySize(panel, new Dimension(1, 1));
 		add(panel);
 		addVerticalBackground(panel, Color.black);

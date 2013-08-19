@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2007 the Initial Developer. All Rights Reserved.
+ * 2005-2008 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -69,6 +69,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private static String			MSG_INITIAL_POINTS;
 	private static String			MSG_INITIAL_POINTS_TOOLTIP;
 	private static String			MSG_SELECT_PORTRAIT;
+	private static String			MSG_OPTIONAL_IQ_RULES;
 	private static String			MSG_OPTIONAL_DICE_RULES;
 	private static String			MSG_PNG_RESOLUTION_PRE;
 	private static String			MSG_PNG_RESOLUTION_POST;
@@ -83,6 +84,10 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	/** The optional dice rules preference key. */
 	public static final String		OPTIONAL_DICE_RULES_PREF_KEY	= Preferences.getModuleKey(MODULE, OPTIONAL_DICE_RULES);
 	private static final boolean	DEFAULT_OPTIONAL_DICE_RULES		= false;
+	private static final String		OPTIONAL_IQ_RULES				= "UseOptionIQRules";										//$NON-NLS-1$
+	/** The optional IQ rules preference key. */
+	public static final String		OPTIONAL_IQ_RULES_PREF_KEY		= Preferences.getModuleKey(MODULE, OPTIONAL_IQ_RULES);
+	private static final boolean	DEFAULT_OPTIONAL_IQ_RULES		= false;
 	private static final int		DEFAULT_PNG_RESOLUTION			= 200;
 	private static final String		PNG_RESOLUTION					= "PNGResolution";											//$NON-NLS-1$
 	private static final int[]		DPI								= { 72, 96, 144, 150, 200, 300 };
@@ -100,6 +105,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private JTextField				mHTMLTemplatePath;
 	private JButton					mHTMLTemplatePicker;
 	private JCheckBox				mUseOptionalDiceRules;
+	private JCheckBox				mUseOptionalIQRules;
 
 	static {
 		LocalizedMessages.initialize(SheetPreferences.class);
@@ -121,6 +127,11 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	/** @return Whether the optional dice rules from B269 are in use. */
 	public static boolean areOptionalDiceRulesUsed() {
 		return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_DICE_RULES, DEFAULT_OPTIONAL_DICE_RULES);
+	}
+
+	/** @return Whether the optional IQ rules (Will &amp; Perception are not based on IQ) are in use. */
+	public static boolean areOptionalIQRulesUsed() {
+		return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_IQ_RULES, DEFAULT_OPTIONAL_IQ_RULES);
 	}
 
 	/** @return The resolution to use when saving the sheet as a PNG. */
@@ -189,6 +200,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		grid.add(new FlexSpacer(0, 0, true, true), rowIndex, 2);
 
 		addSeparator(column);
+
+		mUseOptionalIQRules = createCheckBox(MSG_OPTIONAL_IQ_RULES, null, areOptionalIQRulesUsed());
+		column.add(mUseOptionalIQRules);
 
 		mUseOptionalDiceRules = createCheckBox(MSG_OPTIONAL_DICE_RULES, null, areOptionalDiceRulesUsed());
 		column.add(mUseOptionalDiceRules);
@@ -313,10 +327,11 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		}
 		mUseHTMLTemplateOverride.setSelected(false);
 		mUseOptionalDiceRules.setSelected(DEFAULT_OPTIONAL_DICE_RULES);
+		mUseOptionalIQRules.setSelected(DEFAULT_OPTIONAL_IQ_RULES);
 	}
 
 	@Override public boolean isSetToDefaults() {
-		return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultCampaign().equals("") && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getInitialPoints() == DEFAULT_INITIAL_POINTS && getPNGResolution() == DEFAULT_PNG_RESOLUTION && isHTMLTemplateOverridden() == false && areOptionalDiceRulesUsed() == DEFAULT_OPTIONAL_DICE_RULES; //$NON-NLS-1$ //$NON-NLS-2$
+		return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultCampaign().equals("") && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getInitialPoints() == DEFAULT_INITIAL_POINTS && getPNGResolution() == DEFAULT_PNG_RESOLUTION && isHTMLTemplateOverridden() == false && areOptionalDiceRulesUsed() == DEFAULT_OPTIONAL_DICE_RULES && areOptionalIQRulesUsed() == DEFAULT_OPTIONAL_IQ_RULES; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	private void setPortrait(String path) {
@@ -364,6 +379,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 			boolean checked = mUseOptionalDiceRules.isSelected();
 			adjustOptionalDiceRulesProperty(checked);
 			Preferences.getInstance().setValue(MODULE, OPTIONAL_DICE_RULES, checked);
+		} else if (source == mUseOptionalIQRules) {
+			Preferences.getInstance().setValue(MODULE, OPTIONAL_IQ_RULES, mUseOptionalIQRules.isSelected());
 		}
 		adjustResetButton();
 	}

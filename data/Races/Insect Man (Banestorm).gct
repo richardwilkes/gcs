@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="faee8i36:-saqienx3whib" version="1">
+	<advantage_list>
+		<advantage version="2">
+			<name>Increased Strength</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<points_per_level>10</points_per_level>
+			<reference>B14</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>st</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Increased Health</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<points_per_level>10</points_per_level>
+			<reference>B14</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>ht</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Damage Resistance</name>
+			<type>Physical, Exotic</type>
+			<levels>2</levels>
+			<points_per_level>5</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Ablative</name>
+				<cost type="percentage">-80</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Absorbtion</name>
+				<cost type="percentage">80</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>Enhances @Trait@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Absorbtion</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>Enhances any trait</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Absorbtion</name>
+				<cost type="percentage">80</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>Healing only</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Can't wear armor</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Directional</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+				<notes>@Direction: Back, Right, Left, Top or Underside@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Directional</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+				<notes>Front</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Flexible</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hardened</name>
+				<cost type="percentage">20</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Common Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-60</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Occasional Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-80</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Rare Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Very Common Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Reflection</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Semi-Ablative</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Force Field</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<reference>B47</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<dr_bonus>
+				<location>full_body</location>
+				<amount per_level="yes">1</amount>
+			</dr_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Racial Memory</name>
+			<type>Mental, Exotic</type>
+			<modifier version="1">
+				<name>Passive</name>
+				<cost type="points">15</cost>
+				<affects>total</affects>
+				<reference>B78</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Active</name>
+				<cost type="points">40</cost>
+				<affects>total</affects>
+				<reference>B78</reference>
+			</modifier>
+			<reference>B78</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Silence</name>
+			<type>Physical, Exotic</type>
+			<levels>2</levels>
+			<points_per_level>5</points_per_level>
+			<reference>B85</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<skill_bonus>
+				<name compare="is">stealth</name>
+				<specialization compare="is anything"></specialization>
+				<amount>2</amount>
+			</skill_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Telecommunication</name>
+			<type>Mental/Physical, Exotic</type>
+			<modifier version="1" enabled="no">
+				<name>Infrared Communication</name>
+				<cost type="points">10</cost>
+				<affects>total</affects>
+				<reference>B91</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Laser Communication</name>
+				<cost type="points">15</cost>
+				<affects>total</affects>
+				<reference>B91</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Radio</name>
+				<cost type="points">10</cost>
+				<affects>total</affects>
+				<reference>B91</reference>
+			</modifier>
+			<modifier version="1">
+				<name>Telesend</name>
+				<cost type="points">30</cost>
+				<affects>total</affects>
+				<reference>B91</reference>
+			</modifier>
+			<modifier version="1">
+				<name>Broadcast</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B91</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Short Wave</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B91</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Universal</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B91</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Video</name>
+				<cost type="percentage">40</cost>
+				<affects>total</affects>
+				<reference>B91</reference>
+			</modifier>
+			<modifier version="1">
+				<name>Racial</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B91</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Receive Only</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B91</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Send Only</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B91</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Vague</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B91</reference>
+			</modifier>
+			<reference>B91</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Chummy</name>
+			<type>Mental</type>
+			<base_points>-5</base_points>
+			<reference>B126</reference>
+			<notes>React to others at +2; -1 to IQ-based skills when alone</notes>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Hard of Hearing</name>
+			<type>Physical</type>
+			<base_points>-10</base_points>
+			<reference>B138</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>hearing</attribute>
+				<amount>-4</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Low TL</name>
+			<type>Social</type>
+			<levels>1</levels>
+			<points_per_level>-5</points_per_level>
+			<reference>B22</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Cannot Speak (Mute)</name>
+			<type>Physical</type>
+			<base_points>-25</base_points>
+			<reference>B125</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Sense of Duty</name>
+			<type>Mental</type>
+			<base_points>-10</base_points>
+			<reference>B153</reference>
+			<notes>Colony</notes>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Shyness (Mild)</name>
+			<type>Mental</type>
+			<base_points>-5</base_points>
+			<reference>B154</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+			<skill_bonus>
+				<name compare="is">acting</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">carousing</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">diplomacy</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">fast-talk</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">intimidation</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">leadership</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">merchant</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">panhandling</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">performance</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">politics</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">public speaking</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="contains">savoir-faire</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">sex appeal</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">streetwise</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">teaching</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Appearance (Unattractive)</name>
+			<type>Physical</type>
+			<base_points>-4</base_points>
+			<reference>B21</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Humble</name>
+			<type>Mental</type>
+			<base_points>-1</base_points>
+			<reference>B164</reference>
+			<categories>
+				<category>Quirk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Sterile</name>
+			<type>Physical</type>
+		</advantage>
+	</advantage_list>
+	<notes>  The bizarre insect men live solely underground, near the border
+between Zarak and the Great Desert. To date, only a few dwarves know
+they are more than just large bugs. The Zarakun of Ginnrel consider
+them a major threat and are trying to wipe them out. Doing so, however,
+is proving difficult.
+  Insect men are probably native to Gabrook, though no one is certain.
+They could just be a mutation of Yrth insects, affected by the intense
+magical &#8220;fallout&#8221; from the Banestorm in this area. This would explain
+why they only began appearing in the past decade. They are currently
+TL2; they&#8217;ve apparently learned a lot from their enemies in a short time.
+Insect men are roughly the same size and shape as humans. They
+have hard, chitinous, bronze-colored skin, faceted black eyes, and long
+antennae. Like ants, they have different castes. Insect men proper are the
+intelligent guides for the colony; the taller, brawnier, four-armed insect
+warriors are servants and fighters. Both types are sexless; breeding is
+done by the queen and her consorts, neither of which are intelligent.
+  Many insect men and warriors have the quirk Secretive, and for some
+it is outright Paranoia. Very few lack any of the racial disadvantages;
+GMs should emphasize the resulting weird behavior.</notes>
+</template>

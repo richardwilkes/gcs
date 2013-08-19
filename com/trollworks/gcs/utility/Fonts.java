@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2007 the Initial Developer. All Rights Reserved.
+ * 2005-2008 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -32,13 +32,15 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.font.FontRenderContext;
 import java.util.HashMap;
-import java.util.Map.Entry;
 import java.util.StringTokenizer;
+import java.util.Map.Entry;
 
 import javax.swing.UIManager;
 
 /** Provides standardized font access and utilities. */
 public class Fonts {
+	/** The notification key used when font change notifications are broadcast. */
+	public static final String					FONT_NOTIFICATION_KEY	= "FontsChanged";					//$NON-NLS-1$
 	private static final String					COMMA					= ",";								//$NON-NLS-1$
 	private static final String					MODULE					= "Font";							//$NON-NLS-1$
 	/** The standard text field font. */
@@ -224,5 +226,10 @@ public class Fonts {
 				prefs.setValue(MODULE, name, font);
 			}
 		}
+	}
+
+	/** Cause font change listeners to be notified. */
+	public static void notifyOfFontChanges() {
+		Preferences.getInstance().getNotifier().notify(null, FONT_NOTIFICATION_KEY, null);
 	}
 }

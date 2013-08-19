@@ -20,11 +20,15 @@
 		<mkdir dir="${BuildDir}"/>
 
 		<!-- Compile the code. -->
-		<unjar src="libraries/itext-2.0.6.jar" dest="${JavaBuildDir}"/>
+		<unjar src="libraries/itext-2.0.7.jar" dest="${JavaBuildDir}"/>
 		<unjar src="libraries/AppleJavaExtensions.jar" dest="${JavaBuildDir}"/>
 		<javac srcdir="." destdir="${JavaBuildDir}"
 			includes="com/trollworks/gcs/app/Main.java"
 			debug="no" optimize="yes" target="1.5" source="1.5"/>
+
+		<!-- Remove invalid signing files from iText. -->
+		<delete file="${JavaBuildDir}/META-INF/BRUNO_LO.RSA"/>
+		<delete file="${JavaBuildDir}/META-INF/BRUNO_LO.SF"/>
 
 		<!-- Copy the resources over. -->
 		<copy todir="${JavaBuildDir}">
@@ -42,15 +46,20 @@
 			<fileset dir="data" includes="**/*.glb,**/*.adq,**/*.eqp,**/*.gct,**/*.html,**/*.skl,**/*.spl"/>
 		</copy>
 
-		<!-- Copy the documentation. -->
-		<mkdir dir="${InstallDir}/docs"/>
-		<copy todir="${InstallDir}/docs">
-			<fileset dir="docs" includes="**/*.html,**/*.png,**/*.gif,**/*.jpg"/>
+		<!-- Copy the samples dir. -->
+		<mkdir dir="${InstallDir}/samples"/>
+		<copy todir="${InstallDir}/samples">
+			<fileset dir="samples" includes="**/*.gcs"/>
 		</copy>
+
+		<!-- Copy the top-level license and release notes. -->
 		<copy file="LICENSE.txt" todir="${InstallDir}"/>
+		<copy file="License.html" todir="${InstallDir}"/>
+		<copy file="Release Notes.html" todir="${InstallDir}"/>
 
 		<!-- Copy the Windows launcher -->
 		<copy file="install/windows/${APP_NAME}.exe" todir="${InstallDir}"/>
+		<copy file="install/windows/gcs.exe" todir="${InstallDir}"/>
 
 		<!-- Copy the Windows icons -->
 		<mkdir dir="${InstallDir}/icons"/>
@@ -64,6 +73,7 @@
 
 		<!-- Remove Windows-specific files -->
 		<delete file="${InstallDir}/${APP_NAME}.exe"/>
+		<delete file="${InstallDir}/gcs.exe"/>
 		<delete dir="${InstallDir}/icons"/>
 
 		<!-- Create the Unix launcher script. -->
@@ -137,29 +147,33 @@
 	</target>
 
 	<target name="win_launcher" description="Create the Windows launcher">
-		<exec executable="rc.exe" failonerror="yes">
-			<arg value="install/windows/gcs.rc"/>
+		<exec executable="/mingw/bin/windres.exe" failonerror="yes" dir="install/windows">
+			<arg value="-o"/>
+			<arg value="gcs.rc.o"/>
+			<arg value="gcs.rc"/>
 		</exec>
-		<exec executable="cl.exe" failonerror="yes">
-			<arg value="/GA"/>
-			<arg value="/O1"/>
-			<arg value="/W3"/>
-			<arg value="/Gd"/>
-			<arg value="/IC:/Program Files/Java/jdk1.5.0_10/include"/>
-			<arg value="/IC:/Program Files/Java/jdk1.5.0_10/include/win32"/>
-			<arg value="/nologo"/>
-			<arg value="/TC"/>
-			<arg value="/Feinstall/windows/${APP_NAME}.exe"/>
-			<arg value="install/windows/win_launcher.c"/>
-			<arg value="/ML"/>
-			<arg value="/link"/>
-			<arg value="User32.lib"/>
-			<arg value="Advapi32.lib"/>
-			<arg value="install/windows/gcs.res"/>
-			<arg value="/MACHINE:X86"/>
+		<exec executable="/mingw/bin/gcc.exe" failonerror="yes" dir="install/windows">
+			<arg value="-c"/>
+			<arg value="-IC:/Program Files/Java/jdk1.5.0_12/include"/>
+			<arg value="-IC:/Program Files/Java/jdk1.5.0_12/include/win32"/>
+			<arg value="win_launcher.c"/>
+			<arg value="-o"/>
+			<arg value="win_launcher.o"/>
 		</exec>
-		<delete file="win_launcher.obj"/>
-		<delete file="install/windows/gcs.res"/>
+		<exec executable="/mingw/bin/gcc.exe" failonerror="yes" dir="install/windows">
+			<arg value="-o"/>
+			<arg value="${APP_NAME}.exe"/>
+			<arg value="win_launcher.o"/>
+			<arg value="gcs.rc.o"/>
+			<arg value="-mwindows"/>
+		</exec>
+		<exec executable="/mingw/bin/gcc.exe" failonerror="yes" dir="install/windows">
+			<arg value="-o"/>
+			<arg value="gcs.exe"/>
+			<arg value="win_launcher.o"/>
+			<arg value="gcs.rc.o"/>
+			<arg value="-mconsole"/>
+		</exec>
 	</target>
 
 	<target name="mac_launcher" description="Create the Mac launcher">

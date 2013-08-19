@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2007 the Initial Developer. All Rights Reserved.
+ * 2005-2008 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -791,7 +791,7 @@ public class GURPSCharacter extends DataFile {
 
 	@Override public void notify(String type, Object data) {
 		super.notify(type, data);
-		if (Advantage.ID_POINTS.equals(type) || Advantage.ID_LEVELS.equals(type) || Advantage.ID_CONTAINER_TYPE.equals(type) || Advantage.ID_LIST_CHANGED.equals(type) || Modifier.ID_LIST_CHANGED.equals(type) || Modifier.ID_ENABLED.equals(type)) {
+		if (Advantage.ID_POINTS.equals(type) || Advantage.ID_LEVELS.equals(type) || Advantage.ID_CONTAINER_TYPE.equals(type) || Advantage.ID_LIST_CHANGED.equals(type) || Advantage.ID_CR.equals(type) || Modifier.ID_LIST_CHANGED.equals(type) || Modifier.ID_ENABLED.equals(type)) {
 			mNeedAdvantagesPointCalculation = true;
 		}
 		if (Skill.ID_POINTS.equals(type) || Skill.ID_LIST_CHANGED.equals(type)) {
@@ -1480,7 +1480,6 @@ public class GURPSCharacter extends DataFile {
 	 */
 	public void setIntelligence(int intelligence) {
 		int oldIntelligence = getIntelligence();
-
 		if (oldIntelligence != intelligence) {
 			postUndoEdit(MSG_INTELLIGENCE_UNDO, ID_INTELLIGENCE, new Integer(oldIntelligence), new Integer(intelligence));
 			updateIntelligenceInfo(intelligence - mIntelligenceBonus, mIntelligenceBonus);
@@ -1913,7 +1912,7 @@ public class GURPSCharacter extends DataFile {
 
 	/** @return The will. */
 	public int getWill() {
-		return mWill + mWillBonus + getIntelligence();
+		return mWill + mWillBonus + (SheetPreferences.areOptionalIQRulesUsed() ? 10 : getIntelligence());
 	}
 
 	/** @param will The new will. */
@@ -1921,7 +1920,7 @@ public class GURPSCharacter extends DataFile {
 		int oldWill = getWill();
 		if (oldWill != will) {
 			postUndoEdit(MSG_WILL_UNDO, ID_WILL, new Integer(oldWill), new Integer(will));
-			updateWillInfo(will - (mWillBonus + getIntelligence()), mWillBonus);
+			updateWillInfo(will - (mWillBonus + (SheetPreferences.areOptionalIQRulesUsed() ? 10 : getIntelligence())), mWillBonus);
 		}
 	}
 
@@ -1947,6 +1946,12 @@ public class GURPSCharacter extends DataFile {
 		updateSkills();
 		mNeedAttributePointCalculation = true;
 		endNotify();
+	}
+
+	/** Called to ensure notifications are sent out when the optional IQ rule use is changed. */
+	public void updateWillAndPerceptionDueToOptionalIQRuleUseChange() {
+		updateWillInfo(mWill, mWillBonus);
+		updatePerceptionInfo(mPerception, mPerceptionBonus);
 	}
 
 	/** @return The number of points spent on will. */
@@ -2056,7 +2061,7 @@ public class GURPSCharacter extends DataFile {
 
 	/** @return The perception (Per). */
 	public int getPerception() {
-		return mPerception + mPerceptionBonus + getIntelligence();
+		return mPerception + mPerceptionBonus + (SheetPreferences.areOptionalIQRulesUsed() ? 10 : getIntelligence());
 	}
 
 	/**
@@ -2068,7 +2073,7 @@ public class GURPSCharacter extends DataFile {
 		int oldPerception = getPerception();
 		if (oldPerception != perception) {
 			postUndoEdit(MSG_PERCEPTION_UNDO, ID_PERCEPTION, new Integer(oldPerception), new Integer(perception));
-			updatePerceptionInfo(perception - (mPerceptionBonus + getIntelligence()), mPerceptionBonus);
+			updatePerceptionInfo(perception - (mPerceptionBonus + (SheetPreferences.areOptionalIQRulesUsed() ? 10 : getIntelligence())), mPerceptionBonus);
 		}
 	}
 

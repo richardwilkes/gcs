@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2007 the Initial Developer. All Rights Reserved.
+ * 2005-2008 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -25,12 +25,12 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.widgets.UIUtilities;
+import com.trollworks.gcs.widgets.Wrapper;
 import com.trollworks.gcs.widgets.layout.ColumnLayout;
 
 import java.awt.Color;
 import java.awt.Dimension;
 
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 /** The character description panel. */
@@ -67,8 +67,7 @@ public class DescriptionPanel extends DropPanel {
 	public DescriptionPanel(GURPSCharacter character) {
 		super(new ColumnLayout(5, 2, 0), MSG_DESCRIPTION);
 
-		JPanel wrapper = new JPanel(new ColumnLayout(2, 2, 0));
-		wrapper.setOpaque(false);
+		Wrapper wrapper = new Wrapper(new ColumnLayout(2, 2, 0));
 		createLabelAndField(wrapper, character, Profile.ID_RACE, MSG_RACE, null, SwingConstants.LEFT);
 		createLabelAndField(wrapper, character, Profile.ID_GENDER, MSG_GENDER, null, SwingConstants.LEFT);
 		createLabelAndField(wrapper, character, Profile.ID_AGE, MSG_AGE, null, SwingConstants.LEFT);
@@ -77,8 +76,7 @@ public class DescriptionPanel extends DropPanel {
 
 		createDivider();
 
-		wrapper = new JPanel(new ColumnLayout(2, 2, 0));
-		wrapper.setOpaque(false);
+		wrapper = new Wrapper(new ColumnLayout(2, 2, 0));
 		createLabelAndField(wrapper, character, Profile.ID_HEIGHT, MSG_HEIGHT, null, SwingConstants.LEFT);
 		createLabelAndField(wrapper, character, Profile.ID_WEIGHT, MSG_WEIGHT, null, SwingConstants.LEFT);
 		createLabelAndField(wrapper, character, Profile.ID_SIZE_MODIFIER, MSG_SIZE_MODIFIER, MSG_SIZE_MODIFIER_TOOLTIP, SwingConstants.LEFT);
@@ -87,8 +85,7 @@ public class DescriptionPanel extends DropPanel {
 
 		createDivider();
 
-		wrapper = new JPanel(new ColumnLayout(2, 2, 0));
-		wrapper.setOpaque(false);
+		wrapper = new Wrapper(new ColumnLayout(2, 2, 0));
 		createLabelAndField(wrapper, character, Profile.ID_HAIR, MSG_HAIR, MSG_HAIR_TOOLTIP, SwingConstants.LEFT);
 		createLabelAndField(wrapper, character, Profile.ID_EYE_COLOR, MSG_EYE_COLOR, MSG_EYE_COLOR_TOOLTIP, SwingConstants.LEFT);
 		createLabelAndField(wrapper, character, Profile.ID_SKIN_COLOR, MSG_SKIN_COLOR, MSG_SKIN_COLOR_TOOLTIP, SwingConstants.LEFT);
@@ -97,8 +94,7 @@ public class DescriptionPanel extends DropPanel {
 	}
 
 	private void createDivider() {
-		JPanel panel = new JPanel();
-		panel.setOpaque(false);
+		Wrapper panel = new Wrapper();
 		UIUtilities.setOnlySize(panel, new Dimension(1, 1));
 		add(panel);
 		addVerticalBackground(panel, Color.black);

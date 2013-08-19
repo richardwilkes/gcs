@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2007 the Initial Developer. All Rights Reserved.
+ * 2005-2008 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -65,7 +65,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 	private static String					MSG_MINIMUM_STRENGTH;
 	static final String						EMPTY	= "";			//$NON-NLS-1$
 	private ListRow							mOwner;
-	private Outline							mOutline;
+	private WeaponOutline					mOutline;
 	private IconButton						mAddButton;
 	private JPanel							mEditorPanel;
 	private EditorField						mUsage;
@@ -119,7 +119,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 	}
 
 	private Component createOutline(List<WeaponStats> weapons, Class<? extends WeaponStats> weaponClass) {
-		mOutline = new Outline(false);
+		mOutline = new WeaponOutline();
 		OutlineModel model = mOutline.getModel();
 		WeaponColumn.addColumns(mOutline, weaponClass, true);
 		mOutline.setAllowColumnDrag(false);

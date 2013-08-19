@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2007 the Initial Developer. All Rights Reserved.
+ * 2005-2008 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -106,6 +106,7 @@ public class DropPanel extends JPanel {
 	 */
 	public DropPanel(LayoutManager layout, String title, Font font, boolean onlyReportPreferredSize) {
 		super(layout);
+		setOpaque(true);
 		setBackground(Color.WHITE);
 		mBoxedDropShadowBorder = new BoxedDropShadowBorder(font, title);
 		setBorder(new CompoundBorder(mBoxedDropShadowBorder, new EmptyBorder(0, 2, 1, 2)));

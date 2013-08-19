@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2007 the Initial Developer. All Rights Reserved.
+ * 2005-2008 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -233,13 +233,10 @@ public class GraphicsUtilities {
 		}
 	}
 
-	/**
-	 * Forces a full repaint and invalidate on all windows, disposing of any window buffers.
-	 */
+	/** Forces a full repaint and invalidate on all windows, disposing of any window buffers. */
 	public static void forceRepaintAndInvalidate() {
 		for (AppWindow window : AppWindow.getAllWindows()) {
-			window.repaint();
-			window.invalidate();
+			window.invalidate(window.getRootPane());
 		}
 	}
 
@@ -308,7 +305,7 @@ public class GraphicsUtilities {
 			useFallBack = false;
 			try {
 				if (MAC_NSAPPLICATION == null) {
-					URLClassLoader loader = new URLClassLoader(new URL[] { (new File("/System/Library/Java/")).toURI().toURL() }); //$NON-NLS-1$
+					URLClassLoader loader = new URLClassLoader(new URL[] { new File("/System/Library/Java/").toURI().toURL() }); //$NON-NLS-1$
 					Class<?> appClass = Class.forName("com.apple.cocoa.application.NSApplication", true, loader); //$NON-NLS-1$
 					Method method = appClass.getDeclaredMethod("sharedApplication"); //$NON-NLS-1$
 

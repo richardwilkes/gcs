@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2007 the Initial Developer. All Rights Reserved.
+ * 2005-2008 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -61,7 +61,6 @@ public class RowPostProcessor implements Runnable {
 		for (Outline outline : mMap.keySet()) {
 			ArrayList<ListRow> rows = mMap.get(outline);
 			boolean modified = ModifierEnabler.process(outline, new FilteredList<Advantage>(rows, Advantage.class));
-
 			modified |= Namer.name(outline, rows);
 			if (modified) {
 				outline.updateRowHeights(rows);

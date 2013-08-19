@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="faehkils:-1tngpj6c7ql1i" version="1">
+	<advantage_list>
+		<advantage version="2">
+			<name>Increased Health</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<points_per_level>10</points_per_level>
+			<reference>B14</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>ht</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Extra Hit Points</name>
+			<type>Physical</type>
+			<levels>2</levels>
+			<points_per_level>2</points_per_level>
+			<reference>B16</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>hp</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Acute Hearing</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<points_per_level>2</points_per_level>
+			<reference>B35</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>hearing</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Social Stigma (Minority Group)</name>
+			<type>Social</type>
+			<base_points>-10</base_points>
+			<reference>B155</reference>
+			<notes>-2 Reaction from others; +2 Reaction in own group</notes>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+	</advantage_list>
+	<notes>  Half-orcs are the offspring of orcs and humans. 
+In most cases, the relationship was not consensual.
+A halforc can pass for a husky human but is usually
+unattractive. Their acceptance in orc tribes 
+depends on their strength and ferocity. Humans 
+usually look down on them.</notes>
+</template>

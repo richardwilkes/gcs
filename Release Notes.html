@@ -14,6 +14,68 @@
 </head>
 <body>
 	<p class=category>GURPS Character Sheet Release Notes</p>
+	<p class=rversion>Version 2008.01.01 &mdash; January 1, 2008</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1859464&group_id=185516&atid=913592">Feature 1859464</a>:
+				House rule IQ option. There is now a preference to control the
+				application of a popular house rule that makes Will and
+				Perception stand alone (i.e. they stop inheriting their base
+				value from IQ when this option is enabled).</li>
+			<li>Added a separate windows and console version of the executable
+				for Windows. The console version is named 'gcs.exe' and allows
+				output to be sent to the console, unlike before. The whole split
+				between windowed apps and console apps on Windows is quite
+				mystifying to me... but I guess Windows users are used to
+				needless suffering by now.</li>
+			<li>Added more keys to the HTML export substitution list for those
+				inclined to make their own templates.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Fixed issue that prevented changes to CR from being reflected in
+				the character sheet point total until something else caused the
+				point total to change.</li>
+			<li>Fixed a problem preventing deletion of weapon entries in the
+				weapon editor tab.</li>
+			<li>Moved skill bonus application to <b>after</b> the check to see
+				if the best default should be used rather than the skill's
+				normal base. Not 100% sure this is right, but haven't found
+				anything this breaks, and it allows skill penalties to apply to
+				skills that are only known at default (before, the default level
+				would override the penalty).</li>
+			<li>Fixed issue that prevented the bullet next to the current
+				encumbrance level from updating under some circumstances.</li>
+		</ul>
+	</div>
+	<p class=rheader>Data Files</p>
+	<div class=indent>
+		<ul>
+			<li>Applied patch from Kevin Michael Smith to update various
+				disadvantages with appropriate modifiers.</li>
+			<li>Added templates for TBone's GULLIVER Mini and the Western
+				Dragons from GURPS Dragons, contributed by Kevin Michael Smith.</li>
+			<li>Corrected some modifier point costs in the Ally advantage.</li>
+			<li>Added racial templates from Banestorm, contributed by Atreyu
+				Hibiki.</li>
+			<li>Added the 'Leech' advantage from Powers, contributed by Kevin
+				Michael Smith.</li>
+			<li>Added explicit will and perception modifiers as advantages,
+				contributed by Christopher Hunter.</li>
+			<li>Corrected some wrong information in the Flexibility advantage.</li>
+			<li>Lots of modifier updates to advantages, contributed by Kevin
+				Michael Smith.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>Updated to iText 2.0.7.</li>
+		</ul>
+	</div>
 	<p class=rversion>Version 2007.12.15 &mdash; December 15, 2007</p>
 	<p class=rheader>Features</p>
 	<div class=indent>

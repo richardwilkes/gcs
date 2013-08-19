@@ -1,0 +1,1075 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<character unique_id="fasl3ab2:i9ilu03dlbvu" version="1">
+	<created_date>Dec 29, 2007</created_date>
+	<modified_date>Dec 29, 2007 12:25 PM</modified_date>
+	<profile>
+		<player_name>NPC</player_name>
+		<campaign>GURPS Basic Set Sample</campaign>
+		<name>Dai Blackthorn</name>
+		<age>32</age>
+		<eyes>Brown</eyes>
+		<hair>Brown, Wavy, Medium</hair>
+		<skin>Tan</skin>
+		<handedness>Right</handedness>
+		<height units="in">66</height>
+		<weight units="lbs">115.0</weight>
+		<SM>0</SM>
+		<gender>Male</gender>
+		<race>Human</race>
+		<tech_level>8</tech_level>
+	</profile>
+	<HP>2</HP>
+	<FP>-2</FP>
+	<total_points>250</total_points>
+	<ST>8</ST>
+	<DX>15</DX>
+	<IQ>12</IQ>
+	<HT>12</HT>
+	<will>0</will>
+	<perception>3</perception>
+	<speed>0.25</speed>
+	<move>0</move>
+	<include_punch>true</include_punch>
+	<include_kick>true</include_kick>
+	<include_kick_with_boots>true</include_kick_with_boots>
+	<advantage_list>
+		<advantage_container version="2" open="yes">
+			<name>Advantages &amp; Perks</name>
+			<advantage version="2">
+				<name>Absolute Direction</name>
+				<type>Mental/Physical</type>
+				<base_points>5</base_points>
+				<modifier version="1" enabled="no">
+					<name>Requires signal</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>3D Spatial Sense</name>
+					<cost type="points">5</cost>
+					<affects>total</affects>
+					<skill_bonus>
+						<name compare="starts with">piloting</name>
+						<specialization compare="is anything"></specialization>
+						<amount>1</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">aerobatics</name>
+						<specialization compare="is anything"></specialization>
+						<amount>2</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">free fall</name>
+						<specialization compare="is anything"></specialization>
+						<amount>2</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">navigation</name>
+						<specialization compare="is">hyperspace</specialization>
+						<amount>2</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">navigation</name>
+						<specialization compare="is">space</specialization>
+						<amount>2</amount>
+					</skill_bonus>
+				</modifier>
+				<reference>B34</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">body sense</name>
+					<specialization compare="is anything"></specialization>
+					<amount>3</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">navigation</name>
+					<specialization compare="is">air</specialization>
+					<amount>3</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">navigation</name>
+					<specialization compare="is">land</specialization>
+					<amount>3</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">navigation</name>
+					<specialization compare="is">sea</specialization>
+					<amount>3</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Flexibility</name>
+				<type>Physical</type>
+				<base_points>5</base_points>
+				<reference>B56</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">climbing</name>
+					<specialization compare="is anything"></specialization>
+					<amount>3</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">escape</name>
+					<specialization compare="is anything"></specialization>
+					<amount>3</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage_container version="2" open="yes">
+				<name>ESP</name>
+				<modifier version="1" enabled="no">
+					<name>Power Modifier</name>
+					<cost type="percentage">-10</cost>
+					<affects>total</affects>
+					<reference>PW26</reference>
+					<notes>Chi</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Power Modifier</name>
+					<cost type="percentage">-10</cost>
+					<affects>total</affects>
+					<reference>PW26</reference>
+					<notes>Divine</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Power Modifier</name>
+					<cost type="percentage">-10</cost>
+					<affects>total</affects>
+					<reference>PW28</reference>
+					<notes>Psionic</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Power Modifier</name>
+					<cost type="percentage">-25</cost>
+					<affects>total</affects>
+					<reference>PW28</reference>
+					<notes>Spirit</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Power Modifier</name>
+					<cost type="percentage">-10</cost>
+					<affects>total</affects>
+					<reference>PW29</reference>
+					<notes>Super</notes>
+				</modifier>
+				<reference>PW127</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<advantage version="2">
+					<name>Danger Sense</name>
+					<type>Mental</type>
+					<base_points>15</base_points>
+					<reference>B47</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Warp</name>
+					<type>Mental, Supernatural</type>
+					<base_points>100</base_points>
+					<modifier version="1" enabled="no">
+						<name>Blind</name>
+						<cost type="percentage">50</cost>
+						<affects>total</affects>
+						<reference>B98</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Extra Carrying Capacity</name>
+						<cost type="percentage">10</cost>
+						<affects>total</affects>
+						<reference>B98</reference>
+						<notes>Up to Light Encumbrance</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Extra Carrying Capacity</name>
+						<cost type="percentage">20</cost>
+						<affects>total</affects>
+						<reference>B98</reference>
+						<notes>Up to Medium Encumbrance</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Extra Carrying Capacity</name>
+						<cost type="percentage">30</cost>
+						<affects>total</affects>
+						<reference>B98</reference>
+						<notes>Up to Heavy Encumbrance</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Extra Carrying Capacity</name>
+						<cost type="percentage">50</cost>
+						<affects>total</affects>
+						<reference>B98</reference>
+						<notes>Up to Extra-Heavy Encumbrance</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Reliable</name>
+						<cost type="percentage">5</cost>
+						<levels>1</levels>
+						<affects>total</affects>
+						<reference>B98</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Warp Jump</name>
+						<cost type="percentage">10</cost>
+						<affects>total</affects>
+						<reference>B98</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Hyperjump</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B98</reference>
+						<notes>Speed of light</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Hyperjump</name>
+						<cost type="percentage">-25</cost>
+						<affects>total</affects>
+						<reference>B98</reference>
+						<notes>One light-year per day</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Naked</name>
+						<cost type="percentage">-30</cost>
+						<affects>total</affects>
+						<reference>B99</reference>
+					</modifier>
+					<modifier version="1">
+						<name>Range Limit</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B99</reference>
+						<notes>10 yards</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Range Limit</name>
+						<cost type="percentage">-45</cost>
+						<affects>total</affects>
+						<reference>B99</reference>
+						<notes>20 yards</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Range Limit</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B99</reference>
+						<notes>100 yards</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Range Limit</name>
+						<cost type="percentage">-35</cost>
+						<affects>total</affects>
+						<reference>B99</reference>
+						<notes>500 yards</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Range Limit</name>
+						<cost type="percentage">-30</cost>
+						<affects>total</affects>
+						<reference>B99</reference>
+						<notes>2 miles</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Range Limit</name>
+						<cost type="percentage">-25</cost>
+						<affects>total</affects>
+						<reference>B99</reference>
+						<notes>10 miles</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Range Limit</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B99</reference>
+						<notes>100 miles</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Range Limit</name>
+						<cost type="percentage">-15</cost>
+						<affects>total</affects>
+						<reference>B99</reference>
+						<notes>1000 miles</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Range Limit</name>
+						<cost type="percentage">-10</cost>
+						<affects>total</affects>
+						<reference>B99</reference>
+						<notes>10000 miles</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Range Limit</name>
+						<cost type="percentage">-5</cost>
+						<affects>total</affects>
+						<reference>B99</reference>
+						<notes>100000 miles</notes>
+					</modifier>
+					<reference>B97</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+			</advantage_container>
+			<advantage version="2">
+				<name>Honest Face</name>
+				<type>Physical</type>
+				<base_points>1</base_points>
+				<reference>B101</reference>
+				<categories>
+					<category>Perk</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Legal Enforcement Powers (ISWAT)</name>
+				<type>Social</type>
+				<base_points>15</base_points>
+				<reference>B65</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Perfect Balance</name>
+				<type>Physical</type>
+				<base_points>15</base_points>
+				<reference>B74</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="starts with">piloting</name>
+					<specialization compare="is anything"></specialization>
+					<amount>1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">acrobatics</name>
+					<specialization compare="is anything"></specialization>
+					<amount>1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">climbing</name>
+					<specialization compare="is anything"></specialization>
+					<amount>1</amount>
+				</skill_bonus>
+			</advantage>
+		</advantage_container>
+		<advantage_container version="2" open="yes">
+			<name>Languages</name>
+			<advantage version="2">
+				<name>Language: Anglish</name>
+				<type>Mental</type>
+				<modifier version="1">
+					<name>Native</name>
+					<cost type="points">-6</cost>
+					<affects>total</affects>
+					<reference>B23</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Spoken</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+					<reference>B24</reference>
+					<notes>None</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Spoken</name>
+					<cost type="points">1</cost>
+					<affects>total</affects>
+					<reference>B24</reference>
+					<notes>Broken</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Spoken</name>
+					<cost type="points">2</cost>
+					<affects>total</affects>
+					<reference>B24</reference>
+					<notes>Accented</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Spoken</name>
+					<cost type="points">3</cost>
+					<affects>total</affects>
+					<reference>B24</reference>
+					<notes>Native</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Written</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+					<reference>B24</reference>
+					<notes>None</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Written</name>
+					<cost type="points">1</cost>
+					<affects>total</affects>
+					<reference>B24</reference>
+					<notes>Broken</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Written</name>
+					<cost type="points">2</cost>
+					<affects>total</affects>
+					<reference>B24</reference>
+					<notes>Accented</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Written</name>
+					<cost type="points">3</cost>
+					<affects>total</affects>
+					<reference>B24</reference>
+					<notes>Native</notes>
+				</modifier>
+				<reference>B24</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Language: English</name>
+				<type>Mental</type>
+				<modifier version="1" enabled="no">
+					<name>Native</name>
+					<cost type="points">-6</cost>
+					<affects>total</affects>
+					<reference>B23</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Spoken</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+					<reference>B24</reference>
+					<notes>None</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Spoken</name>
+					<cost type="points">1</cost>
+					<affects>total</affects>
+					<reference>B24</reference>
+					<notes>Broken</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Spoken</name>
+					<cost type="points">2</cost>
+					<affects>total</affects>
+					<reference>B24</reference>
+					<notes>Accented</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Spoken</name>
+					<cost type="points">3</cost>
+					<affects>total</affects>
+					<reference>B24</reference>
+					<notes>Native</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Written</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+					<reference>B24</reference>
+					<notes>None</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Written</name>
+					<cost type="points">1</cost>
+					<affects>total</affects>
+					<reference>B24</reference>
+					<notes>Broken</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Written</name>
+					<cost type="points">2</cost>
+					<affects>total</affects>
+					<reference>B24</reference>
+					<notes>Accented</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Written</name>
+					<cost type="points">3</cost>
+					<affects>total</affects>
+					<reference>B24</reference>
+					<notes>Native</notes>
+				</modifier>
+				<reference>B24</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+		<advantage_container version="2" open="yes">
+			<name>Cultural Familiarities</name>
+			<advantage version="2">
+				<name>Cultural Familiarity (Homeline)</name>
+				<type>Mental</type>
+				<base_points>1</base_points>
+				<modifier version="1" enabled="no">
+					<name>Alien</name>
+					<cost type="points">1</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B23</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Cultural Familiarity (Yrth)</name>
+				<type>Mental</type>
+				<modifier version="1" enabled="no">
+					<name>Alien</name>
+					<cost type="points">1</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B23</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+		<advantage_container version="2" open="yes">
+			<name>Disadvantages &amp; Quirks</name>
+			<advantage version="2">
+				<name>Duty (ISWAT)</name>
+				<type>Social</type>
+				<modifier version="1" enabled="no">
+					<name>FR: 6</name>
+					<cost type="points">-2</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>FR: 9</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>FR: 12</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1">
+					<name>FR: 15</name>
+					<cost type="points">-15</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1">
+					<name>Extremely Hazardous</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Involuntary</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Nonhazardous</name>
+					<cost type="points">5</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B133</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Light Sleeper</name>
+				<type>Physical</type>
+				<base_points>-5</base_points>
+				<reference>B142</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Overconfidence</name>
+				<type>Mental</type>
+				<base_points>-5</base_points>
+				<cr>12</cr>
+				<reference>B148</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Sense of Duty</name>
+				<type>Mental</type>
+				<base_points>-5</base_points>
+				<reference>B153</reference>
+				<notes>His squad</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Wealth (Poor)</name>
+				<type>Social</type>
+				<base_points>-15</base_points>
+				<reference>B25</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Dislikes deep water</name>
+				<type>Mental</type>
+				<levels>0</levels>
+				<base_points>-1</base_points>
+				<reference>B164</reference>
+				<categories>
+					<category>Quirk</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Loves high places</name>
+				<type>Mental</type>
+				<levels>0</levels>
+				<base_points>-1</base_points>
+				<reference>B164</reference>
+				<categories>
+					<category>Quirk</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>No drugs or alcohol</name>
+				<type>Physical</type>
+				<base_points>-1</base_points>
+			</advantage>
+			<advantage version="2">
+				<name>Sensitive about his height</name>
+				<type>Physical</type>
+				<base_points>-1</base_points>
+			</advantage>
+			<advantage version="2">
+				<name>Showoff</name>
+				<type>Physical</type>
+				<base_points>-1</base_points>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+	<skill_list>
+		<skill version="2">
+			<name>Acrobatics</name>
+			<difficulty>DX/H</difficulty>
+			<points>2</points>
+			<reference>B174</reference>
+			<categories>
+				<category>Athletic</category>
+			</categories>
+			<default>
+				<type>DX</type>
+				<modifier>-6</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Body Sense</name>
+			<difficulty>DX/H</difficulty>
+			<points>1</points>
+			<reference>B181</reference>
+			<categories>
+				<category>Athletic</category>
+			</categories>
+			<default>
+				<type>DX</type>
+				<modifier>-6</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Acrobatics</name>
+				<modifier>-3</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Climbing</name>
+			<encumbrance_penalty_multiplier>1</encumbrance_penalty_multiplier>
+			<difficulty>DX/A</difficulty>
+			<points>1</points>
+			<reference>B183</reference>
+			<categories>
+				<category>Athletic</category>
+				<category>Criminal/Street</category>
+				<category>Outdoor/Exploration</category>
+			</categories>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Escape</name>
+			<difficulty>DX/H</difficulty>
+			<points>1</points>
+			<reference>B192</reference>
+			<categories>
+				<category>Criminal/Street</category>
+			</categories>
+			<default>
+				<type>DX</type>
+				<modifier>-6</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Fast-Draw</name>
+			<specialization>Knife</specialization>
+			<difficulty>DX/E</difficulty>
+			<points>1</points>
+			<reference>B194</reference>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Melee Combat</category>
+			</categories>
+		</skill>
+		<skill version="2">
+			<name>Fast-Talk</name>
+			<difficulty>IQ/A</difficulty>
+			<points>2</points>
+			<reference>B195</reference>
+			<categories>
+				<category>Criminal/Street</category>
+				<category>Social</category>
+				<category>Spy</category>
+			</categories>
+			<default>
+				<type>IQ</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Acting</name>
+				<modifier>-5</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Filch</name>
+			<difficulty>DX/A</difficulty>
+			<points>1</points>
+			<reference>B195</reference>
+			<categories>
+				<category>Criminal/Street</category>
+				<category>Spy</category>
+			</categories>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Pickpocket</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Sleight of Hand</name>
+				<modifier>-4</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Guns</name>
+			<specialization>Pistol</specialization>
+			<tech_level>8</tech_level>
+			<difficulty>DX/E</difficulty>
+			<points>1</points>
+			<reference>B198</reference>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Ranged Combat</category>
+			</categories>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Beam Weapons</name>
+				<specialization>Pistol</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Holdout</name>
+			<difficulty>IQ/A</difficulty>
+			<points>2</points>
+			<reference>B200</reference>
+			<categories>
+				<category>Criminal/Street</category>
+				<category>Spy</category>
+			</categories>
+			<default>
+				<type>IQ</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Sleight of Hand</name>
+				<modifier>-3</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Knife</name>
+			<difficulty>DX/E</difficulty>
+			<points>4</points>
+			<reference>B208</reference>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Melee Combat</category>
+			</categories>
+			<default>
+				<type>Skill</type>
+				<name>Force Sword</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Lockpicking</name>
+			<tech_level>8</tech_level>
+			<difficulty>IQ/A</difficulty>
+			<points>12</points>
+			<reference>B206</reference>
+			<categories>
+				<category>Criminal/Street</category>
+				<category>Police</category>
+				<category>Spy</category>
+				<category>Technical</category>
+			</categories>
+			<default>
+				<type>IQ</type>
+				<modifier>-5</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Observation</name>
+			<difficulty>Per/A</difficulty>
+			<points>2</points>
+			<reference>B211</reference>
+			<categories>
+				<category>Criminal/Street</category>
+				<category>Military</category>
+				<category>Police</category>
+				<category>Spy</category>
+			</categories>
+			<default>
+				<type>Per</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shadowing</name>
+				<modifier>-5</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Pickpocket</name>
+			<difficulty>DX/H</difficulty>
+			<points>4</points>
+			<reference>B213</reference>
+			<categories>
+				<category>Criminal/Street</category>
+			</categories>
+			<default>
+				<type>DX</type>
+				<modifier>-6</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Filch</name>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Sleight of Hand</name>
+				<modifier>-4</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Shortsword</name>
+			<difficulty>DX/A</difficulty>
+			<points>2</points>
+			<reference>B209</reference>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Melee Combat</category>
+			</categories>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Force Sword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Stealth</name>
+			<encumbrance_penalty_multiplier>1</encumbrance_penalty_multiplier>
+			<difficulty>DX/A</difficulty>
+			<points>4</points>
+			<reference>B222</reference>
+			<categories>
+				<category>Criminal/Street</category>
+				<category>Police</category>
+				<category>Spy</category>
+			</categories>
+			<default>
+				<type>IQ</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Streetwise</name>
+			<difficulty>IQ/A</difficulty>
+			<points>2</points>
+			<reference>B223</reference>
+			<categories>
+				<category>Criminal/Street</category>
+				<category>Police</category>
+				<category>Social</category>
+			</categories>
+			<default>
+				<type>IQ</type>
+				<modifier>-5</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Thrown Weapon</name>
+			<specialization>Knife</specialization>
+			<difficulty>DX/E</difficulty>
+			<points>4</points>
+			<reference>B226</reference>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Ranged Combat</category>
+			</categories>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Urban Survival</name>
+			<difficulty>Per/A</difficulty>
+			<points>1</points>
+			<reference>B228</reference>
+			<categories>
+				<category>Criminal/Street</category>
+				<category>Police</category>
+			</categories>
+			<default>
+				<type>Per</type>
+				<modifier>-5</modifier>
+			</default>
+		</skill>
+	</skill_list>
+	<print_settings printer="HP Color LaserJet 3800" units="in">
+		<orientation>Portrait</orientation>
+		<width>8.5</width>
+		<height>11</height>
+		<top_margin>0.5</top_margin>
+		<left_margin>0.5</left_margin>
+		<bottom_margin>0.5</bottom_margin>
+		<right_margin>0.5</right_margin>
+		<ink_chromaticity>Monochrome</ink_chromaticity>
+		<sides>Single</sides>
+		<quality>Normal</quality>
+	</print_settings>
+</character>

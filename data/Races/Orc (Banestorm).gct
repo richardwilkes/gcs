@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="faeh6lz8:-m66qh9ee7s0e" version="1">
+	<advantage_list>
+		<advantage version="2">
+			<name>Decreased Intelligence</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<points_per_level>-20</points_per_level>
+			<reference>B15</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>iq</attribute>
+				<amount per_level="yes">-1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Increased Health</name>
+			<type>Physical</type>
+			<levels>2</levels>
+			<points_per_level>10</points_per_level>
+			<reference>B14</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>ht</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Extra Hit Points</name>
+			<type>Physical</type>
+			<levels>3</levels>
+			<points_per_level>2</points_per_level>
+			<reference>B16</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>hp</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Acute Hearing</name>
+			<type>Physical</type>
+			<levels>2</levels>
+			<points_per_level>2</points_per_level>
+			<reference>B35</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>hearing</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Bully</name>
+			<type>Mental</type>
+			<base_points>-10</base_points>
+			<cr>12</cr>
+			<reference>B125</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Intolerance (Total)</name>
+			<type>Mental</type>
+			<modifier version="1" enabled="no">
+				<name>Scope: Common</name>
+				<cost type="points">-5</cost>
+				<affects>total</affects>
+				<reference>B140</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Scope: Occassional</name>
+				<cost type="points">-2</cost>
+				<affects>total</affects>
+				<reference>B140</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Scope: Rare</name>
+				<cost type="points">-1</cost>
+				<affects>total</affects>
+				<reference>B140</reference>
+			</modifier>
+			<modifier version="1">
+				<name>Scope: Anyone unlike you</name>
+				<cost type="points">-10</cost>
+				<affects>total</affects>
+				<reference>B140</reference>
+			</modifier>
+			<reference>B140</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Social Stigma (Barbarian)</name>
+			<type>Social</type>
+			<base_points>-10</base_points>
+			<reference>BS186</reference>
+			<notes>-2 Reaction from others; +2 Reaction by Barbarians</notes>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Doesn't regard betrayal as wrong</name>
+			<type>Mental</type>
+			<base_points>-1</base_points>
+			<reference>B163</reference>
+			<categories>
+				<category>Quirk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Kowtows to stronger people</name>
+			<type>Mental</type>
+			<base_points>-1</base_points>
+			<reference>B163</reference>
+			<categories>
+				<category>Quirk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Measures social standing by things 'controlled'</name>
+			<type>Mental</type>
+			<base_points>-1</base_points>
+			<reference>B163</reference>
+			<categories>
+				<category>Quirk</category>
+			</categories>
+		</advantage>
+	</advantage_list>
+	<skill_list>
+		<skill version="2">
+			<name>Brawling</name>
+			<difficulty>DX/E</difficulty>
+			<points>1</points>
+			<reference>B182</reference>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Melee Combat</category>
+			</categories>
+			<weapon_bonus>
+				<name compare="is">Brawling</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at_least">2</level>
+				<amount per_level="yes">1</amount>
+			</weapon_bonus>
+		</skill>
+	</skill_list>
+	<notes>  Orcs are squat, hairy humanoids with small eyes and
+broad mouths dominated by enlarged canines; most
+other races regard them as ugly. Most orcs are 
+brutal and treacherous, and respect only force; 
+whether living as primitive savages or disciplined
+legionaries, the strongest and most ruthless among 
+them will usually lead. They enjoy revelry, the 
+spoils of war, and dominating those weaker than
+themselves.
+  Orcs return other races&#8217; hostility with interest. 
+Many will gladly sacrifice their own lives for a 
+chance to take a dwarf or elf with them.
+  Height is 2&#8221; less than normal for ST. Weight is 
+10 lbs. over human average for their height.
+  Individual orcs, even whole tribes, often have 
+the advantages Acute Vision, Combat Reflexes, 
+High Pain Threshold, Night Vision, or Rapid
+Healing. Common disadvantages include Bad Temper,
+Berserk, Gluttony, Greed, Sadism, and Unattractive
+Appearance (though some orcs manage rugged good
+looks). However, civilized orcs do not usually have
+Intolerance and may even lack Bully.</notes>
+</template>
