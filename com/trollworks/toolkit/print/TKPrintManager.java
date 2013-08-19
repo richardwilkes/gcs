@@ -30,8 +30,8 @@ import com.trollworks.toolkit.io.xml.TKXMLReader;
 import com.trollworks.toolkit.io.xml.TKXMLWriter;
 import com.trollworks.toolkit.utility.TKNumberUtils;
 import com.trollworks.toolkit.utility.units.TKLengthUnits;
-import com.trollworks.toolkit.window.TKOptionDialog;
 import com.trollworks.toolkit.window.TKDialog;
+import com.trollworks.toolkit.window.TKOptionDialog;
 import com.trollworks.toolkit.window.TKRepaintManager;
 import com.trollworks.toolkit.window.TKWindow;
 

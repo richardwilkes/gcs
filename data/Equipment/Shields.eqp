@@ -42,11 +42,23 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
+			<attribute_bonus>
+				<attribute>dodge</attribute>
+				<amount>+1</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>parry</attribute>
+				<amount>+1</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>block</attribute>
+				<amount>+1</amount>
+			</attribute_bonus>
 		</equipment>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Light Buckler with Spike</description>
-			<tech_level>2</tech_level>
+			<tech_level>1</tech_level>
 			<legality_class>4</legality_class>
 			<value>45.0</value>
 			<weight units="lb">7.0</weight>
@@ -80,6 +92,18 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
+			<attribute_bonus>
+				<attribute>dodge</attribute>
+				<amount>+1</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>parry</attribute>
+				<amount>+1</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>block</attribute>
+				<amount>+1</amount>
+			</attribute_bonus>
 		</equipment>
 		<equipment>
 			<quantity>1</quantity>
@@ -118,6 +142,68 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
+			<attribute_bonus>
+				<attribute>dodge</attribute>
+				<amount>+2</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>parry</attribute>
+				<amount>+2</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>block</attribute>
+				<amount>+2</amount>
+			</attribute_bonus>
+		</equipment>
+		<equipment>
+			<quantity>1</quantity>
+			<description>Medium Buckler with Spike</description>
+			<tech_level>1</tech_level>
+			<legality_class>4</legality_class>
+			<value>80.0</value>
+			<weight units="lb">20.0</weight>
+			<reference>B287</reference>
+			<melee_weapon>
+				<damage>thr+1 cr</damage>
+				<strength>0</strength>
+				<reach>1</reach>
+				<parry>No</parry>
+				<block>+0</block>
+				<default>
+					<type>DX</type>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Shield</name>
+					<specialization>Shield</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Shield</name>
+					<specialization>Force Shield</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Shield</name>
+					<specialization>Buckler</specialization>
+					<modifier>0</modifier>
+				</default>
+			</melee_weapon>
+			<attribute_bonus>
+				<attribute>dodge</attribute>
+				<amount>+2</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>parry</attribute>
+				<amount>+2</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>block</attribute>
+				<amount>+2</amount>
+			</attribute_bonus>
 		</equipment>
 		<equipment>
 			<quantity>1</quantity>
@@ -156,11 +242,23 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
+			<attribute_bonus>
+				<attribute>dodge</attribute>
+				<amount>+1</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>parry</attribute>
+				<amount>+1</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>block</attribute>
+				<amount>+1</amount>
+			</attribute_bonus>
 		</equipment>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Small Buckler with Spike</description>
-			<tech_level>2</tech_level>
+			<tech_level>1</tech_level>
 			<legality_class>4</legality_class>
 			<value>60.0</value>
 			<weight units="lb">13.0</weight>
@@ -194,6 +292,18 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
+			<attribute_bonus>
+				<attribute>dodge</attribute>
+				<amount>+1</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>parry</attribute>
+				<amount>+1</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>block</attribute>
+				<amount>+1</amount>
+			</attribute_bonus>
 		</equipment>
 	</equipment_container>
 	<equipment_container open="yes">
@@ -247,15 +357,15 @@
 			</ranged_weapon>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
-				<amount per_level="no">+2</amount>
+				<amount>+2</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
-				<amount per_level="no">+2</amount>
+				<amount>+2</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
-				<amount per_level="no">+2</amount>
+				<amount>+2</amount>
 			</attribute_bonus>
 		</equipment>
 		<equipment>
@@ -304,15 +414,15 @@
 			</ranged_weapon>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
-				<amount per_level="no">+1</amount>
+				<amount>+1</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
-				<amount per_level="no">+1</amount>
+				<amount>+1</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
-				<amount per_level="no">+1</amount>
+				<amount>+1</amount>
 			</attribute_bonus>
 		</equipment>
 	</equipment_container>
@@ -338,15 +448,15 @@
 			</melee_weapon>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
-				<amount per_level="no">+3</amount>
+				<amount>+3</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
-				<amount per_level="no">+3</amount>
+				<amount>+3</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
-				<amount per_level="no">+3</amount>
+				<amount>+3</amount>
 			</attribute_bonus>
 		</equipment>
 	</equipment_container>
@@ -394,21 +504,21 @@
 			</melee_weapon>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
-				<amount per_level="no">+3</amount>
+				<amount>+3</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
-				<amount per_level="no">+3</amount>
+				<amount>+3</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
-				<amount per_level="no">+3</amount>
+				<amount>+3</amount>
 			</attribute_bonus>
 		</equipment>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Large Shield with Spike</description>
-			<tech_level>2</tech_level>
+			<tech_level>1</tech_level>
 			<legality_class>4</legality_class>
 			<value>110.0</value>
 			<weight units="lb">30.0</weight>
@@ -444,15 +554,15 @@
 			</melee_weapon>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
-				<amount per_level="no">+3</amount>
+				<amount>+3</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
-				<amount per_level="no">+3</amount>
+				<amount>+3</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
-				<amount per_level="no">+3</amount>
+				<amount>+3</amount>
 			</attribute_bonus>
 		</equipment>
 		<equipment>
@@ -494,21 +604,21 @@
 			</melee_weapon>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
-				<amount per_level="no">+1</amount>
+				<amount>+1</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
-				<amount per_level="no">+1</amount>
+				<amount>+1</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
-				<amount per_level="no">+1</amount>
+				<amount>+1</amount>
 			</attribute_bonus>
 		</equipment>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Light Shield with Spike</description>
-			<tech_level>2</tech_level>
+			<tech_level>1</tech_level>
 			<legality_class>4</legality_class>
 			<value>45.0</value>
 			<weight units="lb">7.0</weight>
@@ -542,6 +652,18 @@
 					<modifier>0</modifier>
 				</default>
 			</melee_weapon>
+			<attribute_bonus>
+				<attribute>dodge</attribute>
+				<amount>+2</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>parry</attribute>
+				<amount>+2</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>block</attribute>
+				<amount>+2</amount>
+			</attribute_bonus>
 		</equipment>
 		<equipment>
 			<quantity>1</quantity>
@@ -582,21 +704,21 @@
 			</melee_weapon>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
-				<amount per_level="no">+2</amount>
+				<amount>+2</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
-				<amount per_level="no">+2</amount>
+				<amount>+2</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
-				<amount per_level="no">+2</amount>
+				<amount>+2</amount>
 			</attribute_bonus>
 		</equipment>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Medium Shield with Spike</description>
-			<tech_level>2</tech_level>
+			<tech_level>1</tech_level>
 			<legality_class>4</legality_class>
 			<value>80.0</value>
 			<weight units="lb">20.0</weight>
@@ -632,15 +754,15 @@
 			</melee_weapon>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
-				<amount per_level="no">+2</amount>
+				<amount>+2</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
-				<amount per_level="no">+2</amount>
+				<amount>+2</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
-				<amount per_level="no">+2</amount>
+				<amount>+2</amount>
 			</attribute_bonus>
 		</equipment>
 		<equipment>
@@ -682,21 +804,21 @@
 			</melee_weapon>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
-				<amount per_level="no">+1</amount>
+				<amount>+1</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
-				<amount per_level="no">+1</amount>
+				<amount>+1</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
-				<amount per_level="no">+1</amount>
+				<amount>+1</amount>
 			</attribute_bonus>
 		</equipment>
 		<equipment>
 			<quantity>1</quantity>
 			<description>Small Shield with Spike</description>
-			<tech_level>2</tech_level>
+			<tech_level>1</tech_level>
 			<legality_class>4</legality_class>
 			<value>60.0</value>
 			<weight units="lb">13.0</weight>
@@ -732,15 +854,15 @@
 			</melee_weapon>
 			<attribute_bonus>
 				<attribute>dodge</attribute>
-				<amount per_level="no">+1</amount>
+				<amount>+1</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>parry</attribute>
-				<amount per_level="no">+1</amount>
+				<amount>+1</amount>
 			</attribute_bonus>
 			<attribute_bonus>
 				<attribute>block</attribute>
-				<amount per_level="no">+1</amount>
+				<amount>+1</amount>
 			</attribute_bonus>
 		</equipment>
 	</equipment_container>

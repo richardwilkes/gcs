@@ -1,0 +1,1633 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<advantage_list unique_id="eyk5lw31:1gi4pw5m2blyg">
+	<advantage_container open="yes">
+		<name>Air</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Elemental</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW121</reference>
+	</advantage_container>
+	<advantage>
+		<name>Air Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<reference>PW121</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Animal Control</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-20</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Nature</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW121</reference>
+	</advantage_container>
+	<advantage>
+		<name>Animal Control Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<reference>PW121</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Anti-Magic</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">0</cost>
+			<affects>total</affects>
+			<reference>PW122</reference>
+			<notes>Anti-Magic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<reference>PW121</reference>
+	</advantage_container>
+	<advantage>
+		<name>Anti-Magic Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<reference>PW121</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Anti-Super</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Biological</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-20</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Nature</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Anti-Super</name>
+			<cost type="percentage">0</cost>
+			<affects>total</affects>
+			<reference>PW122</reference>
+		</modifier>
+		<reference>PW122</reference>
+	</advantage_container>
+	<advantage>
+		<name>Anti-Super Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<reference>PW122</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Antipsi</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">0</cost>
+			<affects>total</affects>
+			<reference>PW122</reference>
+			<notes>Antipsi</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Biological</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Chi</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW122</reference>
+	</advantage_container>
+	<advantage>
+		<name>Antipsi Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<reference>PW122</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Astral Projection</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-20</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Moral</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<reference>PW122</reference>
+	</advantage_container>
+	<advantage>
+		<name>Astral Projection Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<reference>PW123</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Bioenergy</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Biological</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Chi</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW123</reference>
+	</advantage_container>
+	<advantage>
+		<name>Bioenergy Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<reference>PW123</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Body Alteration</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Biological</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW123</reference>
+	</advantage_container>
+	<advantage>
+		<name>Body Alteration Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<reference>PW123</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Body Control</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Biological</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Chi</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW123</reference>
+	</advantage_container>
+	<advantage>
+		<name>Body Control Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<reference>PW123</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Chaos</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-20</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Moral</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW124</reference>
+	</advantage_container>
+	<advantage>
+		<name>Chaos Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<reference>PW124</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Cold/Ice</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Elemental</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW124</reference>
+	</advantage_container>
+	<advantage>
+		<name>Cold/Ice Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<reference>PW124</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Cosmic</name>
+		<modifier>
+			<name>Power Modifier</name>
+			<cost type="percentage">50</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Cosmic</notes>
+		</modifier>
+		<reference>PW124</reference>
+	</advantage_container>
+	<advantage>
+		<name>Cosmic Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>15</points_per_level>
+		<reference>PW125</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Darkness</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Elemental</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW125</reference>
+	</advantage_container>
+	<advantage>
+		<name>Darkness Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<reference>PW125</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Death</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<reference>PW125</reference>
+	</advantage_container>
+	<advantage>
+		<name>Death Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<reference>PW125</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Divine (@Deity@)</name>
+		<modifier>
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<reference>PW126</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Dimensional Travel</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW125</reference>
+	</advantage_container>
+	<advantage>
+		<name>Dimensional Travel Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<reference>PW125</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Earth</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Elemental</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW126</reference>
+	</advantage_container>
+	<advantage>
+		<name>Earth Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<reference>PW127</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Electricity</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Elemental</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW126</reference>
+	</advantage_container>
+	<advantage>
+		<name>Electricity Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<reference>PW126</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Electrokinesis</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW126</reference>
+	</advantage_container>
+	<advantage>
+		<name>Electrokinesis Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<reference>PW123</reference>
+	</advantage>
+	<advantage_container open="yes">
+		<name>ESP</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Chi</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW127</reference>
+	</advantage_container>
+	<advantage>
+		<name>ESP Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Evil</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-20</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Moral</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<reference>PW127</reference>
+	</advantage_container>
+	<advantage>
+		<name>Evil Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+	</advantage>
+	<advantage>
+		<name>Force Construct Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Force Constructs</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW127</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Good</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-20</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Moral</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<reference>PW128</reference>
+	</advantage_container>
+	<advantage>
+		<name>Good Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Gravity</name>
+		<modifier enabled="no">
+			<name>Power modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Elemental</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW128</reference>
+	</advantage_container>
+	<advantage>
+		<name>Gravity Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Healing</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Biological</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Chi</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW128</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Heat/Fire</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Elemental</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-20</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Moral</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW129</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Illusion</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-20</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Moral</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW129</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Life</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-20</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Nature</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<reference>PW130</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Light</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Elemental</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW130</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Machine Telepathy</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW130</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Magic</name>
+		<modifier>
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<reference>PW131</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Magnetism</name>
+		<modifier enabled="no">
+			<name>Power modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Elemental</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW131</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Matter Control</name>
+		<modifier>
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW131</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Order</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-20</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Moral</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<reference>PW132</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Plant Control</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-20</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Nature</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW132</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Power</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Biological</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Chi</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">50</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Cosmic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Elemental</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-20</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Moral</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-20</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Nature</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<notes>To be tooled to a new power</notes>
+	</advantage_container>
+	<advantage>
+		<name>Power Talent</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+	</advantage>
+	<advantage_container open="yes">
+		<name>Probability Alteration</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW132</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Psychokinesis</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW133</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Radiation</name>
+		<modifier enabled="no">
+			<name>Power modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Elemental</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW133</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Sound/Vibration</name>
+		<modifier enabled="no">
+			<name>Power modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Elemental</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW133</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Spirit Control</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<reference>PW134</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Telepathy</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Biological</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW134</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Teleportation</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW134</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Time Mastery</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW135</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Vampirism</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Biological</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Psionic</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW135</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Water</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Elemental</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW135</reference>
+	</advantage_container>
+	<advantage_container open="yes">
+		<name>Weather Control</name>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW26</reference>
+			<notes>Divine</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW27</reference>
+			<notes>Magical</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-20</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Nature</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-25</cost>
+			<affects>total</affects>
+			<reference>PW28</reference>
+			<notes>Spirit</notes>
+		</modifier>
+		<modifier enabled="no">
+			<name>Power Modifier</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>PW29</reference>
+			<notes>Super</notes>
+		</modifier>
+		<reference>PW136</reference>
+	</advantage_container>
+</advantage_list>

@@ -62,14 +62,14 @@
 		<reference>M166</reference>
 		<prereq_list all="no">
 			<advantage_prereq has="yes">
-				<name compare="is">magery: protection college</name>
-				<notes compare="is anything"></notes>
-				<level compare="atLeast">1</level>
+				<name compare="is">magery</name>
+				<notes compare="contains">one college (protection)</notes>
+				<level compare="at_least">1</level>
 			</advantage_prereq>
 			<advantage_prereq has="yes">
 				<name compare="is">magery</name>
 				<notes compare="is anything"></notes>
-				<level compare="atLeast">1</level>
+				<level compare="at_least">1</level>
 			</advantage_prereq>
 		</prereq_list>
 	</spell>
@@ -148,14 +148,14 @@
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: protection college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (protection)</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<spell_prereq has="yes">
@@ -193,15 +193,15 @@
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">body control</college>
-				<quantity compare="atLeast">3</quantity>
+				<quantity compare="at_least">3</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<college compare="contains">movement</college>
-				<quantity compare="atLeast">3</quantity>
+				<quantity compare="at_least">3</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<college compare="contains">protection</college>
-				<quantity compare="atLeast">3</quantity>
+				<quantity compare="at_least">3</quantity>
 			</spell_prereq>
 		</prereq_list>
 	</spell>
@@ -233,7 +233,7 @@
 			<spell_prereq has="yes">
 				<name compare="is">resist pain</name>
 			</spell_prereq>
-			<attribute_prereq has="yes" which="DX" compare="atLeast">11</attribute_prereq>
+			<attribute_prereq has="yes" which="dx" compare="at_least">11</attribute_prereq>
 		</prereq_list>
 	</spell>
 	<spell>
@@ -249,7 +249,7 @@
 			<advantage_prereq has="yes">
 				<name compare="contains">magery</name>
 				<notes compare="is anything"></notes>
-				<level compare="atLeast">1</level>
+				<level compare="at_least">1</level>
 			</advantage_prereq>
 		</prereq_list>
 	</spell>
@@ -291,14 +291,14 @@
 			</prereq_list>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: protection college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (protection)</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -378,7 +378,7 @@
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">air</college>
-				<quantity compare="atLeast">6</quantity>
+				<quantity compare="at_least">6</quantity>
 			</spell_prereq>
 		</prereq_list>
 	</spell>
@@ -424,7 +424,7 @@
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">radiation</college>
-				<quantity compare="atLeast">3</quantity>
+				<quantity compare="at_least">3</quantity>
 			</spell_prereq>
 		</prereq_list>
 	</spell>
@@ -440,7 +440,7 @@
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">sound</college>
-				<quantity compare="atLeast">4</quantity>
+				<quantity compare="at_least">4</quantity>
 			</spell_prereq>
 		</prereq_list>
 	</spell>
@@ -566,14 +566,14 @@
 		<reference>M167</reference>
 		<prereq_list all="no">
 			<advantage_prereq has="yes">
-				<name compare="is">magery: protection college</name>
-				<notes compare="is anything"></notes>
-				<level compare="atLeast">2</level>
+				<name compare="is">magery</name>
+				<notes compare="contains">one college (protection)</notes>
+				<level compare="at_least">2</level>
 			</advantage_prereq>
 			<advantage_prereq has="yes">
 				<name compare="is">magery</name>
 				<notes compare="is anything"></notes>
-				<level compare="atLeast">2</level>
+				<level compare="at_least">2</level>
 			</advantage_prereq>
 		</prereq_list>
 	</spell>
@@ -654,14 +654,14 @@
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: protection college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (protection)</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -726,19 +726,19 @@
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">water</college>
-				<quantity compare="atLeast">2</quantity>
+				<quantity compare="at_least">2</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<college compare="contains">earth</college>
-				<quantity compare="atLeast">2</quantity>
+				<quantity compare="at_least">2</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<college compare="contains">fire</college>
-				<quantity compare="atLeast">2</quantity>
+				<quantity compare="at_least">2</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<college compare="contains">air</college>
-				<quantity compare="atLeast">2</quantity>
+				<quantity compare="at_least">2</quantity>
 			</spell_prereq>
 		</prereq_list>
 	</spell>

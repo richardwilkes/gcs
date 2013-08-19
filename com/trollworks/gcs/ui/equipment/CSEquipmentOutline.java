@@ -31,7 +31,7 @@ import com.trollworks.gcs.model.CMRow;
 import com.trollworks.gcs.model.CMRowUndo;
 import com.trollworks.gcs.model.CMTemplate;
 import com.trollworks.gcs.model.equipment.CMEquipment;
-import com.trollworks.gcs.ui.common.CSNamePostProcessor;
+import com.trollworks.gcs.ui.common.CSRowPostProcessor;
 import com.trollworks.gcs.ui.common.CSOutline;
 import com.trollworks.gcs.ui.common.CSWindow;
 import com.trollworks.toolkit.collections.TKFilteredIterator;
@@ -195,7 +195,7 @@ public class CSEquipmentOutline extends CSOutline {
 		}
 
 		if (forSheetOrTemplate && !process.isEmpty()) {
-			EventQueue.invokeLater(new CSNamePostProcessor(this, process));
+			EventQueue.invokeLater(new CSRowPostProcessor(this, process));
 		}
 	}
 }

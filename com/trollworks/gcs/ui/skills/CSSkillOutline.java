@@ -32,7 +32,7 @@ import com.trollworks.gcs.model.CMRowUndo;
 import com.trollworks.gcs.model.CMTemplate;
 import com.trollworks.gcs.model.skill.CMSkill;
 import com.trollworks.gcs.model.skill.CMTechnique;
-import com.trollworks.gcs.ui.common.CSNamePostProcessor;
+import com.trollworks.gcs.ui.common.CSRowPostProcessor;
 import com.trollworks.gcs.ui.common.CSOutline;
 import com.trollworks.gcs.ui.common.CSWindow;
 import com.trollworks.toolkit.collections.TKFilteredIterator;
@@ -170,7 +170,7 @@ public class CSSkillOutline extends CSOutline {
 		}
 
 		if (forSheetOrTemplate) {
-			EventQueue.invokeLater(new CSNamePostProcessor(this, process));
+			EventQueue.invokeLater(new CSRowPostProcessor(this, process));
 		}
 	}
 }

@@ -40,12 +40,12 @@ import com.trollworks.toolkit.collections.TKEnumExtractor;
 import com.trollworks.toolkit.collections.TKFilteredIterator;
 import com.trollworks.toolkit.io.xml.TKXMLReader;
 import com.trollworks.toolkit.io.xml.TKXMLWriter;
-import com.trollworks.toolkit.utility.TKNumberUtils;
 import com.trollworks.toolkit.widget.outline.TKColumn;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -197,6 +197,7 @@ public class CMAdvantage extends CMRow {
 		mPointsPerLevel = 0;
 		mOldPointsString = null;
 		mWeapons = new ArrayList<CMWeaponStats>();
+		mModifiers = new ArrayList<CMModifier>();
 	}
 
 	@Override protected void loadAttributes(TKXMLReader reader, boolean forUndo) {
@@ -215,6 +216,8 @@ public class CMAdvantage extends CMRow {
 			mReference = reader.readText().replace("\n", " "); //$NON-NLS-1$ //$NON-NLS-2$
 		} else if (!forUndo && (TAG_ADVANTAGE.equals(name) || TAG_ADVANTAGE_CONTAINER.equals(name))) {
 			addChild(new CMAdvantage(mDataFile, reader));
+		} else if (CMModifier.TAG_MODIFIER.equals(name)) {
+			mModifiers.add(new CMModifier(getDataFile(), reader));
 		} else if (!canHaveChildren()) {
 			if (TAG_TYPE.equals(name)) {
 				mType = getTypeFromText(reader.readText());
@@ -232,8 +235,6 @@ public class CMAdvantage extends CMRow {
 				mWeapons.add(new CMRangedWeaponStats(this, reader));
 			} else if (CMOldWeapon.TAG_ROOT.equals(name)) {
 				mOldWeapon = new CMOldWeapon(reader);
-			} else if (CMModifier.TAG_MODIFIER.equals(name)) {
-				mModifiers.add(new CMModifier(getDataFile(), reader));
 			} else {
 				super.loadSubElement(reader, forUndo);
 			}
@@ -303,12 +304,13 @@ public class CMAdvantage extends CMRow {
 			if (mPointsPerLevel != 0) {
 				out.simpleTag(TAG_POINTS_PER_LEVEL, mPointsPerLevel);
 			}
-			for (CMModifier modifier : mModifiers) {
-				modifier.save(out, forUndo);
-			}
+
 			for (CMWeaponStats weapon : mWeapons) {
 				weapon.save(out);
 			}
+		}
+		for (CMModifier modifier : mModifiers) {
+			modifier.save(out, forUndo);
 		}
 		out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
 	}
@@ -396,29 +398,100 @@ public class CMAdvantage extends CMRow {
 
 	/** @return The total points, taking levels into account. */
 	public int getAdjustedPoints() {
-		int points = 0;
-
 		if (canHaveChildren()) {
+			int points = 0;
 			for (CMAdvantage child : new TKFilteredIterator<CMAdvantage>(getChildren(), CMAdvantage.class)) {
 				points += child.getAdjustedPoints();
 			}
 			return points;
 		}
+		return getAdjustedPoints(mPoints, mLevels, mPointsPerLevel, getAllModifiers());
+	}
 
-		points = mLevels >= 0 ? mPoints + mPointsPerLevel * mLevels : mPoints;
-		int modifier = 0;
+	/**
+	 * @param basePoints The base point cost.
+	 * @param levels The number of levels.
+	 * @param pointsPerLevel The point cost per level.
+	 * @param modifiers The {@link CMModifier}s to apply.
+	 * @return The total points, taking levels and modifiers into account.
+	 */
+	public static int getAdjustedPoints(int basePoints, int levels, int pointsPerLevel, Collection<CMModifier> modifiers) {
+		int baseMod = 0;
+		int levelMod = 0;
+		double multiplier = 1.0;
 
-		for (CMModifier one : mModifiers) {
-			modifier += one.getCostModifier();
-		}
-
-		if (modifier != 0) {
-			if (modifier < -80) {
-				modifier = -80;
+		for (CMModifier one : modifiers) {
+			if (one.isEnabled()) {
+				int modifier = one.getCostModifier();
+				switch (one.getCostType()) {
+					case PERCENTAGE:
+						switch (one.getAffects()) {
+							case TOTAL:
+								baseMod += modifier;
+								levelMod += modifier;
+								break;
+							case BASE_ONLY:
+								baseMod += modifier;
+								break;
+							case LEVELS_ONLY:
+								levelMod += modifier;
+								break;
+						}
+						break;
+					case POINTS:
+						switch (one.getAffects()) {
+							case TOTAL:
+							case BASE_ONLY:
+								basePoints += modifier;
+								break;
+							case LEVELS_ONLY:
+								pointsPerLevel += modifier;
+								break;
+						}
+						break;
+					case MULTIPLIER:
+						multiplier *= one.getCostMultiplier();
+						break;
+				}
 			}
-			points = (int) Math.round(Math.ceil(points * (1.0 + modifier / 100.0)));
 		}
-		return points;
+
+		int leveledPoints = levels > 0 ? pointsPerLevel * levels : 0;
+		if (baseMod != 0 || levelMod != 0) {
+			if (baseMod < -80) {
+				baseMod = -80;
+			}
+			if (levelMod < -80) {
+				levelMod = -80;
+			}
+			if (baseMod == levelMod) {
+				basePoints = modifyPoints(basePoints + leveledPoints, baseMod);
+			} else {
+				basePoints = modifyPoints(basePoints, baseMod) + modifyPoints(leveledPoints, levelMod);
+			}
+		} else {
+			basePoints += leveledPoints;
+		}
+
+		if (basePoints > 0) {
+			basePoints = (int) (basePoints * multiplier + 0.5);
+			if (basePoints < 1) {
+				basePoints = 1;
+			}
+		} else if (basePoints < 0) {
+			basePoints = (int) (basePoints * multiplier);
+		}
+		return basePoints;
+	}
+
+	private static int modifyPoints(int points, int modifier) {
+		modifier *= points;
+		if (modifier > 0) {
+			modifier = (modifier + 50) / 100;
+		} else {
+			modifier /= 100;
+		}
+		return points + modifier;
 	}
 
 	/** @return The points. */
@@ -607,6 +680,9 @@ public class CMAdvantage extends CMRow {
 				one.fillWithNameableKeys(set);
 			}
 		}
+		for (CMModifier modifier : mModifiers) {
+			modifier.fillWithNameableKeys(set);
+		}
 	}
 
 	@Override public void applyNameableKeys(HashMap<String, String> map) {
@@ -617,11 +693,23 @@ public class CMAdvantage extends CMRow {
 				one.applyNameableKeys(map);
 			}
 		}
+		for (CMModifier modifier : mModifiers) {
+			modifier.applyNameableKeys(map);
+		}
 	}
 
 	/** @return The modifiers. */
 	public List<CMModifier> getModifiers() {
 		return Collections.unmodifiableList(mModifiers);
+	}
+
+	/** @return The modifiers including those inherited from parent row. */
+	public List<CMModifier> getAllModifiers() {
+		ArrayList<CMModifier> allModifiers = new ArrayList<CMModifier>(mModifiers);
+		if (getParent() != null) {
+			allModifiers.addAll(((CMAdvantage) getParent()).getAllModifiers());
+		}
+		return Collections.unmodifiableList(allModifiers);
 	}
 
 	/**
@@ -638,28 +726,24 @@ public class CMAdvantage extends CMRow {
 	}
 
 	@Override public String getModifierNotes() {
-		if (!canHaveChildren()) {
-			if (!mModifiers.isEmpty()) {
-				StringBuilder builder = new StringBuilder();
+		ArrayList<CMModifier> modifiers = new ArrayList<CMModifier>();
 
-				for (CMModifier modifier : mModifiers) {
-					String modNote = modifier.getNotes();
-
-					builder.append(modifier.toString());
-					if (modNote.length() > 0) {
-						builder.append(" ("); //$NON-NLS-1$
-						builder.append(modNote);
-						builder.append(')');
-					}
-					builder.append(", "); //$NON-NLS-1$
-					builder.append(TKNumberUtils.format(modifier.getCostModifier(), true));
-					builder.append("%; "); //$NON-NLS-1$
-				}
-				builder.setLength(builder.length() - 2); // Remove the trailing "; "
-				builder.append('.');
-				return builder.toString();
+		for (CMModifier modifier : mModifiers) {
+			if (modifier.isEnabled()) {
+				modifiers.add(modifier);
 			}
 		}
-		return null;
+		if (!modifiers.isEmpty()) {
+			StringBuilder builder = new StringBuilder();
+
+			for (CMModifier modifier : modifiers) {
+				builder.append(modifier.getFullDescription());
+				builder.append("; "); //$NON-NLS-1$
+			}
+			builder.setLength(builder.length() - 2); // Remove the trailing "; "
+			builder.append('.');
+			return builder.toString();
+		}
+		return ""; //$NON-NLS-1$
 	}
 }

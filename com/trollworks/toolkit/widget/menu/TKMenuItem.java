@@ -64,10 +64,6 @@ public class TKMenuItem {
 	private int				mMarkWidth;
 	private int				mMarkHeight;
 
-	private TKMenuItem() {
-		// Prevent creation without parameters
-	}
-
 	/**
 	 * Creates a new menu item.
 	 * 

@@ -28,15 +28,17 @@ import com.trollworks.gcs.model.advantage.CMAdvantageContainerType;
 import com.trollworks.gcs.model.advantage.CMAdvantageList;
 import com.trollworks.gcs.model.equipment.CMEquipment;
 import com.trollworks.gcs.model.equipment.CMEquipmentList;
-import com.trollworks.gcs.model.feature.CMAttributeBonus;
+import com.trollworks.gcs.model.feature.CMAttributeBonusLimitation;
 import com.trollworks.gcs.model.feature.CMBonus;
+import com.trollworks.gcs.model.feature.CMBonusAttributeType;
 import com.trollworks.gcs.model.feature.CMCostReduction;
-import com.trollworks.gcs.model.feature.CMDRBonus;
 import com.trollworks.gcs.model.feature.CMFeature;
+import com.trollworks.gcs.model.feature.CMHitLocation;
 import com.trollworks.gcs.model.feature.CMLeveledAmount;
 import com.trollworks.gcs.model.feature.CMSkillBonus;
 import com.trollworks.gcs.model.feature.CMSpellBonus;
 import com.trollworks.gcs.model.feature.CMWeaponBonus;
+import com.trollworks.gcs.model.modifier.CMModifier;
 import com.trollworks.gcs.model.names.USCensusNames;
 import com.trollworks.gcs.model.skill.CMSkill;
 import com.trollworks.gcs.model.skill.CMSkillList;
@@ -135,43 +137,43 @@ public class CMCharacter extends CMDataFile {
 	/** The prefix used in front of all IDs for basic attributes. */
 	public static final String						ATTRIBUTES_PREFIX						= CHARACTER_PREFIX + "ba.";																											//$NON-NLS-1$
 	/** The field ID for strength (ST) changes. */
-	public static final String						ID_STRENGTH								= ATTRIBUTES_PREFIX + CMAttributeBonus.ST;
+	public static final String						ID_STRENGTH								= ATTRIBUTES_PREFIX + CMBonusAttributeType.ST.name();
 	/** The field ID for lifting strength bonuses -- used by features. */
-	public static final String						ID_LIFTING_STRENGTH						= ID_STRENGTH + CMAttributeBonus.LIFTING_ONLY;
+	public static final String						ID_LIFTING_STRENGTH						= ID_STRENGTH + CMAttributeBonusLimitation.LIFTING_ONLY.name();
 	/** The field ID for striking strength bonuses -- used by features. */
-	public static final String						ID_STRIKING_STRENGTH					= ID_STRENGTH + CMAttributeBonus.STRIKING_ONLY;
+	public static final String						ID_STRIKING_STRENGTH					= ID_STRENGTH + CMAttributeBonusLimitation.STRIKING_ONLY.name();
 	/** The field ID for dexterity (DX) changes. */
-	public static final String						ID_DEXTERITY							= ATTRIBUTES_PREFIX + CMAttributeBonus.DX;
+	public static final String						ID_DEXTERITY							= ATTRIBUTES_PREFIX + CMBonusAttributeType.DX.name();
 	/** The field ID for intelligence (IQ) changes. */
-	public static final String						ID_INTELLIGENCE							= ATTRIBUTES_PREFIX + CMAttributeBonus.IQ;
+	public static final String						ID_INTELLIGENCE							= ATTRIBUTES_PREFIX + CMBonusAttributeType.IQ.name();
 	/** The field ID for health (HT) changes. */
-	public static final String						ID_HEALTH								= ATTRIBUTES_PREFIX + CMAttributeBonus.HT;
+	public static final String						ID_HEALTH								= ATTRIBUTES_PREFIX + CMBonusAttributeType.HT.name();
 	/** The field ID for perception changes. */
-	public static final String						ID_PERCEPTION							= ATTRIBUTES_PREFIX + CMAttributeBonus.PER;
+	public static final String						ID_PERCEPTION							= ATTRIBUTES_PREFIX + CMBonusAttributeType.PERCEPTION.name();
 	/** The field ID for vision changes. */
-	public static final String						ID_VISION								= ATTRIBUTES_PREFIX + CMAttributeBonus.VISION;
+	public static final String						ID_VISION								= ATTRIBUTES_PREFIX + CMBonusAttributeType.VISION.name();
 	/** The field ID for hearing changes. */
-	public static final String						ID_HEARING								= ATTRIBUTES_PREFIX + CMAttributeBonus.HEARING;
+	public static final String						ID_HEARING								= ATTRIBUTES_PREFIX + CMBonusAttributeType.HEARING.name();
 	/** The field ID for taste changes. */
-	public static final String						ID_TASTE_AND_SMELL						= ATTRIBUTES_PREFIX + CMAttributeBonus.TASTE_SMELL;
+	public static final String						ID_TASTE_AND_SMELL						= ATTRIBUTES_PREFIX + CMBonusAttributeType.TASTE_SMELL.name();
 	/** The field ID for smell changes. */
-	public static final String						ID_TOUCH								= ATTRIBUTES_PREFIX + CMAttributeBonus.TOUCH;
+	public static final String						ID_TOUCH								= ATTRIBUTES_PREFIX + CMBonusAttributeType.TOUCH.name();
 	/** The field ID for will changes. */
-	public static final String						ID_WILL									= ATTRIBUTES_PREFIX + CMAttributeBonus.WILL;
+	public static final String						ID_WILL									= ATTRIBUTES_PREFIX + CMBonusAttributeType.WILL.name();
 	/** The field ID for basic speed changes. */
-	public static final String						ID_BASIC_SPEED							= ATTRIBUTES_PREFIX + CMAttributeBonus.SPEED;
+	public static final String						ID_BASIC_SPEED							= ATTRIBUTES_PREFIX + CMBonusAttributeType.SPEED.name();
 	/** The field ID for basic move changes. */
-	public static final String						ID_BASIC_MOVE							= ATTRIBUTES_PREFIX + CMAttributeBonus.MOVE;
+	public static final String						ID_BASIC_MOVE							= ATTRIBUTES_PREFIX + CMBonusAttributeType.MOVE.name();
 	/** The prefix used in front of all IDs for dodge changes. */
-	public static final String						DODGE_PREFIX							= ATTRIBUTES_PREFIX + CMAttributeBonus.DODGE + "#.";																					//$NON-NLS-1$
+	public static final String						DODGE_PREFIX							= ATTRIBUTES_PREFIX + CMBonusAttributeType.DODGE.name() + "#.";																		//$NON-NLS-1$
 	/** The field ID for dodge bonus changes. */
-	public static final String						ID_DODGE_BONUS							= ATTRIBUTES_PREFIX + CMAttributeBonus.DODGE;
+	public static final String						ID_DODGE_BONUS							= ATTRIBUTES_PREFIX + CMBonusAttributeType.DODGE.name();
 	/** The field ID for parry bonus changes. */
-	public static final String						ID_PARRY_BONUS							= ATTRIBUTES_PREFIX + CMAttributeBonus.PARRY;
+	public static final String						ID_PARRY_BONUS							= ATTRIBUTES_PREFIX + CMBonusAttributeType.PARRY.name();
 	/** The field ID for block bonus changes. */
-	public static final String						ID_BLOCK_BONUS							= ATTRIBUTES_PREFIX + CMAttributeBonus.BLOCK;
+	public static final String						ID_BLOCK_BONUS							= ATTRIBUTES_PREFIX + CMBonusAttributeType.BLOCK.name();
 	/** The prefix used in front of all IDs for move changes. */
-	public static final String						MOVE_PREFIX								= ATTRIBUTES_PREFIX + CMAttributeBonus.MOVE + "#.";																					//$NON-NLS-1$
+	public static final String						MOVE_PREFIX								= ATTRIBUTES_PREFIX + CMBonusAttributeType.MOVE.name() + "#.";																			//$NON-NLS-1$
 	/** The field ID for carried weight changes. */
 	public static final String						ID_CARRIED_WEIGHT						= CHARACTER_PREFIX + "CarriedWeight";																									//$NON-NLS-1$
 	/** The field ID for carried wealth changes. */
@@ -230,7 +232,7 @@ public class CMCharacter extends CMDataFile {
 	/** The field ID for campaign changes. */
 	public static final String						ID_CAMPAIGN								= PROFILE_PREFIX + "Campaign";																											//$NON-NLS-1$
 	/** The field ID for size modifier changes. */
-	public static final String						ID_SIZE_MODIFIER						= ATTRIBUTES_PREFIX + CMAttributeBonus.SM;
+	public static final String						ID_SIZE_MODIFIER						= ATTRIBUTES_PREFIX + CMBonusAttributeType.SM.name();
 	/** The field ID for tech level changes. */
 	public static final String						ID_TECH_LEVEL							= PROFILE_PREFIX + "TechLevel";																										//$NON-NLS-1$
 	/** The prefix used in front of all IDs for point summaries. */
@@ -256,29 +258,29 @@ public class CMCharacter extends CMDataFile {
 	/** The prefix used in front of all IDs for damage resistance. */
 	public static final String						DR_PREFIX								= CHARACTER_PREFIX + "dr.";																											//$NON-NLS-1$
 	/** The skull hit location's DR. */
-	public static final String						ID_SKULL_DR								= DR_PREFIX + CMDRBonus.SKULL;
+	public static final String						ID_SKULL_DR								= DR_PREFIX + CMHitLocation.SKULL.name();
 	/** The eyes hit location's DR. */
-	public static final String						ID_EYES_DR								= DR_PREFIX + CMDRBonus.EYES;
+	public static final String						ID_EYES_DR								= DR_PREFIX + CMHitLocation.EYES.name();
 	/** The face hit location's DR. */
-	public static final String						ID_FACE_DR								= DR_PREFIX + CMDRBonus.FACE;
+	public static final String						ID_FACE_DR								= DR_PREFIX + CMHitLocation.FACE.name();
 	/** The neck hit location's DR. */
-	public static final String						ID_NECK_DR								= DR_PREFIX + CMDRBonus.NECK;
+	public static final String						ID_NECK_DR								= DR_PREFIX + CMHitLocation.NECK.name();
 	/** The torso hit location's DR. */
-	public static final String						ID_TORSO_DR								= DR_PREFIX + CMDRBonus.TORSO;
+	public static final String						ID_TORSO_DR								= DR_PREFIX + CMHitLocation.TORSO.name();
 	/** The vitals hit location's DR. */
-	public static final String						ID_VITALS_DR							= DR_PREFIX + CMDRBonus.VITALS;
-	private static final String						ID_FULL_BODY_DR							= DR_PREFIX + CMDRBonus.FULL_BODY;
-	private static final String						ID_FULL_BODY_NO_EYES_DR					= DR_PREFIX + CMDRBonus.FULL_BODY_NO_EYES;
+	public static final String						ID_VITALS_DR							= DR_PREFIX + CMHitLocation.VITALS.name();
+	private static final String						ID_FULL_BODY_DR							= DR_PREFIX + CMHitLocation.FULL_BODY.name();
+	private static final String						ID_FULL_BODY_EXCEPT_EYES_DR				= DR_PREFIX + CMHitLocation.FULL_BODY_EXCEPT_EYES.name();
 	/** The groin hit location's DR. */
-	public static final String						ID_GROIN_DR								= DR_PREFIX + CMDRBonus.GROIN;
+	public static final String						ID_GROIN_DR								= DR_PREFIX + CMHitLocation.GROIN.name();
 	/** The arm hit location's DR. */
-	public static final String						ID_ARM_DR								= DR_PREFIX + CMDRBonus.ARMS;
+	public static final String						ID_ARM_DR								= DR_PREFIX + CMHitLocation.ARMS.name();
 	/** The hand hit location's DR. */
-	public static final String						ID_HAND_DR								= DR_PREFIX + CMDRBonus.HANDS;
+	public static final String						ID_HAND_DR								= DR_PREFIX + CMHitLocation.HANDS.name();
 	/** The leg hit location's DR. */
-	public static final String						ID_LEG_DR								= DR_PREFIX + CMDRBonus.LEGS;
+	public static final String						ID_LEG_DR								= DR_PREFIX + CMHitLocation.LEGS.name();
 	/** The foot hit location's DR. */
-	public static final String						ID_FOOT_DR								= DR_PREFIX + CMDRBonus.FEET;
+	public static final String						ID_FOOT_DR								= DR_PREFIX + CMHitLocation.FEET.name();
 	/** The prefix used in front of all IDs for basic damage. */
 	public static final String						BASIC_DAMAGE_PREFIX						= CHARACTER_PREFIX + "bd.";																											//$NON-NLS-1$
 	/** The field ID for basic thrust damage changes. */
@@ -287,7 +289,7 @@ public class CMCharacter extends CMDataFile {
 	public static final String						ID_BASIC_SWING							= BASIC_DAMAGE_PREFIX + "Swing";																										//$NON-NLS-1$
 	private static final String						HIT_POINTS_PREFIX						= ATTRIBUTES_PREFIX + "derived_hp.";																									//$NON-NLS-1$
 	/** The field ID for hit point changes. */
-	public static final String						ID_HIT_POINTS							= ATTRIBUTES_PREFIX + CMAttributeBonus.HP;
+	public static final String						ID_HIT_POINTS							= ATTRIBUTES_PREFIX + CMBonusAttributeType.HP.name();
 	/** The field ID for current hit point changes. */
 	public static final String						ID_CURRENT_HIT_POINTS					= HIT_POINTS_PREFIX + "Current";																										//$NON-NLS-1$
 	/** The field ID for reeling hit point changes. */
@@ -306,7 +308,7 @@ public class CMCharacter extends CMDataFile {
 	public static final String						ID_DEAD_HIT_POINTS						= HIT_POINTS_PREFIX + "Dead";																											//$NON-NLS-1$
 	private static final String						FATIGUE_POINTS_PREFIX					= ATTRIBUTES_PREFIX + "derived_fp.";																									//$NON-NLS-1$
 	/** The field ID for fatigue point changes. */
-	public static final String						ID_FATIGUE_POINTS						= ATTRIBUTES_PREFIX + CMAttributeBonus.FP;
+	public static final String						ID_FATIGUE_POINTS						= ATTRIBUTES_PREFIX + CMBonusAttributeType.FP.name();
 	/** The field ID for current fatigue point changes. */
 	public static final String						ID_CURRENT_FATIGUE_POINTS				= FATIGUE_POINTS_PREFIX + "Current";																									//$NON-NLS-1$
 	/** The field ID for tired fatigue point changes. */
@@ -444,9 +446,9 @@ public class CMCharacter extends CMDataFile {
 		String[] lengths = { Msgs.SHORT, Msgs.MEDIUM, Msgs.LONG };
 
 		for (String element : colors) {
-			for (int style = 0; style < styles.length; style++) {
-				for (int length = 0; length < lengths.length; length++) {
-					hair.add(MessageFormat.format(Msgs.HAIR_FORMAT, element, styles[style], lengths[length]));
+			for (String style : styles) {
+				for (String length : lengths) {
+					hair.add(MessageFormat.format(Msgs.HAIR_FORMAT, element, style, length));
 				}
 			}
 		}
@@ -644,14 +646,18 @@ public class CMCharacter extends CMDataFile {
 		mPlayerName = full ? getDefaultPlayerName() : EMPTY;
 		mCampaign = full ? getDefaultCampaign() : EMPTY;
 		setPortraitInternal(getPortraitFromPortraitPath(getDefaultPortraitPath()));
-		mPageSettings = new TKPrintManager(TKPageOrientation.PORTRAIT, 0.5, TKLengthUnits.INCHES);
+		try {
+			mPageSettings = new TKPrintManager(TKPageOrientation.PORTRAIT, 0.5, TKLengthUnits.INCHES);
+		} catch (Exception exception) {
+			mPageSettings = null;
+		}
 		mLastModified = System.currentTimeMillis();
 		mCreatedOn = mLastModified;
 		// This will force the long value to match the string value.
 		setCreatedOn(getCreatedOn());
 	}
 
-	/** @return The page settings. */
+	/** @return The page settings. May return <code>null</code> if not printer has been defined. */
 	public TKPrintManager getPageSettings() {
 		return mPageSettings;
 	}
@@ -703,7 +709,7 @@ public class CMCharacter extends CMDataFile {
 					}
 				} else if (TAG_WEIGHT.equals(name)) {
 					mWeight = TKWeightUnits.POUNDS.convert((TKWeightUnits) TKEnumExtractor.extract(reader.getAttribute(ATTRIBUTE_UNITS), TKWeightUnits.values(), TKWeightUnits.POUNDS), reader.readDouble(0));
-				} else if (CMAttributeBonus.SM.equals(name) || "size_modifier".equals(name)) { //$NON-NLS-1$
+				} else if (CMBonusAttributeType.SM.getXMLTag().equals(name) || "size_modifier".equals(name)) { //$NON-NLS-1$
 					mSizeModifier = reader.readInteger(0);
 				} else if (TAG_GENDER.equals(name)) {
 					mGender = reader.readText();
@@ -717,11 +723,11 @@ public class CMCharacter extends CMDataFile {
 					mCreatedOn = TKNumberUtils.getDate(reader.readText());
 				} else if (TAG_MODIFIED_DATE.equals(name)) {
 					mLastModified = TKNumberUtils.getDateTime(reader.readText());
-				} else if (CMAttributeBonus.HP.equals(name)) {
+				} else if (CMBonusAttributeType.HP.getXMLTag().equals(name)) {
 					mHitPoints = reader.readInteger(0);
 				} else if (TAG_CURRENT_HP.equals(name)) {
 					mCurrentHitPoints = reader.readText();
-				} else if (CMAttributeBonus.FP.equals(name)) {
+				} else if (CMBonusAttributeType.FP.getXMLTag().equals(name)) {
 					mFatiguePoints = reader.readInteger(0);
 				} else if (TAG_CURRENT_FP.equals(name)) {
 					mCurrentFatiguePoints = reader.readText();
@@ -729,21 +735,21 @@ public class CMCharacter extends CMDataFile {
 					unspentPoints = reader.readInteger(0);
 				} else if (TAG_TOTAL_POINTS.equals(name)) {
 					mTotalPoints = reader.readInteger(0);
-				} else if (CMAttributeBonus.ST.equals(name)) {
+				} else if (CMBonusAttributeType.ST.getXMLTag().equals(name)) {
 					mStrength = reader.readInteger(0);
-				} else if (CMAttributeBonus.DX.equals(name)) {
+				} else if (CMBonusAttributeType.DX.getXMLTag().equals(name)) {
 					mDexterity = reader.readInteger(0);
-				} else if (CMAttributeBonus.IQ.equals(name)) {
+				} else if (CMBonusAttributeType.IQ.getXMLTag().equals(name)) {
 					mIntelligence = reader.readInteger(0);
-				} else if (CMAttributeBonus.HT.equals(name)) {
+				} else if (CMBonusAttributeType.HT.getXMLTag().equals(name)) {
 					mHealth = reader.readInteger(0);
-				} else if (CMAttributeBonus.WILL.equals(name)) {
+				} else if (CMBonusAttributeType.WILL.getXMLTag().equals(name)) {
 					mWill = reader.readInteger(0);
-				} else if (CMAttributeBonus.PER.equals(name)) {
+				} else if (CMBonusAttributeType.PERCEPTION.getXMLTag().equals(name)) {
 					mPerception = reader.readInteger(0);
-				} else if (CMAttributeBonus.SPEED.equals(name)) {
+				} else if (CMBonusAttributeType.SPEED.getXMLTag().equals(name)) {
 					mSpeed = reader.readDouble(0.0);
-				} else if (CMAttributeBonus.MOVE.equals(name)) {
+				} else if (CMBonusAttributeType.MOVE.getXMLTag().equals(name)) {
 					mMove = reader.readInteger(0);
 				} else if (TAG_INCLUDE_PUNCH.equals(name)) {
 					mIncludePunch = reader.readBoolean();
@@ -767,7 +773,9 @@ public class CMCharacter extends CMDataFile {
 				} else if (CMEquipmentList.TAG_ROOT.equals(name)) {
 					loadEquipmentList(reader);
 				} else if (TKPrintManager.TAG_ROOT.equals(name)) {
-					mPageSettings.load(reader);
+					if (mPageSettings != null) {
+						mPageSettings.load(reader);
+					}
 				} else {
 					reader.skipTag(name);
 				}
@@ -880,31 +888,33 @@ public class CMCharacter extends CMDataFile {
 		out.simpleTagNotEmpty(TAG_HANDEDNESS, mHandedness);
 		out.simpleTagWithAttribute(TAG_HEIGHT, Integer.toString(mHeight), ATTRIBUTE_UNITS, TKLengthUnits.INCHES.toString());
 		out.simpleTagWithAttribute(TAG_WEIGHT, Double.toString(mWeight), ATTRIBUTE_UNITS, TKWeightUnits.POUNDS.toString());
-		out.simpleTag(CMAttributeBonus.SM, mSizeModifier);
+		out.simpleTag(CMBonusAttributeType.SM.getXMLTag(), mSizeModifier);
 		out.simpleTagNotEmpty(TAG_GENDER, mGender);
 		out.simpleTagNotEmpty(TAG_RACE, mRace);
 		out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
 		out.simpleTagNotEmpty(TAG_RELIGION, mReligion);
 		out.simpleTag(TAG_CREATED_DATE, DateFormat.getDateInstance(DateFormat.MEDIUM).format(new Date(mCreatedOn)));
 		out.simpleTag(TAG_MODIFIED_DATE, DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(mLastModified)));
-		out.simpleTag(CMAttributeBonus.HP, mHitPoints);
+		out.simpleTag(CMBonusAttributeType.HP.getXMLTag(), mHitPoints);
 		out.simpleTagNotEmpty(TAG_CURRENT_HP, mCurrentHitPoints);
-		out.simpleTag(CMAttributeBonus.FP, mFatiguePoints);
+		out.simpleTag(CMBonusAttributeType.FP.getXMLTag(), mFatiguePoints);
 		out.simpleTagNotEmpty(TAG_CURRENT_FP, mCurrentFatiguePoints);
 		out.simpleTag(TAG_TOTAL_POINTS, mTotalPoints);
-		out.simpleTag(CMAttributeBonus.ST, mStrength);
-		out.simpleTag(CMAttributeBonus.DX, mDexterity);
-		out.simpleTag(CMAttributeBonus.IQ, mIntelligence);
-		out.simpleTag(CMAttributeBonus.HT, mHealth);
-		out.simpleTag(CMAttributeBonus.WILL, mWill);
-		out.simpleTag(CMAttributeBonus.PER, mPerception);
-		out.simpleTag(CMAttributeBonus.SPEED, mSpeed);
-		out.simpleTag(CMAttributeBonus.MOVE, mMove);
+		out.simpleTag(CMBonusAttributeType.ST.getXMLTag(), mStrength);
+		out.simpleTag(CMBonusAttributeType.DX.getXMLTag(), mDexterity);
+		out.simpleTag(CMBonusAttributeType.IQ.getXMLTag(), mIntelligence);
+		out.simpleTag(CMBonusAttributeType.HT.getXMLTag(), mHealth);
+		out.simpleTag(CMBonusAttributeType.WILL.getXMLTag(), mWill);
+		out.simpleTag(CMBonusAttributeType.PERCEPTION.getXMLTag(), mPerception);
+		out.simpleTag(CMBonusAttributeType.SPEED.getXMLTag(), mSpeed);
+		out.simpleTag(CMBonusAttributeType.MOVE.getXMLTag(), mMove);
 		out.simpleTag(TAG_INCLUDE_PUNCH, mIncludePunch);
 		out.simpleTag(TAG_INCLUDE_KICK, mIncludeKick);
 		out.simpleTag(TAG_INCLUDE_BOOTS, mIncludeKickBoots);
 		out.simpleTagNotEmpty(TAG_NOTES, mNotes);
-		mPageSettings.save(out, TKLengthUnits.INCHES);
+		if (mPageSettings != null) {
+			mPageSettings.save(out, TKLengthUnits.INCHES);
+		}
 
 		if (mAdvantages.getRowCount() > 0) {
 			out.startSimpleTagEOL(CMAdvantageList.TAG_ROOT);
@@ -1283,7 +1293,7 @@ public class CMCharacter extends CMDataFile {
 
 	@Override public void notify(String type, Object data) {
 		super.notify(type, data);
-		if (CMAdvantage.ID_POINTS.equals(type) || CMAdvantage.ID_LEVELS.equals(type) || CMAdvantage.ID_CONTAINER_TYPE.equals(type) || CMAdvantage.ID_LIST_CHANGED.equals(type)) {
+		if (CMAdvantage.ID_POINTS.equals(type) || CMAdvantage.ID_LEVELS.equals(type) || CMAdvantage.ID_CONTAINER_TYPE.equals(type) || CMAdvantage.ID_LIST_CHANGED.equals(type) || CMModifier.ID_LIST_CHANGED.equals(type) || CMModifier.ID_ENABLED.equals(type)) {
 			mNeedAdvantagesPointCalculation = true;
 		}
 		if (CMSkill.ID_POINTS.equals(type) || CMSkill.ID_LIST_CHANGED.equals(type)) {
@@ -1763,7 +1773,10 @@ public class CMCharacter extends CMDataFile {
 		int basicMove = getBasicMove();
 		int move = basicMove * (10 - 2 * level) / 10;
 
-		return move < 1 ? (basicMove > 0 ? 1 : 0) : move;
+		if (move < 1) {
+			return basicMove > 0 ? 1 : 0;
+		}
+		return move;
 	}
 
 	/**
@@ -3448,7 +3461,7 @@ public class CMCharacter extends CMDataFile {
 		setBasicSpeedBonus(getDoubleBonusFor(ID_BASIC_SPEED));
 		setBasicMoveBonus(getIntegerBonusFor(ID_BASIC_MOVE));
 		fullBodyDR = getIntegerBonusFor(ID_FULL_BODY_DR);
-		fullBodyNoEyesDR = getIntegerBonusFor(ID_FULL_BODY_NO_EYES_DR);
+		fullBodyNoEyesDR = getIntegerBonusFor(ID_FULL_BODY_EXCEPT_EYES_DR);
 		setSkullDR(2 + getIntegerBonusFor(ID_SKULL_DR) + fullBodyDR + fullBodyNoEyesDR);
 		setEyesDR(getIntegerBonusFor(ID_EYES_DR) + fullBodyDR);
 		setFaceDR(getIntegerBonusFor(ID_FACE_DR) + fullBodyDR + fullBodyNoEyesDR);
@@ -3499,7 +3512,7 @@ public class CMCharacter extends CMDataFile {
 		ArrayList<CMFeature> list = mFeatureMap.get(id.toLowerCase());
 		if (list != null) {
 			for (CMFeature feature : list) {
-				if ((feature instanceof CMBonus)  && !(feature instanceof CMWeaponBonus)) {
+				if (feature instanceof CMBonus && !(feature instanceof CMWeaponBonus)) {
 					total += ((CMBonus) feature).getAmount().getIntegerAdjustedAmount();
 				}
 			}
@@ -3599,7 +3612,7 @@ public class CMCharacter extends CMDataFile {
 
 		if (list != null) {
 			for (CMFeature feature : list) {
-				if ((feature instanceof CMBonus)  && !(feature instanceof CMWeaponBonus)) {
+				if (feature instanceof CMBonus && !(feature instanceof CMWeaponBonus)) {
 					total += ((CMBonus) feature).getAmount().getAdjustedAmount();
 				}
 			}

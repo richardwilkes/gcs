@@ -98,6 +98,18 @@ public class TKPopupMenu extends TKBaseMenu implements TKMenuTarget, TKDocumentL
 	 * @param target The menu target. Pass in <code>null</code> if the popup menu should deal with
 	 *            menu selections on its own.
 	 * @param editable Pass in <code>true</code> if the popup should have a user-editable field.
+	 */
+	public TKPopupMenu(TKMenu menu, TKMenuTarget target, boolean editable) {
+		this(menu, target, editable, 0);
+	}
+
+	/**
+	 * Creates a popup menu.
+	 * 
+	 * @param menu The menu to be displayed.
+	 * @param target The menu target. Pass in <code>null</code> if the popup menu should deal with
+	 *            menu selections on its own.
+	 * @param editable Pass in <code>true</code> if the popup should have a user-editable field.
 	 * @param selection The item index to select within the menu.
 	 */
 	public TKPopupMenu(TKMenu menu, TKMenuTarget target, boolean editable, int selection) {

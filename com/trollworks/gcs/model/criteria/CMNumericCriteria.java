@@ -23,30 +23,24 @@
 
 package com.trollworks.gcs.model.criteria;
 
+import com.trollworks.toolkit.collections.TKEnumExtractor;
 import com.trollworks.toolkit.io.xml.TKXMLReader;
 import com.trollworks.toolkit.io.xml.TKXMLWriter;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 
 /** Manages numeric comparison criteria. */
 public abstract class CMNumericCriteria {
-	/** The comparison for "is". */
-	public static final String	IS					= "is";		//$NON-NLS-1$
-	/** The comparison for "is at least". */
-	public static final String	AT_LEAST			= "atLeast";	//$NON-NLS-1$
-	/** The comparison for "is no more than". */
-	public static final String	NO_MORE_THAN		= "atMost";	//$NON-NLS-1$
 	/** The comparison attribute. */
-	public static final String	ATTRIBUTE_COMPARE	= "compare";	//$NON-NLS-1$
-	private String				mType;
+	public static final String		ATTRIBUTE_COMPARE	= "compare";	//$NON-NLS-1$
+	private CMNumericCompareType	mType;
 
 	/**
 	 * Creates a new numeric comparison.
 	 * 
-	 * @param type One of {@link #IS}, {@link #AT_LEAST}, or {@link #NO_MORE_THAN}.
+	 * @param type The {@link CMNumericCompareType} to use.
 	 */
-	public CMNumericCriteria(String type) {
+	public CMNumericCriteria(CMNumericCompareType type) {
 		setType(type);
 	}
 
@@ -55,7 +49,7 @@ public abstract class CMNumericCriteria {
 			return true;
 		}
 		if (obj instanceof CMNumericCriteria) {
-			return mType.equals(((CMNumericCriteria) obj).mType);
+			return mType == ((CMNumericCriteria) obj).mType;
 		}
 		return false;
 	}
@@ -67,7 +61,7 @@ public abstract class CMNumericCriteria {
 	 * @throws IOException
 	 */
 	@SuppressWarnings("unused") public void load(TKXMLReader reader) throws IOException {
-		setType(reader.getAttribute(ATTRIBUTE_COMPARE));
+		setType((CMNumericCompareType) TKEnumExtractor.extract(reader.getAttribute(ATTRIBUTE_COMPARE), CMNumericCompareType.values(), CMNumericCompareType.AT_LEAST));
 	}
 
 	/**
@@ -77,7 +71,7 @@ public abstract class CMNumericCriteria {
 	 * @param tag The tag to use.
 	 */
 	public void save(TKXMLWriter out, String tag) {
-		out.simpleTagWithAttribute(tag, getQualifierAsString(false), ATTRIBUTE_COMPARE, mType);
+		out.simpleTagWithAttribute(tag, getQualifierAsString(false), ATTRIBUTE_COMPARE, mType.name().toLowerCase());
 	}
 
 	/**
@@ -87,26 +81,13 @@ public abstract class CMNumericCriteria {
 	public abstract String getQualifierAsString(boolean allowAdornments);
 
 	/** @return The type of comparison to make. */
-	public String getType() {
+	public CMNumericCompareType getType() {
 		return mType;
 	}
 
-	/**
-	 * @param type The type of comparison to make. Must be one of {@link #IS}, {@link #AT_LEAST},
-	 *            or {@link #NO_MORE_THAN}.
-	 */
-	public void setType(String type) {
-		if (type == IS || type == AT_LEAST || type == NO_MORE_THAN) {
-			mType = type;
-		} else if (IS.equals(type)) {
-			mType = IS;
-		} else if (AT_LEAST.equals(type)) {
-			mType = AT_LEAST;
-		} else if (NO_MORE_THAN.equals(type)) {
-			mType = NO_MORE_THAN;
-		} else {
-			mType = AT_LEAST;
-		}
+	/** @param type The type of comparison to make. */
+	public void setType(CMNumericCompareType type) {
+		mType = type;
 	}
 
 	@Override public String toString() {
@@ -118,15 +99,6 @@ public abstract class CMNumericCriteria {
 	 * @return A formatted description of this object.
 	 */
 	public String toString(String prefix) {
-		if (IS == mType) {
-			return MessageFormat.format(Msgs.IS_DESCRIPTION, prefix, getQualifierAsString(true));
-		}
-		if (AT_LEAST == mType) {
-			return MessageFormat.format(Msgs.AT_LEAST, prefix, getQualifierAsString(true));
-		}
-		if (NO_MORE_THAN == mType) {
-			return MessageFormat.format(Msgs.NO_MORE_THAN, prefix, getQualifierAsString(true));
-		}
-		return ""; //$NON-NLS-1$
+		return mType.format(prefix, getQualifierAsString(true));
 	}
 }

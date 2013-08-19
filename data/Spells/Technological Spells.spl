@@ -58,14 +58,14 @@
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: technological college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (technological)</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -85,14 +85,14 @@
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: technological college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (technological)</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -112,14 +112,14 @@
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: technological college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (technological)</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -140,14 +140,14 @@
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: technological college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (technological)</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -174,7 +174,7 @@
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="contains">transmut</name>
-				<quantity compare="atLeast">2</quantity>
+				<quantity compare="at_least">2</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<name compare="starts with">seek fuel</name>
@@ -211,10 +211,10 @@
 		<reference>M180</reference>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<college_count compare="atLeast">10</college_count>
+				<college_count compare="at_least">10</college_count>
 			</spell_prereq>
 			<spell_prereq has="yes">
-				<college_count compare="atLeast">10</college_count>
+				<college_count compare="at_least">10</college_count>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<name compare="starts with">steal power</name>
@@ -234,7 +234,7 @@
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">energy</college>
-				<quantity compare="atLeast">6</quantity>
+				<quantity compare="at_least">6</quantity>
 			</spell_prereq>
 		</prereq_list>
 	</spell>
@@ -259,14 +259,14 @@
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: technological college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (technological)</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -329,11 +329,11 @@
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">earth</college>
-				<quantity compare="atLeast">2</quantity>
+				<quantity compare="at_least">2</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<college compare="contains">fire</college>
-				<quantity compare="atLeast">2</quantity>
+				<quantity compare="at_least">2</quantity>
 			</spell_prereq>
 		</prereq_list>
 	</spell>
@@ -353,14 +353,14 @@
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: technological college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (technological)</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -474,14 +474,14 @@
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: technological college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (technological)</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -517,14 +517,14 @@
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: technological college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">3</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (technological)</notes>
+					<level compare="at_least">3</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">3</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">3</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -647,19 +647,19 @@
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<college compare="contains">air</college>
-				<quantity compare="atLeast">3</quantity>
+				<quantity compare="at_least">3</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<college compare="contains">earth</college>
-				<quantity compare="atLeast">3</quantity>
+				<quantity compare="at_least">3</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<college compare="contains">fire</college>
-				<quantity compare="atLeast">3</quantity>
+				<quantity compare="at_least">3</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<college compare="contains">water</college>
-				<quantity compare="atLeast">3</quantity>
+				<quantity compare="at_least">3</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<name compare="is">create object</name>
@@ -669,14 +669,14 @@
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: technological college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">3</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (technological)</notes>
+					<level compare="at_least">3</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">3</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">3</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -693,7 +693,7 @@
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">radiation</college>
-				<quantity compare="atLeast">3</quantity>
+				<quantity compare="at_least">3</quantity>
 			</spell_prereq>
 		</prereq_list>
 	</spell>
@@ -813,7 +813,7 @@
 			<prereq_list all="no">
 				<spell_prereq has="yes">
 					<college compare="contains">technological</college>
-					<quantity compare="atLeast">6</quantity>
+					<quantity compare="at_least">6</quantity>
 				</spell_prereq>
 				<spell_prereq has="yes">
 					<name compare="is">shape earth</name>
@@ -821,14 +821,14 @@
 			</prereq_list>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: technological college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (technological)</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -846,7 +846,7 @@
 			<prereq_list all="no">
 				<spell_prereq has="yes">
 					<college compare="contains">technological</college>
-					<quantity compare="atLeast">6</quantity>
+					<quantity compare="at_least">6</quantity>
 				</spell_prereq>
 				<spell_prereq has="yes">
 					<name compare="is">shape plant</name>
@@ -854,14 +854,14 @@
 			</prereq_list>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: technological college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (technological)</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -900,14 +900,14 @@
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: technological college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (technological)</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -927,14 +927,14 @@
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: technological college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (technological)</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>

@@ -14,6 +14,65 @@
 </head>
 <body>
 	<p class=category>GURPS Character Sheet Release Notes</p>
+	<p class=rversion>Version 3.1.0.14 &mdash; February 25, 2007</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Added the ability to specify that a particular enhancement/limitation's
+				cost modifier only applies to the base cost or the leveled cost.</li>
+			<li>Turned the "smooth" algorithm for image scaling back on.</li>
+			<li>Added support for "nameables" (text that gets substituted by a
+				real value from the user when it is first added to a character
+				sheet) within modifiers.</li>
+			<li>If modifiers are present in a (dis)advantage when it is put into
+				a character sheet or template, you will now be prompted to
+				enable or disable those modifiers that you want.</li>
+			<li>Modifiers can now provide multipliers or just straight point
+				additions, instead of their normal percentage modifier.</li>
+			<li><a href="http://sourceforge.net/tracker/?func=detail&atid=913592&aid=1658469&group_id=185516">Feature #1658469</a>:
+				Support modifiers for (dis)advantage groups. Thanks again to
+				Sebastien Wilhelmi for initial contributions in this area!</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Fixed some long-standing scrolling/selection issues in the sheet
+				lists.</li>
+			<li><a href="http://sourceforge.net/tracker/?func=detail&atid=913589&aid=1652159&group_id=185516">Bug #1652159</a>:
+				Create New Character Sheet problem. This was actually a problem
+				with no printer being available on the computer. The code now
+				tries to do a better check for this condition and provide some
+				defaults when it occurs.</li>
+			<li>Modifiers now undo without replicating.</li>
+			<li>Final point cost for (dis)advantages with modifiers is no longer
+				subject to floating-point math inaccuracies.</li>
+			<li>Prerequisite matching against notes now includes notes provided
+				by Modifiers.</li>
+			<li>Spell containers now properly restore their open/closed state.</li>
+			<li>When dragging one or more items to a new window, if a dialog
+				needs to appear, it is now positioned on top of the destination
+				window, rather than the source window, like in the past.</li>
+			<li><a href="http://sourceforge.net/tracker/?func=detail&atid=913589&aid=1667912&group_id=185516">Bug #1667912</a>:
+				ST 7 Shift Slightly shows 8 decimal places.</li>
+			<li><a href="http://sourceforge.net/tracker/?func=detail&atid=913589&aid=1668557&group_id=185516">Bug #1668557</a>:
+				HTML sheet shows 0 for the point total.</li>
+		</ul>
+	</div>
+	<p class=rheader>Data Files</p>
+	<div class=indent>
+		<ul>
+			<li>Incorporated changes to the 'Shields.eqp' data file, as noted in
+				<a href="http://sourceforge.net/tracker/?func=detail&atid=913589&aid=1652229&group_id=185516">Bug #1652229</a>.</li>
+			<li>Incorporated changes to various advantages and disadvantages to
+				use Modifiers where appropriate.  While the main Advantages list
+				has been updated, the Disadvantages list still uses the old way
+				for most entries.</li>
+			<li>Updated the spell lists to correctly find Magery prerequisites
+				now that Magery uses the new Modifiers.</li>
+			<li>Added a Powers data list, contributed by Sebastien Wilhelmi.</li>
+		</ul>
+	</div>
 	<p class=rversion>Version 3.1.0.13 &mdash; January 31, 2007</p>
 	<p class=rheader>Features</p>
 	<div class=indent>

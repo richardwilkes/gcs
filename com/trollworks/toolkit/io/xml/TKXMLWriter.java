@@ -248,6 +248,54 @@ public class TKXMLWriter extends PrintWriter {
 	 * @param attribute The name of the attribute.
 	 * @param attributeValue The value of the attribute.
 	 */
+	public void simpleTagWithAttribute(String name, int value, String attribute, boolean attributeValue) {
+		startTag(name);
+		writeAttribute(attribute, attributeValue);
+		finishTag();
+		writeEncodedData(Integer.toString(value));
+		endTagEOL(name, false);
+	}
+
+	/**
+	 * Write out an XML tag with a single attribute and no children, with a trailing line feed.
+	 * 
+	 * @param name The name of the tag.
+	 * @param value The data to place between the tags.
+	 * @param attribute The name of the attribute.
+	 * @param attributeValue The value of the attribute.
+	 */
+	public void simpleTagWithAttribute(String name, long value, String attribute, boolean attributeValue) {
+		startTag(name);
+		writeAttribute(attribute, attributeValue);
+		finishTag();
+		writeEncodedData(Long.toString(value));
+		endTagEOL(name, false);
+	}
+
+	/**
+	 * Write out an XML tag with a single attribute and no children, with a trailing line feed.
+	 * 
+	 * @param name The name of the tag.
+	 * @param value The data to place between the tags.
+	 * @param attribute The name of the attribute.
+	 * @param attributeValue The value of the attribute.
+	 */
+	public void simpleTagWithAttribute(String name, double value, String attribute, boolean attributeValue) {
+		startTag(name);
+		writeAttribute(attribute, attributeValue);
+		finishTag();
+		writeEncodedData(toString(value));
+		endTagEOL(name, false);
+	}
+
+	/**
+	 * Write out an XML tag with a single attribute and no children, with a trailing line feed.
+	 * 
+	 * @param name The name of the tag.
+	 * @param value The data to place between the tags.
+	 * @param attribute The name of the attribute.
+	 * @param attributeValue The value of the attribute.
+	 */
 	public void simpleTagWithAttribute(String name, String value, String attribute, int attributeValue) {
 		startTag(name);
 		writeAttribute(attribute, attributeValue);
@@ -284,7 +332,47 @@ public class TKXMLWriter extends PrintWriter {
 		startTag(name);
 		writeAttribute(attribute, attributeValue);
 		finishTag();
-		writeEncodedData(Double.toString(value));
+		writeEncodedData(toString(value));
+		endTagEOL(name, false);
+	}
+
+	private String toString(double value) {
+		String result = Double.toString(value);
+		if (result.endsWith(".0")) { //$NON-NLS-1$
+			result = result.substring(0, result.length() - 2);
+		}
+		return result;
+	}
+
+	/**
+	 * Write out an XML tag with a single attribute and no children, with a trailing line feed.
+	 * 
+	 * @param name The name of the tag.
+	 * @param value The data to place between the tags.
+	 * @param attribute The name of the attribute.
+	 * @param attributeValue The value of the attribute.
+	 */
+	public void simpleTagWithAttribute(String name, int value, String attribute, String attributeValue) {
+		startTag(name);
+		writeAttribute(attribute, attributeValue);
+		finishTag();
+		writeEncodedData(Integer.toString(value));
+		endTagEOL(name, false);
+	}
+
+	/**
+	 * Write out an XML tag with a single attribute and no children, with a trailing line feed.
+	 * 
+	 * @param name The name of the tag.
+	 * @param value The data to place between the tags.
+	 * @param attribute The name of the attribute.
+	 * @param attributeValue The value of the attribute.
+	 */
+	public void simpleTagWithAttribute(String name, long value, String attribute, String attributeValue) {
+		startTag(name);
+		writeAttribute(attribute, attributeValue);
+		finishTag();
+		writeEncodedData(Long.toString(value));
 		endTagEOL(name, false);
 	}
 
@@ -314,6 +402,18 @@ public class TKXMLWriter extends PrintWriter {
 	 * @param name The name of the tag.
 	 * @param value The data to place between the tags.
 	 */
+	public void simpleTagNotZero(String name, int value) {
+		if (value != 0) {
+			simpleTag(name, Integer.toString(value));
+		}
+	}
+
+	/**
+	 * Write out a simple XML tag (i.e. no children or attributes).
+	 * 
+	 * @param name The name of the tag.
+	 * @param value The data to place between the tags.
+	 */
 	public void simpleTag(String name, long value) {
 		simpleTag(name, Long.toString(value));
 	}
@@ -324,8 +424,20 @@ public class TKXMLWriter extends PrintWriter {
 	 * @param name The name of the tag.
 	 * @param value The data to place between the tags.
 	 */
+	public void simpleTagNotZero(String name, long value) {
+		if (value != 0) {
+			simpleTag(name, Long.toString(value));
+		}
+	}
+
+	/**
+	 * Write out a simple XML tag (i.e. no children or attributes).
+	 * 
+	 * @param name The name of the tag.
+	 * @param value The data to place between the tags.
+	 */
 	public void simpleTag(String name, double value) {
-		simpleTag(name, Double.toString(value));
+		simpleTag(name, toString(value));
 	}
 
 	/**

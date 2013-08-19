@@ -27,49 +27,6 @@ import com.trollworks.toolkit.io.TKMessages;
 
 /** All localized strings in this package should be accessed via this class. */
 class Msgs {
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	ST;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	DX;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	IQ;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	HT;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	WILL;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	PERCEPTION;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	VISION;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	HEARING;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	TASTE_SMELL;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	TOUCH;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	DODGE;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	PARRY;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	BLOCK;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	SPEED;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	MOVE;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	FP;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	HP;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	SM;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	NO_LIMITATION;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	STRIKING_ONLY;
-	/** Used by {@link CSAttributeBonus}. */
-	public static String	LIFTING_ONLY;
-
 	/** Used by {@link CSBaseFeature}. */
 	public static String	ADD_FEATURE_TOOLTIP;
 	/** Used by {@link CSBaseFeature}. */
@@ -94,31 +51,6 @@ class Msgs {
 	/** Used by {@link CSCostReduction}. */
 	public static String	BY;
 
-	/** Used by {@link CSDRBonus}. */
-	public static String	SKULL;
-	/** Used by {@link CSDRBonus}. */
-	public static String	EYES;
-	/** Used by {@link CSDRBonus}. */
-	public static String	FACE;
-	/** Used by {@link CSDRBonus}. */
-	public static String	NECK;
-	/** Used by {@link CSDRBonus}. */
-	public static String	TORSO;
-	/** Used by {@link CSDRBonus}. */
-	public static String	FULL_BODY;
-	/** Used by {@link CSDRBonus}. */
-	public static String	FULL_BODY_NO_EYES;
-	/** Used by {@link CSDRBonus}. */
-	public static String	GROIN;
-	/** Used by {@link CSDRBonus}. */
-	public static String	ARMS;
-	/** Used by {@link CSDRBonus}. */
-	public static String	HANDS;
-	/** Used by {@link CSDRBonus}. */
-	public static String	LEGS;
-	/** Used by {@link CSDRBonus}. */
-	public static String	FEET;
-
 	/** Used by {@link CSFeatures}. */
 	public static String	FEATURES;
 
@@ -137,11 +69,7 @@ class Msgs {
 	/** Used by {@link CSWeaponBonus}. */
 	public static String	WEAPON_SKILL;
 	/** Used by {@link CSWeaponBonus}. */
-	public static String	IS;
-	/** Used by {@link CSWeaponBonus}. */
-	public static String	AT_LEAST;
-	/** Used by {@link CSWeaponBonus}. */
-	public static String	AT_MOST;
+	public static String	RELATIVE_SKILL_LEVEL;
 
 	static {
 		TKMessages.initialize(Msgs.class);

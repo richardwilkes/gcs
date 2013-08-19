@@ -24,9 +24,10 @@
 package com.trollworks.gcs.ui.editor.feature;
 
 import com.trollworks.gcs.model.CMRow;
+import com.trollworks.gcs.model.feature.CMBonusAttributeType;
 import com.trollworks.gcs.model.feature.CMCostReduction;
-import com.trollworks.toolkit.widget.TKPopupMenu;
 import com.trollworks.toolkit.widget.TKPanel;
+import com.trollworks.toolkit.widget.TKPopupMenu;
 import com.trollworks.toolkit.widget.layout.TKColumnLayout;
 import com.trollworks.toolkit.widget.menu.TKMenu;
 import com.trollworks.toolkit.widget.menu.TKMenuItem;
@@ -59,23 +60,17 @@ public class CSCostReduction extends CSBaseFeature {
 	}
 
 	private void addAttributePopup(TKPanel parent) {
-		String[] keys = { CMCostReduction.ST, CMCostReduction.DX, CMCostReduction.IQ, CMCostReduction.HT };
 		TKMenu menu = new TKMenu();
-		int selection = 0;
-		CMCostReduction reduction = (CMCostReduction) getFeature();
-		String attribute = reduction.getAttribute();
-		TKMenuItem item;
 		TKPopupMenu popup;
 
-		for (int i = 0; i < keys.length; i++) {
-			item = new TKMenuItem(keys[i], CHANGE_ATTRIBUTE);
-			item.setUserObject(keys[i]);
+		for (CMBonusAttributeType one : CMCostReduction.TYPES) {
+			TKMenuItem item = new TKMenuItem(one.name(), CHANGE_ATTRIBUTE);
+			item.setUserObject(one);
 			menu.add(item);
-			if (attribute.equals(keys[i])) {
-				selection = i;
-			}
 		}
-		popup = new TKPopupMenu(menu, this, false, selection);
+
+		popup = new TKPopupMenu(menu, this, false);
+		popup.setSelectedUserObject(((CMCostReduction) getFeature()).getAttribute());
 		popup.setOnlySize(popup.getPreferredSize());
 		parent.add(popup);
 	}
@@ -104,7 +99,7 @@ public class CSCostReduction extends CSBaseFeature {
 
 	@Override public boolean obeyCommand(String command, TKMenuItem item) {
 		if (CHANGE_ATTRIBUTE.equals(command)) {
-			((CMCostReduction) getFeature()).setAttribute((String) item.getUserObject());
+			((CMCostReduction) getFeature()).setAttribute((CMBonusAttributeType) item.getUserObject());
 		} else if (CHANGE_PERCENTAGE.equals(command)) {
 			((CMCostReduction) getFeature()).setPercentage(((Integer) item.getUserObject()).intValue());
 		} else {

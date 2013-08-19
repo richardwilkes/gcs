@@ -25,7 +25,7 @@ package com.trollworks.gcs.model.feature;
 
 import com.trollworks.gcs.model.CMRow;
 import com.trollworks.gcs.model.criteria.CMIntegerCriteria;
-import com.trollworks.gcs.model.criteria.CMNumericCriteria;
+import com.trollworks.gcs.model.criteria.CMNumericCompareType;
 import com.trollworks.gcs.model.criteria.CMStringCompareType;
 import com.trollworks.gcs.model.criteria.CMStringCriteria;
 import com.trollworks.gcs.model.skill.CMSkill;
@@ -53,7 +53,7 @@ public class CMWeaponBonus extends CMBonus {
 		super(1);
 		mNameCriteria = new CMStringCriteria(CMStringCompareType.IS, EMPTY);
 		mSpecializationCriteria = new CMStringCriteria(CMStringCompareType.IS_ANYTHING, EMPTY);
-		mLevelCriteria = new CMIntegerCriteria(CMNumericCriteria.AT_LEAST, 0);
+		mLevelCriteria = new CMIntegerCriteria(CMNumericCompareType.AT_LEAST, 0);
 	}
 
 	/**

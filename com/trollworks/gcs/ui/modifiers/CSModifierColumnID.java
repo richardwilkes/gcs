@@ -28,7 +28,6 @@ import com.trollworks.gcs.ui.common.CSHeaderCell;
 import com.trollworks.gcs.ui.common.CSMultiCell;
 import com.trollworks.gcs.ui.common.CSTextCell;
 import com.trollworks.toolkit.utility.TKAlignment;
-import com.trollworks.toolkit.utility.TKNumberUtils;
 import com.trollworks.toolkit.widget.outline.TKCell;
 import com.trollworks.toolkit.widget.outline.TKColumn;
 import com.trollworks.toolkit.widget.outline.TKOutline;
@@ -37,14 +36,20 @@ import com.trollworks.toolkit.widget.outline.TKTextCell;
 
 /** Modifier Columns */
 public enum CSModifierColumnID {
+	/** The enabled/disabled column. */
+	ENABLED(Msgs.ENABLED_COLUMN, Msgs.ENABLED_TOOLTIP) {
+		@Override public TKCell getCell() {
+			return new CSTextCell(TKAlignment.CENTER, TKTextCell.COMPARE_AS_TEXT, null, false);
+		}
+
+		@Override public String getDataAsText(CMModifier modifier) {
+			return modifier.isEnabled() ? Msgs.ENABLED_COLUMN : ""; //$NON-NLS-1$
+		}
+	},
 	/** The advantage name/description. */
 	DESCRIPTION(Msgs.DESCRIPTION, Msgs.DESCRIPTION_TOOLTIP) {
 		@Override public TKCell getCell() {
 			return new CSMultiCell();
-		}
-
-		@Override public Object getData(CMModifier modifier) {
-			return getDataAsText(modifier);
 		}
 
 		@Override public String getDataAsText(CMModifier modifier) {
@@ -53,8 +58,9 @@ public enum CSModifierColumnID {
 
 			builder.append(modifier.toString());
 			if (notes.length() > 0) {
-				builder.append(" - "); //$NON-NLS-1$
+				builder.append(" ("); //$NON-NLS-1$
 				builder.append(notes);
+				builder.append(')');
 			}
 			return builder.toString();
 		}
@@ -62,15 +68,11 @@ public enum CSModifierColumnID {
 	/** The total cost modifier. */
 	COST_MODIFIER_TOTAL(Msgs.COST_MODIFIER, Msgs.COST_MODIFIER_TOOLTIP) {
 		@Override public TKCell getCell() {
-			return new CSTextCell(TKAlignment.RIGHT, TKTextCell.COMPARE_AS_INTEGER, null, false);
-		}
-
-		@Override public Object getData(CMModifier modifier) {
-			return new Integer(modifier.getCostModifier());
+			return new CSTextCell(TKAlignment.LEFT, TKTextCell.COMPARE_AS_TEXT, null, false);
 		}
 
 		@Override public String getDataAsText(CMModifier modifier) {
-			return TKNumberUtils.format(modifier.getCostModifier(), true) + "%"; //$NON-NLS-1$
+			return modifier.getCostDescription();
 		}
 	},
 
@@ -78,10 +80,6 @@ public enum CSModifierColumnID {
 	REFERENCE(Msgs.REFERENCE, Msgs.REFERENCE_TOOLTIP) {
 		@Override public TKCell getCell() {
 			return new CSTextCell(TKAlignment.RIGHT, TKTextCell.COMPARE_AS_TEXT, null, false);
-		}
-
-		@Override public Object getData(CMModifier modifier) {
-			return getDataAsText(modifier);
 		}
 
 		@Override public String getDataAsText(CMModifier modifier) {
@@ -105,7 +103,9 @@ public enum CSModifierColumnID {
 	 * @param modifier The {@link CMModifier} to get the data from.
 	 * @return An object representing the data for this column.
 	 */
-	public abstract Object getData(CMModifier modifier);
+	public Object getData(CMModifier modifier) {
+		return getDataAsText(modifier);
+	}
 
 	/**
 	 * @param modifier The {@link CMModifier} to get the data from.
@@ -130,15 +130,18 @@ public enum CSModifierColumnID {
 	 * Adds all relevant {@link TKColumn}s to a {@link TKOutline}.
 	 * 
 	 * @param outline The {@link TKOutline} to use.
+	 * @param forEditor Whether this is for an editor or not.
 	 */
-	public static void addColumns(TKOutline outline) {
+	public static void addColumns(TKOutline outline, boolean forEditor) {
 		TKOutlineModel model = outline.getModel();
 
 		for (CSModifierColumnID one : values()) {
 			if (one.shouldDisplay()) {
 				TKColumn column = new TKColumn(one.ordinal(), one.toString(), one.getToolTip(), one.getCell());
 
-				column.setHeaderCell(new CSHeaderCell(false));
+				if (!forEditor) {
+					column.setHeaderCell(new CSHeaderCell(true));
+				}
 				model.addColumn(column);
 			}
 		}

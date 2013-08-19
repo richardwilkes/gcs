@@ -35,10 +35,10 @@ public class CMIntegerCriteria extends CMNumericCriteria {
 	/**
 	 * Creates a new integer comparison.
 	 * 
-	 * @param type One of {@link #IS}, {@link #AT_LEAST}, or {@link #NO_MORE_THAN}.
+	 * @param type The {@link CMNumericCompareType} to use.
 	 * @param qualifier The qualifier to match against.
 	 */
-	public CMIntegerCriteria(String type, int qualifier) {
+	public CMIntegerCriteria(CMNumericCompareType type, int qualifier) {
 		super(type);
 		setQualifier(qualifier);
 	}
@@ -87,17 +87,14 @@ public class CMIntegerCriteria extends CMNumericCriteria {
 	 * @return Whether the data matches this criteria.
 	 */
 	public boolean matches(int data) {
-		String type = getType();
-
-		if (IS == type) {
-			return data == mQualifier;
+		switch (getType()) {
+			case IS:
+				return data == mQualifier;
+			case AT_LEAST:
+			default:
+				return data >= mQualifier;
+			case AT_MOST:
+				return data <= mQualifier;
 		}
-		if (AT_LEAST == type) {
-			return data >= mQualifier;
-		}
-		if (NO_MORE_THAN == type) {
-			return data <= mQualifier;
-		}
-		return false;
 	}
 }

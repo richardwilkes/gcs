@@ -50,12 +50,15 @@ class Msgs {
 	/** Used by {@link CSModifierEditor}. */
 	public static String	TOTAL_COST_TOOLTIP;
 	/** Used by {@link CSModifierEditor}. */
-	public static String	NO_LEVELS;
-	/** Used by {@link CSModifierEditor}. */
 	public static String	HAS_LEVELS;
+	/** Used by {@link CSModifierEditor}. */
+	public static String	ENABLED;
 
 	/** Used by {@link CSModifierListEditor}. */
 	public static String	MODIFIERS;
+
+	/** Used by {@link CSModifierEditor}. */
+	public static String	ENABLED_COLUMN;
 
 	/** Used by {@link CSModifierColumnID}. */
 	public static String	DESCRIPTION;
@@ -65,7 +68,9 @@ class Msgs {
 	public static String	COST_MODIFIER;
 	/** Used by {@link CSModifierColumnID}. */
 	public static String	COST_MODIFIER_TOOLTIP;
-	
+
+	/** Used by {@link CSModifierEditor} && {@link CSModifierColumnID}. */
+	public static String	ENABLED_TOOLTIP;
 	/** Used by {@link CSModifierEditor} and {@link CSModifierColumnID}. */
 	public static String	REFERENCE;
 	/** Used by {@link CSModifierEditor} and {@link CSModifierColumnID}. */

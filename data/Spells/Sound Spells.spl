@@ -12,11 +12,11 @@
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="contains">body</name>
-				<quantity compare="atLeast">4</quantity>
+				<quantity compare="at_least">4</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<college compare="contains">sound</college>
-				<quantity compare="atLeast">4</quantity>
+				<quantity compare="at_least">4</quantity>
 			</spell_prereq>
 		</prereq_list>
 	</spell>
@@ -65,14 +65,14 @@
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: sound college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (sound)</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<spell_prereq has="yes">
@@ -101,14 +101,14 @@
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: sound college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (sound)</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -125,14 +125,14 @@
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: sound college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (sound)</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 			</prereq_list>
 			<spell_prereq has="yes">
@@ -155,7 +155,7 @@
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">sound</college>
-				<quantity compare="atLeast">4</quantity>
+				<quantity compare="at_least">4</quantity>
 			</spell_prereq>
 			<advantage_prereq has="no">
 				<name compare="is">hard of hearing</name>
@@ -167,14 +167,14 @@
 			</advantage_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: sound college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (sound)</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -345,7 +345,7 @@
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">sound</college>
-				<quantity compare="atLeast">4</quantity>
+				<quantity compare="at_least">4</quantity>
 			</spell_prereq>
 		</prereq_list>
 	</spell>
@@ -458,7 +458,7 @@
 			<advantage_prereq has="yes">
 				<name compare="is">acute hearing</name>
 				<notes compare="is anything"></notes>
-				<level compare="atLeast">1</level>
+				<level compare="at_least">1</level>
 			</advantage_prereq>
 			<spell_prereq has="yes">
 				<name compare="is">keen hearing</name>

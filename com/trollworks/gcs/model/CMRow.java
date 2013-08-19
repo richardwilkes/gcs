@@ -503,7 +503,7 @@ public abstract class CMRow extends TKRow {
 
 	/** @return The notes due to modifiers. */
 	public String getModifierNotes() {
-		return null;
+		return ""; //$NON-NLS-1$
 	}
 
 	/**

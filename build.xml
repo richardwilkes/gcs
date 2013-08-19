@@ -8,6 +8,9 @@
 		<property name="InstallDirParent" value="/usr/local"/>
 		<property name="InstallDirLeaf" value="gcs"/>
 		<property name="InstallDir" value="${InstallDirParent}/${InstallDirLeaf}"/>
+		<property name="SrcArchiveDirParent" value="${BuildDir}/src"/>
+		<property name="SrcArchiveDirLeaf" value="gcs-${APP_VERSION}"/>
+		<property name="SrcArchiveDir" value="${SrcArchiveDirParent}/${SrcArchiveDirLeaf}"/>
 
 		<delete dir="${BuildDir}"/>
 		<delete dir="${JavaBuildDir}"/>
@@ -55,8 +58,8 @@
 		</copy>
 
 		<!-- Create the Windows zip file -->
-		<delete file="${user.home}/Desktop/gcs-${APP_VERSION}.zip"/>
-		<zip basedir="${InstallDirParent}" includes="${InstallDirLeaf}/**" destfile="${user.home}/Desktop/gcs-${APP_VERSION}.zip"/>
+		<delete file="${user.home}/Desktop/gcs-${APP_VERSION}.windows.zip"/>
+		<zip basedir="${InstallDirParent}" includes="${InstallDirLeaf}/**" destfile="${user.home}/Desktop/gcs-${APP_VERSION}.windows.zip"/>
 
 		<!-- Remove Windows-specific files -->
 		<delete file="${InstallDir}/${APP_NAME}.exe"/>
@@ -67,10 +70,10 @@
 		<chmod perm="755" file="${InstallDir}/gcs"/>
 
 		<!-- Create the Unix tbz file -->
-		<delete file="${user.home}/Desktop/gcs-${APP_VERSION}.tbz"/>
+		<delete file="${user.home}/Desktop/gcs-${APP_VERSION}.unix.tbz"/>
 		<exec executable="tar" failonerror="yes">
 			<arg value="cjf"/>
-			<arg value="${user.home}/Desktop/gcs-${APP_VERSION}.tbz"/>
+			<arg value="${user.home}/Desktop/gcs-${APP_VERSION}.unix.tbz"/>
 			<arg value="-C"/>
 			<arg value="${InstallDirParent}"/>
 			<arg value="${InstallDirLeaf}"/>
@@ -109,17 +112,33 @@
 		<move file="${InstallDir}/GCS.jar" todir="${JavaDir}"/>
 
 		<!-- Create the Mac disk image. -->
-		<delete file="${user.home}/Desktop/gcs-${APP_VERSION}.dmg"/>
+		<delete file="${user.home}/Desktop/gcs-${APP_VERSION}.macosx.dmg"/>
 		<chmod perm="755" file="install/macosx/makedmg"/>
 		<exec executable="install/macosx/makedmg" failonerror="yes">
 			<arg value="${APP_NAME} ${APP_VERSION}"/>
 			<arg value="${InstallDir}"/>
 			<arg value="${user.home}/Desktop"/>
 		</exec>
-		<move file="${user.home}/Desktop/${APP_NAME} ${APP_VERSION}.dmg" tofile="${user.home}/Desktop/gcs-${APP_VERSION}.dmg"/>
+		<move file="${user.home}/Desktop/${APP_NAME} ${APP_VERSION}.macosx.dmg" tofile="${user.home}/Desktop/gcs-${APP_VERSION}.macosx.dmg"/>
+
+		<!-- Create the source archive area. -->
+		<mkdir dir="${SrcArchiveDir}"/>
+		<copy todir="${SrcArchiveDir}">
+			<fileset dir="." excludes="build/**"/>
+		</copy>
+
+		<!-- Create the source tbz file. -->
+		<delete file="${user.home}/Desktop/gcs-${APP_VERSION}.src.tbz"/>
+		<exec executable="tar" failonerror="yes">
+			<arg value="cjf"/>
+			<arg value="${user.home}/Desktop/gcs-${APP_VERSION}.src.tbz"/>
+			<arg value="-C"/>
+			<arg value="${SrcArchiveDirParent}"/>
+			<arg value="${SrcArchiveDirLeaf}"/>
+		</exec>
 	</target>
 
-	<target name="create_win_launcher" description="Create the Windows launcher">
+	<target name="win_launcher" description="Create the Windows launcher">
 		<exec executable="rc.exe" failonerror="yes">
 			<arg value="install/windows/gcs.rc"/>
 		</exec>
@@ -145,7 +164,7 @@
 		<delete file="install/windows/gcs.res"/>
 	</target>
 
-	<target name="create_mac_launcher" description="Create the Mac launcher">
+	<target name="mac_launcher" description="Create the Mac launcher">
 		<exec executable="gcc" failonerror="yes">
 			<arg value="-O2"/>
 			<arg value="-Wall"/>

@@ -97,6 +97,9 @@ class Msgs {
 	/** Used by {@link TKOpenManager}. */
 	public static String	OPEN_FAILURE;
 
+	/** Used by {@link TKWindow}. */
+	public static String	NO_PRINTER_SELECTED;
+
 	static {
 		TKMessages.initialize(Msgs.class);
 	}

@@ -24,19 +24,23 @@
 package com.trollworks.gcs.ui.editor.prereq;
 
 import com.trollworks.gcs.model.CMRow;
+import com.trollworks.gcs.model.criteria.CMNumericCompareType;
+import com.trollworks.gcs.model.feature.CMBonusAttributeType;
 import com.trollworks.gcs.model.prereq.CMAttributePrereq;
-import com.trollworks.toolkit.widget.TKPopupMenu;
 import com.trollworks.toolkit.widget.TKPanel;
+import com.trollworks.toolkit.widget.TKPopupMenu;
 import com.trollworks.toolkit.widget.layout.TKColumnLayout;
 import com.trollworks.toolkit.widget.menu.TKMenu;
 import com.trollworks.toolkit.widget.menu.TKMenuItem;
 
 import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
 
 /** An attribute prerequisite editor panel. */
 public class CSAttributePrereq extends CSBasePrereq {
-	private static final String	SECOND_TYPE_PREFIX	= "SecondType"; //$NON-NLS-1$
-	private static final String	VALUE_PREFIX		= "Value";		//$NON-NLS-1$
+	private static final String	CHANGE_TYPE			= "ChangeType";		//$NON-NLS-1$
+	private static final String	CHANGE_SECOND_TYPE	= "ChangeSecondType";	//$NON-NLS-1$
+	private static final String	VALUE_PREFIX		= "Value";				//$NON-NLS-1$
 
 	/**
 	 * Creates a new attribute prerequisite editor panel.
@@ -67,39 +71,38 @@ public class CSAttributePrereq extends CSBasePrereq {
 	}
 
 	private void addChangeTypePopup(TKPanel parent) {
-		String[] keys = { CMAttributePrereq.ST, CMAttributePrereq.DX, CMAttributePrereq.IQ, CMAttributePrereq.HT, CMAttributePrereq.WILL };
-		String[] titles = { Msgs.ST, Msgs.DX, Msgs.IQ, Msgs.HT, Msgs.WILL };
 		TKMenu menu = new TKMenu();
-		int selection = 0;
-		String current = ((CMAttributePrereq) mPrereq).getWhich();
 		TKPopupMenu popup;
 
-		for (int i = 0; i < keys.length; i++) {
-			menu.add(new TKMenuItem(titles[i], keys[i]));
-			if (current == keys[i]) {
-				selection = i;
-			}
+		for (CMBonusAttributeType type : CMAttributePrereq.TYPES) {
+			TKMenuItem item = new TKMenuItem(type.getPresentationName(), CHANGE_TYPE);
+			item.setUserObject(type);
+			menu.add(item);
 		}
-		popup = new TKPopupMenu(menu, this, false, selection);
+		popup = new TKPopupMenu(menu, this, false);
+		popup.setSelectedUserObject(((CMAttributePrereq) mPrereq).getWhich());
 		popup.setOnlySize(popup.getPreferredSize());
 		parent.add(popup);
 	}
 
 	private void addChangeSecondTypePopup(TKPanel parent) {
-		String[] keys = { "None", CMAttributePrereq.ST, CMAttributePrereq.DX, CMAttributePrereq.IQ, CMAttributePrereq.HT, CMAttributePrereq.WILL }; //$NON-NLS-1$
-		String[] titles = { " ", Msgs.COMBINED_WITH_ST, Msgs.COMBINED_WITH_DX, Msgs.COMBINED_WITH_IQ, Msgs.COMBINED_WITH_HT, Msgs.COMBINED_WITH_WILL }; //$NON-NLS-1$
 		TKMenu menu = new TKMenu();
-		int selection = 0;
-		String current = ((CMAttributePrereq) mPrereq).getCombinedWith();
+		CMBonusAttributeType current = ((CMAttributePrereq) mPrereq).getCombinedWith();
 		TKPopupMenu popup;
 
-		for (int i = 0; i < keys.length; i++) {
-			menu.add(new TKMenuItem(titles[i], SECOND_TYPE_PREFIX + keys[i]));
-			if (current == keys[i]) {
-				selection = i;
-			}
+		menu.add(new TKMenuItem(" ", CHANGE_SECOND_TYPE)); //$NON-NLS-1$
+		for (CMBonusAttributeType type : CMAttributePrereq.TYPES) {
+			TKMenuItem item = new TKMenuItem(MessageFormat.format(Msgs.COMBINED_WITH, type.getPresentationName()), CHANGE_SECOND_TYPE);
+			item.setUserObject(type);
+			menu.add(item);
 		}
-		popup = new TKPopupMenu(menu, this, false, selection);
+
+		popup = new TKPopupMenu(menu, this, false);
+		if (current == null) {
+			popup.setSelectedItem(0);
+		} else {
+			popup.setSelectedUserObject(current);
+		}
 		popup.setOnlySize(popup.getPreferredSize());
 		parent.add(popup);
 	}
@@ -107,12 +110,12 @@ public class CSAttributePrereq extends CSBasePrereq {
 	@Override public boolean obeyCommand(String command, TKMenuItem item) {
 		CMAttributePrereq prereq = (CMAttributePrereq) mPrereq;
 
-		if (CMAttributePrereq.ST.equals(command) || CMAttributePrereq.DX.equals(command) || CMAttributePrereq.IQ.equals(command) || CMAttributePrereq.HT.equals(command) || CMAttributePrereq.WILL.equals(command)) {
-			prereq.setWhich(command);
-		} else if (command.startsWith(SECOND_TYPE_PREFIX)) {
-			prereq.setCombinedWith(command.substring(SECOND_TYPE_PREFIX.length()));
+		if (CHANGE_TYPE.equals(command)) {
+			prereq.setWhich((CMBonusAttributeType) item.getUserObject());
+		} else if (CHANGE_SECOND_TYPE.equals(command)) {
+			prereq.setCombinedWith((CMBonusAttributeType) item.getUserObject());
 		} else if (command.startsWith(VALUE_PREFIX)) {
-			handleNumericCompareChange(prereq.getValueCompare(), command.substring(VALUE_PREFIX.length()), null);
+			prereq.getValueCompare().setType((CMNumericCompareType) item.getUserObject());
 		} else {
 			return super.obeyCommand(command, item);
 		}
@@ -124,7 +127,7 @@ public class CSAttributePrereq extends CSBasePrereq {
 		String command = event.getActionCommand();
 
 		if (command.startsWith(VALUE_PREFIX)) {
-			handleNumericCompareChange(prereq.getValueCompare(), command.substring(VALUE_PREFIX.length()), event);
+			handleNumericCompareChange(prereq.getValueCompare(), event);
 		} else {
 			super.actionPerformed(event);
 		}

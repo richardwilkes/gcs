@@ -27,19 +27,30 @@ import com.trollworks.toolkit.io.TKMessages;
 
 /** All localized strings in this package should be accessed via this class. */
 class Msgs {
+	/** Used by {@link CMStringCompareType} and {@link CMNumericCriteria}. */
+	public static String	IS;
+
+	/** Used by {@link CMNumericCriteria}. */
+	public static String	AT_LEAST;
+	/** Used by {@link CMNumericCriteria}. */
+	public static String	AT_MOST;
 	/** Used by {@link CMNumericCriteria}. */
 	public static String	IS_PREFIX;
 	/** Used by {@link CMNumericCriteria}. */
 	public static String	IS_DESCRIPTION;
 	/** Used by {@link CMNumericCriteria}. */
-	public static String	AT_LEAST;
+	public static String	AT_LEAST_DESCRIPTION;
 	/** Used by {@link CMNumericCriteria}. */
-	public static String	NO_MORE_THAN;
+	public static String	AT_MOST_DESCRIPTION;
+	/** Used by {@link CMNumericCriteria}. */
+	public static String	IS_DESCRIPTION2;
+	/** Used by {@link CMNumericCriteria}. */
+	public static String	AT_LEAST_DESCRIPTION2;
+	/** Used by {@link CMNumericCriteria}. */
+	public static String	AT_MOST_DESCRIPTION2;
 
 	/** Used by {@link CMStringCompareType}. */
 	public static String	IS_ANYTHING;
-	/** Used by {@link CMStringCompareType}. */
-	public static String	IS;
 	/** Used by {@link CMStringCompareType}. */
 	public static String	IS_NOT;
 	/** Used by {@link CMStringCompareType}. */

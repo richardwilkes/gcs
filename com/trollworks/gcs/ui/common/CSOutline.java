@@ -23,9 +23,11 @@
 
 package com.trollworks.gcs.ui.common;
 
+import com.trollworks.gcs.model.CMCharacter;
 import com.trollworks.gcs.model.CMDataFile;
 import com.trollworks.gcs.model.CMListFile;
 import com.trollworks.gcs.model.CMRow;
+import com.trollworks.gcs.model.CMTemplate;
 import com.trollworks.gcs.ui.editor.CSRowEditor;
 import com.trollworks.toolkit.collections.TKFilteredList;
 import com.trollworks.toolkit.undo.TKUndo;
@@ -39,8 +41,8 @@ import com.trollworks.toolkit.widget.outline.TKOutline;
 import com.trollworks.toolkit.widget.outline.TKOutlineModel;
 import com.trollworks.toolkit.widget.outline.TKOutlineModelUndo;
 import com.trollworks.toolkit.widget.outline.TKOutlineModelUndoSnapshot;
-import com.trollworks.toolkit.widget.outline.TKRow;
 import com.trollworks.toolkit.widget.outline.TKProxyOutline;
+import com.trollworks.toolkit.widget.outline.TKRow;
 import com.trollworks.toolkit.widget.scroll.TKScrollPanel;
 import com.trollworks.toolkit.window.TKWindow;
 
@@ -255,9 +257,13 @@ public class CSOutline extends TKOutline implements Runnable {
 	private ArrayList<CMRow>	mRowsToEdit;
 
 	public void run() {
-		if (CSRowEditor.edit(mRowsToEdit)) {
+		if (CSRowEditor.edit(getBaseWindowAsWindow(), mRowsToEdit)) {
+			if (mDataFile instanceof CMCharacter || mDataFile instanceof CMTemplate) {
+				CSNamer.name(getBaseWindow(), mRowsToEdit);
+			}
 			updateRows(mRowsToEdit);
 			updateRowHeights(mRowsToEdit);
+			repaint();
 			mDataFile.notifySingle(mRowSetChangedID, null);
 		}
 		mRowsToEdit = null;

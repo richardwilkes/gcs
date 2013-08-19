@@ -189,18 +189,20 @@ public class CSPrerequisitesThread extends Thread implements TKNotifierTarget {
 			if (row instanceof CMAdvantage) {
 				CMAdvantage advantage = (CMAdvantage) row;
 				for (CMModifier modifier : advantage.getModifiers()) {
-					for (CMFeature feature : modifier.getFeatures()) {
-						String key = feature.getKey().toLowerCase();
-						ArrayList<CMFeature> list = map.get(key);
+					if (modifier.isEnabled()) {
+						for (CMFeature feature : modifier.getFeatures()) {
+							String key = feature.getKey().toLowerCase();
+							ArrayList<CMFeature> list = map.get(key);
 
-						if (list == null) {
-							list = new ArrayList<CMFeature>(1);
-							map.put(key, list);
+							if (list == null) {
+								list = new ArrayList<CMFeature>(1);
+								map.put(key, list);
+							}
+							if (feature instanceof CMBonus) {
+								((CMBonus) feature).getAmount().setLevel(modifier.getLevels());
+							}
+							list.add(feature);
 						}
-						if (feature instanceof CMBonus) {
-							((CMBonus) feature).getAmount().setLevel(modifier.getLevels());
-						}
-						list.add(feature);
 					}
 				}
 			}

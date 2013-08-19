@@ -3103,6 +3103,21 @@ public class TKOutline extends TKPanel implements TKOutlineModelListener, Action
 		}
 	}
 
+	/**
+	 * @param index The row index to look for.
+	 * @return The {@link TKOutline} most suitable for displaying the index.
+	 */
+	public TKOutline getBestOutlineForRowIndex(int index) {
+		TKOutline outline = getRealOutline();
+
+		for (TKOutline other : outline.mProxies) {
+			if (other.mFirstRow <= index && other.mLastRow >= index) {
+				return other;
+			}
+		}
+		return outline;
+	}
+
 	private class DelayedRemover implements Runnable {
 		private TKPanel		mPanelToRemove;
 		private Rectangle	mBounds;

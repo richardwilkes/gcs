@@ -38,11 +38,11 @@ public class TKNumberUtils {
 
 	static {
 		NUMBER_FORMAT = (DecimalFormat) NumberFormat.getNumberInstance();
-		NUMBER_FORMAT.setMaximumFractionDigits(13);
+		NUMBER_FORMAT.setMaximumFractionDigits(5);
 
 		NO_COMMA_NUMBER_FORMAT = (DecimalFormat) NumberFormat.getNumberInstance();
 		NO_COMMA_NUMBER_FORMAT.setGroupingUsed(false);
-		NO_COMMA_NUMBER_FORMAT.setMaximumFractionDigits(13);
+		NO_COMMA_NUMBER_FORMAT.setMaximumFractionDigits(5);
 	}
 
 	/**

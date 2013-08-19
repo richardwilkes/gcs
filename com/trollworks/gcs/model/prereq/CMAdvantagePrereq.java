@@ -113,14 +113,23 @@ public class CMAdvantagePrereq extends CMNameLevelPrereq {
 		CMIntegerCriteria levelCriteria = getLevelCriteria();
 
 		for (CMAdvantage advantage : character.getAdvantagesIterator()) {
-			if (exclude != advantage && nameCriteria.matches(advantage.getName()) && mNotesCriteria.matches(advantage.getNotes())) {
-				int levels = advantage.getLevels();
+			if (exclude != advantage && nameCriteria.matches(advantage.getName())) {
+				String notes = advantage.getNotes();
+				String modifierNotes = advantage.getModifierNotes();
 
-				if (levels < 0) {
-					levels = 0;
+				if (modifierNotes.length() > 0) {
+					notes = modifierNotes + '\n' + notes;
 				}
-				satisfied = levelCriteria.matches(levels);
-				break;
+				if (mNotesCriteria.matches(notes)) {
+
+					int levels = advantage.getLevels();
+
+					if (levels < 0) {
+						levels = 0;
+					}
+					satisfied = levelCriteria.matches(levels);
+					break;
+				}
 			}
 		}
 		if (!has()) {

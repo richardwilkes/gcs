@@ -9497,28 +9497,16 @@
 		<notes>When below TL8</notes>
 		<prereq_list all="no">
 			<advantage_prereq has="yes">
-				<name compare="starts with">Native Language</name>
-				<notes compare="contains">Written: Accented</notes>
-			</advantage_prereq>
-			<advantage_prereq has="yes">
-				<name compare="starts with">Native Language</name>
-				<notes compare="contains">Written: Native</notes>
-			</advantage_prereq>
-			<advantage_prereq has="yes">
-				<name compare="starts with">Native Language</name>
-				<notes compare="contains">Written: Broken</notes>
+				<name compare="starts with">Language</name>
+				<notes compare="contains">Written (Broken)</notes>
 			</advantage_prereq>
 			<advantage_prereq has="yes">
 				<name compare="starts with">Language</name>
-				<notes compare="contains">Written: Broken</notes>
+				<notes compare="contains">Written (Native)</notes>
 			</advantage_prereq>
 			<advantage_prereq has="yes">
 				<name compare="starts with">Language</name>
-				<notes compare="contains">Written: Native</notes>
-			</advantage_prereq>
-			<advantage_prereq has="yes">
-				<name compare="starts with">Language</name>
-				<notes compare="contains">Written: Accented</notes>
+				<notes compare="contains">Written (Accented)</notes>
 			</advantage_prereq>
 		</prereq_list>
 		<default>
@@ -9544,28 +9532,16 @@
 				<specialization compare="is"></specialization>
 			</skill_prereq>
 			<advantage_prereq has="yes">
-				<name compare="starts with">Native Language</name>
-				<notes compare="contains">Written: Accented</notes>
-			</advantage_prereq>
-			<advantage_prereq has="yes">
-				<name compare="starts with">Native Language</name>
-				<notes compare="contains">Written: Native</notes>
-			</advantage_prereq>
-			<advantage_prereq has="yes">
-				<name compare="starts with">Native Language</name>
-				<notes compare="contains">Written: Broken</notes>
+				<name compare="starts with">Language</name>
+				<notes compare="contains">Written (Broken)</notes>
 			</advantage_prereq>
 			<advantage_prereq has="yes">
 				<name compare="starts with">Language</name>
-				<notes compare="contains">Written: Broken</notes>
+				<notes compare="contains">Written (Native)</notes>
 			</advantage_prereq>
 			<advantage_prereq has="yes">
 				<name compare="starts with">Language</name>
-				<notes compare="contains">Written: Native</notes>
-			</advantage_prereq>
-			<advantage_prereq has="yes">
-				<name compare="starts with">Language</name>
-				<notes compare="contains">Written: Accented</notes>
+				<notes compare="contains">Written (Accented)</notes>
 			</advantage_prereq>
 		</prereq_list>
 		<default>

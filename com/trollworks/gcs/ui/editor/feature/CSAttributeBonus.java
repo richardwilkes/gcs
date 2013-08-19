@@ -25,8 +25,10 @@ package com.trollworks.gcs.ui.editor.feature;
 
 import com.trollworks.gcs.model.CMRow;
 import com.trollworks.gcs.model.feature.CMAttributeBonus;
-import com.trollworks.toolkit.widget.TKPopupMenu;
+import com.trollworks.gcs.model.feature.CMAttributeBonusLimitation;
+import com.trollworks.gcs.model.feature.CMBonusAttributeType;
 import com.trollworks.toolkit.widget.TKPanel;
+import com.trollworks.toolkit.widget.TKPopupMenu;
 import com.trollworks.toolkit.widget.border.TKEmptyBorder;
 import com.trollworks.toolkit.widget.layout.TKColumnLayout;
 import com.trollworks.toolkit.widget.menu.TKMenu;
@@ -49,18 +51,18 @@ public class CSAttributeBonus extends CSBaseFeature {
 
 	@Override protected void rebuildSelf() {
 		CMAttributeBonus bonus = (CMAttributeBonus) getFeature();
-		String attribute = bonus.getAttribute();
+		CMBonusAttributeType attribute = bonus.getAttribute();
 		TKPanel wrapper = new TKPanel(new TKColumnLayout(4));
 
 		addChangeBaseTypePopup(wrapper);
-		addLeveledAmountPopups(wrapper, bonus.getAmount(), 6, CMAttributeBonus.SPEED.equals(attribute));
+		addLeveledAmountPopups(wrapper, bonus.getAmount(), 6, !attribute.isIntegerOnly());
 		wrapper.add(new TKPanel());
 		mCenter.add(wrapper);
 
 		wrapper = new TKPanel(new TKColumnLayout(3));
 		wrapper.setBorder(new TKEmptyBorder(0, 20, 0, 0));
 		addAttributePopup(wrapper);
-		if (CMAttributeBonus.ST.equals(attribute)) {
+		if (CMBonusAttributeType.ST == attribute) {
 			addLimitationPopup(wrapper);
 		}
 		wrapper.add(new TKPanel());
@@ -68,58 +70,44 @@ public class CSAttributeBonus extends CSBaseFeature {
 	}
 
 	private void addAttributePopup(TKPanel parent) {
-		String[] keys = { CMAttributeBonus.ST, CMAttributeBonus.DX, CMAttributeBonus.IQ, CMAttributeBonus.HT, CMAttributeBonus.FP, CMAttributeBonus.HP, CMAttributeBonus.SM, CMAttributeBonus.WILL, CMAttributeBonus.PER, CMAttributeBonus.VISION, CMAttributeBonus.HEARING, CMAttributeBonus.TASTE_SMELL, CMAttributeBonus.TOUCH, CMAttributeBonus.DODGE, CMAttributeBonus.PARRY, CMAttributeBonus.BLOCK, CMAttributeBonus.SPEED, CMAttributeBonus.MOVE };
-		String[] titles = { Msgs.ST, Msgs.DX, Msgs.IQ, Msgs.HT, Msgs.FP, Msgs.HP, Msgs.SM, Msgs.WILL, Msgs.PERCEPTION, Msgs.VISION, Msgs.HEARING, Msgs.TASTE_SMELL, Msgs.TOUCH, Msgs.DODGE, Msgs.PARRY, Msgs.BLOCK, Msgs.SPEED, Msgs.MOVE };
 		TKMenu menu = new TKMenu();
-		int selection = 0;
-		CMAttributeBonus bonus = (CMAttributeBonus) getFeature();
-		String attribute = bonus.getAttribute();
-		TKMenuItem item;
 		TKPopupMenu popup;
 
-		for (int i = 0; i < keys.length; i++) {
-			item = new TKMenuItem(titles[i], CHANGE_ATTRIBUTE);
-			item.setUserObject(keys[i]);
+		for (CMBonusAttributeType one : CMBonusAttributeType.values()) {
+			TKMenuItem item = new TKMenuItem(one.toString(), CHANGE_ATTRIBUTE);
+			item.setUserObject(one);
 			menu.add(item);
-			if (attribute.equals(keys[i])) {
-				selection = i;
-			}
 		}
-		popup = new TKPopupMenu(menu, this, false, selection);
+
+		popup = new TKPopupMenu(menu, this, false);
+		popup.setSelectedUserObject(((CMAttributeBonus) getFeature()).getAttribute());
 		popup.setOnlySize(popup.getPreferredSize());
 		parent.add(popup);
 	}
 
 	private void addLimitationPopup(TKPanel parent) {
-		String[] keys = { "NoLimitation", CMAttributeBonus.STRIKING_ONLY, CMAttributeBonus.LIFTING_ONLY }; //$NON-NLS-1$
-		String[] titles = { Msgs.NO_LIMITATION, Msgs.STRIKING_ONLY, Msgs.LIFTING_ONLY };
 		TKMenu menu = new TKMenu();
-		int selection = 0;
-		CMAttributeBonus bonus = (CMAttributeBonus) getFeature();
-		String limitation = bonus.getLimitation();
-		TKMenuItem item;
 		TKPopupMenu popup;
 
-		for (int i = 0; i < keys.length; i++) {
-			item = new TKMenuItem(titles[i], CHANGE_LIMITATION);
-			item.setUserObject(keys[i]);
+		for (CMAttributeBonusLimitation one : CMAttributeBonusLimitation.values()) {
+			TKMenuItem item = new TKMenuItem(one.toString(), CHANGE_LIMITATION);
+			item.setUserObject(one);
 			menu.add(item);
-			if (keys[i].equals(limitation)) {
-				selection = i;
-			}
 		}
-		popup = new TKPopupMenu(menu, this, false, selection);
+
+		popup = new TKPopupMenu(menu, this, false);
+		popup.setSelectedUserObject(((CMAttributeBonus) getFeature()).getLimitation());
 		popup.setOnlySize(popup.getPreferredSize());
 		parent.add(popup);
 	}
 
 	@Override public boolean obeyCommand(String command, TKMenuItem item) {
 		if (CHANGE_ATTRIBUTE.equals(command)) {
-			((CMAttributeBonus) getFeature()).setAttribute((String) item.getUserObject());
+			((CMAttributeBonus) getFeature()).setAttribute((CMBonusAttributeType) item.getUserObject());
 			forceFocusToAccept();
 			rebuild();
 		} else if (CHANGE_LIMITATION.equals(command)) {
-			((CMAttributeBonus) getFeature()).setLimitation((String) item.getUserObject());
+			((CMAttributeBonus) getFeature()).setLimitation((CMAttributeBonusLimitation) item.getUserObject());
 		} else {
 			return super.obeyCommand(command, item);
 		}

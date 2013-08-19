@@ -297,7 +297,7 @@ public class TKWindow extends Frame implements Comparable<TKWindow>, TKBaseWindo
 			if (CMD_ABOUT.equals(command) || CMD_OPEN.equals(command) || CMD_ATTEMPT_CLOSE.equals(command) || CMD_QUIT.equals(command)) {
 				item.setEnabled(true);
 			} else if (CMD_PAGE_SETUP.equals(command) || CMD_PRINT.equals(command)) {
-				item.setEnabled(this instanceof Printable);
+				item.setEnabled((this instanceof Printable) && getPrintManager() != null);
 			} else if (CMD_REDO.equals(command)) {
 				item.setEnabled(getUndoManager().canApply(false));
 				item.setTitle(getUndoManager().getName(false));
@@ -569,9 +569,13 @@ public class TKWindow extends Frame implements Comparable<TKWindow>, TKBaseWindo
 		mPrintManager = printManager;
 	}
 
-	/** @return The default page settings for this window. */
+	/** @return The default page settings for this window. May return <code>null</code>. */
 	protected TKPrintManager createPageSettings() {
-		return new TKPrintManager(TKPageOrientation.PORTRAIT, 0.5, TKLengthUnits.INCHES);
+		try {
+			return new TKPrintManager(TKPageOrientation.PORTRAIT, 0.5, TKLengthUnits.INCHES);
+		} catch (Exception exception) {
+			return null;
+		}
 	}
 
 	/**
@@ -580,7 +584,12 @@ public class TKWindow extends Frame implements Comparable<TKWindow>, TKBaseWindo
 	 */
 	public void pageSetup() {
 		if (this instanceof Printable) {
-			getPrintManager().pageSetup(this);
+			TKPrintManager mgr = getPrintManager();
+			if (mgr != null) {
+				mgr.pageSetup(this);
+			} else {
+				TKOptionDialog.error(this, Msgs.NO_PRINTER_SELECTED);
+			}
 		}
 	}
 
@@ -595,7 +604,12 @@ public class TKWindow extends Frame implements Comparable<TKWindow>, TKBaseWindo
 	 */
 	public void print() {
 		if (this instanceof Printable) {
-			getPrintManager().print(this, getTitle(), (Printable) this);
+			TKPrintManager mgr = getPrintManager();
+			if (mgr != null) {
+				mgr.print(this, getTitle(), (Printable) this);
+			} else {
+				TKOptionDialog.error(this, Msgs.NO_PRINTER_SELECTED);
+			}
 		}
 	}
 
@@ -829,8 +843,7 @@ public class TKWindow extends Frame implements Comparable<TKWindow>, TKBaseWindo
 	}
 
 	/**
-	 * Dispatches a selection changed event to all of the registered
-	 * {@link TKSelectionListener}s.
+	 * Dispatches a selection changed event to all of the registered {@link TKSelectionListener}s.
 	 * 
 	 * @param selectedObjects The new list of selected objects.
 	 */

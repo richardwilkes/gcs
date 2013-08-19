@@ -136,7 +136,7 @@
 			<prereq_list all="yes">
 				<spell_prereq has="yes">
 					<name compare="contains">seek</name>
-					<quantity compare="atLeast">2</quantity>
+					<quantity compare="at_least">2</quantity>
 				</spell_prereq>
 				<spell_prereq has="yes">
 					<name compare="is">beast summoning</name>
@@ -160,7 +160,7 @@
 			<advantage_prereq has="yes">
 				<name compare="is">animal friend</name>
 				<notes compare="is anything"></notes>
-				<level compare="atLeast">1</level>
+				<level compare="at_least">1</level>
 			</advantage_prereq>
 			<spell_prereq has="yes">
 				<name compare="is">persuasion</name>
@@ -214,7 +214,7 @@
 			<advantage_prereq has="yes">
 				<name compare="is">animal friend</name>
 				<notes compare="is anything"></notes>
-				<level compare="atLeast">1</level>
+				<level compare="at_least">1</level>
 			</advantage_prereq>
 			<advantage_prereq has="yes">
 				<name compare="is">animal empathy</name>
@@ -240,22 +240,22 @@
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<any/>
-				<quantity compare="atLeast">15</quantity>
+				<quantity compare="at_least">15</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<name compare="contains">Shapeshifting</name>
-				<quantity compare="atLeast">4</quantity>
+				<quantity compare="at_least">4</quantity>
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: animal college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">3</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (animal)</notes>
+					<level compare="at_least">3</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">3</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">3</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -272,7 +272,7 @@
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="starts with">animal control</name>
-				<quantity compare="atLeast">2</quantity>
+				<quantity compare="at_least">2</quantity>
 			</spell_prereq>
 		</prereq_list>
 	</spell>
@@ -303,14 +303,14 @@
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: animal college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">3</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (animal)</notes>
+					<level compare="at_least">3</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">3</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">3</level>
 				</advantage_prereq>
 			</prereq_list>
 			<spell_prereq has="yes">
@@ -336,14 +336,14 @@
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: animal college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (animal)</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -363,14 +363,14 @@
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: animal college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">3</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (animal)</notes>
+					<level compare="at_least">3</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">3</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">3</level>
 				</advantage_prereq>
 			</prereq_list>
 		</prereq_list>
@@ -387,7 +387,7 @@
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="is">animal</college>
-				<quantity compare="atLeast">3</quantity>
+				<quantity compare="at_least">3</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<name compare="is">watchdog</name>
@@ -529,7 +529,7 @@
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<name compare="is">animal control (@animal@)</name>
-				<quantity compare="atLeast">2</quantity>
+				<quantity compare="at_least">2</quantity>
 			</spell_prereq>
 		</prereq_list>
 	</spell>
@@ -545,14 +545,14 @@
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: animal college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (animal)</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">2</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">2</level>
 				</advantage_prereq>
 			</prereq_list>
 			<spell_prereq has="yes">
@@ -572,19 +572,19 @@
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: animal college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (animal)</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<spell_prereq has="yes">
 				<any/>
-				<quantity compare="atLeast">6</quantity>
+				<quantity compare="at_least">6</quantity>
 			</spell_prereq>
 		</prereq_list>
 	</spell>
@@ -616,19 +616,19 @@
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="is">magery: animal college</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (animal)</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">magery</name>
-					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<notes compare="does not contain">one college</notes>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<spell_prereq has="yes">
 				<college compare="is">animal</college>
-				<quantity compare="atLeast">2</quantity>
+				<quantity compare="at_least">2</quantity>
 			</spell_prereq>
 		</prereq_list>
 	</spell>

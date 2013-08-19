@@ -231,6 +231,7 @@ public class CMSpell extends CMRow {
 	}
 
 	@Override protected void loadAttributes(TKXMLReader reader, boolean forUndo) {
+		super.loadAttributes(reader, forUndo);
 		mIsVeryHard = reader.isAttributeSet(ATTRIBUTE_VERY_HARD);
 	}
 

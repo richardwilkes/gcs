@@ -47,6 +47,7 @@ import com.trollworks.toolkit.widget.TKPopupMenu;
 import com.trollworks.toolkit.widget.TKTextField;
 import com.trollworks.toolkit.widget.border.TKLineBorder;
 import com.trollworks.toolkit.widget.button.TKBaseButton;
+import com.trollworks.toolkit.widget.button.TKCheckbox;
 import com.trollworks.toolkit.widget.button.TKToggleButton;
 import com.trollworks.toolkit.widget.layout.TKColumnLayout;
 import com.trollworks.toolkit.widget.menu.TKMenu;
@@ -133,15 +134,15 @@ public class CSAdvantageEditor extends CSRowEditor<CMAdvantage> implements Actio
 		content.add(fields);
 		add(content);
 
+		ArrayList<TKPanel> panels = new ArrayList<TKPanel>();
+		mModifiers = CSModifierListEditor.createEditor(mRow);
+		mModifiers.addActionListener(this);
 		if (notContainer) {
-			ArrayList<TKPanel> panels = new ArrayList<TKPanel>();
-
 			mPrereqs = new CSPrereqs(mRow, mRow.getPrereqs());
 			mFeatures = new CSFeatures(mRow, mRow.getFeatures());
 			mDefaults = new CSDefaults(mRow.getDefaults());
 			mMeleeWeapons = CSMeleeWeaponEditor.createEditor(mRow);
 			mRangedWeapons = CSRangedWeaponEditor.createEditor(mRow);
-			mModifiers = CSModifierListEditor.createEditor(mRow);
 			mDefaults.addActionListener(this);
 			panels.add(embedEditor(mDefaults));
 			panels.add(embedEditor(mPrereqs));
@@ -153,13 +154,17 @@ public class CSAdvantageEditor extends CSRowEditor<CMAdvantage> implements Actio
 			if (!mIsEditable) {
 				disableControls(mMeleeWeapons);
 				disableControls(mRangedWeapons);
-				disableControls(mModifiers);
 			}
-
-			mTabPanel = new TKTabbedPanel(panels);
-			mTabPanel.setSelectedPanelByName(getLastTabName());
-			add(mTabPanel);
+			updatePoints();
+		} else {
+			panels.add(mModifiers);
 		}
+		if (!mIsEditable) {
+			disableControls(mModifiers);
+		}
+		mTabPanel = new TKTabbedPanel(panels);
+		mTabPanel.setSelectedPanelByName(getLastTabName());
+		add(mTabPanel);
 	}
 
 	private TKToggleButton createType(TKPanel parent, BufferedImage icon, BufferedImage selectedIcon, boolean selected, String tooltip) {
@@ -167,6 +172,7 @@ public class CSAdvantageEditor extends CSRowEditor<CMAdvantage> implements Actio
 
 		button.setPressedIcon(selectedIcon);
 		button.setToolTipText(tooltip);
+		button.setEnabled(mIsEditable);
 		parent.add(button);
 		return button;
 	}
@@ -203,6 +209,7 @@ public class CSAdvantageEditor extends CSRowEditor<CMAdvantage> implements Actio
 		mLevelType = new TKPopupMenu(menu);
 		mLevelType.setSelectedUserObject(mRow.isLeveled() ? Boolean.TRUE : Boolean.FALSE);
 		mLevelType.setOnlySize(mLevelType.getPreferredSize());
+		mLevelType.setEnabled(mIsEditable);
 		mLevelType.addActionListener(this);
 		parent.add(mLevelType);
 	}
@@ -241,7 +248,7 @@ public class CSAdvantageEditor extends CSRowEditor<CMAdvantage> implements Actio
 			disableControls((TKPanel) panel.getComponent(i));
 		}
 
-		if (panel instanceof TKBaseButton || panel instanceof TKTextField || panel instanceof TKPopupMenu) {
+		if (panel instanceof TKBaseButton || panel instanceof TKTextField || panel instanceof TKPopupMenu || panel instanceof TKCheckbox) {
 			panel.setEnabled(false);
 		}
 	}
@@ -345,9 +352,10 @@ public class CSAdvantageEditor extends CSRowEditor<CMAdvantage> implements Actio
 				list.addAll(mRangedWeapons.getWeapons());
 				modified |= mRow.setWeapons(list);
 			}
-			if (mModifiers != null) {
-				modified |= mRow.setModifiers(mModifiers.getModifiers());
-			}
+		}
+		if (mModifiers.wasModified()) {
+			modified = true;
+			mRow.setModifiers(mModifiers.getModifiers());
 		}
 		modified |= mRow.setReference(mReferenceField.getText());
 		modified |= mRow.setNotes(mNotesField.getText());
@@ -408,16 +416,16 @@ public class CSAdvantageEditor extends CSRowEditor<CMAdvantage> implements Actio
 	}
 
 	private int getPoints() {
-		int base = getBasePoints();
-
-		if (isLeveled()) {
-			return base + getLevels() * getPointsPerLevel();
+		if (mModifiers == null) {
+			return 0;
 		}
-		return base;
+		return CMAdvantage.getAdjustedPoints(getBasePoints(), isLeveled() ? getLevels() : 0, getPointsPerLevel(), mModifiers.getAllModifiers());
 	}
 
 	private void updatePoints() {
-		mPointsField.setText(TKNumberUtils.format(getPoints()));
+		if (mPointsField != null) {
+			mPointsField.setText(TKNumberUtils.format(getPoints()));
+		}
 	}
 
 	private void nameChanged() {

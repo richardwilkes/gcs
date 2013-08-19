@@ -24,12 +24,15 @@
 package com.trollworks.gcs.ui.modifiers;
 
 import com.trollworks.gcs.model.CMDataFile;
+import com.trollworks.gcs.model.CMListFile;
+import com.trollworks.gcs.model.CMRow;
 import com.trollworks.gcs.model.advantage.CMAdvantage;
 import com.trollworks.gcs.model.modifier.CMModifier;
 import com.trollworks.gcs.model.modifier.CMModifierList;
 import com.trollworks.gcs.ui.common.CSImage;
-import com.trollworks.gcs.ui.common.CSOutline;
+import com.trollworks.gcs.ui.editor.CSRowEditor;
 import com.trollworks.toolkit.collections.TKFilteredIterator;
+import com.trollworks.toolkit.collections.TKFilteredList;
 import com.trollworks.toolkit.utility.TKColor;
 import com.trollworks.toolkit.widget.TKPanel;
 import com.trollworks.toolkit.widget.border.TKLineBorder;
@@ -40,7 +43,6 @@ import com.trollworks.toolkit.widget.menu.TKMenuItem;
 import com.trollworks.toolkit.widget.menu.TKMenuTarget;
 import com.trollworks.toolkit.widget.outline.TKOutline;
 import com.trollworks.toolkit.widget.outline.TKOutlineModel;
-import com.trollworks.toolkit.widget.outline.TKRow;
 import com.trollworks.toolkit.widget.scroll.TKScrollPanel;
 import com.trollworks.toolkit.window.TKWindow;
 
@@ -52,10 +54,10 @@ import java.util.List;
 
 /** Editor for {@link CMModifierList}s. */
 public class CSModifierListEditor extends TKPanel implements ActionListener, TKMenuTarget {
-	private CMDataFile		mOwner;
-	private CSOutline		mOutline;
-	private TKButton		mAddButton;
-	private TKOutlineModel	mModifierModel;
+	private CMDataFile	mOwner;
+	private TKOutline	mOutline;
+	private TKButton	mAddButton;
+	private boolean		mModified;
 
 	/**
 	 * @param advantage The {@link CMAdvantage} to edit.
@@ -69,12 +71,14 @@ public class CSModifierListEditor extends TKPanel implements ActionListener, TKM
 	 * Creates a new {@link CSModifierListEditor} editor.
 	 * 
 	 * @param owner The owning row.
-	 * @param modifier The list of {@link CMModifier}s to modify.
+	 * @param readOnlyModifiers The list of {@link CMModifier}s from parents, which are not to be
+	 *            modified.
+	 * @param modifiers The list of {@link CMModifier}s to modify.
 	 */
-	public CSModifierListEditor(CMDataFile owner, List<CMModifier> modifier) {
+	public CSModifierListEditor(CMDataFile owner, List<CMModifier> readOnlyModifiers, List<CMModifier> modifiers) {
 		super(new TKCompassLayout());
 		mOwner = owner;
-		add(createOutline(modifier), TKCompassPosition.CENTER);
+		add(createOutline(readOnlyModifiers, modifiers), TKCompassPosition.CENTER);
 	}
 
 	/**
@@ -83,7 +87,12 @@ public class CSModifierListEditor extends TKPanel implements ActionListener, TKM
 	 * @param advantage Associated advantage
 	 */
 	public CSModifierListEditor(CMAdvantage advantage) {
-		this(advantage.getDataFile(), advantage.getModifiers());
+		this(advantage.getDataFile(), advantage.getParent() != null ? ((CMAdvantage) advantage.getParent()).getAllModifiers() : null, advantage.getModifiers());
+	}
+
+	/** @return Whether a {@link CMModifier} was modified. */
+	public boolean wasModified() {
+		return mModified;
 	}
 
 	public void actionPerformed(ActionEvent event) {
@@ -93,6 +102,18 @@ public class CSModifierListEditor extends TKPanel implements ActionListener, TKM
 			addModifier();
 		} else if (mOutline == source) {
 			handleOutline(event.getActionCommand());
+		}
+	}
+
+	private void handleOutline(String cmd) {
+		if (TKOutline.CMD_OPEN_SELECTION.equals(cmd)) {
+			openDetailEditor();
+		} else if (TKOutline.CMD_DELETE_SELECTION.equals(cmd)) {
+			if (canClear()) {
+				clear();
+			} else {
+				getToolkit().beep();
+			}
 		}
 	}
 
@@ -120,21 +141,35 @@ public class CSModifierListEditor extends TKPanel implements ActionListener, TKM
 		return mOutline.obeyCommand(command, item);
 	}
 
-	private TKPanel createOutline(List<CMModifier> modifiers) {
+	private TKPanel createOutline(List<CMModifier> readOnlyModifiers, List<CMModifier> modifiers) {
 		TKScrollPanel scroller;
-
 		TKPanel borderView;
 		Dimension minSize;
+		TKOutlineModel model;
 
 		mAddButton = new TKButton(CSImage.getAddIcon());
 		mAddButton.addActionListener(this);
 
-		mModifierModel = new TKOutlineModel();
-		for (CMModifier modifier : new TKFilteredIterator<CMModifier>(modifiers, CMModifier.class)) {
-			mModifierModel.addRow(modifier);
-		}
+		mOutline = new TKOutline(false);
+		model = mOutline.getModel();
+		CSModifierColumnID.addColumns(mOutline, true);
+		mOutline.setAllowColumnDrag(false);
+		mOutline.setAllowColumnResize(false);
+		mOutline.setAllowRowDrag(false);
+		mOutline.setMenuTargetDelegate(this);
 
-		mOutline = new CSModifierOutline(mOwner, mModifierModel, CMModifier.ID_LIST_CHANGED);
+		if (readOnlyModifiers != null) {
+			for (CMModifier modifier : readOnlyModifiers) {
+				if (modifier.isEnabled()) {
+					CMModifier romod = modifier.cloneModifier();
+					romod.setReadOnly(true);
+					model.addRow(romod);
+				}
+			}
+		}
+		for (CMModifier modifier : modifiers) {
+			model.addRow(modifier.cloneModifier());
+		}
 		mOutline.addActionListener(this);
 
 		scroller = new TKScrollPanel(mOutline);
@@ -151,44 +186,79 @@ public class CSModifierListEditor extends TKPanel implements ActionListener, TKM
 		return scroller;
 	}
 
+	private void openDetailEditor() {
+		ArrayList<CMRow> rows = new ArrayList<CMRow>();
+		for (CMModifier row : new TKFilteredIterator<CMModifier>(mOutline.getModel().getSelectionAsList(), CMModifier.class)) {
+			if (!row.isReadOnly()) {
+				rows.add(row);
+			}
+		}
+		if (!rows.isEmpty()) {
+			mOutline.getModel().setLocked(!mAddButton.isEnabled());
+			if (CSRowEditor.edit(getBaseWindowAsWindow(), rows)) {
+				mModified = true;
+				for (CMRow row : rows) {
+					row.update();
+				}
+				mOutline.updateRowHeights(rows);
+				mOutline.sizeColumnsToFit();
+				notifyActionListeners();
+			}
+		}
+	}
+
 	private void addModifier() {
 		CMModifier modifier = new CMModifier(mOwner);
 		TKOutlineModel model = mOutline.getModel();
 
+		if (mOwner instanceof CMListFile) {
+			modifier.setEnabled(false);
+		}
 		model.addRow(modifier);
 		mOutline.sizeColumnsToFit();
 		model.select(modifier, false);
 		mOutline.revalidateImmediately();
 		mOutline.scrollSelectionIntoView();
 		mOutline.requestFocus();
-
-		mOutline.openDetailEditor(false);
-	}
-
-	private void handleOutline(String cmd) {
-		if (TKOutline.CMD_UPDATE_FROM_EDITOR.equals(cmd)) {
-			// TODO
-		}
+		mModified = true;
+		openDetailEditor();
 	}
 
 	private boolean canClear() {
-		return mOutline.getModel().hasSelection();
+		boolean can = mAddButton.isEnabled() && mOutline.getModel().hasSelection();
+		if (can) {
+			for (CMModifier row : new TKFilteredIterator<CMModifier>(mOutline.getModel().getSelectionAsList(), CMModifier.class)) {
+				if (row.isReadOnly()) {
+					return false;
+				}
+			}
+		}
+		return can;
 	}
 
 	private void clear() {
 		if (canClear()) {
 			mOutline.getModel().removeSelection();
 			mOutline.sizeColumnsToFit();
+			mModified = true;
+			notifyActionListeners();
 		}
 	}
 
 	/** @return Modifiers edited by this editor */
 	public List<CMModifier> getModifiers() {
-		ArrayList<CMModifier> modifiers = new ArrayList<CMModifier>(mOutline.getModel().getRowCount());
-		for (TKRow row : mOutline.getModel().getRows()) {
-			modifiers.add(((CMModifier) row).cloneModifier());
+		ArrayList<CMModifier> modifiers = new ArrayList<CMModifier>();
+		for (CMModifier modifier : new TKFilteredIterator<CMModifier>(mOutline.getModel().getRows(), CMModifier.class)) {
+			if (!modifier.isReadOnly()) {
+				modifiers.add(modifier);
+			}
 		}
 		return modifiers;
+	}
+
+	/** @return Modifiers edited by this editor plus inherited Modifiers */
+	public List<CMModifier> getAllModifiers() {
+		return new TKFilteredList<CMModifier>(mOutline.getModel().getRows(), CMModifier.class);
 	}
 
 	@Override public String toString() {

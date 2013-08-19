@@ -36,25 +36,7 @@ class Msgs {
 	public static String	WHOSE_NOTES;
 
 	/** Used by {@link CSAttributePrereq}. */
-	public static String	ST;
-	/** Used by {@link CSAttributePrereq}. */
-	public static String	DX;
-	/** Used by {@link CSAttributePrereq}. */
-	public static String	IQ;
-	/** Used by {@link CSAttributePrereq}. */
-	public static String	HT;
-	/** Used by {@link CSAttributePrereq}. */
-	public static String	WILL;
-	/** Used by {@link CSAttributePrereq}. */
-	public static String	COMBINED_WITH_ST;
-	/** Used by {@link CSAttributePrereq}. */
-	public static String	COMBINED_WITH_DX;
-	/** Used by {@link CSAttributePrereq}. */
-	public static String	COMBINED_WITH_IQ;
-	/** Used by {@link CSAttributePrereq}. */
-	public static String	COMBINED_WITH_HT;
-	/** Used by {@link CSAttributePrereq}. */
-	public static String	COMBINED_WITH_WILL;
+	public static String	COMBINED_WITH;
 
 	/** Used by {@link CSAttributePrereq} and {@link CSContainedWeightPrereq}. */
 	public static String	WHICH;
@@ -82,17 +64,7 @@ class Msgs {
 	/** Used by {@link CSBasePrereq}. */
 	public static String	SPELL;
 	/** Used by {@link CSBasePrereq}. */
-	public static String	IS;
-	/** Used by {@link CSBasePrereq}. */
-	public static String	AT_LEAST;
-	/** Used by {@link CSBasePrereq}. */
-	public static String	AT_MOST;
-	/** Used by {@link CSBasePrereq}. */
-	public static String	ALT_IS;
-	/** Used by {@link CSBasePrereq}. */
-	public static String	ALT_AT_LEAST;
-	/** Used by {@link CSBasePrereq}. */
-	public static String	ALT_AT_MOST;
+	public static String	EXACTLY;
 
 	/** Used by {@link CSListPrereq}. */
 	public static String	REQUIRES_ALL;

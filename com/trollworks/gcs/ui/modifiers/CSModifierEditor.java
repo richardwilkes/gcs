@@ -23,6 +23,8 @@
 
 package com.trollworks.gcs.ui.modifiers;
 
+import com.trollworks.gcs.model.modifier.CMAffects;
+import com.trollworks.gcs.model.modifier.CMCostType;
 import com.trollworks.gcs.model.modifier.CMModifier;
 import com.trollworks.gcs.ui.editor.CSRowEditor;
 import com.trollworks.gcs.ui.editor.feature.CSFeatures;
@@ -39,6 +41,7 @@ import com.trollworks.toolkit.widget.TKPopupMenu;
 import com.trollworks.toolkit.widget.TKTextField;
 import com.trollworks.toolkit.widget.border.TKLineBorder;
 import com.trollworks.toolkit.widget.button.TKBaseButton;
+import com.trollworks.toolkit.widget.button.TKCheckbox;
 import com.trollworks.toolkit.widget.layout.TKColumnLayout;
 import com.trollworks.toolkit.widget.menu.TKMenu;
 import com.trollworks.toolkit.widget.menu.TKMenuItem;
@@ -48,12 +51,14 @@ import com.trollworks.toolkit.widget.tab.TKTabbedPanel;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 
 /** Editor for {@link CMModifier}s. */
 public class CSModifierEditor extends CSRowEditor<CMModifier> implements ActionListener {
 	private static final String	EMPTY	= "";		//$NON-NLS-1$
 	private TKCorrectableField	mNameField;
+	private TKCheckbox			mEnabledField;
 	private TKTextField			mNotesField;
 	private TKTextField			mReferenceField;
 	private TKTextField			mCostField;
@@ -61,7 +66,8 @@ public class CSModifierEditor extends CSRowEditor<CMModifier> implements ActionL
 	private TKTextField			mCostModifierField;
 	private CSFeatures			mFeatures;
 	private TKTabbedPanel		mTabPanel;
-	private TKPopupMenu			mLevelType;
+	private TKPopupMenu			mCostType;
+	private TKPopupMenu			mAffects;
 	private int					mLastLevel;
 
 	/**
@@ -74,11 +80,16 @@ public class CSModifierEditor extends CSRowEditor<CMModifier> implements ActionL
 
 		TKPanel content = new TKPanel(new TKColumnLayout(2));
 		TKPanel fields = new TKPanel(new TKColumnLayout(2));
-		TKPanel wrapper;
-
 		TKLabel icon = new TKLabel(modifier.getImage(true));
 
-		mNameField = createCorrectableField(fields, Msgs.NAME, modifier.getName(), Msgs.NAME_TOOLTIP);
+		TKPanel wrapper = new TKPanel(new TKColumnLayout(2));
+		mNameField = createCorrectableField(fields, wrapper, Msgs.NAME, modifier.getName(), Msgs.NAME_TOOLTIP);
+		mEnabledField = new TKCheckbox(Msgs.ENABLED, modifier.isEnabled());
+		mEnabledField.setToolTipText(Msgs.ENABLED_TOOLTIP);
+		mEnabledField.setEnabled(mIsEditable);
+		wrapper.add(mEnabledField);
+		fields.add(wrapper);
+
 		createCostModifierFields(fields);
 
 		wrapper = new TKPanel(new TKColumnLayout(3));
@@ -108,8 +119,20 @@ public class CSModifierEditor extends CSRowEditor<CMModifier> implements ActionL
 
 		modified |= mRow.setReference(mReferenceField.getText());
 		modified |= mRow.setNotes(mNotesField.getText());
-		modified |= mRow.setCost(getCost());
-		modified |= mRow.setLevels(hasLevels() ? getLevels() : 0);
+		if (getCostType() == CMCostType.MULTIPLIER) {
+			modified |= mRow.setCostMultiplier(getCostMultiplier());
+		} else {
+			modified |= mRow.setCost(getCost());
+		}
+		if (hasLevels()) {
+			modified |= mRow.setLevels(getLevels());
+			modified |= mRow.setCostType(CMCostType.PERCENTAGE);
+		} else {
+			modified |= mRow.setLevels(0);
+			modified |= mRow.setCostType(getCostType());
+		}
+		modified |= mRow.setAffects((CMAffects) mAffects.getSelectedItemUserObject());
+		modified |= mRow.setEnabled(mEnabledField.isChecked());
 
 		if (mFeatures != null) {
 			modified |= mRow.setFeatures(mFeatures.getFeatures());
@@ -118,7 +141,7 @@ public class CSModifierEditor extends CSRowEditor<CMModifier> implements ActionL
 	}
 
 	private boolean hasLevels() {
-		return ((Boolean) mLevelType.getSelectedItemUserObject()).booleanValue();
+		return mCostType.getSelectedItemUserObject() instanceof Boolean;
 	}
 
 	@Override public void finished() {
@@ -127,15 +150,15 @@ public class CSModifierEditor extends CSRowEditor<CMModifier> implements ActionL
 		}
 	}
 
-	private TKCorrectableField createCorrectableField(TKPanel parent, String title, String text, String tooltip) {
+	private TKCorrectableField createCorrectableField(TKPanel labelParent, TKPanel fieldParent, String title, String text, String tooltip) {
 		TKCorrectableLabel label = new TKCorrectableLabel(title);
 		TKCorrectableField field = new TKCorrectableField(label, text);
 
 		field.setToolTipText(tooltip);
 		field.setEnabled(mIsEditable);
 		field.addActionListener(this);
-		parent.add(label);
-		parent.add(field);
+		labelParent.add(label);
+		fieldParent.add(field);
 		return field;
 	}
 
@@ -144,8 +167,8 @@ public class CSModifierEditor extends CSRowEditor<CMModifier> implements ActionL
 
 		if (src == mNameField) {
 			nameChanged();
-		} else if (src == mLevelType) {
-			levelTypeChanged();
+		} else if (src == mCostType) {
+			costTypeChanged();
 		} else if (src == mCostField || src == mLevelField) {
 			updateCostModifier();
 		}
@@ -184,7 +207,7 @@ public class CSModifierEditor extends CSRowEditor<CMModifier> implements ActionL
 			disableControls((TKPanel) panel.getComponent(i));
 		}
 
-		if (panel instanceof TKBaseButton || panel instanceof TKTextField || panel instanceof TKPopupMenu) {
+		if (panel instanceof TKBaseButton || panel instanceof TKTextField || panel instanceof TKPopupMenu || panel instanceof TKCheckbox) {
 			panel.setEnabled(false);
 		}
 	}
@@ -214,17 +237,36 @@ public class CSModifierEditor extends CSRowEditor<CMModifier> implements ActionL
 		return field;
 	}
 
+	private TKTextField createNumberField(TKPanel labelParent, TKPanel fieldParent, String title, double value, String tooltip, int maxDigits) {
+		TKTextField field = new TKTextField(TKTextUtility.makeFiller(maxDigits, '9') + TKTextUtility.makeFiller(maxDigits / 3, ',') + '.');
+
+		field.setOnlySize(field.getPreferredSize());
+		field.setText(TKNumberUtils.format(value));
+		field.setToolTipText(tooltip);
+		field.setEnabled(mIsEditable);
+		field.setKeyEventFilter(new TKNumberFilter(true, false, true, maxDigits));
+		field.addActionListener(this);
+		labelParent.add(new TKLinkedLabel(field, title));
+		fieldParent.add(field);
+		return field;
+	}
+
 	private void createCostModifierFields(TKPanel parent) {
-		TKPanel wrapper = new TKPanel(new TKColumnLayout(6));
+		TKPanel wrapper = new TKPanel(new TKColumnLayout(7));
 
 		mLastLevel = mRow.getLevels();
 		if (mLastLevel < 1) {
 			mLastLevel = 1;
 		}
-		mCostField = createNumberField(parent, wrapper, Msgs.COST, true, mRow.getCost(), Msgs.COST_TOOLTIP, 5);
-		createLevelType(wrapper);
+		if (mRow.getCostType() == CMCostType.MULTIPLIER) {
+			mCostField = createNumberField(parent, wrapper, Msgs.COST, mRow.getCostMultiplier(), Msgs.COST_TOOLTIP, 5);
+		} else {
+			mCostField = createNumberField(parent, wrapper, Msgs.COST, true, mRow.getCost(), Msgs.COST_TOOLTIP, 5);
+		}
+		createCostType(wrapper);
 		mLevelField = createNumberField(wrapper, wrapper, Msgs.LEVELS, false, mLastLevel, Msgs.LEVELS_TOOLTIP, 3);
-		mCostModifierField = createNumberField(wrapper, wrapper, Msgs.TOTAL_COST, true, mRow.getCostModifier(), Msgs.TOTAL_COST_TOOLTIP, 9);
+		mCostModifierField = createNumberField(wrapper, wrapper, Msgs.TOTAL_COST, true, 0, Msgs.TOTAL_COST_TOOLTIP, 9);
+		createAffects(wrapper);
 		mCostModifierField.setEnabled(false);
 		if (!mRow.hasLevels()) {
 			mLevelField.setText(EMPTY);
@@ -233,24 +275,45 @@ public class CSModifierEditor extends CSRowEditor<CMModifier> implements ActionL
 		parent.add(wrapper);
 	}
 
-	private void createLevelType(TKPanel parent) {
+	private void createAffects(TKPanel parent) {
 		TKMenu menu = new TKMenu();
-		TKMenuItem item = new TKMenuItem(Msgs.NO_LEVELS);
 
-		item.setUserObject(Boolean.FALSE);
-		menu.add(item);
-		item = new TKMenuItem(Msgs.HAS_LEVELS);
-		item.setUserObject(Boolean.TRUE);
-		menu.add(item);
+		for (CMAffects affects : CMAffects.values()) {
+			TKMenuItem item = new TKMenuItem(affects.toString());
+			item.setUserObject(affects);
+			menu.add(item);
+		}
 
-		mLevelType = new TKPopupMenu(menu);
-		mLevelType.setSelectedUserObject(mRow.hasLevels() ? Boolean.TRUE : Boolean.FALSE);
-		mLevelType.setOnlySize(mLevelType.getPreferredSize());
-		mLevelType.addActionListener(this);
-		parent.add(mLevelType);
+		mAffects = new TKPopupMenu(menu);
+		mAffects.setSelectedUserObject(mRow.getAffects());
+		mAffects.setOnlySize(mAffects.getPreferredSize());
+		mAffects.setEnabled(mIsEditable);
+		parent.add(mAffects);
 	}
 
-	private void levelTypeChanged() {
+	private void createCostType(TKPanel parent) {
+		TKMenu menu = new TKMenu();
+
+		for (CMCostType type : CMCostType.values()) {
+			TKMenuItem item = new TKMenuItem(type.toString());
+			item.setUserObject(type);
+			menu.add(item);
+			if (type == CMCostType.PERCENTAGE) {
+				item = new TKMenuItem(MessageFormat.format(Msgs.HAS_LEVELS, type.toString()));
+				item.setUserObject(Boolean.TRUE);
+				menu.add(item);
+			}
+		}
+
+		mCostType = new TKPopupMenu(menu);
+		mCostType.setSelectedUserObject(mRow.hasLevels() ? Boolean.TRUE : mRow.getCostType());
+		mCostType.setOnlySize(mCostType.getPreferredSize());
+		mCostType.setEnabled(mIsEditable);
+		mCostType.addActionListener(this);
+		parent.add(mCostType);
+	}
+
+	private void costTypeChanged() {
 		boolean hasLevels = hasLevels();
 
 		if (hasLevels) {
@@ -260,15 +323,57 @@ public class CSModifierEditor extends CSRowEditor<CMModifier> implements ActionL
 			mLevelField.setText(EMPTY);
 		}
 		mLevelField.setEnabled(hasLevels);
+		updateCostField();
 		updateCostModifier();
 	}
 
+	private void updateCostField() {
+		if (getCostType() == CMCostType.MULTIPLIER) {
+			mCostField.setKeyEventFilter(new TKNumberFilter(true, false, true, 5));
+			mCostField.setText(TKNumberUtils.format(Math.abs(TKNumberUtils.getDouble(mCostField.getText(), 0))));
+		} else {
+			mCostField.setKeyEventFilter(new TKNumberFilter(false, true, true, 5));
+			mCostField.setText(TKNumberUtils.format(TKNumberUtils.getInteger(mCostField.getText(), 0), true));
+		}
+	}
+
 	private void updateCostModifier() {
-		mCostModifierField.setText(TKNumberUtils.format(hasLevels() ? getCost() * getLevels() : getCost(), true) + "%"); //$NON-NLS-1$
+		boolean enabled = true;
+
+		if (hasLevels()) {
+			mCostModifierField.setText(TKNumberUtils.format(getCost() * getLevels(), true) + "%"); //$NON-NLS-1$
+		} else {
+			switch (getCostType()) {
+				case PERCENTAGE:
+					mCostModifierField.setText(TKNumberUtils.format(getCost(), true) + "%"); //$NON-NLS-1$
+					break;
+				case POINTS:
+					mCostModifierField.setText(TKNumberUtils.format(getCost(), true));
+					break;
+				case MULTIPLIER:
+					mCostModifierField.setText("x" + TKNumberUtils.format(getCostMultiplier())); //$NON-NLS-1$
+					mAffects.setSelectedUserObject(CMAffects.TOTAL);
+					enabled = false;
+					break;
+			}
+		}
+		mAffects.setEnabled(mIsEditable && enabled);
+	}
+
+	private CMCostType getCostType() {
+		Object obj = mCostType.getSelectedItemUserObject();
+		if (obj instanceof Boolean) {
+			obj = CMCostType.PERCENTAGE;
+		}
+		return (CMCostType) obj;
 	}
 
 	private int getCost() {
 		return TKNumberUtils.getInteger(mCostField.getText(), 0);
+	}
+
+	private double getCostMultiplier() {
+		return TKNumberUtils.getDouble(mCostField.getText(), 0);
 	}
 
 	private int getLevels() {

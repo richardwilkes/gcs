@@ -31,6 +31,28 @@ class Msgs {
 	public static String	DEFAULT_NAME;
 	/** Used by {@link CMModifier}. */
 	public static String	MODIFIER_TYPE;
+	/** Used by {@link CMModifier}. */
+	public static String	READ_ONLY;
+
+	/** Used by {@link CMAffects}. */
+	public static String	TOTAL;
+	/** Used by {@link CMAffects}. */
+	public static String	BASE_ONLY;
+	/** Used by {@link CMAffects}. */
+	public static String	LEVELS_ONLY;
+	/** Used by {@link CMAffects}. */
+	public static String	TOTAL_SHORT;
+	/** Used by {@link CMAffects}. */
+	public static String	BASE_ONLY_SHORT;
+	/** Used by {@link CMAffects}. */
+	public static String	LEVELS_ONLY_SHORT;
+
+	/** Used by {@link CMCostType}. */
+	public static String	PERCENTAGE;
+	/** Used by {@link CMCostType}. */
+	public static String	POINTS;
+	/** Used by {@link CMCostType}. */
+	public static String	MULTIPLIER;
 
 	static {
 		TKMessages.initialize(Msgs.class);

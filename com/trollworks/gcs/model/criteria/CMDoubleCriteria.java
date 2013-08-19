@@ -39,11 +39,11 @@ public class CMDoubleCriteria extends CMNumericCriteria {
 	/**
 	 * Creates a new double comparison.
 	 * 
-	 * @param type One of {@link #IS}, {@link #AT_LEAST}, or {@link #NO_MORE_THAN}.
+	 * @param type The {@link CMNumericCompareType} to use.
 	 * @param qualifier The qualifier to match against.
 	 * @param isWeight Whether this number represents a weight.
 	 */
-	public CMDoubleCriteria(String type, double qualifier, boolean isWeight) {
+	public CMDoubleCriteria(CMNumericCompareType type, double qualifier, boolean isWeight) {
 		super(type);
 		setQualifier(qualifier);
 		mIsWeight = isWeight;
@@ -84,7 +84,7 @@ public class CMDoubleCriteria extends CMNumericCriteria {
 	@Override public void save(TKXMLWriter out, String tag) {
 		if (mIsWeight) {
 			out.startTag(tag);
-			out.writeAttribute(ATTRIBUTE_COMPARE, getType());
+			out.writeAttribute(ATTRIBUTE_COMPARE, getType().name().toLowerCase());
 			out.writeAttribute(ATTRIBUTE_UNITS, TKWeightUnits.POUNDS.toString());
 			out.finishTag();
 			out.writeEncodedData(getQualifierAsString(false));
@@ -121,17 +121,14 @@ public class CMDoubleCriteria extends CMNumericCriteria {
 	 * @return Whether the data matches this criteria.
 	 */
 	public boolean matches(double data) {
-		String type = getType();
-
-		if (IS == type) {
-			return data == mQualifier;
+		switch (getType()) {
+			case IS:
+				return data == mQualifier;
+			case AT_LEAST:
+			default:
+				return data >= mQualifier;
+			case AT_MOST:
+				return data <= mQualifier;
 		}
-		if (AT_LEAST == type) {
-			return data >= mQualifier;
-		}
-		if (NO_MORE_THAN == type) {
-			return data <= mQualifier;
-		}
-		return false;
 	}
 }

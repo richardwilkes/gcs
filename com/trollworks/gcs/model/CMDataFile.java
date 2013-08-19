@@ -151,11 +151,7 @@ public abstract class CMDataFile extends TKUndoManager implements TKNotifierTarg
 			TKXMLWriter out = new TKXMLWriter(new BufferedOutputStream(new FileOutputStream(transaction.getTransactionFile(file))));
 
 			out.writeHeader();
-			out.startTag(getXMLTagName());
-			out.writeAttribute(ATTRIBUTE_UNIQUE_ID, getUniqueID().toString());
-			out.finishTagEOL();
-			saveSelf(out);
-			out.endTagEOL(getXMLTagName(), true);
+			save(out);
 			out.close();
 			if (out.checkError()) {
 				transaction.abort();
@@ -171,6 +167,19 @@ public abstract class CMDataFile extends TKUndoManager implements TKNotifierTarg
 			transaction.abort();
 		}
 		return success;
+	}
+
+	/**
+	 * Saves the root tag.
+	 *
+	 * @param out The XML writer to use.
+	 */
+	public void save(TKXMLWriter out) {
+		out.startTag(getXMLTagName());
+		out.writeAttribute(ATTRIBUTE_UNIQUE_ID, getUniqueID().toString());
+		out.finishTagEOL();
+		saveSelf(out);
+		out.endTagEOL(getXMLTagName(), true);
 	}
 
 	/**

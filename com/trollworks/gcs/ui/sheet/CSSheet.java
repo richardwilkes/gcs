@@ -65,9 +65,9 @@ import com.trollworks.toolkit.utility.TKDebug;
 import com.trollworks.toolkit.utility.TKFont;
 import com.trollworks.toolkit.utility.TKGraphics;
 import com.trollworks.toolkit.utility.TKNumberUtils;
-import com.trollworks.toolkit.utility.units.TKLengthUnits;
 import com.trollworks.toolkit.utility.units.TKWeightUnits;
 import com.trollworks.toolkit.widget.TKPanel;
+import com.trollworks.toolkit.widget.TKSelection;
 import com.trollworks.toolkit.widget.border.TKLineBorder;
 import com.trollworks.toolkit.widget.layout.TKColumnLayout;
 import com.trollworks.toolkit.widget.layout.TKRowDistribution;
@@ -104,6 +104,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
+import java.awt.print.Paper;
 import java.awt.print.Printable;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -122,7 +123,6 @@ import java.util.HashSet;
 public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTarget, CSPageOwner, Printable, ActionListener, Runnable, DropTargetListener {
 	private static final String	BOXING_SKILL_NAME	= "Boxing";	//$NON-NLS-1$
 	private static final String	KARATE_SKILL_NAME	= "Karate";	//$NON-NLS-1$
-	private static final String	JUDO_SKILL_NAME		= "Judo";		//$NON-NLS-1$
 	private static final String	BRAWLING_SKILL_NAME	= "Brawling";	//$NON-NLS-1$
 	private CMCharacter			mCharacter;
 	private int					mLastPage;
@@ -177,6 +177,7 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 	/** Synchronizes the display with the underlying model. */
 	public void rebuild() {
 		Component focus = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
+		int firstRow = 0;
 		String focusKey = null;
 		TKBaseWindow window = getBaseWindow();
 		CSPageAssembler pageAssembler;
@@ -184,6 +185,17 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 		if (focus instanceof CSField) {
 			focusKey = ((CSField) focus).getConsumedType();
 			focus = null;
+		}
+		if (focus instanceof TKOutline) {
+			TKOutline outline = (TKOutline) focus;
+			TKSelection selection = outline.getModel().getSelection();
+
+			firstRow = outline.getFirstRowToDisplay();
+			int selRow = selection.nextSelectedIndex(firstRow);
+			if (selRow >= 0) {
+				firstRow = selRow;
+			}
+			focus = outline.getRealOutline();
 		}
 		if (window instanceof CSWindow) {
 			((CSWindow) window).jumpToFindField();
@@ -231,7 +243,11 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 		CSOutlineSyncer.remove(mCarriedEquipmentOutline);
 		CSOutlineSyncer.remove(mOtherEquipmentOutline);
 		mCharacter.addTarget(this, CMCharacter.CHARACTER_PREFIX);
-		restoreFocusToKey(focusKey, this);
+		if (focusKey != null) {
+			restoreFocusToKey(focusKey, this);
+		} else if (focus instanceof TKOutline) {
+			((TKOutline) focus).getBestOutlineForRowIndex(firstRow).requestFocusInWindow();
+		}
 		mIgnoreScroll = false;
 	}
 
@@ -439,7 +455,6 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 				defaults.add(new CMSkillDefault(CMSkillDefaultType.Skill, BOXING_SKILL_NAME, null, 0));
 				defaults.add(new CMSkillDefault(CMSkillDefaultType.Skill, BRAWLING_SKILL_NAME, null, 0));
 				defaults.add(new CMSkillDefault(CMSkillDefaultType.Skill, KARATE_SKILL_NAME, null, 0));
-				defaults.add(new CMSkillDefault(CMSkillDefaultType.Skill, JUDO_SKILL_NAME, null, 0));
 				weapon = new CMMeleeWeaponStats(phantom);
 				weapon.setUsage(Msgs.PUNCH);
 				weapon.setDefaults(defaults);
@@ -861,6 +876,16 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 		setBorder(null, true, false);
 	}
 
+	private PageFormat createDefaultPageFormat() {
+		Paper paper = new Paper();
+		PageFormat format = new PageFormat();
+		format.setOrientation(PageFormat.PORTRAIT);
+		paper.setSize(8.5 * 72.0, 11.0 * 72.0);
+		paper.setImageableArea(0.5 * 72.0, 0.5 * 72.0, 7.5 * 72.0, 10 * 72.0);
+		format.setPaper(paper);
+		return format;
+	}
+
 	/**
 	 * @param file The file to save to.
 	 * @return <code>true</code> on success.
@@ -869,13 +894,13 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 		try {
 			TKBaseWindow window = getBaseWindow();
 			TKPrintManager settings = mCharacter.getPageSettings();
-			double[] size = settings.getPaperSize(TKLengthUnits.INCHES);
-			float width = 72 * (float) size[0];
-			float height = 72 * (float) size[1];
+			PageFormat format = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
+			Paper paper = format.getPaper();
+			float width = (float) paper.getWidth();
+			float height = (float) paper.getHeight();
 			com.lowagie.text.Document pdfDoc = new com.lowagie.text.Document(new com.lowagie.text.Rectangle(width, height));
 			PdfWriter writer = PdfWriter.getInstance(pdfDoc, new FileOutputStream(file));
 			int pageNum = 0;
-			PageFormat format = settings.createPageFormat();
 			PdfContentByte cb;
 
 			pdfDoc.open();
@@ -1007,6 +1032,8 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 			writeXMLText(out, mCharacter.getCreatedOn());
 		} else if (key.equals("CAMPAIGN")) { //$NON-NLS-1$
 			writeXMLText(out, mCharacter.getCampaign());
+		} else if (key.equals("TOTAL_POINTS")) { //$NON-NLS-1$
+			writeXMLText(out, TKNumberUtils.format(mCharacter.getTotalPoints()));
 		} else if (key.equals("ATTRIBUTE_POINTS")) { //$NON-NLS-1$
 			writeXMLText(out, TKNumberUtils.format(mCharacter.getAttributePoints()));
 		} else if (key.equals("ADVANTAGE_POINTS")) { //$NON-NLS-1$
@@ -1357,7 +1384,7 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 	}
 
 	private void writeNote(BufferedWriter out, String notes) throws IOException {
-		if (notes != null && notes.length() > 0) {
+		if (notes.length() > 0) {
 			out.write("<div class=\"note\">"); //$NON-NLS-1$
 			writeXMLText(out, notes);
 			out.write("</div>"); //$NON-NLS-1$
@@ -1731,17 +1758,17 @@ public class CSSheet extends TKPanel implements TKScrollable, TKBatchNotifierTar
 	public boolean saveAsPNG(File file, ArrayList<File> createdFiles) {
 		try {
 			TKBaseWindow window = getBaseWindow();
-			TKPrintManager settings = mCharacter.getPageSettings();
 			Graphics2D g2d = TKGraphics.getGraphics();
 			GraphicsConfiguration gc = g2d.getDeviceConfiguration();
 			int dpi = CSSheetPreferences.getPNGResolution();
-			double[] size = settings.getPaperSize(TKLengthUnits.INCHES);
-			int width = (int) (dpi * size[0]);
-			int height = (int) (dpi * size[1]);
+			TKPrintManager settings = mCharacter.getPageSettings();
+			PageFormat format = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
+			Paper paper = format.getPaper();
+			int width = (int) (paper.getWidth() / 72.0 * dpi);
+			int height = (int) (paper.getHeight() / 72.0 * dpi);
 			BufferedImage buffer = gc.createCompatibleImage(width, height, Transparency.OPAQUE);
 			int pageNum = 0;
 			String name = TKPath.getLeafName(file.getName(), false);
-			PageFormat format = settings.createPageFormat();
 
 			g2d.dispose();
 			file = file.getParentFile();

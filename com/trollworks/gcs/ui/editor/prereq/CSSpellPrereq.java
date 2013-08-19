@@ -24,6 +24,7 @@
 package com.trollworks.gcs.ui.editor.prereq;
 
 import com.trollworks.gcs.model.CMRow;
+import com.trollworks.gcs.model.criteria.CMNumericCompareType;
 import com.trollworks.gcs.model.prereq.CMSpellPrereq;
 import com.trollworks.toolkit.widget.TKPopupMenu;
 import com.trollworks.toolkit.widget.TKPanel;
@@ -106,7 +107,7 @@ public class CSSpellPrereq extends CSBasePrereq {
 		} else if (command.startsWith(COLLEGE_PREFIX)) {
 			handleStringCompareChange(prereq.getStringCriteria(), command.substring(COLLEGE_PREFIX.length()), null);
 		} else if (command.startsWith(COUNT_PREFIX)) {
-			handleNumericCompareChange(prereq.getQuantityCriteria(), command.substring(COUNT_PREFIX.length()), null);
+			prereq.getQuantityCriteria().setType((CMNumericCompareType) item.getUserObject());
 		} else {
 			return super.obeyCommand(command, item);
 		}
@@ -122,7 +123,7 @@ public class CSSpellPrereq extends CSBasePrereq {
 		} else if (command.startsWith(COLLEGE_PREFIX)) {
 			handleStringCompareChange(prereq.getStringCriteria(), command.substring(COLLEGE_PREFIX.length()), event);
 		} else if (command.startsWith(COUNT_PREFIX)) {
-			handleNumericCompareChange(prereq.getQuantityCriteria(), command.substring(COUNT_PREFIX.length()), event);
+			handleNumericCompareChange(prereq.getQuantityCriteria(), event);
 		} else {
 			super.actionPerformed(event);
 		}

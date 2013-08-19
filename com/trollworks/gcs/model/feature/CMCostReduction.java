@@ -24,6 +24,7 @@
 package com.trollworks.gcs.model.feature;
 
 import com.trollworks.gcs.model.CMCharacter;
+import com.trollworks.toolkit.collections.TKEnumExtractor;
 import com.trollworks.toolkit.io.xml.TKXMLNodeType;
 import com.trollworks.toolkit.io.xml.TKXMLReader;
 import com.trollworks.toolkit.io.xml.TKXMLWriter;
@@ -34,24 +35,18 @@ import java.util.HashSet;
 
 /** Describes a cost reduction. */
 public class CMCostReduction implements CMFeature {
+	/** The possible {@link CMBonusAttributeType}s that can be affected. */
+	public static final CMBonusAttributeType[]	TYPES			= { CMBonusAttributeType.ST, CMBonusAttributeType.DX, CMBonusAttributeType.IQ, CMBonusAttributeType.HT };
 	/** The XML tag. */
-	public static final String	TAG_ROOT		= "cost_reduction"; //$NON-NLS-1$
-	private static final String	TAG_ATTRIBUTE	= "attribute";		//$NON-NLS-1$
-	private static final String	TAG_PERCENTAGE	= "percentage";	//$NON-NLS-1$
-	/** The ST attribute. */
-	public static final String	ST				= "ST";			//$NON-NLS-1$
-	/** The DX attribute. */
-	public static final String	DX				= "DX";			//$NON-NLS-1$
-	/** The IQ attribute. */
-	public static final String	IQ				= "IQ";			//$NON-NLS-1$
-	/** The HT attribute. */
-	public static final String	HT				= "HT";			//$NON-NLS-1$
-	private String				mAttribute;
-	private int					mPercentage;
+	public static final String					TAG_ROOT		= "cost_reduction";																						//$NON-NLS-1$
+	private static final String					TAG_ATTRIBUTE	= "attribute";																								//$NON-NLS-1$
+	private static final String					TAG_PERCENTAGE	= "percentage";																							//$NON-NLS-1$
+	private CMBonusAttributeType				mAttribute;
+	private int									mPercentage;
 
 	/** Creates a new cost reduction. */
 	public CMCostReduction() {
-		mAttribute = ST;
+		mAttribute = CMBonusAttributeType.ST;
 		mPercentage = 40;
 	}
 
@@ -83,7 +78,7 @@ public class CMCostReduction implements CMFeature {
 		if (obj instanceof CMCostReduction) {
 			CMCostReduction other = (CMCostReduction) obj;
 
-			return mPercentage == other.mPercentage && mAttribute.equals(other.mAttribute);
+			return mPercentage == other.mPercentage && mAttribute == other.mAttribute;
 		}
 		return false;
 	}
@@ -99,23 +94,13 @@ public class CMCostReduction implements CMFeature {
 	}
 
 	/** @return The attribute this cost reduction applies to. */
-	public String getAttribute() {
+	public CMBonusAttributeType getAttribute() {
 		return mAttribute;
 	}
 
 	/** @param attribute The attribute. */
-	public void setAttribute(String attribute) {
-		if (ST.equals(attribute)) {
-			mAttribute = ST;
-		} else if (DX.equals(attribute)) {
-			mAttribute = DX;
-		} else if (IQ.equals(attribute)) {
-			mAttribute = IQ;
-		} else if (HT.equals(attribute)) {
-			mAttribute = HT;
-		} else {
-			mAttribute = ST;
-		}
+	public void setAttribute(CMBonusAttributeType attribute) {
+		mAttribute = attribute;
 	}
 
 	/**
@@ -132,7 +117,7 @@ public class CMCostReduction implements CMFeature {
 				String name = reader.getName();
 
 				if (TAG_ATTRIBUTE.equals(name)) {
-					setAttribute(reader.readText());
+					setAttribute((CMBonusAttributeType) TKEnumExtractor.extract(reader.readText(), TYPES, CMBonusAttributeType.ST));
 				} else if (TAG_PERCENTAGE.equals(name)) {
 					setPercentage(reader.readInteger(0));
 				} else {
@@ -147,7 +132,7 @@ public class CMCostReduction implements CMFeature {
 	}
 
 	public String getKey() {
-		return CMCharacter.ATTRIBUTES_PREFIX + mAttribute;
+		return CMCharacter.ATTRIBUTES_PREFIX + mAttribute.name();
 	}
 
 	public CMFeature cloneFeature() {
@@ -156,7 +141,7 @@ public class CMCostReduction implements CMFeature {
 
 	public void save(TKXMLWriter out) {
 		out.startSimpleTagEOL(TAG_ROOT);
-		out.simpleTag(TAG_ATTRIBUTE, mAttribute);
+		out.simpleTag(TAG_ATTRIBUTE, mAttribute.name().toLowerCase());
 		out.simpleTag(TAG_PERCENTAGE, mPercentage);
 		out.endTagEOL(TAG_ROOT, true);
 	}

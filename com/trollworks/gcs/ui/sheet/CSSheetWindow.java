@@ -33,7 +33,7 @@ import com.trollworks.gcs.model.skill.CMTechnique;
 import com.trollworks.gcs.model.spell.CMSpell;
 import com.trollworks.gcs.ui.common.CSFileOpener;
 import com.trollworks.gcs.ui.common.CSFont;
-import com.trollworks.gcs.ui.common.CSNamePostProcessor;
+import com.trollworks.gcs.ui.common.CSRowPostProcessor;
 import com.trollworks.gcs.ui.common.CSOutline;
 import com.trollworks.gcs.ui.common.CSRowItemRenderer;
 import com.trollworks.gcs.ui.common.CSWindow;
@@ -400,7 +400,7 @@ public class CSSheetWindow extends CSWindow implements Printable, TKSearchTarget
 			anOutline.requestFocus();
 		}
 		if (!nameMap.isEmpty()) {
-			EventQueue.invokeLater(new CSNamePostProcessor(nameMap));
+			EventQueue.invokeLater(new CSRowPostProcessor(nameMap));
 		}
 	}
 

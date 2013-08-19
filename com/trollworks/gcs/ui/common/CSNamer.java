@@ -55,10 +55,11 @@ public class CSNamer extends TKPanel {
 	/**
 	 * Brings up a modal naming dialog for each row in the list.
 	 * 
+	 * @param window The window to open the dialog over.
 	 * @param list The rows to name.
 	 * @return Whether anything was modified.
 	 */
-	static public boolean name(ArrayList<CMRow> list) {
+	static public boolean name(TKBaseWindow window, ArrayList<CMRow> list) {
 		ArrayList<CMRow> rowList = new ArrayList<CMRow>();
 		ArrayList<HashSet<String>> setList = new ArrayList<HashSet<String>>();
 		boolean modified = false;
@@ -78,7 +79,7 @@ public class CSNamer extends TKPanel {
 		for (int i = 0; i < count; i++) {
 			CMRow row = rowList.get(i);
 			boolean hasMore = i != count - 1;
-			TKOptionDialog dialog = new TKOptionDialog(MessageFormat.format(Msgs.NAME_TITLE, row.getLocalizedName()), hasMore ? TKOptionDialog.TYPE_YES_NO_CANCEL : TKOptionDialog.TYPE_YES_NO);
+			TKOptionDialog dialog = TKOptionDialog.create(window, MessageFormat.format(Msgs.NAME_TITLE, row.getLocalizedName()), hasMore ? TKOptionDialog.TYPE_YES_NO_CANCEL : TKOptionDialog.TYPE_YES_NO);
 			CSNamer panel = new CSNamer(row, setList.get(i), count - i - 1);
 
 			if (hasMore) {

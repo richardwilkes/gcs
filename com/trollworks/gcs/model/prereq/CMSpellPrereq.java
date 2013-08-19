@@ -26,7 +26,7 @@ package com.trollworks.gcs.model.prereq;
 import com.trollworks.gcs.model.CMCharacter;
 import com.trollworks.gcs.model.CMRow;
 import com.trollworks.gcs.model.criteria.CMIntegerCriteria;
-import com.trollworks.gcs.model.criteria.CMNumericCriteria;
+import com.trollworks.gcs.model.criteria.CMNumericCompareType;
 import com.trollworks.gcs.model.criteria.CMStringCompareType;
 import com.trollworks.gcs.model.criteria.CMStringCriteria;
 import com.trollworks.gcs.model.spell.CMSpell;
@@ -66,7 +66,7 @@ public class CMSpellPrereq extends CMHasPrereq {
 		super(parent);
 		mType = TAG_NAME;
 		mStringCriteria = new CMStringCriteria(CMStringCompareType.IS, EMPTY);
-		mQuantityCriteria = new CMIntegerCriteria(CMNumericCriteria.AT_LEAST, 1);
+		mQuantityCriteria = new CMIntegerCriteria(CMNumericCompareType.AT_LEAST, 1);
 	}
 
 	/**
@@ -146,7 +146,7 @@ public class CMSpellPrereq extends CMHasPrereq {
 		out.finishTagEOL();
 		if (mType == TAG_NAME || mType == TAG_COLLEGE) {
 			mStringCriteria.save(out, mType);
-			if (mQuantityCriteria.getType() != CMNumericCriteria.AT_LEAST || mQuantityCriteria.getQualifier() != 1) {
+			if (mQuantityCriteria.getType() != CMNumericCompareType.AT_LEAST || mQuantityCriteria.getQualifier() != 1) {
 				mQuantityCriteria.save(out, TAG_QUANTITY);
 			}
 		} else if (mType == TAG_COLLEGE_COUNT) {

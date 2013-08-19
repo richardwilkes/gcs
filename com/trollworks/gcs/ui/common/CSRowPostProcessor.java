@@ -24,15 +24,17 @@
 package com.trollworks.gcs.ui.common;
 
 import com.trollworks.gcs.model.CMRow;
+import com.trollworks.gcs.model.advantage.CMAdvantage;
 import com.trollworks.gcs.ui.sheet.CSSheetWindow;
+import com.trollworks.toolkit.collections.TKFilteredList;
 import com.trollworks.toolkit.widget.outline.TKOutline;
 import com.trollworks.toolkit.window.TKBaseWindow;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/** Helper for causing the namer to be brought up. */
-public class CSNamePostProcessor implements Runnable {
+/** Helper for causing the row post-processing to occur. */
+public class CSRowPostProcessor implements Runnable {
 	private HashMap<TKOutline, ArrayList<CMRow>>	mMap;
 
 	/**
@@ -40,7 +42,7 @@ public class CSNamePostProcessor implements Runnable {
 	 * 
 	 * @param map The map to process.
 	 */
-	public CSNamePostProcessor(HashMap<TKOutline, ArrayList<CMRow>> map) {
+	public CSRowPostProcessor(HashMap<TKOutline, ArrayList<CMRow>> map) {
 		mMap = map;
 	}
 
@@ -50,18 +52,19 @@ public class CSNamePostProcessor implements Runnable {
 	 * @param outline The outline containing the rows.
 	 * @param list The list to process.
 	 */
-	public CSNamePostProcessor(TKOutline outline, ArrayList<CMRow> list) {
+	public CSRowPostProcessor(TKOutline outline, ArrayList<CMRow> list) {
 		mMap = new HashMap<TKOutline, ArrayList<CMRow>>();
 		mMap.put(outline, list);
 	}
 
 	public void run() {
 		for (TKOutline outline : mMap.keySet()) {
+			TKBaseWindow window = outline.getBaseWindow();
 			ArrayList<CMRow> rows = mMap.get(outline);
+			boolean modified = CSModifierEnabler.process(window, new TKFilteredList<CMAdvantage>(rows, CMAdvantage.class));
 
-			if (CSNamer.name(rows)) {
-				TKBaseWindow window = outline.getBaseWindow();
-
+			modified |= CSNamer.name(window, rows);
+			if (modified) {
 				outline.updateRowHeights(rows);
 				outline.repaint();
 
@@ -70,7 +73,6 @@ public class CSNamePostProcessor implements Runnable {
 
 					sheetWindow.notifyOfPrereqOrFeatureModification();
 				}
-
 			}
 		}
 	}

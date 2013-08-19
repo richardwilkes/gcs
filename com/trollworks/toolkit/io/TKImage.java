@@ -205,9 +205,9 @@ public class TKImage {
 			double hMult = height / (double) scaledHeight;
 
 			if (wMult > hMult) {
-				scaledImg = loadToolkitImage(image.getScaledInstance(scaledWidth, -1, Image.SCALE_DEFAULT));
+				scaledImg = loadToolkitImage(image.getScaledInstance(scaledWidth, -1, Image.SCALE_SMOOTH));
 			} else {
-				scaledImg = loadToolkitImage(image.getScaledInstance(-1, scaledHeight, Image.SCALE_DEFAULT));
+				scaledImg = loadToolkitImage(image.getScaledInstance(-1, scaledHeight, Image.SCALE_SMOOTH));
 			}
 		} else {
 			scaledImg = image;

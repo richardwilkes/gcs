@@ -24,6 +24,7 @@
 package com.trollworks.gcs.ui.editor.prereq;
 
 import com.trollworks.gcs.model.CMRow;
+import com.trollworks.gcs.model.criteria.CMNumericCompareType;
 import com.trollworks.gcs.model.prereq.CMContainedWeightPrereq;
 import com.trollworks.toolkit.widget.TKPanel;
 import com.trollworks.toolkit.widget.layout.TKColumnLayout;
@@ -65,7 +66,7 @@ public class CSContainedWeightPrereq extends CSBasePrereq {
 		CMContainedWeightPrereq prereq = (CMContainedWeightPrereq) mPrereq;
 
 		if (command.startsWith(WEIGHT_PREFIX)) {
-			handleNumericCompareChange(prereq.getWeightCompare(), command.substring(WEIGHT_PREFIX.length()), null);
+			prereq.getWeightCompare().setType((CMNumericCompareType) item.getUserObject());
 		} else {
 			return super.obeyCommand(command, item);
 		}
@@ -77,7 +78,7 @@ public class CSContainedWeightPrereq extends CSBasePrereq {
 		String command = event.getActionCommand();
 
 		if (command.startsWith(WEIGHT_PREFIX)) {
-			handleNumericCompareChange(prereq.getWeightCompare(), command.substring(WEIGHT_PREFIX.length()), event);
+			handleNumericCompareChange(prereq.getWeightCompare(), event);
 		} else {
 			super.actionPerformed(event);
 		}

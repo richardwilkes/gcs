@@ -25,7 +25,7 @@ package com.trollworks.gcs.model.prereq;
 
 import com.trollworks.gcs.model.CMRow;
 import com.trollworks.gcs.model.criteria.CMIntegerCriteria;
-import com.trollworks.gcs.model.criteria.CMNumericCriteria;
+import com.trollworks.gcs.model.criteria.CMNumericCompareType;
 import com.trollworks.gcs.model.criteria.CMStringCompareType;
 import com.trollworks.gcs.model.criteria.CMStringCriteria;
 import com.trollworks.toolkit.io.xml.TKXMLNodeType;
@@ -57,7 +57,7 @@ public abstract class CMNameLevelPrereq extends CMHasPrereq {
 		super(parent);
 		mTag = tag;
 		mNameCriteria = new CMStringCriteria(CMStringCompareType.IS, ""); //$NON-NLS-1$
-		mLevelCriteria = new CMIntegerCriteria(CMNumericCriteria.AT_LEAST, 0);
+		mLevelCriteria = new CMIntegerCriteria(CMNumericCompareType.AT_LEAST, 0);
 	}
 
 	/**
@@ -116,7 +116,7 @@ public abstract class CMNameLevelPrereq extends CMHasPrereq {
 		out.finishTagEOL();
 		mNameCriteria.save(out, TAG_NAME);
 		saveSelf(out);
-		if (mLevelCriteria.getType() != CMNumericCriteria.AT_LEAST || mLevelCriteria.getQualifier() != 0) {
+		if (mLevelCriteria.getType() != CMNumericCompareType.AT_LEAST || mLevelCriteria.getQualifier() != 0) {
 			mLevelCriteria.save(out, TAG_LEVEL);
 		}
 		out.endTagEOL(mTag, true);

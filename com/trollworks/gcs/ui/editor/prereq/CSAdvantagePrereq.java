@@ -24,6 +24,7 @@
 package com.trollworks.gcs.ui.editor.prereq;
 
 import com.trollworks.gcs.model.CMRow;
+import com.trollworks.gcs.model.criteria.CMNumericCompareType;
 import com.trollworks.gcs.model.prereq.CMAdvantagePrereq;
 import com.trollworks.toolkit.widget.TKPanel;
 import com.trollworks.toolkit.widget.layout.TKColumnLayout;
@@ -79,7 +80,7 @@ public class CSAdvantagePrereq extends CSBasePrereq {
 		} else if (command.startsWith(NOTES_PREFIX)) {
 			handleStringCompareChange(prereq.getNotesCriteria(), command.substring(NOTES_PREFIX.length()), null);
 		} else if (command.startsWith(LEVEL_PREFIX)) {
-			handleNumericCompareChange(prereq.getLevelCriteria(), command.substring(LEVEL_PREFIX.length()), null);
+			prereq.getLevelCriteria().setType((CMNumericCompareType) item.getUserObject());
 		} else {
 			return super.obeyCommand(command, item);
 		}
@@ -95,7 +96,7 @@ public class CSAdvantagePrereq extends CSBasePrereq {
 		} else if (command.startsWith(NOTES_PREFIX)) {
 			handleStringCompareChange(prereq.getNotesCriteria(), command.substring(NOTES_PREFIX.length()), event);
 		} else if (command.startsWith(LEVEL_PREFIX)) {
-			handleNumericCompareChange(prereq.getLevelCriteria(), command.substring(LEVEL_PREFIX.length()), event);
+			handleNumericCompareChange(prereq.getLevelCriteria(), event);
 		} else {
 			super.actionPerformed(event);
 		}

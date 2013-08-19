@@ -25,8 +25,9 @@ package com.trollworks.gcs.ui.editor.feature;
 
 import com.trollworks.gcs.model.CMRow;
 import com.trollworks.gcs.model.feature.CMDRBonus;
-import com.trollworks.toolkit.widget.TKPopupMenu;
+import com.trollworks.gcs.model.feature.CMHitLocation;
 import com.trollworks.toolkit.widget.TKPanel;
+import com.trollworks.toolkit.widget.TKPopupMenu;
 import com.trollworks.toolkit.widget.border.TKEmptyBorder;
 import com.trollworks.toolkit.widget.layout.TKColumnLayout;
 import com.trollworks.toolkit.widget.menu.TKMenu;
@@ -63,31 +64,26 @@ public class CSDRBonus extends CSBaseFeature {
 	}
 
 	private void addLocationPopup(TKPanel parent) {
-		String[] keys = { CMDRBonus.EYES, CMDRBonus.SKULL, CMDRBonus.FACE, CMDRBonus.NECK, CMDRBonus.TORSO, CMDRBonus.FULL_BODY, CMDRBonus.FULL_BODY_NO_EYES, CMDRBonus.GROIN, CMDRBonus.ARMS, CMDRBonus.HANDS, CMDRBonus.LEGS, CMDRBonus.FEET };
-		String[] titles = { Msgs.EYES, Msgs.SKULL, Msgs.FACE, Msgs.NECK, Msgs.TORSO, Msgs.FULL_BODY, Msgs.FULL_BODY_NO_EYES, Msgs.GROIN, Msgs.ARMS, Msgs.HANDS, Msgs.LEGS, Msgs.FEET };
 		TKMenu menu = new TKMenu();
-		int selection = 0;
-		CMDRBonus bonus = (CMDRBonus) getFeature();
-		String location = bonus.getLocation();
-		TKMenuItem item;
 		TKPopupMenu popup;
 
-		for (int i = 0; i < keys.length; i++) {
-			item = new TKMenuItem(titles[i], CHANGE_LOCATION);
-			item.setUserObject(keys[i]);
-			menu.add(item);
-			if (location.equals(keys[i])) {
-				selection = i;
+		for (CMHitLocation location : CMHitLocation.values()) {
+			if (location.isChoosable()) {
+				TKMenuItem item = new TKMenuItem(location.toString(), CHANGE_LOCATION);
+				item.setUserObject(location);
+				menu.add(item);
 			}
 		}
-		popup = new TKPopupMenu(menu, this, false, selection);
+
+		popup = new TKPopupMenu(menu, this, false);
+		popup.setSelectedUserObject(((CMDRBonus) getFeature()).getLocation());
 		popup.setOnlySize(popup.getPreferredSize());
 		parent.add(popup);
 	}
 
 	@Override public boolean obeyCommand(String command, TKMenuItem item) {
 		if (CHANGE_LOCATION.equals(command)) {
-			((CMDRBonus) getFeature()).setLocation((String) item.getUserObject());
+			((CMDRBonus) getFeature()).setLocation((CMHitLocation) item.getUserObject());
 		} else {
 			return super.obeyCommand(command, item);
 		}

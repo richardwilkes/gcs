@@ -24,6 +24,7 @@
 package com.trollworks.gcs.model.feature;
 
 import com.trollworks.gcs.model.CMCharacter;
+import com.trollworks.toolkit.collections.TKEnumExtractor;
 import com.trollworks.toolkit.io.xml.TKXMLReader;
 import com.trollworks.toolkit.io.xml.TKXMLWriter;
 
@@ -32,40 +33,14 @@ import java.io.IOException;
 /** A DR bonus. */
 public class CMDRBonus extends CMBonus {
 	/** The XML tag. */
-	public static final String	TAG_ROOT			= "dr_bonus";				//$NON-NLS-1$
-	private static final String	TAG_LOCATION		= "location";				//$NON-NLS-1$
-	/** The skull hit location. */
-	public static final String	SKULL				= "skull";					//$NON-NLS-1$
-	/** The eyes hit location. */
-	public static final String	EYES				= "eyes";					//$NON-NLS-1$
-	/** The face hit location. */
-	public static final String	FACE				= "face";					//$NON-NLS-1$
-	/** The neck hit location. */
-	public static final String	NECK				= "neck";					//$NON-NLS-1$
-	/** The torso hit location. */
-	public static final String	TORSO				= "torso";					//$NON-NLS-1$
-	/** The vitals hit location. */
-	public static final String	VITALS				= "vitals";				//$NON-NLS-1$
-	/** The groin hit location. */
-	public static final String	GROIN				= "groin";					//$NON-NLS-1$
-	/** The arm hit location. */
-	public static final String	ARMS				= "arms";					//$NON-NLS-1$
-	/** The hand hit location. */
-	public static final String	HANDS				= "hands";					//$NON-NLS-1$
-	/** The leg hit location. */
-	public static final String	LEGS				= "legs";					//$NON-NLS-1$
-	/** The foot hit location. */
-	public static final String	FEET				= "feet";					//$NON-NLS-1$
-	/** The full body hit location. */
-	public static final String	FULL_BODY			= "full_body";				//$NON-NLS-1$
-	/** The full body except eyes hit location. */
-	public static final String	FULL_BODY_NO_EYES	= "full_body_except_eyes";	//$NON-NLS-1$
-	private String				mLocation;
+	public static final String	TAG_ROOT		= "dr_bonus";	//$NON-NLS-1$
+	private static final String	TAG_LOCATION	= "location";	//$NON-NLS-1$
+	private CMHitLocation		mLocation;
 
 	/** Creates a new DR bonus. */
 	public CMDRBonus() {
 		super(1);
-		mLocation = TORSO;
+		mLocation = CMHitLocation.TORSO;
 	}
 
 	/**
@@ -94,7 +69,7 @@ public class CMDRBonus extends CMBonus {
 			return true;
 		}
 		if (obj instanceof CMDRBonus && super.equals(obj)) {
-			return mLocation.equals(((CMDRBonus) obj).mLocation);
+			return mLocation == ((CMDRBonus) obj).mLocation;
 		}
 		return false;
 	}
@@ -107,7 +82,7 @@ public class CMDRBonus extends CMBonus {
 		StringBuffer buffer = new StringBuffer();
 
 		buffer.append(CMCharacter.DR_PREFIX);
-		buffer.append(mLocation);
+		buffer.append(mLocation.name());
 		return buffer.toString();
 	}
 
@@ -117,7 +92,7 @@ public class CMDRBonus extends CMBonus {
 
 	@Override protected void loadSelf(TKXMLReader reader) throws IOException {
 		if (TAG_LOCATION.equals(reader.getName())) {
-			setLocation(reader.readText());
+			setLocation((CMHitLocation) TKEnumExtractor.extract(reader.readText(), CMHitLocation.values(), CMHitLocation.TORSO));
 		} else {
 			super.loadSelf(reader);
 		}
@@ -130,48 +105,18 @@ public class CMDRBonus extends CMBonus {
 	 */
 	public void save(TKXMLWriter out) {
 		out.startSimpleTagEOL(TAG_ROOT);
-		out.simpleTag(TAG_LOCATION, mLocation);
+		out.simpleTag(TAG_LOCATION, mLocation.name().toLowerCase());
 		saveBase(out);
 		out.endTagEOL(TAG_ROOT, true);
 	}
 
 	/** @return The location protected by the DR. */
-	public String getLocation() {
+	public CMHitLocation getLocation() {
 		return mLocation;
 	}
 
 	/** @param location The location. */
-	public void setLocation(String location) {
-		if (SKULL == location || FACE == location || NECK == location || TORSO == location || GROIN == location || ARMS == location || HANDS == location || LEGS == location || FEET == location || VITALS == location || EYES == location || FULL_BODY == location || FULL_BODY_NO_EYES == location) {
-			mLocation = location;
-		} else if (SKULL.equals(location)) {
-			mLocation = SKULL;
-		} else if (EYES.equals(location)) {
-			mLocation = EYES;
-		} else if (FACE.equals(location)) {
-			mLocation = FACE;
-		} else if (NECK.equals(location)) {
-			mLocation = NECK;
-		} else if (TORSO.equals(location)) {
-			mLocation = TORSO;
-		} else if (VITALS.equals(location)) {
-			mLocation = VITALS;
-		} else if (FULL_BODY.equals(location)) {
-			mLocation = FULL_BODY;
-		} else if (FULL_BODY_NO_EYES.equals(location)) {
-			mLocation = FULL_BODY_NO_EYES;
-		} else if (GROIN.equals(location)) {
-			mLocation = GROIN;
-		} else if (ARMS.equals(location)) {
-			mLocation = ARMS;
-		} else if (HANDS.equals(location)) {
-			mLocation = HANDS;
-		} else if (LEGS.equals(location)) {
-			mLocation = LEGS;
-		} else if (FEET.equals(location)) {
-			mLocation = FEET;
-		} else {
-			mLocation = TORSO;
-		}
+	public void setLocation(CMHitLocation location) {
+		mLocation = location;
 	}
 }

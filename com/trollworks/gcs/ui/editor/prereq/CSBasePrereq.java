@@ -26,6 +26,7 @@ package com.trollworks.gcs.ui.editor.prereq;
 import com.trollworks.gcs.model.CMRow;
 import com.trollworks.gcs.model.criteria.CMDoubleCriteria;
 import com.trollworks.gcs.model.criteria.CMIntegerCriteria;
+import com.trollworks.gcs.model.criteria.CMNumericCompareType;
 import com.trollworks.gcs.model.criteria.CMNumericCriteria;
 import com.trollworks.gcs.model.criteria.CMStringCompareType;
 import com.trollworks.gcs.model.criteria.CMStringCriteria;
@@ -60,7 +61,6 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.text.MessageFormat;
 
 /** A generic prerequisite editor panel. */
 public abstract class CSBasePrereq extends TKPanel implements ActionListener, TKMenuTarget {
@@ -265,17 +265,6 @@ public abstract class CSBasePrereq extends TKPanel implements ActionListener, TK
 		parent.add(field);
 	}
 
-	private void addCompareMenuItem(TKMenu menu, String title, String altTitle, String extra, String keyPrefix, String key) {
-		String msg;
-
-		if (extra != null) {
-			msg = MessageFormat.format(title, extra);
-		} else {
-			msg = altTitle;
-		}
-		menu.add(new TKMenuItem(msg, keyPrefix + key));
-	}
-
 	/**
 	 * Call to handle a change in one of the string comparison controls.
 	 * 
@@ -302,21 +291,17 @@ public abstract class CSBasePrereq extends TKPanel implements ActionListener, TK
 	 * @param maxDigits The maximum number of digits to allow.
 	 */
 	protected void addNumericComparePopups(TKPanel parent, CMNumericCriteria compare, String extra, String keyPrefix, int maxDigits) {
-		String[] keys = { CMNumericCriteria.IS, CMNumericCriteria.AT_LEAST, CMNumericCriteria.NO_MORE_THAN };
-		String[] titles = { Msgs.IS, Msgs.AT_LEAST, Msgs.AT_MOST };
-		String[] altTitles = { Msgs.ALT_IS, Msgs.ALT_AT_LEAST, Msgs.ALT_AT_MOST };
 		TKMenu menu = new TKMenu();
-		int selection = 0;
 		TKPopupMenu popup;
 		TKTextField field;
 
-		for (int i = 0; i < keys.length; i++) {
-			addCompareMenuItem(menu, titles[i], altTitles[i], extra, keyPrefix, keys[i]);
-			if (compare.getType() == keys[i]) {
-				selection = i;
-			}
+		for (CMNumericCompareType type : CMNumericCompareType.values()) {
+			TKMenuItem item = new TKMenuItem(extra != null ? extra + type.getDescription() : (type == CMNumericCompareType.IS ? Msgs.EXACTLY : type.toString()), keyPrefix);
+			item.setUserObject(type);
+			menu.add(item);
 		}
-		popup = new TKPopupMenu(menu, this, false, selection);
+		popup = new TKPopupMenu(menu, this, false);
+		popup.setSelectedUserObject(compare.getType());
 		popup.setOnlySize(popup.getPreferredSize());
 		parent.add(popup);
 
@@ -333,25 +318,16 @@ public abstract class CSBasePrereq extends TKPanel implements ActionListener, TK
 	 * Call to handle a change in one of the numeric comparison controls.
 	 * 
 	 * @param compare The current numeric compare object.
-	 * @param command The command without the prefix.
 	 * @param event In the case of a change to the qualifier field, the {@link ActionEvent}
 	 *            associated with the notification.
 	 */
-	protected void handleNumericCompareChange(CMNumericCriteria compare, String command, ActionEvent event) {
-		if (CMNumericCriteria.IS.equals(command)) {
-			compare.setType(CMNumericCriteria.IS);
-		} else if (CMNumericCriteria.AT_LEAST.equals(command)) {
-			compare.setType(CMNumericCriteria.AT_LEAST);
-		} else if (CMNumericCriteria.NO_MORE_THAN.equals(command)) {
-			compare.setType(CMNumericCriteria.NO_MORE_THAN);
-		} else if (QUALIFIER_KEY.equals(command)) {
-			String text = ((TKTextField) event.getSource()).getText();
+	protected void handleNumericCompareChange(CMNumericCriteria compare, ActionEvent event) {
+		String text = ((TKTextField) event.getSource()).getText();
 
-			if (compare instanceof CMIntegerCriteria) {
-				((CMIntegerCriteria) compare).setQualifier(TKNumberUtils.getInteger(text, 0));
-			} else if (compare instanceof CMDoubleCriteria) {
-				((CMDoubleCriteria) compare).setQualifier(TKNumberUtils.getDouble(text, 0.0));
-			}
+		if (compare instanceof CMIntegerCriteria) {
+			((CMIntegerCriteria) compare).setQualifier(TKNumberUtils.getInteger(text, 0));
+		} else if (compare instanceof CMDoubleCriteria) {
+			((CMDoubleCriteria) compare).setQualifier(TKNumberUtils.getDouble(text, 0.0));
 		}
 	}
 

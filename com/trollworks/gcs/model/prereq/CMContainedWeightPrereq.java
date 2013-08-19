@@ -26,7 +26,7 @@ package com.trollworks.gcs.model.prereq;
 import com.trollworks.gcs.model.CMCharacter;
 import com.trollworks.gcs.model.CMRow;
 import com.trollworks.gcs.model.criteria.CMDoubleCriteria;
-import com.trollworks.gcs.model.criteria.CMNumericCriteria;
+import com.trollworks.gcs.model.criteria.CMNumericCompareType;
 import com.trollworks.gcs.model.equipment.CMEquipment;
 import com.trollworks.toolkit.collections.TKEnumExtractor;
 import com.trollworks.toolkit.io.xml.TKXMLReader;
@@ -51,7 +51,7 @@ public class CMContainedWeightPrereq extends CMHasPrereq {
 	 */
 	public CMContainedWeightPrereq(CMPrereqList parent) {
 		super(parent);
-		mWeightCompare = new CMDoubleCriteria(CMNumericCriteria.NO_MORE_THAN, 5.0, true);
+		mWeightCompare = new CMDoubleCriteria(CMNumericCompareType.AT_MOST, 5.0, true);
 	}
 
 	/**
@@ -64,7 +64,7 @@ public class CMContainedWeightPrereq extends CMHasPrereq {
 	public CMContainedWeightPrereq(CMPrereqList parent, TKXMLReader reader) throws IOException {
 		this(parent);
 		loadHasAttribute(reader);
-		mWeightCompare.setType(reader.getAttribute(ATTRIBUTE_COMPARE));
+		mWeightCompare.setType((CMNumericCompareType) TKEnumExtractor.extract(reader.getAttribute(ATTRIBUTE_COMPARE), CMNumericCompareType.values(), CMNumericCompareType.AT_LEAST));
 		mWeightCompare.setQualifier(TKWeightUnits.POUNDS.convert((TKWeightUnits) TKEnumExtractor.extract(reader.getAttribute(ATTRIBUTE_UNITS), TKWeightUnits.values(), TKWeightUnits.POUNDS), reader.readDouble(0)));
 	}
 
@@ -100,7 +100,7 @@ public class CMContainedWeightPrereq extends CMHasPrereq {
 	@Override public void save(TKXMLWriter out) {
 		out.startTag(TAG_ROOT);
 		saveHasAttribute(out);
-		out.writeAttribute(ATTRIBUTE_COMPARE, mWeightCompare.getType());
+		out.writeAttribute(ATTRIBUTE_COMPARE, mWeightCompare.getType().name().toLowerCase());
 		out.writeAttribute(ATTRIBUTE_UNITS, TKWeightUnits.POUNDS.toString());
 		out.finishTag();
 		out.writeEncodedData(Double.toString(mWeightCompare.getQualifier()));

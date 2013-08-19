@@ -26,7 +26,9 @@ package com.trollworks.gcs.model.prereq;
 import com.trollworks.gcs.model.CMCharacter;
 import com.trollworks.gcs.model.CMRow;
 import com.trollworks.gcs.model.criteria.CMIntegerCriteria;
-import com.trollworks.gcs.model.criteria.CMNumericCriteria;
+import com.trollworks.gcs.model.criteria.CMNumericCompareType;
+import com.trollworks.gcs.model.feature.CMBonusAttributeType;
+import com.trollworks.toolkit.collections.TKEnumExtractor;
 import com.trollworks.toolkit.io.xml.TKXMLReader;
 import com.trollworks.toolkit.io.xml.TKXMLWriter;
 
@@ -35,24 +37,16 @@ import java.text.MessageFormat;
 
 /** A Attribute prerequisite. */
 public class CMAttributePrereq extends CMHasPrereq {
+	/** The possible {@link CMBonusAttributeType}s that can be affected. */
+	public static final CMBonusAttributeType[]	TYPES					= { CMBonusAttributeType.ST, CMBonusAttributeType.DX, CMBonusAttributeType.IQ, CMBonusAttributeType.HT, CMBonusAttributeType.WILL };
 	/** The XML tag for this class. */
-	public static final String	TAG_ROOT				= "attribute_prereq";	//$NON-NLS-1$
-	private static final String	ATTRIBUTE_WHICH			= "which";				//$NON-NLS-1$
-	private static final String	ATTRIBUTE_COMBINED_WITH	= "combined_with";		//$NON-NLS-1$
-	private static final String	ATTRIBUTE_COMPARE		= "compare";			//$NON-NLS-1$
-	/** The constant for strength. */
-	public static final String	ST						= "ST";				//$NON-NLS-1$
-	/** The constant for dexterity. */
-	public static final String	DX						= "DX";				//$NON-NLS-1$
-	/** The constant for intelligence. */
-	public static final String	IQ						= "IQ";				//$NON-NLS-1$
-	/** The constant for health. */
-	public static final String	HT						= "HT";				//$NON-NLS-1$
-	/** The constant for will. */
-	public static final String	WILL					= "Will";				//$NON-NLS-1$
-	private String				mWhich;
-	private String				mCombinedWith;
-	private CMIntegerCriteria	mValueCompare;
+	public static final String					TAG_ROOT				= "attribute_prereq";																													//$NON-NLS-1$
+	private static final String					ATTRIBUTE_WHICH			= "which";																																//$NON-NLS-1$
+	private static final String					ATTRIBUTE_COMBINED_WITH	= "combined_with";																														//$NON-NLS-1$
+	private static final String					ATTRIBUTE_COMPARE		= "compare";																															//$NON-NLS-1$
+	private CMBonusAttributeType				mWhich;
+	private CMBonusAttributeType				mCombinedWith;
+	private CMIntegerCriteria					mValueCompare;
 
 	/**
 	 * Creates a new prerequisite.
@@ -61,8 +55,8 @@ public class CMAttributePrereq extends CMHasPrereq {
 	 */
 	public CMAttributePrereq(CMPrereqList parent) {
 		super(parent);
-		mValueCompare = new CMIntegerCriteria(CMNumericCriteria.AT_LEAST, 10);
-		setWhich(IQ);
+		mValueCompare = new CMIntegerCriteria(CMNumericCompareType.AT_LEAST, 10);
+		setWhich(CMBonusAttributeType.IQ);
 		setCombinedWith(null);
 	}
 
@@ -76,9 +70,9 @@ public class CMAttributePrereq extends CMHasPrereq {
 	public CMAttributePrereq(CMPrereqList parent, TKXMLReader reader) throws IOException {
 		this(parent);
 		loadHasAttribute(reader);
-		setWhich(reader.getAttribute(ATTRIBUTE_WHICH));
-		setCombinedWith(reader.getAttribute(ATTRIBUTE_COMBINED_WITH));
-		mValueCompare.setType(reader.getAttribute(ATTRIBUTE_COMPARE));
+		setWhich((CMBonusAttributeType) TKEnumExtractor.extract(reader.getAttribute(ATTRIBUTE_WHICH), TYPES, CMBonusAttributeType.ST));
+		setCombinedWith((CMBonusAttributeType) TKEnumExtractor.extract(reader.getAttribute(ATTRIBUTE_COMBINED_WITH), TYPES));
+		mValueCompare.setType((CMNumericCompareType) TKEnumExtractor.extract(reader.getAttribute(ATTRIBUTE_COMPARE), CMNumericCompareType.values(), CMNumericCompareType.AT_LEAST));
 		mValueCompare.setQualifier(reader.readInteger(10));
 	}
 
@@ -102,7 +96,7 @@ public class CMAttributePrereq extends CMHasPrereq {
 		if (obj instanceof CMAttributePrereq && super.equals(obj)) {
 			CMAttributePrereq other = (CMAttributePrereq) obj;
 
-			return mWhich.equals(other.mWhich) && (mCombinedWith == null ? other.mCombinedWith == null : mCombinedWith.equals(other.mCombinedWith)) && mValueCompare.equals(other.mValueCompare);
+			return mWhich == other.mWhich && mCombinedWith == other.mCombinedWith && mValueCompare.equals(other.mValueCompare);
 		}
 		return false;
 	}
@@ -118,79 +112,54 @@ public class CMAttributePrereq extends CMHasPrereq {
 	@Override public void save(TKXMLWriter out) {
 		out.startTag(TAG_ROOT);
 		saveHasAttribute(out);
-		out.writeAttribute(ATTRIBUTE_WHICH, mWhich);
+		out.writeAttribute(ATTRIBUTE_WHICH, mWhich.name().toLowerCase());
 		if (mCombinedWith != null) {
-			out.writeAttribute(ATTRIBUTE_COMBINED_WITH, mCombinedWith);
+			out.writeAttribute(ATTRIBUTE_COMBINED_WITH, mCombinedWith.name().toLowerCase());
 		}
-		out.writeAttribute(ATTRIBUTE_COMPARE, mValueCompare.getType());
+		out.writeAttribute(ATTRIBUTE_COMPARE, mValueCompare.getType().name().toLowerCase());
 		out.finishTag();
 		out.writeEncodedData(Integer.toString(mValueCompare.getQualifier()));
 		out.endTagEOL(TAG_ROOT, false);
 	}
 
 	/** @return The type of comparison to make. */
-	public String getWhich() {
+	public CMBonusAttributeType getWhich() {
 		return mWhich;
 	}
 
-	/**
-	 * @param which The type of comparison to make. Must be one of {@link #ST}, {@link #DX},
-	 *            {@link #IQ}, {@link #HT}, or {@link #WILL}.
-	 */
-	public void setWhich(String which) {
-		mWhich = getMatchingAttribute(which);
-		if (mWhich == null) {
-			mWhich = ST;
-		}
+	/** @param which The type of comparison to make. */
+	public void setWhich(CMBonusAttributeType which) {
+		mWhich = which;
 	}
 
 	/** @return The type of comparison to make. */
-	public String getCombinedWith() {
+	public CMBonusAttributeType getCombinedWith() {
 		return mCombinedWith;
 	}
 
-	/**
-	 * @param which The type of comparison to make. Must be one of {@link #ST}, {@link #DX},
-	 *            {@link #IQ}, {@link #HT}, or {@link #WILL}.
-	 */
-	public void setCombinedWith(String which) {
-		mCombinedWith = getMatchingAttribute(which);
+	/** @param which The type of comparison to make. */
+	public void setCombinedWith(CMBonusAttributeType which) {
+		mCombinedWith = which;
 	}
 
-	private String getMatchingAttribute(String attribute) {
-		if (attribute == ST || attribute == DX || attribute == IQ || attribute == HT || attribute == WILL) {
-			return attribute;
-		} else if (ST.equals(attribute)) {
-			return ST;
-		} else if (DX.equals(attribute)) {
-			return DX;
-		} else if (IQ.equals(attribute)) {
-			return IQ;
-		} else if (HT.equals(attribute)) {
-			return HT;
-		} else if (WILL.equals(attribute)) {
-			return WILL;
+	private int getAttributeValue(CMCharacter character, CMBonusAttributeType attribute) {
+		if (attribute == null) {
+			return 0;
 		}
-		return null;
-	}
-
-	private int getAttributeValue(CMCharacter character, String attribute) {
-		if (attribute == ST) {
-			return character.getStrength();
+		switch (attribute) {
+			case ST:
+				return character.getStrength();
+			case DX:
+				return character.getDexterity();
+			case IQ:
+				return character.getIntelligence();
+			case HT:
+				return character.getHealth();
+			case WILL:
+				return character.getWill();
+			default:
+				return 0;
 		}
-		if (attribute == DX) {
-			return character.getDexterity();
-		}
-		if (attribute == IQ) {
-			return character.getIntelligence();
-		}
-		if (attribute == HT) {
-			return character.getHealth();
-		}
-		if (attribute == WILL) {
-			return character.getWill();
-		}
-		return 0;
 	}
 
 	/** @return The value comparison object. */
@@ -205,7 +174,7 @@ public class CMAttributePrereq extends CMHasPrereq {
 			satisfied = !satisfied;
 		}
 		if (!satisfied && builder != null) {
-			builder.append(MessageFormat.format(Msgs.DESCRIPTION, prefix, has() ? Msgs.HAS : Msgs.DOES_NOT_HAVE, mCombinedWith == null ? mWhich : MessageFormat.format(Msgs.COMBINED, mWhich, mCombinedWith), mValueCompare.toString()));
+			builder.append(MessageFormat.format(Msgs.DESCRIPTION, prefix, has() ? Msgs.HAS : Msgs.DOES_NOT_HAVE, mCombinedWith == null ? mWhich.getPresentationName() : MessageFormat.format(Msgs.COMBINED, mWhich.getPresentationName(), mCombinedWith.getPresentationName()), mValueCompare.toString()));
 		}
 		return satisfied;
 	}

@@ -25,7 +25,7 @@ package com.trollworks.gcs.ui.editor.feature;
 
 import com.trollworks.gcs.model.CMRow;
 import com.trollworks.gcs.model.criteria.CMIntegerCriteria;
-import com.trollworks.gcs.model.criteria.CMNumericCriteria;
+import com.trollworks.gcs.model.criteria.CMNumericCompareType;
 import com.trollworks.gcs.model.feature.CMWeaponBonus;
 import com.trollworks.toolkit.text.TKNumberFilter;
 import com.trollworks.toolkit.text.TKTextUtility;
@@ -39,6 +39,7 @@ import com.trollworks.toolkit.widget.menu.TKMenu;
 import com.trollworks.toolkit.widget.menu.TKMenuItem;
 
 import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
 
 /** A weapon bonus editor. */
 public class CSWeaponBonus extends CSBaseFeature {
@@ -83,20 +84,17 @@ public class CSWeaponBonus extends CSBaseFeature {
 	}
 
 	private void addNumericComparePopups(TKPanel parent, CMIntegerCriteria compare, String keyPrefix, int maxDigits) {
-		String[] keys = { CMNumericCriteria.IS, CMNumericCriteria.AT_LEAST, CMNumericCriteria.NO_MORE_THAN };
-		String[] titles = { Msgs.IS, Msgs.AT_LEAST, Msgs.AT_MOST };
 		TKMenu menu = new TKMenu();
-		int selection = 0;
 		TKPopupMenu popup;
 		TKTextField field;
 
-		for (int i = 0; i < keys.length; i++) {
-			menu.add(new TKMenuItem(titles[i], keyPrefix + keys[i]));
-			if (compare.getType() == keys[i]) {
-				selection = i;
-			}
+		for (CMNumericCompareType type : CMNumericCompareType.values()) {
+			TKMenuItem item = new TKMenuItem(MessageFormat.format(Msgs.RELATIVE_SKILL_LEVEL, type.getDescription()), keyPrefix);
+			item.setUserObject(type);
+			menu.add(item);
 		}
-		popup = new TKPopupMenu(menu, this, false, selection);
+		popup = new TKPopupMenu(menu, this, false);
+		popup.setSelectedUserObject(compare.getType());
 		popup.setOnlySize(popup.getPreferredSize());
 		parent.add(popup);
 
@@ -117,7 +115,7 @@ public class CSWeaponBonus extends CSBaseFeature {
 		} else if (command.startsWith(SPECIALIZATION_PREFIX)) {
 			handleStringCompareChange(((CMWeaponBonus) getFeature()).getSpecializationCriteria(), command.substring(SPECIALIZATION_PREFIX.length()), event);
 		} else if (command.startsWith(LEVEL_PREFIX)) {
-			handleNumericCompareChange(((CMWeaponBonus) getFeature()).getLevelCriteria(), command.substring(LEVEL_PREFIX.length()), event);
+			((CMWeaponBonus) getFeature()).getLevelCriteria().setQualifier(TKNumberUtils.getInteger(((TKTextField) event.getSource()).getText(), 0));
 		} else {
 			super.actionPerformed(event);
 		}
@@ -129,22 +127,10 @@ public class CSWeaponBonus extends CSBaseFeature {
 		} else if (command.startsWith(SPECIALIZATION_PREFIX)) {
 			handleStringCompareChange(((CMWeaponBonus) getFeature()).getSpecializationCriteria(), command.substring(SPECIALIZATION_PREFIX.length()), null);
 		} else if (command.startsWith(LEVEL_PREFIX)) {
-			handleNumericCompareChange(((CMWeaponBonus) getFeature()).getLevelCriteria(), command.substring(LEVEL_PREFIX.length()), null);
+			((CMWeaponBonus) getFeature()).getLevelCriteria().setType((CMNumericCompareType) item.getUserObject());
 		} else {
 			return super.obeyCommand(command, item);
 		}
 		return true;
-	}
-
-	private void handleNumericCompareChange(CMIntegerCriteria compare, String command, ActionEvent event) {
-		if (CMNumericCriteria.IS.equals(command)) {
-			compare.setType(CMNumericCriteria.IS);
-		} else if (CMNumericCriteria.AT_LEAST.equals(command)) {
-			compare.setType(CMNumericCriteria.AT_LEAST);
-		} else if (CMNumericCriteria.NO_MORE_THAN.equals(command)) {
-			compare.setType(CMNumericCriteria.NO_MORE_THAN);
-		} else if (QUALIFIER_KEY.equals(command)) {
-			compare.setQualifier(TKNumberUtils.getInteger(((TKTextField) event.getSource()).getText(), 0));
-		}
 	}
 }

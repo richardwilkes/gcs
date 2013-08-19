@@ -181,15 +181,23 @@ class Msgs {
 	/** Used by {@link CSNamer}. */
 	public static String	NAME_TITLE;
 	/** Used by {@link CSNamer}. */
-	public static String	CANCEL_REST;
-	/** Used by {@link CSNamer}. */
-	public static String	CANCEL;
-	/** Used by {@link CSNamer}. */
-	public static String	APPLY;
-	/** Used by {@link CSNamer}. */
 	public static String	ONE_REMAINING;
 	/** Used by {@link CSNamer}. */
 	public static String	REMAINING;
+
+	/** Used by {@link CSModifierEnabler}. */
+	public static String	MODIFIER_TITLE;
+	/** Used by {@link CSModifierEnabler}. */
+	public static String	MODIFIER_ONE_REMAINING;
+	/** Used by {@link CSModifierEnabler}. */
+	public static String	MODIFIER_REMAINING;
+
+	/** Used by {@link CSNamer} and {@link CSModifierEnabler}. */
+	public static String	CANCEL_REST;
+	/** Used by {@link CSNamer} and {@link CSModifierEnabler}. */
+	public static String	CANCEL;
+	/** Used by {@link CSNamer} and {@link CSModifierEnabler}. */
+	public static String	APPLY;
 
 	/** Used by {@link CSOpenAccessoryPanel}. */
 	public static String	NEW_TITLE;

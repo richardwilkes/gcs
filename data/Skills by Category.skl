@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
 <skill_list unique_id="elopgj61:-t669rbe6ekg8">
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Animal</name>
 		<skill>
 			<name>Animal Handling</name>
@@ -404,7 +404,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Arts/Entertainment</name>
 		<skill>
 			<name>Artist</name>
@@ -1089,7 +1089,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Athletic</name>
 		<skill>
 			<name>Acrobatics</name>
@@ -1454,7 +1454,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Business</name>
 		<skill>
 			<name>Accounting</name>
@@ -1690,7 +1690,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Combat/Weapon</name>
 		<skill_container open="yes">
 			<name>Melee Combat</name>
@@ -1722,13 +1722,13 @@
 				<weapon_bonus>
 					<name compare="is">Boxing</name>
 					<specialization compare="is anything"></specialization>
-					<level compare="atLeast">1</level>
+					<level compare="at_least">1</level>
 					<amount per_level="yes">+1</amount>
 				</weapon_bonus>
 				<weapon_bonus>
 					<name compare="is">Boxing</name>
 					<specialization compare="is anything"></specialization>
-					<level compare="atLeast">2</level>
+					<level compare="at_least">2</level>
 					<amount per_level="yes">+1</amount>
 				</weapon_bonus>
 			</skill>
@@ -1740,7 +1740,7 @@
 				<weapon_bonus>
 					<name compare="is">Brawling</name>
 					<specialization compare="is anything"></specialization>
-					<level compare="atLeast">2</level>
+					<level compare="at_least">2</level>
 					<amount per_level="yes">+1</amount>
 				</weapon_bonus>
 			</skill>
@@ -1958,13 +1958,13 @@
 				<weapon_bonus>
 					<name compare="is">Karate</name>
 					<specialization compare="is anything"></specialization>
-					<level compare="atLeast">0</level>
+					<level compare="at_least">0</level>
 					<amount per_level="yes">+1</amount>
 				</weapon_bonus>
 				<weapon_bonus>
 					<name compare="is">Karate</name>
 					<specialization compare="is anything"></specialization>
-					<level compare="atLeast">1</level>
+					<level compare="at_least">1</level>
 					<amount per_level="yes">+1</amount>
 				</weapon_bonus>
 			</skill>
@@ -3515,7 +3515,7 @@
 			</skill>
 		</skill_container>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Craft</name>
 		<skill>
 			<name>Artist</name>
@@ -3681,7 +3681,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Criminal/Street</name>
 		<skill>
 			<name>Carousing</name>
@@ -4138,7 +4138,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Design/Invention</name>
 		<skill>
 			<name>Architecture</name>
@@ -4785,7 +4785,7 @@
 			<reference>B228</reference>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Esoteric</name>
 		<skill>
 			<name>Autohypnosis</name>
@@ -4855,17 +4855,17 @@
 				<skill_prereq has="yes">
 					<name compare="is">suggest</name>
 					<specialization compare="is"></specialization>
-					<level compare="atLeast">12</level>
+					<level compare="at_least">12</level>
 				</skill_prereq>
 				<skill_prereq has="yes">
 					<name compare="is">public speaking</name>
 					<specialization compare="is"></specialization>
-					<level compare="atLeast">12</level>
+					<level compare="at_least">12</level>
 				</skill_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">charisma</name>
 					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</skill>
@@ -4888,12 +4888,12 @@
 				<advantage_prereq has="yes">
 					<name compare="is">charisma</name>
 					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 				<skill_prereq has="yes">
 					<name compare="is">public speaking</name>
 					<specialization compare="is"></specialization>
-					<level compare="atLeast">12</level>
+					<level compare="at_least">12</level>
 				</skill_prereq>
 			</prereq_list>
 		</skill>
@@ -4954,12 +4954,12 @@
 				<skill_prereq has="yes">
 					<name compare="is">stealth</name>
 					<specialization compare="is"></specialization>
-					<level compare="atLeast">14</level>
+					<level compare="at_least">14</level>
 				</skill_prereq>
 				<skill_prereq has="yes">
 					<name compare="is">hypnotism</name>
 					<specialization compare="is"></specialization>
-					<level compare="atLeast">14</level>
+					<level compare="at_least">14</level>
 				</skill_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">trained by a master</name>
@@ -4996,12 +4996,12 @@
 				<skill_prereq has="yes">
 					<name compare="is">stealth</name>
 					<specialization compare="is"></specialization>
-					<level compare="atLeast">14</level>
+					<level compare="at_least">14</level>
 				</skill_prereq>
 				<skill_prereq has="yes">
 					<name compare="is">acrobatics</name>
 					<specialization compare="is"></specialization>
-					<level compare="atLeast">14</level>
+					<level compare="at_least">14</level>
 				</skill_prereq>
 			</prereq_list>
 		</skill>
@@ -5061,18 +5061,18 @@
 					<skill_prereq has="yes">
 						<name compare="is">singing</name>
 						<specialization compare="is"></specialization>
-						<level compare="atLeast">12</level>
+						<level compare="at_least">12</level>
 					</skill_prereq>
 					<skill_prereq has="yes">
 						<name compare="starts with">musical instrument</name>
 						<specialization compare="is"></specialization>
-						<level compare="atLeast">12</level>
+						<level compare="at_least">12</level>
 					</skill_prereq>
 				</prereq_list>
 				<advantage_prereq has="yes">
 					<name compare="is">musical ability</name>
 					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</skill>
@@ -5085,12 +5085,12 @@
 				<advantage_prereq has="yes">
 					<name compare="is">charisma</name>
 					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 				<skill_prereq has="yes">
 					<name compare="is">public speaking</name>
 					<specialization compare="is"></specialization>
-					<level compare="atLeast">12</level>
+					<level compare="at_least">12</level>
 				</skill_prereq>
 			</prereq_list>
 		</skill>
@@ -5135,7 +5135,7 @@
 				<skill_prereq has="yes">
 					<name compare="is">pressure points</name>
 					<specialization compare="is"></specialization>
-					<level compare="atLeast">16</level>
+					<level compare="at_least">16</level>
 				</skill_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">trained by a master</name>
@@ -5164,17 +5164,17 @@
 				<skill_prereq has="yes">
 					<name compare="is">persuade</name>
 					<specialization compare="is"></specialization>
-					<level compare="atLeast">12</level>
+					<level compare="at_least">12</level>
 				</skill_prereq>
 				<skill_prereq has="yes">
 					<name compare="is">public speaking</name>
 					<specialization compare="is"></specialization>
-					<level compare="atLeast">12</level>
+					<level compare="at_least">12</level>
 				</skill_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">charisma</name>
 					<notes compare="is anything"></notes>
-					<level compare="atLeast">1</level>
+					<level compare="at_least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</skill>
@@ -5207,7 +5207,7 @@
 				<skill_prereq has="yes">
 					<name compare="is">bow</name>
 					<specialization compare="is"></specialization>
-					<level compare="atLeast">18</level>
+					<level compare="at_least">18</level>
 				</skill_prereq>
 				<prereq_list all="no">
 					<advantage_prereq has="yes">
@@ -5222,7 +5222,7 @@
 			</prereq_list>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Everyman</name>
 		<skill>
 			<name>Area Knowledge</name>
@@ -5656,7 +5656,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Knowledge</name>
 		<skill>
 			<name>Area Knowledge</name>
@@ -6264,7 +6264,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Medical</name>
 		<skill>
 			<name>Diagnosis</name>
@@ -6559,7 +6559,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Military</name>
 		<skill>
 			<name>Armoury</name>
@@ -6854,7 +6854,7 @@
 			<points>1</points>
 			<reference>B194</reference>
 			<prereq_list all="yes">
-				<attribute_prereq has="yes" which="DX" compare="atLeast">12</attribute_prereq>
+				<attribute_prereq has="yes" which="dx" compare="at_least">12</attribute_prereq>
 			</prereq_list>
 			<default>
 				<type>IQ</type>
@@ -7214,7 +7214,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Natural Science</name>
 		<skill>
 			<name>Alchemy</name>
@@ -8102,7 +8102,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Occult/Magical</name>
 		<skill>
 			<name>Alchemy</name>
@@ -8223,7 +8223,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Outdoor/Exploration</name>
 		<skill>
 			<name>Camouflage</name>
@@ -9632,7 +9632,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Plant</name>
 		<skill>
 			<name>Biology</name>
@@ -10058,7 +10058,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Police</name>
 		<skill>
 			<name>Body Language</name>
@@ -10164,7 +10164,7 @@
 			<points>1</points>
 			<reference>B194</reference>
 			<prereq_list all="yes">
-				<attribute_prereq has="yes" which="DX" compare="atLeast">12</attribute_prereq>
+				<attribute_prereq has="yes" which="dx" compare="at_least">12</attribute_prereq>
 			</prereq_list>
 			<default>
 				<type>IQ</type>
@@ -10389,7 +10389,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Repair/Maintainance</name>
 		<skill>
 			<name>Armoury</name>
@@ -12236,7 +12236,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Scholarly</name>
 		<skill>
 			<name>Computer Operation</name>
@@ -12377,28 +12377,16 @@
 			<notes>When below TL8</notes>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="starts with">Native Language</name>
-					<notes compare="contains">Written: Accented</notes>
-				</advantage_prereq>
-				<advantage_prereq has="yes">
-					<name compare="starts with">Native Language</name>
-					<notes compare="contains">Written: Native</notes>
-				</advantage_prereq>
-				<advantage_prereq has="yes">
-					<name compare="starts with">Native Language</name>
-					<notes compare="contains">Written: Broken</notes>
+					<name compare="starts with">Language</name>
+					<notes compare="contains">Written (Broken)</notes>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="starts with">Language</name>
-					<notes compare="contains">Written: Broken</notes>
+					<notes compare="contains">Written (Native)</notes>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="starts with">Language</name>
-					<notes compare="contains">Written: Native</notes>
-				</advantage_prereq>
-				<advantage_prereq has="yes">
-					<name compare="starts with">Language</name>
-					<notes compare="contains">Written: Accented</notes>
+					<notes compare="contains">Written (Accented)</notes>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -12424,28 +12412,16 @@
 					<specialization compare="is"></specialization>
 				</skill_prereq>
 				<advantage_prereq has="yes">
-					<name compare="starts with">Native Language</name>
-					<notes compare="contains">Written: Accented</notes>
-				</advantage_prereq>
-				<advantage_prereq has="yes">
-					<name compare="starts with">Native Language</name>
-					<notes compare="contains">Written: Native</notes>
-				</advantage_prereq>
-				<advantage_prereq has="yes">
-					<name compare="starts with">Native Language</name>
-					<notes compare="contains">Written: Broken</notes>
+					<name compare="starts with">Language</name>
+					<notes compare="contains">Written (Broken)</notes>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="starts with">Language</name>
-					<notes compare="contains">Written: Broken</notes>
+					<notes compare="contains">Written (Native)</notes>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="starts with">Language</name>
-					<notes compare="contains">Written: Native</notes>
-				</advantage_prereq>
-				<advantage_prereq has="yes">
-					<name compare="starts with">Language</name>
-					<notes compare="contains">Written: Accented</notes>
+					<notes compare="contains">Written (Accented)</notes>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -12495,7 +12471,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Social</name>
 		<skill>
 			<name>Acting</name>
@@ -13374,7 +13350,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Social Sciences/Humanities</name>
 		<skill>
 			<name>Anthropology</name>
@@ -13901,7 +13877,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Spy</name>
 		<skill>
 			<name>Acting</name>
@@ -14326,28 +14302,16 @@
 			<notes>When below TL8</notes>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="starts with">Native Language</name>
-					<notes compare="contains">Written: Accented</notes>
-				</advantage_prereq>
-				<advantage_prereq has="yes">
-					<name compare="starts with">Native Language</name>
-					<notes compare="contains">Written: Native</notes>
-				</advantage_prereq>
-				<advantage_prereq has="yes">
-					<name compare="starts with">Native Language</name>
-					<notes compare="contains">Written: Broken</notes>
+					<name compare="starts with">Language</name>
+					<notes compare="contains">Written (Broken)</notes>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="starts with">Language</name>
-					<notes compare="contains">Written: Broken</notes>
+					<notes compare="contains">Written (Native)</notes>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="starts with">Language</name>
-					<notes compare="contains">Written: Native</notes>
-				</advantage_prereq>
-				<advantage_prereq has="yes">
-					<name compare="starts with">Language</name>
-					<notes compare="contains">Written: Accented</notes>
+					<notes compare="contains">Written (Accented)</notes>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -14373,28 +14337,16 @@
 					<specialization compare="is"></specialization>
 				</skill_prereq>
 				<advantage_prereq has="yes">
-					<name compare="starts with">Native Language</name>
-					<notes compare="contains">Written: Accented</notes>
-				</advantage_prereq>
-				<advantage_prereq has="yes">
-					<name compare="starts with">Native Language</name>
-					<notes compare="contains">Written: Native</notes>
-				</advantage_prereq>
-				<advantage_prereq has="yes">
-					<name compare="starts with">Native Language</name>
-					<notes compare="contains">Written: Broken</notes>
+					<name compare="starts with">Language</name>
+					<notes compare="contains">Written (Broken)</notes>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="starts with">Language</name>
-					<notes compare="contains">Written: Broken</notes>
+					<notes compare="contains">Written (Native)</notes>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="starts with">Language</name>
-					<notes compare="contains">Written: Native</notes>
-				</advantage_prereq>
-				<advantage_prereq has="yes">
-					<name compare="starts with">Language</name>
-					<notes compare="contains">Written: Accented</notes>
+					<notes compare="contains">Written (Accented)</notes>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -14468,7 +14420,7 @@
 			</default>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Technical</name>
 		<skill>
 			<name>Battlesuit</name>
@@ -14972,7 +14924,7 @@
 			<points>1</points>
 			<reference>B194</reference>
 			<prereq_list all="yes">
-				<attribute_prereq has="yes" which="DX" compare="atLeast">12</attribute_prereq>
+				<attribute_prereq has="yes" which="dx" compare="at_least">12</attribute_prereq>
 			</prereq_list>
 			<default>
 				<type>IQ</type>
@@ -15381,7 +15333,7 @@
 			<reference>B192</reference>
 		</skill>
 	</skill_container>
-	<skill_container open="yes">
+	<skill_container open="no">
 		<name>Vehicle</name>
 		<skill>
 			<name>Airshipman</name>

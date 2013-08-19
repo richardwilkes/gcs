@@ -98,10 +98,10 @@ public class CSBatchApplication extends TKApp {
 						prereqs.start();
 						CSPrerequisitesThread.waitForProcessingToFinish(character);
 
-						if (paperSize != null) {
+						if (paperSize != null && settings != null) {
 							settings.setPageSize(paperSize, TKLengthUnits.INCHES);
 						}
-						if (margins != null) {
+						if (margins != null && settings != null) {
 							settings.setPageMargins(margins, TKLengthUnits.INCHES);
 						}
 						sheet.rebuild();

@@ -654,9 +654,8 @@ public class TKOptionDialog extends TKDialog implements ActionListener {
 	 * @param icon The icon to display, or <code>null</code>.
 	 * @param title The title for the dialog.
 	 * @param type The type of dialog to create. One of the <code>TYPE_xxx</code> constants.
-	 * @param data If this parameter is a {@link TKPanel}, it will be inserted into the
-	 *            dialog, otherwise, it will be made into a string and displayed in a
-	 *            {@link TKLabel}.
+	 * @param data If this parameter is a {@link TKPanel}, it will be inserted into the dialog,
+	 *            otherwise, it will be made into a string and displayed in a {@link TKLabel}.
 	 * @return The result code of the dialog.
 	 */
 	public static int modal(TKBaseWindow owner, BufferedImage icon, String title, int type, Object data) {
@@ -670,9 +669,8 @@ public class TKOptionDialog extends TKDialog implements ActionListener {
 	 * @param icon The icon to display, or <code>null</code>.
 	 * @param title The title for the dialog.
 	 * @param type The type of dialog to create. One of the <code>TYPE_xxx</code> constants.
-	 * @param data If this parameter is a {@link TKPanel}, it will be inserted into the
-	 *            dialog, otherwise, it will be made into a string and displayed in a
-	 *            {@link TKLabel}.
+	 * @param data If this parameter is a {@link TKPanel}, it will be inserted into the dialog,
+	 *            otherwise, it will be made into a string and displayed in a {@link TKLabel}.
 	 * @param dontShowTag The tag for tracking "don't show again" state, or <code>null</code> if
 	 *            the dialog should always show.
 	 * @return The result code of the dialog.
@@ -688,9 +686,8 @@ public class TKOptionDialog extends TKDialog implements ActionListener {
 	 * @param icon The icon to display, or <code>null</code>.
 	 * @param title The title for the dialog.
 	 * @param type The type of dialog to create. One of the <code>TYPE_xxx</code> constants.
-	 * @param data If this parameter is a {@link TKPanel}, it will be inserted into the
-	 *            dialog, otherwise, it will be made into a string and displayed in a
-	 *            {@link TKLabel}.
+	 * @param data If this parameter is a {@link TKPanel}, it will be inserted into the dialog,
+	 *            otherwise, it will be made into a string and displayed in a {@link TKLabel}.
 	 * @param dontShowTag The tag for tracking "don't show again" state, or <code>null</code> if
 	 *            the dialog should always show.
 	 * @param buttonTitles An array containing the titles for the standard buttons. The title index
@@ -700,16 +697,8 @@ public class TKOptionDialog extends TKDialog implements ActionListener {
 	 */
 	public static int modal(TKBaseWindow owner, BufferedImage icon, String title, int type, Object data, String dontShowTag, String[] buttonTitles) {
 		if (dontShowTag == null || !TKPreferences.getInstance().getBooleanValue(MODULE, dontShowTag)) {
-			TKOptionDialog dialog;
+			TKOptionDialog dialog = create(owner, title, type);
 			TKPanel panel;
-
-			if (owner == null) {
-				dialog = new TKOptionDialog(title, type);
-			} else if (owner instanceof TKWindow) {
-				dialog = new TKOptionDialog((TKWindow) owner, title, type);
-			} else {
-				dialog = new TKOptionDialog((TKDialog) owner, title, type);
-			}
 
 			if (buttonTitles != null) {
 				dialog.setOKButtonTitle(buttonTitles[OK - 1]);
@@ -726,6 +715,23 @@ public class TKOptionDialog extends TKDialog implements ActionListener {
 			return dialog.doModal(icon, panel, dontShowTag);
 		}
 		return OK;
+	}
+
+	/**
+	 * Creates a new {@link TKOptionDialog}.
+	 * 
+	 * @param owner The owning window, if any.
+	 * @param title The title to use.
+	 * @param type The type of dialog to create.
+	 * @return The newly created {@link TKOptionDialog}.
+	 */
+	public static TKOptionDialog create(TKBaseWindow owner, String title, int type) {
+		if (owner == null) {
+			return new TKOptionDialog(title, type);
+		} else if (owner instanceof TKWindow) {
+			return new TKOptionDialog((TKWindow) owner, title, type);
+		}
+		return new TKOptionDialog((TKDialog) owner, title, type);
 	}
 
 	/**

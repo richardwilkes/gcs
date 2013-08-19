@@ -55,13 +55,14 @@ public class CSPage extends TKPanel {
 	private void updateBorder() {
 		TKPrintManager pageSettings = mOwner.getPageSettings();
 		Insets insets = mOwner.getPageAdornmentsInsets(this);
-		double[] margins = pageSettings.getPageMargins(TKLengthUnits.POINTS);
+		double[] margins = (pageSettings != null) ? pageSettings.getPageMargins(TKLengthUnits.POINTS) : new double[] { 36.0, 36.0, 36.0, 36.0 };
 
 		setBorder(new TKEmptyBorder(insets.top + (int) margins[0], insets.left + (int) margins[1], insets.bottom + (int) margins[2], insets.right + (int) margins[3]));
 	}
 
 	@Override protected Dimension getPreferredSizeSelf() {
-		double[] size = mOwner.getPageSettings().getPageSize(TKLengthUnits.POINTS);
+		TKPrintManager pageSettings = mOwner.getPageSettings();
+		double[] size = (pageSettings != null) ? pageSettings.getPageSize(TKLengthUnits.POINTS) : new double[] { 8.5 * 72.0, 11.0 * 72.0 };
 
 		updateBorder();
 		return new Dimension((int) size[0], (int) size[1]);

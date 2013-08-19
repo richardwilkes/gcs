@@ -38,9 +38,12 @@ import com.trollworks.toolkit.widget.layout.TKColumnLayout;
 import com.trollworks.toolkit.widget.layout.TKCompassLayout;
 import com.trollworks.toolkit.widget.layout.TKCompassPosition;
 import com.trollworks.toolkit.widget.layout.TKRowDistribution;
-import com.trollworks.toolkit.window.TKOptionDialog;
 import com.trollworks.toolkit.window.TKDialog;
+import com.trollworks.toolkit.window.TKOptionDialog;
 
+import java.awt.Dialog;
+import java.awt.Frame;
+import java.awt.Window;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,10 +64,11 @@ public abstract class CSRowEditor<T extends CMRow> extends TKPanel {
 	/**
 	 * Brings up a modal detailed editor for each row in the list.
 	 * 
+	 * @param owner The owning window/dialog.
 	 * @param list The rows to edit.
 	 * @return Whether anything was modified.
 	 */
-	static public boolean edit(List<? extends CMRow> list) {
+	static public boolean edit(Window owner, List<? extends CMRow> list) {
 		ArrayList<CMRowUndo> undos = new ArrayList<CMRowUndo>();
 		CMRow[] rows = list.toArray(new CMRow[0]);
 
@@ -72,7 +76,14 @@ public abstract class CSRowEditor<T extends CMRow> extends TKPanel {
 			boolean hasMore = i != rows.length - 1;
 			CMRow row = rows[i];
 			CSRowEditor<? extends CMRow> editor = row.createEditor();
-			TKOptionDialog dialog = new TKOptionDialog(MessageFormat.format(Msgs.WINDOW_TITLE, row.getRowType()), hasMore ? TKOptionDialog.TYPE_YES_NO_CANCEL : TKOptionDialog.TYPE_YES_NO);
+			String title = MessageFormat.format(Msgs.WINDOW_TITLE, row.getRowType());
+			int type = hasMore ? TKOptionDialog.TYPE_YES_NO_CANCEL : TKOptionDialog.TYPE_YES_NO;
+			TKOptionDialog dialog;
+			if (owner instanceof Dialog) {
+				dialog = new TKOptionDialog((Dialog) owner, title, type);
+			} else {
+				dialog = new TKOptionDialog((Frame) owner, title, type);
+			}
 			TKPanel wrapper = new TKPanel(new TKCompassLayout());
 
 			if (hasMore) {
