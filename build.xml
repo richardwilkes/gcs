@@ -66,6 +66,7 @@
 				<pathelement location="libraries/iText.jar"/>
 			</classpath>
 			<src path="."/>
+			<!-- <compilerarg value="-Xlint:unchecked"/> -->
 		</javac>
 
 		<!-- Create the GCS jar file and copy over the various library jar files. -->
