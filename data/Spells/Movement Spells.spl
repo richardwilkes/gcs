@@ -885,7 +885,7 @@
 			<prereq_list all="yes">
 				<attribute_prereq has="yes" which="iq" compare="at_least">13</attribute_prereq>
 				<spell_prereq has="yes">
-					<name compare="is">from 10 colleges</name>
+					<college_count compare="at_least">10</college_count>
 				</spell_prereq>
 			</prereq_list>
 		</prereq_list>

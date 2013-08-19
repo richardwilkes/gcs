@@ -878,7 +878,6 @@ public class GURPSCharacter extends DataFile {
 	/** @return The last modified date and time. */
 	public String getLastModified() {
 		Date date = new Date(mLastModified);
-
 		return MessageFormat.format(MSG_LAST_MODIFIED, DateFormat.getTimeInstance(DateFormat.SHORT).format(date), DateFormat.getDateInstance(DateFormat.MEDIUM).format(date));
 	}
 

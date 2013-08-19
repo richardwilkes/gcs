@@ -9,11 +9,6 @@
 		<casting_time>2 sec</casting_time>
 		<duration>1 min</duration>
 		<reference>M86</reference>
-		<skill_bonus>
-			<name compare="is"></name>
-			<specialization compare="is anything"></specialization>
-			<amount>+1</amount>
-		</skill_bonus>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college_count compare="at_least">10</college_count>

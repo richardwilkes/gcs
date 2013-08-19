@@ -21,7 +21,7 @@
 	<key>CFBundleSignature</key>
 		<string>RWGS</string>
 	<key>CFBundleGetInfoString</key>
-		<string>APP_VERSION, Copyright (c) COPYRIGHT_YEARS by APP_COPYRIGHT_OWNER.  All rights reserved worldwide.</string>
+		<string>APP_VERSION, Copyright (c) COPYRIGHT_YEARS by COPYRIGHT_OWNER.  All rights reserved worldwide.</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
 	<key>CFBundleIconFile</key>

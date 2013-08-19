@@ -264,8 +264,6 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 
 	public void dragOver(DropTargetDragEvent dtde) {
 		if (mDragWasAcceptable) {
-// setBorder(new CompoundBorder(new LineBorder(Colors.HIGHLIGHT, 2, LineBorder.ALL_EDGES, false),
-// NORMAL_BORDER));
 			dtde.acceptDrag(DnDConstants.ACTION_MOVE);
 		} else {
 			dtde.rejectDrag();
@@ -284,12 +282,10 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		dtde.acceptDrop(dtde.getDropAction());
 		((TemplateWindow) getTopLevelAncestor()).addRows(mDragRows);
 		mDragRows = null;
-// setBorder(NORMAL_BORDER);
 		dtde.dropComplete(true);
 	}
 
 	public void dragExit(DropTargetEvent dte) {
 		mDragRows = null;
-// setBorder(NORMAL_BORDER);
 	}
 }

@@ -23,6 +23,7 @@
 
 package com.trollworks.gcs.widgets;
 
+import com.trollworks.gcs.menu.file.RecentFilesMenu;
 import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.io.Path;
@@ -77,9 +78,13 @@ public class StdFileDialog implements FilenameFilter {
 		String result = dialog.getFile();
 		if (result != null) {
 			if (filter.accept(null, result)) {
-				return new File(dialog.getDirectory(), result);
+				File file = new File(dialog.getDirectory(), result);
+				RecentFilesMenu.addRecent(file);
+				return file;
 			} else if (!open) {
-				return new File(dialog.getDirectory(), Path.enforceExtension(result, extension[0]));
+				File file = new File(dialog.getDirectory(), Path.enforceExtension(result, extension[0]));
+				RecentFilesMenu.addRecent(file);
+				return file;
 			}
 			showCannotOpenMsg(comp, result);
 		}

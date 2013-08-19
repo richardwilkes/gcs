@@ -49,10 +49,15 @@ public class FileMenu extends JMenu {
 		add(new JMenuItem(NewListCommand.EQUIPMENT));
 		addSeparator();
 		add(new JMenuItem(OpenCommand.INSTANCE));
+		add(new RecentFilesMenu());
 		add(new JMenuItem(CloseCommand.INSTANCE));
 		addSeparator();
 		add(new JMenuItem(SaveCommand.INSTANCE));
 		add(new JMenuItem(SaveAsCommand.INSTANCE));
+		addSeparator();
+		add(new JMenuItem(ExportToCommand.EXPORT_TO_HTML));
+		add(new JMenuItem(ExportToCommand.EXPORT_TO_PDF));
+		add(new JMenuItem(ExportToCommand.EXPORT_TO_PNG));
 		addSeparator();
 		add(new JMenuItem(PageSetupCommand.INSTANCE));
 		add(new JMenuItem(PrintCommand.INSTANCE));

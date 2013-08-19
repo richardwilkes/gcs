@@ -150,7 +150,7 @@
 		<reference>M198</reference>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<name compare="is"></name>
+				<name compare="is">Lightning</name>
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">

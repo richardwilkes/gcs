@@ -225,6 +225,7 @@ public class Main {
 						}
 						sheet.dispose();
 					} catch (Exception exception) {
+						exception.printStackTrace();
 						System.out.println(MSG_PROCESSING_FAILED);
 					}
 				}

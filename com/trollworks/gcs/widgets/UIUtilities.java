@@ -90,7 +90,7 @@ public class UIUtilities {
 	}
 
 	/** @param comps The {@link Component}s to set to the same size. */
-	public static void adjustToSameSize(Component[] comps) {
+	public static void adjustToSameSize(Component... comps) {
 		Dimension best = new Dimension();
 		for (Component comp : comps) {
 			Dimension size = comp.getPreferredSize();

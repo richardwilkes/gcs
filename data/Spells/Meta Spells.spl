@@ -199,7 +199,7 @@
 		<reference>M126</reference>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<name compare="is"></name>
+				<any/>
 				<quantity compare="at_least">12</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
@@ -773,7 +773,7 @@
 		<reference>M123</reference>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<name compare="is"></name>
+				<name compare="is anything"></name>
 				<quantity compare="at_least">8</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">

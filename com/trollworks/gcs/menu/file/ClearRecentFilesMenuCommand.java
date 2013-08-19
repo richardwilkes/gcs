@@ -26,57 +26,30 @@ package com.trollworks.gcs.menu.file;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 
-import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.io.File;
 
 import javax.swing.JMenuItem;
 
-/** Provides the "Save" command. */
-public class SaveCommand extends Command {
-	private static String			MSG_SAVE;
+/** Provides the "Clear" command in the {@link RecentFilesMenu}. */
+public class ClearRecentFilesMenuCommand extends Command {
+	private static String							MSG_CLEAR;
 
 	static {
-		LocalizedMessages.initialize(SaveCommand.class);
+		LocalizedMessages.initialize(ClearRecentFilesMenuCommand.class);
 	}
 
-	/** The singleton {@link SaveCommand}. */
-	public static final SaveCommand	INSTANCE	= new SaveCommand();
+	/** The singleton {@link ClearRecentFilesMenuCommand}. */
+	public static final ClearRecentFilesMenuCommand	INSTANCE	= new ClearRecentFilesMenuCommand();
 
-	private SaveCommand() {
-		super(MSG_SAVE, KeyEvent.VK_S);
+	private ClearRecentFilesMenuCommand() {
+		super(MSG_CLEAR);
 	}
 
 	@Override public void adjustForMenu(JMenuItem item) {
-		Window window = getActiveWindow();
-		if (window instanceof Saveable) {
-			setEnabled(((Saveable) window).isModified());
-		} else {
-			setEnabled(false);
-		}
+		setEnabled(RecentFilesMenu.getRecentCount() > 0);
 	}
 
 	@Override public void actionPerformed(ActionEvent event) {
-		save((Saveable) getActiveWindow());
-	}
-
-	/**
-	 * Allows the user to save the file.
-	 * 
-	 * @param saveable The {@link Saveable} to work on.
-	 * @return The file(s) actually written to.
-	 */
-	public File[] save(Saveable saveable) {
-		File file = saveable.getBackingFile();
-		if (file != null) {
-			File[] files = saveable.saveTo(file);
-			for (File one : files) {
-				RecentFilesMenu.addRecent(one);
-			}
-			return files;
-
-		}
-		return SaveAsCommand.INSTANCE.saveAs(saveable);
+		RecentFilesMenu.clearRecents();
 	}
 }

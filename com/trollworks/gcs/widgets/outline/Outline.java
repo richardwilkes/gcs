@@ -1163,12 +1163,12 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 		mSelectionChangedCommand = command;
 	}
 
-	/** @return The otential user-initiated content size change action command. */
+	/** @return The potential user-initiated content size change action command. */
 	public String getPotentialContentSizeChangeActionCommand() {
 		return mPotentialContentSizeChangeCommand;
 	}
 
-	/** @param command The otential user-initiated content size change action command. */
+	/** @param command The potential user-initiated content size change action command. */
 	public void setPotentialContentSizeChangeActionCommand(String command) {
 		mPotentialContentSizeChangeCommand = command;
 	}

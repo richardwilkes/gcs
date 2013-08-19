@@ -28,6 +28,7 @@ import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.skill.Skill;
+import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.io.xml.XMLReader;
 import com.trollworks.gcs.utility.io.xml.XMLWriter;
 import com.trollworks.gcs.widgets.outline.ListRow;
@@ -45,7 +46,11 @@ public class SkillPrereq extends NameLevelPrereq {
 	/** The XML tag for this class. */
 	public static final String	TAG_ROOT			= "skill_prereq";	//$NON-NLS-1$
 	private static final String	TAG_SPECIALIZATION	= "specialization"; //$NON-NLS-1$
-	private StringCriteria	mSpecializationCriteria;
+	private StringCriteria		mSpecializationCriteria;
+
+	static {
+		LocalizedMessages.initialize(SkillPrereq.class);
+	}
 
 	/**
 	 * Creates a new prerequisite.

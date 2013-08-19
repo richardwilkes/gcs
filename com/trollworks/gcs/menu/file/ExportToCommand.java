@@ -23,35 +23,54 @@
 
 package com.trollworks.gcs.menu.file;
 
+import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.io.Path;
 import com.trollworks.gcs.widgets.StdFileDialog;
 
 import java.awt.Component;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.io.File;
 
 import javax.swing.JMenuItem;
 
 /** Provides the "Save As..." command. */
-public class SaveAsCommand extends Command {
-	private static String				MSG_SAVE_AS;
+public class ExportToCommand extends Command {
+	private static String				MSG_EXPORT_TO_HTML;
+	private static String				MSG_EXPORT_TO_PDF;
+	private static String				MSG_EXPORT_TO_PNG;
 
 	static {
-		LocalizedMessages.initialize(SaveAsCommand.class);
+		LocalizedMessages.initialize(ExportToCommand.class);
 	}
 
-	/** The singleton {@link SaveAsCommand}. */
-	public static final SaveAsCommand	INSTANCE	= new SaveAsCommand();
+	/** The "Export To HTML...". */
+	public static final ExportToCommand	EXPORT_TO_HTML	= new ExportToCommand(MSG_EXPORT_TO_HTML, SheetWindow.HTML_EXTENSION);
+	/** The "Export To PDF...". */
+	public static final ExportToCommand	EXPORT_TO_PDF	= new ExportToCommand(MSG_EXPORT_TO_PDF, SheetWindow.PDF_EXTENSION);
+	/** The "Export To PNG...". */
+	public static final ExportToCommand	EXPORT_TO_PNG	= new ExportToCommand(MSG_EXPORT_TO_PNG, SheetWindow.PNG_EXTENSION);
+	private String						mExtension;
 
-	private SaveAsCommand() {
-		super(MSG_SAVE_AS, KeyEvent.VK_S, SHIFTED_COMMAND_MODIFIER);
+	private ExportToCommand(String title, String extension) {
+		super(title);
+		mExtension = extension;
 	}
 
 	@Override public void adjustForMenu(JMenuItem item) {
-		setEnabled(getActiveWindow() instanceof Saveable);
+		Window activeWindow = getActiveWindow();
+		boolean enable = false;
+		if (activeWindow instanceof Saveable) {
+			for (String extension : ((Saveable) activeWindow).getAllowedExtensions()) {
+				if (mExtension.equals(extension)) {
+					enable = true;
+					break;
+				}
+			}
+		}
+		setEnabled(enable);
 	}
 
 	@Override public void actionPerformed(ActionEvent event) {
@@ -66,11 +85,7 @@ public class SaveAsCommand extends Command {
 	 */
 	public File[] saveAs(Saveable saveable) {
 		String path = saveable.getPreferredSavePath();
-		File result = StdFileDialog.choose(saveable instanceof Component ? (Component) saveable : null, false, MSG_SAVE_AS, Path.getParent(path), Path.getLeafName(path), saveable.getAllowedExtensions());
-		File[] files = result != null ? saveable.saveTo(result) : new File[0];
-		for (File file : files) {
-			RecentFilesMenu.addRecent(file);
-		}
-		return files;
+		File result = StdFileDialog.choose(saveable instanceof Component ? (Component) saveable : null, false, (String) getValue(NAME), Path.getParent(path), Path.getLeafName(path), mExtension);
+		return result != null ? saveable.saveTo(result) : new File[0];
 	}
 }

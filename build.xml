@@ -80,9 +80,6 @@
 			<arg value="${InstallDirLeaf}"/>
 		</exec>
 
-		<!-- Remove Unix-specific files -->
-		<delete file="${InstallDir}/gcs"/>
-
 		<!-- Create the Mac OS X application bundle. -->
 		<property name="AppBundle" value="${InstallDir}/${APP_NAME}.app/Contents"/>
 		<property name="AppDir" value="${AppBundle}/MacOS"/>

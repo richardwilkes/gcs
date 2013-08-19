@@ -25,6 +25,7 @@ package com.trollworks.gcs.widgets.layout;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 
 /** A row within a {@link FlexLayout}. */
 public class FlexRow extends FlexContainer {
@@ -66,22 +67,22 @@ public class FlexRow extends FlexContainer {
 				extra = 0;
 			}
 		}
-		Alignment vAlign = getVerticalAlignment();
+		ArrayList<FlexCell> children = getChildren();
 		Rectangle[] childBounds = new Rectangle[count];
 		for (int i = 0; i < count; i++) {
 			childBounds[i] = new Rectangle(prefSizes[i]);
 			if (getFillVertical()) {
 				childBounds[i].height = Math.min(maxSizes[i].height, bounds.height);
 			}
-			switch (vAlign) {
+			switch (children.get(i).getVerticalAlignment()) {
 				case LEFT_TOP:
 					childBounds[i].y = bounds.y;
 					break;
 				case CENTER:
-					childBounds[i].y = bounds.y + (bounds.height - prefSizes[i].height) / 2;
+					childBounds[i].y = bounds.y + (bounds.height - childBounds[i].height) / 2;
 					break;
 				case RIGHT_BOTTOM:
-					childBounds[i].y = bounds.y + bounds.height - prefSizes[i].height;
+					childBounds[i].y = bounds.y + bounds.height - childBounds[i].height;
 					break;
 			}
 		}

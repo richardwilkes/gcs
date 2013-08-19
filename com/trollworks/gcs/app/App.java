@@ -35,7 +35,6 @@ import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.data.OpenDataFileCommand;
 import com.trollworks.gcs.menu.edit.PreferencesCommand;
 import com.trollworks.gcs.menu.file.NewCharacterSheetCommand;
-import com.trollworks.gcs.menu.file.OpenCommand;
 import com.trollworks.gcs.menu.file.PrintCommand;
 import com.trollworks.gcs.menu.file.QuitCommand;
 import com.trollworks.gcs.menu.help.AboutCommand;
@@ -205,7 +204,8 @@ public class App implements ApplicationListener, Runnable, KeyEventDispatcher {
 		}
 
 		if (AppWindow.getAllWindows().isEmpty()) {
-			OpenCommand.INSTANCE.open();
+			StartupDialog sd = new StartupDialog();
+			sd.setVisible(true);
 			if (AppWindow.getAllWindows().isEmpty()) {
 				NewCharacterSheetCommand.INSTANCE.newSheet();
 			}

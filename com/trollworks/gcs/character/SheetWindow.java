@@ -482,16 +482,4 @@ public class SheetWindow extends AppWindow implements Saveable, Printable, Searc
 		}
 		return result.toArray(new File[result.size()]);
 	}
-
-	// @Override public boolean obeyCommand(String command, TKMenuItem item) {
-	// } else if (CMD_REDO.equals(command) || CMD_UNDO.equals(command)) {
-	// if (super.obeyCommand(command, item)) {
-	// notifyOfPrereqOrFeatureModification();
-	// repaint();
-	// }
-	// } else {
-	// return super.obeyCommand(command, item);
-	// }
-	// return true;
-	// }
 }

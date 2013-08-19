@@ -154,6 +154,7 @@ public class TemplateWindow extends AppWindow implements Saveable, SearchTarget 
 		mTemplate = template;
 		mContent = new TemplateSheet(mTemplate);
 		adjustWindowTitle();
+		mContent.setSize(mContent.getPreferredSize());
 		add(new JScrollPane(mContent));
 		createToolBar();
 		restoreBounds();
@@ -186,15 +187,6 @@ public class TemplateWindow extends AppWindow implements Saveable, SearchTarget 
 	@Override public String getWindowPrefsPrefix() {
 		return getConsumerGroup(mTemplate) + "."; //$NON-NLS-1$
 	}
-
-// @Override public boolean obeyCommand(String command, TKMenuItem item) {
-// } else if (CMD_APPLY_TEMPLATE_TO_SHEET.equals(command)) {
-// applyTemplateToSheet(mTemplate);
-// } else {
-// return super.obeyCommand(command, item);
-// }
-// return true;
-// }
 
 	/**
 	 * Adds rows to the display.

@@ -136,16 +136,21 @@ public class NotesPanel extends ActionPanel {
 	@Override public Dimension getMinimumSize() {
 		Insets insets = getInsets();
 		int height = TextDrawing.getPreferredSize(UIManager.getFont(Fonts.KEY_NOTES), null, "Mg").height; //$NON-NLS-1$
-
 		return new Dimension(insets.left + insets.right, height + insets.top + insets.bottom);
 	}
 
 	@Override public Dimension getPreferredSize() {
 		Insets insets = getInsets();
 		Dimension size = TextDrawing.getPreferredSize(UIManager.getFont(Fonts.KEY_NOTES), null, mNotes);
-
 		size.width += insets.left + insets.right;
 		size.height += insets.top + insets.bottom;
+		Dimension minSize = getMinimumSize();
+		if (minSize.width > size.width) {
+			size.width = minSize.width;
+		}
+		if (minSize.height > size.height) {
+			size.height = minSize.height;
+		}
 		return size;
 	}
 

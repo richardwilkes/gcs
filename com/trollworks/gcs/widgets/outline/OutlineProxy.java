@@ -51,6 +51,14 @@ public class OutlineProxy extends Outline {
 		return mOutlineToProxy;
 	}
 
+	@Override public boolean canDeleteSelection() {
+		return getRealOutline().canDeleteSelection();
+	}
+
+	@Override public void deleteSelection() {
+		getRealOutline().deleteSelection();
+	}
+
 	@Override protected void addProxy(OutlineProxy proxy) {
 		assert false : "You cannot add a proxy to a proxy"; //$NON-NLS-1$
 	}

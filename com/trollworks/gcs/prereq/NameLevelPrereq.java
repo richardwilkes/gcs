@@ -47,8 +47,8 @@ public abstract class NameLevelPrereq extends HasPrereq {
 	private static final String	TAG_NAME	= "name";	//$NON-NLS-1$
 	private static final String	TAG_LEVEL	= "level";	//$NON-NLS-1$
 	private String				mTag;
-	private StringCriteria	mNameCriteria;
-	private IntegerCriteria	mLevelCriteria;
+	private StringCriteria		mNameCriteria;
+	private IntegerCriteria		mLevelCriteria;
 
 	static {
 		LocalizedMessages.initialize(NameLevelPrereq.class);

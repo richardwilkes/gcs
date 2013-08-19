@@ -82,6 +82,7 @@ public class QuitCommand extends Command {
 			}
 
 			try {
+				RecentFilesMenu.saveToPreferences();
 				Fonts.saveToPreferences();
 				Preferences.getInstance().save();
 			} catch (Exception exception) {

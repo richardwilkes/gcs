@@ -134,7 +134,6 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
 	public Dimension minimumLayoutSize(Container parent) {
 		Dimension size = mOutline.getMinimumSize();
 		int minHeight = TextDrawing.getPreferredSize(UIManager.getFont(Fonts.KEY_FIELD), null, "Mg").height; //$NON-NLS-1$
-
 		if (size.height < minHeight) {
 			size.height = minHeight;
 		}
@@ -142,12 +141,19 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
 	}
 
 	public Dimension preferredLayoutSize(Container parent) {
-		return getLayoutSizeForOne(mOutline.getPreferredSize());
+		Dimension size = getLayoutSizeForOne(mOutline.getPreferredSize());
+		Dimension min = getMinimumSize();
+		if (size.width < min.width) {
+			size.width = min.width;
+		}
+		if (size.height < min.height) {
+			size.height = min.height;
+		}
+		return size;
 	}
 
 	private Dimension getLayoutSizeForOne(Dimension one) {
 		Insets insets = getInsets();
-
 		return new Dimension(1 + insets.left + insets.right + one.width, insets.top + insets.bottom + one.height + mHeader.getPreferredSize().height);
 	}
 }

@@ -205,7 +205,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		Component focus = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
 		int firstRow = 0;
 		String focusKey = null;
-		Container window = getTopLevelAncestor();
 		PageAssembler pageAssembler;
 
 		if (focus instanceof PageField) {
@@ -223,7 +222,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			}
 			focus = outline.getRealOutline();
 		}
-		((SheetWindow) window).jumpToSearchField();
+
+		Container window = getTopLevelAncestor();
+		if (window != null) {
+			((SheetWindow) window).jumpToSearchField();
+		}
 
 		// Make sure our primary outlines exist
 		createAdvantageOutline();
@@ -1047,7 +1050,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 		if (key.equals("PORTRAIT")) { //$NON-NLS-1$
 			String fileName = Path.getLeafName(base.getName(), false) + SheetWindow.PNG_EXTENSION;
-
 			Images.writePNG(new File(base.getParentFile(), fileName), description.getPortrait(true), 150);
 			writeXMLData(out, fileName);
 		} else if (key.equals("NAME")) { //$NON-NLS-1$
@@ -1063,6 +1065,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		} else if (key.equals("CREATED_ON")) { //$NON-NLS-1$
 			Date date = new Date(mCharacter.getCreatedOn());
 			writeXMLText(out, DateFormat.getDateInstance(DateFormat.MEDIUM).format(date));
+		} else if (key.equals("MODIFIED_ON")) { //$NON-NLS-1$
+			writeXMLText(out, mCharacter.getLastModified());
 		} else if (key.equals("CAMPAIGN")) { //$NON-NLS-1$
 			writeXMLText(out, description.getCampaign());
 		} else if (key.equals("TOTAL_POINTS")) { //$NON-NLS-1$

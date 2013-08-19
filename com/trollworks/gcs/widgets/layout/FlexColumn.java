@@ -25,6 +25,7 @@ package com.trollworks.gcs.widgets.layout;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 
 /** A column within a {@link FlexLayout}. */
 public class FlexColumn extends FlexContainer {
@@ -71,14 +72,14 @@ public class FlexColumn extends FlexContainer {
 				extra = 0;
 			}
 		}
-		Alignment hAlign = getHorizontalAlignment();
+		ArrayList<FlexCell> children = getChildren();
 		Rectangle[] childBounds = new Rectangle[count];
 		for (int i = 0; i < count; i++) {
 			childBounds[i] = new Rectangle(prefSizes[i]);
 			if (getFillHorizontal()) {
 				childBounds[i].width = Math.min(maxSizes[i].width, bounds.width);
 			}
-			switch (hAlign) {
+			switch (children.get(i).getHorizontalAlignment()) {
 				case LEFT_TOP:
 					childBounds[i].x = bounds.x;
 					break;
