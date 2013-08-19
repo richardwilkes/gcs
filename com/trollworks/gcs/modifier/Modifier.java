@@ -447,6 +447,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 		switch (costType) {
 			case PERCENTAGE:
 			case POINTS:
+			default:
 				builder.append(Numbers.formatWithForcedSign(getCostModifier()));
 				if (costType == CostType.PERCENTAGE) {
 					builder.append('%');

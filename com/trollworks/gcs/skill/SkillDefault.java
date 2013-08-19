@@ -255,6 +255,11 @@ public class SkillDefault {
 		return false;
 	}
 
+	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
 	/** @param set The nameable keys. */
 	public void fillWithNameableKeys(HashSet<String> set) {
 		ListRow.extractNameables(set, getName());

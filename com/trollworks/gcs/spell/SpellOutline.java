@@ -107,7 +107,7 @@ public class SpellOutline extends ListOutline implements Incrementable {
 	}
 
 	private boolean selectionHasLeafRows(boolean requirePointsAboveZero) {
-		for (Spell spell : new FilteredIterator<Spell>(getModel().getSelectionAsList(), Spell.class)) {
+		for (Spell spell : new FilteredIterator<>(getModel().getSelectionAsList(), Spell.class)) {
 			if (!spell.canHaveChildren() && (!requirePointsAboveZero || spell.getPoints() > 0)) {
 				return true;
 			}
@@ -115,6 +115,7 @@ public class SpellOutline extends ListOutline implements Incrementable {
 		return false;
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	public void decrement() {
 		ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
@@ -139,6 +140,7 @@ public class SpellOutline extends ListOutline implements Incrementable {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	public void increment() {
 		ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
@@ -169,7 +171,7 @@ public class SpellOutline extends ListOutline implements Incrementable {
 		OutlineModel model = getModel();
 		Row[] rows = model.getDragRows();
 		boolean forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
-		ArrayList<ListRow> process = forSheetOrTemplate ? new ArrayList<ListRow>() : null;
+		ArrayList<ListRow> process = new ArrayList<>();
 
 		for (Row element : rows) {
 			Spell spell = new Spell(mDataFile, (Spell) element, true, forSheetOrTemplate);

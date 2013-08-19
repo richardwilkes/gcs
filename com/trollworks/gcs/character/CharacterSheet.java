@@ -27,7 +27,6 @@ import com.lowagie.text.pdf.DefaultFontMapper;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
-
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageColumn;
 import com.trollworks.gcs.advantage.AdvantageOutline;
@@ -176,7 +175,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		setOpaque(false);
 		mCharacter = character;
 		mLastPage = -1;
-		mRootsToSync = new HashSet<Outline>();
+		mRootsToSync = new HashSet<>();
 		if (!GraphicsUtilities.inHeadlessPrintMode()) {
 			setDropTarget(new DropTarget(this, this));
 		}
@@ -297,7 +296,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		return false;
 	}
 
-	private void addOutline(PageAssembler pageAssembler, Outline outline, String title) {
+	private static void addOutline(PageAssembler pageAssembler, Outline outline, String title) {
 		if (outline.getModel().getRowCount() > 0) {
 			OutlineInfo info = new OutlineInfo(outline, pageAssembler.getContentWidth());
 			boolean useProxy = false;
@@ -311,7 +310,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		}
 	}
 
-	private void addOutline(PageAssembler pageAssembler, Outline leftOutline, String leftTitle, Outline rightOutline, String rightTitle) {
+	private static void addOutline(PageAssembler pageAssembler, Outline leftOutline, String leftTitle, Outline rightOutline, String rightTitle) {
 		int width = pageAssembler.getContentWidth() / 2 - 1;
 		OutlineInfo infoLeft = new OutlineInfo(leftOutline, width);
 		OutlineInfo infoRight = new OutlineInfo(rightOutline, width);
@@ -447,7 +446,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private void addBuiltInWeapons(Class<? extends WeaponStats> weaponClass, HashMap<HashedWeapon, WeaponDisplayRow> map) {
 		if (weaponClass == MeleeWeaponStats.class) {
 			boolean savedModified = mCharacter.isModified();
-			ArrayList<SkillDefault> defaults = new ArrayList<SkillDefault>();
+			ArrayList<SkillDefault> defaults = new ArrayList<>();
 			Advantage phantom;
 			MeleeWeaponStats weapon;
 
@@ -502,7 +501,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	private ArrayList<WeaponDisplayRow> collectWeapons(Class<? extends WeaponStats> weaponClass) {
-		HashMap<HashedWeapon, WeaponDisplayRow> weaponMap = new HashMap<HashedWeapon, WeaponDisplayRow>();
+		HashMap<HashedWeapon, WeaponDisplayRow> weaponMap = new HashMap<>();
 		ArrayList<WeaponDisplayRow> weaponList;
 
 		addBuiltInWeapons(weaponClass, weaponMap);
@@ -541,7 +540,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			}
 		}
 
-		weaponList = new ArrayList<WeaponDisplayRow>(weaponMap.values());
+		weaponList = new ArrayList<>(weaponMap.values());
 		return weaponList;
 	}
 
@@ -549,11 +548,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		outline.addActionListener(this);
 	}
 
-	private void resetOutline(Outline outline) {
+	private static void resetOutline(Outline outline) {
 		outline.clearProxies();
 	}
 
-	private Container hwrap(Component left, Component right) {
+	private static Container hwrap(Component left, Component right) {
 		Wrapper wrapper = new Wrapper(new ColumnLayout(2, 2, 2));
 		wrapper.add(left);
 		wrapper.add(right);
@@ -561,7 +560,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		return wrapper;
 	}
 
-	private Container hwrap(Component left, Component center, Component right) {
+	private static Container hwrap(Component left, Component center, Component right) {
 		Wrapper wrapper = new Wrapper(new ColumnLayout(3, 2, 2));
 		wrapper.add(left);
 		wrapper.add(center);
@@ -570,7 +569,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		return wrapper;
 	}
 
-	private Container hwrap(Component left, Component center, Component center2, Component right) {
+	private static Container hwrap(Component left, Component center, Component center2, Component right) {
 		Wrapper wrapper = new Wrapper(new ColumnLayout(4, 2, 2));
 		wrapper.add(left);
 		wrapper.add(center);
@@ -580,7 +579,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		return wrapper;
 	}
 
-	private Container vwrap(Component top, Component bottom) {
+	private static Container vwrap(Component top, Component bottom) {
 		Wrapper wrapper = new Wrapper(new ColumnLayout(1, 2, 2));
 		wrapper.add(top);
 		wrapper.add(bottom);
@@ -588,7 +587,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		return wrapper;
 	}
 
-	private Container vwrap(Component top, Component bottom, RowDistribution distribution) {
+	private static Container vwrap(Component top, Component bottom, RowDistribution distribution) {
 		Wrapper wrapper = new Wrapper(new ColumnLayout(1, 2, 2, distribution));
 		wrapper.add(top);
 		wrapper.add(bottom);
@@ -856,7 +855,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				Row[] rows = (Row[]) dtde.getTransferable().getTransferData(RowSelection.DATA_FLAVOR);
 
 				if (rows != null && rows.length > 0) {
-					mDragRows = new ArrayList<Row>(rows.length);
+					mDragRows = new ArrayList<>(rows.length);
 
 					for (Row element : rows) {
 						if (element instanceof ListRow) {
@@ -909,7 +908,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		mDragRows = null;
 	}
 
-	private PageFormat createDefaultPageFormat() {
+	private static PageFormat createDefaultPageFormat() {
 		Paper paper = new Paper();
 		PageFormat format = new PageFormat();
 		format.setOrientation(PageFormat.PORTRAIT);
@@ -920,7 +919,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	private HashSet<Row> expandAllContainers() {
-		HashSet<Row> changed = new HashSet<Row>();
+		HashSet<Row> changed = new HashSet<>();
 		expandAllContainers(mCharacter.getAdvantagesIterator(), changed);
 		expandAllContainers(mCharacter.getSkillsIterator(), changed);
 		expandAllContainers(mCharacter.getSpellsIterator(), changed);
@@ -932,7 +931,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		return changed;
 	}
 
-	private void expandAllContainers(RowIterator<? extends Row> iterator, HashSet<Row> changed) {
+	private static void expandAllContainers(RowIterator<? extends Row> iterator, HashSet<Row> changed) {
 		for (Row row : iterator) {
 			if (!row.isOpen()) {
 				row.setOpen(true);
@@ -964,36 +963,38 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			float width = (float) paper.getWidth();
 			float height = (float) paper.getHeight();
 			com.lowagie.text.Document pdfDoc = new com.lowagie.text.Document(new com.lowagie.text.Rectangle(width, height));
-			PdfWriter writer = PdfWriter.getInstance(pdfDoc, new FileOutputStream(file));
-			int pageNum = 0;
-			PdfContentByte cb;
+			try (FileOutputStream out = new FileOutputStream(file)) {
+				PdfWriter writer = PdfWriter.getInstance(pdfDoc, out);
+				int pageNum = 0;
+				PdfContentByte cb;
 
-			pdfDoc.open();
-			cb = writer.getDirectContent();
-			while (true) {
-				PdfTemplate template = cb.createTemplate(width, height);
-				Graphics2D g2d = template.createGraphics(width, height, new DefaultFontMapper());
+				pdfDoc.open();
+				cb = writer.getDirectContent();
+				while (true) {
+					PdfTemplate template = cb.createTemplate(width, height);
+					Graphics2D g2d = template.createGraphics(width, height, new DefaultFontMapper());
 
-				if (print(g2d, format, pageNum) == NO_SUCH_PAGE) {
+					if (print(g2d, format, pageNum) == NO_SUCH_PAGE) {
+						g2d.dispose();
+						break;
+					}
+					if (pageNum != 0) {
+						pdfDoc.newPage();
+					}
+					g2d.setClip(0, 0, (int) width, (int) height);
+					GCSWindow window = (GCSWindow) getTopLevelAncestor();
+					if (window != null) {
+						window.setPrinting(true);
+					}
+					print(g2d, format, pageNum++);
+					if (window != null) {
+						window.setPrinting(false);
+					}
 					g2d.dispose();
-					break;
+					cb.addTemplate(template, 0, 0);
 				}
-				if (pageNum != 0) {
-					pdfDoc.newPage();
-				}
-				g2d.setClip(0, 0, (int) width, (int) height);
-				GCSWindow window = (GCSWindow) getTopLevelAncestor();
-				if (window != null) {
-					window.setPrinting(true);
-				}
-				print(g2d, format, pageNum++);
-				if (window != null) {
-					window.setPrinting(false);
-				}
-				g2d.dispose();
-				cb.addTemplate(template, 0, 0);
+				pdfDoc.close();
 			}
-			pdfDoc.close();
 			return true;
 		} catch (Exception exception) {
 			return false;
@@ -1010,12 +1011,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	 * @return <code>true</code> on success.
 	 */
 	public boolean saveAsHTML(File file, File template, StringBuilder templateUsed) {
-		BufferedReader in = null;
-		BufferedWriter out = null;
-
 		try {
 			char[] buffer = new char[1];
-			int state = 0;
+			boolean lookForKeyMarker = true;
 			StringBuilder keyBuffer = new StringBuilder();
 
 			if (template == null || !template.isFile() || !template.canRead()) {
@@ -1027,22 +1025,18 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			if (templateUsed != null) {
 				templateUsed.append(Path.getFullPath(template));
 			}
-			in = new BufferedReader(new InputStreamReader(new FileInputStream(template)));
-			out = new BufferedWriter(new FileWriter(file));
-
-			while (in.read(buffer) != -1) {
-				char ch = buffer[0];
-
-				switch (state) {
-					case 0:
+			try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(template)));
+				BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
+				while (in.read(buffer) != -1) {
+					char ch = buffer[0];
+					if (lookForKeyMarker) {
 						if (ch == '@') {
-							state = 1;
+							lookForKeyMarker = false;
 							in.mark(1);
 							break;
 						}
 						out.append(ch);
-						break;
-					case 1:
+					} else {
 						if (ch == '_' || Character.isLetterOrDigit(ch)) {
 							keyBuffer.append(ch);
 							in.mark(1);
@@ -1050,32 +1044,17 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 							in.reset();
 							emitHTMLKey(in, out, keyBuffer.toString(), file);
 							keyBuffer.setLength(0);
-							state = 0;
+							lookForKeyMarker = true;
 						}
-						break;
+					}
 				}
-			}
-			if (keyBuffer.length() != 0) {
-				emitHTMLKey(in, out, keyBuffer.toString(), file);
+				if (keyBuffer.length() != 0) {
+					emitHTMLKey(in, out, keyBuffer.toString(), file);
+				}
 			}
 			return true;
 		} catch (Exception exception) {
 			return false;
-		} finally {
-			if (in != null) {
-				try {
-					in.close();
-				} catch (IOException ioe) {
-					// Ignore...
-				}
-			}
-			if (out != null) {
-				try {
-					out.close();
-				} catch (IOException ioe) {
-					// Ignore...
-				}
-			}
 		}
 	}
 
@@ -1186,7 +1165,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		} else if (key.equals("BEST_CURRENT_PARRY")) { //$NON-NLS-1$
 			String best = "-"; //$NON-NLS-1$
 			int bestValue = Integer.MIN_VALUE;
-			for (WeaponDisplayRow row : new FilteredIterator<WeaponDisplayRow>(getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
+			for (WeaponDisplayRow row : new FilteredIterator<>(getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
 				MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
 				String parry = weapon.getResolvedParry().trim();
 				if (parry.length() > 0 && !"No".equals(parry)) { //$NON-NLS-1$
@@ -1201,7 +1180,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		} else if (key.equals("BEST_CURRENT_BLOCK")) { //$NON-NLS-1$
 			String best = "-"; //$NON-NLS-1$
 			int bestValue = Integer.MIN_VALUE;
-			for (WeaponDisplayRow row : new FilteredIterator<WeaponDisplayRow>(getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
+			for (WeaponDisplayRow row : new FilteredIterator<>(getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
 				MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
 				String block = weapon.getResolvedBlock().trim();
 				if (block.length() > 0 && !"No".equals(block)) { //$NON-NLS-1$
@@ -1278,49 +1257,44 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		}
 	}
 
-	private void writeXMLText(BufferedWriter out, String text) throws IOException {
+	private static void writeXMLText(BufferedWriter out, String text) throws IOException {
 		out.write(XMLWriter.encodeData(text).replaceAll("&#10;", "<br>")); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
-	private void writeXMLData(BufferedWriter out, String text) throws IOException {
+	private static void writeXMLData(BufferedWriter out, String text) throws IOException {
 		out.write(XMLWriter.encodeData(text).replaceAll(" ", "%20")); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
-	private String extractUpToMarker(BufferedReader in, String marker) throws IOException {
+	private static String extractUpToMarker(BufferedReader in, String marker) throws IOException {
 		char[] buffer = new char[1];
 		StringBuilder keyBuffer = new StringBuilder();
 		StringBuilder extraction = new StringBuilder();
-		int state = 0;
-
+		boolean lookForKeyMarker = true;
 		while (in.read(buffer) != -1) {
 			char ch = buffer[0];
-
-			switch (state) {
-				case 0:
-					if (ch == '@') {
-						state = 1;
-						in.mark(1);
-						break;
-					}
-					extraction.append(ch);
+			if (lookForKeyMarker) {
+				if (ch == '@') {
+					lookForKeyMarker = false;
+					in.mark(1);
 					break;
-				case 1:
-					if (ch == '_' || Character.isLetterOrDigit(ch)) {
-						keyBuffer.append(ch);
-						in.mark(1);
-					} else {
-						String key = keyBuffer.toString();
+				}
+				extraction.append(ch);
+			} else {
+				if (ch == '_' || Character.isLetterOrDigit(ch)) {
+					keyBuffer.append(ch);
+					in.mark(1);
+				} else {
+					String key = keyBuffer.toString();
 
-						in.reset();
-						if (key.equals(marker)) {
-							return extraction.toString();
-						}
-						extraction.append('@');
-						extraction.append(key);
-						keyBuffer.setLength(0);
-						state = 0;
+					in.reset();
+					if (key.equals(marker)) {
+						return extraction.toString();
 					}
-					break;
+					extraction.append('@');
+					extraction.append(key);
+					keyBuffer.setLength(0);
+					lookForKeyMarker = true;
+				}
 			}
 		}
 		return extraction.toString();
@@ -1329,47 +1303,40 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private void processEncumbranceLoop(BufferedWriter out, String contents) throws IOException {
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
-		int state = 0;
-
+		boolean lookForKeyMarker = true;
 		for (int level = GURPSCharacter.ENCUMBRANCE_NONE; level <= GURPSCharacter.ENCUMBRANCE_EXTRA_HEAVY; level++) {
 			for (int i = 0; i < length; i++) {
 				char ch = contents.charAt(i);
-
-				switch (state) {
-					case 0:
-						if (ch == '@') {
-							state = 1;
-							break;
-						}
-						out.append(ch);
+				if (lookForKeyMarker) {
+					if (ch == '@') {
+						lookForKeyMarker = false;
 						break;
-					case 1:
-						if (ch == '_' || Character.isLetterOrDigit(ch)) {
-							keyBuffer.append(ch);
-						} else {
-							String key = keyBuffer.toString();
-
-							i--;
-							keyBuffer.setLength(0);
-							state = 0;
-
-							if (key.equals("CURRENT_MARKER")) { //$NON-NLS-1$
-								if (level == mCharacter.getEncumbranceLevel()) {
-									out.write(" class=\"encumbrance\" "); //$NON-NLS-1$
-								}
-							} else if (key.equals("LEVEL")) { //$NON-NLS-1$
-								writeXMLText(out, MessageFormat.format(level == mCharacter.getEncumbranceLevel() ? EncumbrancePanel.MSG_CURRENT_ENCUMBRANCE_FORMAT : EncumbrancePanel.MSG_ENCUMBRANCE_FORMAT, EncumbrancePanel.ENCUMBRANCE_TITLES[level], Numbers.format(level)));
-							} else if (key.equals("MAX_LOAD")) { //$NON-NLS-1$
-								writeXMLText(out, mCharacter.getMaximumCarry(level).toString());
-							} else if (key.equals("MOVE")) { //$NON-NLS-1$
-								writeXMLText(out, Numbers.format(mCharacter.getMove(level)));
-							} else if (key.equals("DODGE")) { //$NON-NLS-1$
-								writeXMLText(out, Numbers.format(mCharacter.getDodge(level)));
-							} else {
-								writeXMLText(out, MSG_UNIDENTIFIED_KEY);
+					}
+					out.append(ch);
+				} else {
+					if (ch == '_' || Character.isLetterOrDigit(ch)) {
+						keyBuffer.append(ch);
+					} else {
+						String key = keyBuffer.toString();
+						i--;
+						keyBuffer.setLength(0);
+						lookForKeyMarker = true;
+						if (key.equals("CURRENT_MARKER")) { //$NON-NLS-1$
+							if (level == mCharacter.getEncumbranceLevel()) {
+								out.write(" class=\"encumbrance\" "); //$NON-NLS-1$
 							}
+						} else if (key.equals("LEVEL")) { //$NON-NLS-1$
+							writeXMLText(out, MessageFormat.format(level == mCharacter.getEncumbranceLevel() ? EncumbrancePanel.MSG_CURRENT_ENCUMBRANCE_FORMAT : EncumbrancePanel.MSG_ENCUMBRANCE_FORMAT, EncumbrancePanel.ENCUMBRANCE_TITLES[level], Numbers.format(level)));
+						} else if (key.equals("MAX_LOAD")) { //$NON-NLS-1$
+							writeXMLText(out, mCharacter.getMaximumCarry(level).toString());
+						} else if (key.equals("MOVE")) { //$NON-NLS-1$
+							writeXMLText(out, Numbers.format(mCharacter.getMove(level)));
+						} else if (key.equals("DODGE")) { //$NON-NLS-1$
+							writeXMLText(out, Numbers.format(mCharacter.getDodge(level)));
+						} else {
+							writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 						}
-						break;
+					}
 				}
 			}
 		}
@@ -1378,43 +1345,36 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private void processHitLocationLoop(BufferedWriter out, String contents) throws IOException {
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
-		int state = 0;
-
+		boolean lookForKeyMarker = true;
 		for (int which = 0; which < HitLocationPanel.DR_KEYS.length; which++) {
 			for (int i = 0; i < length; i++) {
 				char ch = contents.charAt(i);
-
-				switch (state) {
-					case 0:
-						if (ch == '@') {
-							state = 1;
-							break;
-						}
-						out.append(ch);
+				if (lookForKeyMarker) {
+					if (ch == '@') {
+						lookForKeyMarker = false;
 						break;
-					case 1:
-						if (ch == '_' || Character.isLetterOrDigit(ch)) {
-							keyBuffer.append(ch);
+					}
+					out.append(ch);
+				} else {
+					if (ch == '_' || Character.isLetterOrDigit(ch)) {
+						keyBuffer.append(ch);
+					} else {
+						String key = keyBuffer.toString();
+						i--;
+						keyBuffer.setLength(0);
+						lookForKeyMarker = true;
+						if (key.equals("ROLL")) { //$NON-NLS-1$
+							writeXMLText(out, HitLocationPanel.ROLLS[which]);
+						} else if (key.equals("WHERE")) { //$NON-NLS-1$
+							writeXMLText(out, HitLocationPanel.LOCATIONS[which]);
+						} else if (key.equals("PENALTY")) { //$NON-NLS-1$
+							writeXMLText(out, HitLocationPanel.PENALTIES[which]);
+						} else if (key.equals("DR")) { //$NON-NLS-1$
+							writeXMLText(out, Numbers.format(((Integer) mCharacter.getValueForID(HitLocationPanel.DR_KEYS[which])).intValue()));
 						} else {
-							String key = keyBuffer.toString();
-
-							i--;
-							keyBuffer.setLength(0);
-							state = 0;
-
-							if (key.equals("ROLL")) { //$NON-NLS-1$
-								writeXMLText(out, HitLocationPanel.ROLLS[which]);
-							} else if (key.equals("WHERE")) { //$NON-NLS-1$
-								writeXMLText(out, HitLocationPanel.LOCATIONS[which]);
-							} else if (key.equals("PENALTY")) { //$NON-NLS-1$
-								writeXMLText(out, HitLocationPanel.PENALTIES[which]);
-							} else if (key.equals("DR")) { //$NON-NLS-1$
-								writeXMLText(out, Numbers.format(((Integer) mCharacter.getValueForID(HitLocationPanel.DR_KEYS[which])).intValue()));
-							} else {
-								writeXMLText(out, MSG_UNIDENTIFIED_KEY);
-							}
+							writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 						}
-						break;
+					}
 				}
 			}
 		}
@@ -1423,51 +1383,48 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private void processAdvantagesLoop(BufferedWriter out, String contents) throws IOException {
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
-		int state = 0;
+		boolean lookForKeyMarker = true;
 		int counter = 0;
 		boolean odd = true;
 		for (Advantage advantage : mCharacter.getAdvantagesIterator()) {
 			counter++;
 			for (int i = 0; i < length; i++) {
 				char ch = contents.charAt(i);
-				switch (state) {
-					case 0:
-						if (ch == '@') {
-							state = 1;
-							break;
-						}
-						out.append(ch);
+				if (lookForKeyMarker) {
+					if (ch == '@') {
+						lookForKeyMarker = false;
 						break;
-					case 1:
-						if (ch == '_' || Character.isLetterOrDigit(ch)) {
-							keyBuffer.append(ch);
-						} else {
-							String key = keyBuffer.toString();
-							i--;
-							keyBuffer.setLength(0);
-							state = 0;
-							if (!processStyleIndentWarning(key, out, advantage, odd)) {
-								if (!processDescription(key, out, advantage)) {
-									if (key.equals("POINTS")) { //$NON-NLS-1$
-										writeXMLText(out, AdvantageColumn.POINTS.getDataAsText(advantage));
-									} else if (key.equals("REF")) { //$NON-NLS-1$
-										writeXMLText(out, AdvantageColumn.REFERENCE.getDataAsText(advantage));
-									} else if (key.equals("ID")) { //$NON-NLS-1$
-										writeXMLText(out, Integer.toString(counter));
-									} else {
-										writeXMLText(out, MSG_UNIDENTIFIED_KEY);
-									}
+					}
+					out.append(ch);
+				} else {
+					if (ch == '_' || Character.isLetterOrDigit(ch)) {
+						keyBuffer.append(ch);
+					} else {
+						String key = keyBuffer.toString();
+						i--;
+						keyBuffer.setLength(0);
+						lookForKeyMarker = true;
+						if (!processStyleIndentWarning(key, out, advantage, odd)) {
+							if (!processDescription(key, out, advantage)) {
+								if (key.equals("POINTS")) { //$NON-NLS-1$
+									writeXMLText(out, AdvantageColumn.POINTS.getDataAsText(advantage));
+								} else if (key.equals("REF")) { //$NON-NLS-1$
+									writeXMLText(out, AdvantageColumn.REFERENCE.getDataAsText(advantage));
+								} else if (key.equals("ID")) { //$NON-NLS-1$
+									writeXMLText(out, Integer.toString(counter));
+								} else {
+									writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 								}
 							}
 						}
-						break;
+					}
 				}
 			}
 			odd = !odd;
 		}
 	}
 
-	private boolean processDescription(String key, BufferedWriter out, ListRow row) throws IOException {
+	private static boolean processDescription(String key, BufferedWriter out, ListRow row) throws IOException {
 		if (key.equals("DESCRIPTION")) { //$NON-NLS-1$
 			writeXMLText(out, row.toString());
 			writeNote(out, row.getModifierNotes());
@@ -1484,7 +1441,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		return true;
 	}
 
-	private void writeXMLTextWithOptionalParens(String key, BufferedWriter out, String text) throws IOException {
+	private static void writeXMLTextWithOptionalParens(String key, BufferedWriter out, String text) throws IOException {
 		if (text.length() > 0) {
 			boolean parenVersion = key.endsWith("_PAREN"); //$NON-NLS-1$
 			if (parenVersion) {
@@ -1497,7 +1454,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		}
 	}
 
-	private void writeNote(BufferedWriter out, String notes) throws IOException {
+	private static void writeNote(BufferedWriter out, String notes) throws IOException {
 		if (notes.length() > 0) {
 			out.write("<div class=\"note\">"); //$NON-NLS-1$
 			writeXMLText(out, notes);
@@ -1508,55 +1465,52 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private void processSkillsLoop(BufferedWriter out, String contents) throws IOException {
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
-		int state = 0;
+		boolean lookForKeyMarker = true;
 		int counter = 0;
 		boolean odd = true;
 		for (Skill skill : mCharacter.getSkillsIterator()) {
 			counter++;
 			for (int i = 0; i < length; i++) {
 				char ch = contents.charAt(i);
-				switch (state) {
-					case 0:
-						if (ch == '@') {
-							state = 1;
-							break;
-						}
-						out.append(ch);
+				if (lookForKeyMarker) {
+					if (ch == '@') {
+						lookForKeyMarker = false;
 						break;
-					case 1:
-						if (ch == '_' || Character.isLetterOrDigit(ch)) {
-							keyBuffer.append(ch);
-						} else {
-							String key = keyBuffer.toString();
-							i--;
-							keyBuffer.setLength(0);
-							state = 0;
-							if (!processStyleIndentWarning(key, out, skill, odd)) {
-								if (!processDescription(key, out, skill)) {
-									if (key.equals("SL")) { //$NON-NLS-1$
-										writeXMLText(out, SkillColumn.LEVEL.getDataAsText(skill));
-									} else if (key.equals("RSL")) { //$NON-NLS-1$
-										writeXMLText(out, SkillColumn.RELATIVE_LEVEL.getDataAsText(skill));
-									} else if (key.equals("POINTS")) { //$NON-NLS-1$
-										writeXMLText(out, SkillColumn.POINTS.getDataAsText(skill));
-									} else if (key.equals("REF")) { //$NON-NLS-1$
-										writeXMLText(out, SkillColumn.REFERENCE.getDataAsText(skill));
-									} else if (key.equals("ID")) { //$NON-NLS-1$
-										writeXMLText(out, Integer.toString(counter));
-									} else {
-										writeXMLText(out, MSG_UNIDENTIFIED_KEY);
-									}
+					}
+					out.append(ch);
+				} else {
+					if (ch == '_' || Character.isLetterOrDigit(ch)) {
+						keyBuffer.append(ch);
+					} else {
+						String key = keyBuffer.toString();
+						i--;
+						keyBuffer.setLength(0);
+						lookForKeyMarker = true;
+						if (!processStyleIndentWarning(key, out, skill, odd)) {
+							if (!processDescription(key, out, skill)) {
+								if (key.equals("SL")) { //$NON-NLS-1$
+									writeXMLText(out, SkillColumn.LEVEL.getDataAsText(skill));
+								} else if (key.equals("RSL")) { //$NON-NLS-1$
+									writeXMLText(out, SkillColumn.RELATIVE_LEVEL.getDataAsText(skill));
+								} else if (key.equals("POINTS")) { //$NON-NLS-1$
+									writeXMLText(out, SkillColumn.POINTS.getDataAsText(skill));
+								} else if (key.equals("REF")) { //$NON-NLS-1$
+									writeXMLText(out, SkillColumn.REFERENCE.getDataAsText(skill));
+								} else if (key.equals("ID")) { //$NON-NLS-1$
+									writeXMLText(out, Integer.toString(counter));
+								} else {
+									writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 								}
 							}
 						}
-						break;
+					}
 				}
 			}
 			odd = !odd;
 		}
 	}
 
-	private boolean processStyleIndentWarning(String key, BufferedWriter out, ListRow row, boolean odd) throws IOException {
+	private static boolean processStyleIndentWarning(String key, BufferedWriter out, ListRow row, boolean odd) throws IOException {
 		if (key.equals("EVEN_ODD")) { //$NON-NLS-1$
 			out.write(odd ? "odd" : "even"); //$NON-NLS-1$ //$NON-NLS-2$
 		} else if (key.equals("STYLE_INDENT_WARNING")) { //$NON-NLS-1$
@@ -1591,60 +1545,57 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private void processSpellsLoop(BufferedWriter out, String contents) throws IOException {
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
-		int state = 0;
+		boolean lookForKeyMarker = true;
 		int counter = 0;
 		boolean odd = true;
 		for (Spell spell : mCharacter.getSpellsIterator()) {
 			counter++;
 			for (int i = 0; i < length; i++) {
 				char ch = contents.charAt(i);
-				switch (state) {
-					case 0:
-						if (ch == '@') {
-							state = 1;
-							break;
-						}
-						out.append(ch);
+				if (lookForKeyMarker) {
+					if (ch == '@') {
+						lookForKeyMarker = false;
 						break;
-					case 1:
-						if (ch == '_' || Character.isLetterOrDigit(ch)) {
-							keyBuffer.append(ch);
-						} else {
-							String key = keyBuffer.toString();
-							i--;
-							keyBuffer.setLength(0);
-							state = 0;
-							if (!processStyleIndentWarning(key, out, spell, odd)) {
-								if (!processDescription(key, out, spell)) {
-									if (key.equals("CLASS")) { //$NON-NLS-1$
-										writeXMLText(out, spell.getSpellClass());
-									} else if (key.equals("COLLEGE")) { //$NON-NLS-1$
-										writeXMLText(out, spell.getCollege());
-									} else if (key.equals("MANA_CAST")) { //$NON-NLS-1$
-										writeXMLText(out, spell.getCastingCost());
-									} else if (key.equals("MANA_MAINTAIN")) { //$NON-NLS-1$
-										writeXMLText(out, spell.getMaintenance());
-									} else if (key.equals("TIME_CAST")) { //$NON-NLS-1$
-										writeXMLText(out, spell.getCastingTime());
-									} else if (key.equals("DURATION")) { //$NON-NLS-1$
-										writeXMLText(out, spell.getDuration());
-									} else if (key.equals("SL")) { //$NON-NLS-1$
-										writeXMLText(out, SpellColumn.LEVEL.getDataAsText(spell));
-									} else if (key.equals("RSL")) { //$NON-NLS-1$
-										writeXMLText(out, SpellColumn.RELATIVE_LEVEL.getDataAsText(spell));
-									} else if (key.equals("POINTS")) { //$NON-NLS-1$
-										writeXMLText(out, SpellColumn.POINTS.getDataAsText(spell));
-									} else if (key.equals("REF")) { //$NON-NLS-1$
-										writeXMLText(out, SpellColumn.REFERENCE.getDataAsText(spell));
-									} else if (key.equals("ID")) { //$NON-NLS-1$
-										writeXMLText(out, Integer.toString(counter));
-									} else {
-										writeXMLText(out, MSG_UNIDENTIFIED_KEY);
-									}
+					}
+					out.append(ch);
+				} else {
+					if (ch == '_' || Character.isLetterOrDigit(ch)) {
+						keyBuffer.append(ch);
+					} else {
+						String key = keyBuffer.toString();
+						i--;
+						keyBuffer.setLength(0);
+						lookForKeyMarker = true;
+						if (!processStyleIndentWarning(key, out, spell, odd)) {
+							if (!processDescription(key, out, spell)) {
+								if (key.equals("CLASS")) { //$NON-NLS-1$
+									writeXMLText(out, spell.getSpellClass());
+								} else if (key.equals("COLLEGE")) { //$NON-NLS-1$
+									writeXMLText(out, spell.getCollege());
+								} else if (key.equals("MANA_CAST")) { //$NON-NLS-1$
+									writeXMLText(out, spell.getCastingCost());
+								} else if (key.equals("MANA_MAINTAIN")) { //$NON-NLS-1$
+									writeXMLText(out, spell.getMaintenance());
+								} else if (key.equals("TIME_CAST")) { //$NON-NLS-1$
+									writeXMLText(out, spell.getCastingTime());
+								} else if (key.equals("DURATION")) { //$NON-NLS-1$
+									writeXMLText(out, spell.getDuration());
+								} else if (key.equals("SL")) { //$NON-NLS-1$
+									writeXMLText(out, SpellColumn.LEVEL.getDataAsText(spell));
+								} else if (key.equals("RSL")) { //$NON-NLS-1$
+									writeXMLText(out, SpellColumn.RELATIVE_LEVEL.getDataAsText(spell));
+								} else if (key.equals("POINTS")) { //$NON-NLS-1$
+									writeXMLText(out, SpellColumn.POINTS.getDataAsText(spell));
+								} else if (key.equals("REF")) { //$NON-NLS-1$
+									writeXMLText(out, SpellColumn.REFERENCE.getDataAsText(spell));
+								} else if (key.equals("ID")) { //$NON-NLS-1$
+									writeXMLText(out, Integer.toString(counter));
+								} else {
+									writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 								}
 							}
 						}
-						break;
+					}
 				}
 			}
 			odd = !odd;
@@ -1654,62 +1605,59 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private void processMeleeLoop(BufferedWriter out, String contents) throws IOException {
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
-		int state = 0;
+		boolean lookForKeyMarker = true;
 		int counter = 0;
 		boolean odd = true;
-		for (WeaponDisplayRow row : new FilteredIterator<WeaponDisplayRow>(getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
+		for (WeaponDisplayRow row : new FilteredIterator<>(getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
 			counter++;
 			MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
 			for (int i = 0; i < length; i++) {
 				char ch = contents.charAt(i);
-				switch (state) {
-					case 0:
-						if (ch == '@') {
-							state = 1;
-							break;
-						}
-						out.append(ch);
+				if (lookForKeyMarker) {
+					if (ch == '@') {
+						lookForKeyMarker = false;
 						break;
-					case 1:
-						if (ch == '_' || Character.isLetterOrDigit(ch)) {
-							keyBuffer.append(ch);
-						} else {
-							String key = keyBuffer.toString();
-							i--;
-							keyBuffer.setLength(0);
-							state = 0;
-							if (key.equals("EVEN_ODD")) { //$NON-NLS-1$
-								out.write(odd ? "odd" : "even"); //$NON-NLS-1$  //$NON-NLS-2$
-							} else if (!processDescription(key, out, weapon)) {
-								if (key.equals("USAGE")) { //$NON-NLS-1$
-									writeXMLText(out, weapon.getUsage());
-								} else if (key.equals("LEVEL")) { //$NON-NLS-1$
-									writeXMLText(out, Numbers.format(weapon.getSkillLevel()));
-								} else if (key.equals("PARRY")) { //$NON-NLS-1$
-									writeXMLText(out, weapon.getResolvedParry());
-								} else if (key.equals("BLOCK")) { //$NON-NLS-1$
-									writeXMLText(out, weapon.getResolvedBlock());
-								} else if (key.equals("DAMAGE")) { //$NON-NLS-1$
-									writeXMLText(out, weapon.getResolvedDamage());
-								} else if (key.equals("REACH")) { //$NON-NLS-1$
-									writeXMLText(out, weapon.getReach());
-								} else if (key.equals("STRENGTH")) { //$NON-NLS-1$
-									writeXMLText(out, weapon.getStrength());
-								} else if (key.equals("ID")) { //$NON-NLS-1$
-									writeXMLText(out, Integer.toString(counter));
-								} else {
-									writeXMLText(out, MSG_UNIDENTIFIED_KEY);
-								}
+					}
+					out.append(ch);
+				} else {
+					if (ch == '_' || Character.isLetterOrDigit(ch)) {
+						keyBuffer.append(ch);
+					} else {
+						String key = keyBuffer.toString();
+						i--;
+						keyBuffer.setLength(0);
+						lookForKeyMarker = true;
+						if (key.equals("EVEN_ODD")) { //$NON-NLS-1$
+							out.write(odd ? "odd" : "even"); //$NON-NLS-1$  //$NON-NLS-2$
+						} else if (!processDescription(key, out, weapon)) {
+							if (key.equals("USAGE")) { //$NON-NLS-1$
+								writeXMLText(out, weapon.getUsage());
+							} else if (key.equals("LEVEL")) { //$NON-NLS-1$
+								writeXMLText(out, Numbers.format(weapon.getSkillLevel()));
+							} else if (key.equals("PARRY")) { //$NON-NLS-1$
+								writeXMLText(out, weapon.getResolvedParry());
+							} else if (key.equals("BLOCK")) { //$NON-NLS-1$
+								writeXMLText(out, weapon.getResolvedBlock());
+							} else if (key.equals("DAMAGE")) { //$NON-NLS-1$
+								writeXMLText(out, weapon.getResolvedDamage());
+							} else if (key.equals("REACH")) { //$NON-NLS-1$
+								writeXMLText(out, weapon.getReach());
+							} else if (key.equals("STRENGTH")) { //$NON-NLS-1$
+								writeXMLText(out, weapon.getStrength());
+							} else if (key.equals("ID")) { //$NON-NLS-1$
+								writeXMLText(out, Integer.toString(counter));
+							} else {
+								writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 							}
 						}
-						break;
+					}
 				}
 			}
 			odd = !odd;
 		}
 	}
 
-	private boolean processDescription(String key, BufferedWriter out, WeaponStats stats) throws IOException {
+	private static boolean processDescription(String key, BufferedWriter out, WeaponStats stats) throws IOException {
 		if (key.equals("DESCRIPTION")) { //$NON-NLS-1$
 			writeXMLText(out, stats.toString());
 			writeNote(out, stats.getNotes());
@@ -1726,61 +1674,58 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private void processRangedLoop(BufferedWriter out, String contents) throws IOException {
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
-		int state = 0;
+		boolean lookForKeyMarker = true;
 		int counter = 0;
 		boolean odd = true;
-		for (WeaponDisplayRow row : new FilteredIterator<WeaponDisplayRow>(getRangedWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
+		for (WeaponDisplayRow row : new FilteredIterator<>(getRangedWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
 			counter++;
 			RangedWeaponStats weapon = (RangedWeaponStats) row.getWeapon();
 			for (int i = 0; i < length; i++) {
 				char ch = contents.charAt(i);
-				switch (state) {
-					case 0:
-						if (ch == '@') {
-							state = 1;
-							break;
-						}
-						out.append(ch);
+				if (lookForKeyMarker) {
+					if (ch == '@') {
+						lookForKeyMarker = false;
 						break;
-					case 1:
-						if (ch == '_' || Character.isLetterOrDigit(ch)) {
-							keyBuffer.append(ch);
-						} else {
-							String key = keyBuffer.toString();
-							i--;
-							keyBuffer.setLength(0);
-							state = 0;
-							if (key.equals("EVEN_ODD")) { //$NON-NLS-1$
-								out.write(odd ? "odd" : "even"); //$NON-NLS-1$ //$NON-NLS-2$
-							} else if (!processDescription(key, out, weapon)) {
-								if (key.equals("USAGE")) { //$NON-NLS-1$
-									writeXMLText(out, weapon.getUsage());
-								} else if (key.equals("LEVEL")) { //$NON-NLS-1$
-									writeXMLText(out, Numbers.format(weapon.getSkillLevel()));
-								} else if (key.equals("ACCURACY")) { //$NON-NLS-1$
-									writeXMLText(out, weapon.getAccuracy());
-								} else if (key.equals("DAMAGE")) { //$NON-NLS-1$
-									writeXMLText(out, weapon.getResolvedDamage());
-								} else if (key.equals("RANGE")) { //$NON-NLS-1$
-									writeXMLText(out, weapon.getResolvedRange());
-								} else if (key.equals("ROF")) { //$NON-NLS-1$
-									writeXMLText(out, weapon.getRateOfFire());
-								} else if (key.equals("SHOTS")) { //$NON-NLS-1$
-									writeXMLText(out, weapon.getShots());
-								} else if (key.equals("BULK")) { //$NON-NLS-1$
-									writeXMLText(out, weapon.getBulk());
-								} else if (key.equals("RECOIL")) { //$NON-NLS-1$
-									writeXMLText(out, weapon.getRecoil());
-								} else if (key.equals("STRENGTH")) { //$NON-NLS-1$
-									writeXMLText(out, weapon.getStrength());
-								} else if (key.equals("ID")) { //$NON-NLS-1$
-									writeXMLText(out, Integer.toString(counter));
-								} else {
-									writeXMLText(out, MSG_UNIDENTIFIED_KEY);
-								}
+					}
+					out.append(ch);
+				} else {
+					if (ch == '_' || Character.isLetterOrDigit(ch)) {
+						keyBuffer.append(ch);
+					} else {
+						String key = keyBuffer.toString();
+						i--;
+						keyBuffer.setLength(0);
+						lookForKeyMarker = true;
+						if (key.equals("EVEN_ODD")) { //$NON-NLS-1$
+							out.write(odd ? "odd" : "even"); //$NON-NLS-1$ //$NON-NLS-2$
+						} else if (!processDescription(key, out, weapon)) {
+							if (key.equals("USAGE")) { //$NON-NLS-1$
+								writeXMLText(out, weapon.getUsage());
+							} else if (key.equals("LEVEL")) { //$NON-NLS-1$
+								writeXMLText(out, Numbers.format(weapon.getSkillLevel()));
+							} else if (key.equals("ACCURACY")) { //$NON-NLS-1$
+								writeXMLText(out, weapon.getAccuracy());
+							} else if (key.equals("DAMAGE")) { //$NON-NLS-1$
+								writeXMLText(out, weapon.getResolvedDamage());
+							} else if (key.equals("RANGE")) { //$NON-NLS-1$
+								writeXMLText(out, weapon.getResolvedRange());
+							} else if (key.equals("ROF")) { //$NON-NLS-1$
+								writeXMLText(out, weapon.getRateOfFire());
+							} else if (key.equals("SHOTS")) { //$NON-NLS-1$
+								writeXMLText(out, weapon.getShots());
+							} else if (key.equals("BULK")) { //$NON-NLS-1$
+								writeXMLText(out, weapon.getBulk());
+							} else if (key.equals("RECOIL")) { //$NON-NLS-1$
+								writeXMLText(out, weapon.getRecoil());
+							} else if (key.equals("STRENGTH")) { //$NON-NLS-1$
+								writeXMLText(out, weapon.getStrength());
+							} else if (key.equals("ID")) { //$NON-NLS-1$
+								writeXMLText(out, Integer.toString(counter));
+							} else {
+								writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 							}
 						}
-						break;
+					}
 				}
 			}
 			odd = !odd;
@@ -1790,54 +1735,51 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private void processEquipmentLoop(BufferedWriter out, String contents) throws IOException {
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
-		int state = 0;
+		boolean lookForKeyMarker = true;
 		int counter = 0;
 		boolean odd = true;
 		for (Equipment equipment : mCharacter.getEquipmentIterator()) {
 			counter++;
 			for (int i = 0; i < length; i++) {
 				char ch = contents.charAt(i);
-				switch (state) {
-					case 0:
-						if (ch == '@') {
-							state = 1;
-							break;
-						}
-						out.append(ch);
+				if (lookForKeyMarker) {
+					if (ch == '@') {
+						lookForKeyMarker = false;
 						break;
-					case 1:
-						if (ch == '_' || Character.isLetterOrDigit(ch)) {
-							keyBuffer.append(ch);
-						} else {
-							String key = keyBuffer.toString();
-							i--;
-							keyBuffer.setLength(0);
-							state = 0;
-							if (!processStyleIndentWarning(key, out, equipment, odd)) {
-								if (!processDescription(key, out, equipment)) {
-									if (key.equals("STATE")) { //$NON-NLS-1$
-										out.write(equipment.getState().toShortString());
-									} else if (key.equals("QTY")) { //$NON-NLS-1$
-										writeXMLText(out, Numbers.format(equipment.getQuantity()));
-									} else if (key.equals("COST")) { //$NON-NLS-1$
-										writeXMLText(out, Numbers.format(equipment.getValue()));
-									} else if (key.equals("WEIGHT")) { //$NON-NLS-1$
-										writeXMLText(out, equipment.getWeight().toString());
-									} else if (key.equals("COST_SUMMARY")) { //$NON-NLS-1$
-										writeXMLText(out, Numbers.format(equipment.getExtendedValue()));
-									} else if (key.equals("WEIGHT_SUMMARY")) { //$NON-NLS-1$
-										writeXMLText(out, equipment.getExtendedWeight().toString());
-									} else if (key.equals("REF")) { //$NON-NLS-1$
-										writeXMLText(out, equipment.getReference());
-									} else if (key.equals("ID")) { //$NON-NLS-1$
-										writeXMLText(out, Integer.toString(counter));
-									} else {
-										writeXMLText(out, MSG_UNIDENTIFIED_KEY);
-									}
+					}
+					out.append(ch);
+				} else {
+					if (ch == '_' || Character.isLetterOrDigit(ch)) {
+						keyBuffer.append(ch);
+					} else {
+						String key = keyBuffer.toString();
+						i--;
+						keyBuffer.setLength(0);
+						lookForKeyMarker = true;
+						if (!processStyleIndentWarning(key, out, equipment, odd)) {
+							if (!processDescription(key, out, equipment)) {
+								if (key.equals("STATE")) { //$NON-NLS-1$
+									out.write(equipment.getState().toShortString());
+								} else if (key.equals("QTY")) { //$NON-NLS-1$
+									writeXMLText(out, Numbers.format(equipment.getQuantity()));
+								} else if (key.equals("COST")) { //$NON-NLS-1$
+									writeXMLText(out, Numbers.format(equipment.getValue()));
+								} else if (key.equals("WEIGHT")) { //$NON-NLS-1$
+									writeXMLText(out, equipment.getWeight().toString());
+								} else if (key.equals("COST_SUMMARY")) { //$NON-NLS-1$
+									writeXMLText(out, Numbers.format(equipment.getExtendedValue()));
+								} else if (key.equals("WEIGHT_SUMMARY")) { //$NON-NLS-1$
+									writeXMLText(out, equipment.getExtendedWeight().toString());
+								} else if (key.equals("REF")) { //$NON-NLS-1$
+									writeXMLText(out, equipment.getReference());
+								} else if (key.equals("ID")) { //$NON-NLS-1$
+									writeXMLText(out, Integer.toString(counter));
+								} else {
+									writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 								}
 							}
 						}
-						break;
+					}
 				}
 			}
 			odd = !odd;

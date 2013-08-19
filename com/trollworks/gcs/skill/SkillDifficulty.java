@@ -36,7 +36,8 @@ public enum SkillDifficulty {
 	/** The "wildcard" difficulty. */
 	W {
 
-		@Override public int getBaseRelativeLevel() {
+		@Override
+		public int getBaseRelativeLevel() {
 			return VH.getBaseRelativeLevel();
 		}
 	};

@@ -29,19 +29,22 @@ import com.trollworks.ttk.utility.LocalizedMessages;
 public enum AttributeBonusLimitation {
 	/** No limitation. */
 	NONE {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_NONE;
 		}
 	},
 	/** Striking only. */
 	STRIKING_ONLY {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_STRIKING_ONLY;
 		}
 	},
 	/** Lifting only */
 	LIFTING_ONLY {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_LIFTING_ONLY;
 		}
 	};

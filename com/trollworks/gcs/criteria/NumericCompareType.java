@@ -31,43 +31,52 @@ import java.text.MessageFormat;
 public enum NumericCompareType {
 	/** The comparison for "is". */
 	IS {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_IS;
 		}
 
-		@Override public String getDescription() {
+		@Override
+		public String getDescription() {
 			return MSG_IS_DESCRIPTION;
 		}
 
-		@Override String getDescriptionFormat() {
+		@Override
+		String getDescriptionFormat() {
 			return MSG_IS_FORMAT;
 		}
 	},
 	/** The comparison for "is at least". */
 	AT_LEAST {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_AT_LEAST;
 		}
 
-		@Override public String getDescription() {
+		@Override
+		public String getDescription() {
 			return MSG_AT_LEAST_DESCRIPTION;
 		}
 
-		@Override String getDescriptionFormat() {
+		@Override
+		String getDescriptionFormat() {
 			return MSG_AT_LEAST_FORMAT;
 		}
 	},
 	/** The comparison for "is at most". */
 	AT_MOST {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_AT_MOST;
 		}
 
-		@Override public String getDescription() {
+		@Override
+		public String getDescription() {
 			return MSG_AT_MOST_DESCRIPTION;
 		}
 
-		@Override String getDescriptionFormat() {
+		@Override
+		String getDescriptionFormat() {
 			return MSG_AT_MOST_FORMAT;
 		}
 	};

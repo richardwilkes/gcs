@@ -75,13 +75,13 @@ public class Namer extends JPanel {
 	 * @return Whether anything was modified.
 	 */
 	static public boolean name(Component owner, ArrayList<ListRow> list) {
-		ArrayList<ListRow> rowList = new ArrayList<ListRow>();
-		ArrayList<HashSet<String>> setList = new ArrayList<HashSet<String>>();
+		ArrayList<ListRow> rowList = new ArrayList<>();
+		ArrayList<HashSet<String>> setList = new ArrayList<>();
 		boolean modified = false;
 		int count;
 
 		for (ListRow row : list) {
-			HashSet<String> set = new HashSet<String>();
+			HashSet<String> set = new HashSet<>();
 
 			row.fillWithNameableKeys(set);
 			if (!set.isEmpty()) {
@@ -106,6 +106,7 @@ public class Namer extends JPanel {
 					break;
 				case JOptionPane.CANCEL_OPTION:
 				case JOptionPane.CLOSED_OPTION:
+				default:
 					return modified;
 			}
 		}
@@ -115,7 +116,7 @@ public class Namer extends JPanel {
 	private Namer(ListRow row, HashSet<String> set, int remaining) {
 		JLabel label;
 		mRow = row;
-		mFields = new ArrayList<JTextField>();
+		mFields = new ArrayList<>();
 
 		FlexColumn column = new FlexColumn();
 		if (remaining > 0) {
@@ -145,7 +146,7 @@ public class Namer extends JPanel {
 		int rowIndex = 0;
 		FlexGrid grid = new FlexGrid();
 		grid.setFillHorizontal(true);
-		ArrayList<String> list = new ArrayList<String>(set);
+		ArrayList<String> list = new ArrayList<>(set);
 		Collections.sort(list);
 		for (String name : list) {
 			JTextField field = new JTextField(25);
@@ -169,7 +170,7 @@ public class Namer extends JPanel {
 
 	private void applyChanges() {
 		CommitEnforcer.forceFocusToAccept();
-		HashMap<String, String> map = new HashMap<String, String>();
+		HashMap<String, String> map = new HashMap<>();
 		for (JTextField field : mFields) {
 			map.put(field.getName(), field.getText());
 		}

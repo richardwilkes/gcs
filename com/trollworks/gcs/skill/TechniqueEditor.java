@@ -89,12 +89,12 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 	private JTextField			mNotesField;
 	private JTextField			mCategoriesField;
 	private JTextField			mReferenceField;
-	private JComboBox			mDifficultyCombo;
+	private JComboBox<Object>	mDifficultyCombo;
 	private JTextField			mPointsField;
 	private JTextField			mLevelField;
 	private JPanel				mDefaultPanel;
 	private LinkedLabel			mDefaultPanelLabel;
-	private JComboBox			mDefaultTypeCombo;
+	private JComboBox<Object>	mDefaultTypeCombo;
 	private JTextField			mDefaultNameField;
 	private JTextField			mDefaultSpecializationField;
 	private JTextField			mDefaultModifierField;
@@ -163,8 +163,8 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 		rebuildDefaultPanel();
 	}
 
-	private JComboBox createComboBox(Container parent, Object[] items, Object selection) {
-		JComboBox combo = new JComboBox(items);
+	private JComboBox<Object> createComboBox(Container parent, Object[] items, Object selection) {
+		JComboBox<Object> combo = new JComboBox<>(items);
 		combo.setSelectedItem(selection);
 		combo.addActionListener(this);
 		combo.setMaximumRowCount(items.length);
@@ -276,12 +276,14 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 		return field;
 	}
 
+	@SuppressWarnings("unused")
 	private JTextField createNumberField(Container labelParent, Container fieldParent, String title, String tooltip, int value, int maxDigits) {
 		JTextField field = createField(labelParent, fieldParent, title, Numbers.formatWithForcedSign(value), tooltip, maxDigits + 1);
 		new NumberFilter(field, false, true, false, maxDigits);
 		return field;
 	}
 
+	@SuppressWarnings("unused")
 	private void createPointsFields(Container parent, boolean forCharacter) {
 		mPointsField = createField(parent, parent, MSG_EDITOR_POINTS, Integer.toString(mRow.getPoints()), MSG_TECHNIQUE_POINTS_TOOLTIP, 4);
 		new NumberFilter(mPointsField, false, false, false, 4);
@@ -364,7 +366,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 		modified |= mRow.setPrereqs(mPrereqs.getPrereqList());
 		modified |= mRow.setFeatures(mFeatures.getFeatures());
 
-		ArrayList<WeaponStats> list = new ArrayList<WeaponStats>(mMeleeWeapons.getWeapons());
+		ArrayList<WeaponStats> list = new ArrayList<>(mMeleeWeapons.getWeapons());
 		list.addAll(mRangedWeapons.getWeapons());
 		modified |= mRow.setWeapons(list);
 

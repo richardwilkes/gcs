@@ -35,15 +35,18 @@ public class USCensusNames extends Names {
 		// Just here to prevent external instantiation
 	}
 
-	@Override public String getLastName() {
+	@Override
+	public String getLastName() {
 		return LAST[RANDOM.nextInt(LAST.length)];
 	}
 
-	@Override public String getFemaleFirstName() {
+	@Override
+	public String getFemaleFirstName() {
 		return FEMALE[RANDOM.nextInt(FEMALE.length)];
 	}
 
-	@Override public String getMaleFirstName() {
+	@Override
+	public String getMaleFirstName() {
 		return MALE[RANDOM.nextInt(MALE.length)];
 	}
 }

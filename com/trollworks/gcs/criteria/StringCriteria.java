@@ -67,6 +67,11 @@ public class StringCriteria {
 		return false;
 	}
 
+	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
 	/**
 	 * @param reader The reader to load data from.
 	 */

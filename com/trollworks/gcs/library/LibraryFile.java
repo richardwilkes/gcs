@@ -207,7 +207,7 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 	 * @return The set of categories for the specified {@link ListFile}.
 	 */
 	public TreeSet<String> getCategoriesFor(ListFile file) {
-		TreeSet<String> set = new TreeSet<String>();
+		TreeSet<String> set = new TreeSet<>();
 		for (Row row : file.getTopLevelRows()) {
 			processRowForCategories(row, set);
 		}

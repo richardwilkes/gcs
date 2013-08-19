@@ -130,9 +130,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private JTextField					mTechLevel;
 	private JTextField					mInitialPoints;
 	private PortraitPreferencePanel		mPortrait;
-	private JComboBox					mPNGResolutionCombo;
-	private JComboBox					mLengthUnitsCombo;
-	private JComboBox					mWeightUnitsCombo;
+	private JComboBox<String>			mPNGResolutionCombo;
+	private JComboBox<String>			mLengthUnitsCombo;
+	private JComboBox<String>			mWeightUnitsCombo;
 	private JCheckBox					mUseHTMLTemplateOverride;
 	private JTextField					mHTMLTemplatePath;
 	private JButton						mHTMLTemplatePicker;
@@ -348,10 +348,11 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		return field;
 	}
 
-	private JComboBox createPNGResolutionPopup() {
+	private JComboBox<String> createPNGResolutionPopup() {
 		int selection = 0;
 		int resolution = getPNGResolution();
-		JComboBox combo = createCombo(MSG_PNG_RESOLUTION_TOOLTIP);
+		JComboBox<String> combo = new JComboBox<>();
+		setupCombo(combo, MSG_PNG_RESOLUTION_TOOLTIP);
 		for (int i = 0; i < DPI.length; i++) {
 			combo.addItem(MessageFormat.format(MSG_DPI, new Integer(DPI[i])));
 			if (DPI[i] == resolution) {
@@ -365,8 +366,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		return combo;
 	}
 
-	private JComboBox createLengthUnitsPopup() {
-		JComboBox combo = createCombo(MSG_LENGTH_UNITS_TOOLTIP);
+	private JComboBox<String> createLengthUnitsPopup() {
+		JComboBox<String> combo = new JComboBox<>();
+		setupCombo(combo, MSG_LENGTH_UNITS_TOOLTIP);
 		for (LengthUnits unit : LengthUnits.values()) {
 			combo.addItem(unit.getDescription());
 		}
@@ -377,8 +379,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		return combo;
 	}
 
-	private JComboBox createWeightUnitsPopup() {
-		JComboBox combo = createCombo(MSG_WEIGHT_UNITS_TOOLTIP);
+	private JComboBox<String> createWeightUnitsPopup() {
+		JComboBox<String> combo = new JComboBox<>();
+		setupCombo(combo, MSG_WEIGHT_UNITS_TOOLTIP);
 		for (WeightUnits unit : WeightUnits.values()) {
 			combo.addItem(unit.getDescription());
 		}

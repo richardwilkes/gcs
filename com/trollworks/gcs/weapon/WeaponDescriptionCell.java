@@ -51,6 +51,7 @@ public class WeaponDescriptionCell implements Cell {
 	 * @param row The row to use.
 	 * @return The primary text to display.
 	 */
+	@SuppressWarnings("static-method")
 	protected String getPrimaryText(WeaponDisplayRow row) {
 		return row.getWeapon().toString();
 	}
@@ -59,6 +60,7 @@ public class WeaponDescriptionCell implements Cell {
 	 * @param row The row to use.
 	 * @return The secondary text to display.
 	 */
+	@SuppressWarnings("static-method")
 	protected String getSecondaryText(WeaponDisplayRow row) {
 		return row.getWeapon().getNotes();
 	}
@@ -112,7 +114,7 @@ public class WeaponDescriptionCell implements Cell {
 		return height;
 	}
 
-	private String wrap(WeaponDisplayRow row, Column column, String text, Font font) {
+	private static String wrap(WeaponDisplayRow row, Column column, String text, Font font) {
 		int width = column.getWidth();
 
 		if (width == -1) {

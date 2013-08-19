@@ -72,7 +72,7 @@ public class ListCollectionThread extends Thread {
 		} catch (InterruptedException outerIEx) {
 			// Someone is tring to terminate us... let them.
 		}
-		return mLists == null ? new ArrayList<Object>() : mLists;
+		return mLists == null ? new ArrayList<>() : mLists;
 	}
 
 	@Override
@@ -91,13 +91,13 @@ public class ListCollectionThread extends Thread {
 					sleep(5000);
 				}
 			} catch (InterruptedException outerIEx) {
-				// Someone is tring to terminate us... let them.
+				// Someone is trying to terminate us... let them.
 			}
 		}
 	}
 
 	private static ArrayList<Object> collectLists(File dir, int depth) {
-		ArrayList<Object> list = new ArrayList<Object>();
+		ArrayList<Object> list = new ArrayList<>();
 		try {
 			File[] files = dir.listFiles();
 			if (files != null) {

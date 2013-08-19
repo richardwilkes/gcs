@@ -53,7 +53,8 @@ public class MultipleRowUndo extends AbstractUndoableEdit {
 		}
 	}
 
-	@Override public void undo() throws CannotUndoException {
+	@Override
+	public void undo() throws CannotUndoException {
 		super.undo();
 		if (mUndos.length > 0) {
 			for (int i = mUndos.length - 1; i != -1; i--) {
@@ -63,7 +64,8 @@ public class MultipleRowUndo extends AbstractUndoableEdit {
 		}
 	}
 
-	@Override public void redo() throws CannotRedoException {
+	@Override
+	public void redo() throws CannotRedoException {
 		super.redo();
 		if (mUndos.length > 0) {
 			for (int i = 0; i != mUndos.length; i++) {
@@ -73,7 +75,8 @@ public class MultipleRowUndo extends AbstractUndoableEdit {
 		}
 	}
 
-	@Override public String getPresentationName() {
+	@Override
+	public String getPresentationName() {
 		if (mUndos.length == 0) {
 			return super.getPresentationName();
 		}

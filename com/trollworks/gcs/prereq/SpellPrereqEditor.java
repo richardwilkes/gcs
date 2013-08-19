@@ -86,7 +86,7 @@ public class SpellPrereqEditor extends PrereqEditor {
 		grid.add(row, 1, 1);
 	}
 
-	private JComboBox addChangeTypePopup() {
+	private JComboBox<Object> addChangeTypePopup() {
 		String[] titles = { MSG_WHOSE_SPELL_NAME, MSG_ANY, MSG_COLLEGE, MSG_COLLEGE_COUNT };
 		int selection = 0;
 		String current = ((SpellPrereq) mPrereq).getType();
@@ -105,7 +105,7 @@ public class SpellPrereqEditor extends PrereqEditor {
 		String command = event.getActionCommand();
 
 		if (CHANGE_TYPE.equals(command)) {
-			String type = TYPES[((JComboBox) event.getSource()).getSelectedIndex()];
+			String type = TYPES[((JComboBox<Object>) event.getSource()).getSelectedIndex()];
 			if (!prereq.getType().equals(type)) {
 				CommitEnforcer.forceFocusToAccept();
 				prereq.setType(type);

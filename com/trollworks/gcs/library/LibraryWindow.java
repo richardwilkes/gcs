@@ -98,8 +98,8 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	private IconButton			mToggleRowsButton;
 	private IconButton			mSizeColumnsButton;
 	private boolean				mLocked;
-	private JComboBox			mTypeCombo;
-	private JComboBox			mCategoryCombo;
+	private JComboBox<Object>	mTypeCombo;
+	private JComboBox<Object>	mCategoryCombo;
 	private JScrollPane			mScroller;
 	/** The current outline. */
 	ListOutline					mOutline;
@@ -291,10 +291,10 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	}
 
 	private void createCategoryCombo(JToolBar toolbar, FlexRow row) {
-		mCategoryCombo = new JComboBox();
+		mCategoryCombo = new JComboBox<>();
 		mCategoryCombo.setRenderer(new DefaultListCellRenderer() {
 			@Override
-			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				setFont(getFont().deriveFont(index == 0 ? Font.ITALIC : Font.PLAIN));
 				return comp;
@@ -321,10 +321,10 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	}
 
 	private void createTypeCombo(JToolBar toolbar, FlexRow row) {
-		mTypeCombo = new JComboBox(new Object[] { MSG_ADVANTAGES, MSG_SKILLS, MSG_SPELLS, MSG_EQUIPMENT });
+		mTypeCombo = new JComboBox<>(new Object[] { MSG_ADVANTAGES, MSG_SKILLS, MSG_SPELLS, MSG_EQUIPMENT });
 		mTypeCombo.setRenderer(new DefaultListCellRenderer() {
 			@Override
-			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				if (value == MSG_ADVANTAGES) {
 					setIcon(new ImageIcon(GCSImages.getAdvantageIcon(false, true)));

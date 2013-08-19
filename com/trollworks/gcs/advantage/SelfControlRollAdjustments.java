@@ -186,7 +186,7 @@ public enum SelfControlRollAdjustments {
 
 		@Override
 		public ArrayList<Bonus> getBonuses(SelfControlRoll cr) {
-			ArrayList<Bonus> list = new ArrayList<Bonus>();
+			ArrayList<Bonus> list = new ArrayList<>();
 			SkillBonus bonus = new SkillBonus();
 			StringCriteria criteria = bonus.getNameCriteria();
 			criteria.setType(StringCompareType.IS);
@@ -237,7 +237,8 @@ public enum SelfControlRollAdjustments {
 	 * @param cr The {@link SelfControlRoll} being adjusted.
 	 * @return The set of bonuses that this adjustment provides.
 	 */
+	@SuppressWarnings("static-method")
 	public ArrayList<Bonus> getBonuses(SelfControlRoll cr) {
-		return new ArrayList<Bonus>();
+		return new ArrayList<>();
 	}
 }

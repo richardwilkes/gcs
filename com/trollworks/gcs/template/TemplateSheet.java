@@ -254,7 +254,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 				Row[] rows = (Row[]) dtde.getTransferable().getTransferData(RowSelection.DATA_FLAVOR);
 
 				if (rows != null && rows.length > 0) {
-					mDragRows = new ArrayList<Row>(rows.length);
+					mDragRows = new ArrayList<>(rows.length);
 
 					for (Row element : rows) {
 						if (element instanceof ListRow) {

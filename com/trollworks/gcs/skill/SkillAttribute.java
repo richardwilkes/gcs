@@ -29,37 +29,43 @@ import com.trollworks.gcs.character.GURPSCharacter;
 public enum SkillAttribute {
 	/** The strength attribute. */
 	ST {
-		@Override public int getBaseSkillLevel(GURPSCharacter character) {
+		@Override
+		public int getBaseSkillLevel(GURPSCharacter character) {
 			return character != null ? character.getStrength() : Integer.MIN_VALUE;
 		}
 	},
 	/** The dexterity attribute. */
 	DX {
-		@Override public int getBaseSkillLevel(GURPSCharacter character) {
+		@Override
+		public int getBaseSkillLevel(GURPSCharacter character) {
 			return character != null ? character.getDexterity() : Integer.MIN_VALUE;
 		}
 	},
 	/** The health attribute. */
 	HT {
-		@Override public int getBaseSkillLevel(GURPSCharacter character) {
+		@Override
+		public int getBaseSkillLevel(GURPSCharacter character) {
 			return character != null ? character.getHealth() : Integer.MIN_VALUE;
 		}
 	},
 	/** The intelligence attribute. */
 	IQ {
-		@Override public int getBaseSkillLevel(GURPSCharacter character) {
+		@Override
+		public int getBaseSkillLevel(GURPSCharacter character) {
 			return character != null ? character.getIntelligence() : Integer.MIN_VALUE;
 		}
 	},
 	/** The will attribute. */
 	Will {
-		@Override public int getBaseSkillLevel(GURPSCharacter character) {
+		@Override
+		public int getBaseSkillLevel(GURPSCharacter character) {
 			return character != null ? character.getWill() : Integer.MIN_VALUE;
 		}
 	},
 	/** The perception attribute. */
 	Per {
-		@Override public int getBaseSkillLevel(GURPSCharacter character) {
+		@Override
+		public int getBaseSkillLevel(GURPSCharacter character) {
 			return character != null ? character.getPerception() : Integer.MIN_VALUE;
 		}
 	};

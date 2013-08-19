@@ -112,8 +112,8 @@ public class DropPanel extends JPanel {
 		setBorder(new CompoundBorder(mBoxedDropShadowBorder, new EmptyBorder(0, 2, 1, 2)));
 		setAlignmentY(TOP_ALIGNMENT);
 		mOnlyReportPreferredSize = onlyReportPreferredSize;
-		mHorizontalBackgrounds = new HashMap<Component, Color>();
-		mVerticalBackgrounds = new HashMap<Component, Color>();
+		mHorizontalBackgrounds = new HashMap<>();
+		mVerticalBackgrounds = new HashMap<>();
 	}
 
 	@Override
@@ -246,6 +246,7 @@ public class DropPanel extends JPanel {
 	 * @param alignment The horizontal field alignment to use.
 	 * @return The newly created field.
 	 */
+	@SuppressWarnings("static-method")
 	protected PageField createLabelAndField(Container parent, GURPSCharacter character, String key, String title, String tooltip, int alignment) {
 		PageField field = new PageField(character, key, alignment, true, tooltip);
 		parent.add(new PageLabel(title, field));
@@ -262,6 +263,7 @@ public class DropPanel extends JPanel {
 	 * @param alignment The horizontal field alignment to use.
 	 * @return The newly created field.
 	 */
+	@SuppressWarnings("static-method")
 	protected PageField createLabelAndDisabledField(Container parent, GURPSCharacter character, String key, String title, String tooltip, int alignment) {
 		PageField field = new PageField(character, key, alignment, false, tooltip);
 		parent.add(new PageLabel(title, field));
@@ -277,6 +279,7 @@ public class DropPanel extends JPanel {
 	 * @param alignment The horizontal field alignment to use.
 	 * @return The newly created field.
 	 */
+	@SuppressWarnings("static-method")
 	protected PageField createField(Container parent, GURPSCharacter character, String key, String tooltip, int alignment) {
 		PageField field = new PageField(character, key, alignment, true, tooltip);
 		parent.add(field);
@@ -291,6 +294,7 @@ public class DropPanel extends JPanel {
 	 * @param alignment The horizontal field alignment to use.
 	 * @return The newly created field.
 	 */
+	@SuppressWarnings("static-method")
 	protected PageField createDisabledField(Container parent, GURPSCharacter character, String key, String tooltip, int alignment) {
 		PageField field = new PageField(character, key, alignment, false, tooltip);
 		parent.add(field);
@@ -303,6 +307,7 @@ public class DropPanel extends JPanel {
 	 * @param tooltip The tooltip to use.
 	 * @return The newly created header.
 	 */
+	@SuppressWarnings("static-method")
 	protected PageHeader createHeader(Container parent, String title, String tooltip) {
 		PageHeader header = new PageHeader(title, tooltip);
 		parent.add(header);

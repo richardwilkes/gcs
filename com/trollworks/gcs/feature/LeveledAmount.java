@@ -84,6 +84,11 @@ public class LeveledAmount {
 		return false;
 	}
 
+	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
 	/** @param reader The reader to load data from. */
 	public void load(XMLReader reader) throws IOException {
 		mPerLevel = reader.isAttributeSet(ATTRIBUTE_PER_LEVEL);

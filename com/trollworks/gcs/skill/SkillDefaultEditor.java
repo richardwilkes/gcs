@@ -55,7 +55,7 @@ public class SkillDefaultEditor extends EditorPanel {
 	private static final String		REMOVE			= "Remove";			//$NON-NLS-1$
 	private static SkillDefaultType	LAST_ITEM_TYPE	= SkillDefaultType.DX;
 	private SkillDefault			mDefault;
-	private JComboBox				mTypeCombo;
+	private JComboBox<Object>		mTypeCombo;
 	private EditorField				mSkillNameField;
 	private EditorField				mSpecializationField;
 	private EditorField				mModifierField;
@@ -98,7 +98,7 @@ public class SkillDefaultEditor extends EditorPanel {
 
 			FlexRow row = new FlexRow();
 			SkillDefaultType current = mDefault.getType();
-			mTypeCombo = new JComboBox(SkillDefaultType.values());
+			mTypeCombo = new JComboBox<Object>(SkillDefaultType.values());
 			mTypeCombo.setOpaque(false);
 			mTypeCombo.setSelectedItem(current);
 			mTypeCombo.setActionCommand(SkillDefault.TAG_TYPE);
@@ -197,7 +197,7 @@ public class SkillDefaultEditor extends EditorPanel {
 			notifyActionListeners();
 		} else if (SkillDefault.TAG_TYPE.equals(command)) {
 			SkillDefaultType current = mDefault.getType();
-			SkillDefaultType value = (SkillDefaultType) ((JComboBox) src).getSelectedItem();
+			SkillDefaultType value = (SkillDefaultType) ((JComboBox<?>) src).getSelectedItem();
 			if (!current.equals(value)) {
 				CommitEnforcer.forceFocusToAccept();
 				mDefault.setType(value);

@@ -59,7 +59,7 @@
 		</replace>
 
 		<!-- Compile the code. -->
-		<javac destdir="${JavaBuildDir}" includes="com/trollworks/gcs/app/GCS.java" debug="no" optimize="yes" target="1.6" source="1.6" deprecation="true">
+		<javac destdir="${JavaBuildDir}" includes="com/trollworks/gcs/app/GCS.java" debug="no" optimize="yes" target="1.7" source="1.7" deprecation="true" includeantruntime="no">
 			<classpath>
 				<pathelement location="../ttk/TrollworksToolkit.jar"/>
 				<pathelement location="../ttk/libraries/Trove.jar"/>

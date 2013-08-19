@@ -75,6 +75,11 @@ public abstract class HasPrereq extends Prereq {
 		return false;
 	}
 
+	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
 	/**
 	 * Loads the "has" attribute.
 	 * 

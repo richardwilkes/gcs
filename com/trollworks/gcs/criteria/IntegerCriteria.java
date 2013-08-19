@@ -66,6 +66,11 @@ public class IntegerCriteria extends NumericCriteria {
 	}
 
 	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
+	@Override
 	public void load(XMLReader reader) throws IOException {
 		super.load(reader);
 		setQualifier(reader.readInteger(0));

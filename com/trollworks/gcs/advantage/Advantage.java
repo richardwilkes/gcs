@@ -141,8 +141,8 @@ public class Advantage extends ListRow {
 		mLevels = -1;
 		mReference = ""; //$NON-NLS-1$
 		mContainerType = AdvantageContainerType.GROUP;
-		mWeapons = new ArrayList<WeaponStats>();
-		mModifiers = new ArrayList<Modifier>();
+		mWeapons = new ArrayList<>();
+		mModifiers = new ArrayList<>();
 	}
 
 	/**
@@ -163,7 +163,7 @@ public class Advantage extends ListRow {
 		mPointsPerLevel = advantage.mPointsPerLevel;
 		mReference = advantage.mReference;
 		mContainerType = advantage.mContainerType;
-		mWeapons = new ArrayList<WeaponStats>(advantage.mWeapons.size());
+		mWeapons = new ArrayList<>(advantage.mWeapons.size());
 		for (WeaponStats weapon : advantage.mWeapons) {
 			if (weapon instanceof MeleeWeaponStats) {
 				mWeapons.add(new MeleeWeaponStats(this, (MeleeWeaponStats) weapon));
@@ -171,7 +171,7 @@ public class Advantage extends ListRow {
 				mWeapons.add(new RangedWeaponStats(this, (RangedWeaponStats) weapon));
 			}
 		}
-		mModifiers = new ArrayList<Modifier>(advantage.mModifiers.size());
+		mModifiers = new ArrayList<>(advantage.mModifiers.size());
 		for (Modifier modifier : advantage.mModifiers) {
 			mModifiers.add(new Modifier(mDataFile, modifier));
 		}
@@ -235,8 +235,8 @@ public class Advantage extends ListRow {
 		mPoints = 0;
 		mPointsPerLevel = 0;
 		mOldPointsString = null;
-		mWeapons = new ArrayList<WeaponStats>();
-		mModifiers = new ArrayList<Modifier>();
+		mWeapons = new ArrayList<>();
+		mModifiers = new ArrayList<>();
 	}
 
 	@Override
@@ -490,8 +490,8 @@ public class Advantage extends ListRow {
 		if (canHaveChildren()) {
 			int points = 0;
 			if (mContainerType == AdvantageContainerType.ALTERNATIVE_ABILITIES) {
-				ArrayList<Integer> values = new ArrayList<Integer>();
-				for (Advantage child : new FilteredIterator<Advantage>(getChildren(), Advantage.class)) {
+				ArrayList<Integer> values = new ArrayList<>();
+				for (Advantage child : new FilteredIterator<>(getChildren(), Advantage.class)) {
 					int pts = child.getAdjustedPoints();
 					values.add(new Integer(pts));
 					if (pts > points) {
@@ -509,7 +509,7 @@ public class Advantage extends ListRow {
 					}
 				}
 			} else {
-				for (Advantage child : new FilteredIterator<Advantage>(getChildren(), Advantage.class)) {
+				for (Advantage child : new FilteredIterator<>(getChildren(), Advantage.class)) {
 					points += child.getAdjustedPoints();
 				}
 			}
@@ -538,8 +538,10 @@ public class Advantage extends ListRow {
 				int modifier = one.getCostModifier();
 				switch (one.getCostType()) {
 					case PERCENTAGE:
+					default:
 						switch (one.getAffects()) {
 							case TOTAL:
+							default:
 								if (modifier < 0) { // Limitation
 									baseLim += modifier;
 									levelLim += modifier;
@@ -568,6 +570,7 @@ public class Advantage extends ListRow {
 						switch (one.getAffects()) {
 							case TOTAL:
 							case BASE_ONLY:
+							default:
 								basePoints += modifier;
 								break;
 							case LEVELS_ONLY:
@@ -591,10 +594,10 @@ public class Advantage extends ListRow {
 			if (SheetPreferences.areOptionalModifierRulesUsed()) {
 				if (baseEnh == levelEnh && baseLim == levelLim) {
 					modifiedBasePoints = modifyPoints(basePoints + leveledPoints, baseEnh);
-					modifiedBasePoints = modifyPoints(basePoints, Math.max(baseLim, -80));
+					modifiedBasePoints = modifyPoints(modifiedBasePoints, Math.max(baseLim, -80));
 				} else {
 					modifiedBasePoints = modifyPoints(basePoints, baseEnh);
-					modifiedBasePoints = modifyPoints(basePoints, Math.max(baseLim, -80));
+					modifiedBasePoints = modifyPoints(modifiedBasePoints, Math.max(baseLim, -80));
 					leveledPoints = modifyPoints(leveledPoints, levelEnh);
 					leveledPoints = modifyPoints(leveledPoints, Math.max(levelLim, -80));
 					basePoints += leveledPoints;
@@ -687,7 +690,7 @@ public class Advantage extends ListRow {
 		return AdvantageColumn.values()[column.getID()].getDataAsText(this);
 	}
 
-	private int getSimpleNumber(String buffer) {
+	private static int getSimpleNumber(String buffer) {
 		try {
 			return Integer.parseInt(buffer);
 		} catch (Exception exception) {
@@ -703,7 +706,7 @@ public class Advantage extends ListRow {
 		return super.contains(text, lowerCaseOnly);
 	}
 
-	private int getTypeFromText(String text) {
+	private static int getTypeFromText(String text) {
 		int type = 0;
 
 		if (text.indexOf(TYPE_MENTAL) != -1) {
@@ -788,7 +791,7 @@ public class Advantage extends ListRow {
 	 */
 	public boolean setWeapons(List<WeaponStats> weapons) {
 		if (!mWeapons.equals(weapons)) {
-			mWeapons = new ArrayList<WeaponStats>(weapons);
+			mWeapons = new ArrayList<>(weapons);
 			for (WeaponStats weapon : mWeapons) {
 				weapon.setOwner(this);
 			}
@@ -843,7 +846,7 @@ public class Advantage extends ListRow {
 
 	/** @return The modifiers including those inherited from parent row. */
 	public List<Modifier> getAllModifiers() {
-		ArrayList<Modifier> allModifiers = new ArrayList<Modifier>(mModifiers);
+		ArrayList<Modifier> allModifiers = new ArrayList<>(mModifiers);
 		if (getParent() != null) {
 			allModifiers.addAll(((Advantage) getParent()).getAllModifiers());
 		}
@@ -856,7 +859,7 @@ public class Advantage extends ListRow {
 	 */
 	public boolean setModifiers(List<Modifier> modifiers) {
 		if (!mModifiers.equals(modifiers)) {
-			mModifiers = new ArrayList<Modifier>(modifiers);
+			mModifiers = new ArrayList<>(modifiers);
 			notifySingle(ID_MODIFIER_STATUS_CHANGED);
 			return true;
 		}

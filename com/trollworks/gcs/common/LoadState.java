@@ -30,7 +30,7 @@ import java.util.HashMap;
 /** Temporary storage for data needed at load time. */
 public class LoadState {
 	/** The attribute used for versioning. */
-	public static final String			ATTRIBUTE_VERSION	= "version";						//$NON-NLS-1$
+	public static final String			ATTRIBUTE_VERSION	= "version";		//$NON-NLS-1$
 
 	/** The data file version. */
 	public int							mDataFileVersion;
@@ -39,7 +39,7 @@ public class LoadState {
 	/** Whether the load is happening to restore undo state. */
 	public boolean						mForUndo;
 	/** Used to convert old weapon data in equipment lists. */
-	public HashMap<Object, OldWeapon>	mOldWeapons			= new HashMap<Object, OldWeapon>();
+	public HashMap<Object, OldWeapon>	mOldWeapons			= new HashMap<>();
 	/** Used to convert old equipment data. */
 	public boolean						mDefaultCarried;
 }

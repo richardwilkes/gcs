@@ -100,7 +100,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 		character.addTarget(this, GURPSCharacter.ID_CARRIED_WEIGHT, GURPSCharacter.ID_BASIC_LIFT);
 	}
 
-	private String getMarkerText(int which, int current) {
+	private static String getMarkerText(int which, int current) {
 		return MessageFormat.format(which == current ? MSG_CURRENT_ENCUMBRANCE_FORMAT : MSG_ENCUMBRANCE_FORMAT, ENCUMBRANCE_TITLES[which], Numbers.format(which));
 	}
 

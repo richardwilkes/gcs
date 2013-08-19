@@ -55,7 +55,7 @@ public class EditMenu extends JMenu {
 	 *         modified.
 	 */
 	public static HashSet<Command> getCommands() {
-		HashSet<Command> cmds = new HashSet<Command>();
+		HashSet<Command> cmds = new HashSet<>();
 		cmds.add(UndoCommand.INSTANCE);
 		cmds.add(RedoCommand.INSTANCE);
 		cmds.add(CutCommand.INSTANCE);

@@ -69,7 +69,7 @@ public class DRBonusEditor extends FeatureEditor {
 	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
 		if (CHANGE_LOCATION.equals(command)) {
-			((DRBonus) getFeature()).setLocation((HitLocation) ((JComboBox) event.getSource()).getSelectedItem());
+			((DRBonus) getFeature()).setLocation((HitLocation) ((JComboBox<Object>) event.getSource()).getSelectedItem());
 		} else {
 			super.actionPerformed(event);
 		}

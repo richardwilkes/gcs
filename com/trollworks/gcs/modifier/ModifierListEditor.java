@@ -146,8 +146,8 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 	}
 
 	private void openDetailEditor() {
-		ArrayList<ListRow> rows = new ArrayList<ListRow>();
-		for (Modifier row : new FilteredIterator<Modifier>(mOutline.getModel().getSelectionAsList(), Modifier.class)) {
+		ArrayList<ListRow> rows = new ArrayList<>();
+		for (Modifier row : new FilteredIterator<>(mOutline.getModel().getSelectionAsList(), Modifier.class)) {
 			if (!row.isReadOnly()) {
 				rows.add(row);
 			}
@@ -185,8 +185,8 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 
 	/** @return Modifiers edited by this editor */
 	public List<Modifier> getModifiers() {
-		ArrayList<Modifier> modifiers = new ArrayList<Modifier>();
-		for (Modifier modifier : new FilteredIterator<Modifier>(mOutline.getModel().getRows(), Modifier.class)) {
+		ArrayList<Modifier> modifiers = new ArrayList<>();
+		for (Modifier modifier : new FilteredIterator<>(mOutline.getModel().getRows(), Modifier.class)) {
 			if (!modifier.isReadOnly()) {
 				modifiers.add(modifier);
 			}
@@ -196,7 +196,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 
 	/** @return Modifiers edited by this editor plus inherited Modifiers */
 	public List<Modifier> getAllModifiers() {
-		return new FilteredList<Modifier>(mOutline.getModel().getRows(), Modifier.class);
+		return new FilteredList<>(mOutline.getModel().getRows(), Modifier.class);
 	}
 
 	@Override
@@ -217,7 +217,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 			OutlineModel model = getModel();
 			boolean can = mAddButton.isEnabled() && model.hasSelection();
 			if (can) {
-				for (Modifier row : new FilteredIterator<Modifier>(model.getSelectionAsList(), Modifier.class)) {
+				for (Modifier row : new FilteredIterator<>(model.getSelectionAsList(), Modifier.class)) {
 					if (row.isReadOnly()) {
 						return false;
 					}

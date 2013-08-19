@@ -107,7 +107,7 @@ public class SkillOutline extends ListOutline implements Incrementable {
 	}
 
 	private boolean selectionHasLeafRows(boolean requirePointsAboveZero) {
-		for (Skill skill : new FilteredIterator<Skill>(getModel().getSelectionAsList(), Skill.class)) {
+		for (Skill skill : new FilteredIterator<>(getModel().getSelectionAsList(), Skill.class)) {
 			if (!skill.canHaveChildren() && (!requirePointsAboveZero || skill.getPoints() > 0)) {
 				return true;
 			}
@@ -115,6 +115,7 @@ public class SkillOutline extends ListOutline implements Incrementable {
 		return false;
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	public void decrement() {
 		ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
@@ -137,6 +138,7 @@ public class SkillOutline extends ListOutline implements Incrementable {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	public void increment() {
 		ArrayList<RowUndo> undos = new ArrayList<RowUndo>();

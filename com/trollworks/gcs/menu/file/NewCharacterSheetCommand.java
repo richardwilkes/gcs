@@ -61,7 +61,7 @@ public class NewCharacterSheetCommand extends Command {
 	}
 
 	/** @return The newly created a new {@link SheetWindow}. */
-	public SheetWindow newSheet() {
+	public static SheetWindow newSheet() {
 		return SheetWindow.displaySheetWindow(new GURPSCharacter());
 	}
 }

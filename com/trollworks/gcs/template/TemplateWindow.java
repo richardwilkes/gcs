@@ -207,9 +207,9 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 	 * @param rows The rows to add.
 	 */
 	public void addRows(List<Row> rows) {
-		HashMap<ListOutline, StateEdit> map = new HashMap<ListOutline, StateEdit>();
-		HashMap<Outline, ArrayList<Row>> selMap = new HashMap<Outline, ArrayList<Row>>();
-		HashMap<Outline, ArrayList<ListRow>> nameMap = new HashMap<Outline, ArrayList<ListRow>>();
+		HashMap<ListOutline, StateEdit> map = new HashMap<>();
+		HashMap<Outline, ArrayList<Row>> selMap = new HashMap<>();
+		HashMap<Outline, ArrayList<ListRow>> nameMap = new HashMap<>();
 		ListOutline outline = null;
 
 		for (Row row : rows) {
@@ -255,7 +255,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 				ArrayList<ListRow> process = nameMap.get(outline);
 
 				if (process == null) {
-					process = new ArrayList<ListRow>();
+					process = new ArrayList<>();
 					nameMap.put(outline, process);
 				}
 				addRowsToBeProcessed(process, (ListRow) row);
@@ -292,7 +292,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 		addCompleteRow(outline.getModel(), row);
 		outline.contentSizeMayHaveChanged();
 		if (selection == null) {
-			selection = new ArrayList<Row>();
+			selection = new ArrayList<>();
 			selMap.put(outline, selection);
 		}
 		selection.add(row);
@@ -319,7 +319,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 	}
 
 	@Override
-	public ListCellRenderer getSearchRenderer() {
+	public ListCellRenderer<Object> getSearchRenderer() {
 		return new RowItemRenderer();
 	}
 
@@ -329,18 +329,17 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 	}
 
 	@Override
-	public Object[] search(String text) {
-		ArrayList<Object> list = new ArrayList<Object>();
-
+	public List<Object> search(String text) {
+		ArrayList<Object> list = new ArrayList<>();
 		text = text.toLowerCase();
 		searchOne(mContent.getAdvantageOutline(), text, list);
 		searchOne(mContent.getSkillOutline(), text, list);
 		searchOne(mContent.getSpellOutline(), text, list);
 		searchOne(mContent.getEquipmentOutline(), text, list);
-		return list.toArray();
+		return list;
 	}
 
-	private void searchOne(ListOutline outline, String text, ArrayList<Object> list) {
+	private static void searchOne(ListOutline outline, String text, ArrayList<Object> list) {
 		for (ListRow row : new RowIterator<ListRow>(outline.getModel())) {
 			if (row.contains(text, true)) {
 				list.add(row);
@@ -349,8 +348,8 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 	}
 
 	@Override
-	public void searchSelect(Object[] selection) {
-		HashMap<OutlineModel, ArrayList<Row>> map = new HashMap<OutlineModel, ArrayList<Row>>();
+	public void searchSelect(List<Object> selection) {
+		HashMap<OutlineModel, ArrayList<Row>> map = new HashMap<>();
 		Outline primary = null;
 		ArrayList<Row> list;
 
@@ -371,7 +370,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 			}
 			list = map.get(model);
 			if (list == null) {
-				list = new ArrayList<Row>();
+				list = new ArrayList<>();
 				list.add(row);
 				map.put(model, list);
 			} else {

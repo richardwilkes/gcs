@@ -54,16 +54,16 @@ import javax.swing.border.LineBorder;
 
 /** Asks the user to enable/disable modifiers. */
 public class ModifierEnabler extends JPanel {
-	private static String	MSG_MODIFIER_TITLE;
-	private static String	MSG_MODIFIER_ONE_REMAINING;
-	private static String	MSG_MODIFIER_REMAINING;
-	private static String	MSG_CANCEL_REST;
-	private static String	MSG_CANCEL;
-	private static String	MSG_APPLY;
-	private Advantage		mAdvantage;
-	private JCheckBox[]		mEnabled;
-	private Modifier[]		mModifiers;
-	private JComboBox		mCRCombo;
+	private static String		MSG_MODIFIER_TITLE;
+	private static String		MSG_MODIFIER_ONE_REMAINING;
+	private static String		MSG_MODIFIER_REMAINING;
+	private static String		MSG_CANCEL_REST;
+	private static String		MSG_CANCEL;
+	private static String		MSG_APPLY;
+	private Advantage			mAdvantage;
+	private JCheckBox[]			mEnabled;
+	private Modifier[]			mModifiers;
+	private JComboBox<String>	mCRCombo;
 
 	static {
 		LocalizedMessages.initialize(ModifierEnabler.class);
@@ -78,7 +78,7 @@ public class ModifierEnabler extends JPanel {
 	 * @return Whether anything was modified.
 	 */
 	static public boolean process(Component comp, ArrayList<Advantage> advantages) {
-		ArrayList<Advantage> list = new ArrayList<Advantage>();
+		ArrayList<Advantage> list = new ArrayList<>();
 		boolean modified = false;
 		int count;
 
@@ -102,6 +102,7 @@ public class ModifierEnabler extends JPanel {
 					break;
 				case JOptionPane.CANCEL_OPTION:
 				case JOptionPane.CLOSED_OPTION:
+				default:
 					return modified;
 			}
 		}
@@ -117,7 +118,7 @@ public class ModifierEnabler extends JPanel {
 		add(scrollPanel, BorderLayout.CENTER);
 	}
 
-	private Container createTop(Advantage advantage, int remaining) {
+	private static Container createTop(Advantage advantage, int remaining) {
 		JPanel top = new JPanel(new ColumnLayout());
 		JLabel label = new JLabel(TextUtility.truncateIfNecessary(advantage.toString(), 80, SwingConstants.RIGHT), SwingConstants.LEFT);
 
@@ -143,13 +144,13 @@ public class ModifierEnabler extends JPanel {
 		wrapper.setBackground(Color.WHITE);
 		SelfControlRoll cr = mAdvantage.getCR();
 		if (cr != SelfControlRoll.NONE_REQUIRED) {
-			ArrayList<String> possible = new ArrayList<String>();
+			ArrayList<String> possible = new ArrayList<>();
 			for (SelfControlRoll one : SelfControlRoll.values()) {
 				if (one != SelfControlRoll.NONE_REQUIRED) {
 					possible.add(one.getDescriptionWithCost());
 				}
 			}
-			mCRCombo = new JComboBox(possible.toArray(new String[possible.size()]));
+			mCRCombo = new JComboBox<>(possible.toArray(new String[possible.size()]));
 			mCRCombo.setSelectedItem(cr.getDescriptionWithCost());
 			UIUtilities.setOnlySize(mCRCombo, mCRCombo.getPreferredSize());
 			wrapper.add(mCRCombo);

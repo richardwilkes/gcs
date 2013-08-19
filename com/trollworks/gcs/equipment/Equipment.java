@@ -134,7 +134,7 @@ public class Equipment extends ListRow {
 		mReference = EMPTY;
 		mWeight = new WeightValue(0, SheetPreferences.getWeightUnits());
 		mExtendedWeight = mWeight.clone();
-		mWeapons = new ArrayList<WeaponStats>();
+		mWeapons = new ArrayList<>();
 	}
 
 	/**
@@ -158,7 +158,7 @@ public class Equipment extends ListRow {
 		mExtendedWeight = mWeight.clone();
 		mExtendedWeight.setValue(mExtendedWeight.getValue() * mQuantity);
 		mReference = equipment.mReference;
-		mWeapons = new ArrayList<WeaponStats>(equipment.mWeapons.size());
+		mWeapons = new ArrayList<>(equipment.mWeapons.size());
 		for (WeaponStats weapon : equipment.mWeapons) {
 			if (weapon instanceof MeleeWeaponStats) {
 				mWeapons.add(new MeleeWeaponStats(this, (MeleeWeaponStats) weapon));
@@ -237,7 +237,7 @@ public class Equipment extends ListRow {
 		mReference = EMPTY;
 		mValue = 0.0;
 		mWeight.setValue(0.0);
-		mWeapons = new ArrayList<WeaponStats>();
+		mWeapons = new ArrayList<>();
 	}
 
 	@Override
@@ -268,7 +268,7 @@ public class Equipment extends ListRow {
 		} else if (TAG_VALUE.equals(name)) {
 			mValue = reader.readDouble(0.0);
 		} else if (TAG_WEIGHT.equals(name)) {
-			mWeight = WeightValue.extract(reader.readText());
+			mWeight = WeightValue.extract(reader.readText(), false);
 		} else if (TAG_REFERENCE.equals(name)) {
 			mReference = reader.readText().replace(NEWLINE, SPACE);
 		} else if (!state.mForUndo && (TAG_EQUIPMENT.equals(name) || TAG_EQUIPMENT_CONTAINER.equals(name))) {
@@ -606,7 +606,7 @@ public class Equipment extends ListRow {
 	 */
 	public boolean setWeapons(List<WeaponStats> weapons) {
 		if (!mWeapons.equals(weapons)) {
-			mWeapons = new ArrayList<WeaponStats>(weapons);
+			mWeapons = new ArrayList<>(weapons);
 			for (WeaponStats weapon : mWeapons) {
 				weapon.setOwner(this);
 			}

@@ -91,7 +91,7 @@ public class TextEditor extends JDialog implements ActionListener, WindowFocusLi
 		mSetButton = createButton(panel, MSG_SET);
 		content.add(panel, BorderLayout.SOUTH);
 
-		new WindowSizeEnforcer(this);
+		WindowSizeEnforcer.monitor(this);
 		addWindowFocusListener(this);
 
 		pack();

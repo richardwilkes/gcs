@@ -29,119 +29,139 @@ import com.trollworks.ttk.utility.LocalizedMessages;
 public enum BonusAttributeType {
 	/** The ST attribute. */
 	ST {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_ST;
 		}
 	},
 	/** The DX attribute. */
 	DX {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_DX;
 		}
 	},
 	/** The IQ attribute. */
 	IQ {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_IQ;
 		}
 	},
 	/** The HT attribute. */
 	HT {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_HT;
 		}
 	},
 	/** The Will attribute. */
 	WILL {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_WILL;
 		}
 	},
 	/** The Fright Check attribute. */
 	FRIGHT_CHECK {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_FRIGHT_CHECK;
 		}
 	},
 	/** The Perception attribute. */
 	PERCEPTION {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_PERCEPTION;
 		}
 	},
 	/** The Vision attribute. */
 	VISION {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_VISION;
 		}
 	},
 	/** The Hearing attribute. */
 	HEARING {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_HEARING;
 		}
 	},
 	/** The TasteSmell attribute. */
 	TASTE_SMELL {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_TASTE_SMELL;
 		}
 	},
 	/** The Touch attribute. */
 	TOUCH {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_TOUCH;
 		}
 	},
 	/** The Dodge attribute. */
 	DODGE {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_DODGE;
 		}
 	},
 	/** The Dodge attribute. */
 	PARRY {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_PARRY;
 		}
 	},
 	/** The Dodge attribute. */
 	BLOCK {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_BLOCK;
 		}
 	},
 	/** The Speed attribute. */
 	SPEED {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_SPEED;
 		}
 
-		@Override public boolean isIntegerOnly() {
+		@Override
+		public boolean isIntegerOnly() {
 			return false;
 		}
 	},
 	/** The Move attribute. */
 	MOVE {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_MOVE;
 		}
 	},
 	/** The FP attribute. */
 	FP {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_FP;
 		}
 	},
 	/** The HP attribute. */
 	HP {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_HP;
 		}
 	},
 	/** The size modifier attribute. */
 	SM {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_SM;
 		}
 	};
@@ -189,6 +209,7 @@ public enum BonusAttributeType {
 	}
 
 	/** @return <code>true</code> if only integer values are permitted. */
+	@SuppressWarnings("static-method")
 	public boolean isIntegerOnly() {
 		return true;
 	}

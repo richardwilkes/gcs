@@ -56,7 +56,7 @@ public abstract class PrereqEditor extends EditorPanel {
 	/** The row this prerequisite will be attached to. */
 	protected ListRow				mRow;
 	private int						mDepth;
-	private JComboBox				mBaseTypeCombo;
+	private JComboBox<Object>		mBaseTypeCombo;
 
 	static {
 		LocalizedMessages.initialize(PrereqEditor.class);
@@ -142,12 +142,12 @@ public abstract class PrereqEditor extends EditorPanel {
 	 * @param has The current value of the "has" attribute.
 	 * @return The {@link JComboBox} that allows the "has" attribute to be changed.
 	 */
-	protected JComboBox addHasCombo(boolean has) {
+	protected JComboBox<Object> addHasCombo(boolean has) {
 		return addComboBox(CHANGE_HAS, new Object[] { MSG_HAS, MSG_DOES_NOT_HAVE }, has ? MSG_HAS : MSG_DOES_NOT_HAVE);
 	}
 
 	/** @return The {@link JComboBox} that allows the base prereq type to be changed. */
-	protected JComboBox addChangeBaseTypeCombo() {
+	protected JComboBox<Object> addChangeBaseTypeCombo() {
 		Object[] choices = new Object[] { MSG_ATTRIBUTE, MSG_ADVANTAGE, MSG_SKILL, MSG_SPELL, MSG_CONTAINED_WEIGHT };
 		Class<?> type = mPrereq.getClass();
 		Object current = choices[0];
@@ -199,7 +199,7 @@ public abstract class PrereqEditor extends EditorPanel {
 				ListPrereqEditor.setLastItemType(type);
 			}
 		} else if (CHANGE_HAS.equals(command)) {
-			((HasPrereq) mPrereq).has(((JComboBox) event.getSource()).getSelectedIndex() == 0);
+			((HasPrereq) mPrereq).has(((JComboBox<Object>) event.getSource()).getSelectedIndex() == 0);
 		} else if (REMOVE.equals(command)) {
 			JComponent parent = (JComponent) getParent();
 			int index = UIUtilities.getIndexOf(parent, this);

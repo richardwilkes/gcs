@@ -54,7 +54,7 @@ public class RowPostProcessor implements Runnable {
 	 * @param list The list to process.
 	 */
 	public RowPostProcessor(Outline outline, ArrayList<ListRow> list) {
-		mMap = new HashMap<Outline, ArrayList<ListRow>>();
+		mMap = new HashMap<>();
 		mMap.put(outline, list);
 	}
 
@@ -62,7 +62,7 @@ public class RowPostProcessor implements Runnable {
 	public void run() {
 		for (Outline outline : mMap.keySet()) {
 			ArrayList<ListRow> rows = mMap.get(outline);
-			boolean modified = ModifierEnabler.process(outline, new FilteredList<Advantage>(rows, Advantage.class));
+			boolean modified = ModifierEnabler.process(outline, new FilteredList<>(rows, Advantage.class));
 			modified |= Namer.name(outline, rows);
 			if (modified) {
 				outline.updateRowHeights(rows);

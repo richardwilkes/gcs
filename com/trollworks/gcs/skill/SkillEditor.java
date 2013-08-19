@@ -98,11 +98,11 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 	private JCheckBox			mHasTechLevel;
 	private JTextField			mTechLevel;
 	private String				mSavedTechLevel;
-	private JComboBox			mAttributePopup;
-	private JComboBox			mDifficultyPopup;
+	private JComboBox<Object>	mAttributePopup;
+	private JComboBox<Object>	mDifficultyPopup;
 	private JTextField			mPointsField;
 	private JTextField			mLevelField;
-	private JComboBox			mEncPenaltyPopup;
+	private JComboBox<Object>	mEncPenaltyPopup;
 	private JTabbedPane			mTabPanel;
 	private PrereqsPanel		mPrereqs;
 	private FeaturesPanel		mFeatures;
@@ -213,6 +213,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 		return field;
 	}
 
+	@SuppressWarnings("unused")
 	private void createPointsFields(Container parent, boolean forCharacter) {
 		mPointsField = createField(parent, parent, MSG_EDITOR_POINTS, Integer.toString(mRow.getPoints()), MSG_EDITOR_POINTS_TOOLTIP, 4);
 		new NumberFilter(mPointsField, false, false, false, 4);
@@ -266,7 +267,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 		}
 	}
 
-	private JComboBox createEncumbrancePenaltyMultiplierPopup(Container parent) {
+	private JComboBox<Object> createEncumbrancePenaltyMultiplierPopup(Container parent) {
 		Object[] items = new Object[10];
 		items[0] = MSG_NO_ENC_PENALTY;
 		items[1] = MSG_ONE_ENC_PENALTY;
@@ -275,7 +276,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 		}
 		LinkedLabel label = new LinkedLabel(MSG_ENC_PENALTY_MULT);
 		parent.add(label);
-		JComboBox popup = createComboBox(parent, items, items[mRow.getEncumbrancePenaltyMultiplier()], MSG_ENC_PENALTY_MULT_TOOLTIP);
+		JComboBox<Object> popup = createComboBox(parent, items, items[mRow.getEncumbrancePenaltyMultiplier()], MSG_ENC_PENALTY_MULT_TOOLTIP);
 		label.setLink(popup);
 		return popup;
 	}
@@ -302,8 +303,8 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 		return wrapper;
 	}
 
-	private JComboBox createComboBox(Container parent, Object[] items, Object selection, String tooltip) {
-		JComboBox combo = new JComboBox(items);
+	private JComboBox<Object> createComboBox(Container parent, Object[] items, Object selection, String tooltip) {
+		JComboBox<Object> combo = new JComboBox<>(items);
 		combo.setToolTipText(tooltip);
 		combo.setSelectedItem(selection);
 		combo.addActionListener(this);
@@ -369,7 +370,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 			modified |= mRow.setFeatures(mFeatures.getFeatures());
 		}
 		if (mMeleeWeapons != null) {
-			ArrayList<WeaponStats> list = new ArrayList<WeaponStats>(mMeleeWeapons.getWeapons());
+			ArrayList<WeaponStats> list = new ArrayList<>(mMeleeWeapons.getWeapons());
 
 			list.addAll(mRangedWeapons.getWeapons());
 			modified |= mRow.setWeapons(list);

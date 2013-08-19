@@ -29,19 +29,22 @@ import com.trollworks.ttk.utility.LocalizedMessages;
 public enum CostType {
 	/** Adds to the percentage multiplier. */
 	PERCENTAGE {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_PERCENTAGE;
 		}
 	},
 	/** Adds a constant to the base value prior to any multiplier or percentage adjustment. */
 	POINTS {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_POINTS;
 		}
 	},
 	/** Multiplies the final cost by a constant. */
 	MULTIPLIER {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_MULTIPLIER;
 		}
 	};

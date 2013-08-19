@@ -31,83 +31,97 @@ import java.util.ArrayList;
 public enum HitLocation {
 	/** The skull hit location. */
 	SKULL {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_SKULL;
 		}
 	},
 	/** The eyes hit location. */
 	EYES {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_EYES;
 		}
 	},
 	/** The face hit location. */
 	FACE {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_FACE;
 		}
 	},
 	/** The neck hit location. */
 	NECK {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_NECK;
 		}
 	},
 	/** The torso hit location. */
 	TORSO {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_TORSO;
 		}
 	},
 	/** The vitals hit location. */
 	VITALS {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_VITALS;
 		}
 
-		@Override public boolean isChoosable() {
+		@Override
+		public boolean isChoosable() {
 			return false;
 		}
 	},
 	/** The groin hit location. */
 	GROIN {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_GROIN;
 		}
 	},
 	/** The arm hit location. */
 	ARMS {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_ARMS;
 		}
 	},
 	/** The hand hit location. */
 	HANDS {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_HANDS;
 		}
 	},
 	/** The leg hit location. */
 	LEGS {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_LEGS;
 		}
 	},
 	/** The foot hit location. */
 	FEET {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_FEET;
 		}
 	},
 	/** The full body hit location. */
 	FULL_BODY {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_FULL_BODY;
 		}
 	},
 	/** The full body except eyes hit location. */
 	FULL_BODY_EXCEPT_EYES {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_FULL_BODY_EXCEPT_EYES;
 		}
 	};
@@ -132,7 +146,7 @@ public enum HitLocation {
 
 	/** @return The hit locations that can be chosen as an armor protection spot. */
 	public static HitLocation[] getChoosableLocations() {
-		ArrayList<HitLocation> list = new ArrayList<HitLocation>();
+		ArrayList<HitLocation> list = new ArrayList<>();
 		for (HitLocation one : values()) {
 			if (one.isChoosable()) {
 				list.add(one);
@@ -142,6 +156,7 @@ public enum HitLocation {
 	}
 
 	/** @return Whether this location is choosable as an armor protection spot. */
+	@SuppressWarnings("static-method")
 	public boolean isChoosable() {
 		return true;
 	}

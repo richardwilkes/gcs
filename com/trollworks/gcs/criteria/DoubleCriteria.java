@@ -64,6 +64,11 @@ public class DoubleCriteria extends NumericCriteria {
 	}
 
 	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
+	@Override
 	public void load(XMLReader reader) throws IOException {
 		super.load(reader);
 		setQualifier(reader.readDouble(0.0));

@@ -108,6 +108,11 @@ public class AttributePrereq extends HasPrereq {
 	}
 
 	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
+	@Override
 	public String getXMLTag() {
 		return TAG_ROOT;
 	}
@@ -151,7 +156,7 @@ public class AttributePrereq extends HasPrereq {
 		mCombinedWith = which;
 	}
 
-	private int getAttributeValue(GURPSCharacter character, BonusAttributeType attribute) {
+	private static int getAttributeValue(GURPSCharacter character, BonusAttributeType attribute) {
 		if (attribute == null) {
 			return 0;
 		}

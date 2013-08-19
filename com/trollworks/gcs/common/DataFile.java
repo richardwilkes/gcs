@@ -49,13 +49,13 @@ import javax.swing.undo.UndoableEdit;
 /** A common super class for all data file-based model objects. */
 public abstract class DataFile {
 	/** The 'unique ID' attribute. */
-	public static final String				ATTRIBUTE_UNIQUE_ID		= "unique_id";								//$NON-NLS-1$
+	public static final String				ATTRIBUTE_UNIQUE_ID		= "unique_id";			//$NON-NLS-1$
 	private File							mFile;
 	private UniqueID						mUniqueID;
 	private Notifier						mNotifier;
 	private boolean							mModified;
 	private StdUndoManager					mUndoManager;
-	private ArrayList<DataModifiedListener>	mDataModifiedListeners	= new ArrayList<DataModifiedListener>();
+	private ArrayList<DataModifiedListener>	mDataModifiedListeners	= new ArrayList<>();
 
 	/** Creates a new data file object. */
 	protected DataFile() {
@@ -83,29 +83,30 @@ public abstract class DataFile {
 	protected DataFile(File file, LoadState state) throws IOException {
 		setFile(file);
 		mNotifier = new Notifier();
-		XMLReader reader = new XMLReader(new FileReader(file));
-		XMLNodeType type = reader.next();
-		boolean found = false;
+		try (FileReader fileReader = new FileReader(file);
+			XMLReader reader = new XMLReader(fileReader)) {
+			XMLNodeType type = reader.next();
+			boolean found = false;
 
-		while (type != XMLNodeType.END_DOCUMENT) {
-			if (type == XMLNodeType.START_TAG) {
-				String name = reader.getName();
-				if (matchesRootTag(name)) {
-					if (!found) {
-						found = true;
-						load(reader, state);
+			while (type != XMLNodeType.END_DOCUMENT) {
+				if (type == XMLNodeType.START_TAG) {
+					String name = reader.getName();
+					if (matchesRootTag(name)) {
+						if (!found) {
+							found = true;
+							load(reader, state);
+						} else {
+							throw new IOException();
+						}
 					} else {
-						throw new IOException();
+						reader.skipTag(name);
 					}
+					type = reader.getType();
 				} else {
-					reader.skipTag(name);
+					type = reader.next();
 				}
-				type = reader.getType();
-			} else {
-				type = reader.next();
 			}
 		}
-		reader.close();
 		setModified(false);
 	}
 
@@ -141,16 +142,19 @@ public abstract class DataFile {
 		boolean success = false;
 		transaction.begin();
 		try {
-			XMLWriter out = new XMLWriter(new BufferedOutputStream(new FileOutputStream(transaction.getTransactionFile(file))));
-			out.writeHeader();
-			save(out, true, false);
-			out.close();
-			if (out.checkError()) {
-				transaction.abort();
-			} else {
+			File transactionFile = transaction.getTransactionFile(file);
+			try (XMLWriter out = new XMLWriter(new BufferedOutputStream(new FileOutputStream(transactionFile)))) {
+				out.writeHeader();
+				save(out, true, false);
+				success = !out.checkError();
+			}
+			if (success) {
+				success = false;
 				transaction.commit();
 				setModified(false);
 				success = true;
+			} else {
+				transaction.abort();
 			}
 		} catch (Exception exception) {
 			Debug.diagnoseLoadAndSave(exception);
@@ -187,6 +191,7 @@ public abstract class DataFile {
 	protected abstract void saveSelf(XMLWriter out);
 
 	/** @return Whether the file is empty. By default, returns <code>false</code>. */
+	@SuppressWarnings("static-method")
 	public boolean isEmpty() {
 		return false;
 	}

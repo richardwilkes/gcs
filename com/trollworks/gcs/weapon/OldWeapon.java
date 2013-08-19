@@ -95,7 +95,7 @@ public class OldWeapon {
 		} while (reader.withinMarker(marker));
 	}
 
-	private String[] extract(XMLReader reader) throws IOException {
+	private static String[] extract(XMLReader reader) throws IOException {
 		return TextUtility.extractLines(reader.readText().trim(), 0).toArray(new String[0]);
 	}
 
@@ -104,7 +104,7 @@ public class OldWeapon {
 	 * @return The weapons associated with the old data.
 	 */
 	public ArrayList<WeaponStats> getWeapons(ListRow owner) {
-		ArrayList<WeaponStats> weapons = new ArrayList<WeaponStats>();
+		ArrayList<WeaponStats> weapons = new ArrayList<>();
 		int count = count();
 
 		for (int i = 0; i < count; i++) {
@@ -140,7 +140,7 @@ public class OldWeapon {
 		return weapons;
 	}
 
-	private String get(String[] data, int index) {
+	private static String get(String[] data, int index) {
 		if (data != null && data.length > index) {
 			return data[index];
 		}
@@ -190,7 +190,7 @@ public class OldWeapon {
 		return count > max ? count : max;
 	}
 
-	private int count(String[] which) {
+	private static int count(String[] which) {
 		return which != null ? which.length : 0;
 	}
 }

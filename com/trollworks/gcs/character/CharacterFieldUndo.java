@@ -53,16 +53,19 @@ public class CharacterFieldUndo extends AbstractUndoableEdit {
 		mAfter = after;
 	}
 
-	@Override public String getPresentationName() {
+	@Override
+	public String getPresentationName() {
 		return mName;
 	}
 
-	@Override public void undo() throws CannotUndoException {
+	@Override
+	public void undo() throws CannotUndoException {
 		super.undo();
 		mCharacter.setValueForID(mID, mBefore);
 	}
 
-	@Override public void redo() throws CannotRedoException {
+	@Override
+	public void redo() throws CannotRedoException {
 		super.redo();
 		mCharacter.setValueForID(mID, mAfter);
 	}

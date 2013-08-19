@@ -55,7 +55,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 	private static String						MSG_APPLY;
 	private static String						MSG_ONE_REMAINING;
 	private static String						MSG_REMAINING;
-	private static HashMap<Class<?>, String>	LAST_TAB_MAP	= new HashMap<Class<?>, String>();
+	private static HashMap<Class<?>, String>	LAST_TAB_MAP	= new HashMap<>();
 	/** Whether the underlying data should be editable. */
 	protected boolean							mIsEditable;
 	/** The row being edited. */
@@ -72,6 +72,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 	 * @param list The rows to edit.
 	 * @return Whether anything was modified.
 	 */
+	@SuppressWarnings("unused")
 	static public boolean edit(Component owner, List<? extends ListRow> list) {
 		ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
 		ListRow[] rows = list.toArray(new ListRow[0]);
@@ -107,6 +108,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 					break;
 				case JOptionPane.CANCEL_OPTION:
 				case JOptionPane.CLOSED_OPTION:
+				default:
 					i = rows.length;
 					break;
 			}

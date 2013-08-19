@@ -75,6 +75,11 @@ public abstract class Bonus implements Feature {
 		return false;
 	}
 
+	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
 	/** @param reader The XML reader to use. */
 	protected final void load(XMLReader reader) throws IOException {
 		String marker = reader.getMarker();

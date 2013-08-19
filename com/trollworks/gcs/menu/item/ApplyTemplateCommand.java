@@ -73,7 +73,7 @@ public class ApplyTemplateCommand extends Command {
 		if (window instanceof TemplateWindow) {
 			Template template = ((TemplateWindow) window).getTemplate();
 			MultipleUndo edit = new MultipleUndo(MSG_UNDO);
-			ArrayList<Row> rows = new ArrayList<Row>();
+			ArrayList<Row> rows = new ArrayList<>();
 			String notes = template.getNotes().trim();
 			SheetWindow sheet = SheetWindow.getTopSheet();
 			template.addEdit(edit);

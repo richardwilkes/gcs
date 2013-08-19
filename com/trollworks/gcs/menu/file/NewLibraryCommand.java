@@ -61,7 +61,7 @@ public class NewLibraryCommand extends Command {
 	}
 
 	/** @return The newly created a new {@link LibraryWindow}. */
-	public LibraryWindow newLibrary() {
+	public static LibraryWindow newLibrary() {
 		return LibraryWindow.displayLibraryWindow(new LibraryFile());
 	}
 }

@@ -60,49 +60,49 @@ import javax.swing.event.DocumentListener;
 
 /** The detailed editor for {@link Equipment}s. */
 public class EquipmentEditor extends RowEditor<Equipment> implements ActionListener, DocumentListener, FocusListener {
-	private static String		MSG_REFERENCE_TOOLTIP;
-	private static String		MSG_VALUE_TOOLTIP;
-	private static String		MSG_EXT_VALUE_TOOLTIP;
-	private static String		MSG_NAME;
-	private static String		MSG_NAME_TOOLTIP;
-	private static String		MSG_NAME_CANNOT_BE_EMPTY;
-	private static String		MSG_EDITOR_TECH_LEVEL;
-	private static String		MSG_EDITOR_TECH_LEVEL_TOOLTIP;
-	private static String		MSG_EDITOR_LEGALITY_CLASS;
-	private static String		MSG_EDITOR_LEGALITY_CLASS_TOOLTIP;
-	private static String		MSG_EDITOR_QUANTITY;
-	private static String		MSG_EDITOR_QUANTITY_TOOLTIP;
-	private static String		MSG_EDITOR_VALUE;
-	private static String		MSG_EDITOR_EXTENDED_VALUE;
-	private static String		MSG_EDITOR_WEIGHT;
-	private static String		MSG_EDITOR_WEIGHT_TOOLTIP;
-	private static String		MSG_EDITOR_EXTENDED_WEIGHT;
-	private static String		MSG_EDITOR_EXTENDED_WEIGHT_TOOLTIP;
-	private static String		MSG_CATEGORIES;
-	private static String		MSG_CATEGORIES_TOOLTIP;
-	private static String		MSG_NOTES;
-	private static String		MSG_NOTES_TOOLTIP;
-	private static String		MSG_EDITOR_REFERENCE;
-	private static String		MSG_STATE_TOOLTIP;
-	private JComboBox			mStateCombo;
-	private JTextField			mDescriptionField;
-	private JTextField			mTechLevelField;
-	private JTextField			mLegalityClassField;
-	private JTextField			mQtyField;
-	private JTextField			mValueField;
-	private JTextField			mExtValueField;
-	private JTextField			mWeightField;
-	private JTextField			mExtWeightField;
-	private JTextField			mNotesField;
-	private JTextField			mCategoriesField;
-	private JTextField			mReferenceField;
-	private JTabbedPane			mTabPanel;
-	private PrereqsPanel		mPrereqs;
-	private FeaturesPanel		mFeatures;
-	private MeleeWeaponEditor	mMeleeWeapons;
-	private RangedWeaponEditor	mRangedWeapons;
-	private double				mContainedValue;
-	private WeightValue			mContainedWeight;
+	private static String				MSG_REFERENCE_TOOLTIP;
+	private static String				MSG_VALUE_TOOLTIP;
+	private static String				MSG_EXT_VALUE_TOOLTIP;
+	private static String				MSG_NAME;
+	private static String				MSG_NAME_TOOLTIP;
+	private static String				MSG_NAME_CANNOT_BE_EMPTY;
+	private static String				MSG_EDITOR_TECH_LEVEL;
+	private static String				MSG_EDITOR_TECH_LEVEL_TOOLTIP;
+	private static String				MSG_EDITOR_LEGALITY_CLASS;
+	private static String				MSG_EDITOR_LEGALITY_CLASS_TOOLTIP;
+	private static String				MSG_EDITOR_QUANTITY;
+	private static String				MSG_EDITOR_QUANTITY_TOOLTIP;
+	private static String				MSG_EDITOR_VALUE;
+	private static String				MSG_EDITOR_EXTENDED_VALUE;
+	private static String				MSG_EDITOR_WEIGHT;
+	private static String				MSG_EDITOR_WEIGHT_TOOLTIP;
+	private static String				MSG_EDITOR_EXTENDED_WEIGHT;
+	private static String				MSG_EDITOR_EXTENDED_WEIGHT_TOOLTIP;
+	private static String				MSG_CATEGORIES;
+	private static String				MSG_CATEGORIES_TOOLTIP;
+	private static String				MSG_NOTES;
+	private static String				MSG_NOTES_TOOLTIP;
+	private static String				MSG_EDITOR_REFERENCE;
+	private static String				MSG_STATE_TOOLTIP;
+	private JComboBox<EquipmentState>	mStateCombo;
+	private JTextField					mDescriptionField;
+	private JTextField					mTechLevelField;
+	private JTextField					mLegalityClassField;
+	private JTextField					mQtyField;
+	private JTextField					mValueField;
+	private JTextField					mExtValueField;
+	private JTextField					mWeightField;
+	private JTextField					mExtWeightField;
+	private JTextField					mNotesField;
+	private JTextField					mCategoriesField;
+	private JTextField					mReferenceField;
+	private JTabbedPane					mTabPanel;
+	private PrereqsPanel				mPrereqs;
+	private FeaturesPanel				mFeatures;
+	private MeleeWeaponEditor			mMeleeWeapons;
+	private RangedWeaponEditor			mRangedWeapons;
+	private double						mContainedValue;
+	private WeightValue					mContainedWeight;
 
 	static {
 		LocalizedMessages.initialize(EquipmentEditor.class);
@@ -168,7 +168,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		mTechLevelField = createField(isContainer ? parent : wrapper, wrapper, MSG_EDITOR_TECH_LEVEL, mRow.getTechLevel(), MSG_EDITOR_TECH_LEVEL_TOOLTIP, 3);
 		mLegalityClassField = createField(wrapper, wrapper, MSG_EDITOR_LEGALITY_CLASS, mRow.getLegalityClass(), MSG_EDITOR_LEGALITY_CLASS_TOOLTIP, 3);
 		if (showEquipmentState()) {
-			mStateCombo = new JComboBox(EquipmentState.values());
+			mStateCombo = new JComboBox<>(EquipmentState.values());
 			mStateCombo.setSelectedItem(mRow.getState());
 			UIUtilities.setOnlySize(mStateCombo, mStateCombo.getPreferredSize());
 			mStateCombo.setEnabled(mIsEditable);
@@ -242,6 +242,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		return field;
 	}
 
+	@SuppressWarnings("unused")
 	private JTextField createIntegerNumberField(Container labelParent, Container fieldParent, String title, int value, String tooltip, int maxDigits) {
 		JTextField field = new JTextField(TextUtility.makeFiller(maxDigits, '9') + TextUtility.makeFiller(maxDigits / 3, ','));
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
@@ -256,6 +257,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		return field;
 	}
 
+	@SuppressWarnings("unused")
 	private JTextField createNumberField(Container labelParent, Container fieldParent, String title, double value, String tooltip, int maxDigits) {
 		JTextField field = new JTextField(TextUtility.makeFiller(maxDigits, '9') + TextUtility.makeFiller(maxDigits / 3, ',') + "."); //$NON-NLS-1$
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
@@ -291,7 +293,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		modified |= mRow.setLegalityClass(mLegalityClassField.getText());
 		modified |= mRow.setQuantity(getQty());
 		modified |= mRow.setValue(Numbers.getLocalizedDouble(mValueField.getText(), 0.0));
-		modified |= mRow.setWeight(WeightValue.extract(mWeightField.getText()));
+		modified |= mRow.setWeight(WeightValue.extract(mWeightField.getText(), true));
 		if (showEquipmentState()) {
 			modified |= mRow.setState((EquipmentState) mStateCombo.getSelectedItem());
 		}
@@ -304,8 +306,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 			modified |= mRow.setFeatures(mFeatures.getFeatures());
 		}
 		if (mMeleeWeapons != null) {
-			ArrayList<WeaponStats> list = new ArrayList<WeaponStats>(mMeleeWeapons.getWeapons());
-
+			ArrayList<WeaponStats> list = new ArrayList<>(mMeleeWeapons.getWeapons());
 			list.addAll(mRangedWeapons.getWeapons());
 			modified |= mRow.setWeapons(list);
 		}
@@ -344,7 +345,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 	}
 
 	private void weightChanged() {
-		WeightValue weight = WeightValue.extract(mWeightField.getText());
+		WeightValue weight = WeightValue.extract(mWeightField.getText(), true);
 		weight.setValue(weight.getValue() * Math.max(getQty(), 0));
 		mExtWeightField.setText(weight.toString());
 	}

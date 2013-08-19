@@ -40,7 +40,7 @@ public class ColumnUtils {
 	public static void pack(Outline outline, int width) {
 		OutlineModel outlineModel = outline.getModel();
 		int count = outlineModel.getColumnCount();
-		ArrayList<Column> changed = new ArrayList<Column>();
+		ArrayList<Column> changed = new ArrayList<>();
 		int[] widths = new int[count];
 		Column column;
 		if (outline.shouldDrawColumnDividers()) {

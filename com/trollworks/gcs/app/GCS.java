@@ -214,7 +214,7 @@ public class GCS {
 							}
 						}
 						if (png) {
-							ArrayList<File> result = new ArrayList<File>();
+							ArrayList<File> result = new ArrayList<>();
 
 							System.out.print(MSG_CREATING_PNG);
 							System.out.flush();

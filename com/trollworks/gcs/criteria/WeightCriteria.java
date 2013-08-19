@@ -65,9 +65,14 @@ public class WeightCriteria extends NumericCriteria {
 	}
 
 	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
+	@Override
 	public void load(XMLReader reader) throws IOException {
 		super.load(reader);
-		setQualifier(WeightValue.extract(reader.readText()));
+		setQualifier(WeightValue.extract(reader.readText(), false));
 	}
 
 	/** @return The qualifier to match against. */

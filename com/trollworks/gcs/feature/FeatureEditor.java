@@ -40,8 +40,8 @@ import java.beans.PropertyChangeEvent;
 
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.SwingConstants;
 import javax.swing.JFormattedTextField.AbstractFormatter;
+import javax.swing.SwingConstants;
 import javax.swing.text.DefaultFormatterFactory;
 
 /** A generic feature editor panel. */
@@ -64,8 +64,8 @@ public abstract class FeatureEditor extends EditorPanel {
 	private static Class<?>			LAST_ITEM_TYPE		= SkillBonus.class;
 	private ListRow					mRow;
 	private Feature					mFeature;
-	private JComboBox				mBaseTypeCombo;
-	private JComboBox				mLeveledAmountCombo;
+	private JComboBox<Object>		mBaseTypeCombo;
+	private JComboBox<Object>		mLeveledAmountCombo;
 
 	static {
 		LocalizedMessages.initialize(FeatureEditor.class);
@@ -138,7 +138,7 @@ public abstract class FeatureEditor extends EditorPanel {
 	protected abstract void rebuildSelf(FlexGrid grid, FlexRow right);
 
 	/** @return The {@link JComboBox} that allows the base feature type to be changed. */
-	protected JComboBox addChangeBaseTypeCombo() {
+	protected JComboBox<Object> addChangeBaseTypeCombo() {
 		Object[] choices = new Object[] { MSG_ATTRIBUTE_BONUS, MSG_DR_BONUS, MSG_SKILL_BONUS, MSG_SPELL_BONUS, MSG_WEAPON_BONUS, MSG_COST_REDUCTION };
 		Class<?> type = mFeature.getClass();
 		Object current = choices[0];
@@ -183,7 +183,7 @@ public abstract class FeatureEditor extends EditorPanel {
 	 * @param usePerDie Whether to use the "per die" message or the "per level" message.
 	 * @return The {@link JComboBox} that allows a {@link LeveledAmount} to be changed.
 	 */
-	protected JComboBox addLeveledAmountCombo(LeveledAmount amt, boolean usePerDie) {
+	protected JComboBox<Object> addLeveledAmountCombo(LeveledAmount amt, boolean usePerDie) {
 		String per = usePerDie ? MSG_PER_DIE : MSG_PER_LEVEL;
 		mLeveledAmountCombo = addComboBox(LeveledAmount.ATTRIBUTE_PER_LEVEL, new Object[] { BLANK, per }, amt.isPerLevel() ? per : BLANK);
 		mLeveledAmountCombo.putClientProperty(LeveledAmount.class, amt);

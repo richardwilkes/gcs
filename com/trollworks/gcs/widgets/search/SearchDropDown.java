@@ -30,6 +30,7 @@ import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.List;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
@@ -40,10 +41,10 @@ import javax.swing.ListCellRenderer;
 
 /** The drop-down panel used by {@link Search}. */
 class SearchDropDown extends JPanel implements MouseListener {
-	private JList				mList;
-	private JTextField			mFilterField;
-	private SearchTarget		mTarget;
-	private DefaultListModel	mModel;
+	private JList<Object>				mList;
+	private JTextField					mFilterField;
+	private SearchTarget				mTarget;
+	private DefaultListModel<Object>	mModel;
 
 	/**
 	 * Creates a new drop-down panel for use with {@link Search}.
@@ -52,13 +53,13 @@ class SearchDropDown extends JPanel implements MouseListener {
 	 * @param filterField The text field the drop-down will appear to be attached to.
 	 * @param target The search target.
 	 */
-	SearchDropDown(ListCellRenderer renderer, JTextField filterField, SearchTarget target) {
+	SearchDropDown(ListCellRenderer<Object> renderer, JTextField filterField, SearchTarget target) {
 		super(new BorderLayout());
 		setOpaque(true);
 		mFilterField = filterField;
 		mTarget = target;
-		mModel = new DefaultListModel();
-		mList = new JList(mModel);
+		mModel = new DefaultListModel<>();
+		mList = new JList<>(mModel);
 		mList.setFocusable(false);
 		mList.addMouseListener(this);
 		mList.setCellRenderer(renderer);
@@ -66,8 +67,8 @@ class SearchDropDown extends JPanel implements MouseListener {
 	}
 
 	/** @return The currently selected values. */
-	public Object[] getSelectedValues() {
-		return mList.getSelectedValues();
+	public List<Object> getSelectedValues() {
+		return mList.getSelectedValuesList();
 	}
 
 	/**
@@ -75,7 +76,7 @@ class SearchDropDown extends JPanel implements MouseListener {
 	 * 
 	 * @param hits The current collection of hits.
 	 */
-	void adjustToHits(Object[] hits) {
+	void adjustToHits(List<Object> hits) {
 		mModel.removeAllElements();
 		for (Object one : hits) {
 			mModel.addElement(one);

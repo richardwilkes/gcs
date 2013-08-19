@@ -70,63 +70,63 @@ import javax.swing.text.DefaultFormatterFactory;
 
 /** The detailed editor for {@link Advantage}s. */
 public class AdvantageEditor extends RowEditor<Advantage> implements ActionListener, DocumentListener, PropertyChangeListener {
-	private static String		MSG_NAME;
-	private static String		MSG_NAME_TOOLTIP;
-	private static String		MSG_NAME_CANNOT_BE_EMPTY;
-	private static String		MSG_TOTAL_POINTS;
-	private static String		MSG_TOTAL_POINTS_TOOLTIP;
-	private static String		MSG_BASE_POINTS;
-	private static String		MSG_BASE_POINTS_TOOLTIP;
-	private static String		MSG_LEVEL_POINTS;
-	private static String		MSG_LEVEL_POINTS_TOOLTIP;
-	private static String		MSG_LEVEL;
-	private static String		MSG_LEVEL_TOOLTIP;
-	private static String		MSG_NOTES;
-	private static String		MSG_NOTES_TOOLTIP;
-	private static String		MSG_CATEGORIES;
-	private static String		MSG_CATEGORIES_TOOLTIP;
-	private static String		MSG_CR;
-	private static String		MSG_CR_ADJ_TOOLTIP;
-	private static String		MSG_TYPE;
-	private static String		MSG_TYPE_TOOLTIP;
-	private static String		MSG_CONTAINER_TYPE;
-	private static String		MSG_CONTAINER_TYPE_TOOLTIP;
-	private static String		MSG_REFERENCE;
-	private static String		MSG_REFERENCE_TOOLTIP;
-	private static String		MSG_NO_LEVELS;
-	private static String		MSG_HAS_LEVELS;
-	private static String		MSG_MENTAL;
-	private static String		MSG_PHYSICAL;
-	private static String		MSG_SOCIAL;
-	private static String		MSG_EXOTIC;
-	private static String		MSG_SUPERNATURAL;
-	private static final String	EMPTY	= "";				//$NON-NLS-1$
-	private EditorField			mNameField;
-	private JComboBox			mLevelTypeCombo;
-	private EditorField			mBasePointsField;
-	private EditorField			mLevelField;
-	private EditorField			mLevelPointsField;
-	private EditorField			mPointsField;
-	private EditorField			mNotesField;
-	private EditorField			mCategoriesField;
-	private EditorField			mReferenceField;
-	private JTabbedPane			mTabPanel;
-	private PrereqsPanel		mPrereqs;
-	private FeaturesPanel		mFeatures;
-	private Defaults			mDefaults;
-	private MeleeWeaponEditor	mMeleeWeapons;
-	private RangedWeaponEditor	mRangedWeapons;
-	private ModifierListEditor	mModifiers;
-	private int					mLastLevel;
-	private int					mLastPointsPerLevel;
-	private JCheckBox			mMentalType;
-	private JCheckBox			mPhysicalType;
-	private JCheckBox			mSocialType;
-	private JCheckBox			mExoticType;
-	private JCheckBox			mSupernaturalType;
-	private JComboBox			mContainerTypeCombo;
-	private JComboBox			mCRCombo;
-	private JComboBox			mCRAdjCombo;
+	private static String							MSG_NAME;
+	private static String							MSG_NAME_TOOLTIP;
+	private static String							MSG_NAME_CANNOT_BE_EMPTY;
+	private static String							MSG_TOTAL_POINTS;
+	private static String							MSG_TOTAL_POINTS_TOOLTIP;
+	private static String							MSG_BASE_POINTS;
+	private static String							MSG_BASE_POINTS_TOOLTIP;
+	private static String							MSG_LEVEL_POINTS;
+	private static String							MSG_LEVEL_POINTS_TOOLTIP;
+	private static String							MSG_LEVEL;
+	private static String							MSG_LEVEL_TOOLTIP;
+	private static String							MSG_NOTES;
+	private static String							MSG_NOTES_TOOLTIP;
+	private static String							MSG_CATEGORIES;
+	private static String							MSG_CATEGORIES_TOOLTIP;
+	private static String							MSG_CR;
+	private static String							MSG_CR_ADJ_TOOLTIP;
+	private static String							MSG_TYPE;
+	private static String							MSG_TYPE_TOOLTIP;
+	private static String							MSG_CONTAINER_TYPE;
+	private static String							MSG_CONTAINER_TYPE_TOOLTIP;
+	private static String							MSG_REFERENCE;
+	private static String							MSG_REFERENCE_TOOLTIP;
+	private static String							MSG_NO_LEVELS;
+	private static String							MSG_HAS_LEVELS;
+	private static String							MSG_MENTAL;
+	private static String							MSG_PHYSICAL;
+	private static String							MSG_SOCIAL;
+	private static String							MSG_EXOTIC;
+	private static String							MSG_SUPERNATURAL;
+	private static final String						EMPTY	= "";				//$NON-NLS-1$
+	private EditorField								mNameField;
+	private JComboBox<String>						mLevelTypeCombo;
+	private EditorField								mBasePointsField;
+	private EditorField								mLevelField;
+	private EditorField								mLevelPointsField;
+	private EditorField								mPointsField;
+	private EditorField								mNotesField;
+	private EditorField								mCategoriesField;
+	private EditorField								mReferenceField;
+	private JTabbedPane								mTabPanel;
+	private PrereqsPanel							mPrereqs;
+	private FeaturesPanel							mFeatures;
+	private Defaults								mDefaults;
+	private MeleeWeaponEditor						mMeleeWeapons;
+	private RangedWeaponEditor						mRangedWeapons;
+	private ModifierListEditor						mModifiers;
+	private int										mLastLevel;
+	private int										mLastPointsPerLevel;
+	private JCheckBox								mMentalType;
+	private JCheckBox								mPhysicalType;
+	private JCheckBox								mSocialType;
+	private JCheckBox								mExoticType;
+	private JCheckBox								mSupernaturalType;
+	private JComboBox<AdvantageContainerType>		mContainerTypeCombo;
+	private JComboBox<SelfControlRoll>				mCRCombo;
+	private JComboBox<SelfControlRollAdjustments>	mCRAdjCombo;
 
 	static {
 		LocalizedMessages.initialize(AdvantageEditor.class);
@@ -171,7 +171,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 			innerGrid.add(new FlexComponent(createLabel(MSG_BASE_POINTS, mBasePointsField), Alignment.RIGHT_BOTTOM, null), ri, 0);
 			innerGrid.add(row, ri++, 1);
 
-			mLevelTypeCombo = new JComboBox(new Object[] { MSG_NO_LEVELS, MSG_HAS_LEVELS });
+			mLevelTypeCombo = new JComboBox<>(new String[] { MSG_NO_LEVELS, MSG_HAS_LEVELS });
 			mLevelTypeCombo.setSelectedIndex(mRow.isLeveled() ? 1 : 0);
 			UIUtilities.setOnlySize(mLevelTypeCombo, mLevelTypeCombo.getPreferredSize());
 			mLevelTypeCombo.setEnabled(mIsEditable);
@@ -210,13 +210,13 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		innerGrid.add(new FlexComponent(createLabel(MSG_CATEGORIES, mCategoriesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
 		innerGrid.add(mCategoriesField, ri++, 1);
 
-		mCRCombo = new JComboBox(SelfControlRoll.values());
+		mCRCombo = new JComboBox<>(SelfControlRoll.values());
 		mCRCombo.setSelectedIndex(mRow.getCR().ordinal());
 		UIUtilities.setOnlySize(mCRCombo, mCRCombo.getPreferredSize());
 		mCRCombo.setEnabled(mIsEditable);
 		mCRCombo.addActionListener(this);
 		add(mCRCombo);
-		mCRAdjCombo = new JComboBox(SelfControlRollAdjustments.values());
+		mCRAdjCombo = new JComboBox<>(SelfControlRollAdjustments.values());
 		mCRAdjCombo.setToolTipText(MSG_CR_ADJ_TOOLTIP);
 		mCRAdjCombo.setSelectedIndex(mRow.getCRAdj().ordinal());
 		UIUtilities.setOnlySize(mCRAdjCombo, mCRAdjCombo.getPreferredSize());
@@ -256,7 +256,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 			row.add(mSupernaturalType);
 			row.add(createTypeLabel(GCSImages.getSupernaturalTypeIcon(), mSupernaturalType));
 		} else {
-			mContainerTypeCombo = new JComboBox(AdvantageContainerType.values());
+			mContainerTypeCombo = new JComboBox<>(AdvantageContainerType.values());
 			mContainerTypeCombo.setSelectedItem(mRow.getContainerType());
 			UIUtilities.setOnlySize(mContainerTypeCombo, mContainerTypeCombo.getPreferredSize());
 			mContainerTypeCombo.setToolTipText(MSG_CONTAINER_TYPE_TOOLTIP);
@@ -410,7 +410,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 				modified |= mRow.setFeatures(mFeatures.getFeatures());
 			}
 			if (mMeleeWeapons != null) {
-				ArrayList<WeaponStats> list = new ArrayList<WeaponStats>(mMeleeWeapons.getWeapons());
+				ArrayList<WeaponStats> list = new ArrayList<>(mMeleeWeapons.getWeapons());
 				list.addAll(mRangedWeapons.getWeapons());
 				modified |= mRow.setWeapons(list);
 			}

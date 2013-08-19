@@ -102,7 +102,7 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
 		int height = mHeader.getPreferredSize().height;
 		OutlineModel outlineModel = mOutline.getModel();
 		int count = outlineModel.getColumnCount();
-		ArrayList<Column> changed = new ArrayList<Column>();
+		ArrayList<Column> changed = new ArrayList<>();
 		Column column;
 
 		mHeader.setBounds(bounds.x, bounds.y, width, height);

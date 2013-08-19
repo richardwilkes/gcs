@@ -76,11 +76,11 @@ public class AttributeBonusEditor extends FeatureEditor {
 	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
 		if (CHANGE_ATTRIBUTE.equals(command)) {
-			((AttributeBonus) getFeature()).setAttribute((BonusAttributeType) ((JComboBox) event.getSource()).getSelectedItem());
+			((AttributeBonus) getFeature()).setAttribute((BonusAttributeType) ((JComboBox<Object>) event.getSource()).getSelectedItem());
 			CommitEnforcer.forceFocusToAccept();
 			rebuild();
 		} else if (CHANGE_LIMITATION.equals(command)) {
-			((AttributeBonus) getFeature()).setLimitation((AttributeBonusLimitation) ((JComboBox) event.getSource()).getSelectedItem());
+			((AttributeBonus) getFeature()).setLimitation((AttributeBonusLimitation) ((JComboBox<Object>) event.getSource()).getSelectedItem());
 		} else {
 			super.actionPerformed(event);
 		}

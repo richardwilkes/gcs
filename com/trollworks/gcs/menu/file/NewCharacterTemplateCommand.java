@@ -61,7 +61,7 @@ public class NewCharacterTemplateCommand extends Command {
 	}
 
 	/** @return The newly created a new {@link TemplateWindow}. */
-	public TemplateWindow newTemplate() {
+	public static TemplateWindow newTemplate() {
 		return TemplateWindow.displayTemplateWindow(new Template());
 	}
 }

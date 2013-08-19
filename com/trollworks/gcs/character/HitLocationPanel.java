@@ -137,7 +137,7 @@ public class HitLocationPanel extends DropPanel {
 		addVerticalBackground(panel, Color.black);
 	}
 
-	private void createLabel(Container panel, String title, String tooltip, int alignment) {
+	private static void createLabel(Container panel, String title, String tooltip, int alignment) {
 		PageLabel label = new PageLabel(title, null);
 		label.setHorizontalAlignment(alignment);
 		label.setToolTipText(tooltip);

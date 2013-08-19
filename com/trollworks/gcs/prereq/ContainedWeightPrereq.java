@@ -70,7 +70,7 @@ public class ContainedWeightPrereq extends HasPrereq {
 		this(parent);
 		loadHasAttribute(reader);
 		mWeightCompare.setType(Enums.extract(reader.getAttribute(ATTRIBUTE_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
-		mWeightCompare.setQualifier(WeightValue.extract(reader.readText()));
+		mWeightCompare.setQualifier(WeightValue.extract(reader.readText(), false));
 	}
 
 	/**
@@ -96,6 +96,11 @@ public class ContainedWeightPrereq extends HasPrereq {
 	}
 
 	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
+	@Override
 	public String getXMLTag() {
 		return TAG_ROOT;
 	}
@@ -111,7 +116,7 @@ public class ContainedWeightPrereq extends HasPrereq {
 		saveHasAttribute(out);
 		out.writeAttribute(ATTRIBUTE_COMPARE, mWeightCompare.getType().name().toLowerCase());
 		out.finishTag();
-		out.writeEncodedData(mWeightCompare.getQualifier().toString());
+		out.writeEncodedData(mWeightCompare.getQualifier().toString(false));
 		out.endTagEOL(TAG_ROOT, false);
 	}
 

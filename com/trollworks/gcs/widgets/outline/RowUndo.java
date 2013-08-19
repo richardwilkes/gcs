@@ -85,14 +85,13 @@ public class RowUndo extends AbstractUndoableEdit {
 		return false;
 	}
 
-	private byte[] serialize(ListRow row) {
+	private static byte[] serialize(ListRow row) {
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			GZIPOutputStream gos = new GZIPOutputStream(baos);
-			XMLWriter writer = new XMLWriter(gos);
-
-			row.save(writer, true);
-			writer.close();
+			try (XMLWriter writer = new XMLWriter(gos)) {
+				row.save(writer, true);
+			}
 			return baos.toByteArray();
 		} catch (Exception exception) {
 			exception.printStackTrace(System.err);
@@ -101,8 +100,7 @@ public class RowUndo extends AbstractUndoableEdit {
 	}
 
 	private void deserialize(byte[] buffer) {
-		try {
-			XMLReader reader = new XMLReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(buffer))));
+		try (XMLReader reader = new XMLReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(buffer))))) {
 			XMLNodeType type = reader.next();
 			LoadState state = new LoadState();
 			state.mForUndo = true;
@@ -114,7 +112,6 @@ public class RowUndo extends AbstractUndoableEdit {
 					type = reader.next();
 				}
 			}
-			reader.close();
 		} catch (Exception exception) {
 			exception.printStackTrace(System.err);
 		}

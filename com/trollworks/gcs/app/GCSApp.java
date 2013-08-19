@@ -78,7 +78,7 @@ public class GCSApp extends App {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void configureApplication(CmdLine cmdLine) {
-		HashMap<String, String> map = new HashMap<String, String>();
+		HashMap<String, String> map = new HashMap<>();
 		map.put(SheetWindow.SHEET_EXTENSION.substring(1), MSG_SHEET_DESCRIPTION);
 		map.put(LibraryFile.EXTENSION.substring(1), MSG_LIBRARY_DESCRIPTION);
 		map.put(TemplateWindow.EXTENSION.substring(1), MSG_TEMPLATE_DESCRIPTION);
@@ -102,7 +102,7 @@ public class GCSApp extends App {
 	@Override
 	public void noWindowsAreOpenAtStartup(boolean finalChance) {
 		if (finalChance) {
-			NewCharacterSheetCommand.INSTANCE.newSheet();
+			NewCharacterSheetCommand.newSheet();
 		} else {
 			StartupDialog sd = new StartupDialog();
 			sd.setVisible(true);

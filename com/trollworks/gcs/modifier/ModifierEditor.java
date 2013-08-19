@@ -81,8 +81,8 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 	private JTextField			mCostModifierField;
 	private FeaturesPanel		mFeatures;
 	private JTabbedPane			mTabPanel;
-	private JComboBox			mCostType;
-	private JComboBox			mAffects;
+	private JComboBox<Object>	mCostType;
+	private JComboBox<Object>	mAffects;
 	private int					mLastLevel;
 
 	static {
@@ -222,6 +222,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		return scrollPanel;
 	}
 
+	@SuppressWarnings("unused")
 	private JTextField createNumberField(Container labelParent, Container fieldParent, String title, boolean allowSign, int value, String tooltip, int maxDigits) {
 		JTextField field = new JTextField(TextUtility.makeFiller(maxDigits, '9') + TextUtility.makeFiller(maxDigits / 3, ',') + (allowSign ? "-" : EMPTY)); //$NON-NLS-1$
 
@@ -236,6 +237,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		return field;
 	}
 
+	@SuppressWarnings("unused")
 	private JTextField createNumberField(Container labelParent, Container fieldParent, String title, double value, String tooltip, int maxDigits) {
 		JTextField field = new JTextField(TextUtility.makeFiller(maxDigits, '9') + TextUtility.makeFiller(maxDigits / 3, ',') + '.');
 
@@ -274,8 +276,8 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		parent.add(wrapper);
 	}
 
-	private JComboBox createComboBox(Container parent, Object[] items, Object selection) {
-		JComboBox combo = new JComboBox(items);
+	private JComboBox<Object> createComboBox(Container parent, Object[] items, Object selection) {
+		JComboBox<Object> combo = new JComboBox<>(items);
 		combo.setSelectedItem(selection);
 		combo.addActionListener(this);
 		combo.setMaximumRowCount(items.length);
@@ -306,6 +308,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		updateCostModifier();
 	}
 
+	@SuppressWarnings("unused")
 	private void updateCostField() {
 		if (getCostType() == CostType.MULTIPLIER) {
 			new NumberFilter(mCostField, true, false, true, 5);
@@ -324,6 +327,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		} else {
 			switch (getCostType()) {
 				case PERCENTAGE:
+				default:
 					mCostModifierField.setText(Numbers.formatWithForcedSign(getCost()) + "%"); //$NON-NLS-1$
 					break;
 				case POINTS:

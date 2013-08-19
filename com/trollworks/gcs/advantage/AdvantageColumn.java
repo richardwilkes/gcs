@@ -162,12 +162,12 @@ public enum AdvantageColumn {
 					return null;
 				}
 				if (mMap == null) {
-					mMap = new HashMap<Integer, BufferedImage>();
+					mMap = new HashMap<>();
 				}
 				typeObj = new Integer(advantage.getType());
 				img = mMap.get(typeObj);
 				if (img == null) {
-					ArrayList<BufferedImage> list = new ArrayList<BufferedImage>();
+					ArrayList<BufferedImage> list = new ArrayList<>();
 
 					if ((type & Advantage.TYPE_MASK_MENTAL) != 0) {
 						list.add(GCSImages.getMentalTypeIcon());

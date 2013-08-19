@@ -70,30 +70,29 @@ public abstract class Names {
 		String[] names;
 
 		try {
-			BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
-			String line = in.readLine();
 			int count = 0;
-
-			while (line != null) {
-				if (line.trim().length() > 0) {
-					count++;
+			try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()))) {
+				String line = in.readLine();
+				while (line != null) {
+					if (line.trim().length() > 0) {
+						count++;
+					}
+					line = in.readLine();
 				}
-				line = in.readLine();
 			}
-			in.close();
 
 			names = new String[count];
-			in = new BufferedReader(new InputStreamReader(url.openStream()));
-			line = in.readLine();
-			count = 0;
-			while (line != null) {
-				line = line.trim();
-				if (line.length() > 0) {
-					names[count++] = line;
+			try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()))) {
+				String line = in.readLine();
+				count = 0;
+				while (line != null) {
+					line = line.trim();
+					if (line.length() > 0) {
+						names[count++] = line;
+					}
+					line = in.readLine();
 				}
-				line = in.readLine();
 			}
-			in.close();
 		} catch (Exception exception) {
 			// This should never occur... but if it does, we won't fail.
 			names = new String[] { fallback };

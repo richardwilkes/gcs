@@ -45,7 +45,7 @@ public class ItemMenu extends JMenu {
 	 *         modified.
 	 */
 	public static HashSet<Command> getCommands() {
-		HashSet<Command> cmds = new HashSet<Command>();
+		HashSet<Command> cmds = new HashSet<>();
 		cmds.add(OpenEditorCommand.INSTANCE);
 		cmds.add(CopyToSheetCommand.INSTANCE);
 		cmds.add(CopyToTemplateCommand.INSTANCE);

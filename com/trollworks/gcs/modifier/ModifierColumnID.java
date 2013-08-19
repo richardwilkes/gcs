@@ -170,6 +170,7 @@ public enum ModifierColumnID {
 	public abstract Cell getCell();
 
 	/** @return Whether this column should be displayed for the specified data file. */
+	@SuppressWarnings("static-method")
 	public boolean shouldDisplay() {
 		return true;
 	}

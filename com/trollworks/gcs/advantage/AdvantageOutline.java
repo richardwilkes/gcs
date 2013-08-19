@@ -96,7 +96,7 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
 		OutlineModel model = getModel();
 		Row[] rows = model.getDragRows();
 		boolean forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
-		ArrayList<ListRow> process = forSheetOrTemplate ? new ArrayList<ListRow>() : null;
+		ArrayList<ListRow> process = new ArrayList<>();
 
 		for (Row element : rows) {
 			Advantage advantage = new Advantage(mDataFile, (Advantage) element, true);
@@ -133,7 +133,7 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
 	}
 
 	private boolean selectionHasLeveledRows(boolean requireLevelAboveZero) {
-		for (Advantage advantage : new FilteredIterator<Advantage>(getModel().getSelectionAsList(), Advantage.class)) {
+		for (Advantage advantage : new FilteredIterator<>(getModel().getSelectionAsList(), Advantage.class)) {
 			if (!advantage.canHaveChildren() && advantage.isLeveled() && (!requireLevelAboveZero || advantage.getLevels() > 0)) {
 				return true;
 			}
@@ -141,6 +141,7 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
 		return false;
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	public void increment() {
 		ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
@@ -160,6 +161,7 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	public void decrement() {
 		ArrayList<RowUndo> undos = new ArrayList<RowUndo>();

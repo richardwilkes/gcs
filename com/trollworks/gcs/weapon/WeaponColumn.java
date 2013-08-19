@@ -419,6 +419,7 @@ public enum WeaponColumn {
 	 * @param forEditor Whether this is for an editor or not.
 	 * @return The {@link Cell} used to display the data.
 	 */
+	@SuppressWarnings("static-method")
 	public Cell getCell(boolean forEditor) {
 		if (forEditor) {
 			return new TextCell(SwingConstants.LEFT, false);
@@ -431,6 +432,7 @@ public enum WeaponColumn {
 	 * @param forEditor Whether this is for an editor or not.
 	 * @return Whether this column is valid for the specified weapon class.
 	 */
+	@SuppressWarnings("static-method")
 	public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
 		return true;
 	}

@@ -153,7 +153,7 @@ public class Spell extends ListRow {
 		mPoints = 1;
 		mReference = EMPTY;
 		mIsVeryHard = false;
-		mWeapons = new ArrayList<WeaponStats>();
+		mWeapons = new ArrayList<>();
 		updateLevel(false);
 	}
 
@@ -188,7 +188,7 @@ public class Spell extends ListRow {
 				mTechLevel = EMPTY;
 			}
 		}
-		mWeapons = new ArrayList<WeaponStats>(spell.mWeapons.size());
+		mWeapons = new ArrayList<>(spell.mWeapons.size());
 		for (WeaponStats weapon : spell.mWeapons) {
 			if (weapon instanceof MeleeWeaponStats) {
 				mWeapons.add(new MeleeWeaponStats(this, (MeleeWeaponStats) weapon));
@@ -279,7 +279,7 @@ public class Spell extends ListRow {
 		mPoints = 1;
 		mReference = EMPTY;
 		mIsVeryHard = false;
-		mWeapons = new ArrayList<WeaponStats>();
+		mWeapons = new ArrayList<>();
 	}
 
 	@Override
@@ -392,7 +392,7 @@ public class Spell extends ListRow {
 	 */
 	public boolean setWeapons(List<WeaponStats> weapons) {
 		if (!mWeapons.equals(weapons)) {
-			mWeapons = new ArrayList<WeaponStats>(weapons);
+			mWeapons = new ArrayList<>(weapons);
 			for (WeaponStats weapon : mWeapons) {
 				weapon.setOwner(this);
 			}

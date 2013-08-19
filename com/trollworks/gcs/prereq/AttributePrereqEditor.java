@@ -77,7 +77,7 @@ public class AttributePrereqEditor extends PrereqEditor {
 		grid.add(row, 1, 1);
 	}
 
-	private JComboBox addChangeTypePopup() {
+	private JComboBox<Object> addChangeTypePopup() {
 		BonusAttributeType[] types = AttributePrereq.TYPES;
 		String[] titles = new String[types.length];
 		for (int i = 0; i < types.length; i++) {
@@ -86,7 +86,7 @@ public class AttributePrereqEditor extends PrereqEditor {
 		return addComboBox(CHANGE_TYPE, titles, ((AttributePrereq) mPrereq).getWhich().getPresentationName());
 	}
 
-	private JComboBox addChangeSecondTypePopup() {
+	private JComboBox<Object> addChangeSecondTypePopup() {
 		BonusAttributeType current = ((AttributePrereq) mPrereq).getCombinedWith();
 		BonusAttributeType[] types = AttributePrereq.TYPES;
 		String[] titles = new String[types.length + 1];
@@ -107,9 +107,9 @@ public class AttributePrereqEditor extends PrereqEditor {
 		String command = event.getActionCommand();
 
 		if (CHANGE_TYPE.equals(command)) {
-			prereq.setWhich(AttributePrereq.TYPES[((JComboBox) event.getSource()).getSelectedIndex()]);
+			prereq.setWhich(AttributePrereq.TYPES[((JComboBox<Object>) event.getSource()).getSelectedIndex()]);
 		} else if (CHANGE_SECOND_TYPE.equals(command)) {
-			int which = ((JComboBox) event.getSource()).getSelectedIndex();
+			int which = ((JComboBox<Object>) event.getSource()).getSelectedIndex();
 			prereq.setCombinedWith(which == 0 ? null : AttributePrereq.TYPES[which - 1]);
 		} else {
 			super.actionPerformed(event);

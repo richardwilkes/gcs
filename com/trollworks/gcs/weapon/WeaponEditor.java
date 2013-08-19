@@ -111,7 +111,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 
 	/** @return The weapons in this editor. */
 	public List<WeaponStats> getWeapons() {
-		ArrayList<WeaponStats> weapons = new ArrayList<WeaponStats>();
+		ArrayList<WeaponStats> weapons = new ArrayList<>();
 		for (Row row : mOutline.getModel().getRows()) {
 			weapons.add(((WeaponDisplayRow) row).getWeapon().clone(mOwner));
 		}

@@ -25,6 +25,8 @@ package com.trollworks.gcs.widgets.search;
 
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 
+import java.util.List;
+
 import javax.swing.ListCellRenderer;
 
 /** Defines the methods which must be implemented to be the target of a {@link Search} control. */
@@ -34,7 +36,7 @@ public interface SearchTarget extends JumpToSearchTarget {
 	 * 
 	 * @return The item renderer.
 	 */
-	ListCellRenderer getSearchRenderer();
+	ListCellRenderer<Object> getSearchRenderer();
 
 	/**
 	 * Called to have the target search itself with the specified filter and return the matching
@@ -43,12 +45,12 @@ public interface SearchTarget extends JumpToSearchTarget {
 	 * @param filter The filter to apply.
 	 * @return The matching objects.
 	 */
-	Object[] search(String filter);
+	List<Object> search(String filter);
 
 	/**
 	 * Called to have the target select the objects specified.
 	 * 
 	 * @param selection The objects to select.
 	 */
-	void searchSelect(Object[] selection);
+	void searchSelect(List<Object> selection);
 }

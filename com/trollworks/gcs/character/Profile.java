@@ -271,9 +271,9 @@ public class Profile {
 		} else if (TAG_HANDEDNESS.equals(tag)) {
 			mHandedness = reader.readText();
 		} else if (TAG_HEIGHT.equals(tag)) {
-			mHeight = LengthValue.extract(reader.readText());
+			mHeight = LengthValue.extract(reader.readText(), false);
 		} else if (TAG_WEIGHT.equals(tag)) {
-			mWeight = WeightValue.extract(reader.readText());
+			mWeight = WeightValue.extract(reader.readText(), false);
 		} else if (BonusAttributeType.SM.getXMLTag().equals(tag) || "size_modifier".equals(tag)) { //$NON-NLS-1$
 			mSizeModifier = reader.readInteger(0);
 		} else if (TAG_GENDER.equals(tag)) {
@@ -323,14 +323,13 @@ public class Profile {
 		out.simpleTagNotEmpty(TAG_NOTES, mNotes);
 		if (mCustomPortrait && mPortrait != null) {
 			try {
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-				ImageIO.write(mPortrait, "png", baos); //$NON-NLS-1$
-				baos.close();
-				out.writeComment(MSG_PORTRAIT_COMMENT);
-				out.startSimpleTagEOL(TAG_PORTRAIT);
-				out.println(Base64.encode(baos.toByteArray()));
-				out.endTagEOL(TAG_PORTRAIT, true);
+				try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+					ImageIO.write(mPortrait, "png", baos); //$NON-NLS-1$
+					out.writeComment(MSG_PORTRAIT_COMMENT);
+					out.startSimpleTagEOL(TAG_PORTRAIT);
+					out.println(Base64.encode(baos.toByteArray()));
+					out.endTagEOL(TAG_PORTRAIT, true);
+				}
 			} catch (Exception ex) {
 				throw new RuntimeException(MSG_PORTRAIT_WRITE_ERROR);
 			}
@@ -870,7 +869,7 @@ public class Profile {
 	}
 
 	static {
-		ArrayList<String> hair = new ArrayList<String>(100);
+		ArrayList<String> hair = new ArrayList<>(100);
 		String[] colors = { MSG_BROWN, MSG_BROWN, MSG_BROWN, MSG_BLACK, MSG_BLACK, MSG_BLACK, MSG_BLOND, MSG_BLOND, MSG_REDHEAD };
 		String[] styles = { MSG_STRAIGHT, MSG_CURLY, MSG_WAVY };
 		String[] lengths = { MSG_SHORT, MSG_MEDIUM, MSG_LONG };

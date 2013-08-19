@@ -61,6 +61,11 @@ public abstract class NumericCriteria {
 		return false;
 	}
 
+	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
 	/**
 	 * Loads data.
 	 * 

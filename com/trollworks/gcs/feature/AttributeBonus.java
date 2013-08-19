@@ -80,6 +80,11 @@ public class AttributeBonus extends Bonus {
 	}
 
 	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
+	@Override
 	public Feature cloneFeature() {
 		return new AttributeBonus(this);
 	}

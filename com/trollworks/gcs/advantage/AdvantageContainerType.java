@@ -29,7 +29,8 @@ import com.trollworks.ttk.utility.LocalizedMessages;
 public enum AdvantageContainerType {
 	/** The standard grouping container type. */
 	GROUP {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_GROUP;
 		}
 	},
@@ -38,7 +39,8 @@ public enum AdvantageContainerType {
 	 * its point total is positive, or a disadvantage if it is negative.
 	 */
 	METATRAIT {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_METATRAIT;
 		}
 	},
@@ -47,16 +49,19 @@ public enum AdvantageContainerType {
 	 * and disadvantages.
 	 */
 	RACE {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_RACE;
 		}
 	},
 	/**
-	 * The alternative abilities grouping container type. It behaves similar to a {@link #METATRAIT},
-	 * but applies the rules for alternative abilities (see B61 and P11) to its immediate children.
+	 * The alternative abilities grouping container type. It behaves similar to a {@link #METATRAIT}
+	 * , but applies the rules for alternative abilities (see B61 and P11) to its immediate
+	 * children.
 	 */
 	ALTERNATIVE_ABILITIES {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_ALTERNATIVE_ABILITIES;
 		}
 	};

@@ -107,7 +107,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 	private JTextField			mMaintenanceField;
 	private JTextField			mCastingTimeField;
 	private JTextField			mDurationField;
-	private JComboBox			mDifficultyCombo;
+	private JComboBox<Object>	mDifficultyCombo;
 	private JTextField			mNotesField;
 	private JTextField			mCategoriesField;
 	private JTextField			mPointsField;
@@ -206,7 +206,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		}
 	}
 
-	private void determineLargest(Container panel, int every, Dimension size) {
+	private static void determineLargest(Container panel, int every, Dimension size) {
 		int count = panel.getComponentCount();
 
 		for (int i = 0; i < count; i += every) {
@@ -221,7 +221,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		}
 	}
 
-	private void applySize(Container panel, int every, Dimension size) {
+	private static void applySize(Container panel, int every, Dimension size) {
 		int count = panel.getComponentCount();
 
 		for (int i = 0; i < count; i += every) {
@@ -282,12 +282,13 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private Container createPointsFields() {
 		boolean forCharacter = mRow.getCharacter() != null;
 		boolean forTemplate = mRow.getTemplate() != null;
 		JPanel panel = new JPanel(new ColumnLayout(forCharacter ? 8 : forTemplate ? 6 : 4));
 
-		mDifficultyCombo = new JComboBox(new Object[] { SkillDifficulty.H.name(), SkillDifficulty.VH.name() });
+		mDifficultyCombo = new JComboBox<>(new Object[] { SkillDifficulty.H.name(), SkillDifficulty.VH.name() });
 		mDifficultyCombo.setSelectedIndex(mRow.isVeryHard() ? 1 : 0);
 		mDifficultyCombo.setToolTipText(MSG_DIFFICULTY_TOOLTIP);
 		UIUtilities.setOnlySize(mDifficultyCombo, mDifficultyCombo.getPreferredSize());
@@ -309,7 +310,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		return panel;
 	}
 
-	private String getDisplayLevel(int level, int relativeLevel) {
+	private static String getDisplayLevel(int level, int relativeLevel) {
 		if (level < 0) {
 			return "-"; //$NON-NLS-1$
 		}
@@ -372,7 +373,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 			modified |= mRow.setPrereqs(mPrereqs.getPrereqList());
 		}
 		if (mMeleeWeapons != null) {
-			ArrayList<WeaponStats> list = new ArrayList<WeaponStats>(mMeleeWeapons.getWeapons());
+			ArrayList<WeaponStats> list = new ArrayList<>(mMeleeWeapons.getWeapons());
 
 			list.addAll(mRangedWeapons.getWeapons());
 			modified |= mRow.setWeapons(list);

@@ -138,12 +138,12 @@ public abstract class ListRow extends Row {
 		setCanHaveChildren(isContainer);
 		setOpen(isContainer);
 		mDataFile = dataFile;
-		mFeatures = new ArrayList<Feature>();
+		mFeatures = new ArrayList<>();
 		mPrereqList = new PrereqList(null, true);
-		mDefaults = new ArrayList<SkillDefault>();
+		mDefaults = new ArrayList<>();
 		mIsSatisfied = true;
 		mNotes = ""; //$NON-NLS-1$
-		mCategories = new TreeSet<String>();
+		mCategories = new TreeSet<>();
 	}
 
 	/**
@@ -161,11 +161,11 @@ public abstract class ListRow extends Row {
 			mFeatures.add(feature.cloneFeature());
 		}
 		mPrereqList = new PrereqList(null, rowToClone.getPrereqs());
-		mDefaults = new ArrayList<SkillDefault>();
+		mDefaults = new ArrayList<>();
 		for (SkillDefault skillDefault : rowToClone.mDefaults) {
 			mDefaults.add(new SkillDefault(skillDefault));
 		}
-		mCategories = new TreeSet<String>(rowToClone.mCategories);
+		mCategories = new TreeSet<>(rowToClone.mCategories);
 	}
 
 	/**
@@ -336,6 +336,7 @@ public abstract class ListRow extends Row {
 	 * @param reader The XML reader to load from.
 	 * @param state The {@link LoadState} to use.
 	 */
+	@SuppressWarnings("static-method")
 	protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
 		reader.skipTag(reader.getName());
 	}
@@ -487,7 +488,7 @@ public abstract class ListRow extends Row {
 	 */
 	public boolean setFeatures(List<Feature> features) {
 		if (!mFeatures.equals(features)) {
-			mFeatures = new ArrayList<Feature>(features);
+			mFeatures = new ArrayList<>(features);
 			return true;
 		}
 		return false;
@@ -516,7 +517,7 @@ public abstract class ListRow extends Row {
 	 */
 	public boolean setCategories(Collection<String> categories) {
 		TreeSet<String> old = mCategories;
-		mCategories = new TreeSet<String>();
+		mCategories = new TreeSet<>();
 		for (String category : categories) {
 			category = category.trim();
 			if (category.length() > 0) {
@@ -560,6 +561,7 @@ public abstract class ListRow extends Row {
 	}
 
 	/** @return The notification ID to use with categories. */
+	@SuppressWarnings("static-method")
 	protected String getCategoryID() {
 		return null;
 	}
@@ -592,7 +594,7 @@ public abstract class ListRow extends Row {
 	 */
 	public boolean setDefaults(List<SkillDefault> defaults) {
 		if (!mDefaults.equals(defaults)) {
-			mDefaults = new ArrayList<SkillDefault>(defaults);
+			mDefaults = new ArrayList<>(defaults);
 			return true;
 		}
 		return false;
@@ -608,6 +610,7 @@ public abstract class ListRow extends Row {
 	 * @param lowerCaseOnly The passed in text is all lowercase.
 	 * @return <code>true</code> if this row contains the text.
 	 */
+	@SuppressWarnings("static-method")
 	public boolean contains(String text, boolean lowerCaseOnly) {
 		return false;
 	}
@@ -648,6 +651,7 @@ public abstract class ListRow extends Row {
 	}
 
 	/** @return The notes due to modifiers. */
+	@SuppressWarnings("static-method")
 	public String getModifierNotes() {
 		return ""; //$NON-NLS-1$
 	}

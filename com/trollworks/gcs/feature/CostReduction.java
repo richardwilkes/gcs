@@ -82,6 +82,11 @@ public class CostReduction implements Feature {
 		return false;
 	}
 
+	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
 	/** @return The percentage to use. */
 	public int getPercentage() {
 		return mPercentage;

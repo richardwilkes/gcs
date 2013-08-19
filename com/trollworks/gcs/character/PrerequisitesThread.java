@@ -44,7 +44,7 @@ import java.util.Iterator;
  * A thread for doing background updates of the prerequisite status of a character sheet.
  */
 public class PrerequisitesThread extends Thread implements NotifierTarget {
-	private static HashMap<GURPSCharacter, PrerequisitesThread>	MAP		= new HashMap<GURPSCharacter, PrerequisitesThread>();
+	private static HashMap<GURPSCharacter, PrerequisitesThread>	MAP		= new HashMap<>();
 	private static int											COUNTER	= 0;
 	private CharacterSheet										mSheet;
 	private GURPSCharacter										mCharacter;
@@ -157,7 +157,7 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 	}
 
 	private void processFeatures() throws Exception {
-		HashMap<String, ArrayList<Feature>> map = new HashMap<String, ArrayList<Feature>>();
+		HashMap<String, ArrayList<Feature>> map = new HashMap<>();
 		buildFeatureMap(map, mCharacter.getAdvantagesIterator());
 		buildFeatureMap(map, mCharacter.getSkillsIterator());
 		buildFeatureMap(map, mCharacter.getSpellsIterator());
@@ -195,11 +195,11 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 		}
 	}
 
-	private void processFeature(HashMap<String, ArrayList<Feature>> map, int levels, Feature feature) {
+	private static void processFeature(HashMap<String, ArrayList<Feature>> map, int levels, Feature feature) {
 		String key = feature.getKey().toLowerCase();
 		ArrayList<Feature> list = map.get(key);
 		if (list == null) {
-			list = new ArrayList<Feature>(1);
+			list = new ArrayList<>(1);
 			map.put(key, list);
 		}
 		if (feature instanceof Bonus) {

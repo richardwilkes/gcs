@@ -267,8 +267,7 @@ public class Template extends DataFile implements StateEditable {
 
 	/**
 	 * @param id The field ID to retrieve the data for.
-	 * @return The value of the specified field ID, or <code>null</code> if the field ID is
-	 *         invalid.
+	 * @return The value of the specified field ID, or <code>null</code> if the field ID is invalid.
 	 */
 	public Object getValueForID(String id) {
 		if (ID_ADVANTAGE_POINTS.equals(id)) {
@@ -401,7 +400,7 @@ public class Template extends DataFile implements StateEditable {
 
 	/** @return A recursive iterator over the advantages. */
 	public RowIterator<Advantage> getAdvantagesIterator() {
-		return new RowIterator<Advantage>(mAdvantages);
+		return new RowIterator<>(mAdvantages);
 	}
 
 	/** @return The outline model for the skills. */
@@ -411,7 +410,7 @@ public class Template extends DataFile implements StateEditable {
 
 	/** @return A recursive iterable for the template's skills. */
 	public Iterable<Skill> getSkillsIterable() {
-		return new FilteredIterator<Skill>(new RowIterator<ListRow>(mSkills), Skill.class);
+		return new FilteredIterator<>(new RowIterator<ListRow>(mSkills), Skill.class);
 	}
 
 	/** @return The outline model for the spells. */
@@ -421,7 +420,7 @@ public class Template extends DataFile implements StateEditable {
 
 	/** @return A recursive iterator over the spells. */
 	public RowIterator<Spell> getSpellsIterator() {
-		return new RowIterator<Spell>(mSpells);
+		return new RowIterator<>(mSpells);
 	}
 
 	/** @return The outline model for the equipment. */
@@ -431,7 +430,7 @@ public class Template extends DataFile implements StateEditable {
 
 	/** @return A recursive iterator over the equipment. */
 	public RowIterator<Equipment> getEquipmentIterator() {
-		return new RowIterator<Equipment>(mEquipment);
+		return new RowIterator<>(mEquipment);
 	}
 
 	/** @return The notes. */

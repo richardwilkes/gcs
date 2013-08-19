@@ -77,9 +77,9 @@ public class CostReductionEditor extends FeatureEditor {
 	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
 		if (CHANGE_ATTRIBUTE.equals(command)) {
-			((CostReduction) getFeature()).setAttribute(CostReduction.TYPES[((JComboBox) event.getSource()).getSelectedIndex()]);
+			((CostReduction) getFeature()).setAttribute(CostReduction.TYPES[((JComboBox<Object>) event.getSource()).getSelectedIndex()]);
 		} else if (CHANGE_PERCENTAGE.equals(command)) {
-			((CostReduction) getFeature()).setPercentage((((JComboBox) event.getSource()).getSelectedIndex() + 1) * 5);
+			((CostReduction) getFeature()).setPercentage((((JComboBox<Object>) event.getSource()).getSelectedIndex() + 1) * 5);
 		} else {
 			super.actionPerformed(event);
 		}

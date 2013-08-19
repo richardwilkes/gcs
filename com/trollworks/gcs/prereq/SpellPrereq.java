@@ -209,7 +209,7 @@ public class SpellPrereq extends HasPrereq {
 
 	@Override
 	public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
-		HashSet<String> colleges = new HashSet<String>();
+		HashSet<String> colleges = new HashSet<>();
 		String techLevel = null;
 		int count = 0;
 		boolean satisfied;

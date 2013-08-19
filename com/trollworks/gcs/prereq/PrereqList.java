@@ -67,7 +67,7 @@ public class PrereqList extends Prereq {
 		super(parent);
 		mAll = all;
 		mWhenTLCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, Integer.MIN_VALUE);
-		mPrereqs = new ArrayList<Prereq>();
+		mPrereqs = new ArrayList<>();
 	}
 
 	/**
@@ -114,7 +114,7 @@ public class PrereqList extends Prereq {
 		super(parent);
 		mAll = prereqList.mAll;
 		mWhenTLCriteria = new IntegerCriteria(prereqList.mWhenTLCriteria);
-		mPrereqs = new ArrayList<Prereq>(prereqList.mPrereqs.size());
+		mPrereqs = new ArrayList<>(prereqList.mPrereqs.size());
 		for (Prereq prereq : prereqList.mPrereqs) {
 			mPrereqs.add(prereq.clone(this));
 		}
@@ -130,6 +130,11 @@ public class PrereqList extends Prereq {
 			return mAll == list.mAll && mWhenTLCriteria.equals(list.mWhenTLCriteria) && mPrereqs.equals(list.mPrereqs);
 		}
 		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode();
 	}
 
 	@Override

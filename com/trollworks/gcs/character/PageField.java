@@ -199,7 +199,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		}
 	}
 
-	private static final HashMap<String, AbstractFormatterFactory>	FACTORY_MAP	= new HashMap<String, AbstractFormatterFactory>();
+	private static final HashMap<String, AbstractFormatterFactory>	FACTORY_MAP	= new HashMap<>();
 	private static final AbstractFormatterFactory					DEFAULT_FACTORY;
 
 	static {

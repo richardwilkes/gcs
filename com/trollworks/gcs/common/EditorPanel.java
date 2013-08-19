@@ -101,8 +101,8 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 	 * @param selection The item to select initially.
 	 * @return The new {@link JComboBox}.
 	 */
-	protected JComboBox addComboBox(String command, Object[] items, Object selection) {
-		JComboBox combo = new JComboBox(items);
+	protected JComboBox<Object> addComboBox(String command, Object[] items, Object selection) {
+		JComboBox<Object> combo = new JComboBox<>(items);
 		combo.setOpaque(false);
 		combo.setSelectedItem(selection);
 		combo.setActionCommand(command);
@@ -118,14 +118,14 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 	 * @param extra The extra text to add to the menu item.
 	 * @return The {@link JComboBox} that allows a string comparison to be changed.
 	 */
-	protected JComboBox addStringCompareCombo(StringCriteria compare, String extra) {
+	protected JComboBox<Object> addStringCompareCombo(StringCriteria compare, String extra) {
 		Object[] values;
 		Object selection;
 		if (extra == null) {
 			values = StringCompareType.values();
 			selection = compare.getType();
 		} else {
-			ArrayList<String> list = new ArrayList<String>();
+			ArrayList<String> list = new ArrayList<>();
 			selection = null;
 			for (StringCompareType type : StringCompareType.values()) {
 				String title = extra + type;
@@ -136,7 +136,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 			}
 			values = list.toArray();
 		}
-		JComboBox combo = addComboBox(COMPARISON, values, selection);
+		JComboBox<Object> combo = addComboBox(COMPARISON, values, selection);
 		combo.putClientProperty(StringCriteria.class, compare);
 		return combo;
 	}
@@ -159,7 +159,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 	 * @param extra The extra text to add to the menu item.
 	 * @return The {@link JComboBox} that allows a comparison to be changed.
 	 */
-	protected JComboBox addNumericCompareCombo(NumericCriteria compare, String extra) {
+	protected JComboBox<Object> addNumericCompareCombo(NumericCriteria compare, String extra) {
 		Object[] values;
 		Object selection;
 		if (extra == null) {
@@ -172,7 +172,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 				selection = MSG_EXACTLY;
 			}
 		} else {
-			ArrayList<String> list = new ArrayList<String>();
+			ArrayList<String> list = new ArrayList<>();
 			selection = null;
 			for (NumericCompareType type : NumericCompareType.values()) {
 				String title = extra + type.getDescription();
@@ -183,7 +183,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 			}
 			values = list.toArray();
 		}
-		JComboBox combo = addComboBox(COMPARISON, values, selection);
+		JComboBox<Object> combo = addComboBox(COMPARISON, values, selection);
 		combo.putClientProperty(NumericCriteria.class, compare);
 		return combo;
 	}
@@ -250,7 +250,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 					} else {
 						WeightCriteria weightCriteria = (WeightCriteria) field.getClientProperty(WeightCriteria.class);
 						if (weightCriteria != null) {
-							weightCriteria.setQualifier(((WeightValue) field.getValue()));
+							weightCriteria.setQualifier((WeightValue) field.getValue());
 							notifyActionListeners();
 						}
 					}
@@ -263,7 +263,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
 		if (COMPARISON.equals(command)) {
-			JComboBox combo = (JComboBox) event.getSource();
+			JComboBox<Object> combo = (JComboBox<Object>) event.getSource();
 			int selectedIndex = combo.getSelectedIndex();
 			StringCriteria stringCriteria = (StringCriteria) combo.getClientProperty(StringCriteria.class);
 			if (stringCriteria != null) {

@@ -80,7 +80,7 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 	private JButton			mTemplateButton;
 	private JButton			mChooseOtherButton;
 	private JButton			mOpenButton;
-	private JList			mRecentFilesList;
+	private JList<File>		mRecentFilesList;
 
 	static {
 		LocalizedMessages.initialize(StartupDialog.class);
@@ -95,7 +95,7 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 		content.add(createRecentFilesPanel(), "vGrab:yes hGrab:yes vAlign:fill hAlign:fill"); //$NON-NLS-1$
 		setResizable(true);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		new WindowSizeEnforcer(this);
+		WindowSizeEnforcer.monitor(this);
 		addWindowFocusListener(this);
 		pack();
 		setLocationRelativeTo(null);
@@ -114,10 +114,10 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 	private JPanel createRecentFilesPanel() {
 		JPanel panel = new JPanel(new PrecisionLayout("columns:2 equalColumns:yes")); //$NON-NLS-1$
 		panel.setBorder(new TitledBorder(MSG_RECENT_FILES));
-		mRecentFilesList = new JList(RecentFilesMenu.getRecents().toArray());
+		mRecentFilesList = new JList<>(RecentFilesMenu.getRecents().toArray(new File[0]));
 		mRecentFilesList.setCellRenderer(new DefaultListCellRenderer() {
 			@Override
-			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				setText(DataMenu.filterTitle(Path.getLeafName(((File) value).getName(), false)));
 				setIcon(new ImageIcon(FileType.getIconForFile((File) value)));
@@ -170,13 +170,13 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 		Object obj = event.getSource();
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		if (obj == mSheetButton) {
-			NewCharacterSheetCommand.INSTANCE.newSheet();
+			NewCharacterSheetCommand.newSheet();
 		} else if (obj == mLibraryButton) {
-			NewLibraryCommand.INSTANCE.newLibrary();
+			NewLibraryCommand.newLibrary();
 		} else if (obj == mTemplateButton) {
-			NewCharacterTemplateCommand.INSTANCE.newTemplate();
+			NewCharacterTemplateCommand.newTemplate();
 		} else if (obj == mChooseOtherButton) {
-			OpenCommand.INSTANCE.open();
+			OpenCommand.open();
 		} else if (obj == mOpenButton) {
 			openSelectedRecents(false);
 		}
@@ -196,8 +196,8 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 
 	private void openSelectedRecents(boolean performPostAmble) {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		for (Object obj : mRecentFilesList.getSelectedValues()) {
-			OpenCommand.INSTANCE.open((File) obj);
+		for (File obj : mRecentFilesList.getSelectedValuesList()) {
+			OpenCommand.open(obj);
 		}
 		if (performPostAmble) {
 			if (AppWindow.getAllWindows().isEmpty()) {

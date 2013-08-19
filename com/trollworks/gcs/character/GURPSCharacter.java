@@ -348,7 +348,7 @@ public class GURPSCharacter extends DataFile {
 	}
 
 	private void characterInitialize(boolean full) {
-		mFeatureMap = new HashMap<String, ArrayList<Feature>>();
+		mFeatureMap = new HashMap<>();
 		mAdvantages = new OutlineModel();
 		mSkills = new OutlineModel();
 		mSpells = new OutlineModel();
@@ -576,10 +576,10 @@ public class GURPSCharacter extends DataFile {
 		}
 	}
 
-	private void saveList(String tag, OutlineModel model, XMLWriter out) {
+	private static void saveList(String tag, OutlineModel model, XMLWriter out) {
 		if (model.getRowCount() > 0) {
 			out.startSimpleTagEOL(tag);
-			for (ListRow row : new FilteredIterator<ListRow>(model.getTopLevelRows(), ListRow.class)) {
+			for (ListRow row : new FilteredIterator<>(model.getTopLevelRows(), ListRow.class)) {
 				row.save(out, false);
 			}
 			out.endTagEOL(tag, true);
@@ -1016,7 +1016,7 @@ public class GURPSCharacter extends DataFile {
 		return getPointsForAttribute(mStrength - 10, 10, mStrengthCostReduction + mDescription.getSizeModifier() * 10);
 	}
 
-	private int getPointsForAttribute(int delta, int ptsPerLevel, int reduction) {
+	private static int getPointsForAttribute(int delta, int ptsPerLevel, int reduction) {
 		int amt = delta * ptsPerLevel;
 
 		if (reduction > 0 && delta > 0) {
@@ -1344,6 +1344,7 @@ public class GURPSCharacter extends DataFile {
 	 * @param level The encumbrance level (0-4)
 	 * @return The encumbrance penalty for the specified encumbrance level.
 	 */
+	@SuppressWarnings("static-method")
 	public int getEncumbrancePenalty(int level) {
 		return -level;
 	}
@@ -1711,7 +1712,7 @@ public class GURPSCharacter extends DataFile {
 		mCachedRacePoints = 0;
 		mCachedQuirkPoints = 0;
 
-		for (Advantage advantage : new FilteredIterator<Advantage>(mAdvantages.getTopLevelRows(), Advantage.class)) {
+		for (Advantage advantage : new FilteredIterator<>(mAdvantages.getTopLevelRows(), Advantage.class)) {
 			calculateSingleAdvantagePoints(advantage);
 		}
 	}
@@ -1720,7 +1721,7 @@ public class GURPSCharacter extends DataFile {
 		if (advantage.canHaveChildren()) {
 			AdvantageContainerType type = advantage.getContainerType();
 			if (type == AdvantageContainerType.GROUP) {
-				for (Advantage child : new FilteredIterator<Advantage>(advantage.getChildren(), Advantage.class)) {
+				for (Advantage child : new FilteredIterator<>(advantage.getChildren(), Advantage.class)) {
 					calculateSingleAdvantagePoints(child);
 				}
 				return;
@@ -1908,6 +1909,7 @@ public class GURPSCharacter extends DataFile {
 	}
 
 	/** @return The number of hit points where unconsciousness checks must start being made. */
+	@SuppressWarnings("static-method")
 	public int getUnconsciousChecksHitPoints() {
 		return 0;
 	}
@@ -2212,6 +2214,7 @@ public class GURPSCharacter extends DataFile {
 	}
 
 	/** @return The number of fatigue points where unconsciousness checks must start being made. */
+	@SuppressWarnings("static-method")
 	public int getUnconsciousChecksFatiguePoints() {
 		return 0;
 	}
@@ -2238,7 +2241,7 @@ public class GURPSCharacter extends DataFile {
 
 	/** @return A recursive iterator over the character's advantages. */
 	public RowIterator<Advantage> getAdvantagesIterator() {
-		return new RowIterator<Advantage>(mAdvantages);
+		return new RowIterator<>(mAdvantages);
 	}
 
 	/**
@@ -2273,7 +2276,7 @@ public class GURPSCharacter extends DataFile {
 
 	/** @return A recursive iterable for the character's skills. */
 	public RowIterator<Skill> getSkillsIterator() {
-		return new RowIterator<Skill>(mSkills);
+		return new RowIterator<>(mSkills);
 	}
 
 	/**
@@ -2287,7 +2290,7 @@ public class GURPSCharacter extends DataFile {
 	 * @return The skill if it is present, or <code>null</code> if its not.
 	 */
 	public ArrayList<Skill> getSkillNamed(String name, String specialization, boolean requirePoints, HashSet<String> excludes) {
-		ArrayList<Skill> skills = new ArrayList<Skill>();
+		ArrayList<Skill> skills = new ArrayList<>();
 		boolean checkSpecialization = specialization != null && specialization.length() > 0;
 		for (Skill skill : getSkillsIterator()) {
 			if (excludes == null || !excludes.contains(skill.toString())) {
@@ -2336,7 +2339,7 @@ public class GURPSCharacter extends DataFile {
 
 	/** @return A recursive iterator over the character's spells. */
 	public RowIterator<Spell> getSpellsIterator() {
-		return new RowIterator<Spell>(mSpells);
+		return new RowIterator<>(mSpells);
 	}
 
 	/** @return The outline model for the character's equipment. */
@@ -2346,7 +2349,7 @@ public class GURPSCharacter extends DataFile {
 
 	/** @return A recursive iterator over the character's equipment. */
 	public RowIterator<Equipment> getEquipmentIterator() {
-		return new RowIterator<Equipment>(mEquipment);
+		return new RowIterator<>(mEquipment);
 	}
 
 	/** @param map The new feature map. */
@@ -2436,7 +2439,7 @@ public class GURPSCharacter extends DataFile {
 	 * @return The bonuses.
 	 */
 	public ArrayList<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier) {
-		ArrayList<WeaponBonus> bonuses = new ArrayList<WeaponBonus>();
+		ArrayList<WeaponBonus> bonuses = new ArrayList<>();
 		int rsl = Integer.MIN_VALUE;
 
 		for (Skill skill : getSkillNamed(nameQualifier, specializationQualifier, true, null)) {

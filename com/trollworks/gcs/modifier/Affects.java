@@ -29,31 +29,37 @@ import com.trollworks.ttk.utility.LocalizedMessages;
 public enum Affects {
 	/** Affects the total cost. */
 	TOTAL {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_TOTAL;
 		}
 
-		@Override public String getShortTitle() {
+		@Override
+		public String getShortTitle() {
 			return MSG_TOTAL_SHORT;
 		}
 	},
 	/** Affects only the base cost, not the leveled cost. */
 	BASE_ONLY {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_BASE_ONLY;
 		}
 
-		@Override public String getShortTitle() {
+		@Override
+		public String getShortTitle() {
 			return MSG_BASE_ONLY_SHORT;
 		}
 	},
 	/** Affects only the leveled cost, not the base cost. */
 	LEVELS_ONLY {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_LEVELS_ONLY;
 		}
 
-		@Override public String getShortTitle() {
+		@Override
+		public String getShortTitle() {
 			return MSG_LEVELS_ONLY_SHORT;
 		}
 	};

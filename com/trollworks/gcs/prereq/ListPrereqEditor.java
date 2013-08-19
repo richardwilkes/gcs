@@ -74,10 +74,11 @@ public class ListPrereqEditor extends PrereqEditor {
 		super(row, prereq, depth);
 	}
 
-	private String mapWhenTLToString(IntegerCriteria criteria) {
+	private static String mapWhenTLToString(IntegerCriteria criteria) {
 		if (PrereqList.isWhenTLEnabled(criteria)) {
 			switch (criteria.getType()) {
 				case IS:
+				default:
 					return MSG_TL_IS;
 				case AT_LEAST:
 					return MSG_TL_IS_AT_LEAST;
@@ -108,7 +109,7 @@ public class ListPrereqEditor extends PrereqEditor {
 	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
 		if (ANY_ALL.equals(command)) {
-			((PrereqList) mPrereq).setRequiresAll(((JComboBox) event.getSource()).getSelectedIndex() == 0);
+			((PrereqList) mPrereq).setRequiresAll(((JComboBox<Object>) event.getSource()).getSelectedIndex() == 0);
 			getParent().repaint();
 		} else if (ADD_PREREQ.equals(command)) {
 			try {
@@ -122,7 +123,7 @@ public class ListPrereqEditor extends PrereqEditor {
 		} else if (WHEN_TL.equals(command)) {
 			PrereqList prereqList = (PrereqList) mPrereq;
 			IntegerCriteria whenTLCriteria = prereqList.getWhenTLCriteria();
-			Object value = ((JComboBox) event.getSource()).getSelectedItem();
+			Object value = ((JComboBox<Object>) event.getSource()).getSelectedItem();
 			if (!mapWhenTLToString(whenTLCriteria).equals(value)) {
 				if (MSG_TL_IS.equals(value)) {
 					if (!PrereqList.isWhenTLEnabled(whenTLCriteria)) {

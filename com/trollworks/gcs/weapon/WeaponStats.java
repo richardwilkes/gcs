@@ -77,7 +77,7 @@ public abstract class WeaponStats {
 		mDamage = EMPTY;
 		mStrength = EMPTY;
 		mUsage = EMPTY;
-		mDefaults = new ArrayList<SkillDefault>();
+		mDefaults = new ArrayList<>();
 		initialize();
 	}
 
@@ -92,7 +92,7 @@ public abstract class WeaponStats {
 		mDamage = other.mDamage;
 		mStrength = other.mStrength;
 		mUsage = other.mUsage;
-		mDefaults = new ArrayList<SkillDefault>();
+		mDefaults = new ArrayList<>();
 		for (SkillDefault skillDefault : other.mDefaults) {
 			mDefaults.add(new SkillDefault(skillDefault));
 		}
@@ -182,7 +182,7 @@ public abstract class WeaponStats {
 	 */
 	public boolean setDefaults(List<SkillDefault> defaults) {
 		if (!mDefaults.equals(defaults)) {
-			mDefaults = new ArrayList<SkillDefault>(defaults);
+			mDefaults = new ArrayList<>(defaults);
 			return true;
 		}
 		return false;
@@ -234,7 +234,7 @@ public abstract class WeaponStats {
 
 		if (df instanceof GURPSCharacter) {
 			GURPSCharacter character = (GURPSCharacter) df;
-			HashSet<WeaponBonus> bonuses = new HashSet<WeaponBonus>();
+			HashSet<WeaponBonus> bonuses = new HashSet<>();
 
 			for (SkillDefault one : getDefaults()) {
 				if (one.getType().isSkillBased()) {
@@ -349,7 +349,7 @@ public abstract class WeaponStats {
 		return damage;
 	}
 
-	private boolean isDigit(char ch) {
+	private static boolean isDigit(char ch) {
 		return ch >= '0' && ch <= '9';
 	}
 
@@ -402,6 +402,7 @@ public abstract class WeaponStats {
 	 * @param index The index to start looking.
 	 * @return The index of the next non-space character.
 	 */
+	@SuppressWarnings("static-method")
 	protected int skipSpaces(String buffer, int index) {
 		int max = buffer.length();
 		while (index < max && buffer.charAt(index) == ' ') {
@@ -535,10 +536,16 @@ public abstract class WeaponStats {
 		return false;
 	}
 
+	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
 	/**
 	 * @param data The data to sanitize.
 	 * @return The original data, or "", if the data was <code>null</code>.
 	 */
+	@SuppressWarnings("static-method")
 	protected String sanitize(String data) {
 		if (data == null) {
 			return EMPTY;

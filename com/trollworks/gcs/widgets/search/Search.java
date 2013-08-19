@@ -34,6 +34,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.Collections;
+import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
@@ -91,8 +93,8 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 
 	private void searchSelect() {
 		if (mFloater != null) {
-			Object[] selection = mFloater.getSelectedValues();
-			if (selection != null && selection.length > 0) {
+			List<Object> selection = mFloater.getSelectedValues();
+			if (!selection.isEmpty()) {
 				mTarget.searchSelect(selection);
 				return;
 			}
@@ -105,9 +107,9 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 	 * 
 	 * @return The current hits.
 	 */
-	public Object[] adjustHits() {
-		Object[] hits = mFilter != null ? mTarget.search(mFilter) : new Object[0];
-		mHits.setText(Numbers.format(hits.length));
+	public List<Object> adjustHits() {
+		List<Object> hits = mFilter != null ? mTarget.search(mFilter) : Collections.emptyList();
+		mHits.setText(Numbers.format(hits.size()));
 		if (mFloater != null) {
 			mFloater.adjustToHits(hits);
 		}
@@ -146,6 +148,8 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 				break;
 			case KeyEvent.VK_ENTER:
 				searchSelect();
+				break;
+			default:
 				break;
 		}
 	}

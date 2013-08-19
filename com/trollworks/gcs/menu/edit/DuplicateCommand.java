@@ -80,8 +80,8 @@ public class DuplicateCommand extends Command {
 		ListOutline outline = (ListOutline) focus;
 		OutlineModel model = outline.getModel();
 		if (!model.isLocked() && model.hasSelection()) {
-			ArrayList<Row> rows = new ArrayList<Row>();
-			ArrayList<Row> topRows = new ArrayList<Row>();
+			ArrayList<Row> rows = new ArrayList<>();
+			ArrayList<Row> topRows = new ArrayList<>();
 			DataFile dataFile = outline.getDataFile();
 			dataFile.startNotify();
 			model.setDragRows(model.getSelectionAsList(true).toArray(new Row[0]));

@@ -150,7 +150,7 @@ public class Skill extends ListRow {
 		mDifficulty = SkillDifficulty.A;
 		mPoints = 1;
 		mReference = EMPTY;
-		mWeapons = new ArrayList<WeaponStats>();
+		mWeapons = new ArrayList<>();
 		updateLevel(false);
 	}
 
@@ -181,7 +181,7 @@ public class Skill extends ListRow {
 				mTechLevel = EMPTY;
 			}
 		}
-		mWeapons = new ArrayList<WeaponStats>(skill.mWeapons.size());
+		mWeapons = new ArrayList<>(skill.mWeapons.size());
 		for (WeaponStats weapon : skill.mWeapons) {
 			if (weapon instanceof MeleeWeaponStats) {
 				mWeapons.add(new MeleeWeaponStats(this, (MeleeWeaponStats) weapon));
@@ -283,7 +283,7 @@ public class Skill extends ListRow {
 		mPoints = 1;
 		mReference = EMPTY;
 		mEncumbrancePenaltyMultiplier = 0;
-		mWeapons = new ArrayList<WeaponStats>();
+		mWeapons = new ArrayList<>();
 	}
 
 	@Override
@@ -368,7 +368,7 @@ public class Skill extends ListRow {
 	 */
 	public boolean setWeapons(List<WeaponStats> weapons) {
 		if (!mWeapons.equals(weapons)) {
-			mWeapons = new ArrayList<WeaponStats>(weapons);
+			mWeapons = new ArrayList<>(weapons);
 			for (WeaponStats weapon : mWeapons) {
 				weapon.setOwner(this);
 			}

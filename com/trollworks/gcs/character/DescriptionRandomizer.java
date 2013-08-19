@@ -144,8 +144,8 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
 		description.setGender(mFields[GENDER_INDEX].getText());
 		description.setAge(Numbers.getLocalizedInteger(mFields[AGE_INDEX].getText(), 18));
 		description.setBirthday(mFields[BIRTHDAY_INDEX].getText());
-		description.setHeight(LengthValue.extract(mFields[HEIGHT_INDEX].getText()));
-		description.setWeight(WeightValue.extract(mFields[WEIGHT_INDEX].getText()));
+		description.setHeight(LengthValue.extract(mFields[HEIGHT_INDEX].getText(), true));
+		description.setWeight(WeightValue.extract(mFields[WEIGHT_INDEX].getText(), true));
 		description.setHair(mFields[HAIR_INDEX].getText());
 		description.setEyeColor(mFields[EYES_INDEX].getText());
 		description.setSkinColor(mFields[SKIN_INDEX].getText());

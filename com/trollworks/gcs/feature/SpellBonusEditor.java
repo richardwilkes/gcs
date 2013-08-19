@@ -84,7 +84,7 @@ public class SpellBonusEditor extends FeatureEditor {
 		grid.add(row, 1, 0);
 	}
 
-	private String getMatchText(boolean allColleges, String matchType) {
+	private static String getMatchText(boolean allColleges, String matchType) {
 		if (allColleges) {
 			return MSG_ALL_COLLEGES;
 		}
@@ -102,8 +102,9 @@ public class SpellBonusEditor extends FeatureEditor {
 		String command = event.getActionCommand();
 		if (COLLEGE_TYPE.equals(command)) {
 			SpellBonus bonus = (SpellBonus) getFeature();
-			switch (((JComboBox) event.getSource()).getSelectedIndex()) {
+			switch (((JComboBox<Object>) event.getSource()).getSelectedIndex()) {
 				case 0:
+				default:
 					if (!bonus.allColleges()) {
 						CommitEnforcer.forceFocusToAccept();
 						bonus.allColleges(true);

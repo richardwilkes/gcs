@@ -94,6 +94,11 @@ public class AdvantagePrereq extends NameLevelPrereq {
 	}
 
 	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
+	@Override
 	protected void loadSelf(XMLReader reader) throws IOException {
 		if (TAG_NOTES.equals(reader.getName())) {
 			mNotesCriteria.load(reader);

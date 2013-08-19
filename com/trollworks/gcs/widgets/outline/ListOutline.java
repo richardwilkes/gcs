@@ -199,7 +199,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 	 *            opening the editor.
 	 */
 	public void openDetailEditor(boolean later) {
-		mRowsToEdit = new FilteredList<ListRow>(getModel().getSelectionAsList(), ListRow.class);
+		mRowsToEdit = new FilteredList<>(getModel().getSelectionAsList(), ListRow.class);
 		if (later) {
 			EventQueue.invokeLater(this);
 		} else {
@@ -238,7 +238,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 	}
 
 	private void updateAllRows() {
-		updateRows(new FilteredList<ListRow>(getModel().getTopLevelRows(), ListRow.class));
+		updateRows(new FilteredList<>(getModel().getTopLevelRows(), ListRow.class));
 	}
 
 	private void updateRows(Collection<ListRow> rows) {

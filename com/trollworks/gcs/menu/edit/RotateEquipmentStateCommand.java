@@ -72,6 +72,7 @@ public class RotateEquipmentStateCommand extends Command {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		Component focus = getFocusOwner();

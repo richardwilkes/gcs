@@ -216,6 +216,7 @@ public enum SkillDefaultType {
 	}
 
 	/** @return Whether the {@link SkillDefaultType} is based on another skill or not. */
+	@SuppressWarnings("static-method")
 	public boolean isSkillBased() {
 		return false;
 	}
@@ -243,6 +244,7 @@ public enum SkillDefaultType {
 	 * @param level The level without the default modifier.
 	 * @return The final level.
 	 */
+	@SuppressWarnings("static-method")
 	protected int finalLevel(SkillDefault skillDefault, int level) {
 		if (level != Integer.MIN_VALUE) {
 			level += skillDefault.getModifier();

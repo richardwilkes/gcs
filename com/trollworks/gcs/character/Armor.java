@@ -28,7 +28,7 @@ import com.trollworks.gcs.feature.HitLocation;
 /** Tracks the current armor levels. */
 public class Armor {
 	/** The prefix used in front of all IDs for damage resistance. */
-	public static final String	DR_PREFIX					= GURPSCharacter.CHARACTER_PREFIX + "dr.";					//$NON-NLS-1$
+	public static final String	DR_PREFIX					= GURPSCharacter.CHARACTER_PREFIX + "dr.";				//$NON-NLS-1$
 	/** The skull hit location's DR. */
 	public static final String	ID_SKULL_DR					= DR_PREFIX + HitLocation.SKULL.name();
 	/** The eyes hit location's DR. */
@@ -53,7 +53,7 @@ public class Armor {
 	public static final String	ID_LEG_DR					= DR_PREFIX + HitLocation.LEGS.name();
 	/** The foot hit location's DR. */
 	public static final String	ID_FOOT_DR					= DR_PREFIX + HitLocation.FEET.name();
-	private GURPSCharacter			mCharacter;
+	private GURPSCharacter		mCharacter;
 	private int					mSkullDR;
 	private int					mEyesDR;
 	private int					mFaceDR;
@@ -278,8 +278,7 @@ public class Armor {
 
 	/**
 	 * @param id The field ID to retrieve the data for.
-	 * @return The value of the specified field ID, or <code>null</code> if the field ID is
-	 *         invalid.
+	 * @return The value of the specified field ID, or <code>null</code> if the field ID is invalid.
 	 */
 	public Object getValueForID(String id) {
 		if (id != null && id.startsWith(DR_PREFIX)) {

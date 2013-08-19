@@ -33,11 +33,13 @@ public enum EquipmentState {
 	 * {@link Feature}s applied. For example, a magic ring that is being worn on a finger.
 	 */
 	EQUIPPED {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_EQUIPPED;
 		}
 
-		@Override public String toShortString() {
+		@Override
+		public String toShortString() {
 			return "E"; //$NON-NLS-1$
 		}
 	},
@@ -46,21 +48,25 @@ public enum EquipmentState {
 	 * {@link Feature}s applied. For example, a magic ring that is being stored in a pouch.
 	 */
 	CARRIED {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_CARRIED;
 		}
 
-		@Override public String toShortString() {
+		@Override
+		public String toShortString() {
 			return "C"; //$NON-NLS-1$
 		}
 	},
 	/** The state of a piece of equipment that is not being carried. */
 	NOT_CARRIED {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_NOT_CARRIED;
 		}
 
-		@Override public String toShortString() {
+		@Override
+		public String toShortString() {
 			return "-"; //$NON-NLS-1$
 		}
 	};
