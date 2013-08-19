@@ -50,7 +50,7 @@ public class WeightCriteria extends NumericCriteria {
 	 */
 	public WeightCriteria(WeightCriteria other) {
 		super(other.getType());
-		mQualifier = other.mQualifier.clone();
+		mQualifier = new WeightValue(other.mQualifier);
 	}
 
 	@Override
@@ -87,7 +87,7 @@ public class WeightCriteria extends NumericCriteria {
 
 	/** @param qualifier The qualifier to match against. */
 	public void setQualifier(WeightValue qualifier) {
-		mQualifier = qualifier.clone();
+		mQualifier = new WeightValue(qualifier);
 	}
 
 	/**

@@ -682,8 +682,8 @@ public class Profile {
 	 */
 	public void setHeight(LengthValue height) {
 		if (!mHeight.equals(height)) {
-			height = height.clone();
-			mCharacter.postUndoEdit(MSG_HEIGHT_UNDO, ID_HEIGHT, mHeight.clone(), height);
+			height = new LengthValue(height);
+			mCharacter.postUndoEdit(MSG_HEIGHT_UNDO, ID_HEIGHT, new LengthValue(mHeight), height);
 			mHeight = height;
 			mCharacter.notifySingle(ID_HEIGHT, height);
 		}
@@ -701,8 +701,8 @@ public class Profile {
 	 */
 	public void setWeight(WeightValue weight) {
 		if (!mWeight.equals(weight)) {
-			weight = weight.clone();
-			mCharacter.postUndoEdit(MSG_WEIGHT_UNDO, ID_WEIGHT, mWeight.clone(), weight);
+			weight = new WeightValue(weight);
+			mCharacter.postUndoEdit(MSG_WEIGHT_UNDO, ID_WEIGHT, new WeightValue(mWeight), weight);
 			mWeight = weight;
 			mCharacter.notifySingle(ID_WEIGHT, weight);
 		}
@@ -796,9 +796,9 @@ public class Profile {
 			} else if (ID_HANDEDNESS.equals(id)) {
 				return getHandedness();
 			} else if (ID_HEIGHT.equals(id)) {
-				return getHeight().clone();
+				return new LengthValue(getHeight());
 			} else if (ID_WEIGHT.equals(id)) {
-				return getWeight().clone();
+				return new WeightValue(getWeight());
 			} else if (ID_GENDER.equals(id)) {
 				return getGender();
 			} else if (ID_RACE.equals(id)) {

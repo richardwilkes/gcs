@@ -133,7 +133,7 @@ public class Equipment extends ListRow {
 		mLegalityClass = DEFAULT_LEGALITY_CLASS;
 		mReference = EMPTY;
 		mWeight = new WeightValue(0, SheetPreferences.getWeightUnits());
-		mExtendedWeight = mWeight.clone();
+		mExtendedWeight = new WeightValue(mWeight);
 		mWeapons = new ArrayList<>();
 	}
 
@@ -153,9 +153,9 @@ public class Equipment extends ListRow {
 		mTechLevel = equipment.mTechLevel;
 		mLegalityClass = equipment.mLegalityClass;
 		mValue = equipment.mValue;
-		mWeight = equipment.mWeight.clone();
+		mWeight = new WeightValue(equipment.mWeight);
 		mExtendedValue = mQuantity * mValue;
-		mExtendedWeight = mWeight.clone();
+		mExtendedWeight = new WeightValue(mWeight);
 		mExtendedWeight.setValue(mExtendedWeight.getValue() * mQuantity);
 		mReference = equipment.mReference;
 		mWeapons = new ArrayList<>(equipment.mWeapons.size());
@@ -447,7 +447,7 @@ public class Equipment extends ListRow {
 	 */
 	public boolean setWeight(WeightValue weight) {
 		if (!mWeight.equals(weight)) {
-			mWeight = weight.clone();
+			mWeight = new WeightValue(weight);
 			startNotify();
 			notify(ID_WEIGHT, this);
 			updateContainingWeights(true);

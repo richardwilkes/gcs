@@ -192,8 +192,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		parent.add(wrapper);
 
 		wrapper = new JPanel(new ColumnLayout(3));
-		mContainedWeight = mRow.getExtendedWeight().clone();
-		WeightValue weight = mRow.getWeight().clone();
+		mContainedWeight = new WeightValue(mRow.getExtendedWeight());
+		WeightValue weight = new WeightValue(mRow.getWeight());
 		weight.setValue(weight.getValue() * mRow.getQuantity());
 		mContainedWeight.subtract(weight);
 		mWeightField = createWeightField(parent, wrapper, MSG_EDITOR_WEIGHT, mRow.getWeight(), MSG_EDITOR_WEIGHT_TOOLTIP, 13);

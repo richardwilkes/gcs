@@ -132,7 +132,7 @@ public class ContainedWeightPrereq extends HasPrereq {
 			Equipment equipment = (Equipment) exclude;
 			satisfied = !equipment.canHaveChildren();
 			if (!satisfied) {
-				WeightValue weight = equipment.getExtendedWeight().clone();
+				WeightValue weight = new WeightValue(equipment.getExtendedWeight());
 				weight.subtract(equipment.getWeight());
 				satisfied = mWeightCompare.matches(weight);
 			}

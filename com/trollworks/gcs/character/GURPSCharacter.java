@@ -1379,14 +1379,14 @@ public class GURPSCharacter extends DataFile {
 	 *            the previous values.
 	 */
 	public void calculateWeightAndWealthCarried(boolean notify) {
-		WeightValue savedWeight = mCachedWeightCarried.clone();
+		WeightValue savedWeight = new WeightValue(mCachedWeightCarried);
 		double savedWealth = mCachedWealthCarried;
 		mCachedWeightCarried = new WeightValue(0, SheetPreferences.getWeightUnits());
 		mCachedWealthCarried = 0.0;
 		for (Equipment equipment : getEquipmentIterator()) {
 			int quantity = equipment.getQuantity();
 			if (equipment.isCarried()) {
-				WeightValue weight = equipment.getWeight().clone();
+				WeightValue weight = new WeightValue(equipment.getWeight());
 				weight.setValue(weight.getValue() * quantity);
 				mCachedWeightCarried.add(weight);
 			}
