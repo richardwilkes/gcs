@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -100,21 +100,12 @@ public class GCS {
 	 * @param args Arguments to the program.
 	 */
 	public static void main(String[] args) {
-		ArrayList<CmdLineOption> options = new ArrayList<CmdLineOption>();
-		options.add(HTML_OPTION);
-		options.add(HTML_TEMPLATE_OPTION);
-		options.add(PDF_OPTION);
-		options.add(PNG_OPTION);
-		options.add(SIZE_OPTION);
-		options.add(MARGIN_OPTION);
-
-		String versionBanner = App.getVersionBanner(false);
-		CmdLine cmdLine = new CmdLine(args, options, versionBanner);
+		CmdLine cmdLine = new CmdLine(args, HTML_OPTION, HTML_TEMPLATE_OPTION, PDF_OPTION, PNG_OPTION, SIZE_OPTION, MARGIN_OPTION);
 		if (cmdLine.isOptionUsed(HTML_OPTION) || cmdLine.isOptionUsed(PDF_OPTION) || cmdLine.isOptionUsed(PNG_OPTION)) {
 			System.setProperty("java.awt.headless", Boolean.TRUE.toString()); //$NON-NLS-1$
 			initialize();
 			Timing timing = new Timing();
-			System.out.println(versionBanner);
+			System.out.println(App.getVersionBanner(false));
 			System.out.println();
 			if (convert(cmdLine) < 1) {
 				System.out.println(MSG_NO_FILES_TO_PROCESS);

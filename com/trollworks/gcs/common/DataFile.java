@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -112,7 +112,6 @@ public abstract class DataFile {
 	/**
 	 * @param reader The {@link XMLReader} to load data from.
 	 * @param state The {@link LoadState} to use.
-	 * @throws IOException
 	 */
 	public void load(XMLReader reader, LoadState state) throws IOException {
 		mUniqueID = new UniqueID(reader.getAttribute(ATTRIBUTE_UNIQUE_ID));
@@ -128,7 +127,6 @@ public abstract class DataFile {
 	 * 
 	 * @param reader The {@link XMLReader} to load data from.
 	 * @param state The {@link LoadState} to use.
-	 * @throws IOException
 	 */
 	protected abstract void loadSelf(XMLReader reader, LoadState state) throws IOException;
 

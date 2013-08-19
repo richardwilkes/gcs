@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -117,7 +117,6 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 	 * @param file The {@link DataFile} to use.
 	 * @param reader The {@link XMLReader} to use.
 	 * @param state The {@link LoadState} to use.
-	 * @throws IOException
 	 */
 	public Modifier(DataFile file, XMLReader reader, LoadState state) throws IOException {
 		super(file, false);

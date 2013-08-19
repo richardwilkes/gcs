@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -26,6 +26,7 @@ package com.trollworks.gcs.skill;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
+import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.ttk.text.Numbers;
@@ -154,12 +155,11 @@ public class Technique extends Skill {
 	 * @param dataFile The data file to associate it with.
 	 * @param reader The XML reader to load from.
 	 * @param state The {@link LoadState} to use.
-	 * @throws IOException
 	 */
 	public Technique(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
 		this(dataFile);
 		load(reader, state);
-		if (!(dataFile instanceof GURPSCharacter)) {
+		if (!(dataFile instanceof GURPSCharacter) && !(dataFile instanceof Template)) {
 			mPoints = getDifficulty() == SkillDifficulty.A ? 1 : 2;
 		}
 	}

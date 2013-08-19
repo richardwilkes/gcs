@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -28,11 +28,18 @@ import com.trollworks.gcs.widgets.outline.MultiCell;
 
 /** A cell for displaying the spell class and college. */
 public class SpellClassCell extends MultiCell {
-	@Override protected String getPrimaryText(ListRow row) {
+	@Override
+	protected String getPrimaryText(ListRow row) {
 		return row.canHaveChildren() ? "" : ((Spell) row).getSpellClass(); //$NON-NLS-1$
 	}
 
-	@Override protected String getSecondaryText(ListRow row) {
+	@Override
+	protected String getSecondaryText(ListRow row) {
 		return row.canHaveChildren() ? "" : ((Spell) row).getCollege(); //$NON-NLS-1$
+	}
+
+	@Override
+	protected String getSortText(ListRow row) {
+		return getSecondaryText(row);
 	}
 }

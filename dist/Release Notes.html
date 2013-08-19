@@ -14,7 +14,70 @@
 </head>
 <body>
 	<p class=category>GURPS Character Sheet Release Notes</p>
-	<p class=rversion>Version 2008.?.? &mdash; ? ?, 2008</p>
+	<p class=rversion>Version ??.??.?? &mdash; ?? ??, ??</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Added support for increasing the combat damage of weapons
+				provided by advantages on a per-level basis.</li>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&atid=913592&group_id=185516&aid=2679148">Feature #2679148</a>:
+				Automatically expand all containers when doing an export.</li>
+			<li>Use directory where the file already resides as the default when
+				asking where to save/export a file. Thanks to Matt Fowles for
+				contributing a patch to implement this.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li><a href="https://sourceforge.net/tracker/?func=detail&atid=913589&aid=2505157&group_id=185516">Fix for bug #2505157</a>:
+				Guns skills not defaulting properly.</li>
+			<li><a href="http://sourceforge.net/tracker/?func=detail&atid=913589&aid=2832083&group_id=185516">Fix for bug #2832083</a>:
+				Single-college Magery not acting as single college. Added a
+				separate Magery advantage specifically for single-college magery.</li>
+			<li><a href="http://sourceforge.net/tracker/?func=detail&aid=2844673&group_id=185516&atid=913589">Fix for bug #2844673</a>:
+				Techniques in templates only provide default points.</li>
+			<li>Fixed per-die weapon damage bonuses that come from features
+				rather than the special dice suffix notation.</li>
+			<li><a href="http://sourceforge.net/tracker/?func=detail&atid=913589&aid=2795647&group_id=185516">Fix for bug #2795647</a>:
+				Typo in Self-Control Roll Side Effects.</li>
+			<li>Fixed a case where the extended fields in the equipment editor
+				didn't reflect the current state.</li>
+			<li>The 'per die' popup no longer says 'per level' in the weapon
+				bonus editor. The calculation was doing the right thing, the
+				UI was incorrect. Thanks to Keith Wilbur for contributing a
+				patch for this.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>The minimum Java version required has been bumped to Java 6.</li>
+			<li>Greatly simplified the distribution process, eliminating all
+				native code and making it possible to build GCS on any platform
+				where Java is supported. This does eliminate the native wrapper
+				that I had created for Windows, but the simplification was worth
+				the minor loss.</li>
+		</ul>
+	</div>
+	<p class=rheader>Data Files</p>
+	<div class=indent>
+		<ul>
+			<li>Finally got around to including perks from Power-Ups 2, provided
+				by Kevin Michael Smith back in August 2008.</li>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&atid=913589&group_id=185516&aid=2702557">Bug #2702557</a>:
+				Fixed an incorrect prerequisite on the 'Schematic' spell. While
+				looking at the file, also corrected invalid use of trailing
+				'/TL' in the names of the 'Schematic' and 'Machine Speech'
+				spells by removing it from the name and enabling the TL field.</li>
+			<li>Fixed the weight of the 'Water' entry in the equipment lists.</li>
+			<li>Fixed the Judo skill to apply an encumbrance penalty when applicable.</li>
+			<li>Fixed the base cost for the Ally advantage and added the
+				'Appears constantly' modifier to the list of modifiers. Thanks
+				to Matt Fowles for contributing a patch for this.</li>
+		</ul>
+	</div>
+	<p class=rversion>Version 2009.01.01 &mdash; January 1, 2009</p>
 	<p class=rheader>Features</p>
 	<div class=indent>
 		<ul>
@@ -25,6 +88,8 @@
 				For HTML export, added @DESCRIPTION_PRIMARY and @DESCRIPTION_NOTES for
 				weapons, just like the other loops have.</li>
 			<li>Added an 'ID' output key to the various lists when exporting.</li>
+			<li>Sorting on the Class/College column of spells now sorts by
+				College, rather than by Class.</li>
 		</ul>
 	</div>
 	<p class=rheader>Bug Fixes</p>

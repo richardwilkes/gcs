@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -42,6 +42,8 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
@@ -56,7 +58,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** The detailed editor for {@link Equipment}s. */
-public class EquipmentEditor extends RowEditor<Equipment> implements ActionListener, DocumentListener {
+public class EquipmentEditor extends RowEditor<Equipment> implements ActionListener, DocumentListener, FocusListener {
 	private static String		MSG_REFERENCE_TOOLTIP;
 	private static String		MSG_VALUE_TOOLTIP;
 	private static String		MSG_EXT_VALUE_TOOLTIP;
@@ -215,6 +217,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		field.setToolTipText(tooltip);
 		field.setEnabled(mIsEditable);
 		field.getDocument().addDocumentListener(this);
+		field.addFocusListener(this);
 
 		LinkedLabel label = new LinkedLabel(title);
 		label.setLink(field);
@@ -233,6 +236,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		}
 		field.setToolTipText(tooltip);
 		field.setEnabled(mIsEditable);
+		field.addFocusListener(this);
 		labelParent.add(new LinkedLabel(title, field));
 		fieldParent.add(field);
 		return field;
@@ -247,6 +251,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		field.setEnabled(mIsEditable);
 		new NumberFilter(field, false, false, true, maxDigits);
 		field.addActionListener(this);
+		field.addFocusListener(this);
 		labelParent.add(new LinkedLabel(title, field));
 		fieldParent.add(field);
 		return field;
@@ -261,6 +266,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		field.setEnabled(mIsEditable);
 		new NumberFilter(field, true, false, true, maxDigits);
 		field.addActionListener(this);
+		field.addFocusListener(this);
 		labelParent.add(new LinkedLabel(title, field));
 		fieldParent.add(field);
 		return field;
@@ -303,15 +309,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 	}
 
 	public void actionPerformed(ActionEvent event) {
-		Object src = event.getSource();
-		if (src == mValueField) {
-			valueChanged();
-		} else if (src == mWeightField) {
-			weightChanged();
-		} else if (src == mQtyField) {
-			valueChanged();
-			weightChanged();
-		}
+		adjustForChange(event.getSource());
 	}
 
 	private int getQty() {
@@ -359,5 +357,26 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
 	private void descriptionChanged() {
 		LinkedLabel.setErrorMessage(mDescriptionField, mDescriptionField.getText().trim().length() != 0 ? null : MSG_NAME_CANNOT_BE_EMPTY);
+	}
+
+	@Override
+	public void focusGained(FocusEvent event) {
+		// Not used.
+	}
+
+	@Override
+	public void focusLost(FocusEvent event) {
+		adjustForChange(event.getSource());
+	}
+
+	private void adjustForChange(Object field) {
+		if (field == mValueField) {
+			valueChanged();
+		} else if (field == mWeightField) {
+			weightChanged();
+		} else if (field == mQtyField) {
+			valueChanged();
+			weightChanged();
+		}
 	}
 }

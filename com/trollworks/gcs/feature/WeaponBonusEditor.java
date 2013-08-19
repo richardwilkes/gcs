@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -61,7 +61,7 @@ public class WeaponBonusEditor extends FeatureEditor {
 		row.add(addChangeBaseTypeCombo());
 		LeveledAmount amount = bonus.getAmount();
 		row.add(addLeveledAmountField(amount, -999, 999));
-		row.add(addLeveledAmountCombo(amount, false));
+		row.add(addLeveledAmountCombo(amount, true));
 		row.add(new FlexSpacer(0, 0, true, false));
 		grid.add(row, 0, 0);
 

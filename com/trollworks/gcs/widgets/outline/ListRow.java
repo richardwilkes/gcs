@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -255,7 +255,6 @@ public abstract class ListRow extends Row {
 	 * 
 	 * @param reader The XML reader to load from.
 	 * @param state The {@link LoadState} to use.
-	 * @throws IOException
 	 */
 	public final void load(XMLReader reader, LoadState state) throws IOException {
 		String marker = reader.getMarker();
@@ -336,7 +335,6 @@ public abstract class ListRow extends Row {
 	 * 
 	 * @param reader The XML reader to load from.
 	 * @param state The {@link LoadState} to use.
-	 * @throws IOException
 	 */
 	protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
 		reader.skipTag(reader.getName());

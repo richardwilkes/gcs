@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd">
-<plist version="0.9">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
 <dict>
 	<key>CFBundleName</key>
 		<string>APP_NAME</string>
@@ -11,7 +11,7 @@
 	<key>CFBundleAllowMixedLocalizations</key>
 		<string>true</string>
 	<key>CFBundleExecutable</key>
-		<string>APP_NAME</string>
+		<string>JavaApplicationStub</string>
 	<key>CFBundleDevelopmentRegion</key>
 		<string>English</string>
 	<key>CFBundlePackageType</key>
@@ -21,11 +21,31 @@
 	<key>CFBundleSignature</key>
 		<string>RWGS</string>
 	<key>CFBundleGetInfoString</key>
-		<string>APP_VERSION, Copyright (c) COPYRIGHT_YEARS by COPYRIGHT_OWNER.  All rights reserved worldwide.</string>
+		<string>APP_VERSION, Copyright ©COPYRIGHT_YEARS by COPYRIGHT_OWNER. All rights reserved.</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
 	<key>CFBundleIconFile</key>
 		<string>app.icns</string>
+	<key>Java</key>
+	<dict>
+		<key>SplashFile</key>
+		<string>$JAVAROOT/Splash.gif</string>
+		<key>VMOptions</key>
+		<string>-Xmx256m</string>
+		<key>MainClass</key>
+		<string>com.trollworks.ttk.Launcher</string>
+		<key>JVMVersion</key>
+		<string>1.6+</string>
+		<key>ClassPath</key>
+		<string>$JAVAROOT/GCS.jar</string>
+		<key>Properties</key>
+			<dict>
+				<key>apple.laf.useScreenMenuBar</key>
+					<string>true</string>
+				<key>app.home</key>
+					<string>$APP_PACKAGE</string>
+			</dict>
+	</dict>
 	<key>CFBundleDocumentTypes</key>
 		<array>
 			<dict>

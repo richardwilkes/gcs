@@ -30,6 +30,25 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>@Racial@ Gifts</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:12</reference>
+			<notes>May purchase @Traits@</notes>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>@Skill@ based on @Stat@</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:15</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Absent-Mindedness</name>
 			<type>Mental</type>
 			<base_points>-15</base_points>
@@ -119,6 +138,15 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Acceleration Tolerance</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:13</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Acceleration Weakness</name>
 			<type>Physical</type>
 			<base_points>-1</base_points>
@@ -126,6 +154,21 @@
 			<categories>
 				<category>Quirk</category>
 			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Accent (@Language@; @Region@)</name>
+			<type>Physical, Exotic</type>
+			<base_points>1</base_points>
+			<reference>PU2:5</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+			<prereq_list all="yes">
+				<advantage_prereq has="yes">
+					<name compare="is">Language: @Language@</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
 		</advantage>
 		<advantage version="2">
 			<name>Accessory (@Tool@)</name>
@@ -378,6 +421,15 @@
 			</categories>
 		</advantage_container>
 		<advantage version="2">
+			<name>Air Jet</name>
+			<type>Physical, Exotic</type>
+			<base_points>1</base_points>
+			<reference>PU2:10</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Air Talent</name>
 			<type>Mental</type>
 			<levels>1</levels>
@@ -437,7 +489,6 @@
 		<advantage version="2">
 			<name>Ally (@Who@)</name>
 			<type>Social</type>
-			<base_points>1</base_points>
 			<modifier version="1" enabled="no">
 				<name>Point total</name>
 				<cost type="points">1</cost>
@@ -472,6 +523,12 @@
 				<affects>total</affects>
 				<reference>B37</reference>
 				<notes>150% of your starting points</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Appears constantly</name>
+				<cost type="multiplier">4</cost>
+				<reference>B36</reference>
+				<notes>No roll required</notes>
 			</modifier>
 			<modifier version="1" enabled="no">
 				<name>Appears almost all the time</name>
@@ -1279,6 +1336,15 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Background Knowledge (@Background@)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:16</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Bad Back (Mild)</name>
 			<type>Physical</type>
 			<base_points>-15</base_points>
@@ -1365,6 +1431,16 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Base</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:17</reference>
+			<notes>@Description@</notes>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Berserk</name>
 			<type>Mental</type>
 			<base_points>-10</base_points>
@@ -1387,6 +1463,21 @@
 			<categories>
 				<category>Disadvantage</category>
 			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Better (@Gear@)</name>
+			<type>Social</type>
+			<base_points>1</base_points>
+			<reference>PU2:8</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+			<prereq_list all="yes">
+				<advantage_prereq has="yes">
+					<name compare="is">High-Heeled Heroine</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
 		</advantage>
 		<advantage version="2">
 			<name>Binding</name>
@@ -1715,6 +1806,15 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Brotherhood (@Group@)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:17</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Bully</name>
 			<type>Mental</type>
 			<base_points>-10</base_points>
@@ -1733,6 +1833,22 @@
 			<categories>
 				<category>Perk</category>
 			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Call of the Wild</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:12</reference>
+			<categories>
+				<category>Cinematic</category>
+				<category>Perk</category>
+			</categories>
+			<prereq_list all="yes">
+				<advantage_prereq has="yes">
+					<name compare="is">Animal Empathy</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
 		</advantage>
 		<advantage version="2">
 			<name>Callous</name>
@@ -1802,6 +1918,15 @@
 			<reference>B163</reference>
 			<categories>
 				<category>Quirk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Carrier (@Disease@)</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:13</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -1971,6 +2096,15 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Charm (@Spell@)</name>
+			<type>Supernatural</type>
+			<base_points>1</base_points>
+			<reference>PU2:19</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Chauvinistic</name>
 			<type>Mental</type>
 			<levels>0</levels>
@@ -1982,7 +2116,23 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
-			<name>Chi Resitance (@Attack@)</name>
+			<name>Cheaper (@Gear@; @Percentage@%)</name>
+			<type>Social</type>
+			<base_points>1</base_points>
+			<reference>PU2:8</reference>
+			<notes>@Reason@</notes>
+			<categories>
+				<category>Perk</category>
+			</categories>
+			<prereq_list all="yes">
+				<advantage_prereq has="yes">
+					<name compare="is">High-Heeled Heroine</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</advantage>
+		<advantage version="2">
+			<name>Chi Resistance (@Attack@)</name>
 			<type>Mental, Supernatural</type>
 			<base_points>1</base_points>
 			<reference>MA50</reference>
@@ -2005,7 +2155,7 @@
 		<advantage version="2">
 			<name>Chronic Pain (Agonizing)</name>
 			<type>Physical</type>
-			<base_points>5</base_points>
+			<base_points>-15</base_points>
 			<modifier version="1" enabled="no">
 				<name>1 Hour</name>
 				<cost type="multiplier">0.5</cost>
@@ -2047,7 +2197,7 @@
 		<advantage version="2">
 			<name>Chronic Pain (Mild)</name>
 			<type>Physical</type>
-			<base_points>5</base_points>
+			<base_points>-5</base_points>
 			<modifier version="1" enabled="no">
 				<name>1 Hour</name>
 				<cost type="multiplier">0.5</cost>
@@ -2089,7 +2239,7 @@
 		<advantage version="2">
 			<name>Chronic Pain (Severe)</name>
 			<type>Physical</type>
-			<base_points>10</base_points>
+			<base_points>-10</base_points>
 			<modifier version="1" enabled="no">
 				<name>1 Hour</name>
 				<cost type="multiplier">0.5</cost>
@@ -2146,6 +2296,21 @@
 			<notes>React to others at +4; -2 to IQ-based skills when alone, or -1 in a group of 4 or less</notes>
 			<categories>
 				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Citizenship (@State@)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<modifier version="1" enabled="no">
+				<name>Home</name>
+				<cost type="points">-1</cost>
+				<affects>total</affects>
+				<notes>You get one free citizenship.</notes>
+			</modifier>
+			<reference>PU2:17</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -2234,6 +2399,15 @@
 			<reference>B42</reference>
 			<categories>
 				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Classic Features (@Features@)</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:4</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -3017,6 +3191,16 @@
 			</attribute_bonus>
 		</advantage>
 		<advantage version="2">
+			<name>Combat Vaulting (@Reach 2+ Polearm Skill@)</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:5</reference>
+			<categories>
+				<category>Cinematic</category>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Common Sense</name>
 			<type>Mental</type>
 			<base_points>10</base_points>
@@ -3029,6 +3213,15 @@
 			<reference>B43</reference>
 			<categories>
 				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Compact Frame</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:13</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -3294,6 +3487,11 @@
 				<name>Unreliable</name>
 				<cost type="multiplier">0.5</cost>
 			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Favor</name>
+				<cost type="multiplier">0.2</cost>
+				<reference>B55</reference>
+			</modifier>
 			<reference>B44</reference>
 			<categories>
 				<category>Advantage</category>
@@ -3437,6 +3635,25 @@
 				<category>Advantage</category>
 			</categories>
 		</advantage>
+		<advantage version="2">
+			<name>Controllable Disadvantage (@Disadvantage@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:12</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Convincing Nod</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:15</reference>
+			<notes>Non-Verbal Fast-Talk</notes>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
 		<advantage_container version="2" open="yes">
 			<name>Cosmic</name>
 			<modifier version="1">
@@ -3468,9 +3685,18 @@
 			<type>Physical, Exotic</type>
 			<base_points>1</base_points>
 			<reference>MA50</reference>
-			<notes>Let you catch attacker's incoming hand or feed with your abdominal muscles</notes>
+			<notes>Lets you catch attacker's incoming hand or feed with your abdominal muscles</notes>
 			<categories>
 				<category>Cinematic</category>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Covenant of Rest</name>
+			<type>Social, Supernatural</type>
+			<base_points>1</base_points>
+			<reference>PU2:19</reference>
+			<categories>
 				<category>Perk</category>
 			</categories>
 		</advantage>
@@ -3625,6 +3851,15 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Cross-Species Surrogacy (@Species@)</name>
+			<type>Physical, Exotic</type>
+			<base_points>1</base_points>
+			<reference>PU2:10</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Cross-Trained(Guns(@Speciallity@))</name>
 			<type>Mental</type>
 			<base_points>1</base_points>
@@ -3633,6 +3868,21 @@
 				<category>Cinematic</category>
 				<category>Perk</category>
 			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Crossbow Finesse</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:7</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+			<prereq_list all="yes">
+				<advantage_prereq has="yes">
+					<name compare="is">High-Heeled Heroine</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
 		</advantage>
 		<advantage version="2">
 			<name>Cultural Adaptability</name>
@@ -3682,6 +3932,15 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Cutting Edge Training (@Skill@)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:16</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Cybernetics</name>
 			<type>Physical</type>
 			<reference>B46</reference>
@@ -3697,6 +3956,16 @@
 			<reference>B149</reference>
 			<categories>
 				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Dabbler</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:16</reference>
+			<notes>@Up to 8 Skills@</notes>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -4586,6 +4855,25 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Dirty Fighting</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:5</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Disarming Smile</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:15</reference>
+			<notes>Non-Verbal Diplomacy</notes>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Disciplines of Faith (Asceticism)</name>
 			<type>Mental</type>
 			<base_points>-15</base_points>
@@ -4686,6 +4974,16 @@
 			<reference>B164</reference>
 			<categories>
 				<category>Quirk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Disposable Identity</name>
+			<type>Social</type>
+			<base_points>1</base_points>
+			<reference>PU2:18</reference>
+			<notes>@Details@</notes>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -4869,6 +5167,17 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Doodad</name>
+			<type></type>
+			<levels>1</levels>
+			<points_per_level>1</points_per_level>
+			<reference>PU2:9</reference>
+			<categories>
+				<category>Cinematic</category>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Draining (@Substance@)</name>
 			<type>Physical, Supernatural</type>
 			<base_points>-5</base_points>
@@ -4895,6 +5204,16 @@
 			<reference>B132</reference>
 			<categories>
 				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Dramatic Death</name>
+			<type>Supernatural</type>
+			<base_points>1</base_points>
+			<reference>PU2:19</reference>
+			<categories>
+				<category>Cinematic</category>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -4961,6 +5280,15 @@
 			<reference>Sup33</reference>
 			<categories>
 				<category>Quirk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Dual Ready (@Single Handed Weapon Skill@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:5</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -5177,6 +5505,15 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Efficient (@Skill@)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:16</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Eidetic Memory</name>
 			<type>Mental</type>
 			<base_points>5</base_points>
@@ -5332,6 +5669,15 @@
 			<categories>
 				<category>Advantage</category>
 				<category>Power</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Emeritus Professor</name>
+			<type>Social</type>
+			<base_points>1</base_points>
+			<reference>PU2:18</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -5824,11 +6170,30 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Ex-Cop</name>
+			<type>Social</type>
+			<levels>1</levels>
+			<points_per_level>1</points_per_level>
+			<reference>PU2:18</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Exotic Equipment Training (@Equipment@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:9</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Exotic Weapon Training (@Weapon@)</name>
 			<type>Mental</type>
 			<base_points>1</base_points>
 			<reference>MA50</reference>
-			<notes>Let you ignore build-in penalties for a particular weapon</notes>
+			<notes>Lets you ignore built-in penalties for a particular weapon</notes>
 			<categories>
 				<category>Perk</category>
 			</categories>
@@ -5842,6 +6207,24 @@
 			<notes>"@Saying@"</notes>
 			<categories>
 				<category>Quirk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Extended Hearing (High)</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:14</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Extended Hearing (Low)</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:14</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -6092,6 +6475,15 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Extra Option (@Rule@)</name>
+			<type></type>
+			<base_points>1</base_points>
+			<reference>PU2:20</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Extra Sleep</name>
 			<type>Physical</type>
 			<levels>1</levels>
@@ -6099,6 +6491,30 @@
 			<reference>B136</reference>
 			<categories>
 				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Extreme Sexual Dimorphism</name>
+			<type>Physical, Exotic</type>
+			<base_points>1</base_points>
+			<reference>PU2:10</reference>
+			<notes>+1 to attempts to identify you, -1 to attempts to remain anonymous.</notes>
+			<categories>
+				<category>Perk</category>
+			</categories>
+			<skill_bonus>
+				<name compare="is">Sex Appeal</name>
+				<specialization compare="is anything"></specialization>
+				<amount>1</amount>
+			</skill_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Eye for Distance</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:13</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -6177,6 +6593,25 @@
 			<reference>B55</reference>
 			<categories>
 				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Fearsom Stare</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:15</reference>
+			<notes>Non-Verbal Intimidation</notes>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Feathers</name>
+			<type>Physical, Exotic</type>
+			<base_points>1</base_points>
+			<reference>PU2:10</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -6400,6 +6835,46 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Flourish (@Weapon Skill@)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:15</reference>
+			<notes>Intimidate at +4 with ready after kill/knockdown</notes>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Focused (@Task@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:13</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Focused Fury</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:5</reference>
+			<notes>Combine Mighty Blows and All Out Attack</notes>
+			<categories>
+				<category>Cinematic</category>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Follow-Through (@Weapon Skill@)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:15</reference>
+			<notes>Intimidate as free action after kill/knockdown</notes>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Force Construct Talent</name>
 			<type>Mental</type>
 			<levels>1</levels>
@@ -6448,6 +6923,25 @@
 			<categories>
 				<category>Quirk</category>
 			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Forgettable Face</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:4</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+			<prereq_list all="yes">
+				<advantage_prereq has="yes">
+					<name compare="is">Unnatural Features</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+				<advantage_prereq has="no">
+					<name compare="is">Distinctive Features</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
 		</advantage>
 		<advantage version="2">
 			<name>Form Mastery (@Weapon@)</name>
@@ -6502,6 +6996,16 @@
 			<reference>B137</reference>
 			<categories>
 				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Friend</name>
+			<type>Social</type>
+			<base_points>1</base_points>
+			<reference>PU2:18</reference>
+			<notes>@Details@</notes>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -6572,6 +7076,16 @@
 			<reference>B57</reference>
 			<categories>
 				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Gangster Swagger</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:15</reference>
+			<notes>Non-Verbal Streetwise</notes>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -6677,6 +7191,24 @@
 				<category>Power</category>
 			</categories>
 		</advantage>
+		<advantage version="2">
+			<name>Good with @Animal@</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:13</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Good with @Social Group@</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:13</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
 		<advantage_container version="2" open="yes">
 			<name>Gravity</name>
 			<modifier version="1" enabled="no">
@@ -6721,11 +7253,11 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
-			<name>Grib Mastery (@Weapon@)</name>
+			<name>Grip Mastery (@Weapon@)</name>
 			<type>Mental</type>
 			<base_points>1</base_points>
 			<reference>MA50</reference>
-			<notes>Let you change grip as a free action</notes>
+			<notes>Lets you change grip as a free action</notes>
 			<categories>
 				<category>Perk</category>
 			</categories>
@@ -6957,6 +7489,15 @@
 			</prereq_list>
 		</advantage>
 		<advantage version="2">
+			<name>Hands Free (@Skill@)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:16</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Hard of Hearing</name>
 			<type>Physical</type>
 			<base_points>-10</base_points>
@@ -6987,6 +7528,25 @@
 			<reference>B59</reference>
 			<categories>
 				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Haughty Sneer</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:15</reference>
+			<notes>Non-Verbal Savoir-Faire (High Society)</notes>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Headhunter</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:13</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage_container version="2" open="yes">
@@ -7382,6 +7942,30 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>High-Heeled Heroine</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:14</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>High-Heeled Hurt</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:7</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+			<prereq_list all="yes">
+				<advantage_prereq has="yes">
+					<name compare="is">High-Heeled Heroine</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</advantage>
+		<advantage version="2">
 			<name>Higher Purpose</name>
 			<type>Mental, Exotic</type>
 			<base_points>5</base_points>
@@ -7438,6 +8022,26 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Huge Weapons (SM)</name>
+			<type>Physical, Exotic</type>
+			<levels>1</levels>
+			<points_per_level>1</points_per_level>
+			<reference>PU2:6</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Huge Weapons (ST)</name>
+			<type>Physical, Exotic</type>
+			<levels>1</levels>
+			<points_per_level>2</points_per_level>
+			<reference>PU2:6</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Humble</name>
 			<type>Mental</type>
 			<base_points>-1</base_points>
@@ -7464,6 +8068,16 @@
 				<specialization compare="is anything"></specialization>
 				<amount>-3</amount>
 			</skill_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Hyper-Specialization (@Skill@; @Specialty@)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:16</reference>
+			<notes>+5 to specialty</notes>
+			<categories>
+				<category>Perk</category>
+			</categories>
 		</advantage>
 		<advantage version="2">
 			<name>Hyperspectral Vision</name>
@@ -7643,6 +8257,15 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Immunity to (@Specific Hazard/Poison/Disease@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:11</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Improved G-Tolerance (0.3G)</name>
 			<type>Physical</type>
 			<base_points>5</base_points>
@@ -7688,7 +8311,7 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
-			<name>Improvised Weapons(@Weapon@)</name>
+			<name>Improvised Weapons (@Weapon@)</name>
 			<type>Mental</type>
 			<base_points>1</base_points>
 			<reference>MA50</reference>
@@ -7926,16 +8549,6 @@
 			<reference>B140</reference>
 			<categories>
 				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Independant Income</name>
-			<type>Social</type>
-			<levels>1</levels>
-			<points_per_level>1</points_per_level>
-			<reference>B26</reference>
-			<categories>
-				<category>Advantage</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -10397,6 +11010,15 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Intuitive Repairman (@Item@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:9</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Invertebrate</name>
 			<type>Physical, Exotic</type>
 			<base_points>-20</base_points>
@@ -10601,6 +11223,15 @@
 			<reference>B140</reference>
 			<categories>
 				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Job Hunter</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:13</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -11225,6 +11856,15 @@
 				<category>Advantage</category>
 			</categories>
 		</advantage>
+		<advantage version="2">
+			<name>License (@Type@)</name>
+			<type>Social</type>
+			<base_points>1</base_points>
+			<reference>PU2:18</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
 		<advantage_container version="2" open="yes">
 			<name>Life</name>
 			<modifier version="1" enabled="no">
@@ -11374,6 +12014,15 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Limited Camouflage (@Environment@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:11</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Loner</name>
 			<type>Mental</type>
 			<base_points>-5</base_points>
@@ -11384,12 +12033,30 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Long Fingers</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:11</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Longevity</name>
 			<type>Physical</type>
 			<base_points>2</base_points>
 			<reference>B66</reference>
 			<categories>
 				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Looks Good in Uniform</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:14</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -11773,6 +12440,67 @@
 				<amount per_level="yes">1</amount>
 			</skill_bonus>
 		</advantage>
+		<advantage version="2">
+			<name>Magery</name>
+			<type>Mental, Supernatural</type>
+			<levels>1</levels>
+			<base_points>5</base_points>
+			<points_per_level>10</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Dance</name>
+				<cost type="percentage">-40</cost>
+				<affects>levels_only</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Dark-Aspected</name>
+				<cost type="percentage">-50</cost>
+				<affects>levels_only</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Day-Aspected</name>
+				<cost type="percentage">-40</cost>
+				<affects>levels_only</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Musical</name>
+				<cost type="percentage">-50</cost>
+				<affects>levels_only</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Night-Aspected</name>
+				<cost type="percentage">-40</cost>
+				<affects>levels_only</affects>
+			</modifier>
+			<modifier version="1">
+				<name>One College</name>
+				<cost type="percentage">-40</cost>
+				<affects>levels_only</affects>
+				<notes>@College@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Solitary</name>
+				<cost type="percentage">-40</cost>
+				<affects>levels_only</affects>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Song</name>
+				<cost type="percentage">-40</cost>
+				<affects>levels_only</affects>
+			</modifier>
+			<reference>B66</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<spell_bonus>
+				<college_name compare="is">@College@</college_name>
+				<amount per_level="yes">1</amount>
+			</spell_bonus>
+			<skill_bonus>
+				<name compare="is">thaumatology</name>
+				<specialization compare="is anything"></specialization>
+				<amount per_level="yes">1</amount>
+			</skill_bonus>
+		</advantage>
 		<advantage_container version="2" open="yes">
 			<name>Magic</name>
 			<modifier version="1">
@@ -11802,6 +12530,15 @@
 			<reference>B67</reference>
 			<categories>
 				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Magic School Familiarity (@School@)</name>
+			<type>Mental, Social, Supernatural</type>
+			<base_points>1</base_points>
+			<reference>PU2:19</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -12693,18 +13430,7 @@
 			<levels>1</levels>
 			<base_points>6</base_points>
 			<points_per_level>4</points_per_level>
-			<reference>F130</reference>
-			<categories>
-				<category>Advantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Modular Abilities (Spirit Trapping)</name>
-			<type>Mental, Exotic</type>
-			<levels>1</levels>
-			<base_points>6</base_points>
-			<points_per_level>4</points_per_level>
-			<modifier version="1">
+			<modifier version="1" enabled="no">
 				<name>With physical objects</name>
 				<cost type="percentage">-20</cost>
 				<affects>total</affects>
@@ -12799,6 +13525,25 @@
 			<reference>B149</reference>
 			<categories>
 				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Named Possession (@Name@)</name>
+			<type>Social, Supernatural</type>
+			<base_points>1</base_points>
+			<reference>PU2:19</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Natural Pockets</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:14</reference>
+			<notes>@Details@</notes>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -13239,6 +13984,15 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>No Degeneration in Zero-G</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:11</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>No Depth Perception</name>
 			<type>Physical</type>
 			<base_points>-15</base_points>
@@ -13296,37 +14050,19 @@
 		<advantage version="2">
 			<name>No Legs (Aquatic)</name>
 			<type>Physical, Exotic</type>
+			<modifier version="1" enabled="no">
+				<name>Can't dive</name>
+				<cost type="points">-5</cost>
+				<affects>total</affects>
+				<reference>B145</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Can't armor @Fins/Masts/Sails/Paddles@</name>
+				<cost type="points">-5</cost>
+				<affects>total</affects>
+				<reference>B145</reference>
+			</modifier>
 			<reference>B145</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>No Legs (Aquatic)</name>
-			<type>Physical, Exotic</type>
-			<base_points>-5</base_points>
-			<reference>B145</reference>
-			<notes>Can't armor @Fins/Sails/Paddles@</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>No Legs (Aquatic)</name>
-			<type>Physical, Exotic</type>
-			<base_points>-10</base_points>
-			<reference>B145</reference>
-			<notes>Can't armor @Fins/Sails/Paddles@, can't dive</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>No Legs (Aquatic)</name>
-			<type>Physical, Exotic</type>
-			<base_points>-5</base_points>
-			<reference>B145</reference>
-			<notes>Can't dive</notes>
 			<categories>
 				<category>Disadvantage</category>
 			</categories>
@@ -13410,6 +14146,16 @@
 			</cost_reduction>
 		</advantage>
 		<advantage version="2">
+			<name>No Nuisance Rolls (@Task@)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:16</reference>
+			<categories>
+				<category>Cinematic</category>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>No Sense of Humor</name>
 			<type>Physical</type>
 			<base_points>-10</base_points>
@@ -13433,7 +14179,6 @@
 			<type>Physical, Exotic</type>
 			<base_points>1</base_points>
 			<reference>Sup31</reference>
-			<notes>You have a tool particularly suited to you for +1 to skill rolls using it.</notes>
 			<categories>
 				<category>Perk</category>
 			</categories>
@@ -13621,6 +14366,15 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Obscure True Name</name>
+			<type>Social, Supernatural</type>
+			<base_points>1</base_points>
+			<reference>PU2:19</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Obsession</name>
 			<type>Physical</type>
 			<base_points>-10</base_points>
@@ -13682,11 +14436,29 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Off-Hand Training (@Skill@)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:16</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Off-Hand Weapon Training (@Weapon@)</name>
 			<type>Mental</type>
 			<base_points>1</base_points>
 			<reference>MA50</reference>
 			<notes>Replaces equal-named technique on p. B232</notes>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Office (@Type@)</name>
+			<type>Social</type>
+			<base_points>1</base_points>
+			<reference>PU2:18</reference>
 			<categories>
 				<category>Perk</category>
 			</categories>
@@ -13729,12 +14501,39 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
-			<name>One-Armed Bandit(@Weapon@)</name>
+			<name>One-Armed Bandit (Guns (@Weapon@))</name>
 			<type>Mental</type>
 			<base_points>1</base_points>
 			<reference>HT249</reference>
 			<categories>
 				<category>Cinematic</category>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>One-Task Wonder (@Task@)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:16</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>One-Way Fluency (@Language@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:13</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>One-Way Literacy (@Language@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:13</reference>
+			<categories>
 				<category>Perk</category>
 			</categories>
 		</advantage>
@@ -13892,6 +14691,42 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Passing Appearance (@Group@)</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:4</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Passing Appearance (Androgynous)</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:4</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Passing Appearance (Passing Complexion)</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:4</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Patience of Job</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:13</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Patron</name>
 			<type>Social</type>
 			<modifier version="1" enabled="no">
@@ -14024,6 +14859,11 @@
 				<affects>total</affects>
 				<reference>B74</reference>
 			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Favor</name>
+				<cost type="multiplier">0.2</cost>
+				<reference>B55</reference>
+			</modifier>
 			<reference>B72</reference>
 			<categories>
 				<category>Advantage</category>
@@ -14044,6 +14884,22 @@
 			<categories>
 				<category>Advantage</category>
 			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Peg-Leg Fighting</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:6</reference>
+			<categories>
+				<category>Cinematic</category>
+				<category>Perk</category>
+			</categories>
+			<prereq_list all="yes">
+				<advantage_prereq has="yes">
+					<name compare="starts with">Lame</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
 		</advantage>
 		<advantage version="2">
 			<name>Penetrating Vision</name>
@@ -14247,6 +15103,15 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Permit (@Type@)</name>
+			<type>Social</type>
+			<base_points>1</base_points>
+			<reference>PU2:18</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Personality Change</name>
 			<type>Mental</type>
 			<levels>0</levels>
@@ -14255,6 +15120,15 @@
 			<notes>@Circumstance@</notes>
 			<categories>
 				<category>Quirk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Pet (@Type@)</name>
+			<type>Social</type>
+			<base_points>1</base_points>
+			<reference>PU2:18</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -14343,6 +15217,16 @@
 			<categories>
 				<category>Advantage</category>
 				<category>Power</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Pistol-Fist (@Pistol Skill@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:6</reference>
+			<categories>
+				<category>Cinematic</category>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -14854,6 +15738,15 @@
 				<category>Advantage</category>
 			</categories>
 		</advantage>
+		<advantage version="2">
+			<name>Pressure-Tolerant Lungs</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:11</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
 		<advantage_container version="2" open="yes">
 			<name>Probability Alteration</name>
 			<modifier version="1" enabled="no">
@@ -15088,6 +15981,15 @@
 					<notes compare="is anything"></notes>
 				</advantage_prereq>
 			</prereq_list>
+		</advantage>
+		<advantage version="2">
+			<name>Purpose (@Purpose@)</name>
+			<type>Supernatural</type>
+			<base_points>1</base_points>
+			<reference>PU2:19</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
 		</advantage>
 		<advantage version="2">
 			<name>Pyromania</name>
@@ -15405,6 +16307,25 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Razor Kicks</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:7</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Reach Mastery (@Weapon@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:7</reference>
+			<notes>Let you change reach as a free action</notes>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Reawakened</name>
 			<type>Mental, Supernatural</type>
 			<base_points>10</base_points>
@@ -15585,6 +16506,20 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Reproductive Control (Fertility Control)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:12</reference>
+			<notes>Takes a day</notes>
+		</advantage>
+		<advantage version="2">
+			<name>Reproductive Control (Reabsorption)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:12</reference>
+			<notes>Requires Will roll</notes>
+		</advantage>
+		<advantage version="2">
 			<name>Reprogrammable</name>
 			<type>Mental, Exotic</type>
 			<base_points>-10</base_points>
@@ -15743,12 +16678,31 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Resistant to @Specific Poison@</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:14</reference>
+			<notes>+3 to resist</notes>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Responsive</name>
 			<type>Mental</type>
 			<base_points>-1</base_points>
 			<reference>B164</reference>
 			<categories>
 				<category>Quirk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Rest in Pieces</name>
+			<type>Supernatural</type>
+			<base_points>1</base_points>
+			<reference>PU2:19</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -15853,6 +16807,57 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Rinse</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:12</reference>
+		</advantage>
+		<advantage version="2">
+			<name>Robust (@Sense@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:14</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Rule of 15</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:13</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Rule of 17 (@Skill@)</name>
+			<type>Supernatural</type>
+			<base_points>1</base_points>
+			<reference>PU2:20</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Rules Exemption (@Rule@)</name>
+			<type></type>
+			<base_points>1</base_points>
+			<reference>PU2:20</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Sacrificial Parry (@Weapon@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:7</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Sadism</name>
 			<type>Mental</type>
 			<base_points>-15</base_points>
@@ -15870,6 +16875,22 @@
 			<categories>
 				<category>Perk</category>
 			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Sartorial Integrity</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:14</reference>
+			<categories>
+				<category>Cinematic</category>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Scales</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:12</reference>
 		</advantage>
 		<advantage version="2">
 			<name>Scanning Sense</name>
@@ -15990,6 +17011,16 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>School Adaptation (@School@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>MA51</reference>
+			<notes>Lets you learn traits belonging to other schools.</notes>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Scotophobia (Darkness)</name>
 			<type>Mental</type>
 			<base_points>-15</base_points>
@@ -15997,6 +17028,15 @@
 			<reference>B149</reference>
 			<categories>
 				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Sea Legs</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:14</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -16078,6 +17118,25 @@
 			<reference>B153</reference>
 			<categories>
 				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Secret Knowledge (@Skill@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>MA51</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Secret Style (@Style@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>MA49</reference>
+			<categories>
+				<category>Cinematic</category>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -16295,6 +17354,16 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Sexy Pose</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:15</reference>
+			<notes>Non-Verbal Sex Appeal</notes>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Shadow Form</name>
 			<type>Physical, Exotic</type>
 			<base_points>50</base_points>
@@ -16394,6 +17463,16 @@
 			<reference>B154</reference>
 			<categories>
 				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Shoves and Tackles (@Long Weapon@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:7</reference>
+			<notes>You may block attacks on an ally beside you and ignore attack panalty for large shields</notes>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -16784,7 +17863,7 @@
 			</categories>
 			<prereq_list all="yes">
 				<advantage_prereq has="no">
-					<name compare="is">Langauge Talent</name>
+					<name compare="is">Language Talent</name>
 					<notes compare="is anything"></notes>
 				</advantage_prereq>
 			</prereq_list>
@@ -16855,13 +17934,12 @@
 			</skill_bonus>
 		</advantage>
 		<advantage version="2">
-			<name>Sill Adaptaion (@Speciality@)</name>
+			<name>Single-Minded</name>
 			<type>Mental</type>
-			<base_points>1</base_points>
-			<reference>MA51</reference>
-			<notes>Let you base Techniques on different skill.</notes>
+			<base_points>5</base_points>
+			<reference>B85</reference>
 			<categories>
-				<category>Perk</category>
+				<category>Advantage</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -16871,6 +17949,16 @@
 			<reference>B85</reference>
 			<categories>
 				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Skill Adaptation (@Speciality@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>MA51</reference>
+			<notes>Lets you base Techniques on different skill.</notes>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -17690,6 +18778,15 @@
 				<category>Perk</category>
 			</categories>
 		</advantage>
+		<advantage version="2">
+			<name>Spirit Contract (@Patron@)</name>
+			<type>Social, Supernatural</type>
+			<base_points>1</base_points>
+			<reference>PU2:20</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
 		<advantage_container version="2" open="yes">
 			<name>Spirit Control</name>
 			<modifier version="1" enabled="no">
@@ -17768,6 +18865,63 @@
 			<reference>B164</reference>
 			<categories>
 				<category>Quirk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Standard Operating Procedure (Back to the Wall)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:15</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Standard Operating Procedure (Energizer)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:15</reference>
+			<categories>
+				<category>Cinematic</category>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Standard Operating Procedure (Full Tank)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:15</reference>
+			<categories>
+				<category>Cinematic</category>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Standard Operating Procedure (Last Man Out)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:15</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Standard Operating Procedure (Off-Screen Reload)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:15</reference>
+			<categories>
+				<category>Cinematic</category>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Standard Operating Procedure (On Alert)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:15</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -18109,6 +19263,19 @@
 			</prereq_list>
 		</advantage>
 		<advantage version="2">
+			<name>Striking Surface (@Body part@)</name>
+			<type>Physical, Exotic</type>
+			<base_points>1</base_points>
+			<reference>PU2:12</reference>
+			<prereq_list all="yes">
+				<advantage_prereq has="yes">
+					<name compare="starts with">Damage Resistance</name>
+					<notes compare="is anything"></notes>
+					<level compare="at_least">3</level>
+				</advantage_prereq>
+			</prereq_list>
+		</advantage>
+		<advantage version="2">
 			<name>Strongbow</name>
 			<type>Mental</type>
 			<base_points>1</base_points>
@@ -18171,7 +19338,7 @@
 			<type>Mental</type>
 			<base_points>1</base_points>
 			<reference>MA51</reference>
-			<notes>let you learne Techniques belonging to other styles</notes>
+			<notes>Lets you learn techniques belonging to other styles</notes>
 			<categories>
 				<category>Perk</category>
 			</categories>
@@ -19752,6 +20919,16 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Template Adaptation (@Templates@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>MA51</reference>
+			<notes>Lets you learn traits belonging to other templates.</notes>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Temporal Inertia</name>
 			<type>Mental, Supernatural</type>
 			<base_points>15</base_points>
@@ -19960,12 +21137,38 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Trademark Move (@Specific Combat Move@)</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:8</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+			<prereq_list all="yes">
+				<advantage_prereq has="yes">
+					<name compare="is">High-Heeled Heroine</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</advantage>
+		<advantage version="2">
 			<name>Trained by a Master</name>
 			<type>Mental</type>
 			<base_points>30</base_points>
 			<reference>B93</reference>
 			<categories>
 				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Transporter (@Vehicle Skill@)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:16</reference>
+			<notes>No rolls for some vehicle tasks.</notes>
+			<categories>
+				<category>Cinematic</category>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -19976,6 +21179,16 @@
 			<reference>B159</reference>
 			<categories>
 				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Trivial Destiny</name>
+			<type>Supernatural</type>
+			<base_points>1</base_points>
+			<reference>PU2:20</reference>
+			<notes>@Details@</notes>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -20030,6 +21243,15 @@
 			<reference>B94</reference>
 			<categories>
 				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Twirl (@Weapon Skill@)</name>
+			<type>Mental/Physical</type>
+			<base_points>1</base_points>
+			<reference>PU2:15</reference>
+			<categories>
+				<category>Perk</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -20337,6 +21559,15 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Unusual Posture (@Task and Posture@)</name>
+			<type>Mental</type>
+			<base_points>1</base_points>
+			<reference>PU2:17</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Unusual Training (@Cinematic Skill@)</name>
 			<type>Mental</type>
 			<base_points>1</base_points>
@@ -20400,6 +21631,15 @@
 				<category>Power</category>
 			</categories>
 		</advantage_container>
+		<advantage version="2">
+			<name>Vehicle (@Type@)</name>
+			<type>Social</type>
+			<base_points>1</base_points>
+			<reference>PU2:18</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
 		<advantage version="2">
 			<name>Versatile</name>
 			<type>Mental</type>
@@ -31713,6 +32953,7 @@
 		</skill>
 		<skill version="2">
 			<name>Judo</name>
+			<encumbrance_penalty_multiplier>1</encumbrance_penalty_multiplier>
 			<difficulty>DX/H</difficulty>
 			<points>1</points>
 			<reference>B203</reference>
@@ -40347,7 +41588,7 @@
 			<default>
 				<type>Skill</type>
 				<name>Tail Strike</name>
-				<modifier>-42</modifier>
+				<modifier>-2</modifier>
 			</default>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
@@ -46253,7 +47494,7 @@
 				</spell_prereq>
 				<spell_prereq has="yes">
 					<college compare="is">water</college>
-					<quantity compare="at_least">4</quantity>
+					<quantity compare="at_least">5</quantity>
 				</spell_prereq>
 			</prereq_list>
 		</spell>
@@ -52488,7 +53729,8 @@
 			</prereq_list>
 		</spell>
 		<spell version="2">
-			<name>Machine Speech/TL</name>
+			<name>Machine Speech</name>
+			<tech_level/>
 			<college>Communication/Technological</college>
 			<spell_class>Regular</spell_class>
 			<casting_cost>5</casting_cost>
@@ -57176,7 +58418,8 @@
 			</prereq_list>
 		</spell>
 		<spell version="2" very_hard="yes">
-			<name>Schematic/TL</name>
+			<name>Schematic</name>
+			<tech_level/>
 			<college>Knowledge/Technological/Machine</college>
 			<spell_class>Info</spell_class>
 			<casting_cost>5+1/ton</casting_cost>
@@ -57191,7 +58434,7 @@
 			</categories>
 			<prereq_list all="yes">
 				<spell_prereq has="yes">
-					<name compare="is">reveal function/tl</name>
+					<name compare="is">reveal function</name>
 				</spell_prereq>
 				<spell_prereq has="yes">
 					<name compare="is">history</name>
@@ -67387,7 +68630,7 @@
 			<weight units="lb">8.4</weight>
 			<reference>B279</reference>
 			<ranged_weapon>
-				<damage>1d+1 pi-</damage>
+				<damage>1d+1 pi</damage>
 				<strength>10&#8224;</strength>
 				<accuracy>3</accuracy>
 				<range>50/125</range>
@@ -71530,7 +72773,7 @@
 			<weight units="lb">10.0</weight>
 			<reference>B279</reference>
 			<ranged_weapon>
-				<damage>1d+2 pi-</damage>
+				<damage>1d+2 pi</damage>
 				<strength>11&#8224;</strength>
 				<accuracy>3</accuracy>
 				<range>50/125</range>
@@ -80328,7 +81571,7 @@
 			<weight units="lb">8.0</weight>
 			<reference>B279</reference>
 			<ranged_weapon>
-				<damage>1d+1 pi-</damage>
+				<damage>1d+1 pi</damage>
 				<strength>10&#8224;</strength>
 				<accuracy>3</accuracy>
 				<range>50/125</range>
@@ -82151,7 +83394,8 @@
 				</default>
 				<default>
 					<type>Skill</type>
-					<name>Thrown Weapon (Shuriken)</name>
+					<name>Thrown Weapon</name>
+					<specialization>Shuriken</specialization>
 					<modifier>0</modifier>
 				</default>
 				<default>
@@ -84923,7 +86167,21 @@
 		</equipment>
 		<equipment version="2">
 			<quantity>1</quantity>
+			<description>Water, 1 gallon</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<weight units="lb">8.0</weight>
+		</equipment>
+		<equipment version="2">
+			<quantity>1</quantity>
 			<description>Water, 1 pint</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<weight units="lb">1.0</weight>
+		</equipment>
+		<equipment version="2">
+			<quantity>1</quantity>
+			<description>Water, 1 quart</description>
 			<legality_class>4</legality_class>
 			<value>0</value>
 			<weight units="lb">2.0</weight>

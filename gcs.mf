@@ -1,2 +1,3 @@
 Manifest-Version: 1.0
 Main-Class: com.trollworks.ttk.Launcher
+SplashScreen-Image: com/trollworks/gcs/app/images/Splash.gif

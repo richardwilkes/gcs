@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -36,7 +36,6 @@ import com.trollworks.gcs.feature.Bonus;
 import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.feature.CostReduction;
 import com.trollworks.gcs.feature.Feature;
-import com.trollworks.gcs.feature.LeveledAmount;
 import com.trollworks.gcs.feature.SkillBonus;
 import com.trollworks.gcs.feature.SpellBonus;
 import com.trollworks.gcs.feature.WeaponBonus;
@@ -2414,10 +2413,10 @@ public class GURPSCharacter extends DataFile {
 	 * @param id The feature ID to search for.
 	 * @param nameQualifier The name qualifier.
 	 * @param specializationQualifier The specialization qualifier.
-	 * @return The bonus.
+	 * @return The bonuses.
 	 */
-	public ArrayList<LeveledAmount> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier) {
-		ArrayList<LeveledAmount> bonuses = new ArrayList<LeveledAmount>();
+	public ArrayList<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier) {
+		ArrayList<WeaponBonus> bonuses = new ArrayList<WeaponBonus>();
 		int rsl = Integer.MIN_VALUE;
 
 		for (Skill skill : getSkillNamed(nameQualifier, specializationQualifier, true, null)) {
@@ -2435,7 +2434,7 @@ public class GURPSCharacter extends DataFile {
 					if (feature instanceof WeaponBonus) {
 						WeaponBonus bonus = (WeaponBonus) feature;
 						if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.getLevelCriteria().matches(rsl)) {
-							bonuses.add(bonus.getAmount());
+							bonuses.add(bonus);
 						}
 					}
 				}

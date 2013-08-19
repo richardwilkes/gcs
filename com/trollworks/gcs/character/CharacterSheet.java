@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -75,6 +75,7 @@ import com.trollworks.ttk.widgets.outline.OutlineHeader;
 import com.trollworks.ttk.widgets.outline.OutlineModel;
 import com.trollworks.ttk.widgets.outline.OutlineSyncer;
 import com.trollworks.ttk.widgets.outline.Row;
+import com.trollworks.ttk.widgets.outline.RowIterator;
 import com.trollworks.ttk.widgets.outline.RowSelection;
 import com.trollworks.ttk.xml.XMLWriter;
 
@@ -897,11 +898,44 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		return format;
 	}
 
+	private HashSet<Row> expandAllContainers() {
+		HashSet<Row> changed = new HashSet<Row>();
+		expandAllContainers(mCharacter.getAdvantagesIterator(), changed);
+		expandAllContainers(mCharacter.getSkillsIterator(), changed);
+		expandAllContainers(mCharacter.getSpellsIterator(), changed);
+		expandAllContainers(mCharacter.getEquipmentIterator(), changed);
+		if (mRebuildPending) {
+			syncRoots();
+			rebuild();
+		}
+		return changed;
+	}
+
+	private void expandAllContainers(RowIterator<? extends Row> iterator, HashSet<Row> changed) {
+		for (Row row : iterator) {
+			if (!row.isOpen()) {
+				row.setOpen(true);
+				changed.add(row);
+			}
+		}
+	}
+
+	private void closeContainers(HashSet<Row> rows) {
+		for (Row row : rows) {
+			row.setOpen(false);
+		}
+		if (mRebuildPending) {
+			syncRoots();
+			rebuild();
+		}
+	}
+
 	/**
 	 * @param file The file to save to.
 	 * @return <code>true</code> on success.
 	 */
 	public boolean saveAsPDF(File file) {
+		HashSet<Row> changed = expandAllContainers();
 		try {
 			PrintManager settings = mCharacter.getPageSettings();
 			PageFormat format = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
@@ -942,6 +976,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			return true;
 		} catch (Exception exception) {
 			return false;
+		} finally {
+			closeContainers(changed);
 		}
 	}
 
@@ -1793,6 +1829,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	 * @return <code>true</code> on success.
 	 */
 	public boolean saveAsPNG(File file, ArrayList<File> createdFiles) {
+		HashSet<Row> changed = expandAllContainers();
 		try {
 			Graphics2D g2d = GraphicsUtilities.getGraphics();
 			GraphicsConfiguration gc = g2d.getDeviceConfiguration();
@@ -1839,6 +1876,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			return true;
 		} catch (Exception exception) {
 			return false;
+		} finally {
+			closeContainers(changed);
 		}
 	}
 

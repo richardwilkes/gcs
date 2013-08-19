@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -46,7 +46,6 @@ public class HelpMenu extends JMenu {
 	private static String	MSG_LICENSE;
 	private static String	MSG_WEB_SITE;
 	private static String	MSG_MAILING_LISTS;
-	private static String	MSG_WIKI;
 
 	static {
 		LocalizedMessages.initialize(HelpMenu.class);
@@ -65,8 +64,6 @@ public class HelpMenu extends JMenu {
 		add(new JMenuItem(new OpenLocalFileCommand(MSG_LICENSE, new File(App.APP_HOME_DIR, "License.html")))); //$NON-NLS-1$
 		addSeparator();
 		add(new JMenuItem(new OpenURLCommand(MSG_WEB_SITE, "http://gcs.trollworks.com"))); //$NON-NLS-1$
-		add(new JMenuItem(new OpenURLCommand(MSG_WIKI, "http://gcs-java.wiki.sourceforge.net"))); //$NON-NLS-1$
-		addSeparator();
 		add(new JMenuItem(new OpenURLCommand(MSG_MAILING_LISTS, "http://sourceforge.net/mail/?group_id=185516"))); //$NON-NLS-1$
 		add(new JMenuItem(new OpenURLCommand(MSG_FEATURES, "http://sourceforge.net/tracker/?atid=913592&group_id=185516&func=browse"))); //$NON-NLS-1$
 		add(new JMenuItem(new OpenURLCommand(MSG_BUGS, "http://sourceforge.net/tracker/?atid=913589&group_id=185516&func=browse"))); //$NON-NLS-1$

@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -84,10 +84,7 @@ public class LeveledAmount {
 		return false;
 	}
 
-	/**
-	 * @param reader The reader to load data from.
-	 * @throws IOException
-	 */
+	/** @param reader The reader to load data from. */
 	public void load(XMLReader reader) throws IOException {
 		mPerLevel = reader.isAttributeSet(ATTRIBUTE_PER_LEVEL);
 		mAmount = reader.readDouble(0.0);

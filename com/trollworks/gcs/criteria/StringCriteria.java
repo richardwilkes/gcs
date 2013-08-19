@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -69,7 +69,6 @@ public class StringCriteria {
 
 	/**
 	 * @param reader The reader to load data from.
-	 * @throws IOException
 	 */
 	public void load(XMLReader reader) throws IOException {
 		setType(StringCompareType.get(reader.getAttribute(ATTRIBUTE_COMPARE)));

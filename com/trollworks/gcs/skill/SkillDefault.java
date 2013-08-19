@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -93,7 +93,6 @@ public class SkillDefault {
 	 * Creates a skill default.
 	 * 
 	 * @param reader The XML reader to use.
-	 * @throws IOException
 	 */
 	public SkillDefault(XMLReader reader) throws IOException {
 		String marker = reader.getMarker();
@@ -266,5 +265,19 @@ public class SkillDefault {
 	public void applyNameableKeys(HashMap<String, String> map) {
 		setName(ListRow.nameNameables(map, getName()));
 		setSpecialization(ListRow.nameNameables(map, getSpecialization()));
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder buffer = new StringBuilder();
+		buffer.append(getFullName());
+		if (mModifier > 0) {
+			buffer.append(" + "); //$NON-NLS-1$
+			buffer.append(mModifier);
+		} else if (mModifier < 0) {
+			buffer.append(" - "); //$NON-NLS-1$
+			buffer.append(-mModifier);
+		}
+		return buffer.toString();
 	}
 }

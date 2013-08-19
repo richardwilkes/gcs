@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -64,7 +64,6 @@ public class CostReduction implements Feature {
 	 * Loads a {@link CostReduction}.
 	 * 
 	 * @param reader The XML reader to use.
-	 * @throws IOException
 	 */
 	public CostReduction(XMLReader reader) throws IOException {
 		this();
@@ -107,7 +106,6 @@ public class CostReduction implements Feature {
 	 * Loads a cost reduction.
 	 * 
 	 * @param reader The XML reader to use.
-	 * @throws IOException
 	 */
 	protected void load(XMLReader reader) throws IOException {
 		String marker = reader.getMarker();

@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -72,7 +72,6 @@ public abstract class NameLevelPrereq extends HasPrereq {
 	 * 
 	 * @param parent The owning prerequisite list, if any.
 	 * @param reader The XML reader to load from.
-	 * @throws IOException
 	 */
 	public NameLevelPrereq(PrereqList parent, XMLReader reader) throws IOException {
 		this(reader.getName(), parent);
@@ -130,10 +129,7 @@ public abstract class NameLevelPrereq extends HasPrereq {
 		out.endTagEOL(mTag, true);
 	}
 
-	/**
-	 * @param reader The XML reader to load from.
-	 * @throws IOException
-	 */
+	/** @param reader The XML reader to load from. */
 	protected void loadSelf(XMLReader reader) throws IOException {
 		String name = reader.getName();
 

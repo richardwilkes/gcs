@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -28,6 +28,7 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.feature.LeveledAmount;
+import com.trollworks.gcs.feature.WeaponBonus;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
@@ -102,7 +103,6 @@ public abstract class WeaponStats {
 	 * 
 	 * @param owner The owning piece of equipment or advantage.
 	 * @param reader The reader to load from.
-	 * @throws IOException
 	 */
 	public WeaponStats(ListRow owner, XMLReader reader) throws IOException {
 		this(owner);
@@ -127,10 +127,7 @@ public abstract class WeaponStats {
 	/** Called so that sub-classes can initialize themselves. */
 	protected abstract void initialize();
 
-	/**
-	 * @param reader The reader to load from.
-	 * @throws IOException
-	 */
+	/** @param reader The reader to load from. */
 	protected void loadSelf(XMLReader reader) throws IOException {
 		String name = reader.getName();
 
@@ -237,7 +234,7 @@ public abstract class WeaponStats {
 
 		if (df instanceof GURPSCharacter) {
 			GURPSCharacter character = (GURPSCharacter) df;
-			HashSet<LeveledAmount> bonuses = new HashSet<LeveledAmount>();
+			HashSet<WeaponBonus> bonuses = new HashSet<WeaponBonus>();
 
 			for (SkillDefault one : getDefaults()) {
 				if (one.getType().isSkillBased()) {
@@ -250,7 +247,7 @@ public abstract class WeaponStats {
 		return damage.trim();
 	}
 
-	private String resolveDamage(String damage, HashSet<LeveledAmount> bonuses) {
+	private String resolveDamage(String damage, HashSet<WeaponBonus> bonuses) {
 		int maxST = getMinStrengthValue() * 3;
 		GURPSCharacter character = (GURPSCharacter) mOwner.getDataFile();
 		int st = character.getStrength();
@@ -264,18 +261,19 @@ public abstract class WeaponStats {
 		dice = GURPSCharacter.getSwing(st + character.getStrikingStrengthBonus());
 		do {
 			savedDamage = damage;
-			damage = resolveDamage(damage, "sw", dice, bonuses); //$NON-NLS-1$
+			damage = resolveDamage(damage, "sw", dice); //$NON-NLS-1$
 		} while (!savedDamage.equals(damage));
 
 		dice = GURPSCharacter.getThrust(st + character.getStrikingStrengthBonus());
 		do {
 			savedDamage = damage;
-			damage = resolveDamage(damage, "thr", dice, bonuses); //$NON-NLS-1$
+			damage = resolveDamage(damage, "thr", dice); //$NON-NLS-1$
 		} while (!savedDamage.equals(damage));
-		return damage;
+
+		return resolveDamageBonuses(damage, bonuses);
 	}
 
-	private String resolveDamage(String damage, String type, Dice dice, HashSet<LeveledAmount> bonuses) {
+	private String resolveDamage(String damage, String type, Dice dice) {
 		int where = damage.indexOf(type);
 
 		if (where != -1) {
@@ -299,7 +297,7 @@ public abstract class WeaponStats {
 					while (tmp < max) {
 						char digit = damage.charAt(tmp);
 
-						if (digit >= '0' && digit <= '9') {
+						if (isDigit(digit)) {
 							modifier *= 10;
 							modifier += digit - '0';
 							tmp++;
@@ -323,7 +321,7 @@ public abstract class WeaponStats {
 						while (tmp < max) {
 							char digit = damage.charAt(tmp);
 
-							if (digit >= '0' && digit <= '9') {
+							if (isDigit(digit)) {
 								perDie *= 10;
 								perDie += digit - '0';
 								tmp++;
@@ -342,17 +340,6 @@ public abstract class WeaponStats {
 					}
 				}
 			}
-
-			for (LeveledAmount bonus : bonuses) {
-				int amt = bonus.getIntegerAmount();
-
-				if (bonus.isPerLevel()) {
-					dice.add(amt * dice.getDieCount());
-				} else {
-					dice.add(amt);
-				}
-			}
-
 			buffer.append(dice.toString());
 			if (last < max) {
 				buffer.append(damage.substring(last));
@@ -360,6 +347,54 @@ public abstract class WeaponStats {
 			return buffer.toString();
 		}
 		return damage;
+	}
+
+	private boolean isDigit(char ch) {
+		return ch >= '0' && ch <= '9';
+	}
+
+	private String resolveDamageBonuses(String damage, HashSet<WeaponBonus> bonuses) {
+		int max = damage.length();
+		int start = 0;
+		while (true) {
+			int where = damage.indexOf('d', start);
+			if (where < 1) {
+				return damage;
+			}
+			char digit = damage.charAt(where - 1);
+			if (isDigit(digit)) {
+				while (where > 0 && isDigit(damage.charAt(where - 1))) {
+					where--;
+				}
+				StringBuffer buffer = new StringBuffer();
+				if (where > 0) {
+					buffer.append(damage.substring(0, where));
+				}
+				int[] dicePos = Dice.extractDicePosition(damage.substring(where));
+				Dice dice = new Dice(damage.substring(where + dicePos[0], where + dicePos[1] + 1));
+				if (mOwner instanceof Advantage) {
+					Advantage advantage = (Advantage) mOwner;
+					if (advantage.isLeveled()) {
+						dice.multiply(advantage.getLevels());
+					}
+				}
+				for (WeaponBonus bonus : bonuses) {
+					LeveledAmount lvlAmt = bonus.getAmount();
+					int amt = lvlAmt.getIntegerAmount();
+					if (lvlAmt.isPerLevel()) {
+						dice.add(amt * dice.getDieCount());
+					} else {
+						dice.add(amt);
+					}
+				}
+				buffer.append(dice.toString());
+				if (where + dicePos[1] + 1 < max) {
+					buffer.append(damage.substring(where + dicePos[1] + 1));
+				}
+				return buffer.toString();
+			}
+			start = where + 1;
+		}
 	}
 
 	/**

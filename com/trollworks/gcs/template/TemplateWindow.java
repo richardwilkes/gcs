@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -147,7 +147,6 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 	 * Creates a new {@link TemplateWindow}.
 	 * 
 	 * @param file The file to display.
-	 * @throws IOException
 	 */
 	public TemplateWindow(File file) throws IOException {
 		this(new Template(file));
@@ -407,7 +406,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 	}
 
 	public String getPreferredSavePath() {
-		return getTitle();
+		return Path.getFullPath(Path.getParent(Path.getFullPath(getBackingFile())), getTitle());
 	}
 
 	public File getBackingFile() {

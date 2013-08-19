@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -69,6 +69,20 @@ public class MultiCell implements Cell {
 	 */
 	protected String getPrimaryText(ListRow row) {
 		return row.toString();
+	}
+
+	/**
+	 * @param row The row to use.
+	 * @return The text to sort.
+	 */
+	protected String getSortText(ListRow row) {
+		String text = getPrimaryText(row);
+		String secondary = getSecondaryText(row);
+		if (secondary != null && secondary.length() > 0) {
+			text += '\n';
+			text += secondary;
+		}
+		return text;
 	}
 
 	/**
@@ -151,13 +165,7 @@ public class MultiCell implements Cell {
 	}
 
 	public int compare(Column column, Row one, Row two) {
-		ListRow r1 = (ListRow) one;
-		ListRow r2 = (ListRow) two;
-		int result = NumericStringComparator.caselessCompareStrings(getPrimaryText(r1), getPrimaryText(r2));
-		if (result == 0) {
-			result = NumericStringComparator.caselessCompareStrings(getSecondaryText(r1), getSecondaryText(r2));
-		}
-		return result;
+		return NumericStringComparator.caselessCompareStrings(getSortText((ListRow) one), getSortText((ListRow) two));
 	}
 
 	public Cursor getCursor(MouseEvent event, Rectangle bounds, Row row, Column column) {

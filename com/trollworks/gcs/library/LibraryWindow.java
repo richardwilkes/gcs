@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -165,7 +165,6 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	 * Creates a new {@link LibraryWindow}.
 	 * 
 	 * @param file The file to display.
-	 * @throws IOException
 	 */
 	public LibraryWindow(File file) throws IOException {
 		this(new LibraryFile(file));
@@ -383,7 +382,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	}
 
 	public String getPreferredSavePath() {
-		return getTitle();
+		return Path.getFullPath(Path.getParent(Path.getFullPath(getBackingFile())), getTitle());
 	}
 
 	public File[] saveTo(File file) {

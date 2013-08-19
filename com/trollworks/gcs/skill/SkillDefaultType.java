@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -32,7 +32,6 @@ import java.util.HashSet;
 public enum SkillDefaultType {
 	/** The type for ST-based defaults. */
 	ST {
-
 		@Override
 		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			return finalLevel(skillDefault, SkillAttribute.ST.getBaseSkillLevel(character));

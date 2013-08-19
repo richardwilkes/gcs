@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2008 the Initial Developer. All Rights Reserved.
+ * 2005-2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -87,7 +87,7 @@ public class GCSApp extends App {
 		map.put(Equipment.OLD_EQUIPMENT_EXTENSION.substring(1), MSG_EQUIPMENT_DESCRIPTION);
 		map.put(Skill.OLD_SKILL_EXTENSION.substring(1), MSG_SKILLS_DESCRIPTION);
 		map.put(Spell.OLD_SPELL_EXTENSION.substring(1), MSG_SPELLS_DESCRIPTION);
-		WindowsRegistry.register("GCS", map, new File(APP_HOME_DIR, "GURPS Character Sheet.exe"), new File(APP_HOME_DIR, "icons")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		WindowsRegistry.register("GCS", map, new File(APP_HOME_DIR, "gcs.bat"), new File(APP_HOME_DIR, "GURPS Character Sheet.app/Contents/Resources")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 		UpdateChecker.check("gcs", "http://gcs.trollworks.com/current.txt", "http://gcs.trollworks.com"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
