@@ -23,7 +23,7 @@
 	<key>CFBundleSignature</key>
 		<string>RWGS</string>
 	<key>CFBundleVersion</key>
-		<string>BUILD_NUMBER</string>
+		<string>APP_VERSION</string>
 	<key>NSHumanReadableCopyright</key>
 		<string>Copyright ©COPYRIGHT_YEARS by COPYRIGHT_OWNER. All rights reserved.</string>
 	<key>LSApplicationCategoryType</key>

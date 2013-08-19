@@ -20,7 +20,6 @@
 		</copy>
 
 		<!-- Update the version and copyright values. -->
-		<buildnumber/>
 		<property file="build.number"/>
 		<tstamp>
 			<format property="VERSION_YEAR" pattern="yyyy"/>
@@ -62,7 +61,6 @@
 			<replacefilter token="APP_VERSION" value="${APP_VERSION}"/>
 			<replacefilter token="COPYRIGHT_YEARS" value="${APP_COPYRIGHT_YEARS}"/>
 			<replacefilter token="COPYRIGHT_OWNER" value="${APP_COPYRIGHT_OWNER}"/>
-			<replacefilter token="BUILD_NUMBER" value="${build.number}"/>
 		</replace>
 
 		<!-- Compile the code. -->
