@@ -20,14 +20,20 @@
 		</copy>
 
 		<!-- Update the version and copyright values. -->
+		<buildnumber/>
+		<property file="build.number"/>
 		<tstamp>
 			<format property="VERSION_YEAR" pattern="yyyy"/>
 		</tstamp>
 		<tstamp>
 			<format property="VERSION" pattern="yyyy.MM.dd.HHmm"/>
 		</tstamp>
-		<replaceregexp file="${JavaBuildDir}/com/trollworks/gcs/app/GCS.properties" match='(APP_VERSION.+=)(.*)' replace='\1 ${VERSION}'/>
-		<replaceregexp file="${JavaBuildDir}/com/trollworks/gcs/app/GCS.properties" match='(APP_COPYRIGHT_YEARS.+=)(.*)' replace='\1 1998-2002, 2005-${VERSION_YEAR}'/>
+		<replaceregexp file="${JavaBuildDir}/com/trollworks/gcs/app/GCS.properties"
+					match='(APP_VERSION.+=)(.*)'
+					replace='\1 ${VERSION}'/>
+		<replaceregexp file="${JavaBuildDir}/com/trollworks/gcs/app/GCS.properties"
+					match='(APP_COPYRIGHT_YEARS.+=)(.*)'
+					replace='\1 1998-2002, 2005-${VERSION_YEAR}'/>
 
 		<!-- Load the remaining property values. -->
 		<property file="${JavaBuildDir}/com/trollworks/gcs/app/GCS.properties"/>
@@ -36,7 +42,7 @@
 		<property name="AppBundle" value="${DistBuildDir}/${APP_NAME}.app/Contents"/>
 		<property name="AppDir" value="${AppBundle}/MacOS"/>
 		<property name="ResourceDir" value="${AppBundle}/Resources"/>
-		<property name="JavaDir" value="${ResourceDir}/Java"/>
+		<property name="JavaDir" value="${AppBundle}/Java"/>
 		<property name="ZipFile" value="${DistDirName}.zip"/>
 
 		<!-- Copy the initial dist files over. -->
@@ -44,8 +50,8 @@
 		<copy todir="${DistBuildDir}">
 			<fileset dir="dist"/>
 		</copy>
-		<copy file="com/trollworks/gcs/app/images/Splash.gif" todir="${JavaDir}"/>
-		<chmod perm="755" file="${AppDir}/JavaApplicationStub"/>
+		<copy file="com/trollworks/gcs/app/images/Splash.gif" tofile="${ResourceDir}/splash.gif"/>
+		<chmod perm="755" file="${AppDir}/JavaAppLauncher"/>
 		<chmod perm="755" file="${DistBuildDir}/gcs"/>
 		<mkdir dir="${DistBuildDir}/data"/>
 		<copy todir="${DistBuildDir}/data">
@@ -56,10 +62,18 @@
 			<replacefilter token="APP_VERSION" value="${APP_VERSION}"/>
 			<replacefilter token="COPYRIGHT_YEARS" value="${APP_COPYRIGHT_YEARS}"/>
 			<replacefilter token="COPYRIGHT_OWNER" value="${APP_COPYRIGHT_OWNER}"/>
+			<replacefilter token="BUILD_NUMBER" value="${build.number}"/>
 		</replace>
 
 		<!-- Compile the code. -->
-		<javac destdir="${JavaBuildDir}" includes="com/trollworks/gcs/app/GCS.java" debug="no" optimize="yes" target="1.7" source="1.7" deprecation="true" includeantruntime="no">
+		<javac destdir="${JavaBuildDir}"
+					includes="com/trollworks/gcs/app/GCS.java"
+					debug="no"
+					optimize="yes"
+					target="1.7"
+					source="1.7"
+					deprecation="true"
+					includeantruntime="no">
 			<classpath>
 				<pathelement location="../ttk/TrollworksToolkit.jar"/>
 				<pathelement location="../ttk/libraries/Trove.jar"/>
@@ -79,12 +93,12 @@
 		<zip destfile="${ZipFile}">
 			<zipfileset dir="${BuildDir}" filemode="755">
 				<include name="${DistDirName}/gcs"/>
-				<include name="${DistDirName}/${APP_NAME}.app/Contents/MacOS/JavaApplicationStub"/>
+				<include name="${DistDirName}/${APP_NAME}.app/Contents/MacOS/JavaAppLauncher"/>
 			</zipfileset>
 			<zipfileset dir="${BuildDir}">
 				<include name="${DistDirName}/**"/>
 				<exclude name="${DistDirName}/gcs"/>
-				<exclude name="${DistDirName}/${APP_NAME}.app/Contents/MacOS/JavaApplicationStub"/>
+				<exclude name="${DistDirName}/${APP_NAME}.app/Contents/MacOS/JavaAppLauncher"/>
 			</zipfileset>
 		</zip>
 	</target>
