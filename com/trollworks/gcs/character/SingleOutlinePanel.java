@@ -23,12 +23,12 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.widgets.BoxedDropShadowBorder;
-import com.trollworks.gcs.widgets.outline.Column;
-import com.trollworks.gcs.widgets.outline.Outline;
-import com.trollworks.gcs.widgets.outline.OutlineHeader;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
-import com.trollworks.gcs.widgets.outline.OutlineProxy;
+import com.trollworks.ttk.border.BoxedDropShadowBorder;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.OutlineHeader;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
+import com.trollworks.ttk.widgets.outline.OutlineProxy;
 
 import java.awt.Component;
 import java.awt.Container;

@@ -26,12 +26,12 @@ package com.trollworks.gcs.menu.item;
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.library.LibraryWindow;
-import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.template.TemplateWindow;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.widgets.outline.ListOutline;
+import com.trollworks.ttk.menu.Command;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -41,6 +41,12 @@ import javax.swing.JMenuItem;
 
 /** Provides the "New Skill" command. */
 public class NewSkillCommand extends Command {
+	/** The action command this command will issue. */
+	public static final String			CMD_NEW_SKILL			= "NewSkill";																												//$NON-NLS-1$
+	/** The action command this command will issue. */
+	public static final String			CMD_NEW_SKILL_CONTAINER	= "NewSkillContainer";																										//$NON-NLS-1$
+	/** The action command this command will issue. */
+	public static final String			CMD_NEW_TECHNIQUE		= "NewTechnique";																											//$NON-NLS-1$
 	private static String				MSG_SKILL;
 	private static String				MSG_SKILL_CONTAINER;
 	private static String				MSG_TECHNIQUE;
@@ -50,21 +56,22 @@ public class NewSkillCommand extends Command {
 	}
 
 	/** The "New Skill" command. */
-	public static final NewSkillCommand	INSTANCE			= new NewSkillCommand(false, false, MSG_SKILL, KeyEvent.VK_K, COMMAND_MODIFIER);
+	public static final NewSkillCommand	INSTANCE				= new NewSkillCommand(false, false, MSG_SKILL, CMD_NEW_SKILL, KeyEvent.VK_K, COMMAND_MODIFIER);
 	/** The "New Skill Container" command. */
-	public static final NewSkillCommand	CONTAINER_INSTANCE	= new NewSkillCommand(true, false, MSG_SKILL_CONTAINER, KeyEvent.VK_K, SHIFTED_COMMAND_MODIFIER);
+	public static final NewSkillCommand	CONTAINER_INSTANCE		= new NewSkillCommand(true, false, MSG_SKILL_CONTAINER, CMD_NEW_SKILL_CONTAINER, KeyEvent.VK_K, SHIFTED_COMMAND_MODIFIER);
 	/** The "New Technique" command. */
-	public static final NewSkillCommand	TECHNIQUE			= new NewSkillCommand(false, true, MSG_TECHNIQUE, KeyEvent.VK_T, COMMAND_MODIFIER);
+	public static final NewSkillCommand	TECHNIQUE				= new NewSkillCommand(false, true, MSG_TECHNIQUE, CMD_NEW_TECHNIQUE, KeyEvent.VK_T, COMMAND_MODIFIER);
 	private boolean						mContainer;
 	private boolean						mTechnique;
 
-	private NewSkillCommand(boolean container, boolean isTechnique, String title, int keyCode, int modifiers) {
-		super(title, keyCode, modifiers);
+	private NewSkillCommand(boolean container, boolean isTechnique, String title, String cmd, int keyCode, int modifiers) {
+		super(title, cmd, keyCode, modifiers);
 		mContainer = container;
 		mTechnique = isTechnique;
 	}
 
-	@Override public void adjustForMenu(JMenuItem item) {
+	@Override
+	public void adjustForMenu(JMenuItem item) {
 		Window window = getActiveWindow();
 		if (window instanceof LibraryWindow) {
 			setEnabled(!((LibraryWindow) window).getOutline().getModel().isLocked());
@@ -73,7 +80,8 @@ public class NewSkillCommand extends Command {
 		}
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		ListOutline outline;
 		DataFile dataFile;
 

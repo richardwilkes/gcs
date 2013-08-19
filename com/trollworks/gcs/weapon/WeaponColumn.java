@@ -23,15 +23,15 @@
 
 package com.trollworks.gcs.weapon;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.widgets.outline.Cell;
-import com.trollworks.gcs.widgets.outline.Column;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
-import com.trollworks.gcs.widgets.outline.Outline;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
-import com.trollworks.gcs.widgets.outline.TextCell;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.Cell;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
+import com.trollworks.ttk.widgets.outline.TextCell;
 
 import javax.swing.SwingConstants;
 
@@ -39,7 +39,8 @@ import javax.swing.SwingConstants;
 public enum WeaponColumn {
 	/** The weapon name/description. */
 	DESCRIPTION {
-		@Override public String toString(Class<? extends WeaponStats> weaponClass) {
+		@Override
+		public String toString(Class<? extends WeaponStats> weaponClass) {
 			if (weaponClass == MeleeWeaponStats.class) {
 				return MSG_MELEE;
 			}
@@ -49,15 +50,18 @@ public enum WeaponColumn {
 			return MSG_DESCRIPTION;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_DESCRIPTION_TOOLTIP;
 		}
 
-		@Override public Cell getCell(boolean forEditor) {
+		@Override
+		public Cell getCell(boolean forEditor) {
 			return new WeaponDescriptionCell();
 		}
 
-		@Override public String getDataAsText(WeaponStats weapon) {
+		@Override
+		public String getDataAsText(WeaponStats weapon) {
 			StringBuilder builder = new StringBuilder();
 			String notes = weapon.getNotes();
 
@@ -69,46 +73,55 @@ public enum WeaponColumn {
 			return builder.toString();
 		}
 
-		@Override public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
+		@Override
+		public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
 			return !forEditor;
 		}
 	},
 	/** The weapon usage type. */
 	USAGE {
-		@Override public String toString(Class<? extends WeaponStats> weaponClass) {
+		@Override
+		public String toString(Class<? extends WeaponStats> weaponClass) {
 			return MSG_USAGE;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_USAGE_TOOLTIP;
 		}
 
-		@Override public String getDataAsText(WeaponStats weapon) {
+		@Override
+		public String getDataAsText(WeaponStats weapon) {
 			return weapon.getUsage();
 		}
 	},
 	/** The weapon skill level. */
 	LEVEL {
-		@Override public String toString(Class<? extends WeaponStats> weaponClass) {
+		@Override
+		public String toString(Class<? extends WeaponStats> weaponClass) {
 			return MSG_LEVEL;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_LEVEL_TOOLTIP;
 		}
 
-		@Override public Cell getCell(boolean forEditor) {
+		@Override
+		public Cell getCell(boolean forEditor) {
 			if (forEditor) {
 				return new TextCell(SwingConstants.RIGHT, false);
 			}
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public Object getData(WeaponStats weapon) {
+		@Override
+		public Object getData(WeaponStats weapon) {
 			return new Integer(weapon.getSkillLevel());
 		}
 
-		@Override public String getDataAsText(WeaponStats weapon) {
+		@Override
+		public String getDataAsText(WeaponStats weapon) {
 			int level = weapon.getSkillLevel();
 
 			if (level < 0) {
@@ -119,191 +132,233 @@ public enum WeaponColumn {
 	},
 	/** The weapon accuracy. */
 	ACCURACY {
-		@Override public String toString(Class<? extends WeaponStats> weaponClass) {
+		@Override
+		public String toString(Class<? extends WeaponStats> weaponClass) {
 			return MSG_ACCURACY;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_ACCURACY_TOOLTIP;
 		}
 
-		@Override public String getDataAsText(WeaponStats weapon) {
+		@Override
+		public String getDataAsText(WeaponStats weapon) {
 			return ((RangedWeaponStats) weapon).getAccuracy();
 		}
 
-		@Override public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
+		@Override
+		public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
 			return weaponClass == RangedWeaponStats.class;
 		}
 	},
 	/** The weapon parry. */
 	PARRY {
-		@Override public String toString(Class<? extends WeaponStats> weaponClass) {
+		@Override
+		public String toString(Class<? extends WeaponStats> weaponClass) {
 			return MSG_PARRY;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_PARRY_TOOLTIP;
 		}
 
-		@Override public String getDataAsText(WeaponStats weapon) {
+		@Override
+		public String getDataAsText(WeaponStats weapon) {
 			return ((MeleeWeaponStats) weapon).getResolvedParry();
 		}
 
-		@Override public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
+		@Override
+		public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
 			return weaponClass == MeleeWeaponStats.class;
 		}
 	},
 	/** The weapon block. */
 	BLOCK {
-		@Override public String toString(Class<? extends WeaponStats> weaponClass) {
+		@Override
+		public String toString(Class<? extends WeaponStats> weaponClass) {
 			return MSG_BLOCK;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_BLOCK_TOOLTIP;
 		}
 
-		@Override public String getDataAsText(WeaponStats weapon) {
+		@Override
+		public String getDataAsText(WeaponStats weapon) {
 			return ((MeleeWeaponStats) weapon).getResolvedBlock();
 		}
 
-		@Override public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
+		@Override
+		public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
 			return weaponClass == MeleeWeaponStats.class;
 		}
 	},
 	/** The weapon damage. */
 	DAMAGE {
-		@Override public String toString(Class<? extends WeaponStats> weaponClass) {
+		@Override
+		public String toString(Class<? extends WeaponStats> weaponClass) {
 			return MSG_DAMAGE;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_DAMAGE_TOOLTIP;
 		}
 
-		@Override public String getDataAsText(WeaponStats weapon) {
+		@Override
+		public String getDataAsText(WeaponStats weapon) {
 			return weapon.getResolvedDamage();
 		}
 	},
 	/** The weapon reach. */
 	REACH {
-		@Override public String toString(Class<? extends WeaponStats> weaponClass) {
+		@Override
+		public String toString(Class<? extends WeaponStats> weaponClass) {
 			return MSG_REACH;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_REACH_TOOLTIP;
 		}
 
-		@Override public String getDataAsText(WeaponStats weapon) {
+		@Override
+		public String getDataAsText(WeaponStats weapon) {
 			return ((MeleeWeaponStats) weapon).getReach();
 		}
 
-		@Override public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
+		@Override
+		public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
 			return weaponClass == MeleeWeaponStats.class;
 		}
 	},
 	/** The weapon range. */
 	RANGE {
-		@Override public String toString(Class<? extends WeaponStats> weaponClass) {
+		@Override
+		public String toString(Class<? extends WeaponStats> weaponClass) {
 			return MSG_RANGE;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_RANGE_TOOLTIP;
 		}
 
-		@Override public String getDataAsText(WeaponStats weapon) {
+		@Override
+		public String getDataAsText(WeaponStats weapon) {
 			return ((RangedWeaponStats) weapon).getResolvedRange();
 		}
 
-		@Override public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
+		@Override
+		public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
 			return weaponClass == RangedWeaponStats.class;
 		}
 	},
 	/** The weapon rate of fire. */
 	RATE_OF_FIRE {
-		@Override public String toString(Class<? extends WeaponStats> weaponClass) {
+		@Override
+		public String toString(Class<? extends WeaponStats> weaponClass) {
 			return MSG_ROF;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_ROF_TOOLTIP;
 		}
 
-		@Override public String getDataAsText(WeaponStats weapon) {
+		@Override
+		public String getDataAsText(WeaponStats weapon) {
 			return ((RangedWeaponStats) weapon).getRateOfFire();
 		}
 
-		@Override public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
+		@Override
+		public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
 			return weaponClass == RangedWeaponStats.class;
 		}
 	},
 	/** The weapon shots. */
 	SHOTS {
-		@Override public String toString(Class<? extends WeaponStats> weaponClass) {
+		@Override
+		public String toString(Class<? extends WeaponStats> weaponClass) {
 			return MSG_SHOTS;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_SHOTS_TOOLTIP;
 		}
 
-		@Override public String getDataAsText(WeaponStats weapon) {
+		@Override
+		public String getDataAsText(WeaponStats weapon) {
 			return ((RangedWeaponStats) weapon).getShots();
 		}
 
-		@Override public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
+		@Override
+		public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
 			return weaponClass == RangedWeaponStats.class;
 		}
 	},
 	/** The weapon bulk. */
 	BULK {
-		@Override public String toString(Class<? extends WeaponStats> weaponClass) {
+		@Override
+		public String toString(Class<? extends WeaponStats> weaponClass) {
 			return MSG_BULK;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_BULK_TOOLTIP;
 		}
 
-		@Override public String getDataAsText(WeaponStats weapon) {
+		@Override
+		public String getDataAsText(WeaponStats weapon) {
 			return ((RangedWeaponStats) weapon).getBulk();
 		}
 
-		@Override public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
+		@Override
+		public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
 			return weaponClass == RangedWeaponStats.class;
 		}
 	},
 	/** The weapon recoil. */
 	RECOIL {
-		@Override public String toString(Class<? extends WeaponStats> weaponClass) {
+		@Override
+		public String toString(Class<? extends WeaponStats> weaponClass) {
 			return MSG_RECOIL;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_RECOIL_TOOLTIP;
 		}
 
-		@Override public String getDataAsText(WeaponStats weapon) {
+		@Override
+		public String getDataAsText(WeaponStats weapon) {
 			return ((RangedWeaponStats) weapon).getRecoil();
 		}
 
-		@Override public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
+		@Override
+		public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
 			return weaponClass == RangedWeaponStats.class;
 		}
 	},
 	/** The weapon minimum strength. */
 	MIN_ST {
-		@Override public String toString(Class<? extends WeaponStats> weaponClass) {
+		@Override
+		public String toString(Class<? extends WeaponStats> weaponClass) {
 			return MSG_STRENGTH;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_STRENGTH_TOOLTIP;
 		}
 
-		@Override public String getDataAsText(WeaponStats weapon) {
+		@Override
+		public String getDataAsText(WeaponStats weapon) {
 			return weapon.getStrength();
 		}
 	};
@@ -386,7 +441,8 @@ public enum WeaponColumn {
 	 */
 	public abstract String toString(Class<? extends WeaponStats> weaponClass);
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		return toString(WeaponStats.class);
 	}
 

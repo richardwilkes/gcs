@@ -23,22 +23,23 @@
 
 package com.trollworks.gcs.advantage;
 
+import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.template.Template;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.widgets.outline.Cell;
-import com.trollworks.gcs.widgets.outline.Column;
-import com.trollworks.gcs.widgets.outline.ImageCell;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
-import com.trollworks.gcs.widgets.outline.Outline;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
+import com.trollworks.ttk.image.Images;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.Cell;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.widgets.outline.ImageCell;
+import com.trollworks.ttk.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -51,27 +52,33 @@ import javax.swing.SwingConstants;
 public enum AdvantageColumn {
 	/** The advantage name/description. */
 	DESCRIPTION {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_DESCRIPTION;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_DESCRIPTION_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new MultiCell();
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
-		@Override public Object getData(Advantage advantage) {
+		@Override
+		public Object getData(Advantage advantage) {
 			return getDataAsText(advantage);
 		}
 
-		@Override public String getDataAsText(Advantage advantage) {
+		@Override
+		public String getDataAsText(Advantage advantage) {
 			StringBuilder builder = new StringBuilder();
 			String notes = advantage.getModifierNotes();
 
@@ -90,23 +97,28 @@ public enum AdvantageColumn {
 	},
 	/** The points spent in the advantage. */
 	POINTS {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_POINTS;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_POINTS_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
-		@Override public Object getData(Advantage advantage) {
+		@Override
+		public Object getData(Advantage advantage) {
 			if (advantage.canHaveChildren()) {
 				if (advantage.getContainerType() == AdvantageContainerType.GROUP) {
 					return new Integer(-1);
@@ -115,7 +127,8 @@ public enum AdvantageColumn {
 			return new Integer(advantage.getAdjustedPoints());
 		}
 
-		@Override public String getDataAsText(Advantage advantage) {
+		@Override
+		public String getDataAsText(Advantage advantage) {
 			if (advantage.canHaveChildren()) {
 				if (advantage.getContainerType() == AdvantageContainerType.GROUP) {
 					return ""; //$NON-NLS-1$
@@ -128,23 +141,28 @@ public enum AdvantageColumn {
 	TYPE {
 		private HashMap<Integer, BufferedImage>	mMap;
 
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_TYPE;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_TYPE_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ImageCell(SwingConstants.CENTER, SwingConstants.TOP);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
 		}
 
-		@Override public Object getData(Advantage advantage) {
+		@Override
+		public Object getData(Advantage advantage) {
 			if (!advantage.canHaveChildren()) {
 				int type = advantage.getType();
 				Integer typeObj;
@@ -162,19 +180,19 @@ public enum AdvantageColumn {
 					ArrayList<BufferedImage> list = new ArrayList<BufferedImage>();
 
 					if ((type & Advantage.TYPE_MASK_MENTAL) != 0) {
-						list.add(Images.getMentalTypeIcon());
+						list.add(GCSImages.getMentalTypeIcon());
 					}
 					if ((type & Advantage.TYPE_MASK_PHYSICAL) != 0) {
-						list.add(Images.getPhysicalTypeIcon());
+						list.add(GCSImages.getPhysicalTypeIcon());
 					}
 					if ((type & Advantage.TYPE_MASK_SOCIAL) != 0) {
-						list.add(Images.getSocialTypeIcon());
+						list.add(GCSImages.getSocialTypeIcon());
 					}
 					if ((type & Advantage.TYPE_MASK_EXOTIC) != 0) {
-						list.add(Images.getExoticTypeIcon());
+						list.add(GCSImages.getExoticTypeIcon());
 					}
 					if ((type & Advantage.TYPE_MASK_SUPERNATURAL) != 0) {
-						list.add(Images.getSupernaturalTypeIcon());
+						list.add(GCSImages.getSupernaturalTypeIcon());
 					}
 
 					switch (list.size()) {
@@ -216,59 +234,72 @@ public enum AdvantageColumn {
 			return null;
 		}
 
-		@Override public String getDataAsText(Advantage advantage) {
+		@Override
+		public String getDataAsText(Advantage advantage) {
 			return advantage.getTypeAsText();
 		}
 	},
 	/** The category. */
 	CATEGORY {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_CATEGORY;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_CATEGORY_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.LEFT, true);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
 		}
 
-		@Override public Object getData(Advantage advantage) {
+		@Override
+		public Object getData(Advantage advantage) {
 			return getDataAsText(advantage);
 		}
 
-		@Override public String getDataAsText(Advantage advantage) {
+		@Override
+		public String getDataAsText(Advantage advantage) {
 			return advantage.getCategoriesAsString();
 		}
 	},
 	/** The page reference. */
 	REFERENCE {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_REFERENCE;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_REFERENCE_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
-		@Override public Object getData(Advantage advantage) {
+		@Override
+		public Object getData(Advantage advantage) {
 			return getDataAsText(advantage);
 		}
 
-		@Override public String getDataAsText(Advantage advantage) {
+		@Override
+		public String getDataAsText(Advantage advantage) {
 			return advantage.getReference();
 		}
 	};

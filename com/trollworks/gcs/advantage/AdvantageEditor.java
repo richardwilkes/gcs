@@ -23,25 +23,25 @@
 
 package com.trollworks.gcs.advantage;
 
+import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.modifier.ModifierListEditor;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.skill.Defaults;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.text.IntegerFormatter;
 import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
-import com.trollworks.gcs.widgets.EditorField;
-import com.trollworks.gcs.widgets.LinkedLabel;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.layout.Alignment;
-import com.trollworks.gcs.widgets.layout.FlexComponent;
-import com.trollworks.gcs.widgets.layout.FlexGrid;
-import com.trollworks.gcs.widgets.layout.FlexRow;
-import com.trollworks.gcs.widgets.layout.FlexSpacer;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.layout.Alignment;
+import com.trollworks.ttk.layout.FlexComponent;
+import com.trollworks.ttk.layout.FlexGrid;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.layout.FlexSpacer;
+import com.trollworks.ttk.text.IntegerFormatter;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.UIUtilities;
+import com.trollworks.ttk.widgets.EditorField;
+import com.trollworks.ttk.widgets.LinkedLabel;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -238,23 +238,23 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
 			mMentalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_MENTAL) == Advantage.TYPE_MASK_MENTAL, MSG_MENTAL);
 			row.add(mMentalType);
-			row.add(createTypeLabel(Images.getMentalTypeIcon(), mMentalType));
+			row.add(createTypeLabel(GCSImages.getMentalTypeIcon(), mMentalType));
 
 			mPhysicalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_PHYSICAL) == Advantage.TYPE_MASK_PHYSICAL, MSG_PHYSICAL);
 			row.add(mPhysicalType);
-			row.add(createTypeLabel(Images.getPhysicalTypeIcon(), mPhysicalType));
+			row.add(createTypeLabel(GCSImages.getPhysicalTypeIcon(), mPhysicalType));
 
 			mSocialType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SOCIAL) == Advantage.TYPE_MASK_SOCIAL, MSG_SOCIAL);
 			row.add(mSocialType);
-			row.add(createTypeLabel(Images.getSocialTypeIcon(), mSocialType));
+			row.add(createTypeLabel(GCSImages.getSocialTypeIcon(), mSocialType));
 
 			mExoticType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_EXOTIC) == Advantage.TYPE_MASK_EXOTIC, MSG_EXOTIC);
 			row.add(mExoticType);
-			row.add(createTypeLabel(Images.getExoticTypeIcon(), mExoticType));
+			row.add(createTypeLabel(GCSImages.getExoticTypeIcon(), mExoticType));
 
 			mSupernaturalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SUPERNATURAL) == Advantage.TYPE_MASK_SUPERNATURAL, MSG_SUPERNATURAL);
 			row.add(mSupernaturalType);
-			row.add(createTypeLabel(Images.getSupernaturalTypeIcon(), mSupernaturalType));
+			row.add(createTypeLabel(GCSImages.getSupernaturalTypeIcon(), mSupernaturalType));
 		} else {
 			mContainerTypeCombo = new JComboBox(AdvantageContainerType.values());
 			mContainerTypeCombo.setSelectedItem(mRow.getContainerType());
@@ -323,7 +323,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	private LinkedLabel createTypeLabel(BufferedImage icon, final JCheckBox linkTo) {
 		LinkedLabel label = new LinkedLabel(new ImageIcon(icon), linkTo);
 		label.addMouseListener(new MouseAdapter() {
-			@Override public void mouseClicked(MouseEvent event) {
+			@Override
+			public void mouseClicked(MouseEvent event) {
 				linkTo.doClick();
 			}
 		});
@@ -367,7 +368,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		return field;
 	}
 
-	@Override public boolean applyChangesSelf() {
+	@Override
+	public boolean applyChangesSelf() {
 		boolean modified = mRow.setName((String) mNameField.getValue());
 		if (mRow.canHaveChildren()) {
 			modified |= mRow.setContainerType((AdvantageContainerType) mContainerTypeCombo.getSelectedItem());
@@ -425,7 +427,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		return modified;
 	}
 
-	@Override public void finished() {
+	@Override
+	public void finished() {
 		if (mTabPanel != null) {
 			updateLastTabName(mTabPanel.getTitleAt(mTabPanel.getSelectedIndex()));
 		}

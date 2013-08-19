@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 /** Describes how a {@link Modifier}'s point cost is applied. */
 public enum CostType {

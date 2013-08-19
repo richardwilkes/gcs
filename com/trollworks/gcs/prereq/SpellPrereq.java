@@ -29,11 +29,11 @@ import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.xml.XMLNodeType;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.xml.XMLNodeType;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -61,8 +61,8 @@ public class SpellPrereq extends HasPrereq {
 	private static final String	TAG_QUANTITY		= "quantity";		//$NON-NLS-1$
 	private static final String	EMPTY				= "";				//$NON-NLS-1$
 	private String				mType;
-	private StringCriteria	mStringCriteria;
-	private IntegerCriteria	mQuantityCriteria;
+	private StringCriteria		mStringCriteria;
+	private IntegerCriteria		mQuantityCriteria;
 
 	static {
 		LocalizedMessages.initialize(SpellPrereq.class);
@@ -131,7 +131,8 @@ public class SpellPrereq extends HasPrereq {
 		mQuantityCriteria = new IntegerCriteria(prereq.mQuantityCriteria);
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -143,15 +144,18 @@ public class SpellPrereq extends HasPrereq {
 		return false;
 	}
 
-	@Override public String getXMLTag() {
+	@Override
+	public String getXMLTag() {
 		return TAG_ROOT;
 	}
 
-	@Override public Prereq clone(PrereqList parent) {
+	@Override
+	public Prereq clone(PrereqList parent) {
 		return new SpellPrereq(parent, this);
 	}
 
-	@Override public void save(XMLWriter out) {
+	@Override
+	public void save(XMLWriter out) {
 		out.startTag(TAG_ROOT);
 		saveHasAttribute(out);
 		out.finishTagEOL();
@@ -205,7 +209,8 @@ public class SpellPrereq extends HasPrereq {
 		return mQuantityCriteria;
 	}
 
-	@Override public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
+	@Override
+	public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
 		HashSet<String> colleges = new HashSet<String>();
 		String techLevel = null;
 		int count = 0;
@@ -266,13 +271,15 @@ public class SpellPrereq extends HasPrereq {
 		return satisfied;
 	}
 
-	@Override public void fillWithNameableKeys(HashSet<String> set) {
+	@Override
+	public void fillWithNameableKeys(HashSet<String> set) {
 		if (mType != TAG_COLLEGE_COUNT) {
 			ListRow.extractNameables(set, mStringCriteria.getQualifier());
 		}
 	}
 
-	@Override public void applyNameableKeys(HashMap<String, String> map) {
+	@Override
+	public void applyNameableKeys(HashMap<String, String> map) {
 		if (mType != TAG_COLLEGE_COUNT) {
 			mStringCriteria.setQualifier(ListRow.nameNameables(map, mStringCriteria.getQualifier()));
 		}

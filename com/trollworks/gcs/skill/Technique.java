@@ -26,12 +26,12 @@ package com.trollworks.gcs.skill;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
-import com.trollworks.gcs.utility.text.NumberUtils;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -69,28 +69,27 @@ public class Technique extends Skill {
 	 */
 	public static SkillLevel calculateTechniqueLevel(GURPSCharacter character, String name, String specialization, SkillDefault def, SkillDifficulty difficulty, int points, boolean limited, int limitModifier) {
 		int relativeLevel = 0;
-		int level = getBaseLevel(character, def);
-
-		if (level != Integer.MIN_VALUE) {
-			int baseLevel = level;
-
-			level += def.getModifier();
-			if (difficulty == SkillDifficulty.H) {
-				points--;
-			}
-			if (points > 0) {
-				relativeLevel = points;
-			}
-
+		int level = Integer.MIN_VALUE;
+		if (character != null) {
+			level = getBaseLevel(character, def);
 			if (level != Integer.MIN_VALUE) {
-				level += relativeLevel + character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase()) + character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, specialization); //$NON-NLS-1$ //$NON-NLS-2$
-			}
-			if (limited) {
-				int max = baseLevel + limitModifier;
-
-				if (level > max) {
-					relativeLevel -= level - max;
-					level = max;
+				int baseLevel = level;
+				level += def.getModifier();
+				if (difficulty == SkillDifficulty.H) {
+					points--;
+				}
+				if (points > 0) {
+					relativeLevel = points;
+				}
+				if (level != Integer.MIN_VALUE) {
+					level += relativeLevel + character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase()) + character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, specialization); //$NON-NLS-1$ //$NON-NLS-2$
+				}
+				if (limited) {
+					int max = baseLevel + limitModifier;
+					if (level > max) {
+						relativeLevel -= level - max;
+						level = max;
+					}
 				}
 			}
 		}
@@ -165,26 +164,31 @@ public class Technique extends Skill {
 		}
 	}
 
-	@Override public String getLocalizedName() {
+	@Override
+	public String getLocalizedName() {
 		return MSG_TECHNIQUE_DEFAULT_NAME;
 	}
 
-	@Override public String getXMLTagName() {
+	@Override
+	public String getXMLTagName() {
 		return TAG_TECHNIQUE;
 	}
 
-	@Override public String getRowType() {
+	@Override
+	public String getRowType() {
 		return "Technique"; //$NON-NLS-1$
 	}
 
-	@Override protected void prepareForLoad(LoadState state) {
+	@Override
+	protected void prepareForLoad(LoadState state) {
 		super.prepareForLoad(state);
 		mDefault = new SkillDefault(SkillDefaultType.Skill, MSG_DEFAULT_NAME, null, 0);
 		mLimited = false;
 		mLimitModifier = 0;
 	}
 
-	@Override protected void loadAttributes(XMLReader reader, LoadState state) {
+	@Override
+	protected void loadAttributes(XMLReader reader, LoadState state) {
 		String value = reader.getAttribute(ATTRIBUTE_LIMIT);
 		if (value != null && value.length() > 0) {
 			mLimited = true;
@@ -198,7 +202,8 @@ public class Technique extends Skill {
 		super.loadAttributes(reader, state);
 	}
 
-	@Override protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
+	@Override
+	protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
 		if (SkillDefault.TAG_ROOT.equals(reader.getName())) {
 			mDefault = new SkillDefault(reader);
 		} else {
@@ -206,12 +211,14 @@ public class Technique extends Skill {
 		}
 	}
 
-	@Override public void saveSelf(XMLWriter out, boolean forUndo) {
+	@Override
+	public void saveSelf(XMLWriter out, boolean forUndo) {
 		super.saveSelf(out, forUndo);
 		mDefault.save(out);
 	}
 
-	@Override protected void saveAttributes(XMLWriter out, boolean forUndo) {
+	@Override
+	protected void saveAttributes(XMLWriter out, boolean forUndo) {
 		if (mLimited) {
 			out.writeAttribute(ATTRIBUTE_LIMIT, mLimitModifier);
 		}
@@ -239,11 +246,13 @@ public class Technique extends Skill {
 		return true;
 	}
 
-	@Override protected SkillLevel calculateLevelSelf() {
+	@Override
+	protected SkillLevel calculateLevelSelf() {
 		return calculateTechniqueLevel(getCharacter(), getName(), getSpecialization(), getDefault(), getDifficulty(), getPoints(), isLimited(), getLimitModifier());
 	}
 
-	@Override public void updateLevel(boolean notify) {
+	@Override
+	public void updateLevel(boolean notify) {
 		if (mDefault != null) {
 			super.updateLevel(notify);
 		}
@@ -257,19 +266,23 @@ public class Technique extends Skill {
 		return setDifficulty(getAttribute(), difficulty);
 	}
 
-	@Override public String getSpecialization() {
+	@Override
+	public String getSpecialization() {
 		return mDefault.getFullName();
 	}
 
-	@Override public boolean setSpecialization(String specialization) {
+	@Override
+	public boolean setSpecialization(String specialization) {
 		return false;
 	}
 
-	@Override public String getTechLevel() {
+	@Override
+	public String getTechLevel() {
 		return null;
 	}
 
-	@Override public boolean setTechLevel(String techLevel) {
+	@Override
+	public boolean setTechLevel(String techLevel) {
 		return false;
 	}
 
@@ -290,7 +303,8 @@ public class Technique extends Skill {
 		return false;
 	}
 
-	@Override public void setDifficultyFromText(String text) {
+	@Override
+	public void setDifficultyFromText(String text) {
 		text = text.trim();
 		if (SkillDifficulty.A.toString().equalsIgnoreCase(text)) {
 			setDifficulty(SkillDifficulty.A);
@@ -299,7 +313,8 @@ public class Technique extends Skill {
 		}
 	}
 
-	@Override public String getDifficultyAsText() {
+	@Override
+	public String getDifficultyAsText() {
 		return getDifficulty().toString();
 	}
 
@@ -341,16 +356,19 @@ public class Technique extends Skill {
 		return false;
 	}
 
-	@Override public RowEditor<? extends ListRow> createEditor() {
+	@Override
+	public RowEditor<? extends ListRow> createEditor() {
 		return new TechniqueEditor(this);
 	}
 
-	@Override public void fillWithNameableKeys(HashSet<String> set) {
+	@Override
+	public void fillWithNameableKeys(HashSet<String> set) {
 		super.fillWithNameableKeys(set);
 		mDefault.fillWithNameableKeys(set);
 	}
 
-	@Override public void applyNameableKeys(HashMap<String, String> map) {
+	@Override
+	public void applyNameableKeys(HashMap<String, String> map) {
 		super.applyNameableKeys(map);
 		mDefault.applyNameableKeys(map);
 	}

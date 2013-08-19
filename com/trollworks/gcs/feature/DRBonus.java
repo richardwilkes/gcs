@@ -24,9 +24,9 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.character.Armor;
-import com.trollworks.gcs.utility.collections.EnumExtractor;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
+import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 
@@ -35,7 +35,7 @@ public class DRBonus extends Bonus {
 	/** The XML tag. */
 	public static final String	TAG_ROOT		= "dr_bonus";	//$NON-NLS-1$
 	private static final String	TAG_LOCATION	= "location";	//$NON-NLS-1$
-	private HitLocation		mLocation;
+	private HitLocation			mLocation;
 
 	/** Creates a new DR bonus. */
 	public DRBonus() {
@@ -64,7 +64,8 @@ public class DRBonus extends Bonus {
 		mLocation = other.mLocation;
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -90,7 +91,8 @@ public class DRBonus extends Bonus {
 		return new DRBonus(this);
 	}
 
-	@Override protected void loadSelf(XMLReader reader) throws IOException {
+	@Override
+	protected void loadSelf(XMLReader reader) throws IOException {
 		if (TAG_LOCATION.equals(reader.getName())) {
 			setLocation((HitLocation) EnumExtractor.extract(reader.readText(), HitLocation.values(), HitLocation.TORSO));
 		} else {

@@ -24,12 +24,13 @@
 package com.trollworks.gcs.menu.data;
 
 import com.trollworks.gcs.common.ListCollectionThread;
-import com.trollworks.gcs.menu.DynamicMenuEnabler;
-import com.trollworks.gcs.menu.StdMenuBar;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.Path;
-import com.trollworks.gcs.widgets.AppWindow;
+import com.trollworks.ttk.image.ToolkitImage;
+import com.trollworks.ttk.menu.DynamicMenuEnabler;
+import com.trollworks.ttk.menu.StdMenuBar;
+import com.trollworks.ttk.menu.file.OpenDataFileCommand;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.Path;
+import com.trollworks.ttk.widgets.AppWindow;
 
 import java.awt.Toolkit;
 import java.awt.event.InputEvent;
@@ -76,7 +77,7 @@ public class DataMenu extends JMenu {
 			if (entry instanceof ArrayList) {
 				ArrayList<?> subList = (ArrayList<?>) entry;
 				JMenu subMenu = new JMenu((String) subList.get(0));
-				subMenu.setIcon(new ImageIcon(Images.getFolderIcon()));
+				subMenu.setIcon(new ImageIcon(ToolkitImage.getFolderIcon()));
 				addToMenu(subList, subMenu);
 				menu.add(subMenu);
 			} else {

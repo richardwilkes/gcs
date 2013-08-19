@@ -23,11 +23,14 @@
 
 package com.trollworks.gcs.menu.item;
 
-import com.trollworks.gcs.menu.DynamicMenuEnabler;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.menu.Command;
+import com.trollworks.ttk.menu.DynamicMenuEnabler;
+import com.trollworks.ttk.menu.DynamicMenuItem;
+import com.trollworks.ttk.utility.LocalizedMessages;
+
+import java.util.HashSet;
 
 import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 
 /** The "Item" menu. */
 public class ItemMenu extends JMenu {
@@ -37,26 +40,48 @@ public class ItemMenu extends JMenu {
 		LocalizedMessages.initialize(ItemMenu.class);
 	}
 
+	/**
+	 * @return The set of {@link Command}s that this menu provides that can have their accelerators
+	 *         modified.
+	 */
+	public static HashSet<Command> getCommands() {
+		HashSet<Command> cmds = new HashSet<Command>();
+		cmds.add(OpenEditorCommand.INSTANCE);
+		cmds.add(CopyToSheetCommand.INSTANCE);
+		cmds.add(CopyToTemplateCommand.INSTANCE);
+		cmds.add(ApplyTemplateCommand.INSTANCE);
+		cmds.add(NewAdvantageCommand.INSTANCE);
+		cmds.add(NewAdvantageCommand.CONTAINER_INSTANCE);
+		cmds.add(NewSkillCommand.INSTANCE);
+		cmds.add(NewSkillCommand.CONTAINER_INSTANCE);
+		cmds.add(NewSkillCommand.TECHNIQUE);
+		cmds.add(NewSpellCommand.INSTANCE);
+		cmds.add(NewSpellCommand.CONTAINER_INSTANCE);
+		cmds.add(NewEquipmentCommand.CARRIED_INSTANCE);
+		cmds.add(NewEquipmentCommand.CARRIED_CONTAINER_INSTANCE);
+		return cmds;
+	}
+
 	/** Creates a new {@link ItemMenu}. */
 	public ItemMenu() {
 		super(MSG_ITEM);
-		add(new JMenuItem(OpenEditorCommand.INSTANCE));
-		add(new JMenuItem(CopyToSheetCommand.INSTANCE));
-		add(new JMenuItem(CopyToTemplateCommand.INSTANCE));
-		add(new JMenuItem(ApplyTemplateCommand.INSTANCE));
+		add(new DynamicMenuItem(OpenEditorCommand.INSTANCE));
+		add(new DynamicMenuItem(CopyToSheetCommand.INSTANCE));
+		add(new DynamicMenuItem(CopyToTemplateCommand.INSTANCE));
+		add(new DynamicMenuItem(ApplyTemplateCommand.INSTANCE));
 		addSeparator();
-		add(new JMenuItem(NewAdvantageCommand.INSTANCE));
-		add(new JMenuItem(NewAdvantageCommand.CONTAINER_INSTANCE));
+		add(new DynamicMenuItem(NewAdvantageCommand.INSTANCE));
+		add(new DynamicMenuItem(NewAdvantageCommand.CONTAINER_INSTANCE));
 		addSeparator();
-		add(new JMenuItem(NewSkillCommand.INSTANCE));
-		add(new JMenuItem(NewSkillCommand.CONTAINER_INSTANCE));
-		add(new JMenuItem(NewSkillCommand.TECHNIQUE));
+		add(new DynamicMenuItem(NewSkillCommand.INSTANCE));
+		add(new DynamicMenuItem(NewSkillCommand.CONTAINER_INSTANCE));
+		add(new DynamicMenuItem(NewSkillCommand.TECHNIQUE));
 		addSeparator();
-		add(new JMenuItem(NewSpellCommand.INSTANCE));
-		add(new JMenuItem(NewSpellCommand.CONTAINER_INSTANCE));
+		add(new DynamicMenuItem(NewSpellCommand.INSTANCE));
+		add(new DynamicMenuItem(NewSpellCommand.CONTAINER_INSTANCE));
 		addSeparator();
-		add(new JMenuItem(NewEquipmentCommand.CARRIED_INSTANCE));
-		add(new JMenuItem(NewEquipmentCommand.CARRIED_CONTAINER_INSTANCE));
+		add(new DynamicMenuItem(NewEquipmentCommand.CARRIED_INSTANCE));
+		add(new DynamicMenuItem(NewEquipmentCommand.CARRIED_CONTAINER_INSTANCE));
 		DynamicMenuEnabler.add(this);
 	}
 }

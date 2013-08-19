@@ -23,8 +23,8 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.utility.Fonts;
-import com.trollworks.gcs.widgets.LinkedLabel;
+import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.ttk.widgets.LinkedLabel;
 
 import javax.swing.JComponent;
 
@@ -37,7 +37,7 @@ public class PageLabel extends LinkedLabel {
 	 * @param field The field.
 	 */
 	public PageLabel(String title, JComponent field) {
-		super(title, Fonts.KEY_LABEL, field);
+		super(title, GCSFonts.KEY_LABEL, field);
 	}
 
 	/**
@@ -48,6 +48,6 @@ public class PageLabel extends LinkedLabel {
 	 * @param alignment The horizontal alignment to use.
 	 */
 	public PageLabel(String title, JComponent field, int alignment) {
-		super(title, Fonts.KEY_LABEL, field, alignment);
+		super(title, GCSFonts.KEY_LABEL, field, alignment);
 	}
 }

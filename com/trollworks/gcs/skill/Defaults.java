@@ -23,8 +23,8 @@
 
 package com.trollworks.gcs.skill;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.BandedPanel;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.BandedPanel;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -63,7 +63,8 @@ public class Defaults extends BandedPanel implements ActionListener {
 		repaint();
 	}
 
-	@Override protected void addImpl(Component comp, Object constraints, int index) {
+	@Override
+	protected void addImpl(Component comp, Object constraints, int index) {
 		super.addImpl(comp, constraints, index);
 		if (comp instanceof SkillDefaultEditor) {
 			((SkillDefaultEditor) comp).addActionListener(this);

@@ -23,13 +23,13 @@
 
 package com.trollworks.gcs.weapon;
 
-import com.trollworks.gcs.utility.Fonts;
-import com.trollworks.gcs.utility.text.NumericStringComparator;
-import com.trollworks.gcs.utility.text.TextDrawing;
-import com.trollworks.gcs.widgets.outline.Cell;
-import com.trollworks.gcs.widgets.outline.Column;
-import com.trollworks.gcs.widgets.outline.Outline;
-import com.trollworks.gcs.widgets.outline.Row;
+import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.ttk.text.NumericStringComparator;
+import com.trollworks.ttk.text.TextDrawing;
+import com.trollworks.ttk.widgets.outline.Cell;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.Row;
 
 import java.awt.Cursor;
 import java.awt.Font;
@@ -67,7 +67,7 @@ public class WeaponDescriptionCell implements Cell {
 		WeaponDisplayRow theRow = (WeaponDisplayRow) row;
 		Rectangle insetBounds = new Rectangle(bounds.x + H_MARGIN, bounds.y, bounds.width - H_MARGIN * 2, bounds.height);
 		String notes = getSecondaryText(theRow);
-		Font font = UIManager.getFont(Fonts.KEY_FIELD);
+		Font font = UIManager.getFont(GCSFonts.KEY_FIELD);
 		int pos;
 
 		gc.setColor(Outline.getListForeground(selected, active));
@@ -76,18 +76,18 @@ public class WeaponDescriptionCell implements Cell {
 		if (notes.trim().length() > 0) {
 			insetBounds.height -= pos - insetBounds.y;
 			insetBounds.y = pos;
-			gc.setFont(UIManager.getFont(Fonts.KEY_FIELD_NOTES));
+			gc.setFont(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES));
 			TextDrawing.draw(gc, insetBounds, notes, SwingConstants.LEFT, SwingConstants.TOP);
 		}
 	}
 
 	public int getPreferredWidth(Row row, Column column) {
 		WeaponDisplayRow theRow = (WeaponDisplayRow) row;
-		int width = TextDrawing.getWidth(UIManager.getFont(Fonts.KEY_FIELD), null, getPrimaryText(theRow));
+		int width = TextDrawing.getWidth(UIManager.getFont(GCSFonts.KEY_FIELD), null, getPrimaryText(theRow));
 		String notes = getSecondaryText(theRow);
 
 		if (notes.trim().length() > 0) {
-			int notesWidth = TextDrawing.getWidth(UIManager.getFont(Fonts.KEY_FIELD_NOTES), null, notes);
+			int notesWidth = TextDrawing.getWidth(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES), null, notes);
 
 			if (notesWidth > width) {
 				width = notesWidth;
@@ -98,12 +98,12 @@ public class WeaponDescriptionCell implements Cell {
 
 	public int getPreferredHeight(Row row, Column column) {
 		WeaponDisplayRow theRow = (WeaponDisplayRow) row;
-		Font font = UIManager.getFont(Fonts.KEY_FIELD);
+		Font font = UIManager.getFont(GCSFonts.KEY_FIELD);
 		int height = TextDrawing.getPreferredSize(font, null, wrap(theRow, column, getPrimaryText(theRow), font)).height;
 		String notes = getSecondaryText(theRow);
 
 		if (notes.trim().length() > 0) {
-			font = UIManager.getFont(Fonts.KEY_FIELD_NOTES);
+			font = UIManager.getFont(GCSFonts.KEY_FIELD_NOTES);
 			height += TextDrawing.getPreferredSize(font, null, wrap(theRow, column, notes, font)).height;
 		}
 		return height;

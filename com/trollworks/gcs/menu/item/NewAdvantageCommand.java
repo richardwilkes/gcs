@@ -27,10 +27,10 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.library.LibraryWindow;
-import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.template.TemplateWindow;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.widgets.outline.ListOutline;
+import com.trollworks.ttk.menu.Command;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -40,6 +40,10 @@ import javax.swing.JMenuItem;
 
 /** Provides the "New Advantage" command. */
 public class NewAdvantageCommand extends Command {
+	/** The action command this command will issue. */
+	public static final String				CMD_NEW_ADVANTAGE			= "NewAdvantage";																												//$NON-NLS-1$
+	/** The action command this command will issue. */
+	public static final String				CMD_NEW_ADVANTAGE_CONTAINER	= "NewAdvantageContainer";																										//$NON-NLS-1$
 	private static String					MSG_ADVANTAGE;
 	private static String					MSG_ADVANTAGE_CONTAINER;
 
@@ -48,17 +52,18 @@ public class NewAdvantageCommand extends Command {
 	}
 
 	/** The "New Advantage" command. */
-	public static final NewAdvantageCommand	INSTANCE			= new NewAdvantageCommand(false, MSG_ADVANTAGE, KeyEvent.VK_D, COMMAND_MODIFIER);
+	public static final NewAdvantageCommand	INSTANCE					= new NewAdvantageCommand(false, MSG_ADVANTAGE, CMD_NEW_ADVANTAGE, KeyEvent.VK_D, COMMAND_MODIFIER);
 	/** The "New Advantage Container" command. */
-	public static final NewAdvantageCommand	CONTAINER_INSTANCE	= new NewAdvantageCommand(true, MSG_ADVANTAGE_CONTAINER, KeyEvent.VK_D, SHIFTED_COMMAND_MODIFIER);
+	public static final NewAdvantageCommand	CONTAINER_INSTANCE			= new NewAdvantageCommand(true, MSG_ADVANTAGE_CONTAINER, CMD_NEW_ADVANTAGE_CONTAINER, KeyEvent.VK_D, SHIFTED_COMMAND_MODIFIER);
 	private boolean							mContainer;
 
-	private NewAdvantageCommand(boolean container, String title, int keyCode, int modifiers) {
-		super(title, keyCode, modifiers);
+	private NewAdvantageCommand(boolean container, String title, String cmd, int keyCode, int modifiers) {
+		super(title, cmd, keyCode, modifiers);
 		mContainer = container;
 	}
 
-	@Override public void adjustForMenu(JMenuItem item) {
+	@Override
+	public void adjustForMenu(JMenuItem item) {
 		Window window = getActiveWindow();
 		if (window instanceof LibraryWindow) {
 			setEnabled(!((LibraryWindow) window).getOutline().getModel().isLocked());
@@ -67,7 +72,8 @@ public class NewAdvantageCommand extends Command {
 		}
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		ListOutline outline;
 		DataFile dataFile;
 

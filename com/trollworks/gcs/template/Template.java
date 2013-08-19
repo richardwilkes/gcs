@@ -25,6 +25,7 @@ package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageList;
+import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.equipment.Equipment;
@@ -34,16 +35,15 @@ import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellList;
-import com.trollworks.gcs.utility.collections.FilteredIterator;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.xml.XMLNodeType;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
-import com.trollworks.gcs.widgets.outline.Row;
-import com.trollworks.gcs.widgets.outline.RowIterator;
+import com.trollworks.ttk.collections.FilteredIterator;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
+import com.trollworks.ttk.widgets.outline.Row;
+import com.trollworks.ttk.widgets.outline.RowIterator;
+import com.trollworks.ttk.xml.XMLNodeType;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -127,11 +127,13 @@ public class Template extends DataFile implements StateEditable {
 		mNotes = ""; //$NON-NLS-1$
 	}
 
-	@Override public BufferedImage getFileIcon(boolean large) {
-		return Images.getTemplateIcon(large);
+	@Override
+	public BufferedImage getFileIcon(boolean large) {
+		return GCSImages.getTemplateIcon(large);
 	}
 
-	@Override protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
+	@Override
+	protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
 		String marker = reader.getMarker();
 		characterInitialize();
 		do {
@@ -215,15 +217,18 @@ public class Template extends DataFile implements StateEditable {
 		} while (reader.withinMarker(marker));
 	}
 
-	@Override public int getXMLTagVersion() {
+	@Override
+	public int getXMLTagVersion() {
 		return CURRENT_VERSION;
 	}
 
-	@Override public String getXMLTagName() {
+	@Override
+	public String getXMLTagName() {
 		return TAG_ROOT;
 	}
 
-	@Override protected void saveSelf(XMLWriter out) {
+	@Override
+	protected void saveSelf(XMLWriter out) {
 		Iterator<Row> iterator;
 
 		if (mAdvantages.getRowCount() > 0) {
@@ -280,13 +285,15 @@ public class Template extends DataFile implements StateEditable {
 		return null;
 	}
 
-	@Override protected void startNotifyAtBatchLevelZero() {
+	@Override
+	protected void startNotifyAtBatchLevelZero() {
 		mNeedAdvantagesPointCalculation = false;
 		mNeedSkillPointCalculation = false;
 		mNeedSpellPointCalculation = false;
 	}
 
-	@Override public void notify(String type, Object data) {
+	@Override
+	public void notify(String type, Object data) {
 		super.notify(type, data);
 		if (Advantage.ID_POINTS.equals(type) || Advantage.ID_LEVELS.equals(type) || Advantage.ID_LIST_CHANGED.equals(type)) {
 			mNeedAdvantagesPointCalculation = true;
@@ -299,7 +306,8 @@ public class Template extends DataFile implements StateEditable {
 		}
 	}
 
-	@Override protected void endNotifyAtBatchLevelOne() {
+	@Override
+	protected void endNotifyAtBatchLevelOne() {
 		if (mNeedAdvantagesPointCalculation) {
 			calculateAdvantagePoints();
 			notify(ID_ADVANTAGE_POINTS, new Integer(getAdvantagePoints()));

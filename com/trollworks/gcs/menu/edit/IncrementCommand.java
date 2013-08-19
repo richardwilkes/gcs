@@ -23,9 +23,9 @@
 
 package com.trollworks.gcs.menu.edit;
 
-import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.outline.OutlineProxy;
+import com.trollworks.ttk.menu.Command;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.OutlineProxy;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -35,6 +35,8 @@ import javax.swing.JMenuItem;
 
 /** Provides the "Increment" command. */
 public class IncrementCommand extends Command {
+	/** The action command this command will issue. */
+	public static final String				CMD_INCREMENT	= "Increment";				//$NON-NLS-1$
 	private static String					MSG_INCREMENT;
 
 	static {
@@ -42,13 +44,14 @@ public class IncrementCommand extends Command {
 	}
 
 	/** The singleton {@link IncrementCommand}. */
-	public static final IncrementCommand	INSTANCE	= new IncrementCommand();
+	public static final IncrementCommand	INSTANCE		= new IncrementCommand();
 
 	private IncrementCommand() {
-		super(MSG_INCREMENT, KeyEvent.VK_EQUALS);
+		super(MSG_INCREMENT, CMD_INCREMENT, KeyEvent.VK_EQUALS);
 	}
 
-	@Override public void adjustForMenu(JMenuItem item) {
+	@Override
+	public void adjustForMenu(JMenuItem item) {
 		Component focus = getFocusOwner();
 		if (focus instanceof OutlineProxy) {
 			focus = ((OutlineProxy) focus).getRealOutline();
@@ -63,7 +66,8 @@ public class IncrementCommand extends Command {
 		}
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		Component focus = getFocusOwner();
 		if (focus instanceof OutlineProxy) {
 			focus = ((OutlineProxy) focus).getRealOutline();

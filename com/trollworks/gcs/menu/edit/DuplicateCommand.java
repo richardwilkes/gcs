@@ -23,13 +23,14 @@
 
 package com.trollworks.gcs.menu.edit;
 
-import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
-import com.trollworks.gcs.widgets.outline.OutlineProxy;
-import com.trollworks.gcs.widgets.outline.Row;
+import com.trollworks.ttk.menu.Command;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
+import com.trollworks.ttk.widgets.outline.OutlineProxy;
+import com.trollworks.ttk.widgets.outline.Row;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -40,6 +41,8 @@ import javax.swing.JMenuItem;
 
 /** Provides the "Duplicate" command. */
 public class DuplicateCommand extends Command {
+	/** The action command this command will issue. */
+	public static final String				CMD_DUPLICATE	= "Duplicate";				//$NON-NLS-1$
 	private static String					MSG_DUPLICATE;
 	private static String					MSG_DUPLICATE_UNDO;
 
@@ -48,13 +51,14 @@ public class DuplicateCommand extends Command {
 	}
 
 	/** The singleton {@link DuplicateCommand}. */
-	public static final DuplicateCommand	INSTANCE	= new DuplicateCommand();
+	public static final DuplicateCommand	INSTANCE		= new DuplicateCommand();
 
 	private DuplicateCommand() {
-		super(MSG_DUPLICATE, KeyEvent.VK_U);
+		super(MSG_DUPLICATE, CMD_DUPLICATE, KeyEvent.VK_U);
 	}
 
-	@Override public void adjustForMenu(JMenuItem item) {
+	@Override
+	public void adjustForMenu(JMenuItem item) {
 		Component focus = getFocusOwner();
 		if (focus instanceof OutlineProxy) {
 			focus = ((OutlineProxy) focus).getRealOutline();
@@ -67,7 +71,8 @@ public class DuplicateCommand extends Command {
 		}
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		Component focus = getFocusOwner();
 		if (focus instanceof OutlineProxy) {
 			focus = ((OutlineProxy) focus).getRealOutline();
@@ -77,7 +82,8 @@ public class DuplicateCommand extends Command {
 		if (!model.isLocked() && model.hasSelection()) {
 			ArrayList<Row> rows = new ArrayList<Row>();
 			ArrayList<Row> topRows = new ArrayList<Row>();
-			outline.getDataFile().startNotify();
+			DataFile dataFile = outline.getDataFile();
+			dataFile.startNotify();
 			model.setDragRows(model.getSelectionAsList(true).toArray(new Row[0]));
 			outline.convertDragRowsToSelf(rows);
 			model.setDragRows(null);
@@ -87,6 +93,7 @@ public class DuplicateCommand extends Command {
 				}
 			}
 			outline.addRow(topRows.toArray(new ListRow[0]), MSG_DUPLICATE_UNDO, true);
+			dataFile.endNotify();
 			model.select(topRows, false);
 			outline.scrollSelectionIntoView();
 		}

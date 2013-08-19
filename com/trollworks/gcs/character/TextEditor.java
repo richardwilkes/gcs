@@ -23,8 +23,8 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.WindowSizeEnforcer;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.WindowSizeEnforcer;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;

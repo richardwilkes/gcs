@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 /** The limitations applicable to a {@link AttributeBonus}. */
 public enum AttributeBonusLimitation {

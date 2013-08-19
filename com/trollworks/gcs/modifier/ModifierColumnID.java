@@ -23,14 +23,14 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.outline.Cell;
-import com.trollworks.gcs.widgets.outline.Column;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
-import com.trollworks.gcs.widgets.outline.Outline;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.Cell;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
 
 import javax.swing.SwingConstants;
 
@@ -38,37 +38,45 @@ import javax.swing.SwingConstants;
 public enum ModifierColumnID {
 	/** The enabled/disabled column. */
 	ENABLED {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_ENABLED;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_ENABLED_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.CENTER, false);
 		}
 
-		@Override public String getDataAsText(Modifier modifier) {
+		@Override
+		public String getDataAsText(Modifier modifier) {
 			return modifier.isEnabled() ? MSG_ENABLED_COLUMN : ""; //$NON-NLS-1$
 		}
 	},
 	/** The advantage name/description. */
 	DESCRIPTION {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_DESCRIPTION;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_DESCRIPTION_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new MultiCell();
 		}
 
-		@Override public String getDataAsText(Modifier modifier) {
+		@Override
+		public String getDataAsText(Modifier modifier) {
 			StringBuilder builder = new StringBuilder();
 			String notes = modifier.getNotes();
 
@@ -83,38 +91,46 @@ public enum ModifierColumnID {
 	},
 	/** The total cost modifier. */
 	COST_MODIFIER_TOTAL {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_COST_MODIFIER;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_COST_MODIFIER_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.LEFT, false);
 		}
 
-		@Override public String getDataAsText(Modifier modifier) {
+		@Override
+		public String getDataAsText(Modifier modifier) {
 			return modifier.getCostDescription();
 		}
 	},
 
 	/** The page reference. */
 	REFERENCE {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_REFERENCE;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_REFERENCE_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public String getDataAsText(Modifier modifier) {
+		@Override
+		public String getDataAsText(Modifier modifier) {
 			return modifier.getReference();
 		}
 	};

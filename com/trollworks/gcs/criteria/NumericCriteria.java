@@ -23,10 +23,10 @@
 
 package com.trollworks.gcs.criteria;
 
-import com.trollworks.gcs.utility.collections.EnumExtractor;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
+import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 
@@ -50,7 +50,8 @@ public abstract class NumericCriteria {
 		setType(type);
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -96,7 +97,8 @@ public abstract class NumericCriteria {
 		mType = type;
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		return toString(MSG_IS_PREFIX);
 	}
 

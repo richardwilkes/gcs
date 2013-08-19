@@ -23,11 +23,11 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.utility.MultipleUndo;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.utility.units.WeightUnits;
-import com.trollworks.gcs.widgets.layout.ColumnLayout;
+import com.trollworks.ttk.layout.ColumnLayout;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.undo.MultipleUndo;
+import com.trollworks.ttk.units.WeightUnits;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.BorderLayout;
 import java.awt.Container;

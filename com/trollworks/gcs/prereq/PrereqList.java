@@ -26,12 +26,12 @@ package com.trollworks.gcs.prereq;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.xml.XMLNodeType;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
-import com.trollworks.gcs.utility.text.NumberUtils;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.xml.XMLNodeType;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -121,7 +121,8 @@ public class PrereqList extends Prereq {
 		}
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -132,11 +133,13 @@ public class PrereqList extends Prereq {
 		return false;
 	}
 
-	@Override public String getXMLTag() {
+	@Override
+	public String getXMLTag() {
 		return TAG_ROOT;
 	}
 
-	@Override public void save(XMLWriter out) {
+	@Override
+	public void save(XMLWriter out) {
 		if (!mPrereqs.isEmpty()) {
 			out.startTag(TAG_ROOT);
 			out.writeAttribute(ATTRIBUTE_ALL, mAll);
@@ -228,7 +231,8 @@ public class PrereqList extends Prereq {
 		}
 	}
 
-	@Override public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
+	@Override
+	public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
 		if (isWhenTLEnabled(mWhenTLCriteria)) {
 			if (!mWhenTLCriteria.matches(NumberUtils.getNonLocalizedInteger(character.getDescription().getTechLevel(), 0))) {
 				return true;
@@ -257,17 +261,20 @@ public class PrereqList extends Prereq {
 		return satisfied;
 	}
 
-	@Override public Prereq clone(PrereqList parent) {
+	@Override
+	public Prereq clone(PrereqList parent) {
 		return new PrereqList(parent, this);
 	}
 
-	@Override public void fillWithNameableKeys(HashSet<String> set) {
+	@Override
+	public void fillWithNameableKeys(HashSet<String> set) {
 		for (Prereq prereq : mPrereqs) {
 			prereq.fillWithNameableKeys(set);
 		}
 	}
 
-	@Override public void applyNameableKeys(HashMap<String, String> map) {
+	@Override
+	public void applyNameableKeys(HashMap<String, String> map) {
 		for (Prereq prereq : mPrereqs) {
 			prereq.applyNameableKeys(map);
 		}

@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="fczp7t1h:tty3pvkoxdg4" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes" type="race">
+			<name>Wildman</name>
+			<reference>DF3:16</reference>
+			<advantage version="2">
+				<name>Increased Strength</name>
+				<type>Physical</type>
+				<levels>2</levels>
+				<points_per_level>10</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>No Fine Manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B15</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Size</name>
+					<cost type="percentage">-10</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+					<reference>B15</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Super-Effort</name>
+					<cost type="percentage">300</cost>
+					<affects>total</affects>
+					<reference>Sup24</reference>
+				</modifier>
+				<reference>B14</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>st</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Decreased Intelligence</name>
+				<type>Mental</type>
+				<levels>1</levels>
+				<points_per_level>-20</points_per_level>
+				<reference>B15</reference>
+				<categories>
+					<category>Attribute</category>
+					<category>Disadvantage</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>iq</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Health</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>10</points_per_level>
+				<reference>B14</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>ht</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Perception</name>
+				<type>Mental/Physical</type>
+				<levels>3</levels>
+				<points_per_level>5</points_per_level>
+				<reference>B16</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>perception</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Animal Empathy</name>
+				<type>Mental</type>
+				<base_points>5</base_points>
+				<modifier version="1" enabled="no">
+					<name>Remote</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>P48</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B87</reference>
+					<notes>All aquatic animals</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B87</reference>
+					<notes>All land animals</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+					<reference>B87</reference>
+					<notes>@One class: Mammals, Birds, etc.@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-60</cost>
+					<affects>total</affects>
+					<reference>B87</reference>
+					<notes>@One family: Felines, Parrots, etc.@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-80</cost>
+					<affects>total</affects>
+					<reference>B87</reference>
+					<notes>@One species: House Cats, Macaws, etc.@</notes>
+				</modifier>
+				<reference>B40</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Arm ST</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>5</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>No fine manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B145</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Only one arm</name>
+					<cost type="points">-2</cost>
+					<affects>levels_only</affects>
+					<reference>B40</reference>
+					<notes>@Which@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Three arms</name>
+					<cost type="points">3</cost>
+					<affects>levels_only</affects>
+					<reference>B40</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Size</name>
+					<cost type="percentage">-10</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+				</modifier>
+				<reference>B40</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Brachiator</name>
+				<type>Physical, Exotic</type>
+				<base_points>5</base_points>
+				<reference>B41</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">climbing</name>
+					<specialization compare="is anything"></specialization>
+					<amount>2</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Fur</name>
+				<type>Physical, Exotic</type>
+				<base_points>1</base_points>
+				<reference>B101</reference>
+				<categories>
+					<category>Perk</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Temperature Tolerance</name>
+				<type>Physical</type>
+				<levels>2</levels>
+				<points_per_level>1</points_per_level>
+				<reference>B93</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Call of the Wild</name>
+				<type>Physical</type>
+				<base_points>1</base_points>
+				<reference>DF3:16</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Appearance</name>
+				<type>Physical</type>
+				<modifier version="1" enabled="no">
+					<name>Universal</name>
+					<cost type="percentage">25</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Off-the-Shelf Looks</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Androgynous</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Impressive</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Attractive</name>
+					<cost type="points">4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Average</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Horrific</name>
+					<cost type="points">-24</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Monstrous</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Hideous</name>
+					<cost type="points">-16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Ugly</name>
+					<cost type="points">-8</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1">
+					<name>Unattractive</name>
+					<cost type="points">-4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Handsome</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Beautiful</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Handsome</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Beautiful</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Transcendent</name>
+					<cost type="points">20</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B21</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Apeish looks.</name>
+				<type>Physical</type>
+			</advantage>
+			<advantage version="2">
+				<name>Low TL</name>
+				<type>Social</type>
+				<levels>3</levels>
+				<points_per_level>-5</points_per_level>
+				<reference>B22</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Social Stigma (Savage)</name>
+				<type>Social</type>
+				<base_points>-10</base_points>
+				<reference>DF3:11</reference>
+				<notes>-2 reaction; -4 to skills; Denied entry to town on 6 or less</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Apeish looks.</name>
+				<type>Physical</type>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+</template>

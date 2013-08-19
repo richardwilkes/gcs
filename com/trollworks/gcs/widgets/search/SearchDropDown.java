@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.widgets.search;
 
-import com.trollworks.gcs.widgets.UIUtilities;
+import com.trollworks.ttk.utility.UIUtilities;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

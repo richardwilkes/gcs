@@ -23,14 +23,14 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.Wrapper;
-import com.trollworks.gcs.widgets.layout.Alignment;
-import com.trollworks.gcs.widgets.layout.FlexComponent;
-import com.trollworks.gcs.widgets.layout.FlexGrid;
-import com.trollworks.gcs.widgets.layout.FlexRow;
-import com.trollworks.gcs.widgets.layout.FlexSpacer;
+import com.trollworks.ttk.layout.Alignment;
+import com.trollworks.ttk.layout.FlexComponent;
+import com.trollworks.ttk.layout.FlexGrid;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.layout.FlexSpacer;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.UIUtilities;
+import com.trollworks.ttk.widgets.Wrapper;
 
 import java.awt.Color;
 import java.awt.Dimension;

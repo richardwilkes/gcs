@@ -26,9 +26,9 @@ package com.trollworks.gcs.feature;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.skill.Skill;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -41,8 +41,8 @@ public class SkillBonus extends Bonus {
 	private static final String	TAG_NAME			= "name";			//$NON-NLS-1$
 	private static final String	TAG_SPECIALIZATION	= "specialization"; //$NON-NLS-1$
 	private static final String	EMPTY				= "";				//$NON-NLS-1$
-	private StringCriteria	mNameCriteria;
-	private StringCriteria	mSpecializationCriteria;
+	private StringCriteria		mNameCriteria;
+	private StringCriteria		mSpecializationCriteria;
 
 	/** Creates a new skill bonus. */
 	public SkillBonus() {
@@ -73,7 +73,8 @@ public class SkillBonus extends Bonus {
 		mSpecializationCriteria = new StringCriteria(other.mSpecializationCriteria);
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -106,7 +107,8 @@ public class SkillBonus extends Bonus {
 		return buffer.toString();
 	}
 
-	@Override protected void loadSelf(XMLReader reader) throws IOException {
+	@Override
+	protected void loadSelf(XMLReader reader) throws IOException {
 		if (TAG_NAME.equals(reader.getName())) {
 			mNameCriteria.load(reader);
 		} else if (TAG_SPECIALIZATION.equals(reader.getName())) {
@@ -139,12 +141,14 @@ public class SkillBonus extends Bonus {
 		return mSpecializationCriteria;
 	}
 
-	@Override public void fillWithNameableKeys(HashSet<String> set) {
+	@Override
+	public void fillWithNameableKeys(HashSet<String> set) {
 		ListRow.extractNameables(set, mNameCriteria.getQualifier());
 		ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
 	}
 
-	@Override public void applyNameableKeys(HashMap<String, String> map) {
+	@Override
+	public void applyNameableKeys(HashMap<String, String> map) {
 		mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
 		mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
 	}

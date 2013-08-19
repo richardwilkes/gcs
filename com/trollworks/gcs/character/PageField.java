@@ -23,17 +23,17 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.utility.Fonts;
-import com.trollworks.gcs.utility.Platform;
-import com.trollworks.gcs.utility.notification.NotifierTarget;
-import com.trollworks.gcs.utility.text.DateFormatter;
-import com.trollworks.gcs.utility.text.DiceFormatter;
-import com.trollworks.gcs.utility.text.DoubleFormatter;
-import com.trollworks.gcs.utility.text.HeightFormatter;
-import com.trollworks.gcs.utility.text.IntegerFormatter;
-import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.utility.text.WeightFormatter;
-import com.trollworks.gcs.widgets.GraphicsUtilities;
+import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.ttk.notification.NotifierTarget;
+import com.trollworks.ttk.text.DateFormatter;
+import com.trollworks.ttk.text.DiceFormatter;
+import com.trollworks.ttk.text.DoubleFormatter;
+import com.trollworks.ttk.text.HeightFormatter;
+import com.trollworks.ttk.text.IntegerFormatter;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.WeightFormatter;
+import com.trollworks.ttk.utility.GraphicsUtilities;
+import com.trollworks.ttk.utility.Platform;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -110,7 +110,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		}
 		mCharacter = character;
 		mConsumedType = consumedType;
-		setFont(UIManager.getFont(Fonts.KEY_FIELD));
+		setFont(UIManager.getFont(GCSFonts.KEY_FIELD));
 		setBorder(null);
 		setOpaque(false);
 		// Just setting opaque to false isn't enough for some reason, so I'm also setting the
@@ -140,7 +140,8 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		setDisabledTextColor(UIManager.getColor("TextField.inactiveForeground")); //$NON-NLS-1$
 	}
 
-	@Override public Dimension getPreferredSize() {
+	@Override
+	public Dimension getPreferredSize() {
 		Dimension size = super.getPreferredSize();
 		// Don't know why this is needed, but it seems to be. Without it, text is being truncated by
 		// about 2 pixels.
@@ -148,7 +149,8 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		return size;
 	}
 
-	@Override public String getToolTipText() {
+	@Override
+	public String getToolTipText() {
 		if (mCustomToolTip != null) {
 			return MessageFormat.format(mCustomToolTip, NumberUtils.format(((Integer) mCharacter.getValueForID(GURPSCharacter.POINTS_PREFIX + mConsumedType)).intValue()));
 		}
@@ -161,14 +163,16 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		repaint();
 	}
 
-	@Override protected void processFocusEvent(FocusEvent event) {
+	@Override
+	protected void processFocusEvent(FocusEvent event) {
 		super.processFocusEvent(event);
 		if (event.getID() == FocusEvent.FOCUS_GAINED) {
 			selectAll();
 		}
 	}
 
-	@Override protected void paintComponent(Graphics gc) {
+	@Override
+	protected void paintComponent(Graphics gc) {
 		if (isEditable()) {
 			Rectangle bounds = getBounds();
 			bounds.x = 0;

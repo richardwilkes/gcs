@@ -24,20 +24,22 @@
 package com.trollworks.gcs.preferences;
 
 import com.trollworks.gcs.character.Profile;
-import com.trollworks.gcs.utility.Dice;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.Path;
-import com.trollworks.gcs.utility.io.Preferences;
-import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.widgets.StdFileDialog;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.layout.Alignment;
-import com.trollworks.gcs.widgets.layout.FlexColumn;
-import com.trollworks.gcs.widgets.layout.FlexComponent;
-import com.trollworks.gcs.widgets.layout.FlexGrid;
-import com.trollworks.gcs.widgets.layout.FlexRow;
-import com.trollworks.gcs.widgets.layout.FlexSpacer;
+import com.trollworks.ttk.image.Images;
+import com.trollworks.ttk.layout.Alignment;
+import com.trollworks.ttk.layout.FlexColumn;
+import com.trollworks.ttk.layout.FlexComponent;
+import com.trollworks.ttk.layout.FlexGrid;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.layout.FlexSpacer;
+import com.trollworks.ttk.preferences.PreferencePanel;
+import com.trollworks.ttk.preferences.Preferences;
+import com.trollworks.ttk.preferences.PreferencesWindow;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.utility.Dice;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.Path;
+import com.trollworks.ttk.utility.UIUtilities;
+import com.trollworks.ttk.widgets.StdFileDialog;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -70,6 +72,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private static String			MSG_INITIAL_POINTS_TOOLTIP;
 	private static String			MSG_SELECT_PORTRAIT;
 	private static String			MSG_OPTIONAL_IQ_RULES;
+	private static String			MSG_OPTIONAL_MODIFIER_RULES;
 	private static String			MSG_OPTIONAL_DICE_RULES;
 	private static String			MSG_PNG_RESOLUTION_PRE;
 	private static String			MSG_PNG_RESOLUTION_POST;
@@ -79,22 +82,26 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private static String			MSG_HTML_TEMPLATE_PICKER;
 	private static String			MSG_HTML_TEMPLATE_OVERRIDE_TOOLTIP;
 	private static String			MSG_SELECT_HTML_TEMPLATE;
-	private static final String		MODULE							= "Sheet";													//$NON-NLS-1$
-	private static final String		OPTIONAL_DICE_RULES				= "UseOptionDiceRules";									//$NON-NLS-1$
+	private static final String		MODULE								= "Sheet";														//$NON-NLS-1$
+	private static final String		OPTIONAL_DICE_RULES					= "UseOptionDiceRules";										//$NON-NLS-1$
 	/** The optional dice rules preference key. */
-	public static final String		OPTIONAL_DICE_RULES_PREF_KEY	= Preferences.getModuleKey(MODULE, OPTIONAL_DICE_RULES);
-	private static final boolean	DEFAULT_OPTIONAL_DICE_RULES		= false;
-	private static final String		OPTIONAL_IQ_RULES				= "UseOptionIQRules";										//$NON-NLS-1$
+	public static final String		OPTIONAL_DICE_RULES_PREF_KEY		= Preferences.getModuleKey(MODULE, OPTIONAL_DICE_RULES);
+	private static final boolean	DEFAULT_OPTIONAL_DICE_RULES			= false;
+	private static final String		OPTIONAL_IQ_RULES					= "UseOptionIQRules";											//$NON-NLS-1$
 	/** The optional IQ rules preference key. */
-	public static final String		OPTIONAL_IQ_RULES_PREF_KEY		= Preferences.getModuleKey(MODULE, OPTIONAL_IQ_RULES);
-	private static final boolean	DEFAULT_OPTIONAL_IQ_RULES		= false;
-	private static final int		DEFAULT_PNG_RESOLUTION			= 200;
-	private static final String		PNG_RESOLUTION					= "PNGResolution";											//$NON-NLS-1$
-	private static final int[]		DPI								= { 72, 96, 144, 150, 200, 300 };
-	private static final String		USE_HTML_TEMPLATE_OVERRIDE		= "UseHTMLTemplateOverride";								//$NON-NLS-1$
-	private static final String		HTML_TEMPLATE_OVERRIDE			= "HTMLTemplateOverride";									//$NON-NLS-1$
-	private static final String		INITIAL_POINTS_KEY				= "InitialPoints";											//$NON-NLS-1$
-	private static final int		DEFAULT_INITIAL_POINTS			= 100;
+	public static final String		OPTIONAL_IQ_RULES_PREF_KEY			= Preferences.getModuleKey(MODULE, OPTIONAL_IQ_RULES);
+	private static final boolean	DEFAULT_OPTIONAL_IQ_RULES			= false;
+	private static final String		OPTIONAL_MODIFIER_RULES				= "UseOptionModifierRules";									//$NON-NLS-1$
+	/** The optional modifier rules preference key. */
+	public static final String		OPTIONAL_MODIFIER_RULES_PREF_KEY	= Preferences.getModuleKey(MODULE, OPTIONAL_MODIFIER_RULES);
+	private static final boolean	DEFAULT_OPTIONAL_MODIFIER_RULES		= false;
+	private static final int		DEFAULT_PNG_RESOLUTION				= 200;
+	private static final String		PNG_RESOLUTION						= "PNGResolution";												//$NON-NLS-1$
+	private static final int[]		DPI									= { 72, 96, 144, 150, 200, 300 };
+	private static final String		USE_HTML_TEMPLATE_OVERRIDE			= "UseHTMLTemplateOverride";									//$NON-NLS-1$
+	private static final String		HTML_TEMPLATE_OVERRIDE				= "HTMLTemplateOverride";										//$NON-NLS-1$
+	private static final String		INITIAL_POINTS_KEY					= "InitialPoints";												//$NON-NLS-1$
+	private static final int		DEFAULT_INITIAL_POINTS				= 100;
 	private JTextField				mPlayerName;
 	private JTextField				mCampaign;
 	private JTextField				mTechLevel;
@@ -106,6 +113,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private JButton					mHTMLTemplatePicker;
 	private JCheckBox				mUseOptionalDiceRules;
 	private JCheckBox				mUseOptionalIQRules;
+	private JCheckBox				mUseOptionalModifierRules;
 
 	static {
 		LocalizedMessages.initialize(SheetPreferences.class);
@@ -132,6 +140,11 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	/** @return Whether the optional IQ rules (Will &amp; Perception are not based on IQ) are in use. */
 	public static boolean areOptionalIQRulesUsed() {
 		return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_IQ_RULES, DEFAULT_OPTIONAL_IQ_RULES);
+	}
+
+	/** @return Whether the optional modifier rules from PW102 are in use. */
+	public static boolean areOptionalModifierRulesUsed() {
+		return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_MODIFIER_RULES, DEFAULT_OPTIONAL_MODIFIER_RULES);
 	}
 
 	/** @return The resolution to use when saving the sheet as a PNG. */
@@ -203,6 +216,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 		mUseOptionalIQRules = createCheckBox(MSG_OPTIONAL_IQ_RULES, null, areOptionalIQRulesUsed());
 		column.add(mUseOptionalIQRules);
+
+		mUseOptionalModifierRules = createCheckBox(MSG_OPTIONAL_MODIFIER_RULES, null, areOptionalModifierRulesUsed());
+		column.add(mUseOptionalModifierRules);
 
 		mUseOptionalDiceRules = createCheckBox(MSG_OPTIONAL_DICE_RULES, null, areOptionalDiceRulesUsed());
 		column.add(mUseOptionalDiceRules);
@@ -313,7 +329,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		adjustResetButton();
 	}
 
-	@Override public void reset() {
+	@Override
+	public void reset() {
 		mPlayerName.setText(System.getProperty("user.name")); //$NON-NLS-1$
 		mCampaign.setText(""); //$NON-NLS-1$
 		mTechLevel.setText(Profile.DEFAULT_TECH_LEVEL);
@@ -328,10 +345,12 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		mUseHTMLTemplateOverride.setSelected(false);
 		mUseOptionalDiceRules.setSelected(DEFAULT_OPTIONAL_DICE_RULES);
 		mUseOptionalIQRules.setSelected(DEFAULT_OPTIONAL_IQ_RULES);
+		mUseOptionalModifierRules.setSelected(DEFAULT_OPTIONAL_MODIFIER_RULES);
 	}
 
-	@Override public boolean isSetToDefaults() {
-		return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultCampaign().equals("") && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getInitialPoints() == DEFAULT_INITIAL_POINTS && getPNGResolution() == DEFAULT_PNG_RESOLUTION && isHTMLTemplateOverridden() == false && areOptionalDiceRulesUsed() == DEFAULT_OPTIONAL_DICE_RULES && areOptionalIQRulesUsed() == DEFAULT_OPTIONAL_IQ_RULES; //$NON-NLS-1$ //$NON-NLS-2$
+	@Override
+	public boolean isSetToDefaults() {
+		return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultCampaign().equals("") && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getInitialPoints() == DEFAULT_INITIAL_POINTS && getPNGResolution() == DEFAULT_PNG_RESOLUTION && isHTMLTemplateOverridden() == false && areOptionalDiceRulesUsed() == DEFAULT_OPTIONAL_DICE_RULES && areOptionalIQRulesUsed() == DEFAULT_OPTIONAL_IQ_RULES && areOptionalModifierRulesUsed() == DEFAULT_OPTIONAL_MODIFIER_RULES; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	private void setPortrait(String path) {
@@ -381,6 +400,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 			Preferences.getInstance().setValue(MODULE, OPTIONAL_DICE_RULES, checked);
 		} else if (source == mUseOptionalIQRules) {
 			Preferences.getInstance().setValue(MODULE, OPTIONAL_IQ_RULES, mUseOptionalIQRules.isSelected());
+		} else if (source == mUseOptionalModifierRules) {
+			Preferences.getInstance().setValue(MODULE, OPTIONAL_MODIFIER_RULES, mUseOptionalModifierRules.isSelected());
 		}
 		adjustResetButton();
 	}

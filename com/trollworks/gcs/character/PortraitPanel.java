@@ -23,17 +23,17 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.utility.Fonts;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.Path;
-import com.trollworks.gcs.utility.notification.NotifierTarget;
-import com.trollworks.gcs.widgets.AppWindow;
-import com.trollworks.gcs.widgets.BoxedDropShadowBorder;
-import com.trollworks.gcs.widgets.GraphicsUtilities;
-import com.trollworks.gcs.widgets.StdFileDialog;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.WindowUtils;
+import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.gcs.widgets.GCSWindow;
+import com.trollworks.ttk.border.BoxedDropShadowBorder;
+import com.trollworks.ttk.image.Images;
+import com.trollworks.ttk.notification.NotifierTarget;
+import com.trollworks.ttk.utility.GraphicsUtilities;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.Path;
+import com.trollworks.ttk.utility.UIUtilities;
+import com.trollworks.ttk.widgets.StdFileDialog;
+import com.trollworks.ttk.widgets.WindowUtils;
 
 import java.awt.Container;
 import java.awt.Dimension;
@@ -69,14 +69,15 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 	 */
 	public PortraitPanel(GURPSCharacter character) {
 		super(null, true);
-		setBorder(new BoxedDropShadowBorder(UIManager.getFont(Fonts.KEY_LABEL), MSG_PORTRAIT));
+		setBorder(new BoxedDropShadowBorder(UIManager.getFont(GCSFonts.KEY_LABEL), MSG_PORTRAIT));
 		mCharacter = character;
 		Insets insets = getInsets();
 		UIUtilities.setOnlySize(this, new Dimension(insets.left + insets.right + Profile.PORTRAIT_WIDTH, insets.top + insets.bottom + Profile.PORTRAIT_HEIGHT));
 		setToolTipText(MessageFormat.format(MSG_PORTRAIT_TOOLTIP, new Integer(Profile.PORTRAIT_WIDTH * 2), new Integer(Profile.PORTRAIT_HEIGHT * 2)));
 		mCharacter.addTarget(this, Profile.ID_PORTRAIT);
 		addMouseListener(new MouseAdapter() {
-			@Override public void mouseClicked(MouseEvent event) {
+			@Override
+			public void mouseClicked(MouseEvent event) {
 				if (event.getClickCount() == 2) {
 					choosePortrait();
 				}
@@ -96,11 +97,12 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 		}
 	}
 
-	@Override protected void paintComponent(Graphics gc) {
+	@Override
+	protected void paintComponent(Graphics gc) {
 		super.paintComponent(GraphicsUtilities.prepare(gc));
 
 		Container top = getTopLevelAncestor();
-		boolean isPrinting = top instanceof AppWindow && ((AppWindow) top).isPrinting();
+		boolean isPrinting = top instanceof GCSWindow && ((GCSWindow) top).isPrinting();
 		Image portrait = mCharacter.getDescription().getPortrait(isPrinting);
 
 		if (portrait != null) {

@@ -29,15 +29,15 @@ import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.template.Template;
-import com.trollworks.gcs.utility.collections.FilteredIterator;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.MultipleRowUndo;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
-import com.trollworks.gcs.widgets.outline.Row;
 import com.trollworks.gcs.widgets.outline.RowPostProcessor;
 import com.trollworks.gcs.widgets.outline.RowUndo;
+import com.trollworks.ttk.collections.FilteredIterator;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
+import com.trollworks.ttk.widgets.outline.Row;
 
 import java.awt.EventQueue;
 import java.awt.dnd.DropTargetDragEvent;
@@ -153,11 +153,13 @@ public class SpellOutline extends ListOutline implements Incrementable {
 		}
 	}
 
-	@Override protected boolean isRowDragAcceptable(DropTargetDragEvent dtde, Row[] rows) {
+	@Override
+	protected boolean isRowDragAcceptable(DropTargetDragEvent dtde, Row[] rows) {
 		return !getModel().isLocked() && rows.length > 0 && rows[0] instanceof Spell;
 	}
 
-	@Override public void convertDragRowsToSelf(List<Row> list) {
+	@Override
+	public void convertDragRowsToSelf(List<Row> list) {
 		OutlineModel model = getModel();
 		Row[] rows = model.getDragRows();
 		boolean forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;

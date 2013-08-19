@@ -24,8 +24,8 @@
 package com.trollworks.gcs.prereq;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.util.HashMap;
 import java.util.HashSet;

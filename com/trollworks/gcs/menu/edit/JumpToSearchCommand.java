@@ -23,8 +23,8 @@
 
 package com.trollworks.gcs.menu.edit;
 
-import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.menu.Command;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
@@ -35,6 +35,8 @@ import javax.swing.JMenuItem;
 
 /** Provides the "Jump To Search" command. */
 public class JumpToSearchCommand extends Command {
+	/** The action command this command will issue. */
+	public static final String				CMD_JUMP_TO_SEARCH	= "JumpToSearch";				//$NON-NLS-1$
 	private static String					MSG_JUMP_TO_SEARCH;
 
 	static {
@@ -42,13 +44,14 @@ public class JumpToSearchCommand extends Command {
 	}
 
 	/** The singleton {@link JumpToSearchCommand}. */
-	public static final JumpToSearchCommand	INSTANCE	= new JumpToSearchCommand();
+	public static final JumpToSearchCommand	INSTANCE			= new JumpToSearchCommand();
 
 	private JumpToSearchCommand() {
-		super(MSG_JUMP_TO_SEARCH, KeyEvent.VK_J);
+		super(MSG_JUMP_TO_SEARCH, CMD_JUMP_TO_SEARCH, KeyEvent.VK_J);
 	}
 
-	@Override public void adjustForMenu(JMenuItem item) {
+	@Override
+	public void adjustForMenu(JMenuItem item) {
 		KeyboardFocusManager mgr = KeyboardFocusManager.getCurrentKeyboardFocusManager();
 		Component focus = mgr.getPermanentFocusOwner();
 		if (!(focus instanceof JumpToSearchTarget)) {
@@ -57,7 +60,8 @@ public class JumpToSearchCommand extends Command {
 		setEnabled(focus instanceof JumpToSearchTarget);
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		KeyboardFocusManager mgr = KeyboardFocusManager.getCurrentKeyboardFocusManager();
 		Component focus = mgr.getPermanentFocusOwner();
 		if (!(focus instanceof JumpToSearchTarget)) {

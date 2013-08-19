@@ -23,11 +23,11 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.layout.FlexGrid;
-import com.trollworks.gcs.widgets.layout.FlexRow;
-import com.trollworks.gcs.widgets.layout.FlexSpacer;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.layout.FlexGrid;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.layout.FlexSpacer;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
@@ -54,7 +54,8 @@ public class CostReductionEditor extends FeatureEditor {
 		super(row, feature);
 	}
 
-	@Override protected void rebuildSelf(FlexGrid grid, FlexRow right) {
+	@Override
+	protected void rebuildSelf(FlexGrid grid, FlexRow right) {
 		CostReduction feature = (CostReduction) getFeature();
 		FlexRow row = new FlexRow();
 		row.add(addChangeBaseTypeCombo());
@@ -72,7 +73,8 @@ public class CostReductionEditor extends FeatureEditor {
 		grid.add(row, 0, 0);
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
 		if (CHANGE_ATTRIBUTE.equals(command)) {
 			((CostReduction) getFeature()).setAttribute(CostReduction.TYPES[((JComboBox) event.getSource()).getSelectedIndex()]);

@@ -25,9 +25,9 @@ package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.library.LibraryWindow;
-import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
+import com.trollworks.ttk.menu.Command;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -37,6 +37,8 @@ import javax.swing.JMenuItem;
 
 /** Provides the "Copy To Character Sheet" command. */
 public class CopyToSheetCommand extends Command {
+	/** The action command this command will issue. */
+	public static final String				CMD_COPY_TO_SHEET	= "CopyToSheet";			//$NON-NLS-1$
 	private static String					MSG_COPY_TO_SHEET;
 
 	static {
@@ -44,13 +46,14 @@ public class CopyToSheetCommand extends Command {
 	}
 
 	/** The singleton {@link CopyToSheetCommand}. */
-	public static final CopyToSheetCommand	INSTANCE	= new CopyToSheetCommand();
+	public static final CopyToSheetCommand	INSTANCE			= new CopyToSheetCommand();
 
 	private CopyToSheetCommand() {
-		super(MSG_COPY_TO_SHEET, KeyEvent.VK_C, SHIFTED_COMMAND_MODIFIER);
+		super(MSG_COPY_TO_SHEET, CMD_COPY_TO_SHEET, KeyEvent.VK_C, SHIFTED_COMMAND_MODIFIER);
 	}
 
-	@Override public void adjustForMenu(JMenuItem item) {
+	@Override
+	public void adjustForMenu(JMenuItem item) {
 		Window window = getActiveWindow();
 		if (window instanceof LibraryWindow) {
 			setEnabled(((LibraryWindow) window).getOutline().getModel().hasSelection() && SheetWindow.getTopSheet() != null);
@@ -59,7 +62,8 @@ public class CopyToSheetCommand extends Command {
 		}
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		Window window = getActiveWindow();
 		if (window instanceof LibraryWindow) {
 			OutlineModel outlineModel = ((LibraryWindow) window).getOutline().getModel();

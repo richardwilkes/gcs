@@ -23,11 +23,11 @@
 
 package com.trollworks.gcs.common;
 
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
-import com.trollworks.gcs.widgets.outline.Row;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
+import com.trollworks.ttk.widgets.outline.Row;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.List;
@@ -43,7 +43,8 @@ public abstract class ListFile extends DataFile {
 		initialize();
 	}
 
-	@Override protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
+	@Override
+	protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
 		mModel = new OutlineModel();
 		loadList(reader, state);
 	}
@@ -57,7 +58,8 @@ public abstract class ListFile extends DataFile {
 	 */
 	protected abstract void loadList(XMLReader reader, LoadState state) throws IOException;
 
-	@Override protected final void saveSelf(XMLWriter out) {
+	@Override
+	protected final void saveSelf(XMLWriter out) {
 		for (Row one : getTopLevelRows()) {
 			((ListRow) one).save(out, false);
 		}
@@ -73,7 +75,8 @@ public abstract class ListFile extends DataFile {
 		return mModel;
 	}
 
-	@Override public boolean isEmpty() {
+	@Override
+	public boolean isEmpty() {
 		return mModel.getRowCount() == 0;
 	}
 }

@@ -23,23 +23,23 @@
 
 package com.trollworks.gcs.skill;
 
+import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.library.LibraryFile;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
-import com.trollworks.gcs.utility.text.NumberUtils;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
-import com.trollworks.gcs.widgets.outline.Column;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.gcs.widgets.outline.Row;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.widgets.outline.Row;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -218,27 +218,33 @@ public class Skill extends ListRow {
 		load(reader, state);
 	}
 
-	@Override public String getLocalizedName() {
+	@Override
+	public String getLocalizedName() {
 		return MSG_DEFAULT_NAME;
 	}
 
-	@Override public String getListChangedID() {
+	@Override
+	public String getListChangedID() {
 		return ID_LIST_CHANGED;
 	}
 
-	@Override public String getXMLTagName() {
+	@Override
+	public String getXMLTagName() {
 		return canHaveChildren() ? TAG_SKILL_CONTAINER : TAG_SKILL;
 	}
 
-	@Override public int getXMLTagVersion() {
+	@Override
+	public int getXMLTagVersion() {
 		return CURRENT_VERSION;
 	}
 
-	@Override public String getRowType() {
+	@Override
+	public String getRowType() {
 		return "Skill"; //$NON-NLS-1$
 	}
 
-	@Override protected void prepareForLoad(LoadState state) {
+	@Override
+	protected void prepareForLoad(LoadState state) {
 		super.prepareForLoad(state);
 		mName = getLocalizedName();
 		mSpecialization = EMPTY;
@@ -251,7 +257,8 @@ public class Skill extends ListRow {
 		mWeapons = new ArrayList<WeaponStats>();
 	}
 
-	@Override protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
+	@Override
+	protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
 		String name = reader.getName();
 		if (TAG_NAME.equals(name)) {
 			mName = reader.readText().replace(NEWLINE, SPACE);
@@ -290,11 +297,13 @@ public class Skill extends ListRow {
 		}
 	}
 
-	@Override protected void finishedLoading() {
+	@Override
+	protected void finishedLoading() {
 		updateLevel(false);
 	}
 
-	@Override public void saveSelf(XMLWriter out, boolean forUndo) {
+	@Override
+	public void saveSelf(XMLWriter out, boolean forUndo) {
 		out.simpleTag(TAG_NAME, mName);
 		if (!canHaveChildren()) {
 			out.simpleTagNotEmpty(TAG_SPECIALIZATION, mSpecialization);
@@ -527,18 +536,21 @@ public class Skill extends ListRow {
 		return false;
 	}
 
-	@Override public boolean contains(String text, boolean lowerCaseOnly) {
+	@Override
+	public boolean contains(String text, boolean lowerCaseOnly) {
 		if (getName().toLowerCase().indexOf(text) != -1) {
 			return true;
 		}
 		return super.contains(text, lowerCaseOnly);
 	}
 
-	@Override public Object getData(Column column) {
+	@Override
+	public Object getData(Column column) {
 		return SkillColumn.values()[column.getID()].getData(this);
 	}
 
-	@Override public String getDataAsText(Column column) {
+	@Override
+	public String getDataAsText(Column column) {
 		return SkillColumn.values()[column.getID()].getDataAsText(this);
 	}
 
@@ -568,7 +580,8 @@ public class Skill extends ListRow {
 		return mAttribute + SLASH + mDifficulty;
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		StringBuilder builder = new StringBuilder();
 
 		builder.append(getName());
@@ -592,11 +605,13 @@ public class Skill extends ListRow {
 		return builder.toString();
 	}
 
-	@Override public BufferedImage getImage(boolean large) {
-		return Images.getSkillIcon(large, true);
+	@Override
+	public BufferedImage getImage(boolean large) {
+		return GCSImages.getSkillIcon(large, true);
 	}
 
-	@Override public RowEditor<? extends ListRow> createEditor() {
+	@Override
+	public RowEditor<? extends ListRow> createEditor() {
 		return new SkillEditor(this);
 	}
 
@@ -707,7 +722,8 @@ public class Skill extends ListRow {
 		return null;
 	}
 
-	@Override public void fillWithNameableKeys(HashSet<String> set) {
+	@Override
+	public void fillWithNameableKeys(HashSet<String> set) {
 		super.fillWithNameableKeys(set);
 		extractNameables(set, mName);
 		extractNameables(set, mSpecialization);
@@ -718,7 +734,8 @@ public class Skill extends ListRow {
 		}
 	}
 
-	@Override public void applyNameableKeys(HashMap<String, String> map) {
+	@Override
+	public void applyNameableKeys(HashMap<String, String> map) {
 		super.applyNameableKeys(map);
 		mName = nameNameables(map, mName);
 		mSpecialization = nameNameables(map, mSpecialization);
@@ -729,7 +746,8 @@ public class Skill extends ListRow {
 		}
 	}
 
-	@Override protected String getCategoryID() {
+	@Override
+	protected String getCategoryID() {
 		return ID_CATEGORY;
 	}
 }

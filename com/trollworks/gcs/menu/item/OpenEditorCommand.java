@@ -23,10 +23,10 @@
 
 package com.trollworks.gcs.menu.item;
 
-import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.widgets.outline.ListOutline;
-import com.trollworks.gcs.widgets.outline.Outline;
+import com.trollworks.ttk.menu.Command;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.Outline;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -36,6 +36,8 @@ import javax.swing.JMenuItem;
 
 /** Provides the "Open Detail Editor" command. */
 public class OpenEditorCommand extends Command {
+	/** The action command this command will issue. */
+	public static final String				CMD_OPEN_EDITOR	= "OpeNEditor";			//$NON-NLS-1$
 	private static String					MSG_OPEN_EDITOR;
 
 	static {
@@ -43,13 +45,14 @@ public class OpenEditorCommand extends Command {
 	}
 
 	/** The singleton {@link OpenEditorCommand}. */
-	public static final OpenEditorCommand	INSTANCE	= new OpenEditorCommand();
+	public static final OpenEditorCommand	INSTANCE		= new OpenEditorCommand();
 
 	private OpenEditorCommand() {
-		super(MSG_OPEN_EDITOR, KeyEvent.VK_I);
+		super(MSG_OPEN_EDITOR, CMD_OPEN_EDITOR, KeyEvent.VK_I);
 	}
 
-	@Override public void adjustForMenu(JMenuItem item) {
+	@Override
+	public void adjustForMenu(JMenuItem item) {
 		Component comp = getFocusOwner();
 		if (comp instanceof Outline) {
 			setEnabled(((Outline) comp).getModel().hasSelection());
@@ -58,7 +61,8 @@ public class OpenEditorCommand extends Command {
 		}
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		Outline outline = (Outline) getFocusOwner();
 		((ListOutline) outline.getRealOutline()).openDetailEditor(false);
 	}

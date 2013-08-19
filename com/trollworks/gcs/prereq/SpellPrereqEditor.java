@@ -23,12 +23,12 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.CommitEnforcer;
-import com.trollworks.gcs.widgets.layout.FlexGrid;
-import com.trollworks.gcs.widgets.layout.FlexRow;
-import com.trollworks.gcs.widgets.layout.FlexSpacer;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.layout.FlexGrid;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.layout.FlexSpacer;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.CommitEnforcer;
 
 import java.awt.event.ActionEvent;
 
@@ -59,7 +59,8 @@ public class SpellPrereqEditor extends PrereqEditor {
 		super(row, prereq, depth);
 	}
 
-	@Override protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
+	@Override
+	protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
 		SpellPrereq prereq = (SpellPrereq) mPrereq;
 		String type = prereq.getType();
 
@@ -98,7 +99,8 @@ public class SpellPrereqEditor extends PrereqEditor {
 		return addComboBox(CHANGE_TYPE, titles, titles[selection]);
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		SpellPrereq prereq = (SpellPrereq) mPrereq;
 		String command = event.getActionCommand();
 

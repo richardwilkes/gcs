@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.criteria;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.text.MessageFormat;
 

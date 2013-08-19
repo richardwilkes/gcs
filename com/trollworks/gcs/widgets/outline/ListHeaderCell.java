@@ -23,7 +23,11 @@
 
 package com.trollworks.gcs.widgets.outline;
 
-import com.trollworks.gcs.utility.Fonts;
+import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.widgets.outline.HeaderCell;
+import com.trollworks.ttk.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.Row;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -46,12 +50,14 @@ public class ListHeaderCell extends HeaderCell {
 		mForSheet = forSheet;
 	}
 
-	@Override public Font getFont(Row row, Column column) {
-		return UIManager.getFont(Fonts.KEY_LABEL);
+	@Override
+	public Font getFont(Row row, Column column) {
+		return UIManager.getFont(GCSFonts.KEY_LABEL);
 // return mForSheet ? UIManager.getFont(Fonts.KEY_LABEL) : super.getFont(row, column);
 	}
 
-	@Override public void drawCell(Outline outline, Graphics gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
+	@Override
+	public void drawCell(Outline outline, Graphics gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
 		if (mForSheet) {
 			drawCellSuper(outline, gc, bounds, row, column, selected, active);
 		} else {
@@ -59,7 +65,8 @@ public class ListHeaderCell extends HeaderCell {
 		}
 	}
 
-	@Override public int getPreferredWidth(Row row, Column column) {
+	@Override
+	public int getPreferredWidth(Row row, Column column) {
 		int width = super.getPreferredWidth(row, column);
 
 		if (mForSheet) {
@@ -68,7 +75,8 @@ public class ListHeaderCell extends HeaderCell {
 		return width;
 	}
 
-	@Override public Color getColor(boolean selected, boolean active, Row row, Column column) {
+	@Override
+	public Color getColor(boolean selected, boolean active, Row row, Column column) {
 		if (mForSheet) {
 			return Color.white;
 		}

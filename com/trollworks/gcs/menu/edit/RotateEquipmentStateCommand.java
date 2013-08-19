@@ -27,12 +27,12 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentOutline;
 import com.trollworks.gcs.equipment.EquipmentState;
-import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.utility.collections.FilteredIterator;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.widgets.outline.MultipleRowUndo;
-import com.trollworks.gcs.widgets.outline.OutlineProxy;
 import com.trollworks.gcs.widgets.outline.RowUndo;
+import com.trollworks.ttk.collections.FilteredIterator;
+import com.trollworks.ttk.menu.Command;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.OutlineProxy;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -43,6 +43,8 @@ import javax.swing.JMenuItem;
 
 /** Provides the "Rotate Equipment State" command. */
 public class RotateEquipmentStateCommand extends Command {
+	/** The action command this command will issue. */
+	public static final String						CMD_ROTATE_EQUIPMENT_STATE	= "RotateEquipmentState";				//$NON-NLS-1$
 	private static String							MSG_TITLE;
 
 	static {
@@ -50,13 +52,14 @@ public class RotateEquipmentStateCommand extends Command {
 	}
 
 	/** The singleton {@link RotateEquipmentStateCommand}. */
-	public static final RotateEquipmentStateCommand	INSTANCE	= new RotateEquipmentStateCommand();
+	public static final RotateEquipmentStateCommand	INSTANCE					= new RotateEquipmentStateCommand();
 
 	private RotateEquipmentStateCommand() {
-		super(MSG_TITLE, KeyEvent.VK_QUOTE);
+		super(MSG_TITLE, CMD_ROTATE_EQUIPMENT_STATE, KeyEvent.VK_QUOTE);
 	}
 
-	@Override public void adjustForMenu(JMenuItem item) {
+	@Override
+	public void adjustForMenu(JMenuItem item) {
 		Component focus = getFocusOwner();
 		if (focus instanceof OutlineProxy) {
 			focus = ((OutlineProxy) focus).getRealOutline();
@@ -69,7 +72,8 @@ public class RotateEquipmentStateCommand extends Command {
 		}
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		Component focus = getFocusOwner();
 		if (focus instanceof OutlineProxy) {
 			focus = ((OutlineProxy) focus).getRealOutline();

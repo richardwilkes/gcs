@@ -28,8 +28,8 @@ import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.feature.Bonus;
 import com.trollworks.gcs.feature.LeveledAmount;
 import com.trollworks.gcs.feature.SkillBonus;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.text.NumberUtils;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -38,117 +38,138 @@ import java.util.ArrayList;
 public enum SelfControlRollAdjustments {
 	/** None. */
 	NONE {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_NONE;
 		}
 
-		@Override public String getDescription(SelfControlRoll cr) {
+		@Override
+		public String getDescription(SelfControlRoll cr) {
 			return EMPTY;
 		}
 
-		@Override public int getAdjustment(SelfControlRoll cr) {
+		@Override
+		public int getAdjustment(SelfControlRoll cr) {
 			return 0;
 		}
 	},
 	/** General action penalty. */
 	ACTION_PENALTY {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_ACTION_PENALTY;
 		}
 
-		@Override public String getDescription(SelfControlRoll cr) {
+		@Override
+		public String getDescription(SelfControlRoll cr) {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
 				return EMPTY;
 			}
 			return MessageFormat.format(MSG_ACTION_PENALTY_DESCRIPTION, NumberUtils.format(getAdjustment(cr), true));
 		}
 
-		@Override public int getAdjustment(SelfControlRoll cr) {
+		@Override
+		public int getAdjustment(SelfControlRoll cr) {
 			return cr.ordinal() - 4;
 		}
 	},
 	/** Reaction penalty. */
 	REACTION_PENALTY {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_REACTION_PENALTY;
 		}
 
-		@Override public String getDescription(SelfControlRoll cr) {
+		@Override
+		public String getDescription(SelfControlRoll cr) {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
 				return EMPTY;
 			}
 			return MessageFormat.format(MSG_REACTION_PENALTY_DESCRIPTION, NumberUtils.format(getAdjustment(cr), true));
 		}
 
-		@Override public int getAdjustment(SelfControlRoll cr) {
+		@Override
+		public int getAdjustment(SelfControlRoll cr) {
 			return cr.ordinal() - 4;
 		}
 	},
 	/** Fright Check penalty. */
 	FRIGHT_CHECK_PENALTY {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_FRIGHT_CHECK_PENALTY;
 		}
 
-		@Override public String getDescription(SelfControlRoll cr) {
+		@Override
+		public String getDescription(SelfControlRoll cr) {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
 				return EMPTY;
 			}
 			return MessageFormat.format(MSG_FRIGHT_CHECK_PENALTY_DESCRIPTION, NumberUtils.format(getAdjustment(cr), true));
 		}
 
-		@Override public int getAdjustment(SelfControlRoll cr) {
+		@Override
+		public int getAdjustment(SelfControlRoll cr) {
 			return cr.ordinal() - 4;
 		}
 	},
 	/** Fright Check bonus. */
 	FRIGHT_CHECK_BONUS {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_FRIGHT_CHECK_BONUS;
 		}
 
-		@Override public String getDescription(SelfControlRoll cr) {
+		@Override
+		public String getDescription(SelfControlRoll cr) {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
 				return EMPTY;
 			}
 			return MessageFormat.format(MSG_FRIGHT_CHECK_BONUS_DESCRIPTION, NumberUtils.format(getAdjustment(cr), true));
 		}
 
-		@Override public int getAdjustment(SelfControlRoll cr) {
+		@Override
+		public int getAdjustment(SelfControlRoll cr) {
 			return 4 - cr.ordinal();
 		}
 	},
 	/** Minor cost of living increase. */
 	MINOR_COST_OF_LIVING_INCREASE {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_MINOR_COST_OF_LIVING_INCREASE;
 		}
 
-		@Override public String getDescription(SelfControlRoll cr) {
+		@Override
+		public String getDescription(SelfControlRoll cr) {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
 				return EMPTY;
 			}
 			return MessageFormat.format(MSG_MINOR_COST_OF_LIVING_INCREASE_DESCRIPTION, NumberUtils.format(getAdjustment(cr), true));
 		}
 
-		@Override public int getAdjustment(SelfControlRoll cr) {
+		@Override
+		public int getAdjustment(SelfControlRoll cr) {
 			return 5 * (4 - cr.ordinal());
 		}
 	},
 	/** Major cost of living increase plus merchant penalty. */
 	MAJOR_COST_OF_LIVING_INCREASE {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_MAJOR_COST_OF_LIVING_INCREASE;
 		}
 
-		@Override public String getDescription(SelfControlRoll cr) {
+		@Override
+		public String getDescription(SelfControlRoll cr) {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
 				return EMPTY;
 			}
 			return MessageFormat.format(MSG_MAJOR_COST_OF_LIVING_INCREASE_DESCRIPTION, NumberUtils.format(getAdjustment(cr), true));
 		}
 
-		@Override public int getAdjustment(SelfControlRoll cr) {
+		@Override
+		public int getAdjustment(SelfControlRoll cr) {
 			switch (cr) {
 				case CR6:
 					return 80;
@@ -163,7 +184,8 @@ public enum SelfControlRollAdjustments {
 			}
 		}
 
-		@Override public ArrayList<Bonus> getBonuses(SelfControlRoll cr) {
+		@Override
+		public ArrayList<Bonus> getBonuses(SelfControlRoll cr) {
 			ArrayList<Bonus> list = new ArrayList<Bonus>();
 			SkillBonus bonus = new SkillBonus();
 			StringCriteria criteria = bonus.getNameCriteria();

@@ -23,13 +23,13 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.utility.Fonts;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.text.TextDrawing;
-import com.trollworks.gcs.utility.text.TextUtility;
-import com.trollworks.gcs.widgets.ActionPanel;
-import com.trollworks.gcs.widgets.BoxedDropShadowBorder;
-import com.trollworks.gcs.widgets.GraphicsUtilities;
+import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.ttk.border.BoxedDropShadowBorder;
+import com.trollworks.ttk.text.TextDrawing;
+import com.trollworks.ttk.text.TextUtility;
+import com.trollworks.ttk.utility.GraphicsUtilities;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.ActionPanel;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -67,7 +67,7 @@ public class NotesPanel extends ActionPanel {
 	 */
 	public NotesPanel(String notes, boolean continued) {
 		super();
-		setBorder(new CompoundBorder(new BoxedDropShadowBorder(UIManager.getFont(Fonts.KEY_LABEL), continued ? MSG_NOTES_CONTINUED : MSG_NOTES), new EmptyBorder(0, 2, 0, 2)));
+		setBorder(new CompoundBorder(new BoxedDropShadowBorder(UIManager.getFont(GCSFonts.KEY_LABEL), continued ? MSG_NOTES_CONTINUED : MSG_NOTES), new EmptyBorder(0, 2, 0, 2)));
 		setAlignmentY(-1f);
 		setEnabled(true);
 		setOpaque(true);
@@ -76,7 +76,8 @@ public class NotesPanel extends ActionPanel {
 		setToolTipText(MSG_NOTES_TOOLTIP);
 		mNotes = TextUtility.standardizeLineEndings(notes);
 		addMouseListener(new MouseAdapter() {
-			@Override public void mouseClicked(MouseEvent event) {
+			@Override
+			public void mouseClicked(MouseEvent event) {
 				if (event.getClickCount() == 2) {
 					notifyActionListeners();
 				}
@@ -86,7 +87,7 @@ public class NotesPanel extends ActionPanel {
 
 	/** @param width The width to wrap at. */
 	public void setWrapWidth(int width) {
-		mNotes = TextDrawing.wrapToPixelWidth(UIManager.getFont(Fonts.KEY_NOTES), null, mNotes, width);
+		mNotes = TextDrawing.wrapToPixelWidth(UIManager.getFont(GCSFonts.KEY_NOTES), null, mNotes, width);
 	}
 
 	/**
@@ -96,7 +97,7 @@ public class NotesPanel extends ActionPanel {
 	public String setMaxHeight(int height) {
 		StringBuilder buffer = new StringBuilder();
 		Insets insets = getInsets();
-		int lineHeight = TextDrawing.getPreferredSize(UIManager.getFont(Fonts.KEY_NOTES), null, "Mg").height; //$NON-NLS-1$
+		int lineHeight = TextDrawing.getPreferredSize(UIManager.getFont(GCSFonts.KEY_NOTES), null, "Mg").height; //$NON-NLS-1$
 		StringTokenizer tokenizer = new StringTokenizer(mNotes, NEWLINE, true);
 		boolean wasReturn = false;
 
@@ -133,15 +134,17 @@ public class NotesPanel extends ActionPanel {
 		return null;
 	}
 
-	@Override public Dimension getMinimumSize() {
+	@Override
+	public Dimension getMinimumSize() {
 		Insets insets = getInsets();
-		int height = TextDrawing.getPreferredSize(UIManager.getFont(Fonts.KEY_NOTES), null, "Mg").height; //$NON-NLS-1$
+		int height = TextDrawing.getPreferredSize(UIManager.getFont(GCSFonts.KEY_NOTES), null, "Mg").height; //$NON-NLS-1$
 		return new Dimension(insets.left + insets.right, height + insets.top + insets.bottom);
 	}
 
-	@Override public Dimension getPreferredSize() {
+	@Override
+	public Dimension getPreferredSize() {
 		Insets insets = getInsets();
-		Dimension size = TextDrawing.getPreferredSize(UIManager.getFont(Fonts.KEY_NOTES), null, mNotes);
+		Dimension size = TextDrawing.getPreferredSize(UIManager.getFont(GCSFonts.KEY_NOTES), null, mNotes);
 		size.width += insets.left + insets.right;
 		size.height += insets.top + insets.bottom;
 		Dimension minSize = getMinimumSize();
@@ -160,9 +163,10 @@ public class NotesPanel extends ActionPanel {
 		revalidate();
 	}
 
-	@Override protected void paintComponent(Graphics gc) {
+	@Override
+	protected void paintComponent(Graphics gc) {
 		super.paintComponent(GraphicsUtilities.prepare(gc));
-		gc.setFont(UIManager.getFont(Fonts.KEY_NOTES));
+		gc.setFont(UIManager.getFont(GCSFonts.KEY_NOTES));
 		Rectangle bounds = getBounds();
 		Insets insets = getInsets();
 		bounds.x = insets.left;

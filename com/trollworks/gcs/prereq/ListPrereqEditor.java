@@ -25,13 +25,13 @@ package com.trollworks.gcs.prereq;
 
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.layout.FlexGrid;
-import com.trollworks.gcs.widgets.layout.FlexRow;
-import com.trollworks.gcs.widgets.layout.FlexSpacer;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.image.ToolkitImage;
+import com.trollworks.ttk.layout.FlexGrid;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.layout.FlexSpacer;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.UIUtilities;
 
 import java.awt.event.ActionEvent;
 
@@ -88,7 +88,8 @@ public class ListPrereqEditor extends PrereqEditor {
 		return MSG_NO_TL_PREREQ;
 	}
 
-	@Override protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
+	@Override
+	protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
 		PrereqList prereqList = (PrereqList) mPrereq;
 		IntegerCriteria whenTLCriteria = prereqList.getWhenTLCriteria();
 		left.add(addComboBox(WHEN_TL, new Object[] { MSG_NO_TL_PREREQ, MSG_TL_IS, MSG_TL_IS_AT_LEAST, MSG_TL_IS_AT_MOST }, mapWhenTLToString(whenTLCriteria)));
@@ -99,11 +100,12 @@ public class ListPrereqEditor extends PrereqEditor {
 
 		grid.add(new FlexSpacer(0, 0, true, false), 0, 1);
 
-		right.add(addButton(Images.getMoreIcon(), ADD_PREREQ_LIST, MSG_ADD_PREREQ_LIST_TOOLTIP));
-		right.add(addButton(Images.getAddIcon(), ADD_PREREQ, MSG_ADD_PREREQ_TOOLTIP));
+		right.add(addButton(ToolkitImage.getMoreIcon(), ADD_PREREQ_LIST, MSG_ADD_PREREQ_LIST_TOOLTIP));
+		right.add(addButton(ToolkitImage.getAddIcon(), ADD_PREREQ, MSG_ADD_PREREQ_TOOLTIP));
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
 		if (ANY_ALL.equals(command)) {
 			((PrereqList) mPrereq).setRequiresAll(((JComboBox) event.getSource()).getSelectedIndex() == 0);

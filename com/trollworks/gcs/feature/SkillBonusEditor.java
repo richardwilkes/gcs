@@ -24,11 +24,11 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.criteria.StringCriteria;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.layout.FlexGrid;
-import com.trollworks.gcs.widgets.layout.FlexRow;
-import com.trollworks.gcs.widgets.layout.FlexSpacer;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.layout.FlexGrid;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.layout.FlexSpacer;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.Insets;
 
@@ -51,7 +51,8 @@ public class SkillBonusEditor extends FeatureEditor {
 		super(row, bonus);
 	}
 
-	@Override protected void rebuildSelf(FlexGrid grid, FlexRow right) {
+	@Override
+	protected void rebuildSelf(FlexGrid grid, FlexRow right) {
 		SkillBonus bonus = (SkillBonus) getFeature();
 
 		FlexRow row = new FlexRow();

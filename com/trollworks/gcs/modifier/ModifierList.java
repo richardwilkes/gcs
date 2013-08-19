@@ -25,10 +25,10 @@ package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.common.LoadState;
-import com.trollworks.gcs.utility.io.xml.XMLNodeType;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
-import com.trollworks.gcs.widgets.outline.Row;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
+import com.trollworks.ttk.widgets.outline.Row;
+import com.trollworks.ttk.xml.XMLNodeType;
+import com.trollworks.ttk.xml.XMLReader;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -56,7 +56,8 @@ public class ModifierList extends ListFile {
 		}
 	}
 
-	@Override protected void loadList(XMLReader reader, LoadState state) throws IOException {
+	@Override
+	protected void loadList(XMLReader reader, LoadState state) throws IOException {
 		OutlineModel model = getModel();
 		String marker = reader.getMarker();
 		do {
@@ -72,15 +73,18 @@ public class ModifierList extends ListFile {
 		} while (reader.withinMarker(marker));
 	}
 
-	@Override public BufferedImage getFileIcon(boolean large) {
+	@Override
+	public BufferedImage getFileIcon(boolean large) {
 		return null;
 	}
 
-	@Override public int getXMLTagVersion() {
+	@Override
+	public int getXMLTagVersion() {
 		return CURRENT_VERSION;
 	}
 
-	@Override public String getXMLTagName() {
+	@Override
+	public String getXMLTagName() {
 		return TAG_ROOT;
 	}
 }

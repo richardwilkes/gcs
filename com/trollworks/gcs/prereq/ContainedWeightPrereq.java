@@ -27,12 +27,12 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.DoubleCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.utility.collections.EnumExtractor;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
-import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.units.WeightUnits;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -44,7 +44,7 @@ public class ContainedWeightPrereq extends HasPrereq {
 	public static final String	TAG_ROOT			= "contained_weight_prereq";	//$NON-NLS-1$
 	private static final String	ATTRIBUTE_COMPARE	= "compare";					//$NON-NLS-1$
 	private static final String	ATTRIBUTE_UNITS		= "units";						//$NON-NLS-1$
-	private DoubleCriteria	mWeightCompare;
+	private DoubleCriteria		mWeightCompare;
 
 	static {
 		LocalizedMessages.initialize(ContainedWeightPrereq.class);
@@ -85,7 +85,8 @@ public class ContainedWeightPrereq extends HasPrereq {
 		mWeightCompare = new DoubleCriteria(prereq.mWeightCompare);
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -95,15 +96,18 @@ public class ContainedWeightPrereq extends HasPrereq {
 		return false;
 	}
 
-	@Override public String getXMLTag() {
+	@Override
+	public String getXMLTag() {
 		return TAG_ROOT;
 	}
 
-	@Override public Prereq clone(PrereqList parent) {
+	@Override
+	public Prereq clone(PrereqList parent) {
 		return new ContainedWeightPrereq(parent, this);
 	}
 
-	@Override public void save(XMLWriter out) {
+	@Override
+	public void save(XMLWriter out) {
 		out.startTag(TAG_ROOT);
 		saveHasAttribute(out);
 		out.writeAttribute(ATTRIBUTE_COMPARE, mWeightCompare.getType().name().toLowerCase());
@@ -118,7 +122,8 @@ public class ContainedWeightPrereq extends HasPrereq {
 		return mWeightCompare;
 	}
 
-	@Override public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
+	@Override
+	public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
 		boolean satisfied = false;
 
 		if (exclude instanceof Equipment) {

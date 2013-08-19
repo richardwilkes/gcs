@@ -23,11 +23,11 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.layout.FlexGrid;
-import com.trollworks.gcs.widgets.layout.FlexRow;
-import com.trollworks.gcs.widgets.layout.FlexSpacer;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.layout.FlexGrid;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.layout.FlexSpacer;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 /** A contained weight prerequisite editor panel. */
 public class ContainedWeightPrereqEditor extends PrereqEditor {
@@ -48,7 +48,8 @@ public class ContainedWeightPrereqEditor extends PrereqEditor {
 		super(row, prereq, depth);
 	}
 
-	@Override protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
+	@Override
+	protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
 		ContainedWeightPrereq prereq = (ContainedWeightPrereq) mPrereq;
 
 		FlexRow row = new FlexRow();

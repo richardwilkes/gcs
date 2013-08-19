@@ -23,13 +23,13 @@
 
 package com.trollworks.gcs.app;
 
-import com.trollworks.gcs.utility.Fonts;
-import com.trollworks.gcs.utility.Version;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.text.TextDrawing;
-import com.trollworks.gcs.widgets.GraphicsUtilities;
-import com.trollworks.gcs.widgets.UIUtilities;
+import com.trollworks.ttk.text.TextDrawing;
+import com.trollworks.ttk.text.Version;
+import com.trollworks.ttk.utility.App;
+import com.trollworks.ttk.utility.Fonts;
+import com.trollworks.ttk.utility.GraphicsUtilities;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.UIUtilities;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -62,22 +62,23 @@ public class AboutPanel extends JPanel {
 		super();
 		setOpaque(true);
 		setBackground(Color.black);
-		BufferedImage img = Images.getSplash();
+		BufferedImage img = GCSImages.getSplash();
 		UIUtilities.setOnlySize(this, new Dimension(img.getWidth(), img.getHeight() + EXTRA_SPACE));
 	}
 
-	@Override protected void paintComponent(Graphics gc) {
+	@Override
+	protected void paintComponent(Graphics gc) {
 		super.paintComponent(GraphicsUtilities.prepare(gc));
 
 		// Draw the background
-		BufferedImage img = Images.getSplash();
+		BufferedImage img = GCSImages.getSplash();
 		gc.drawImage(img, 0, 0, null);
 
 		// Version
 		gc.setColor(Color.white);
 		Font font = new Font(Fonts.getDefaultFontName(), Font.BOLD, 10);
 		gc.setFont(font);
-		String version = MessageFormat.format(MSG_VERSION, Version.getHumanReadableVersion(Version.extractVersion(Main.getVersion())));
+		String version = MessageFormat.format(MSG_VERSION, Version.getHumanReadableVersion(Version.extractVersion(App.getVersion())));
 		FontRenderContext frc = ((Graphics2D) gc).getFontRenderContext();
 		Dimension size = TextDrawing.getPreferredSize(font, frc, version);
 		Rectangle bounds = new Rectangle(MARGIN, img.getHeight() + MARGIN, size.width, size.height);

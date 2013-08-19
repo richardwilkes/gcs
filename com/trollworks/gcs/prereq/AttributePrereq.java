@@ -27,11 +27,11 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.feature.BonusAttributeType;
-import com.trollworks.gcs.utility.collections.EnumExtractor;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -41,12 +41,12 @@ public class AttributePrereq extends HasPrereq {
 	private static String						MSG_DESCRIPTION;
 	private static String						MSG_COMBINED;
 	/** The possible {@link BonusAttributeType}s that can be affected. */
-	public static final BonusAttributeType[]	TYPES					= { BonusAttributeType.ST, BonusAttributeType.DX, BonusAttributeType.IQ, BonusAttributeType.HT, BonusAttributeType.WILL };
+	public static final BonusAttributeType[]	TYPES					= { BonusAttributeType.ST, BonusAttributeType.DX, BonusAttributeType.IQ, BonusAttributeType.HT, BonusAttributeType.WILL, BonusAttributeType.PERCEPTION };
 	/** The XML tag for this class. */
-	public static final String					TAG_ROOT				= "attribute_prereq";																										//$NON-NLS-1$
-	private static final String					ATTRIBUTE_WHICH			= "which";																													//$NON-NLS-1$
-	private static final String					ATTRIBUTE_COMBINED_WITH	= "combined_with";																											//$NON-NLS-1$
-	private static final String					ATTRIBUTE_COMPARE		= "compare";																												//$NON-NLS-1$
+	public static final String					TAG_ROOT				= "attribute_prereq";																																		//$NON-NLS-1$
+	private static final String					ATTRIBUTE_WHICH			= "which";																																					//$NON-NLS-1$
+	private static final String					ATTRIBUTE_COMBINED_WITH	= "combined_with";																																			//$NON-NLS-1$
+	private static final String					ATTRIBUTE_COMPARE		= "compare";																																				//$NON-NLS-1$
 	private BonusAttributeType					mWhich;
 	private BonusAttributeType					mCombinedWith;
 	private IntegerCriteria						mValueCompare;
@@ -96,7 +96,8 @@ public class AttributePrereq extends HasPrereq {
 		mValueCompare = new IntegerCriteria(prereq.mValueCompare);
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -108,15 +109,18 @@ public class AttributePrereq extends HasPrereq {
 		return false;
 	}
 
-	@Override public String getXMLTag() {
+	@Override
+	public String getXMLTag() {
 		return TAG_ROOT;
 	}
 
-	@Override public Prereq clone(PrereqList parent) {
+	@Override
+	public Prereq clone(PrereqList parent) {
 		return new AttributePrereq(parent, this);
 	}
 
-	@Override public void save(XMLWriter out) {
+	@Override
+	public void save(XMLWriter out) {
 		out.startTag(TAG_ROOT);
 		saveHasAttribute(out);
 		out.writeAttribute(ATTRIBUTE_WHICH, mWhich.name().toLowerCase());
@@ -164,6 +168,8 @@ public class AttributePrereq extends HasPrereq {
 				return character.getHealth();
 			case WILL:
 				return character.getWill();
+			case PERCEPTION:
+				return character.getPerception();
 			default:
 				return 0;
 		}
@@ -174,7 +180,8 @@ public class AttributePrereq extends HasPrereq {
 		return mValueCompare;
 	}
 
-	@Override public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
+	@Override
+	public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
 		boolean satisfied = mValueCompare.matches(getAttributeValue(character, mWhich) + getAttributeValue(character, mCombinedWith));
 
 		if (!has()) {

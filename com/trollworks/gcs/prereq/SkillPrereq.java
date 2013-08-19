@@ -28,10 +28,10 @@ import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.skill.Skill;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -78,11 +78,13 @@ public class SkillPrereq extends NameLevelPrereq {
 		mSpecializationCriteria = new StringCriteria(prereq.mSpecializationCriteria);
 	}
 
-	@Override protected void initializeForLoad() {
+	@Override
+	protected void initializeForLoad() {
 		mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, ""); //$NON-NLS-1$
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -94,7 +96,8 @@ public class SkillPrereq extends NameLevelPrereq {
 		return false;
 	}
 
-	@Override protected void loadSelf(XMLReader reader) throws IOException {
+	@Override
+	protected void loadSelf(XMLReader reader) throws IOException {
 		if (TAG_SPECIALIZATION.equals(reader.getName())) {
 			mSpecializationCriteria.load(reader);
 		} else {
@@ -102,19 +105,23 @@ public class SkillPrereq extends NameLevelPrereq {
 		}
 	}
 
-	@Override protected void saveSelf(XMLWriter out) {
+	@Override
+	protected void saveSelf(XMLWriter out) {
 		mSpecializationCriteria.save(out, TAG_SPECIALIZATION);
 	}
 
-	@Override public String getXMLTag() {
+	@Override
+	public String getXMLTag() {
 		return TAG_ROOT;
 	}
 
-	@Override public Prereq clone(PrereqList parent) {
+	@Override
+	public Prereq clone(PrereqList parent) {
 		return new SkillPrereq(parent, this);
 	}
 
-	@Override public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
+	@Override
+	public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
 		boolean satisfied = false;
 		String techLevel = null;
 		StringCriteria nameCriteria = getNameCriteria();
@@ -157,12 +164,14 @@ public class SkillPrereq extends NameLevelPrereq {
 		return satisfied;
 	}
 
-	@Override public void fillWithNameableKeys(HashSet<String> set) {
+	@Override
+	public void fillWithNameableKeys(HashSet<String> set) {
 		super.fillWithNameableKeys(set);
 		ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
 	}
 
-	@Override public void applyNameableKeys(HashMap<String, String> map) {
+	@Override
+	public void applyNameableKeys(HashMap<String, String> map) {
 		super.applyNameableKeys(map);
 		mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
 	}

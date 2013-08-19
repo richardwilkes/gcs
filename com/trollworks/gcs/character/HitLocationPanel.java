@@ -23,11 +23,11 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.utility.Fonts;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.Wrapper;
-import com.trollworks.gcs.widgets.layout.ColumnLayout;
+import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.ttk.layout.ColumnLayout;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.UIUtilities;
+import com.trollworks.ttk.widgets.Wrapper;
 
 import java.awt.Color;
 import java.awt.Container;
@@ -126,7 +126,8 @@ public class HitLocationPanel extends DropPanel {
 		add(wrapper);
 	}
 
-	@Override public Dimension getMaximumSize() {
+	@Override
+	public Dimension getMaximumSize() {
 		Dimension size = super.getMaximumSize();
 		size.width = getPreferredSize().width;
 		return size;
@@ -141,7 +142,7 @@ public class HitLocationPanel extends DropPanel {
 
 	private JLabel createLabel(Container panel, String title, String tooltip, int alignment) {
 		JLabel label = new JLabel(title, alignment);
-		label.setFont(UIManager.getFont(Fonts.KEY_LABEL));
+		label.setFont(UIManager.getFont(GCSFonts.KEY_LABEL));
 		label.setToolTipText(tooltip);
 		panel.add(label);
 		return label;

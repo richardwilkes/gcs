@@ -23,10 +23,10 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.utility.Fonts;
-import com.trollworks.gcs.widgets.BoxedDropShadowBorder;
-import com.trollworks.gcs.widgets.GraphicsUtilities;
-import com.trollworks.gcs.widgets.UIUtilities;
+import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.ttk.border.BoxedDropShadowBorder;
+import com.trollworks.ttk.utility.GraphicsUtilities;
+import com.trollworks.ttk.utility.UIUtilities;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -80,7 +80,7 @@ public class DropPanel extends JPanel {
 	 * @param title The title to use.
 	 */
 	public DropPanel(LayoutManager layout, String title) {
-		this(layout, title, UIManager.getFont(Fonts.KEY_LABEL), false);
+		this(layout, title, UIManager.getFont(GCSFonts.KEY_LABEL), false);
 	}
 
 	/**
@@ -92,7 +92,7 @@ public class DropPanel extends JPanel {
 	 *            preferred size or not.
 	 */
 	public DropPanel(LayoutManager layout, String title, boolean onlyReportPreferredSize) {
-		this(layout, title, UIManager.getFont(Fonts.KEY_LABEL), onlyReportPreferredSize);
+		this(layout, title, UIManager.getFont(GCSFonts.KEY_LABEL), onlyReportPreferredSize);
 	}
 
 	/**
@@ -116,11 +116,13 @@ public class DropPanel extends JPanel {
 		mVerticalBackgrounds = new HashMap<Component, Color>();
 	}
 
-	@Override public Dimension getMinimumSize() {
+	@Override
+	public Dimension getMinimumSize() {
 		return mOnlyReportPreferredSize ? getPreferredSize() : super.getMinimumSize();
 	}
 
-	@Override public Dimension getMaximumSize() {
+	@Override
+	public Dimension getMaximumSize() {
 		return mOnlyReportPreferredSize ? getPreferredSize() : super.getMaximumSize();
 	}
 
@@ -164,7 +166,8 @@ public class DropPanel extends JPanel {
 		mVerticalBackgrounds.remove(panel);
 	}
 
-	@Override protected void paintComponent(Graphics gc) {
+	@Override
+	protected void paintComponent(Graphics gc) {
 		super.paintComponent(GraphicsUtilities.prepare(gc));
 
 		Insets insets = mBoxedDropShadowBorder.getBorderInsets(this);

@@ -23,10 +23,10 @@
 
 package com.trollworks.gcs.menu.file;
 
-import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateWindow;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.menu.Command;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -35,6 +35,8 @@ import javax.swing.JMenuItem;
 
 /** Provides the "New Character Template" command. */
 public class NewCharacterTemplateCommand extends Command {
+	/** The action command this command will issue. */
+	public static final String						CMD_NEW_CHARACTER_TEMPLATE	= "NewCharacterTemplate";				//$NON-NLS-1$
 	private static String							MSG_NEW_CHARACTER_TEMPLATE;
 
 	static {
@@ -42,17 +44,19 @@ public class NewCharacterTemplateCommand extends Command {
 	}
 
 	/** The singletone {@link NewCharacterTemplateCommand}. */
-	public static final NewCharacterTemplateCommand	INSTANCE	= new NewCharacterTemplateCommand();
+	public static final NewCharacterTemplateCommand	INSTANCE					= new NewCharacterTemplateCommand();
 
 	private NewCharacterTemplateCommand() {
-		super(MSG_NEW_CHARACTER_TEMPLATE, KeyEvent.VK_N, SHIFTED_COMMAND_MODIFIER);
+		super(MSG_NEW_CHARACTER_TEMPLATE, CMD_NEW_CHARACTER_TEMPLATE, KeyEvent.VK_N, SHIFTED_COMMAND_MODIFIER);
 	}
 
-	@Override public void adjustForMenu(JMenuItem item) {
+	@Override
+	public void adjustForMenu(JMenuItem item) {
 		// Do nothing. We're always enabled.
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		newTemplate();
 	}
 

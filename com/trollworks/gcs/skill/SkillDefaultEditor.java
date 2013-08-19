@@ -24,16 +24,16 @@
 package com.trollworks.gcs.skill;
 
 import com.trollworks.gcs.common.EditorPanel;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.text.IntegerFormatter;
-import com.trollworks.gcs.widgets.CommitEnforcer;
-import com.trollworks.gcs.widgets.EditorField;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.layout.Alignment;
-import com.trollworks.gcs.widgets.layout.FlexGrid;
-import com.trollworks.gcs.widgets.layout.FlexRow;
-import com.trollworks.gcs.widgets.layout.FlexSpacer;
+import com.trollworks.ttk.image.ToolkitImage;
+import com.trollworks.ttk.layout.Alignment;
+import com.trollworks.ttk.layout.FlexGrid;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.layout.FlexSpacer;
+import com.trollworks.ttk.text.IntegerFormatter;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.UIUtilities;
+import com.trollworks.ttk.widgets.CommitEnforcer;
+import com.trollworks.ttk.widgets.EditorField;
 
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -134,15 +134,15 @@ public class SkillDefaultEditor extends EditorPanel {
 
 			row = new FlexRow();
 			row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
-			row.add(addButton(Images.getRemoveIcon(), REMOVE, MSG_REMOVE_DEFAULT));
-			row.add(addButton(Images.getAddIcon(), ADD, MSG_ADD_DEFAULT));
+			row.add(addButton(ToolkitImage.getRemoveIcon(), REMOVE, MSG_REMOVE_DEFAULT));
+			row.add(addButton(ToolkitImage.getAddIcon(), ADD, MSG_ADD_DEFAULT));
 			grid.add(row, 0, 2);
 			grid.apply(this);
 		} else {
 			FlexRow row = new FlexRow();
 			row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
 			row.add(new FlexSpacer(0, 0, true, false));
-			row.add(addButton(Images.getAddIcon(), ADD, MSG_ADD_DEFAULT));
+			row.add(addButton(ToolkitImage.getAddIcon(), ADD, MSG_ADD_DEFAULT));
 			row.apply(this);
 		}
 
@@ -155,7 +155,8 @@ public class SkillDefaultEditor extends EditorPanel {
 		return mDefault;
 	}
 
-	@Override public void propertyChange(PropertyChangeEvent event) {
+	@Override
+	public void propertyChange(PropertyChangeEvent event) {
 		Object src = event.getSource();
 		if (src == mSkillNameField) {
 			mDefault.setName((String) mSkillNameField.getValue());
@@ -171,7 +172,8 @@ public class SkillDefaultEditor extends EditorPanel {
 		}
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		Object src = event.getSource();
 		String command = event.getActionCommand();
 		JComponent parent = (JComponent) getParent();

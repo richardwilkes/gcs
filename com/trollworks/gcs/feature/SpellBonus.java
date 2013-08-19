@@ -26,9 +26,9 @@ package com.trollworks.gcs.feature;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -44,7 +44,7 @@ public class SpellBonus extends Bonus {
 	public static final String	ATTRIBUTE_ALL_COLLEGES	= "all_colleges";	//$NON-NLS-1$
 	private boolean				mAllColleges;
 	private boolean				mMatchCollegeName;
-	private StringCriteria	mNameCriteria;
+	private StringCriteria		mNameCriteria;
 
 	/** Creates a new spell bonus. */
 	public SpellBonus() {
@@ -79,7 +79,8 @@ public class SpellBonus extends Bonus {
 		mNameCriteria = new StringCriteria(other.mNameCriteria);
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -116,7 +117,8 @@ public class SpellBonus extends Bonus {
 		return buffer.toString();
 	}
 
-	@Override protected void loadSelf(XMLReader reader) throws IOException {
+	@Override
+	protected void loadSelf(XMLReader reader) throws IOException {
 		String name = reader.getName();
 
 		if (TAG_COLLEGE_NAME.equals(name)) {
@@ -173,13 +175,15 @@ public class SpellBonus extends Bonus {
 		return mNameCriteria;
 	}
 
-	@Override public void fillWithNameableKeys(HashSet<String> set) {
+	@Override
+	public void fillWithNameableKeys(HashSet<String> set) {
 		if (!mAllColleges) {
 			ListRow.extractNameables(set, mNameCriteria.getQualifier());
 		}
 	}
 
-	@Override public void applyNameableKeys(HashMap<String, String> map) {
+	@Override
+	public void applyNameableKeys(HashMap<String, String> map) {
 		if (!mAllColleges) {
 			mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
 		}

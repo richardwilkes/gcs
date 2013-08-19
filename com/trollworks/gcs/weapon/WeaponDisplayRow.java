@@ -23,8 +23,8 @@
 
 package com.trollworks.gcs.weapon;
 
-import com.trollworks.gcs.widgets.outline.Column;
-import com.trollworks.gcs.widgets.outline.Row;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.widgets.outline.Row;
 
 /** A non-editable row for displaying weapon information. */
 public class WeaponDisplayRow extends Row {
@@ -45,15 +45,18 @@ public class WeaponDisplayRow extends Row {
 		return mWeapon;
 	}
 
-	@Override public Object getData(Column column) {
+	@Override
+	public Object getData(Column column) {
 		return WeaponColumn.values()[column.getID()].getData(mWeapon);
 	}
 
-	@Override public String getDataAsText(Column column) {
+	@Override
+	public String getDataAsText(Column column) {
 		return WeaponColumn.values()[column.getID()].getDataAsText(mWeapon);
 	}
 
-	@Override public void setData(Column column, Object data) {
+	@Override
+	public void setData(Column column, Object data) {
 		assert false : "setData() is not supported"; //$NON-NLS-1$
 	}
 }

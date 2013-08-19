@@ -25,15 +25,15 @@ package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
-import com.trollworks.gcs.utility.collections.EnumExtractor;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
-import com.trollworks.gcs.utility.notification.Notifier;
-import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.widgets.outline.Column;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.notification.Notifier;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -187,7 +187,8 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 		mReadOnly = readOnly;
 	}
 
-	@Override public String getModifierNotes() {
+	@Override
+	public String getModifierNotes() {
 		return mReadOnly ? MSG_READ_ONLY : super.getModifierNotes();
 	}
 
@@ -281,47 +282,57 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 		return mCostType == CostType.PERCENTAGE && mLevels > 0;
 	}
 
-	@Override public boolean contains(String text, boolean lowerCaseOnly) {
+	@Override
+	public boolean contains(String text, boolean lowerCaseOnly) {
 		if (getName().toLowerCase().indexOf(text) != -1) {
 			return true;
 		}
 		return super.contains(text, lowerCaseOnly);
 	}
 
-	@Override public RowEditor<Modifier> createEditor() {
+	@Override
+	public RowEditor<Modifier> createEditor() {
 		return new ModifierEditor(this);
 	}
 
-	@Override public BufferedImage getImage(boolean large) {
+	@Override
+	public BufferedImage getImage(boolean large) {
 		return null;
 	}
 
-	@Override public String getListChangedID() {
+	@Override
+	public String getListChangedID() {
 		return ID_LIST_CHANGED;
 	}
 
-	@Override public String getLocalizedName() {
+	@Override
+	public String getLocalizedName() {
 		return MSG_DEFAULT_NAME;
 	}
 
-	@Override public String getRowType() {
+	@Override
+	public String getRowType() {
 		return MSG_MODIFIER_TYPE;
 	}
 
-	@Override public String getXMLTagName() {
+	@Override
+	public String getXMLTagName() {
 		return TAG_MODIFIER;
 	}
 
-	@Override public int getXMLTagVersion() {
+	@Override
+	public int getXMLTagVersion() {
 		return CURRENT_VERSION;
 	}
 
-	@Override protected void loadAttributes(XMLReader reader, LoadState state) {
+	@Override
+	protected void loadAttributes(XMLReader reader, LoadState state) {
 		super.loadAttributes(reader, state);
 		mEnabled = !reader.hasAttribute(ATTRIBUTE_ENABLED) || reader.isAttributeSet(ATTRIBUTE_ENABLED);
 	}
 
-	@Override protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
+	@Override
+	protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
 		String name = reader.getName();
 		if (TAG_NAME.equals(name)) {
 			mName = reader.readText().replace("\n", " "); //$NON-NLS-1$ //$NON-NLS-2$
@@ -343,7 +354,8 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 		}
 	}
 
-	@Override protected void prepareForLoad(LoadState state) {
+	@Override
+	protected void prepareForLoad(LoadState state) {
 		super.prepareForLoad(state);
 		mName = MSG_DEFAULT_NAME;
 		mCostType = CostType.PERCENTAGE;
@@ -355,14 +367,16 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 		mEnabled = true;
 	}
 
-	@Override protected void saveAttributes(XMLWriter out, boolean forUndo) {
+	@Override
+	protected void saveAttributes(XMLWriter out, boolean forUndo) {
 		super.saveAttributes(out, forUndo);
 		if (!mEnabled) {
 			out.writeAttribute(ATTRIBUTE_ENABLED, mEnabled);
 		}
 	}
 
-	@Override protected void saveSelf(XMLWriter out, boolean forUndo) {
+	@Override
+	protected void saveSelf(XMLWriter out, boolean forUndo) {
 		out.simpleTag(TAG_NAME, mName);
 		if (mCostType == CostType.MULTIPLIER) {
 			out.simpleTagWithAttribute(TAG_COST, mCostMultiplier, ATTRIBUTE_COST_TYPE, mCostType.name().toLowerCase());
@@ -376,15 +390,18 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 		out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
 	}
 
-	@Override public Object getData(Column column) {
+	@Override
+	public Object getData(Column column) {
 		return ModifierColumnID.values()[column.getID()].getData(this);
 	}
 
-	@Override public String getDataAsText(Column column) {
+	@Override
+	public String getDataAsText(Column column) {
 		return ModifierColumnID.values()[column.getID()].getDataAsText(this);
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		StringBuilder builder = new StringBuilder();
 
 		builder.append(getName());
@@ -473,14 +490,16 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 		return false;
 	}
 
-	@Override public void fillWithNameableKeys(HashSet<String> set) {
+	@Override
+	public void fillWithNameableKeys(HashSet<String> set) {
 		if (isEnabled()) {
 			super.fillWithNameableKeys(set);
 			extractNameables(set, mName);
 		}
 	}
 
-	@Override public void applyNameableKeys(HashMap<String, String> map) {
+	@Override
+	public void applyNameableKeys(HashMap<String, String> map) {
 		if (isEnabled()) {
 			super.applyNameableKeys(map);
 			mName = nameNameables(map, mName);

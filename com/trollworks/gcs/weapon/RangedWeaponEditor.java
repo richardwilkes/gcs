@@ -27,9 +27,9 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.EditorField;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.EditorField;
 
 import java.awt.Container;
 import java.util.List;
@@ -83,7 +83,8 @@ public class RangedWeaponEditor extends WeaponEditor {
 		super(owner, weapons, RangedWeaponStats.class);
 	}
 
-	@Override protected void createFields(Container parent) {
+	@Override
+	protected void createFields(Container parent) {
 		mAccuracy = createTextField(parent, MSG_ACCURACY, EMPTY);
 		mRange = createTextField(parent, MSG_RANGE, EMPTY);
 		mRateOfFire = createTextField(parent, MSG_RATE_OF_FIRE, EMPTY);
@@ -92,7 +93,8 @@ public class RangedWeaponEditor extends WeaponEditor {
 		mBulk = createTextField(parent, MSG_BULK, EMPTY);
 	}
 
-	@Override protected void updateFromField(Object source) {
+	@Override
+	protected void updateFromField(Object source) {
 		if (mAccuracy == source) {
 			changeAccuracy();
 		} else if (mRange == source) {
@@ -138,11 +140,13 @@ public class RangedWeaponEditor extends WeaponEditor {
 		adjustOutlineToContent();
 	}
 
-	@Override protected WeaponStats createWeaponStats() {
+	@Override
+	protected WeaponStats createWeaponStats() {
 		return new RangedWeaponStats(getOwner());
 	}
 
-	@Override protected void updateFields() {
+	@Override
+	protected void updateFields() {
 		RangedWeaponStats weapon = (RangedWeaponStats) getWeapon();
 		mAccuracy.setValue(weapon.getAccuracy());
 		mRange.setValue(weapon.getRange());
@@ -153,7 +157,8 @@ public class RangedWeaponEditor extends WeaponEditor {
 		super.updateFields();
 	}
 
-	@Override protected void enableFields(boolean enabled) {
+	@Override
+	protected void enableFields(boolean enabled) {
 		mAccuracy.setEnabled(enabled);
 		mRange.setEnabled(enabled);
 		mRateOfFire.setEnabled(enabled);
@@ -163,7 +168,8 @@ public class RangedWeaponEditor extends WeaponEditor {
 		super.enableFields(enabled);
 	}
 
-	@Override protected void blankFields() {
+	@Override
+	protected void blankFields() {
 		mAccuracy.setValue(EMPTY);
 		mRange.setValue(EMPTY);
 		mRateOfFire.setValue(EMPTY);
@@ -173,7 +179,8 @@ public class RangedWeaponEditor extends WeaponEditor {
 		super.blankFields();
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		return MSG_RANGED_WEAPON;
 	}
 }

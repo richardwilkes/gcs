@@ -25,34 +25,36 @@ package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageOutline;
+import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentOutline;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
-import com.trollworks.gcs.menu.file.Saveable;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellOutline;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.Path;
-import com.trollworks.gcs.utility.io.Preferences;
-import com.trollworks.gcs.utility.notification.BatchNotifierTarget;
-import com.trollworks.gcs.widgets.AppWindow;
-import com.trollworks.gcs.widgets.ModifiedMarker;
-import com.trollworks.gcs.widgets.ToolBarIconButton;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.WindowSizeEnforcer;
-import com.trollworks.gcs.widgets.WindowUtils;
-import com.trollworks.gcs.widgets.layout.FlexColumn;
-import com.trollworks.gcs.widgets.layout.FlexRow;
+import com.trollworks.gcs.widgets.GCSWindow;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.gcs.widgets.outline.OutlineHeader;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
-import com.trollworks.gcs.widgets.outline.Row;
-import com.trollworks.gcs.widgets.outline.RowFilter;
+import com.trollworks.ttk.image.ToolkitImage;
+import com.trollworks.ttk.layout.FlexColumn;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.menu.file.Saveable;
+import com.trollworks.ttk.notification.BatchNotifierTarget;
+import com.trollworks.ttk.preferences.Preferences;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.Path;
+import com.trollworks.ttk.utility.UIUtilities;
+import com.trollworks.ttk.utility.WindowSizeEnforcer;
+import com.trollworks.ttk.widgets.AppWindow;
+import com.trollworks.ttk.widgets.ModifiedMarker;
+import com.trollworks.ttk.widgets.ToolBarIconButton;
+import com.trollworks.ttk.widgets.WindowUtils;
+import com.trollworks.ttk.widgets.outline.OutlineHeader;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
+import com.trollworks.ttk.widgets.outline.Row;
+import com.trollworks.ttk.widgets.outline.RowFilter;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -61,6 +63,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
@@ -73,7 +76,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** The library window. */
-public class LibraryWindow extends AppWindow implements Saveable, ActionListener, BatchNotifierTarget, RowFilter, DocumentListener, JumpToSearchTarget {
+public class LibraryWindow extends GCSWindow implements Saveable, ActionListener, BatchNotifierTarget, RowFilter, DocumentListener, JumpToSearchTarget {
 	private static String		MSG_TITLE;
 	private static String		MSG_TOGGLE_EDIT_MODE_TOOLTIP;
 	private static String		MSG_TOGGLE_ROWS_OPEN_TOOLTIP;
@@ -161,10 +164,20 @@ public class LibraryWindow extends AppWindow implements Saveable, ActionListener
 	/**
 	 * Creates a new {@link LibraryWindow}.
 	 * 
+	 * @param file The file to display.
+	 * @throws IOException
+	 */
+	public LibraryWindow(File file) throws IOException {
+		this(new LibraryFile(file));
+	}
+
+	/**
+	 * Creates a new {@link LibraryWindow}.
+	 * 
 	 * @param file The {@link LibraryFile} to display.
 	 */
 	public LibraryWindow(LibraryFile file) {
-		super(MSG_TITLE, Images.getLibraryIcon(true), Images.getLibraryIcon(false));
+		super(MSG_TITLE, GCSImages.getLibraryIcon(true), GCSImages.getLibraryIcon(false));
 		mFile = file;
 		mLocked = mFile.getFile() != null;
 
@@ -224,7 +237,8 @@ public class LibraryWindow extends AppWindow implements Saveable, ActionListener
 		outline.setRowFilter(this);
 	}
 
-	@Override public String getWindowPrefsPrefix() {
+	@Override
+	public String getWindowPrefsPrefix() {
 		return "LibraryWindow:" + mFile.getUniqueID() + "."; //$NON-NLS-1$ //$NON-NLS-2$ 
 	}
 
@@ -243,7 +257,8 @@ public class LibraryWindow extends AppWindow implements Saveable, ActionListener
 		getRootPane().putClientProperty("Window.documentFile", file); //$NON-NLS-1$
 	}
 
-	@Override protected void createToolBarContents(JToolBar toolbar, FlexRow row) {
+	@Override
+	protected void createToolBarContents(JToolBar toolbar, FlexRow row) {
 		FlexColumn column = new FlexColumn();
 		row.add(column);
 		FlexRow firstRow = new FlexRow();
@@ -252,9 +267,9 @@ public class LibraryWindow extends AppWindow implements Saveable, ActionListener
 		mFile.addDataModifiedListener(marker);
 		toolbar.add(marker);
 		firstRow.add(marker);
-		mToggleLockButton = createToolBarButton(toolbar, firstRow, mLocked ? Images.getLockedIcon() : Images.getUnlockedIcon(), MSG_TOGGLE_EDIT_MODE_TOOLTIP);
-		mToggleRowsButton = createToolBarButton(toolbar, firstRow, Images.getToggleOpenIcon(), MSG_TOGGLE_ROWS_OPEN_TOOLTIP);
-		mSizeColumnsButton = createToolBarButton(toolbar, firstRow, Images.getSizeToFitIcon(), MSG_SIZE_COLUMNS_TO_FIT_TOOLTIP);
+		mToggleLockButton = createToolBarButton(toolbar, firstRow, mLocked ? ToolkitImage.getLockedIcon() : ToolkitImage.getUnlockedIcon(), MSG_TOGGLE_EDIT_MODE_TOOLTIP);
+		mToggleRowsButton = createToolBarButton(toolbar, firstRow, ToolkitImage.getToggleOpenIcon(), MSG_TOGGLE_ROWS_OPEN_TOOLTIP);
+		mSizeColumnsButton = createToolBarButton(toolbar, firstRow, ToolkitImage.getSizeToFitIcon(), MSG_SIZE_COLUMNS_TO_FIT_TOOLTIP);
 		createTypeCombo(toolbar, firstRow);
 		createCategoryCombo(toolbar, firstRow);
 
@@ -279,7 +294,8 @@ public class LibraryWindow extends AppWindow implements Saveable, ActionListener
 	private void createCategoryCombo(JToolBar toolbar, FlexRow row) {
 		mCategoryCombo = new JComboBox();
 		mCategoryCombo.setRenderer(new DefaultListCellRenderer() {
-			@Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+			@Override
+			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				setFont(getFont().deriveFont(index == 0 ? Font.ITALIC : Font.PLAIN));
 				return comp;
@@ -308,19 +324,20 @@ public class LibraryWindow extends AppWindow implements Saveable, ActionListener
 	private void createTypeCombo(JToolBar toolbar, FlexRow row) {
 		mTypeCombo = new JComboBox(new Object[] { MSG_ADVANTAGES, MSG_SKILLS, MSG_SPELLS, MSG_EQUIPMENT });
 		mTypeCombo.setRenderer(new DefaultListCellRenderer() {
-			@Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+			@Override
+			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				if (value == MSG_ADVANTAGES) {
-					setIcon(new ImageIcon(Images.getAdvantageIcon(false, true)));
+					setIcon(new ImageIcon(GCSImages.getAdvantageIcon(false, true)));
 				}
 				if (value == MSG_SKILLS) {
-					setIcon(new ImageIcon(Images.getSkillIcon(false, true)));
+					setIcon(new ImageIcon(GCSImages.getSkillIcon(false, true)));
 				}
 				if (value == MSG_SPELLS) {
-					setIcon(new ImageIcon(Images.getSpellIcon(false, true)));
+					setIcon(new ImageIcon(GCSImages.getSpellIcon(false, true)));
 				}
 				if (value == MSG_EQUIPMENT) {
-					setIcon(new ImageIcon(Images.getEquipmentIcon(false, true)));
+					setIcon(new ImageIcon(GCSImages.getEquipmentIcon(false, true)));
 				}
 				return comp;
 			}
@@ -340,7 +357,8 @@ public class LibraryWindow extends AppWindow implements Saveable, ActionListener
 		row.add(mTypeCombo);
 	}
 
-	@Override public void dispose() {
+	@Override
+	public void dispose() {
 		Preferences prefs = getWindowPreferences();
 		String prefix = getWindowPrefsPrefix();
 		prefs.setValue(prefix, ADVANTAGES_CONFIG, mAdvantagesOutline.getConfig());
@@ -386,7 +404,7 @@ public class LibraryWindow extends AppWindow implements Saveable, ActionListener
 			mFile.getSkillList().getModel().setLocked(mLocked);
 			mFile.getSpellList().getModel().setLocked(mLocked);
 			mFile.getEquipmentList().getModel().setLocked(mLocked);
-			mToggleLockButton.setIcon(new ImageIcon(mLocked ? Images.getLockedIcon() : Images.getUnlockedIcon()));
+			mToggleLockButton.setIcon(new ImageIcon(mLocked ? ToolkitImage.getLockedIcon() : ToolkitImage.getUnlockedIcon()));
 		} else if (src == mToggleRowsButton) {
 			mOutline.getModel().toggleRowOpenState();
 		} else if (src == mSizeColumnsButton) {

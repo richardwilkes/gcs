@@ -23,16 +23,17 @@
 
 package com.trollworks.gcs.common;
 
-import com.trollworks.gcs.utility.Debug;
-import com.trollworks.gcs.utility.StdUndoManager;
-import com.trollworks.gcs.utility.UniqueID;
-import com.trollworks.gcs.utility.io.Path;
-import com.trollworks.gcs.utility.io.SafeFileUpdater;
-import com.trollworks.gcs.utility.io.xml.XMLNodeType;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
-import com.trollworks.gcs.utility.notification.Notifier;
-import com.trollworks.gcs.utility.notification.NotifierTarget;
+import com.trollworks.ttk.notification.Notifier;
+import com.trollworks.ttk.notification.NotifierTarget;
+import com.trollworks.ttk.undo.StdUndoManager;
+import com.trollworks.ttk.utility.Debug;
+import com.trollworks.ttk.utility.Path;
+import com.trollworks.ttk.utility.SafeFileUpdater;
+import com.trollworks.ttk.utility.UniqueID;
+import com.trollworks.ttk.widgets.DataModifiedListener;
+import com.trollworks.ttk.xml.XMLNodeType;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry including="com/" kind="src" path=""/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ttk"/>
+	<classpathentry kind="lib" path="libraries/iText-2.0.8.jar" sourcepath="libraries/iText-src-2.0.8.zip"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="libraries/AppleJavaExtensions.jar"/>
-	<classpathentry kind="lib" path="libraries/iText-2.0.7.jar" sourcepath="libraries/iText-src-2.0.7.zip"/>
+	<classpathentry kind="lib" path="/ttk/libraries/AppleJavaExtensions.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

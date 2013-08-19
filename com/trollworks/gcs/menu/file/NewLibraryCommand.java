@@ -25,8 +25,8 @@ package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.library.LibraryWindow;
-import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.menu.Command;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -35,6 +35,8 @@ import javax.swing.JMenuItem;
 
 /** Provides the "New Library" command. */
 public class NewLibraryCommand extends Command {
+	/** The action command this command will issue. */
+	public static final String				CMD_NEW_LIBRARY	= "NewLibrary";			//$NON-NLS-1$
 	private static String					MSG_NEW_LIBRARY;
 
 	static {
@@ -42,17 +44,19 @@ public class NewLibraryCommand extends Command {
 	}
 
 	/** The singleton {@link NewLibraryCommand}. */
-	public static final NewLibraryCommand	INSTANCE	= new NewLibraryCommand();
+	public static final NewLibraryCommand	INSTANCE		= new NewLibraryCommand();
 
 	private NewLibraryCommand() {
-		super(MSG_NEW_LIBRARY, KeyEvent.VK_L);
+		super(MSG_NEW_LIBRARY, CMD_NEW_LIBRARY, KeyEvent.VK_L);
 	}
 
-	@Override public void adjustForMenu(JMenuItem item) {
+	@Override
+	public void adjustForMenu(JMenuItem item) {
 		// Do nothing. We're always enabled.
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		newLibrary();
 	}
 

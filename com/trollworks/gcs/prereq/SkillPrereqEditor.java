@@ -23,11 +23,11 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.layout.FlexGrid;
-import com.trollworks.gcs.widgets.layout.FlexRow;
-import com.trollworks.gcs.widgets.layout.FlexSpacer;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.layout.FlexGrid;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.layout.FlexSpacer;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 /** A skill prerequisite editor panel. */
 public class SkillPrereqEditor extends PrereqEditor {
@@ -50,7 +50,8 @@ public class SkillPrereqEditor extends PrereqEditor {
 		super(row, prereq, depth);
 	}
 
-	@Override protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
+	@Override
+	protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
 		SkillPrereq prereq = (SkillPrereq) mPrereq;
 
 		FlexRow row = new FlexRow();

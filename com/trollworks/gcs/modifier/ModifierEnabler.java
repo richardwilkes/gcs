@@ -25,11 +25,11 @@ package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.SelfControlRoll;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.text.TextUtility;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.WindowUtils;
-import com.trollworks.gcs.widgets.layout.ColumnLayout;
+import com.trollworks.ttk.layout.ColumnLayout;
+import com.trollworks.ttk.text.TextUtility;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.UIUtilities;
+import com.trollworks.ttk.widgets.WindowUtils;
 
 import java.awt.BorderLayout;
 import java.awt.Component;

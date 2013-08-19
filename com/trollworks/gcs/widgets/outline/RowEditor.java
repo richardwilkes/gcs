@@ -23,12 +23,12 @@
 
 package com.trollworks.gcs.widgets.outline;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.ActionPanel;
-import com.trollworks.gcs.widgets.CommitEnforcer;
-import com.trollworks.gcs.widgets.WindowUtils;
-import com.trollworks.gcs.widgets.layout.ColumnLayout;
-import com.trollworks.gcs.widgets.layout.RowDistribution;
+import com.trollworks.ttk.layout.ColumnLayout;
+import com.trollworks.ttk.layout.RowDistribution;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.ActionPanel;
+import com.trollworks.ttk.widgets.CommitEnforcer;
+import com.trollworks.ttk.widgets.WindowUtils;
 
 import java.awt.BorderLayout;
 import java.awt.Component;

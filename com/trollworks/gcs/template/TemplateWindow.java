@@ -25,29 +25,34 @@ package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.menu.file.Saveable;
+import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.Path;
-import com.trollworks.gcs.widgets.AppWindow;
-import com.trollworks.gcs.widgets.ModifiedMarker;
-import com.trollworks.gcs.widgets.WindowUtils;
-import com.trollworks.gcs.widgets.layout.FlexRow;
+import com.trollworks.gcs.widgets.GCSWindow;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.gcs.widgets.outline.Outline;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
-import com.trollworks.gcs.widgets.outline.Row;
 import com.trollworks.gcs.widgets.outline.RowItemRenderer;
-import com.trollworks.gcs.widgets.outline.RowIterator;
 import com.trollworks.gcs.widgets.outline.RowPostProcessor;
 import com.trollworks.gcs.widgets.search.Search;
 import com.trollworks.gcs.widgets.search.SearchTarget;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.menu.file.Saveable;
+import com.trollworks.ttk.notification.NotifierTarget;
+import com.trollworks.ttk.preferences.Preferences;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.Path;
+import com.trollworks.ttk.widgets.AppWindow;
+import com.trollworks.ttk.widgets.ModifiedMarker;
+import com.trollworks.ttk.widgets.WindowUtils;
+import com.trollworks.ttk.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
+import com.trollworks.ttk.widgets.outline.Row;
+import com.trollworks.ttk.widgets.outline.RowIterator;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +63,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
 
 /** The template window. */
-public class TemplateWindow extends AppWindow implements Saveable, SearchTarget {
+public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget, NotifierTarget {
 	private static String		MSG_UNTITLED;
 	private static String		MSG_ADD_ROWS;
 	private static String		MSG_SAVE_ERROR;
@@ -138,6 +143,16 @@ public class TemplateWindow extends AppWindow implements Saveable, SearchTarget 
 	}
 
 	/**
+	 * Creates a new {@link TemplateWindow}.
+	 * 
+	 * @param file The file to display.
+	 * @throws IOException
+	 */
+	public TemplateWindow(File file) throws IOException {
+		this(new Template(file));
+	}
+
+	/**
 	 * Creates a template window.
 	 * 
 	 * @param template The template to display.
@@ -153,6 +168,7 @@ public class TemplateWindow extends AppWindow implements Saveable, SearchTarget 
 		restoreBounds();
 		getUndoManager().discardAllEdits();
 		mTemplate.setUndoManager(getUndoManager());
+		Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY);
 	}
 
 	private void adjustWindowTitle() {
@@ -168,7 +184,9 @@ public class TemplateWindow extends AppWindow implements Saveable, SearchTarget 
 		getRootPane().putClientProperty("Window.documentFile", file); //$NON-NLS-1$
 	}
 
-	@Override public void dispose() {
+	@Override
+	public void dispose() {
+		Preferences.getInstance().getNotifier().remove(this);
 		mTemplate.resetNotifier();
 		super.dispose();
 	}
@@ -178,7 +196,8 @@ public class TemplateWindow extends AppWindow implements Saveable, SearchTarget 
 		return mTemplate;
 	}
 
-	@Override public String getWindowPrefsPrefix() {
+	@Override
+	public String getWindowPrefsPrefix() {
 		return "TemplateWindow:" + mTemplate.getUniqueID() + "."; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
@@ -288,7 +307,8 @@ public class TemplateWindow extends AppWindow implements Saveable, SearchTarget 
 		}
 	}
 
-	@Override protected void createToolBarContents(JToolBar toolbar, FlexRow row) {
+	@Override
+	protected void createToolBarContents(JToolBar toolbar, FlexRow row) {
 		ModifiedMarker marker = new ModifiedMarker();
 		mTemplate.addDataModifiedListener(marker);
 		toolbar.add(marker);
@@ -415,5 +435,9 @@ public class TemplateWindow extends AppWindow implements Saveable, SearchTarget 
 		public void run() {
 			mOutline.scrollSelectionIntoView();
 		}
+	}
+
+	public void handleNotification(Object producer, String name, Object data) {
+		mTemplate.notifySingle(Advantage.ID_LIST_CHANGED, null);
 	}
 }

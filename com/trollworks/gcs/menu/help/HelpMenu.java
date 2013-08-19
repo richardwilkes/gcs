@@ -23,9 +23,13 @@
 
 package com.trollworks.gcs.menu.help;
 
-import com.trollworks.gcs.menu.DynamicMenuEnabler;
-import com.trollworks.gcs.utility.Platform;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.menu.DynamicMenuEnabler;
+import com.trollworks.ttk.menu.help.AboutCommand;
+import com.trollworks.ttk.menu.help.OpenLocalFileCommand;
+import com.trollworks.ttk.menu.help.OpenURLCommand;
+import com.trollworks.ttk.menu.help.UpdateCommand;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.Platform;
 
 import java.io.File;
 

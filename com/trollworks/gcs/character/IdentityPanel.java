@@ -23,8 +23,8 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.layout.ColumnLayout;
+import com.trollworks.ttk.layout.ColumnLayout;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 import javax.swing.SwingConstants;
 

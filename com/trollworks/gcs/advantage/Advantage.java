@@ -23,24 +23,25 @@
 
 package com.trollworks.gcs.advantage;
 
+import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.modifier.Modifier;
+import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.SkillDefault;
-import com.trollworks.gcs.utility.collections.EnumExtractor;
-import com.trollworks.gcs.utility.collections.FilteredIterator;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.OldWeapon;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
-import com.trollworks.gcs.widgets.outline.Column;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.collections.FilteredIterator;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -198,15 +199,18 @@ public class Advantage extends ListRow {
 		load(reader, state);
 	}
 
-	@Override public String getListChangedID() {
+	@Override
+	public String getListChangedID() {
 		return ID_LIST_CHANGED;
 	}
 
-	@Override public String getRowType() {
+	@Override
+	public String getRowType() {
 		return "Advantage"; //$NON-NLS-1$
 	}
 
-	@Override protected void prepareForLoad(LoadState state) {
+	@Override
+	protected void prepareForLoad(LoadState state) {
 		super.prepareForLoad(state);
 		mType = TYPE_MASK_PHYSICAL;
 		mName = MSG_DEFAULT_NAME;
@@ -222,14 +226,16 @@ public class Advantage extends ListRow {
 		mModifiers = new ArrayList<Modifier>();
 	}
 
-	@Override protected void loadAttributes(XMLReader reader, LoadState state) {
+	@Override
+	protected void loadAttributes(XMLReader reader, LoadState state) {
 		super.loadAttributes(reader, state);
 		if (canHaveChildren()) {
 			mContainerType = (AdvantageContainerType) EnumExtractor.extract(reader.getAttribute(TAG_TYPE), AdvantageContainerType.values(), AdvantageContainerType.GROUP);
 		}
 	}
 
-	@Override protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
+	@Override
+	protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
 		String name = reader.getName();
 
 		if (TAG_NAME.equals(name)) {
@@ -268,7 +274,8 @@ public class Advantage extends ListRow {
 		}
 	}
 
-	@Override protected void finishedLoading() {
+	@Override
+	protected void finishedLoading() {
 		if (mOldPointsString != null) {
 			// All this is here solely to support loading old data files
 			mOldPointsString = mOldPointsString.trim();
@@ -303,22 +310,26 @@ public class Advantage extends ListRow {
 		super.finishedLoading();
 	}
 
-	@Override public String getXMLTagName() {
+	@Override
+	public String getXMLTagName() {
 		return canHaveChildren() ? TAG_ADVANTAGE_CONTAINER : TAG_ADVANTAGE;
 	}
 
-	@Override public int getXMLTagVersion() {
+	@Override
+	public int getXMLTagVersion() {
 		return CURRENT_VERSION;
 	}
 
-	@Override protected void saveAttributes(XMLWriter out, boolean forUndo) {
+	@Override
+	protected void saveAttributes(XMLWriter out, boolean forUndo) {
 		super.saveAttributes(out, forUndo);
 		if (canHaveChildren() && mContainerType != AdvantageContainerType.GROUP) {
 			out.writeAttribute(TAG_TYPE, mContainerType.name().toLowerCase());
 		}
 	}
 
-	@Override public void saveSelf(XMLWriter out, boolean forUndo) {
+	@Override
+	public void saveSelf(XMLWriter out, boolean forUndo) {
 		out.simpleTag(TAG_NAME, mName);
 		if (!canHaveChildren()) {
 			out.simpleTag(TAG_TYPE, getTypeAsText());
@@ -379,7 +390,8 @@ public class Advantage extends ListRow {
 		return false;
 	}
 
-	@Override public String getLocalizedName() {
+	@Override
+	public String getLocalizedName() {
 		return MSG_DEFAULT_NAME;
 	}
 
@@ -502,8 +514,10 @@ public class Advantage extends ListRow {
 	 * @return The total points, taking levels and modifiers into account.
 	 */
 	public static int getAdjustedPoints(int basePoints, int levels, int pointsPerLevel, SelfControlRoll cr, Collection<Modifier> modifiers) {
-		int baseMod = 0;
-		int levelMod = 0;
+		int baseEnh = 0;
+		int levelEnh = 0;
+		int baseLim = 0;
+		int levelLim = 0;
 		double multiplier = cr.getMultiplier();
 
 		for (Modifier one : modifiers) {
@@ -513,14 +527,27 @@ public class Advantage extends ListRow {
 					case PERCENTAGE:
 						switch (one.getAffects()) {
 							case TOTAL:
-								baseMod += modifier;
-								levelMod += modifier;
+								if (modifier < 0) { // Limitation
+									baseLim += modifier;
+									levelLim += modifier;
+								} else { // Enhancement
+									baseEnh += modifier;
+									levelEnh += modifier;
+								}
 								break;
 							case BASE_ONLY:
-								baseMod += modifier;
+								if (modifier < 0) { // Limitation
+									baseLim += modifier;
+								} else { // Enhancement
+									baseEnh += modifier;
+								}
 								break;
 							case LEVELS_ONLY:
-								levelMod += modifier;
+								if (modifier < 0) { // Limitation
+									levelLim += modifier;
+								} else { // Enhancement
+									levelEnh += modifier;
+								}
 								break;
 						}
 						break;
@@ -543,24 +570,36 @@ public class Advantage extends ListRow {
 		}
 
 		int leveledPoints = levels > 0 ? pointsPerLevel * levels : 0;
-		if (baseMod != 0 || levelMod != 0) {
-			if (baseMod < -80) {
-				baseMod = -80;
-			}
-			if (levelMod < -80) {
-				levelMod = -80;
-			}
-			if (baseMod == levelMod) {
-				basePoints = modifyPoints(basePoints + leveledPoints, baseMod);
+		if (baseEnh != 0 || baseLim != 0 || levelEnh != 0 || levelLim != 0) {
+			int baseMod = 0;
+			int levelMod = 0;
+
+			if (SheetPreferences.areOptionalModifierRulesUsed()) {
+				if (baseEnh == levelEnh && baseLim == levelLim) {
+					basePoints = modifyPoints(basePoints + leveledPoints, baseEnh);
+					basePoints = modifyPoints(basePoints, Math.max(baseLim, -80));
+				} else {
+					basePoints = modifyPoints(basePoints, baseEnh);
+					basePoints = modifyPoints(basePoints, Math.max(baseLim, -80));
+					leveledPoints = modifyPoints(leveledPoints, levelEnh);
+					leveledPoints = modifyPoints(leveledPoints, Math.max(levelLim, -80));
+					basePoints += leveledPoints;
+				}
 			} else {
-				basePoints = modifyPoints(basePoints, baseMod) + modifyPoints(leveledPoints, levelMod);
+				baseMod = Math.max(baseEnh + baseLim, -80);
+				levelMod = Math.max(levelEnh + levelLim, -80);
+				if (baseMod == levelMod) {
+					basePoints = modifyPoints(basePoints + leveledPoints, baseMod);
+				} else {
+					basePoints = modifyPoints(basePoints, baseMod) + modifyPoints(leveledPoints, levelMod);
+				}
 			}
 		} else {
 			basePoints += leveledPoints;
 		}
 
 		if (basePoints > 0) {
-			basePoints = (int) (basePoints * multiplier + 0.999);
+			basePoints = (int) (basePoints * multiplier + 0.5);
 			if (basePoints < 1) {
 				basePoints = 1;
 			}
@@ -638,11 +677,13 @@ public class Advantage extends ListRow {
 		return false;
 	}
 
-	@Override public Object getData(Column column) {
+	@Override
+	public Object getData(Column column) {
 		return AdvantageColumn.values()[column.getID()].getData(this);
 	}
 
-	@Override public String getDataAsText(Column column) {
+	@Override
+	public String getDataAsText(Column column) {
 		return AdvantageColumn.values()[column.getID()].getDataAsText(this);
 	}
 
@@ -654,7 +695,8 @@ public class Advantage extends ListRow {
 		}
 	}
 
-	@Override public boolean contains(String text, boolean lowerCaseOnly) {
+	@Override
+	public boolean contains(String text, boolean lowerCaseOnly) {
 		if (getName().toLowerCase().indexOf(text) != -1) {
 			return true;
 		}
@@ -721,7 +763,8 @@ public class Advantage extends ListRow {
 		return ""; //$NON-NLS-1$
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append(getName());
 		if (!canHaveChildren()) {
@@ -755,15 +798,18 @@ public class Advantage extends ListRow {
 		return false;
 	}
 
-	@Override public BufferedImage getImage(boolean large) {
-		return Images.getAdvantageIcon(large, true);
+	@Override
+	public BufferedImage getImage(boolean large) {
+		return GCSImages.getAdvantageIcon(large, true);
 	}
 
-	@Override public RowEditor<? extends ListRow> createEditor() {
+	@Override
+	public RowEditor<? extends ListRow> createEditor() {
 		return new AdvantageEditor(this);
 	}
 
-	@Override public void fillWithNameableKeys(HashSet<String> set) {
+	@Override
+	public void fillWithNameableKeys(HashSet<String> set) {
 		super.fillWithNameableKeys(set);
 		extractNameables(set, mName);
 		for (WeaponStats weapon : mWeapons) {
@@ -776,7 +822,8 @@ public class Advantage extends ListRow {
 		}
 	}
 
-	@Override public void applyNameableKeys(HashMap<String, String> map) {
+	@Override
+	public void applyNameableKeys(HashMap<String, String> map) {
 		super.applyNameableKeys(map);
 		mName = nameNameables(map, mName);
 		for (WeaponStats weapon : mWeapons) {
@@ -818,7 +865,8 @@ public class Advantage extends ListRow {
 
 	private static final String	MODIFIER_SEPARATOR	= "; "; //$NON-NLS-1$
 
-	@Override public String getModifierNotes() {
+	@Override
+	public String getModifierNotes() {
 		StringBuilder builder = new StringBuilder();
 		if (mCR != SelfControlRoll.NONE_REQUIRED) {
 			builder.append(mCR);
@@ -842,7 +890,8 @@ public class Advantage extends ListRow {
 		return builder.toString();
 	}
 
-	@Override protected String getCategoryID() {
+	@Override
+	protected String getCategoryID() {
 		return ID_CATEGORY;
 	}
 }

@@ -25,10 +25,10 @@ package com.trollworks.gcs.widgets.outline;
 
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.xml.XMLNodeType;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.xml.XMLNodeType;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -120,12 +120,14 @@ public class RowUndo extends AbstractUndoableEdit {
 		}
 	}
 
-	@Override public void undo() throws CannotUndoException {
+	@Override
+	public void undo() throws CannotUndoException {
 		super.undo();
 		deserialize(mBefore);
 	}
 
-	@Override public void redo() throws CannotRedoException {
+	@Override
+	public void redo() throws CannotRedoException {
 		super.redo();
 		deserialize(mAfter);
 	}
@@ -140,7 +142,8 @@ public class RowUndo extends AbstractUndoableEdit {
 		return mRow;
 	}
 
-	@Override public String getPresentationName() {
+	@Override
+	public String getPresentationName() {
 		return mName;
 	}
 }

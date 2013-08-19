@@ -23,12 +23,12 @@
 
 package com.trollworks.gcs.equipment;
 
+import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.common.LoadState;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.xml.XMLNodeType;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
+import com.trollworks.ttk.xml.XMLNodeType;
+import com.trollworks.ttk.xml.XMLReader;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -40,19 +40,23 @@ public class EquipmentList extends ListFile {
 	/** The XML tag for Equipment lists. */
 	public static final String	TAG_ROOT		= "equipment_list"; //$NON-NLS-1$
 
-	@Override public int getXMLTagVersion() {
+	@Override
+	public int getXMLTagVersion() {
 		return CURRENT_VERSION;
 	}
 
-	@Override public String getXMLTagName() {
+	@Override
+	public String getXMLTagName() {
 		return TAG_ROOT;
 	}
 
-	@Override public BufferedImage getFileIcon(boolean large) {
-		return Images.getEquipmentIcon(large, false);
+	@Override
+	public BufferedImage getFileIcon(boolean large) {
+		return GCSImages.getEquipmentIcon(large, false);
 	}
 
-	@Override protected void loadList(XMLReader reader, LoadState state) throws IOException {
+	@Override
+	protected void loadList(XMLReader reader, LoadState state) throws IOException {
 		OutlineModel model = getModel();
 		String marker = reader.getMarker();
 		do {

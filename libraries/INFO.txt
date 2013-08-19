@@ -1,7 +1,4 @@
 This directory contains various third-party libraries that GCS makes use of:
 
-Apple Java Extensions, version 1.2
-Obtained from http://developer.apple.com/samplecode/AppleJavaExtensions/index.html
-
-iText, version 2.0.7
+iText, version 2.0.8
 Obtained from http://www.lowagie.com/iText

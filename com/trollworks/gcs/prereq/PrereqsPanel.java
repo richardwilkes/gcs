@@ -23,9 +23,9 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.BandedPanel;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.BandedPanel;
 
 /** Displays and edits {@link Prereq} objects. */
 public class PrereqsPanel extends BandedPanel {

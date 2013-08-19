@@ -24,9 +24,9 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.utility.collections.EnumExtractor;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
+import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 
@@ -36,7 +36,7 @@ public class AttributeBonus extends Bonus {
 	public static final String			TAG_ROOT				= "attribute_bonus";	//$NON-NLS-1$
 	private static final String			TAG_ATTRIBUTE			= "attribute";			//$NON-NLS-1$
 	private static final String			ATTRIBUTE_LIMITATION	= "limitation";		//$NON-NLS-1$
-	private BonusAttributeType		mAttribute;
+	private BonusAttributeType			mAttribute;
 	private AttributeBonusLimitation	mLimitation;
 
 	/** Creates a new attribute bonus. */
@@ -68,7 +68,8 @@ public class AttributeBonus extends Bonus {
 		mLimitation = other.mLimitation;
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -99,7 +100,8 @@ public class AttributeBonus extends Bonus {
 		return buffer.toString();
 	}
 
-	@Override protected void loadSelf(XMLReader reader) throws IOException {
+	@Override
+	protected void loadSelf(XMLReader reader) throws IOException {
 		if (TAG_ATTRIBUTE.equals(reader.getName())) {
 			setLimitation((AttributeBonusLimitation) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_LIMITATION), AttributeBonusLimitation.values(), AttributeBonusLimitation.NONE));
 			setAttribute((BonusAttributeType) EnumExtractor.extract(reader.readText(), BonusAttributeType.values(), BonusAttributeType.ST));

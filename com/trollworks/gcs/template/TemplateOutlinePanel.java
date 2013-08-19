@@ -23,14 +23,14 @@
 
 package com.trollworks.gcs.template;
 
+import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.character.DropPanel;
-import com.trollworks.gcs.utility.Fonts;
-import com.trollworks.gcs.utility.text.TextDrawing;
-import com.trollworks.gcs.widgets.BoxedDropShadowBorder;
-import com.trollworks.gcs.widgets.outline.Column;
-import com.trollworks.gcs.widgets.outline.Outline;
-import com.trollworks.gcs.widgets.outline.OutlineHeader;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
+import com.trollworks.ttk.border.BoxedDropShadowBorder;
+import com.trollworks.ttk.text.TextDrawing;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.OutlineHeader;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -133,7 +133,7 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
 
 	public Dimension minimumLayoutSize(Container parent) {
 		Dimension size = mOutline.getMinimumSize();
-		int minHeight = TextDrawing.getPreferredSize(UIManager.getFont(Fonts.KEY_FIELD), null, "Mg").height; //$NON-NLS-1$
+		int minHeight = TextDrawing.getPreferredSize(UIManager.getFont(GCSFonts.KEY_FIELD), null, "Mg").height; //$NON-NLS-1$
 		if (size.height < minHeight) {
 			size.height = minHeight;
 		}

@@ -24,7 +24,7 @@
 package com.trollworks.gcs.skill;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.util.HashSet;
 
@@ -33,51 +33,60 @@ public enum SkillDefaultType {
 	/** The type for ST-based defaults. */
 	ST {
 
-		@Override public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+		@Override
+		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			return finalLevel(skillDefault, SkillAttribute.ST.getBaseSkillLevel(character));
 		}
 	},
 	/** The type for DX-based defaults. */
 	DX {
-		@Override public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+		@Override
+		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			return finalLevel(skillDefault, SkillAttribute.DX.getBaseSkillLevel(character));
 		}
 	},
 	/** The type for IQ-based defaults. */
 	IQ {
-		@Override public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+		@Override
+		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			return finalLevel(skillDefault, SkillAttribute.IQ.getBaseSkillLevel(character));
 		}
 	},
 	/** The type for HT-based defaults. */
 	HT {
-		@Override public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+		@Override
+		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			return finalLevel(skillDefault, SkillAttribute.HT.getBaseSkillLevel(character));
 		}
 	},
 	/** The type for Will-based defaults. */
 	Will {
-		@Override public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+		@Override
+		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			return finalLevel(skillDefault, SkillAttribute.Will.getBaseSkillLevel(character));
 		}
 	},
 	/** The type for Perception-based defaults. */
 	Per {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_PERCEPTION;
 		}
 
-		@Override public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+		@Override
+		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			return finalLevel(skillDefault, SkillAttribute.Per.getBaseSkillLevel(character));
 		}
 	},
 	/** The type for Skill-based defaults. */
 	Skill {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_SKILL_NAMED;
 		}
 
-		@Override public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+		@Override
+		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			int best = Integer.MIN_VALUE;
 			for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
 				int level = skill.getLevel();
@@ -88,7 +97,8 @@ public enum SkillDefaultType {
 			return finalLevel(skillDefault, best);
 		}
 
-		@Override public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+		@Override
+		public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			int best = Integer.MIN_VALUE;
 			for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
 				int level = skill.getLevel(excludes);
@@ -99,17 +109,20 @@ public enum SkillDefaultType {
 			return finalLevel(skillDefault, best);
 		}
 
-		@Override public boolean isSkillBased() {
+		@Override
+		public boolean isSkillBased() {
 			return true;
 		}
 	},
 	/** The type for Parry-based defaults. */
 	Parry {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_PARRY_SKILL_NAMED;
 		}
 
-		@Override public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+		@Override
+		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			int best = Integer.MIN_VALUE;
 			for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
 				int level = skill.getLevel();
@@ -117,10 +130,11 @@ public enum SkillDefaultType {
 					best = level;
 				}
 			}
-			return finalLevel(skillDefault, best / 2 + 3 + character.getParryBonus());
+			return finalLevel(skillDefault, best != Integer.MIN_VALUE ? best / 2 + 3 + character.getParryBonus() : best);
 		}
 
-		@Override public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+		@Override
+		public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			int best = Integer.MIN_VALUE;
 			for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
 				int level = skill.getLevel(excludes);
@@ -128,20 +142,23 @@ public enum SkillDefaultType {
 					best = level;
 				}
 			}
-			return finalLevel(skillDefault, best / 2 + 3 + character.getParryBonus());
+			return finalLevel(skillDefault, best != Integer.MIN_VALUE ? best / 2 + 3 + character.getParryBonus() : best);
 		}
 
-		@Override public boolean isSkillBased() {
+		@Override
+		public boolean isSkillBased() {
 			return true;
 		}
 	},
 	/** The type for Block-based defaults. */
 	Block {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_BLOCK_SKILL_NAMED;
 		}
 
-		@Override public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+		@Override
+		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			int best = Integer.MIN_VALUE;
 			for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
 				int level = skill.getLevel();
@@ -149,10 +166,11 @@ public enum SkillDefaultType {
 					best = level;
 				}
 			}
-			return finalLevel(skillDefault, best / 2 + 3 + character.getBlockBonus());
+			return finalLevel(skillDefault, best != Integer.MIN_VALUE ? best / 2 + 3 + character.getBlockBonus() : best);
 		}
 
-		@Override public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+		@Override
+		public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			int best = Integer.MIN_VALUE;
 			for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
 				int level = skill.getLevel(excludes);
@@ -160,10 +178,11 @@ public enum SkillDefaultType {
 					best = level;
 				}
 			}
-			return finalLevel(skillDefault, best / 2 + 3 + character.getBlockBonus());
+			return finalLevel(skillDefault, best != Integer.MIN_VALUE ? best / 2 + 3 + character.getBlockBonus() : best);
 		}
 
-		@Override public boolean isSkillBased() {
+		@Override
+		public boolean isSkillBased() {
 			return true;
 		}
 	};

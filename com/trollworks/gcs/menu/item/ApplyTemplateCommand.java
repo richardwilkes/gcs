@@ -25,12 +25,12 @@ package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.character.SheetWindow;
-import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateWindow;
-import com.trollworks.gcs.utility.MultipleUndo;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.outline.Row;
+import com.trollworks.ttk.menu.Command;
+import com.trollworks.ttk.undo.MultipleUndo;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.Row;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -41,6 +41,8 @@ import javax.swing.JMenuItem;
 
 /** Provides the "Apply Template To Sheet" command. */
 public class ApplyTemplateCommand extends Command {
+	/** The action command this command will issue. */
+	public static final String					CMD_APPLY_TEMPLATE	= "ApplyTemplate";				//$NON-NLS-1$
 	private static String						MSG_APPLY_TEMPLATE_TO_SHEET;
 	private static String						MSG_UNDO;
 
@@ -49,13 +51,14 @@ public class ApplyTemplateCommand extends Command {
 	}
 
 	/** The singleton {@link ApplyTemplateCommand}. */
-	public static final ApplyTemplateCommand	INSTANCE	= new ApplyTemplateCommand();
+	public static final ApplyTemplateCommand	INSTANCE			= new ApplyTemplateCommand();
 
 	private ApplyTemplateCommand() {
-		super(MSG_APPLY_TEMPLATE_TO_SHEET, KeyEvent.VK_A, SHIFTED_COMMAND_MODIFIER);
+		super(MSG_APPLY_TEMPLATE_TO_SHEET, CMD_APPLY_TEMPLATE, KeyEvent.VK_A, SHIFTED_COMMAND_MODIFIER);
 	}
 
-	@Override public void adjustForMenu(JMenuItem item) {
+	@Override
+	public void adjustForMenu(JMenuItem item) {
 		Window window = getActiveWindow();
 		if (window instanceof TemplateWindow) {
 			setEnabled(SheetWindow.getTopSheet() != null);
@@ -64,7 +67,8 @@ public class ApplyTemplateCommand extends Command {
 		}
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		Window window = getActiveWindow();
 		if (window instanceof TemplateWindow) {
 			Template template = ((TemplateWindow) window).getTemplate();

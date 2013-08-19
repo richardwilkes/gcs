@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="fczneq31:-6skj90gm470y" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes" type="race">
+			<name>Minotaur</name>
+			<reference>DF3:4</reference>
+			<advantage version="2">
+				<name>Increased Strength</name>
+				<type>Physical</type>
+				<levels>3</levels>
+				<points_per_level>10</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>No Fine Manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B15</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Size</name>
+					<cost type="percentage">-10</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+					<reference>B15</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Super-Effort</name>
+					<cost type="percentage">300</cost>
+					<affects>total</affects>
+					<reference>Sup24</reference>
+				</modifier>
+				<reference>B14</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>st</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Decreased Intelligence</name>
+				<type>Mental</type>
+				<levels>2</levels>
+				<points_per_level>-20</points_per_level>
+				<reference>B15</reference>
+				<categories>
+					<category>Attribute</category>
+					<category>Disadvantage</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>iq</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Health</name>
+				<type>Physical</type>
+				<levels>3</levels>
+				<points_per_level>10</points_per_level>
+				<reference>B14</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>ht</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Perception</name>
+				<type>Mental/Physical</type>
+				<levels>2</levels>
+				<points_per_level>5</points_per_level>
+				<reference>B16</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>perception</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Absolute Direction</name>
+				<type>Mental/Physical</type>
+				<base_points>5</base_points>
+				<modifier version="1" enabled="no">
+					<name>Requires signal</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B34</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>3D Spatial Sense</name>
+					<cost type="points">5</cost>
+					<affects>total</affects>
+					<reference>B34</reference>
+					<skill_bonus>
+						<name compare="starts with">piloting</name>
+						<specialization compare="is anything"></specialization>
+						<amount>1</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">aerobatics</name>
+						<specialization compare="is anything"></specialization>
+						<amount>2</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">free fall</name>
+						<specialization compare="is anything"></specialization>
+						<amount>2</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">navigation</name>
+						<specialization compare="is">hyperspace</specialization>
+						<amount>2</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">navigation</name>
+						<specialization compare="is">space</specialization>
+						<amount>2</amount>
+					</skill_bonus>
+				</modifier>
+				<reference>B34</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">body sense</name>
+					<specialization compare="is anything"></specialization>
+					<amount>3</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">navigation</name>
+					<specialization compare="is">air</specialization>
+					<amount>3</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">navigation</name>
+					<specialization compare="is">land</specialization>
+					<amount>3</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">navigation</name>
+					<specialization compare="is">sea</specialization>
+					<amount>3</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Acute Hearing</name>
+				<type>Physical</type>
+				<levels>2</levels>
+				<points_per_level>2</points_per_level>
+				<reference>B35</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>hearing</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Damage Resistance</name>
+				<type>Physical, Exotic</type>
+				<levels>2</levels>
+				<points_per_level>5</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>Ablative</name>
+					<cost type="percentage">-80</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Absorbtion</name>
+					<cost type="percentage">80</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>Enhances @Trait@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Absorbtion</name>
+					<cost type="percentage">100</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>Enhances any trait</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Absorbtion</name>
+					<cost type="percentage">80</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>Healing only</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Can't wear armor</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Directional</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+					<notes>@Direction: Back, Right, Left, Top or Underside@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Directional</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+					<notes>Front</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Flexible</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Hardened</name>
+					<cost type="percentage">20</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Limited</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>@Common Attack Form@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Limited</name>
+					<cost type="percentage">-60</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>@Occasional Attack Form@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Limited</name>
+					<cost type="percentage">-80</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>@Rare Attack Form@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Limited</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>@Very Common Attack Form@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Reflection</name>
+					<cost type="percentage">100</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Semi-Ablative</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Tough Skin</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Partial</name>
+					<cost type="percentage">-70</cost>
+					<affects>total</affects>
+					<notes>Skull Only</notes>
+				</modifier>
+				<reference>B47</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<dr_bonus>
+					<location>skull</location>
+					<amount per_level="yes">1</amount>
+				</dr_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Damage Resistance</name>
+				<type>Physical, Exotic</type>
+				<levels>2</levels>
+				<points_per_level>5</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>Ablative</name>
+					<cost type="percentage">-80</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Absorbtion</name>
+					<cost type="percentage">80</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>Enhances @Trait@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Absorbtion</name>
+					<cost type="percentage">100</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>Enhances any trait</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Absorbtion</name>
+					<cost type="percentage">80</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>Healing only</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Can't wear armor</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Directional</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+					<notes>@Direction: Back, Right, Left, Top or Underside@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Directional</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+					<notes>Front</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Flexible</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Hardened</name>
+					<cost type="percentage">20</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Limited</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>@Common Attack Form@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Limited</name>
+					<cost type="percentage">-60</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>@Occasional Attack Form@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Limited</name>
+					<cost type="percentage">-80</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>@Rare Attack Form@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Limited</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>@Very Common Attack Form@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Reflection</name>
+					<cost type="percentage">100</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Semi-Ablative</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Tough Skin</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<reference>B47</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<dr_bonus>
+					<location>full_body_except_eyes</location>
+					<amount per_level="yes">1</amount>
+				</dr_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Peripheral Vision</name>
+				<type>Physical</type>
+				<base_points>15</base_points>
+				<modifier version="1" enabled="no">
+					<name>Easy to Hit</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B75</reference>
+					<notes>Others can target your eyes at only -6 to hit</notes>
+				</modifier>
+				<reference>B74</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Striker, Impaling (Horns)</name>
+				<type>Physical, Exotic</type>
+				<base_points>8</base_points>
+				<melee_weapon>
+					<damage>thr:+1 imp</damage>
+					<reach>C,1</reach>
+					<parry>0</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-1</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Brawling</name>
+						<modifier>-1</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Head Butt</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Karate</name>
+						<modifier>-1</modifier>
+					</default>
+				</melee_weapon>
+				<modifier version="1">
+					<name>Limited Arc</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<notes>Straight Ahead</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Long</name>
+					<cost type="percentage">100</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B88</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Appearance</name>
+				<type>Physical</type>
+				<modifier version="1" enabled="no">
+					<name>Universal</name>
+					<cost type="percentage">25</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Off-the-Shelf Looks</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Androgynous</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Impressive</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Attractive</name>
+					<cost type="points">4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Average</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Horrific</name>
+					<cost type="points">-24</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Monstrous</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1">
+					<name>Hideous</name>
+					<cost type="points">-16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Ugly</name>
+					<cost type="points">-8</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Unattractive</name>
+					<cost type="points">-4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Handsome</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Beautiful</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Handsome</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Beautiful</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Transcendent</name>
+					<cost type="points">20</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B21</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Bad Temper</name>
+				<type>Mental</type>
+				<base_points>-10</base_points>
+				<cr>12</cr>
+				<reference>B124</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Berserk</name>
+				<type>Mental</type>
+				<base_points>-10</base_points>
+				<cr>12</cr>
+				<modifier version="1" enabled="no">
+					<name>Battle Rage</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B124</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Bull's face and neck</name>
+				<type>Physical</type>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Can't wear most humanoid helmets</name>
+				<type>Physical</type>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+</template>

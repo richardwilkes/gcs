@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="fczfcmfg:-1chln5vozvk9c" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes" type="race">
+			<name>Fire Infused</name>
+			<reference>DF3:13</reference>
+			<advantage version="2">
+				<name>Basic Speed +1</name>
+				<type>Physical</type>
+				<base_points>20</base_points>
+				<attribute_bonus>
+					<attribute>speed</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage_container version="2" open="yes">
+				<name>Fire</name>
+				<modifier version="1">
+					<name>Power Modifier</name>
+					<cost type="percentage">-10</cost>
+					<affects>total</affects>
+					<reference>PW27</reference>
+					<notes>Magical</notes>
+				</modifier>
+				<categories>
+					<category>Advantage</category>
+					<category>Power</category>
+				</categories>
+				<advantage version="2">
+					<name>Damage Resistance</name>
+					<type>Physical, Exotic</type>
+					<levels>6</levels>
+					<points_per_level>5</points_per_level>
+					<modifier version="1" enabled="no">
+						<name>Ablative</name>
+						<cost type="percentage">-80</cost>
+						<affects>total</affects>
+						<reference>B47</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Absorbtion</name>
+						<cost type="percentage">80</cost>
+						<affects>total</affects>
+						<reference>B46</reference>
+						<notes>Enhances @Trait@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Absorbtion</name>
+						<cost type="percentage">100</cost>
+						<affects>total</affects>
+						<reference>B46</reference>
+						<notes>Enhances any trait</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Absorbtion</name>
+						<cost type="percentage">80</cost>
+						<affects>total</affects>
+						<reference>B46</reference>
+						<notes>Healing only</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Can't wear armor</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B47</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Directional</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B47</reference>
+						<notes>@Direction: Back, Right, Left, Top or Underside@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Directional</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B47</reference>
+						<notes>Front</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Flexible</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B47</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Hardened</name>
+						<cost type="percentage">20</cost>
+						<levels>1</levels>
+						<affects>total</affects>
+						<reference>B47</reference>
+					</modifier>
+					<modifier version="1">
+						<name>Limited</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B46</reference>
+						<notes>Fire and Heat</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Limited</name>
+						<cost type="percentage">-60</cost>
+						<affects>total</affects>
+						<reference>B46</reference>
+						<notes>@Occasional Attack Form@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Limited</name>
+						<cost type="percentage">-80</cost>
+						<affects>total</affects>
+						<reference>B46</reference>
+						<notes>@Rare Attack Form@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Limited</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B46</reference>
+						<notes>@Very Common Attack Form@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Reflection</name>
+						<cost type="percentage">100</cost>
+						<affects>total</affects>
+						<reference>B47</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Semi-Ablative</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B47</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Tough Skin</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B47</reference>
+					</modifier>
+					<reference>B47</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+					<dr_bonus>
+						<location>full_body_except_eyes</location>
+						<amount per_level="yes">1</amount>
+					</dr_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Injury Tolerance (Damage Reduction)</name>
+					<type>Physical, Exotic</type>
+					<levels>2</levels>
+					<points_per_level>25</points_per_level>
+					<modifier version="1">
+						<name>Limited</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B46</reference>
+						<notes>Fire and Heat</notes>
+					</modifier>
+					<reference>P53</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Temperature Tolerance</name>
+					<type>Physical</type>
+					<levels>11</levels>
+					<points_per_level>1</points_per_level>
+					<reference>B93</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+			</advantage_container>
+			<advantage version="2">
+				<name>Reputation</name>
+				<type>Social</type>
+				<levels>3</levels>
+				<points_per_level>5</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>People Affected</name>
+					<cost type="multiplier">1</cost>
+					<reference>B27</reference>
+					<notes>Almost everyone</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>People Affected</name>
+					<cost type="multiplier">0.67</cost>
+					<reference>B27</reference>
+					<notes>Almost everyone except @large class of people@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>People Affected</name>
+					<cost type="multiplier">0.5</cost>
+					<reference>B27</reference>
+					<notes>@Large class of people@</notes>
+				</modifier>
+				<modifier version="1">
+					<name>People Affected</name>
+					<cost type="multiplier">0.33</cost>
+					<reference>B27</reference>
+					<notes>Fire Elementals</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Recognized all the time</name>
+					<cost type="multiplier">1</cost>
+					<reference>B28</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Recognized sometimes</name>
+					<cost type="multiplier">0.5</cost>
+					<reference>B28</reference>
+					<notes>10-</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Recognized occasionally</name>
+					<cost type="multiplier">0.33</cost>
+					<reference>B28</reference>
+					<notes>7-</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Recognized occasionally</name>
+					<cost type="multiplier">0.33</cost>
+					<reference>B28</reference>
+					<notes>7-</notes>
+				</modifier>
+				<reference>B26</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Flaming Fingers</name>
+				<type>Physical</type>
+				<base_points>1</base_points>
+				<reference>DF3:13</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Flaming Hair</name>
+				<type>Physical</type>
+				<base_points>1</base_points>
+				<reference>DF3:13</reference>
+				<notes>Light; 2yd</notes>
+			</advantage>
+			<advantage version="2">
+				<name>Unnatural Features (High body temp. Red eyes. Flushed skin. Flaming Hair.)</name>
+				<type>Physical</type>
+				<levels>2</levels>
+				<points_per_level>-1</points_per_level>
+				<reference>B22</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">disguise</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">-1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">shadowing</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">-1</amount>
+				</skill_bonus>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+</template>

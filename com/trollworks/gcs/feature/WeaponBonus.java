@@ -28,9 +28,9 @@ import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.skill.Skill;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -42,11 +42,11 @@ public class WeaponBonus extends Bonus {
 	public static final String	TAG_ROOT			= "weapon_bonus";	//$NON-NLS-1$
 	private static final String	TAG_NAME			= "name";			//$NON-NLS-1$
 	private static final String	TAG_SPECIALIZATION	= "specialization"; //$NON-NLS-1$
-	private static final String	TAG_LEVEL			= "level"; //$NON-NLS-1$
+	private static final String	TAG_LEVEL			= "level";			//$NON-NLS-1$
 	private static final String	EMPTY				= "";				//$NON-NLS-1$
-	private StringCriteria	mNameCriteria;
-	private StringCriteria	mSpecializationCriteria;
-	private IntegerCriteria	mLevelCriteria;
+	private StringCriteria		mNameCriteria;
+	private StringCriteria		mSpecializationCriteria;
+	private IntegerCriteria		mLevelCriteria;
 
 	/** Creates a new skill bonus. */
 	public WeaponBonus() {
@@ -79,7 +79,8 @@ public class WeaponBonus extends Bonus {
 		mLevelCriteria = new IntegerCriteria(other.mLevelCriteria);
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -112,7 +113,8 @@ public class WeaponBonus extends Bonus {
 		return buffer.toString();
 	}
 
-	@Override protected void loadSelf(XMLReader reader) throws IOException {
+	@Override
+	protected void loadSelf(XMLReader reader) throws IOException {
 		if (TAG_NAME.equals(reader.getName())) {
 			mNameCriteria.load(reader);
 		} else if (TAG_SPECIALIZATION.equals(reader.getName())) {
@@ -153,12 +155,14 @@ public class WeaponBonus extends Bonus {
 		return mLevelCriteria;
 	}
 
-	@Override public void fillWithNameableKeys(HashSet<String> set) {
+	@Override
+	public void fillWithNameableKeys(HashSet<String> set) {
 		ListRow.extractNameables(set, mNameCriteria.getQualifier());
 		ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
 	}
 
-	@Override public void applyNameableKeys(HashMap<String, String> map) {
+	@Override
+	public void applyNameableKeys(HashMap<String, String> map) {
 		mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
 		mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
 	}

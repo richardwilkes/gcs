@@ -28,15 +28,15 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.template.Template;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.widgets.outline.Cell;
-import com.trollworks.gcs.widgets.outline.Column;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
-import com.trollworks.gcs.widgets.outline.Outline;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.Cell;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
 
 import javax.swing.SwingConstants;
 
@@ -44,27 +44,33 @@ import javax.swing.SwingConstants;
 public enum SpellColumn {
 	/** The spell name/description. */
 	DESCRIPTION {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_SPELLS;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_SPELLS_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new MultiCell();
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
-		@Override public Object getData(Spell spell) {
+		@Override
+		public Object getData(Spell spell) {
 			return getDataAsText(spell);
 		}
 
-		@Override public String getDataAsText(Spell spell) {
+		@Override
+		public String getDataAsText(Spell spell) {
 			StringBuilder builder = new StringBuilder();
 			String notes = spell.getNotes();
 
@@ -78,27 +84,33 @@ public enum SpellColumn {
 	},
 	/** The spell class/college. */
 	CLASS {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_CLASS;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_CLASS_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new SpellClassCell();
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
-		@Override public Object getData(Spell spell) {
+		@Override
+		public Object getData(Spell spell) {
 			return getDataAsText(spell);
 		}
 
-		@Override public String getDataAsText(Spell spell) {
+		@Override
+		public String getDataAsText(Spell spell) {
 			if (!spell.canHaveChildren()) {
 				StringBuilder builder = new StringBuilder();
 
@@ -112,27 +124,33 @@ public enum SpellColumn {
 	},
 	/** The casting &amp; maintenance cost. */
 	MANA_COST {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_MANA_COST;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_MANA_COST_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new SpellManaCostCell();
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
-		@Override public Object getData(Spell spell) {
+		@Override
+		public Object getData(Spell spell) {
 			return getDataAsText(spell);
 		}
 
-		@Override public String getDataAsText(Spell spell) {
+		@Override
+		public String getDataAsText(Spell spell) {
 			if (!spell.canHaveChildren()) {
 				StringBuilder builder = new StringBuilder();
 
@@ -146,27 +164,33 @@ public enum SpellColumn {
 	},
 	/** The casting time &amp; duration. */
 	TIME {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_TIME;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_TIME_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new SpellTimeCell();
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
-		@Override public Object getData(Spell spell) {
+		@Override
+		public Object getData(Spell spell) {
 			return getDataAsText(spell);
 		}
 
-		@Override public String getDataAsText(Spell spell) {
+		@Override
+		public String getDataAsText(Spell spell) {
 			if (!spell.canHaveChildren()) {
 				StringBuilder builder = new StringBuilder();
 
@@ -180,27 +204,33 @@ public enum SpellColumn {
 	},
 	/** The spell level. */
 	LEVEL {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_LEVEL;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_LEVEL_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return dataFile instanceof GURPSCharacter;
 		}
 
-		@Override public Object getData(Spell spell) {
+		@Override
+		public Object getData(Spell spell) {
 			return new Integer(spell.canHaveChildren() ? -1 : spell.getLevel());
 		}
 
-		@Override public String getDataAsText(Spell spell) {
+		@Override
+		public String getDataAsText(Spell spell) {
 			int level;
 
 			if (spell.canHaveChildren()) {
@@ -215,23 +245,28 @@ public enum SpellColumn {
 	},
 	/** The relative spell level. */
 	RELATIVE_LEVEL {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_RELATIVE_LEVEL;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_RELATIVE_LEVEL_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return dataFile instanceof Template || dataFile instanceof GURPSCharacter;
 		}
 
-		@Override public Object getData(Spell spell) {
+		@Override
+		public Object getData(Spell spell) {
 			return new Integer(getRelativeLevel(spell));
 		}
 
@@ -247,7 +282,8 @@ public enum SpellColumn {
 			return Integer.MIN_VALUE;
 		}
 
-		@Override public String getDataAsText(Spell spell) {
+		@Override
+		public String getDataAsText(Spell spell) {
 			if (!spell.canHaveChildren()) {
 				int level = getRelativeLevel(spell);
 
@@ -261,79 +297,97 @@ public enum SpellColumn {
 	},
 	/** The points spent in the spell. */
 	POINTS {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_POINTS;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_POINTS_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return dataFile instanceof Template || dataFile instanceof GURPSCharacter;
 		}
 
-		@Override public Object getData(Spell spell) {
+		@Override
+		public Object getData(Spell spell) {
 			return new Integer(spell.canHaveChildren() ? -1 : spell.getPoints());
 		}
 
-		@Override public String getDataAsText(Spell spell) {
+		@Override
+		public String getDataAsText(Spell spell) {
 			return spell.canHaveChildren() ? "" : NumberUtils.format(spell.getPoints()); //$NON-NLS-1$
 		}
 	},
 	/** The category. */
 	CATEGORY {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_CATEGORY;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_CATEGORY_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.LEFT, true);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
 		}
 
-		@Override public Object getData(Spell spell) {
+		@Override
+		public Object getData(Spell spell) {
 			return getDataAsText(spell);
 		}
 
-		@Override public String getDataAsText(Spell spell) {
+		@Override
+		public String getDataAsText(Spell spell) {
 			return spell.getCategoriesAsString();
 		}
 	},
 	/** The page reference. */
 	REFERENCE {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_REFERENCE;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_REFERENCE_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
-		@Override public Object getData(Spell spell) {
+		@Override
+		public Object getData(Spell spell) {
 			return getDataAsText(spell);
 		}
 
-		@Override public String getDataAsText(Spell spell) {
+		@Override
+		public String getDataAsText(Spell spell) {
 			return spell.getReference();
 		}
 	};

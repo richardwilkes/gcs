@@ -24,7 +24,7 @@
 package com.trollworks.gcs.equipment;
 
 import com.trollworks.gcs.feature.Feature;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 /** The possible states for a piece of equipment. */
 public enum EquipmentState {

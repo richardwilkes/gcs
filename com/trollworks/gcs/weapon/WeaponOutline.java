@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.weapon;
 
-import com.trollworks.gcs.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.Outline;
 
 class WeaponOutline extends Outline {
 	WeaponOutline() {
@@ -33,11 +33,13 @@ class WeaponOutline extends Outline {
 		setAllowRowDrag(false);
 	}
 
-	@Override public boolean canDeleteSelection() {
+	@Override
+	public boolean canDeleteSelection() {
 		return getModel().hasSelection();
 	}
 
-	@Override public void deleteSelection() {
+	@Override
+	public void deleteSelection() {
 		if (canDeleteSelection()) {
 			getModel().removeSelection();
 			sizeColumnsToFit();

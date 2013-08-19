@@ -23,10 +23,10 @@
 
 package com.trollworks.gcs.criteria;
 
-import com.trollworks.gcs.utility.collections.EnumExtractor;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
-import com.trollworks.gcs.utility.units.WeightUnits;
+import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.units.WeightUnits;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 
@@ -60,7 +60,8 @@ public class DoubleCriteria extends NumericCriteria {
 		mIsWeight = other.mIsWeight;
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -72,7 +73,8 @@ public class DoubleCriteria extends NumericCriteria {
 		return false;
 	}
 
-	@Override public void load(XMLReader reader) throws IOException {
+	@Override
+	public void load(XMLReader reader) throws IOException {
 		super.load(reader);
 		if (mIsWeight) {
 			setQualifier(WeightUnits.POUNDS.convert((WeightUnits) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_UNITS), WeightUnits.values(), WeightUnits.POUNDS), reader.readDouble(0)));
@@ -81,7 +83,8 @@ public class DoubleCriteria extends NumericCriteria {
 		}
 	}
 
-	@Override public void save(XMLWriter out, String tag) {
+	@Override
+	public void save(XMLWriter out, String tag) {
 		if (mIsWeight) {
 			out.startTag(tag);
 			out.writeAttribute(ATTRIBUTE_COMPARE, getType().name().toLowerCase());
@@ -104,7 +107,8 @@ public class DoubleCriteria extends NumericCriteria {
 		return mQualifier;
 	}
 
-	@Override public String getQualifierAsString(boolean allowAdornments) {
+	@Override
+	public String getQualifierAsString(boolean allowAdornments) {
 		if (mIsWeight && allowAdornments) {
 			return WeightUnits.POUNDS.format(mQualifier);
 		}

@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.advantage;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 /** The types of {@link Advantage} containers. */
 public enum AdvantageContainerType {

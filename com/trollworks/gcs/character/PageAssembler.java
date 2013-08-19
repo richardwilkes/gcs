@@ -23,9 +23,9 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.widgets.Wrapper;
-import com.trollworks.gcs.widgets.layout.ColumnLayout;
-import com.trollworks.gcs.widgets.layout.RowDistribution;
+import com.trollworks.ttk.layout.ColumnLayout;
+import com.trollworks.ttk.layout.RowDistribution;
+import com.trollworks.ttk.widgets.Wrapper;
 
 import java.awt.Container;
 import java.awt.Dimension;

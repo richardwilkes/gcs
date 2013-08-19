@@ -27,16 +27,16 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
-import com.trollworks.gcs.utility.collections.FilteredIterator;
-import com.trollworks.gcs.utility.collections.FilteredList;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.ActionPanel;
-import com.trollworks.gcs.widgets.IconButton;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.gcs.widgets.outline.Outline;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.collections.FilteredIterator;
+import com.trollworks.ttk.collections.FilteredList;
+import com.trollworks.ttk.image.ToolkitImage;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.ActionPanel;
+import com.trollworks.ttk.widgets.IconButton;
+import com.trollworks.ttk.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -117,7 +117,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 		JScrollPane scroller;
 		OutlineModel model;
 
-		mAddButton = new IconButton(Images.getAddIcon());
+		mAddButton = new IconButton(ToolkitImage.getAddIcon());
 		mAddButton.addActionListener(this);
 
 		mOutline = new ModifierOutline();
@@ -198,7 +198,8 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 		return new FilteredList<Modifier>(mOutline.getModel().getRows(), Modifier.class);
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		return MSG_MODIFIERS;
 	}
 
@@ -210,7 +211,8 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 			setAllowRowDrag(false);
 		}
 
-		@Override public boolean canDeleteSelection() {
+		@Override
+		public boolean canDeleteSelection() {
 			OutlineModel model = getModel();
 			boolean can = mAddButton.isEnabled() && model.hasSelection();
 			if (can) {
@@ -223,7 +225,8 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 			return can;
 		}
 
-		@Override public void deleteSelection() {
+		@Override
+		public void deleteSelection() {
 			if (canDeleteSelection()) {
 				getModel().removeSelection();
 				sizeColumnsToFit();

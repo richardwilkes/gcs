@@ -24,16 +24,16 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.common.EditorPanel;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.text.DoubleFormatter;
-import com.trollworks.gcs.utility.text.IntegerFormatter;
-import com.trollworks.gcs.widgets.CommitEnforcer;
-import com.trollworks.gcs.widgets.EditorField;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.layout.FlexGrid;
-import com.trollworks.gcs.widgets.layout.FlexRow;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.image.ToolkitImage;
+import com.trollworks.ttk.layout.FlexGrid;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.text.DoubleFormatter;
+import com.trollworks.ttk.text.IntegerFormatter;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.UIUtilities;
+import com.trollworks.ttk.widgets.CommitEnforcer;
+import com.trollworks.ttk.widgets.EditorField;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -120,9 +120,9 @@ public abstract class FeatureEditor extends EditorPanel {
 		FlexRow right = new FlexRow();
 		rebuildSelf(grid, right);
 		if (mFeature != null) {
-			right.add(addButton(Images.getRemoveIcon(), REMOVE, MSG_REMOVE_FEATURE_TOOLTIP));
+			right.add(addButton(ToolkitImage.getRemoveIcon(), REMOVE, MSG_REMOVE_FEATURE_TOOLTIP));
 		}
-		right.add(addButton(Images.getAddIcon(), ADD, MSG_ADD_FEATURE_TOOLTIP));
+		right.add(addButton(ToolkitImage.getAddIcon(), ADD, MSG_ADD_FEATURE_TOOLTIP));
 		grid.add(right, 0, 1);
 		grid.apply(this);
 		revalidate();
@@ -195,7 +195,8 @@ public abstract class FeatureEditor extends EditorPanel {
 		return mFeature;
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
 		JComponent parent = (JComponent) getParent();
 
@@ -238,7 +239,8 @@ public abstract class FeatureEditor extends EditorPanel {
 		}
 	}
 
-	@Override public void propertyChange(PropertyChangeEvent event) {
+	@Override
+	public void propertyChange(PropertyChangeEvent event) {
 		if ("value".equals(event.getPropertyName())) { //$NON-NLS-1$
 			EditorField field = (EditorField) event.getSource();
 			LeveledAmount amt = (LeveledAmount) field.getClientProperty(LeveledAmount.class);

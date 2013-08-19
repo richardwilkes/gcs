@@ -27,7 +27,8 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.character.names.Namer;
 import com.trollworks.gcs.modifier.ModifierEnabler;
-import com.trollworks.gcs.utility.collections.FilteredList;
+import com.trollworks.ttk.collections.FilteredList;
+import com.trollworks.ttk.widgets.outline.Outline;
 
 import java.awt.Container;
 import java.util.ArrayList;

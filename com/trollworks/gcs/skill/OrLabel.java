@@ -23,9 +23,9 @@
 
 package com.trollworks.gcs.skill;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.GraphicsUtilities;
-import com.trollworks.gcs.widgets.UIUtilities;
+import com.trollworks.ttk.utility.GraphicsUtilities;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.UIUtilities;
 
 import java.awt.Component;
 import java.awt.Graphics;
@@ -53,7 +53,8 @@ public class OrLabel extends JLabel {
 		UIUtilities.setOnlySize(this, getPreferredSize());
 	}
 
-	@Override protected void paintComponent(Graphics gc) {
+	@Override
+	protected void paintComponent(Graphics gc) {
 		setText(UIUtilities.getIndexOf(mOwner.getParent(), mOwner) != 0 ? MSG_OR : ""); //$NON-NLS-1$
 		super.paintComponent(GraphicsUtilities.prepare(gc));
 	}

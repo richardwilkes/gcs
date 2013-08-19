@@ -28,16 +28,16 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.template.Template;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.utility.units.WeightUnits;
-import com.trollworks.gcs.widgets.outline.Cell;
-import com.trollworks.gcs.widgets.outline.Column;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
-import com.trollworks.gcs.widgets.outline.Outline;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.units.WeightUnits;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.Cell;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
 
 import java.text.MessageFormat;
 
@@ -47,34 +47,41 @@ import javax.swing.SwingConstants;
 public enum EquipmentColumn {
 	/** The equipment name/description. */
 	DESCRIPTION {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_EQUIPMENT;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_EQUIPMENT_TOOLTIP;
 		}
 
-		@Override public String toString(GURPSCharacter character) {
+		@Override
+		public String toString(GURPSCharacter character) {
 			if (character != null) {
 				return MessageFormat.format(MSG_EQUIPMENT_TOTALS, WeightUnits.POUNDS.format(character.getWeightCarried()), NumberUtils.format(character.getWealthCarried()));
 			}
 			return super.toString(character);
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new MultiCell();
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
-		@Override public Object getData(Equipment equipment) {
+		@Override
+		public Object getData(Equipment equipment) {
 			return getDataAsText(equipment);
 		}
 
-		@Override public String getDataAsText(Equipment equipment) {
+		@Override
+		public String getDataAsText(Equipment equipment) {
 			StringBuilder builder = new StringBuilder();
 			String notes = equipment.getNotes();
 
@@ -88,261 +95,321 @@ public enum EquipmentColumn {
 	},
 	/** The current equipment state. */
 	STATE {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_STATE;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_STATE_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.CENTER, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return dataFile instanceof GURPSCharacter;
 		}
 
-		@Override public Object getData(Equipment equipment) {
+		@Override
+		public Object getData(Equipment equipment) {
 			return equipment.getState();
 		}
 
-		@Override public String getDataAsText(Equipment equipment) {
+		@Override
+		public String getDataAsText(Equipment equipment) {
 			return equipment.getState().toShortString();
 		}
 	},
 	/** The quantity. */
 	QUANTITY {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_QUANTITY;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_QUANTITY_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return !(dataFile instanceof ListFile) && !(dataFile instanceof LibraryFile);
 		}
 
-		@Override public Object getData(Equipment equipment) {
+		@Override
+		public Object getData(Equipment equipment) {
 			return new Integer(equipment.getQuantity());
 		}
 
-		@Override public String getDataAsText(Equipment equipment) {
+		@Override
+		public String getDataAsText(Equipment equipment) {
 			return NumberUtils.format(equipment.getQuantity());
 		}
 	},
 	/** The tech level. */
 	TL {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_TECH_LEVEL;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_TECH_LEVEL_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
 		}
 
-		@Override public Object getData(Equipment equipment) {
+		@Override
+		public Object getData(Equipment equipment) {
 			return equipment.getTechLevel();
 		}
 
-		@Override public String getDataAsText(Equipment equipment) {
+		@Override
+		public String getDataAsText(Equipment equipment) {
 			return equipment.getTechLevel();
 		}
 	},
 	/** The legality class. */
 	LC {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_LEGALITY_CLASS;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_LEGALITY_CLASS_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
 		}
 
-		@Override public Object getData(Equipment equipment) {
+		@Override
+		public Object getData(Equipment equipment) {
 			return equipment.getLegalityClass();
 		}
 
-		@Override public String getDataAsText(Equipment equipment) {
+		@Override
+		public String getDataAsText(Equipment equipment) {
 			return equipment.getLegalityClass();
 		}
 	},
 	/** The value. */
 	VALUE {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_VALUE;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_VALUE_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
-		@Override public Object getData(Equipment equipment) {
+		@Override
+		public Object getData(Equipment equipment) {
 			return new Double(equipment.getValue());
 		}
 
-		@Override public String getDataAsText(Equipment equipment) {
+		@Override
+		public String getDataAsText(Equipment equipment) {
 			return NumberUtils.format(equipment.getValue());
 		}
 	},
 	/** The weight. */
 	WEIGHT {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_WEIGHT;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_WEIGHT_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
-		@Override public Object getData(Equipment equipment) {
+		@Override
+		public Object getData(Equipment equipment) {
 			return new Double(equipment.getWeight());
 		}
 
-		@Override public String getDataAsText(Equipment equipment) {
+		@Override
+		public String getDataAsText(Equipment equipment) {
 			return NumberUtils.format(equipment.getWeight());
 		}
 	},
 	/** The value. */
 	EXT_VALUE {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_EXT_VALUE;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_EXT_VALUE_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return !(dataFile instanceof ListFile) && !(dataFile instanceof LibraryFile);
 		}
 
-		@Override public Object getData(Equipment equipment) {
+		@Override
+		public Object getData(Equipment equipment) {
 			return new Double(equipment.getExtendedValue());
 		}
 
-		@Override public String getDataAsText(Equipment equipment) {
+		@Override
+		public String getDataAsText(Equipment equipment) {
 			return NumberUtils.format(equipment.getExtendedValue());
 		}
 	},
 	/** The weight. */
 	EXT_WEIGHT {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_EXT_WEIGHT;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_EXT_WEIGHT_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return !(dataFile instanceof ListFile) && !(dataFile instanceof LibraryFile);
 		}
 
-		@Override public Object getData(Equipment equipment) {
+		@Override
+		public Object getData(Equipment equipment) {
 			return new Double(equipment.getExtendedWeight());
 		}
 
-		@Override public String getDataAsText(Equipment equipment) {
+		@Override
+		public String getDataAsText(Equipment equipment) {
 			return NumberUtils.format(equipment.getExtendedWeight());
 		}
 	},
 	/** The category. */
 	CATEGORY {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_CATEGORY;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_CATEGORY_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.LEFT, true);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
 		}
 
-		@Override public Object getData(Equipment equipment) {
+		@Override
+		public Object getData(Equipment equipment) {
 			return getDataAsText(equipment);
 		}
 
-		@Override public String getDataAsText(Equipment equipment) {
+		@Override
+		public String getDataAsText(Equipment equipment) {
 			return equipment.getCategoriesAsString();
 		}
 	},
 	/** The page reference. */
 	REFERENCE {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_REFERENCE;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_REFERENCE_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
-		@Override public Object getData(Equipment equipment) {
+		@Override
+		public Object getData(Equipment equipment) {
 			return getDataAsText(equipment);
 		}
 
-		@Override public String getDataAsText(Equipment equipment) {
+		@Override
+		public String getDataAsText(Equipment equipment) {
 			return equipment.getReference();
 		}
 	};

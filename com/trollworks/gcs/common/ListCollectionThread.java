@@ -30,8 +30,8 @@ import com.trollworks.gcs.menu.data.DataMenu;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.template.TemplateWindow;
-import com.trollworks.gcs.utility.Debug;
-import com.trollworks.gcs.utility.io.Path;
+import com.trollworks.ttk.utility.Debug;
+import com.trollworks.ttk.utility.Path;
 
 import java.awt.EventQueue;
 import java.io.File;
@@ -74,7 +74,8 @@ public class ListCollectionThread extends Thread {
 		return mLists == null ? new ArrayList<Object>() : mLists;
 	}
 
-	@Override public void run() {
+	@Override
+	public void run() {
 		if (mRunning) {
 			DataMenu.update();
 		} else {

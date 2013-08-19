@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.util.HashMap;
 import java.util.HashSet;

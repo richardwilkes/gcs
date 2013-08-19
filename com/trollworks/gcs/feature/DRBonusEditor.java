@@ -23,10 +23,10 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.widgets.layout.FlexGrid;
-import com.trollworks.gcs.widgets.layout.FlexRow;
-import com.trollworks.gcs.widgets.layout.FlexSpacer;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.layout.FlexGrid;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.layout.FlexSpacer;
 
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -47,7 +47,8 @@ public class DRBonusEditor extends FeatureEditor {
 		super(row, bonus);
 	}
 
-	@Override protected void rebuildSelf(FlexGrid grid, FlexRow right) {
+	@Override
+	protected void rebuildSelf(FlexGrid grid, FlexRow right) {
 		DRBonus bonus = (DRBonus) getFeature();
 		FlexRow row = new FlexRow();
 		row.add(addChangeBaseTypeCombo());
@@ -64,7 +65,8 @@ public class DRBonusEditor extends FeatureEditor {
 		grid.add(row, 1, 0);
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
 		if (CHANGE_LOCATION.equals(command)) {
 			((DRBonus) getFeature()).setLocation((HitLocation) ((JComboBox) event.getSource()).getSelectedItem());

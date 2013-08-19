@@ -28,15 +28,15 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.template.Template;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.widgets.outline.Cell;
-import com.trollworks.gcs.widgets.outline.Column;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
-import com.trollworks.gcs.widgets.outline.Outline;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.Cell;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
 
 import javax.swing.SwingConstants;
 
@@ -44,27 +44,33 @@ import javax.swing.SwingConstants;
 public enum SkillColumn {
 	/** The skill name/description. */
 	DESCRIPTION {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_SKILLS;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_SKILLS_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new MultiCell();
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
-		@Override public Object getData(Skill skill) {
+		@Override
+		public Object getData(Skill skill) {
 			return getDataAsText(skill);
 		}
 
-		@Override public String getDataAsText(Skill skill) {
+		@Override
+		public String getDataAsText(Skill skill) {
 			StringBuilder builder = new StringBuilder();
 			String notes = skill.getNotes();
 
@@ -78,53 +84,65 @@ public enum SkillColumn {
 	},
 	/** The skill difficulty. */
 	DIFFICULTY {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_DIFFICULTY;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_DIFFICULTY_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
 		}
 
-		@Override public Object getData(Skill skill) {
+		@Override
+		public Object getData(Skill skill) {
 			return new Integer(skill.canHaveChildren() ? -1 : skill.getDifficulty().ordinal() + (skill.getAttribute().ordinal() << 8));
 		}
 
-		@Override public String getDataAsText(Skill skill) {
+		@Override
+		public String getDataAsText(Skill skill) {
 			return skill.getDifficultyAsText();
 		}
 	},
 	/** The skill level. */
 	LEVEL {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_LEVEL;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_LEVEL_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return dataFile instanceof GURPSCharacter;
 		}
 
-		@Override public Object getData(Skill skill) {
+		@Override
+		public Object getData(Skill skill) {
 			return new Integer(skill.canHaveChildren() ? -1 : skill.getLevel());
 		}
 
-		@Override public String getDataAsText(Skill skill) {
+		@Override
+		public String getDataAsText(Skill skill) {
 			int level;
 
 			if (skill.canHaveChildren()) {
@@ -139,23 +157,28 @@ public enum SkillColumn {
 	},
 	/** The relative skill level. */
 	RELATIVE_LEVEL {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_RELATIVE_LEVEL;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_RELATIVE_LEVEL_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return dataFile instanceof Template || dataFile instanceof GURPSCharacter;
 		}
 
-		@Override public Object getData(Skill skill) {
+		@Override
+		public Object getData(Skill skill) {
 			return new Integer(getRelativeLevel(skill));
 		}
 
@@ -198,7 +221,8 @@ public enum SkillColumn {
 			return Integer.MIN_VALUE;
 		}
 
-		@Override public String getDataAsText(Skill skill) {
+		@Override
+		public String getDataAsText(Skill skill) {
 			if (!skill.canHaveChildren()) {
 				int level = getRelativeLevel(skill);
 				StringBuilder builder;
@@ -218,27 +242,33 @@ public enum SkillColumn {
 	},
 	/** The points spent in the skill. */
 	POINTS {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_POINTS;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_POINTS_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return dataFile instanceof Template || dataFile instanceof GURPSCharacter;
 		}
 
-		@Override public Object getData(Skill skill) {
+		@Override
+		public Object getData(Skill skill) {
 			return new Integer(skill.canHaveChildren() ? -1 : skill.getPoints());
 		}
 
-		@Override public String getDataAsText(Skill skill) {
+		@Override
+		public String getDataAsText(Skill skill) {
 			if (skill.canHaveChildren()) {
 				return ""; //$NON-NLS-1$
 			}
@@ -247,53 +277,65 @@ public enum SkillColumn {
 	},
 	/** The category. */
 	CATEGORY {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_CATEGORY;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_CATEGORY_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.LEFT, true);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
 		}
 
-		@Override public Object getData(Skill skill) {
+		@Override
+		public Object getData(Skill skill) {
 			return getDataAsText(skill);
 		}
 
-		@Override public String getDataAsText(Skill skill) {
+		@Override
+		public String getDataAsText(Skill skill) {
 			return skill.getCategoriesAsString();
 		}
 	},
 	/** The page reference. */
 	REFERENCE {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_REFERENCE;
 		}
 
-		@Override public String getToolTip() {
+		@Override
+		public String getToolTip() {
 			return MSG_REFERENCE_TOOLTIP;
 		}
 
-		@Override public Cell getCell() {
+		@Override
+		public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile) {
+		@Override
+		public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
-		@Override public Object getData(Skill skill) {
+		@Override
+		public Object getData(Skill skill) {
 			return getDataAsText(skill);
 		}
 
-		@Override public String getDataAsText(Skill skill) {
+		@Override
+		public String getDataAsText(Skill skill) {
 			return skill.getReference();
 		}
 	};

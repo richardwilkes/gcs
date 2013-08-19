@@ -23,12 +23,12 @@
 
 package com.trollworks.gcs.menu.edit;
 
+import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.DescriptionRandomizer;
 import com.trollworks.gcs.character.SheetWindow;
-import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.WindowUtils;
+import com.trollworks.ttk.menu.Command;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.WindowUtils;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -39,6 +39,8 @@ import javax.swing.JOptionPane;
 
 /** Provides the "Randomize Description" command. */
 public class RandomizeDescriptionCommand extends Command {
+	/** The action command this command will issue. */
+	public static final String						CMD_RANDOMIZE_DESCRIPTION	= "RandomizeDescription";				//$NON-NLS-1$
 	private static String							MSG_RANDOMIZE_DESCRIPTION;
 	private static String							MSG_RANDOMIZER;
 	private static String							MSG_APPLY;
@@ -49,20 +51,22 @@ public class RandomizeDescriptionCommand extends Command {
 	}
 
 	/** The singleton {@link RandomizeDescriptionCommand}. */
-	public static final RandomizeDescriptionCommand	INSTANCE	= new RandomizeDescriptionCommand();
+	public static final RandomizeDescriptionCommand	INSTANCE					= new RandomizeDescriptionCommand();
 
 	private RandomizeDescriptionCommand() {
-		super(MSG_RANDOMIZE_DESCRIPTION);
+		super(MSG_RANDOMIZE_DESCRIPTION, CMD_RANDOMIZE_DESCRIPTION);
 	}
 
-	@Override public void adjustForMenu(JMenuItem item) {
+	@Override
+	public void adjustForMenu(JMenuItem item) {
 		Window window = getActiveWindow();
 		setEnabled(window instanceof SheetWindow);
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		DescriptionRandomizer panel = new DescriptionRandomizer(((SheetWindow) getActiveWindow()).getCharacter());
-		if (WindowUtils.showOptionDialog(null, panel, MSG_RANDOMIZER, true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, new ImageIcon(Images.getCharacterSheetIcon(true)), new String[] { MSG_APPLY, MSG_CANCEL }, MSG_APPLY) == JOptionPane.OK_OPTION) {
+		if (WindowUtils.showOptionDialog(null, panel, MSG_RANDOMIZER, true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, new ImageIcon(GCSImages.getCharacterSheetIcon(true)), new String[] { MSG_APPLY, MSG_CANCEL }, MSG_APPLY) == JOptionPane.OK_OPTION) {
 			panel.applyChanges();
 		}
 	}

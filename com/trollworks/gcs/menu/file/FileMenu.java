@@ -23,12 +23,24 @@
 
 package com.trollworks.gcs.menu.file;
 
-import com.trollworks.gcs.menu.DynamicMenuEnabler;
-import com.trollworks.gcs.utility.Platform;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.menu.Command;
+import com.trollworks.ttk.menu.DynamicMenuEnabler;
+import com.trollworks.ttk.menu.DynamicMenuItem;
+import com.trollworks.ttk.menu.file.CloseCommand;
+import com.trollworks.ttk.menu.file.ExportToCommand;
+import com.trollworks.ttk.menu.file.OpenCommand;
+import com.trollworks.ttk.menu.file.PageSetupCommand;
+import com.trollworks.ttk.menu.file.PrintCommand;
+import com.trollworks.ttk.menu.file.QuitCommand;
+import com.trollworks.ttk.menu.file.RecentFilesMenu;
+import com.trollworks.ttk.menu.file.SaveAsCommand;
+import com.trollworks.ttk.menu.file.SaveCommand;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.Platform;
+
+import java.util.HashSet;
 
 import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 
 /** The standard "File" menu. */
 public class FileMenu extends JMenu {
@@ -38,29 +50,53 @@ public class FileMenu extends JMenu {
 		LocalizedMessages.initialize(FileMenu.class);
 	}
 
+	/**
+	 * @return The set of {@link Command}s that this menu provides that can have their accelerators
+	 *         modified.
+	 */
+	public static HashSet<Command> getCommands() {
+		HashSet<Command> cmds = new HashSet<Command>();
+		cmds.add(NewCharacterSheetCommand.INSTANCE);
+		cmds.add(NewCharacterTemplateCommand.INSTANCE);
+		cmds.add(NewLibraryCommand.INSTANCE);
+		cmds.add(OpenCommand.INSTANCE);
+		cmds.add(CloseCommand.INSTANCE);
+		cmds.add(SaveCommand.INSTANCE);
+		cmds.add(SaveAsCommand.INSTANCE);
+		cmds.add(ExportToCommand.EXPORT_TO_HTML);
+		cmds.add(ExportToCommand.EXPORT_TO_PDF);
+		cmds.add(ExportToCommand.EXPORT_TO_PNG);
+		cmds.add(PageSetupCommand.INSTANCE);
+		cmds.add(PrintCommand.INSTANCE);
+		if (!Platform.isMacintosh()) {
+			cmds.add(QuitCommand.INSTANCE);
+		}
+		return cmds;
+	}
+
 	/** Creates a new {@link FileMenu}. */
 	public FileMenu() {
 		super(MSG_FILE);
-		add(new JMenuItem(NewCharacterSheetCommand.INSTANCE));
-		add(new JMenuItem(NewCharacterTemplateCommand.INSTANCE));
-		add(new JMenuItem(NewLibraryCommand.INSTANCE));
+		add(new DynamicMenuItem(NewCharacterSheetCommand.INSTANCE));
+		add(new DynamicMenuItem(NewCharacterTemplateCommand.INSTANCE));
+		add(new DynamicMenuItem(NewLibraryCommand.INSTANCE));
 		addSeparator();
-		add(new JMenuItem(OpenCommand.INSTANCE));
+		add(new DynamicMenuItem(OpenCommand.INSTANCE));
 		add(new RecentFilesMenu());
-		add(new JMenuItem(CloseCommand.INSTANCE));
+		add(new DynamicMenuItem(CloseCommand.INSTANCE));
 		addSeparator();
-		add(new JMenuItem(SaveCommand.INSTANCE));
-		add(new JMenuItem(SaveAsCommand.INSTANCE));
+		add(new DynamicMenuItem(SaveCommand.INSTANCE));
+		add(new DynamicMenuItem(SaveAsCommand.INSTANCE));
 		addSeparator();
-		add(new JMenuItem(ExportToCommand.EXPORT_TO_HTML));
-		add(new JMenuItem(ExportToCommand.EXPORT_TO_PDF));
-		add(new JMenuItem(ExportToCommand.EXPORT_TO_PNG));
+		add(new DynamicMenuItem(ExportToCommand.EXPORT_TO_HTML));
+		add(new DynamicMenuItem(ExportToCommand.EXPORT_TO_PDF));
+		add(new DynamicMenuItem(ExportToCommand.EXPORT_TO_PNG));
 		addSeparator();
-		add(new JMenuItem(PageSetupCommand.INSTANCE));
-		add(new JMenuItem(PrintCommand.INSTANCE));
+		add(new DynamicMenuItem(PageSetupCommand.INSTANCE));
+		add(new DynamicMenuItem(PrintCommand.INSTANCE));
 		if (!Platform.isMacintosh()) {
 			addSeparator();
-			add(new JMenuItem(QuitCommand.INSTANCE));
+			add(new DynamicMenuItem(QuitCommand.INSTANCE));
 		}
 		DynamicMenuEnabler.add(this);
 	}

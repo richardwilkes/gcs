@@ -24,20 +24,21 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.advantage.Advantage;
+import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.feature.BonusAttributeType;
-import com.trollworks.gcs.utility.collections.EnumExtractor;
-import com.trollworks.gcs.utility.io.Base64;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.Preferences;
-import com.trollworks.gcs.utility.io.xml.XMLNodeType;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
-import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.utility.text.TextUtility;
-import com.trollworks.gcs.utility.units.LengthUnits;
-import com.trollworks.gcs.utility.units.WeightUnits;
+import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.image.Images;
+import com.trollworks.ttk.preferences.Preferences;
+import com.trollworks.ttk.text.Base64;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.TextUtility;
+import com.trollworks.ttk.units.LengthUnits;
+import com.trollworks.ttk.units.WeightUnits;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.xml.XMLNodeType;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -1018,7 +1019,7 @@ public class Profile {
 	 */
 	public static BufferedImage getPortraitFromPortraitPath(String path) {
 		if (DEFAULT_PORTRAIT.equals(path)) {
-			return Images.getDefaultPortrait();
+			return GCSImages.getDefaultPortrait();
 		}
 		return path != null ? Images.loadImage(new File(path)) : null;
 	}

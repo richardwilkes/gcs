@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.Outline;
 
 import java.awt.Component;
 import java.awt.Container;

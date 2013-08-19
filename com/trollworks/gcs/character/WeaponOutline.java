@@ -25,8 +25,8 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.weapon.WeaponColumn;
 import com.trollworks.gcs.weapon.WeaponStats;
-import com.trollworks.gcs.widgets.outline.Outline;
-import com.trollworks.gcs.widgets.outline.Row;
+import com.trollworks.ttk.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.Row;
 
 import java.awt.dnd.DropTargetDragEvent;
 
@@ -44,7 +44,8 @@ public class WeaponOutline extends Outline {
 		setEnabled(false);
 	}
 
-	@Override protected boolean isRowDragAcceptable(DropTargetDragEvent dtde, Row[] rows) {
+	@Override
+	protected boolean isRowDragAcceptable(DropTargetDragEvent dtde, Row[] rows) {
 		return false;
 	}
 }

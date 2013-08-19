@@ -25,8 +25,8 @@ package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetWindow;
-import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.menu.Command;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -35,6 +35,8 @@ import javax.swing.JMenuItem;
 
 /** Provides the "Add Natural Kick w/Boots" command. */
 public class AddNaturalKickWithBootsCommand extends Command {
+	/** The action command this command will issue. */
+	public static final String							CMD_ADD_NATURAL_KICK_WITH_BOOTS	= "AddNaturalKickWithBoots";			//$NON-NLS-1$
 	private static String								MSG_ADD_NATURAL_KICK_WITH_BOOTS;
 
 	static {
@@ -42,13 +44,14 @@ public class AddNaturalKickWithBootsCommand extends Command {
 	}
 
 	/** The singleton {@link AddNaturalKickWithBootsCommand}. */
-	public static final AddNaturalKickWithBootsCommand	INSTANCE	= new AddNaturalKickWithBootsCommand();
+	public static final AddNaturalKickWithBootsCommand	INSTANCE						= new AddNaturalKickWithBootsCommand();
 
 	private AddNaturalKickWithBootsCommand() {
-		super(MSG_ADD_NATURAL_KICK_WITH_BOOTS);
+		super(MSG_ADD_NATURAL_KICK_WITH_BOOTS, CMD_ADD_NATURAL_KICK_WITH_BOOTS);
 	}
 
-	@Override public void adjustForMenu(JMenuItem item) {
+	@Override
+	public void adjustForMenu(JMenuItem item) {
 		Window window = getActiveWindow();
 		if (window instanceof SheetWindow) {
 			setEnabled(true);
@@ -60,7 +63,8 @@ public class AddNaturalKickWithBootsCommand extends Command {
 		updateMark(item);
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		GURPSCharacter character = ((SheetWindow) getActiveWindow()).getCharacter();
 		character.setIncludeKickBoots(!character.includeKickBoots());
 	}

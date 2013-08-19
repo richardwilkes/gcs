@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.utility.io.print.PrintManager;
+import com.trollworks.ttk.print.PrintManager;
 
 import java.awt.Graphics;
 import java.awt.Insets;

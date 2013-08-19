@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="fcz6zoq9:32e7btdq8y1" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes" type="race">
+			<name>Half-Elf</name>
+			<reference>DF3:7</reference>
+			<advantage version="2">
+				<name>Increased Dexterity</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>20</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>No Fine Manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B15</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dx</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Magery</name>
+				<type>Mental, Supernatural</type>
+				<levels>0</levels>
+				<base_points>5</base_points>
+				<points_per_level>10</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>Dance</name>
+					<cost type="percentage">-40</cost>
+					<affects>levels_only</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Dark-Aspected</name>
+					<cost type="percentage">-50</cost>
+					<affects>levels_only</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Day-Aspected</name>
+					<cost type="percentage">-40</cost>
+					<affects>levels_only</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Musical</name>
+					<cost type="percentage">-50</cost>
+					<affects>levels_only</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Night-Aspected</name>
+					<cost type="percentage">-40</cost>
+					<affects>levels_only</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>One College</name>
+					<cost type="percentage">-40</cost>
+					<affects>levels_only</affects>
+					<notes>@College@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Solitary</name>
+					<cost type="percentage">-40</cost>
+					<affects>levels_only</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Song</name>
+					<cost type="percentage">-40</cost>
+					<affects>levels_only</affects>
+				</modifier>
+				<reference>B66</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<spell_bonus all_colleges="yes">
+					<amount per_level="yes">1</amount>
+				</spell_bonus>
+				<skill_bonus>
+					<name compare="is">thaumatology</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<spell_bonus>
+					<college_name compare="is">Clerical</college_name>
+					<amount per_level="yes">-1</amount>
+				</spell_bonus>
+				<spell_bonus>
+					<college_name compare="is">Druidic</college_name>
+					<amount per_level="yes">-1</amount>
+				</spell_bonus>
+				<spell_bonus>
+					<college_name compare="is">Unholy</college_name>
+					<amount per_level="yes">-1</amount>
+				</spell_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Social Stigma (Half-Breed)</name>
+				<type>Social</type>
+				<base_points>-5</base_points>
+				<reference>DF3:11</reference>
+				<notes>-1 Reaction; -2 to social skills with Elves and Humans</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Unnatural hair colour</name>
+				<type>Physical</type>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+</template>

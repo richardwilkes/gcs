@@ -23,11 +23,11 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.Wrapper;
-import com.trollworks.gcs.widgets.layout.ColumnLayout;
-import com.trollworks.gcs.widgets.layout.RowDistribution;
+import com.trollworks.ttk.layout.ColumnLayout;
+import com.trollworks.ttk.layout.RowDistribution;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.UIUtilities;
+import com.trollworks.ttk.widgets.Wrapper;
 
 import java.awt.Color;
 import java.awt.Container;
@@ -97,7 +97,8 @@ public class HitPointsPanel extends DropPanel {
 		createLabelAndDisabledField(this, character, GURPSCharacter.ID_DEAD_HIT_POINTS, MSG_HP_DEAD, MSG_HP_DEAD_TOOLTIP, SwingConstants.RIGHT);
 	}
 
-	@Override public Dimension getMaximumSize() {
+	@Override
+	public Dimension getMaximumSize() {
 		Dimension size = super.getMaximumSize();
 
 		size.width = getPreferredSize().width;

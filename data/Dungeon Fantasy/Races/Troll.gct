@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="fczovcnc:1n1i7jofelc75" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes" type="race">
+			<name>Troll</name>
+			<reference>DF3:16</reference>
+			<advantage version="2">
+				<name>Decreased Strength</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>-10</points_per_level>
+				<reference>B14</reference>
+				<categories>
+					<category>Attribute</category>
+					<category>Disadvantage</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>st</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Dexterity</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>20</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>No Fine Manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B15</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dx</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Health</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>10</points_per_level>
+				<reference>B14</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>ht</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Extra Hit Points</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>2</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>Size</name>
+					<cost type="percentage">-10</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>No Fine Manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B16</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>hp</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Perception</name>
+				<type>Mental/Physical</type>
+				<levels>2</levels>
+				<points_per_level>5</points_per_level>
+				<reference>B16</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>perception</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Discriminitory Smell</name>
+				<type>Physical, Exotic</type>
+				<base_points>15</base_points>
+				<modifier version="1" enabled="no">
+					<name>Emotion Sense</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>B49</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Profiling</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>P47</reference>
+				</modifier>
+				<reference>B49</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Regeneration</name>
+				<type>Physical, Exotic</type>
+				<modifier version="1" enabled="no">
+					<name>Slow</name>
+					<cost type="points">10</cost>
+					<affects>total</affects>
+					<reference>B80</reference>
+					<notes>You recover 1 HP per 12 hours</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Regular</name>
+					<cost type="points">25</cost>
+					<affects>total</affects>
+					<reference>B80</reference>
+					<notes>You recover 1 HP per hour</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Fast</name>
+					<cost type="points">50</cost>
+					<affects>total</affects>
+					<reference>B80</reference>
+					<notes>You recover 1 HP per minute</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Fast</name>
+					<cost type="points">100</cost>
+					<affects>total</affects>
+					<reference>B80</reference>
+					<notes>You recover 1 HP per second</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Extreme</name>
+					<cost type="points">150</cost>
+					<affects>total</affects>
+					<reference>B80</reference>
+					<notes>You recover 10 HP per second</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Heals Radiation</name>
+					<cost type="percentage">40</cost>
+					<affects>total</affects>
+					<reference>B80</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Radiation Only</name>
+					<cost type="percentage">-60</cost>
+					<affects>total</affects>
+					<reference>B80</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Fatigue Recovery</name>
+					<cost type="percentage">100</cost>
+					<affects>total</affects>
+					<reference>P70</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Fatigue Only</name>
+					<cost type="percentage">0</cost>
+					<affects>total</affects>
+					<reference>P70</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Limited: @Advantage@ Only</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>P70</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Not vs Fire or Acid</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B80</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Resistant</name>
+				<type>Physical</type>
+				<modifier version="1">
+					<name>Metabolic Hazards</name>
+					<cost type="points">30</cost>
+					<affects>total</affects>
+					<reference>B80</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Common: Poison, Sickness, etc.@</name>
+					<cost type="points">15</cost>
+					<affects>total</affects>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Occasional: Disease, Ingested Poison, etc.@</name>
+					<cost type="points">10</cost>
+					<affects>total</affects>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.@</name>
+					<cost type="points">5</cost>
+					<affects>total</affects>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Immunity</name>
+					<cost type="multiplier">1</cost>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>+8 to all HT rolls to resist</name>
+					<cost type="multiplier">0.5</cost>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1">
+					<name>+3 to all HT rolls to resist</name>
+					<cost type="multiplier">0.33</cost>
+					<reference>B81</reference>
+				</modifier>
+				<reference>B81</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Teeth, Sharp</name>
+				<type>Physical, Exotic</type>
+				<base_points>1</base_points>
+				<melee_weapon>
+					<damage>thr-1 cut</damage>
+					<usage>Bite</usage>
+					<reach>C</reach>
+					<parry>No</parry>
+					<block>No</block>
+					<default>
+						<type>Skill</type>
+						<name>Brawling</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>DX</type>
+						<modifier>0</modifier>
+					</default>
+				</melee_weapon>
+				<reference>B91</reference>
+				<categories>
+					<category>Perk</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Universal Digestion</name>
+				<type>Physical</type>
+				<base_points>5</base_points>
+				<modifier version="1" enabled="no">
+					<name>Matter Eater</name>
+					<cost type="percentage">300</cost>
+					<affects>total</affects>
+					<reference>P86</reference>
+				</modifier>
+				<reference>B95</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Appearance</name>
+				<type>Physical</type>
+				<modifier version="1" enabled="no">
+					<name>Universal</name>
+					<cost type="percentage">25</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Off-the-Shelf Looks</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Androgynous</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Impressive</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Attractive</name>
+					<cost type="points">4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Average</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Horrific</name>
+					<cost type="points">-24</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Monstrous</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Hideous</name>
+					<cost type="points">-16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1">
+					<name>Ugly</name>
+					<cost type="points">-8</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Unattractive</name>
+					<cost type="points">-4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Handsome</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Beautiful</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Handsome</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Beautiful</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Transcendent</name>
+					<cost type="points">20</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B21</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Bad Temper</name>
+				<type>Mental</type>
+				<base_points>-10</base_points>
+				<cr>12</cr>
+				<reference>B124</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Social Stigma (Monster)</name>
+				<type>Social</type>
+				<base_points>-15</base_points>
+				<reference>DF3:11</reference>
+				<notes>-3 reaction; -6 to skills; Denied entry to town on 9 or less</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">intimidation</name>
+					<specialization compare="is anything"></specialization>
+					<amount>1</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Vulnerability (Fire, Damage x2)</name>
+				<type>Physical, Exotic</type>
+				<base_points>-30</base_points>
+				<reference>B161</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Night Adapted Vision (-5)</name>
+				<type>Physical</type>
+				<reference>DF3:16</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Tufts of brightly coloured hair. Wrinkles.</name>
+				<type>Physical</type>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+</template>

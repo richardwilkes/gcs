@@ -23,87 +23,104 @@
 
 package com.trollworks.gcs.advantage;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
-import com.trollworks.gcs.utility.text.NumberUtils;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.xml.XMLWriter;
 
 /** The possible self-control rolls, from page B121. */
 public enum SelfControlRoll {
 	/** Rarely. */
 	CR6 {
-		@Override public double getMultiplier() {
+		@Override
+		public double getMultiplier() {
 			return 2;
 		}
 
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_CR6;
 		}
 
-		@Override public int getCR() {
+		@Override
+		public int getCR() {
 			return 6;
 		}
 	},
 	/** Fairly often. */
 	CR9 {
-		@Override public double getMultiplier() {
+		@Override
+		public double getMultiplier() {
 			return 1.5;
 		}
 
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_CR9;
 		}
 
-		@Override public int getCR() {
+		@Override
+		public int getCR() {
 			return 9;
 		}
 	},
 	/** Quite often. */
 	CR12 {
-		@Override public double getMultiplier() {
+		@Override
+		public double getMultiplier() {
 			return 1;
 		}
 
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_CR12;
 		}
 
-		@Override public int getCR() {
+		@Override
+		public int getCR() {
 			return 12;
 		}
 	},
 	/** Almost all the time. */
 	CR15 {
-		@Override public double getMultiplier() {
+		@Override
+		public double getMultiplier() {
 			return 0.5;
 		}
 
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_CR15;
 		}
 
-		@Override public int getCR() {
+		@Override
+		public int getCR() {
 			return 15;
 		}
 	},
 	/** No self-control roll. */
 	NONE_REQUIRED {
-		@Override public double getMultiplier() {
+		@Override
+		public double getMultiplier() {
 			return 1;
 		}
 
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_NONE;
 		}
 
-		@Override public int getCR() {
+		@Override
+		public int getCR() {
 			return Integer.MAX_VALUE;
 		}
 
-		@Override public String getDescriptionWithCost() {
+		@Override
+		public String getDescriptionWithCost() {
 			return ""; //$NON-NLS-1$
 		}
 
-		@Override public void save(XMLWriter out, String tag, SelfControlRollAdjustments adj) {
+		@Override
+		public void save(XMLWriter out, String tag, SelfControlRollAdjustments adj) {
 			// Do nothing.
 		}
 	};

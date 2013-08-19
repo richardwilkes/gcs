@@ -24,10 +24,10 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.utility.collections.EnumExtractor;
-import com.trollworks.gcs.utility.io.xml.XMLNodeType;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
+import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.xml.XMLNodeType;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -38,10 +38,10 @@ public class CostReduction implements Feature {
 	/** The possible {@link BonusAttributeType}s that can be affected. */
 	public static final BonusAttributeType[]	TYPES			= { BonusAttributeType.ST, BonusAttributeType.DX, BonusAttributeType.IQ, BonusAttributeType.HT };
 	/** The XML tag. */
-	public static final String					TAG_ROOT		= "cost_reduction";																						//$NON-NLS-1$
-	private static final String					TAG_ATTRIBUTE	= "attribute";																								//$NON-NLS-1$
-	private static final String					TAG_PERCENTAGE	= "percentage";																							//$NON-NLS-1$
-	private BonusAttributeType				mAttribute;
+	public static final String					TAG_ROOT		= "cost_reduction";																				//$NON-NLS-1$
+	private static final String					TAG_ATTRIBUTE	= "attribute";																						//$NON-NLS-1$
+	private static final String					TAG_PERCENTAGE	= "percentage";																					//$NON-NLS-1$
+	private BonusAttributeType					mAttribute;
 	private int									mPercentage;
 
 	/** Creates a new cost reduction. */
@@ -71,7 +71,8 @@ public class CostReduction implements Feature {
 		load(reader);
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}

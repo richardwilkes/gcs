@@ -27,8 +27,13 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.names.Namer;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.template.Template;
-import com.trollworks.gcs.utility.collections.FilteredList;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.collections.FilteredList;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.Selection;
+import com.trollworks.ttk.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
+import com.trollworks.ttk.widgets.outline.OutlineProxy;
+import com.trollworks.ttk.widgets.outline.Row;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -68,12 +73,14 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 		return mDataFile;
 	}
 
-	@Override public void rowsAdded(OutlineModel model, Row[] rows) {
+	@Override
+	public void rowsAdded(OutlineModel model, Row[] rows) {
 		super.rowsAdded(model, rows);
 		mDataFile.notifySingle(mRowSetChangedID, null);
 	}
 
-	@Override public void rowsWereRemoved(OutlineModel model, Row[] rows) {
+	@Override
+	public void rowsWereRemoved(OutlineModel model, Row[] rows) {
 		super.rowsWereRemoved(model, rows);
 		mDataFile.notifySingle(mRowSetChangedID, null);
 	}
@@ -83,12 +90,14 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 		return mRowSetChangedID;
 	}
 
-	@Override public boolean canDeleteSelection() {
+	@Override
+	public boolean canDeleteSelection() {
 		OutlineModel model = getModel();
 		return !model.isLocked() && model.hasSelection();
 	}
 
-	@Override public void deleteSelection() {
+	@Override
+	public void deleteSelection() {
 		if (canDeleteSelection()) {
 			OutlineModel model = getModel();
 			StateEdit edit = new StateEdit(model, MSG_CLEAR_UNDO);
@@ -212,13 +221,15 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 		mRowsToEdit = null;
 	}
 
-	@Override public void undoDidHappen(OutlineModel model) {
+	@Override
+	public void undoDidHappen(OutlineModel model) {
 		super.undoDidHappen(model);
 		updateAllRows();
 		mDataFile.notifySingle(mRowSetChangedID, null);
 	}
 
-	@Override protected void rowsWereDropped() {
+	@Override
+	protected void rowsWereDropped() {
 		updateAllRows();
 		mDataFile.notifySingle(mRowSetChangedID, null);
 		requestFocusInWindow();
@@ -260,7 +271,8 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 		}
 	}
 
-	@Override public void sorted(OutlineModel model, boolean restoring) {
+	@Override
+	public void sorted(OutlineModel model, boolean restoring) {
 		super.sorted(model, restoring);
 		if (!restoring) {
 			mDataFile.setModified(true);

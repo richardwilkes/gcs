@@ -27,10 +27,10 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
-import com.trollworks.gcs.utility.text.NumberUtils;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -86,17 +86,20 @@ public class MeleeWeaponStats extends WeaponStats {
 		super(owner, reader);
 	}
 
-	@Override public WeaponStats clone(ListRow owner) {
+	@Override
+	public WeaponStats clone(ListRow owner) {
 		return new MeleeWeaponStats(owner, this);
 	}
 
-	@Override protected void initialize() {
+	@Override
+	protected void initialize() {
 		mReach = EMPTY;
 		mParry = EMPTY;
 		mBlock = EMPTY;
 	}
 
-	@Override protected void loadSelf(XMLReader reader) throws IOException {
+	@Override
+	protected void loadSelf(XMLReader reader) throws IOException {
 		String name = reader.getName();
 
 		if (TAG_REACH.equals(name)) {
@@ -110,11 +113,13 @@ public class MeleeWeaponStats extends WeaponStats {
 		}
 	}
 
-	@Override protected String getRootTag() {
+	@Override
+	protected String getRootTag() {
 		return TAG_ROOT;
 	}
 
-	@Override protected void saveSelf(XMLWriter out) {
+	@Override
+	protected void saveSelf(XMLWriter out) {
 		out.simpleTagNotEmpty(TAG_REACH, mReach);
 		out.simpleTagNotEmpty(TAG_PARRY, mParry);
 		out.simpleTagNotEmpty(TAG_BLOCK, mBlock);
@@ -127,11 +132,14 @@ public class MeleeWeaponStats extends WeaponStats {
 
 	/** @return The parry, fully resolved for the user's skills, if possible. */
 	public String getResolvedParry() {
-		DataFile df = getOwner().getDataFile();
+		return getResolvedValue(mParry, SkillDefaultType.Parry);
+	}
 
+	private String getResolvedValue(String input, SkillDefaultType baseDefaultType) {
+		DataFile df = getOwner().getDataFile();
 		if (df instanceof GURPSCharacter) {
 			GURPSCharacter character = (GURPSCharacter) df;
-			StringTokenizer tokenizer = new StringTokenizer(mParry, "\n\r", true); //$NON-NLS-1$
+			StringTokenizer tokenizer = new StringTokenizer(input, "\n\r", true); //$NON-NLS-1$
 			StringBuffer buffer = new StringBuffer();
 			int skillLevel = Integer.MAX_VALUE;
 
@@ -167,9 +175,20 @@ public class MeleeWeaponStats extends WeaponStats {
 							String num;
 
 							if (skillLevel == Integer.MAX_VALUE) {
-								skillLevel = getSkillLevel(character);
+								int best = Integer.MIN_VALUE;
+								for (SkillDefault skillDefault : getDefaults()) {
+									SkillDefaultType type = skillDefault.getType();
+									int level = type.getSkillLevelFast(character, skillDefault, new HashSet<String>());
+									if (level != Integer.MIN_VALUE && type != baseDefaultType) {
+										level = level / 2 + 3 + (baseDefaultType == SkillDefaultType.Parry ? character.getParryBonus() : character.getBlockBonus());
+									}
+									if (level > best) {
+										best = level;
+									}
+								}
+								skillLevel = best != Integer.MIN_VALUE ? best : 0;
 							}
-							num = NumberUtils.format(3 + skillLevel / 2 + (neg ? -modifier : modifier) + character.getParryBonus());
+							num = NumberUtils.format(skillLevel + (neg ? -modifier : modifier));
 							if (i < max) {
 								buffer.append(num);
 								token = token.substring(i);
@@ -183,22 +202,7 @@ public class MeleeWeaponStats extends WeaponStats {
 			}
 			return buffer.toString();
 		}
-		return mParry;
-	}
-
-	private int getSkillLevel(GURPSCharacter character) {
-		int best = Integer.MIN_VALUE;
-
-		for (SkillDefault skillDefault : getDefaults()) {
-			SkillDefaultType type = skillDefault.getType();
-			int level = type.getSkillLevelFast(character, skillDefault, new HashSet<String>());
-
-			if (level > best) {
-				best = level;
-			}
-		}
-
-		return best != Integer.MIN_VALUE ? best : 0;
+		return input;
 	}
 
 	/**
@@ -221,63 +225,7 @@ public class MeleeWeaponStats extends WeaponStats {
 
 	/** @return The block, fully resolved for the user's skills, if possible. */
 	public String getResolvedBlock() {
-		DataFile df = getOwner().getDataFile();
-
-		if (df instanceof GURPSCharacter) {
-			GURPSCharacter character = (GURPSCharacter) df;
-			StringTokenizer tokenizer = new StringTokenizer(mBlock, "\n\r", true); //$NON-NLS-1$
-			StringBuffer buffer = new StringBuffer();
-			int skillLevel = Integer.MAX_VALUE;
-
-			while (tokenizer.hasMoreTokens()) {
-				String token = tokenizer.nextToken();
-
-				if (!token.equals("\n") && !token.equals("\r")) { //$NON-NLS-1$ //$NON-NLS-2$
-					int max = token.length();
-					int i = skipSpaces(token, 0);
-
-					if (i < max) {
-						char ch = token.charAt(i);
-						boolean neg = false;
-						int modifier = 0;
-						boolean found = false;
-
-						if (ch == '-' || ch == '+') {
-							neg = ch == '-';
-							if (++i < max) {
-								ch = token.charAt(i);
-							}
-						}
-						while (i < max && ch >= '0' && ch <= '9') {
-							found = true;
-							modifier *= 10;
-							modifier += ch - '0';
-							if (++i < max) {
-								ch = token.charAt(i);
-							}
-						}
-
-						if (found) {
-							String num;
-
-							if (skillLevel == Integer.MAX_VALUE) {
-								skillLevel = getSkillLevel(character);
-							}
-							num = NumberUtils.format(3 + skillLevel / 2 + (neg ? -modifier : modifier) + character.getBlockBonus());
-							if (i < max) {
-								buffer.append(num);
-								token = token.substring(i);
-							} else {
-								token = num;
-							}
-						}
-					}
-				}
-				buffer.append(token);
-			}
-			return buffer.toString();
-		}
-		return mBlock;
+		return getResolvedValue(mBlock, SkillDefaultType.Block);
 	}
 
 	/**
@@ -311,7 +259,8 @@ public class MeleeWeaponStats extends WeaponStats {
 		}
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (obj == this) {
 			return true;
 		}

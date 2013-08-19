@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.utility.Fonts;
+import com.trollworks.gcs.app.GCSFonts;
 
 import java.awt.Color;
 
@@ -41,7 +41,7 @@ public class PageHeader extends JLabel {
 	 */
 	public PageHeader(String title, String tooltip) {
 		super(title, SwingConstants.CENTER);
-		setFont(UIManager.getFont(Fonts.KEY_LABEL));
+		setFont(UIManager.getFont(GCSFonts.KEY_LABEL));
 		setForeground(Color.white);
 		setToolTipText(tooltip);
 	}

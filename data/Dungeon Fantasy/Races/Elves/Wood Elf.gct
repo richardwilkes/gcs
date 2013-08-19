@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="fcz8575a:-1lqf2233cr90v" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes" type="race">
+			<name>Wood Elf</name>
+			<reference>DF3:7</reference>
+			<advantage version="2">
+				<name>Increased Dexterity</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>20</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>No Fine Manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B15</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dx</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Decreased Strength</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>-10</points_per_level>
+				<reference>B14</reference>
+				<categories>
+					<category>Attribute</category>
+					<category>Disadvantage</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>st</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Appearance</name>
+				<type>Physical</type>
+				<modifier version="1" enabled="no">
+					<name>Universal</name>
+					<cost type="percentage">25</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Off-the-Shelf Looks</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Androgynous</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Impressive</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1">
+					<name>Attractive</name>
+					<cost type="points">4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Average</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Horrific</name>
+					<cost type="points">-24</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Monstrous</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Hideous</name>
+					<cost type="points">-16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Ugly</name>
+					<cost type="points">-8</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Unattractive</name>
+					<cost type="points">-4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Handsome</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Beautiful</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Handsome</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Beautiful</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Transcendent</name>
+					<cost type="points">20</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B21</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Magery</name>
+				<type>Mental, Supernatural</type>
+				<levels>0</levels>
+				<base_points>5</base_points>
+				<points_per_level>10</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>Dance</name>
+					<cost type="percentage">-40</cost>
+					<affects>levels_only</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Dark-Aspected</name>
+					<cost type="percentage">-50</cost>
+					<affects>levels_only</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Day-Aspected</name>
+					<cost type="percentage">-40</cost>
+					<affects>levels_only</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Musical</name>
+					<cost type="percentage">-50</cost>
+					<affects>levels_only</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Night-Aspected</name>
+					<cost type="percentage">-40</cost>
+					<affects>levels_only</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>One College</name>
+					<cost type="percentage">-40</cost>
+					<affects>levels_only</affects>
+					<notes>@College@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Solitary</name>
+					<cost type="percentage">-40</cost>
+					<affects>levels_only</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Song</name>
+					<cost type="percentage">-40</cost>
+					<affects>levels_only</affects>
+				</modifier>
+				<reference>B66</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<spell_bonus all_colleges="yes">
+					<amount per_level="yes">1</amount>
+				</spell_bonus>
+				<skill_bonus>
+					<name compare="is">thaumatology</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<spell_bonus>
+					<college_name compare="is">Clerical</college_name>
+					<amount per_level="yes">-1</amount>
+				</spell_bonus>
+				<spell_bonus>
+					<college_name compare="is">Druidic</college_name>
+					<amount per_level="yes">-1</amount>
+				</spell_bonus>
+				<spell_bonus>
+					<college_name compare="is">Unholy</college_name>
+					<amount per_level="yes">-1</amount>
+				</spell_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Elven Gear</name>
+				<type>Physical</type>
+				<base_points>1</base_points>
+				<reference>DF3:6</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Sense of Duty</name>
+				<type>Mental</type>
+				<base_points>-15</base_points>
+				<reference>DF3:6</reference>
+				<notes>Nature</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Talent (Forest Guardian)</name>
+				<type>Mental</type>
+				<levels>2</levels>
+				<points_per_level>5</points_per_level>
+				<reference>DF3:7</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="contains">biology</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">farming</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">gardening</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">herb lore</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">naturalist</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<prereq_list all="yes">
+					<advantage_prereq has="yes">
+						<name compare="ends with">Elf</name>
+						<notes compare="is anything"></notes>
+					</advantage_prereq>
+				</prereq_list>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Green hair</name>
+				<type>Physical</type>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Basic Move</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>5</points_per_level>
+				<attribute_bonus>
+					<attribute>move</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+</template>

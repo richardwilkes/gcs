@@ -23,10 +23,10 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.widgets.layout.FlexGrid;
-import com.trollworks.gcs.widgets.layout.FlexRow;
-import com.trollworks.gcs.widgets.layout.FlexSpacer;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.layout.FlexGrid;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.layout.FlexSpacer;
 
 /** This is a placeholder feature, used for the empty state. */
 public class NoFeature extends FeatureEditor {
@@ -40,7 +40,8 @@ public class NoFeature extends FeatureEditor {
 
 	}
 
-	@Override protected void rebuildSelf(FlexGrid grid, FlexRow right) {
+	@Override
+	protected void rebuildSelf(FlexGrid grid, FlexRow right) {
 		grid.add(new FlexSpacer(0, 0, true, false), 0, 0);
 	}
 }

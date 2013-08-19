@@ -25,27 +25,28 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.menu.file.Saveable;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.Path;
-import com.trollworks.gcs.utility.io.print.PrintManager;
-import com.trollworks.gcs.widgets.AppWindow;
-import com.trollworks.gcs.widgets.ModifiedMarker;
-import com.trollworks.gcs.widgets.WindowUtils;
-import com.trollworks.gcs.widgets.layout.FlexRow;
+import com.trollworks.gcs.widgets.GCSWindow;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.gcs.widgets.outline.Outline;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
-import com.trollworks.gcs.widgets.outline.Row;
 import com.trollworks.gcs.widgets.outline.RowItemRenderer;
-import com.trollworks.gcs.widgets.outline.RowIterator;
 import com.trollworks.gcs.widgets.outline.RowPostProcessor;
 import com.trollworks.gcs.widgets.search.Search;
 import com.trollworks.gcs.widgets.search.SearchTarget;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.menu.file.Saveable;
+import com.trollworks.ttk.print.PrintManager;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.Path;
+import com.trollworks.ttk.widgets.AppWindow;
+import com.trollworks.ttk.widgets.ModifiedMarker;
+import com.trollworks.ttk.widgets.WindowUtils;
+import com.trollworks.ttk.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
+import com.trollworks.ttk.widgets.outline.Row;
+import com.trollworks.ttk.widgets.outline.RowIterator;
 
 import java.awt.Color;
 import java.awt.EventQueue;
@@ -53,6 +54,7 @@ import java.awt.Graphics;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,7 +65,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
 
 /** The character sheet window. */
-public class SheetWindow extends AppWindow implements Saveable, Printable, SearchTarget {
+public class SheetWindow extends GCSWindow implements Saveable, Printable, SearchTarget {
 	private static String		MSG_SAVE_AS_PNG_ERROR;
 	private static String		MSG_SAVE_AS_PDF_ERROR;
 	private static String		MSG_SAVE_AS_HTML_ERROR;
@@ -150,6 +152,16 @@ public class SheetWindow extends AppWindow implements Saveable, Printable, Searc
 	/**
 	 * Creates character sheet window.
 	 * 
+	 * @param file The file to display.
+	 * @throws IOException
+	 */
+	public SheetWindow(File file) throws IOException {
+		this(new GURPSCharacter(file));
+	}
+
+	/**
+	 * Creates character sheet window.
+	 * 
 	 * @param character The character to display.
 	 */
 	public SheetWindow(GURPSCharacter character) {
@@ -190,7 +202,8 @@ public class SheetWindow extends AppWindow implements Saveable, Printable, Searc
 		getRootPane().putClientProperty("Window.documentFile", file); //$NON-NLS-1$
 	}
 
-	@Override public void dispose() {
+	@Override
+	public void dispose() {
 		mSheet.dispose();
 		super.dispose();
 	}
@@ -200,7 +213,8 @@ public class SheetWindow extends AppWindow implements Saveable, Printable, Searc
 		return mCharacter;
 	}
 
-	@Override public void adjustToPageSetupChanges() {
+	@Override
+	public void adjustToPageSetupChanges() {
 		mSheet.rebuild();
 	}
 
@@ -208,7 +222,8 @@ public class SheetWindow extends AppWindow implements Saveable, Printable, Searc
 		return mSheet.print(graphics, pageFormat, pageIndex);
 	}
 
-	@Override public String getWindowPrefsPrefix() {
+	@Override
+	public String getWindowPrefsPrefix() {
 		return "SheetWindow:" + mCharacter.getUniqueID() + "."; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
@@ -315,7 +330,8 @@ public class SheetWindow extends AppWindow implements Saveable, Printable, Searc
 		}
 	}
 
-	@Override protected void createToolBarContents(JToolBar toolbar, FlexRow row) {
+	@Override
+	protected void createToolBarContents(JToolBar toolbar, FlexRow row) {
 		ModifiedMarker marker = new ModifiedMarker();
 		mCharacter.addDataModifiedListener(marker);
 		toolbar.add(marker);
@@ -404,7 +420,8 @@ public class SheetWindow extends AppWindow implements Saveable, Printable, Searc
 		}
 	}
 
-	@Override protected PrintManager createPageSettings() {
+	@Override
+	protected PrintManager createPageSettings() {
 		return mCharacter.getPageSettings();
 	}
 

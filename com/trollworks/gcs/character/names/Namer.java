@@ -23,18 +23,18 @@
 
 package com.trollworks.gcs.character.names;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.text.TextUtility;
-import com.trollworks.gcs.widgets.CommitEnforcer;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.WindowUtils;
-import com.trollworks.gcs.widgets.layout.Alignment;
-import com.trollworks.gcs.widgets.layout.FlexColumn;
-import com.trollworks.gcs.widgets.layout.FlexComponent;
-import com.trollworks.gcs.widgets.layout.FlexGrid;
-import com.trollworks.gcs.widgets.layout.FlexSpacer;
-import com.trollworks.gcs.widgets.layout.LayoutSize;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.layout.Alignment;
+import com.trollworks.ttk.layout.FlexColumn;
+import com.trollworks.ttk.layout.FlexComponent;
+import com.trollworks.ttk.layout.FlexGrid;
+import com.trollworks.ttk.layout.FlexSpacer;
+import com.trollworks.ttk.layout.LayoutSize;
+import com.trollworks.ttk.text.TextUtility;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.UIUtilities;
+import com.trollworks.ttk.widgets.CommitEnforcer;
+import com.trollworks.ttk.widgets.WindowUtils;
 
 import java.awt.Color;
 import java.awt.Component;

@@ -23,9 +23,9 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
-import com.trollworks.gcs.utility.text.NumberUtils;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 
@@ -72,7 +72,8 @@ public class LeveledAmount {
 		mInteger = other.mInteger;
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}

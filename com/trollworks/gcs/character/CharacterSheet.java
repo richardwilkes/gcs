@@ -31,6 +31,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageColumn;
 import com.trollworks.gcs.advantage.AdvantageOutline;
+import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.app.Main;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
@@ -44,38 +45,38 @@ import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellColumn;
 import com.trollworks.gcs.spell.SpellOutline;
-import com.trollworks.gcs.utility.Debug;
-import com.trollworks.gcs.utility.Fonts;
-import com.trollworks.gcs.utility.StdUndoManager;
-import com.trollworks.gcs.utility.collections.FilteredIterator;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.Path;
-import com.trollworks.gcs.utility.io.Preferences;
-import com.trollworks.gcs.utility.io.print.PrintManager;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
-import com.trollworks.gcs.utility.notification.BatchNotifierTarget;
-import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponDisplayRow;
 import com.trollworks.gcs.weapon.WeaponStats;
-import com.trollworks.gcs.widgets.AppWindow;
-import com.trollworks.gcs.widgets.GraphicsUtilities;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.Wrapper;
-import com.trollworks.gcs.widgets.layout.ColumnLayout;
-import com.trollworks.gcs.widgets.layout.RowDistribution;
-import com.trollworks.gcs.widgets.outline.Column;
+import com.trollworks.gcs.widgets.GCSWindow;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.gcs.widgets.outline.Outline;
-import com.trollworks.gcs.widgets.outline.OutlineHeader;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
-import com.trollworks.gcs.widgets.outline.OutlineSyncer;
-import com.trollworks.gcs.widgets.outline.Row;
-import com.trollworks.gcs.widgets.outline.RowSelection;
-import com.trollworks.gcs.widgets.outline.Selection;
+import com.trollworks.ttk.collections.FilteredIterator;
+import com.trollworks.ttk.image.Images;
+import com.trollworks.ttk.layout.ColumnLayout;
+import com.trollworks.ttk.layout.RowDistribution;
+import com.trollworks.ttk.notification.BatchNotifierTarget;
+import com.trollworks.ttk.preferences.Preferences;
+import com.trollworks.ttk.print.PrintManager;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.undo.StdUndoManager;
+import com.trollworks.ttk.units.WeightUnits;
+import com.trollworks.ttk.utility.Debug;
+import com.trollworks.ttk.utility.Fonts;
+import com.trollworks.ttk.utility.GraphicsUtilities;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.Path;
+import com.trollworks.ttk.utility.Selection;
+import com.trollworks.ttk.utility.UIUtilities;
+import com.trollworks.ttk.widgets.Wrapper;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.OutlineHeader;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
+import com.trollworks.ttk.widgets.outline.OutlineSyncer;
+import com.trollworks.ttk.widgets.outline.Row;
+import com.trollworks.ttk.widgets.outline.RowSelection;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -679,8 +680,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		String pageString = MessageFormat.format(MSG_PAGE_NUMBER, NumberUtils.format(pageNumber), NumberUtils.format(getPageCount()));
 		String copyright1 = Main.getCopyrightBanner(true);
 		String copyright2 = copyright1.substring(copyright1.indexOf('\n') + 1);
-		Font font1 = UIManager.getFont(Fonts.KEY_SECONDARY_FOOTER);
-		Font font2 = UIManager.getFont(Fonts.KEY_PRIMARY_FOOTER);
+		Font font1 = UIManager.getFont(GCSFonts.KEY_SECONDARY_FOOTER);
+		Font font2 = UIManager.getFont(GCSFonts.KEY_PRIMARY_FOOTER);
 		FontMetrics fm1 = gc.getFontMetrics(font1);
 		FontMetrics fm2 = gc.getFontMetrics(font2);
 		int y;
@@ -726,8 +727,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	public Insets getPageAdornmentsInsets(Page page) {
-		FontMetrics fm1 = Fonts.getFontMetrics(UIManager.getFont(Fonts.KEY_SECONDARY_FOOTER));
-		FontMetrics fm2 = Fonts.getFontMetrics(UIManager.getFont(Fonts.KEY_PRIMARY_FOOTER));
+		FontMetrics fm1 = Fonts.getFontMetrics(UIManager.getFont(GCSFonts.KEY_SECONDARY_FOOTER));
+		FontMetrics fm2 = Fonts.getFontMetrics(UIManager.getFont(GCSFonts.KEY_PRIMARY_FOOTER));
 
 		return new Insets(0, 0, fm1.getAscent() + fm1.getDescent() + fm2.getAscent() + fm2.getDescent(), 0);
 	}
@@ -923,7 +924,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 					pdfDoc.newPage();
 				}
 				g2d.setClip(0, 0, (int) width, (int) height);
-				AppWindow window = (AppWindow) getTopLevelAncestor();
+				GCSWindow window = (GCSWindow) getTopLevelAncestor();
 				if (window != null) {
 					window.setPrinting(true);
 				}
@@ -1773,7 +1774,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				g2d.setBackground(Color.WHITE);
 				g2d.clearRect(0, 0, width, height);
 				g2d.scale(dpi / 72.0, dpi / 72.0);
-				AppWindow window = (AppWindow) getTopLevelAncestor();
+				GCSWindow window = (GCSWindow) getTopLevelAncestor();
 				if (window != null) {
 					window.setPrinting(true);
 				}

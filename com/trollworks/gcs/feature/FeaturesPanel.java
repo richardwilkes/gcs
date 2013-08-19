@@ -23,9 +23,9 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.BandedPanel;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.BandedPanel;
 
 import java.util.ArrayList;
 import java.util.List;

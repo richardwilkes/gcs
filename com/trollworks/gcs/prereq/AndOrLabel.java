@@ -23,9 +23,9 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.GraphicsUtilities;
-import com.trollworks.gcs.widgets.UIUtilities;
+import com.trollworks.ttk.utility.GraphicsUtilities;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.UIUtilities;
 
 import java.awt.Graphics;
 
@@ -53,7 +53,8 @@ public class AndOrLabel extends JLabel {
 		UIUtilities.setOnlySize(this, getPreferredSize());
 	}
 
-	@Override protected void paintComponent(Graphics gc) {
+	@Override
+	protected void paintComponent(Graphics gc) {
 		PrereqList parent = mOwner.getParent();
 		if (parent != null && parent.getChildren().get(0) != mOwner) {
 			setText(parent.requiresAll() ? MSG_AND : MSG_OR);

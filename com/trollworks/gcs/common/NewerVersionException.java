@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.common;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.io.IOException;
 

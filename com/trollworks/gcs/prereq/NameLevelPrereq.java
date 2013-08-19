@@ -27,11 +27,11 @@ import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.xml.XMLNodeType;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.xml.XMLNodeType;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -105,7 +105,8 @@ public abstract class NameLevelPrereq extends HasPrereq {
 		// Does nothing
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -117,7 +118,8 @@ public abstract class NameLevelPrereq extends HasPrereq {
 		return false;
 	}
 
-	@Override public void save(XMLWriter out) {
+	@Override
+	public void save(XMLWriter out) {
 		out.startTag(mTag);
 		saveHasAttribute(out);
 		out.finishTagEOL();
@@ -164,11 +166,13 @@ public abstract class NameLevelPrereq extends HasPrereq {
 		return mLevelCriteria;
 	}
 
-	@Override public void fillWithNameableKeys(HashSet<String> set) {
+	@Override
+	public void fillWithNameableKeys(HashSet<String> set) {
 		ListRow.extractNameables(set, mNameCriteria.getQualifier());
 	}
 
-	@Override public void applyNameableKeys(HashMap<String, String> map) {
+	@Override
+	public void applyNameableKeys(HashMap<String, String> map) {
 		mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
 	}
 }

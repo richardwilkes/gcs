@@ -23,24 +23,24 @@
 
 package com.trollworks.gcs.equipment;
 
+import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.skill.SkillDefault;
-import com.trollworks.gcs.utility.collections.EnumExtractor;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
-import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.OldWeapon;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
-import com.trollworks.gcs.widgets.outline.Column;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.gcs.widgets.outline.Row;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.units.WeightUnits;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.widgets.outline.Row;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -187,27 +187,33 @@ public class Equipment extends ListRow {
 		load(reader, state);
 	}
 
-	@Override public String getLocalizedName() {
+	@Override
+	public String getLocalizedName() {
 		return MSG_DEFAULT_NAME;
 	}
 
-	@Override public String getListChangedID() {
+	@Override
+	public String getListChangedID() {
 		return ID_LIST_CHANGED;
 	}
 
-	@Override public String getXMLTagName() {
+	@Override
+	public String getXMLTagName() {
 		return canHaveChildren() ? TAG_EQUIPMENT_CONTAINER : TAG_EQUIPMENT;
 	}
 
-	@Override public int getXMLTagVersion() {
+	@Override
+	public int getXMLTagVersion() {
 		return CURRENT_VERSION;
 	}
 
-	@Override public String getRowType() {
+	@Override
+	public String getRowType() {
 		return "Equipment"; //$NON-NLS-1$
 	}
 
-	@Override protected void prepareForLoad(LoadState state) {
+	@Override
+	protected void prepareForLoad(LoadState state) {
 		super.prepareForLoad(state);
 		mState = EquipmentState.EQUIPPED;
 		mQuantity = 1;
@@ -220,7 +226,8 @@ public class Equipment extends ListRow {
 		mWeapons = new ArrayList<WeaponStats>();
 	}
 
-	@Override protected void loadAttributes(XMLReader reader, LoadState state) {
+	@Override
+	protected void loadAttributes(XMLReader reader, LoadState state) {
 		super.loadAttributes(reader, state);
 		if (mDataFile instanceof GURPSCharacter) {
 			if (state.mDataItemVersion == 0) {
@@ -235,7 +242,8 @@ public class Equipment extends ListRow {
 		}
 	}
 
-	@Override protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
+	@Override
+	protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
 		String name = reader.getName();
 		if (TAG_DESCRIPTION.equals(name)) {
 			mDescription = reader.readText().replace(NEWLINE, SPACE);
@@ -268,7 +276,8 @@ public class Equipment extends ListRow {
 		}
 	}
 
-	@Override protected void finishedLoading() {
+	@Override
+	protected void finishedLoading() {
 		if (mOldWeapon != null) {
 			mWeapons.addAll(mOldWeapon.getWeapons(this));
 			mOldWeapon = null;
@@ -279,13 +288,15 @@ public class Equipment extends ListRow {
 		updateExtendedWeight(false);
 	}
 
-	@Override protected void saveAttributes(XMLWriter out, boolean forUndo) {
+	@Override
+	protected void saveAttributes(XMLWriter out, boolean forUndo) {
 		if (mDataFile instanceof GURPSCharacter) {
 			out.writeAttribute(ATTRIBUTE_STATE, mState.name().toLowerCase());
 		}
 	}
 
-	@Override protected void saveSelf(XMLWriter out, boolean forUndo) {
+	@Override
+	protected void saveSelf(XMLWriter out, boolean forUndo) {
 		if (!canHaveChildren()) {
 			out.simpleTag(TAG_QUANTITY, mQuantity);
 		}
@@ -300,7 +311,8 @@ public class Equipment extends ListRow {
 		}
 	}
 
-	@Override public void update() {
+	@Override
+	public void update() {
 		updateExtendedValue(true);
 		updateExtendedWeight(true);
 	}
@@ -543,22 +555,26 @@ public class Equipment extends ListRow {
 		return false;
 	}
 
-	@Override public boolean contains(String text, boolean lowerCaseOnly) {
+	@Override
+	public boolean contains(String text, boolean lowerCaseOnly) {
 		if (getDescription().toLowerCase().indexOf(text) != -1) {
 			return true;
 		}
 		return super.contains(text, lowerCaseOnly);
 	}
 
-	@Override public Object getData(Column column) {
+	@Override
+	public Object getData(Column column) {
 		return EquipmentColumn.values()[column.getID()].getData(this);
 	}
 
-	@Override public String getDataAsText(Column column) {
+	@Override
+	public String getDataAsText(Column column) {
 		return EquipmentColumn.values()[column.getID()].getDataAsText(this);
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		return getDescription();
 	}
 
@@ -583,15 +599,18 @@ public class Equipment extends ListRow {
 		return false;
 	}
 
-	@Override public BufferedImage getImage(boolean large) {
-		return Images.getEquipmentIcon(large, true);
+	@Override
+	public BufferedImage getImage(boolean large) {
+		return GCSImages.getEquipmentIcon(large, true);
 	}
 
-	@Override public RowEditor<? extends ListRow> createEditor() {
+	@Override
+	public RowEditor<? extends ListRow> createEditor() {
 		return new EquipmentEditor(this);
 	}
 
-	@Override public void fillWithNameableKeys(HashSet<String> set) {
+	@Override
+	public void fillWithNameableKeys(HashSet<String> set) {
 		super.fillWithNameableKeys(set);
 		extractNameables(set, mDescription);
 		for (WeaponStats weapon : mWeapons) {
@@ -601,7 +620,8 @@ public class Equipment extends ListRow {
 		}
 	}
 
-	@Override public void applyNameableKeys(HashMap<String, String> map) {
+	@Override
+	public void applyNameableKeys(HashMap<String, String> map) {
 		super.applyNameableKeys(map);
 		mDescription = nameNameables(map, mDescription);
 		for (WeaponStats weapon : mWeapons) {
@@ -611,7 +631,8 @@ public class Equipment extends ListRow {
 		}
 	}
 
-	@Override protected String getCategoryID() {
+	@Override
+	protected String getCategoryID() {
 		return ID_CATEGORY;
 	}
 }

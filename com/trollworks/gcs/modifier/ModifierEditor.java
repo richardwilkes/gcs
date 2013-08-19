@@ -24,14 +24,14 @@
 package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.feature.FeaturesPanel;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.utility.text.TextUtility;
-import com.trollworks.gcs.widgets.LinkedLabel;
-import com.trollworks.gcs.widgets.NumberFilter;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.layout.ColumnLayout;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.layout.ColumnLayout;
+import com.trollworks.ttk.text.NumberFilter;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.TextUtility;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.UIUtilities;
+import com.trollworks.ttk.widgets.LinkedLabel;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -136,7 +136,8 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		add(mTabPanel);
 	}
 
-	@Override protected boolean applyChangesSelf() {
+	@Override
+	protected boolean applyChangesSelf() {
 		boolean modified = mRow.setName(mNameField.getText());
 
 		modified |= mRow.setReference(mReferenceField.getText());
@@ -166,7 +167,8 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		return mCostType.getSelectedIndex() == 0;
 	}
 
-	@Override public void finished() {
+	@Override
+	public void finished() {
 		if (mTabPanel != null) {
 			updateLastTabName(mTabPanel.getTitleAt(mTabPanel.getSelectedIndex()));
 		}

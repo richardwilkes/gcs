@@ -27,19 +27,19 @@ import com.trollworks.gcs.menu.data.DataMenu;
 import com.trollworks.gcs.menu.file.NewCharacterSheetCommand;
 import com.trollworks.gcs.menu.file.NewCharacterTemplateCommand;
 import com.trollworks.gcs.menu.file.NewLibraryCommand;
-import com.trollworks.gcs.menu.file.OpenCommand;
-import com.trollworks.gcs.menu.file.RecentFilesMenu;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.Path;
-import com.trollworks.gcs.widgets.AppWindow;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.WindowSizeEnforcer;
-import com.trollworks.gcs.widgets.layout.Alignment;
-import com.trollworks.gcs.widgets.layout.FlexColumn;
-import com.trollworks.gcs.widgets.layout.FlexComponent;
-import com.trollworks.gcs.widgets.layout.FlexRow;
-import com.trollworks.gcs.widgets.layout.FlexSpacer;
+import com.trollworks.ttk.layout.Alignment;
+import com.trollworks.ttk.layout.FlexColumn;
+import com.trollworks.ttk.layout.FlexComponent;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.layout.FlexSpacer;
+import com.trollworks.ttk.menu.file.FileType;
+import com.trollworks.ttk.menu.file.OpenCommand;
+import com.trollworks.ttk.menu.file.RecentFilesMenu;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.Path;
+import com.trollworks.ttk.utility.UIUtilities;
+import com.trollworks.ttk.utility.WindowSizeEnforcer;
+import com.trollworks.ttk.widgets.AppWindow;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -95,9 +95,9 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 
 		JPanel newPanel = new JPanel();
 		newPanel.setBorder(new TitledBorder(MSG_NEW));
-		mSheetButton = createButton(newPanel, MSG_NEW_CHARACTER_SHEET, Images.getCharacterSheetIcon(true));
-		mLibraryButton = createButton(newPanel, MSG_NEW_LIBRARY, Images.getLibraryIcon(true));
-		mTemplateButton = createButton(newPanel, MSG_NEW_TEMPLATE, Images.getTemplateIcon(true));
+		mSheetButton = createButton(newPanel, MSG_NEW_CHARACTER_SHEET, GCSImages.getCharacterSheetIcon(true));
+		mLibraryButton = createButton(newPanel, MSG_NEW_LIBRARY, GCSImages.getLibraryIcon(true));
+		mTemplateButton = createButton(newPanel, MSG_NEW_TEMPLATE, GCSImages.getTemplateIcon(true));
 		UIUtilities.adjustToSameSize(newPanel.getComponents());
 		content.add(newPanel);
 
@@ -112,10 +112,11 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 		openPanel.setBorder(new TitledBorder(MSG_OPEN));
 		mRecentFilesList = new JList(RecentFilesMenu.getRecents().toArray());
 		mRecentFilesList.setCellRenderer(new DefaultListCellRenderer() {
-			@Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+			@Override
+			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				setText(DataMenu.filterTitle(Path.getLeafName(((File) value).getName(), false)));
-				setIcon(new ImageIcon(App.getIconForFile((File) value)));
+				setIcon(new ImageIcon(FileType.getIconForFile((File) value)));
 				return this;
 			}
 		});

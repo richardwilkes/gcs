@@ -24,12 +24,12 @@
 package com.trollworks.gcs.prereq;
 
 import com.trollworks.gcs.common.EditorPanel;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.layout.FlexGrid;
-import com.trollworks.gcs.widgets.layout.FlexRow;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.image.ToolkitImage;
+import com.trollworks.ttk.layout.FlexGrid;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.UIUtilities;
 
 import java.awt.event.ActionEvent;
 
@@ -121,7 +121,7 @@ public abstract class PrereqEditor extends EditorPanel {
 		grid.add(left, 0, 0);
 		rebuildSelf(left, grid, right);
 		if (mDepth > 0) {
-			right.add(addButton(Images.getRemoveIcon(), REMOVE, mPrereq instanceof PrereqList ? MSG_REMOVE_PREREQ_LIST_TOOLTIP : MSG_REMOVE_PREREQ_TOOLTIP));
+			right.add(addButton(ToolkitImage.getRemoveIcon(), REMOVE, mPrereq instanceof PrereqList ? MSG_REMOVE_PREREQ_LIST_TOOLTIP : MSG_REMOVE_PREREQ_TOOLTIP));
 		}
 		grid.add(right, 0, 2);
 		grid.apply(this);
@@ -171,7 +171,8 @@ public abstract class PrereqEditor extends EditorPanel {
 		return mPrereq;
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
 		if (CHANGE_BASE_TYPE.equals(command)) {
 			Class<?> type = BASE_TYPES[mBaseTypeCombo.getSelectedIndex()];

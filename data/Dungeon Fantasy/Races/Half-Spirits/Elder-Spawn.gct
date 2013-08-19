@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="fczdv0z6:-1ah9gzr3vnzau" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes" type="race">
+			<name>Elder-Spawn</name>
+			<reference>DF3:12</reference>
+			<advantage version="2">
+				<name>Flexibility (Double-Jointed)</name>
+				<type>Physical</type>
+				<base_points>15</base_points>
+				<reference>B56</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">climbing</name>
+					<specialization compare="is anything"></specialization>
+					<amount>5</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">escape</name>
+					<specialization compare="is anything"></specialization>
+					<amount>5</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Talent (Elder Gift)</name>
+				<type>Physical</type>
+				<levels>2</levels>
+				<points_per_level>5</points_per_level>
+				<reference>DF3:6</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">alchemy</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="starts with">hidden lore</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="starts with">occultism</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="starts with">thaumatology</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Injury Tolerance (Homogenous)</name>
+				<type>Physical, Exotic</type>
+				<base_points>40</base_points>
+				<reference>B60</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Night Vision</name>
+				<type>Physical</type>
+				<levels>5</levels>
+				<points_per_level>1</points_per_level>
+				<reference>B71</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Resistant</name>
+				<type>Physical</type>
+				<modifier version="1">
+					<name>Metabolic Hazards</name>
+					<cost type="points">30</cost>
+					<affects>total</affects>
+					<reference>B80</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Common: Poison, Sickness, etc.@</name>
+					<cost type="points">15</cost>
+					<affects>total</affects>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Occasional: Disease, Ingested Poison, etc.@</name>
+					<cost type="points">10</cost>
+					<affects>total</affects>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.@</name>
+					<cost type="points">5</cost>
+					<affects>total</affects>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Immunity</name>
+					<cost type="multiplier">1</cost>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>+8 to all HT rolls to resist</name>
+					<cost type="multiplier">0.5</cost>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1">
+					<name>+3 to all HT rolls to resist</name>
+					<cost type="multiplier">0.33</cost>
+					<reference>B81</reference>
+				</modifier>
+				<reference>B81</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Slippery</name>
+				<type>Physical, Exotic</type>
+				<levels>5</levels>
+				<points_per_level>2</points_per_level>
+				<reference>B85</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">escape</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Unfazeable</name>
+				<type>Mental</type>
+				<base_points>15</base_points>
+				<reference>B95</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Frightens Animals</name>
+				<type>Mental, Supernatural</type>
+				<base_points>-10</base_points>
+				<reference>B137</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Supernatural Features (Not Quite Right)</name>
+				<type>Physical, Supernatural</type>
+				<base_points>-5</base_points>
+				<reference>B157</reference>
+				<notes>-1 reaction to those who see your abilities. +1 to mundane or magical attempts to discover your nature.</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Weirdness Magnet</name>
+				<type>Mental, Supernatural</type>
+				<base_points>-15</base_points>
+				<modifier version="1" enabled="no">
+					<name>Origins Magnet</name>
+					<cost type="percentage">0</cost>
+					<affects>total</affects>
+					<reference>Sup32</reference>
+				</modifier>
+				<reference>B161</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+</template>

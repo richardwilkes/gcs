@@ -14,6 +14,61 @@
 </head>
 <body>
 	<p class=category>GURPS Character Sheet Release Notes</p>
+	<p class=rversion>Version 2008.03.21 &mdash; March 21, 2008</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&atid=913592&aid=1863057&group_id=185516">Feature 1863057</a>:
+				Per Prerequisite. Perception can now be used as a prerequisite.
+				Thanks to Kevin Michael Smith for contributing a patch to
+				implement this.</li>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1863104&group_id=185516&atid=913592">Feature 1863104</a>:
+				Multiplicative Modifiers. Implemented this optional rule from
+				Powers, page 102.</li>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1853186&group_id=185516&atid=913592">Feature 1853186</a>:
+				Allow menu keys to be remapped. This is a feature that used to
+				exist in versions of GCS prior to the migration to Swing. I've
+				reinstated it.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&atid=913589&aid=1892558&group_id=185516">Bug #1892558</a>:
+				Updating of character sheet stops working.</li>
+			<li>Changes to Will or Perception when the house rule was enabled
+				were not recalculating prerequisites unless something else
+				triggered the calculation. Thanks to Kevin Michael Smith for
+				contributing a patch to correct this oversight.</li>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&atid=913589&aid=1863011&group_id=185516">Bug #1863011</a>:
+				Failure loading Parry Techniques.</li>
+			<li>Altered the way rounding works so that a modifier of x1/3 to a
+				value such as 10 would produce 3 rather than the 4 GCS used to
+				produce.</li>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&atid=913592&aid=1892433&group_id=185516">Feature #1892433</a>:
+				Cloaks to calculate block based on cloak skill. Two issues were
+				resolved. First, the cloak equipment items were not entered
+				correctly to pick up their blocking capability. Second, even if
+				they had been, the calculation for this particular case would
+				have been off. Both are now corrected.</li>
+		</ul>
+	</div>
+	<p class=rheader>Data Files</p>
+	<div class=indent>
+		<ul>
+			<li>Applied patch from Kevin Michael Smith to update and add more
+				data from the Powers manual.</li>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&atid=913589&aid=1866156&group_id=185516">Bug #1866156</a>:
+				Incorporated spell fixes contributed by Nathan (sorry, don't
+				have a last name).</li>
+			<li>Applied patch from Sebastien Wilhelmi to categorize all
+				uncategorized skills, correct and recategorize all cinematic
+				techniques and add some perks, skills and techniques from High
+				Tech.</li>
+			<li>Added "Dungeon Fantasy" data files contributed by Kevin Michael
+				Smith.</li>
+		</ul>
+	</div>
 	<p class=rversion>Version 2008.01.01 &mdash; January 1, 2008</p>
 	<p class=rheader>Features</p>
 	<div class=indent>

@@ -24,22 +24,22 @@
 package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.advantage.AdvantageList;
+import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.common.DataFile;
-import com.trollworks.gcs.common.DataModifiedListener;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.spell.SpellList;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.Path;
-import com.trollworks.gcs.utility.io.xml.XMLNodeType;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
-import com.trollworks.gcs.widgets.WindowUtils;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.gcs.widgets.outline.Row;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.Path;
+import com.trollworks.ttk.widgets.DataModifiedListener;
+import com.trollworks.ttk.widgets.WindowUtils;
+import com.trollworks.ttk.widgets.outline.Row;
+import com.trollworks.ttk.xml.XMLNodeType;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.awt.EventQueue;
 import java.awt.image.BufferedImage;
@@ -116,23 +116,28 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 		mEquipment.addDataModifiedListener(this);
 	}
 
-	@Override public BufferedImage getFileIcon(boolean large) {
-		return Images.getLibraryIcon(large);
+	@Override
+	public BufferedImage getFileIcon(boolean large) {
+		return GCSImages.getLibraryIcon(large);
 	}
 
-	@Override public boolean matchesRootTag(String name) {
+	@Override
+	public boolean matchesRootTag(String name) {
 		return TAG_ROOT.equals(name) || AdvantageList.TAG_ROOT.equals(name) || SkillList.TAG_ROOT.equals(name) || SpellList.TAG_ROOT.equals(name) || EquipmentList.TAG_ROOT.equals(name);
 	}
 
-	@Override public String getXMLTagName() {
+	@Override
+	public String getXMLTagName() {
 		return TAG_ROOT;
 	}
 
-	@Override public int getXMLTagVersion() {
+	@Override
+	public int getXMLTagVersion() {
 		return CURRENT_VERSION;
 	}
 
-	@Override protected void loadSelf(XMLReader reader, LoadState state) throws IOException {
+	@Override
+	protected void loadSelf(XMLReader reader, LoadState state) throws IOException {
 		setup();
 		String name = reader.getName();
 		if (TAG_ROOT.equals(name)) {
@@ -168,7 +173,8 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 		}
 	}
 
-	@Override protected void saveSelf(XMLWriter out) {
+	@Override
+	protected void saveSelf(XMLWriter out) {
 		mAdvantages.save(out, false, true);
 		mSkills.save(out, false, true);
 		mSpells.save(out, false, true);

@@ -25,8 +25,8 @@ package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.character.names.USCensusNames;
-import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.menu.Command;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -36,6 +36,10 @@ import javax.swing.JMenuItem;
 
 /** Provides the "Generate Random Name" command. */
 public class RandomizeNameCommand extends Command {
+	/** The action command this command will issue. */
+	public static final String					CMD_GENERATE_RANDOM_MALE_NAME	= "GenerateRandomMaleName";																								//$NON-NLS-1$
+	/** The action command this command will issue. */
+	public static final String					CMD_GENERATE_RANDOM_FEMALE_NAME	= "GenerateRandomFemaleName";																								//$NON-NLS-1$
 	private static String						MSG_MALE;
 	private static String						MSG_FEMALE;
 	private static String						MSG_TITLE;
@@ -45,19 +49,21 @@ public class RandomizeNameCommand extends Command {
 	}
 
 	/** The male {@link RandomizeNameCommand}. */
-	public static final RandomizeNameCommand	MALE_INSTANCE	= new RandomizeNameCommand(MSG_MALE, KeyEvent.VK_V, Command.SHIFTED_COMMAND_MODIFIER);
+	public static final RandomizeNameCommand	MALE_INSTANCE					= new RandomizeNameCommand(MSG_MALE, CMD_GENERATE_RANDOM_MALE_NAME, KeyEvent.VK_V, Command.SHIFTED_COMMAND_MODIFIER);
 	/** The female {@link RandomizeNameCommand}. */
-	public static final RandomizeNameCommand	FEMALE_INSTANCE	= new RandomizeNameCommand(MSG_FEMALE, KeyEvent.VK_I, Command.SHIFTED_COMMAND_MODIFIER);
+	public static final RandomizeNameCommand	FEMALE_INSTANCE					= new RandomizeNameCommand(MSG_FEMALE, CMD_GENERATE_RANDOM_FEMALE_NAME, KeyEvent.VK_I, Command.SHIFTED_COMMAND_MODIFIER);
 
-	private RandomizeNameCommand(String type, int keyCode, int modifiers) {
-		super(MessageFormat.format(MSG_TITLE, type), keyCode, modifiers);
+	private RandomizeNameCommand(String type, String cmd, int keyCode, int modifiers) {
+		super(MessageFormat.format(MSG_TITLE, type), cmd, keyCode, modifiers);
 	}
 
-	@Override public void adjustForMenu(JMenuItem item) {
+	@Override
+	public void adjustForMenu(JMenuItem item) {
 		setEnabled(getActiveWindow() instanceof SheetWindow);
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		((SheetWindow) getActiveWindow()).getCharacter().getDescription().setName(USCensusNames.INSTANCE.getFullName(this == MALE_INSTANCE));
 	}
 }

@@ -25,10 +25,10 @@ package com.trollworks.gcs.weapon;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
-import com.trollworks.gcs.utility.text.NumberUtils;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 
@@ -97,11 +97,13 @@ public class RangedWeaponStats extends WeaponStats {
 		super(owner, reader);
 	}
 
-	@Override public WeaponStats clone(ListRow owner) {
+	@Override
+	public WeaponStats clone(ListRow owner) {
 		return new RangedWeaponStats(owner, this);
 	}
 
-	@Override protected void initialize() {
+	@Override
+	protected void initialize() {
 		mAccuracy = EMPTY;
 		mRange = EMPTY;
 		mRateOfFire = EMPTY;
@@ -110,7 +112,8 @@ public class RangedWeaponStats extends WeaponStats {
 		mRecoil = EMPTY;
 	}
 
-	@Override protected void loadSelf(XMLReader reader) throws IOException {
+	@Override
+	protected void loadSelf(XMLReader reader) throws IOException {
 		String name = reader.getName();
 
 		if (TAG_ACCURACY.equals(name)) {
@@ -130,11 +133,13 @@ public class RangedWeaponStats extends WeaponStats {
 		}
 	}
 
-	@Override protected String getRootTag() {
+	@Override
+	protected String getRootTag() {
 		return TAG_ROOT;
 	}
 
-	@Override protected void saveSelf(XMLWriter out) {
+	@Override
+	protected void saveSelf(XMLWriter out) {
 		out.simpleTagNotEmpty(TAG_ACCURACY, mAccuracy);
 		out.simpleTagNotEmpty(TAG_RANGE, mRange);
 		out.simpleTagNotEmpty(TAG_RATE_OF_FIRE, mRateOfFire);
@@ -316,7 +321,8 @@ public class RangedWeaponStats extends WeaponStats {
 		}
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (obj == this) {
 			return true;
 		}

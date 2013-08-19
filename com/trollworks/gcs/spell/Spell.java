@@ -23,6 +23,7 @@
 
 package com.trollworks.gcs.spell;
 
+import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
@@ -30,16 +31,15 @@ import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillLevel;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
-import com.trollworks.gcs.widgets.outline.Column;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -212,27 +212,33 @@ public class Spell extends ListRow {
 		load(reader, state);
 	}
 
-	@Override public String getLocalizedName() {
+	@Override
+	public String getLocalizedName() {
 		return MSG_DEFAULT_NAME;
 	}
 
-	@Override public String getListChangedID() {
+	@Override
+	public String getListChangedID() {
 		return ID_LIST_CHANGED;
 	}
 
-	@Override public String getXMLTagName() {
+	@Override
+	public String getXMLTagName() {
 		return canHaveChildren() ? TAG_SPELL_CONTAINER : TAG_SPELL;
 	}
 
-	@Override public int getXMLTagVersion() {
+	@Override
+	public int getXMLTagVersion() {
 		return CURRENT_VERSION;
 	}
 
-	@Override public String getRowType() {
+	@Override
+	public String getRowType() {
 		return "Spell"; //$NON-NLS-1$
 	}
 
-	@Override protected void prepareForLoad(LoadState state) {
+	@Override
+	protected void prepareForLoad(LoadState state) {
 		boolean isContainer = canHaveChildren();
 		super.prepareForLoad(state);
 		mName = MSG_DEFAULT_NAME;
@@ -249,12 +255,14 @@ public class Spell extends ListRow {
 		mWeapons = new ArrayList<WeaponStats>();
 	}
 
-	@Override protected void loadAttributes(XMLReader reader, LoadState state) {
+	@Override
+	protected void loadAttributes(XMLReader reader, LoadState state) {
 		super.loadAttributes(reader, state);
 		mIsVeryHard = reader.isAttributeSet(ATTRIBUTE_VERY_HARD);
 	}
 
-	@Override protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
+	@Override
+	protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
 		String name = reader.getName();
 		if (TAG_NAME.equals(name)) {
 			mName = reader.readText().replace(NEWLINE, SPACE);
@@ -302,17 +310,20 @@ public class Spell extends ListRow {
 		}
 	}
 
-	@Override protected void finishedLoading() {
+	@Override
+	protected void finishedLoading() {
 		updateLevel(false);
 	}
 
-	@Override protected void saveAttributes(XMLWriter out, boolean forUndo) {
+	@Override
+	protected void saveAttributes(XMLWriter out, boolean forUndo) {
 		if (mIsVeryHard) {
 			out.writeAttribute(ATTRIBUTE_VERY_HARD, mIsVeryHard);
 		}
 	}
 
-	@Override public void saveSelf(XMLWriter out, boolean forUndo) {
+	@Override
+	public void saveSelf(XMLWriter out, boolean forUndo) {
 		out.simpleTag(TAG_NAME, mName);
 		if (!canHaveChildren()) {
 			if (mTechLevel != null) {
@@ -602,15 +613,18 @@ public class Spell extends ListRow {
 		return false;
 	}
 
-	@Override public Object getData(Column column) {
+	@Override
+	public Object getData(Column column) {
 		return SpellColumn.values()[column.getID()].getData(this);
 	}
 
-	@Override public String getDataAsText(Column column) {
+	@Override
+	public String getDataAsText(Column column) {
 		return SpellColumn.values()[column.getID()].getDataAsText(this);
 	}
 
-	@Override public boolean contains(String text, boolean lowerCaseOnly) {
+	@Override
+	public boolean contains(String text, boolean lowerCaseOnly) {
 		if (getName().toLowerCase().indexOf(text) != -1) {
 			return true;
 		}
@@ -623,7 +637,8 @@ public class Spell extends ListRow {
 		return super.contains(text, lowerCaseOnly);
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		StringBuilder builder = new StringBuilder();
 
 		builder.append(getName());
@@ -640,8 +655,9 @@ public class Spell extends ListRow {
 		return builder.toString();
 	}
 
-	@Override public BufferedImage getImage(boolean large) {
-		return Images.getSpellIcon(large, true);
+	@Override
+	public BufferedImage getImage(boolean large) {
+		return GCSImages.getSpellIcon(large, true);
 	}
 
 	/** @return Whether this is a "Very Hard" spell or not. */
@@ -665,11 +681,13 @@ public class Spell extends ListRow {
 		return false;
 	}
 
-	@Override public RowEditor<? extends ListRow> createEditor() {
+	@Override
+	public RowEditor<? extends ListRow> createEditor() {
 		return new SpellEditor(this);
 	}
 
-	@Override public void fillWithNameableKeys(HashSet<String> set) {
+	@Override
+	public void fillWithNameableKeys(HashSet<String> set) {
 		super.fillWithNameableKeys(set);
 		extractNameables(set, mName);
 		extractNameables(set, mCollege);
@@ -684,7 +702,8 @@ public class Spell extends ListRow {
 		}
 	}
 
-	@Override public void applyNameableKeys(HashMap<String, String> map) {
+	@Override
+	public void applyNameableKeys(HashMap<String, String> map) {
 		super.applyNameableKeys(map);
 		mName = nameNameables(map, mName);
 		mCollege = nameNameables(map, mCollege);
@@ -720,7 +739,8 @@ public class Spell extends ListRow {
 		return MSG_DEFAULT_SPELL_CLASS;
 	}
 
-	@Override protected String getCategoryID() {
+	@Override
+	protected String getCategoryID() {
 		return ID_CATEGORY;
 	}
 }

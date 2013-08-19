@@ -32,12 +32,12 @@ import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
 import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.utility.Dice;
-import com.trollworks.gcs.utility.io.xml.XMLNodeType;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
-import com.trollworks.gcs.utility.text.NumberUtils;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.utility.Dice;
+import com.trollworks.ttk.xml.XMLNodeType;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -215,7 +215,8 @@ public abstract class WeaponStats {
 		return EMPTY;
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		return getDescription();
 	}
 
@@ -368,7 +369,6 @@ public abstract class WeaponStats {
 	 */
 	protected int skipSpaces(String buffer, int index) {
 		int max = buffer.length();
-
 		while (index < max && buffer.charAt(index) == ' ') {
 			index++;
 		}
@@ -491,7 +491,8 @@ public abstract class WeaponStats {
 		mOwner = owner;
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (obj == this) {
 			return true;
 		}

@@ -26,6 +26,7 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageContainerType;
 import com.trollworks.gcs.advantage.AdvantageList;
+import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.equipment.Equipment;
@@ -46,21 +47,20 @@ import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellList;
-import com.trollworks.gcs.utility.Dice;
-import com.trollworks.gcs.utility.StdUndoManager;
-import com.trollworks.gcs.utility.collections.FilteredIterator;
-import com.trollworks.gcs.utility.io.Images;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.print.PageOrientation;
-import com.trollworks.gcs.utility.io.print.PrintManager;
-import com.trollworks.gcs.utility.io.xml.XMLNodeType;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
-import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
-import com.trollworks.gcs.widgets.outline.RowIterator;
+import com.trollworks.ttk.collections.FilteredIterator;
+import com.trollworks.ttk.print.PageOrientation;
+import com.trollworks.ttk.print.PrintManager;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.undo.StdUndoManager;
+import com.trollworks.ttk.units.LengthUnits;
+import com.trollworks.ttk.utility.Dice;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
+import com.trollworks.ttk.widgets.outline.RowIterator;
+import com.trollworks.ttk.xml.XMLNodeType;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -380,11 +380,13 @@ public class GURPSCharacter extends DataFile {
 		return mPageSettings;
 	}
 
-	@Override public BufferedImage getFileIcon(boolean large) {
-		return Images.getCharacterSheetIcon(large);
+	@Override
+	public BufferedImage getFileIcon(boolean large) {
+		return GCSImages.getCharacterSheetIcon(large);
 	}
 
-	@Override protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
+	@Override
+	protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
 		String marker = reader.getMarker();
 		int unspentPoints = 0;
 
@@ -530,15 +532,18 @@ public class GURPSCharacter extends DataFile {
 		calculateWeightAndWealthCarried();
 	}
 
-	@Override public int getXMLTagVersion() {
+	@Override
+	public int getXMLTagVersion() {
 		return CURRENT_VERSION;
 	}
 
-	@Override public String getXMLTagName() {
+	@Override
+	public String getXMLTagName() {
 		return TAG_ROOT;
 	}
 
-	@Override protected void saveSelf(XMLWriter out) {
+	@Override
+	protected void saveSelf(XMLWriter out) {
 		out.simpleTag(TAG_CREATED_DATE, DateFormat.getDateInstance(DateFormat.MEDIUM).format(new Date(mCreatedOn)));
 		out.simpleTag(TAG_MODIFIED_DATE, DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(mLastModified)));
 		mDescription.save(out);
@@ -780,7 +785,8 @@ public class GURPSCharacter extends DataFile {
 		}
 	}
 
-	@Override protected void startNotifyAtBatchLevelZero() {
+	@Override
+	protected void startNotifyAtBatchLevelZero() {
 		mDidModify = false;
 		mNeedAttributePointCalculation = false;
 		mNeedAdvantagesPointCalculation = false;
@@ -789,7 +795,8 @@ public class GURPSCharacter extends DataFile {
 		mNeedEquipmentCalculation = false;
 	}
 
-	@Override public void notify(String type, Object data) {
+	@Override
+	public void notify(String type, Object data) {
 		super.notify(type, data);
 		if (Advantage.ID_POINTS.equals(type) || Advantage.ID_LEVELS.equals(type) || Advantage.ID_CONTAINER_TYPE.equals(type) || Advantage.ID_LIST_CHANGED.equals(type) || Advantage.ID_CR.equals(type) || Modifier.ID_LIST_CHANGED.equals(type) || Modifier.ID_ENABLED.equals(type)) {
 			mNeedAdvantagesPointCalculation = true;
@@ -805,11 +812,13 @@ public class GURPSCharacter extends DataFile {
 		}
 	}
 
-	@Override protected void notifyOccured() {
+	@Override
+	protected void notifyOccured() {
 		mDidModify = true;
 	}
 
-	@Override protected void endNotifyAtBatchLevelOne() {
+	@Override
+	protected void endNotifyAtBatchLevelOne() {
 		if (mNeedAttributePointCalculation) {
 			calculateAttributePoints();
 			notify(ID_ATTRIBUTE_POINTS, new Integer(getAttributePoints()));

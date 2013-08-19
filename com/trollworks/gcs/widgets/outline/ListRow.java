@@ -38,9 +38,11 @@ import com.trollworks.gcs.prereq.PrereqList;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.template.Template;
-import com.trollworks.gcs.utility.io.xml.XMLNodeType;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.widgets.outline.Row;
+import com.trollworks.ttk.xml.XMLNodeType;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -172,7 +174,8 @@ public abstract class ListRow extends Row {
 	/** @return The localized name for this row object. */
 	public abstract String getLocalizedName();
 
-	@Override public boolean addChild(Row row) {
+	@Override
+	public boolean addChild(Row row) {
 		boolean result = super.addChild(row);
 
 		if (result) {
@@ -562,7 +565,8 @@ public abstract class ListRow extends Row {
 		return false;
 	}
 
-	@Override public final void setData(Column column, Object data) {
+	@Override
+	public final void setData(Column column, Object data) {
 		// Not used.
 	}
 

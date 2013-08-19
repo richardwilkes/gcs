@@ -23,7 +23,11 @@
 
 package com.trollworks.gcs.widgets.outline;
 
-import com.trollworks.gcs.utility.Fonts;
+import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.ttk.widgets.outline.Column;
+import com.trollworks.ttk.widgets.outline.Outline;
+import com.trollworks.ttk.widgets.outline.Row;
+import com.trollworks.ttk.widgets.outline.TextCell;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -44,18 +48,21 @@ public class ListTextCell extends TextCell {
 		super(alignment, wrapped);
 	}
 
-	@Override public Font getFont(Row row, Column column) {
-		return UIManager.getFont(Fonts.KEY_FIELD);
+	@Override
+	public Font getFont(Row row, Column column) {
+		return UIManager.getFont(GCSFonts.KEY_FIELD);
 	}
 
-	@Override public Color getColor(boolean selected, boolean active, Row row, Column column) {
+	@Override
+	public Color getColor(boolean selected, boolean active, Row row, Column column) {
 		if (row instanceof ListRow && !((ListRow) row).isSatisfied()) {
 			return Color.red;
 		}
 		return super.getColor(selected, active, row, column);
 	}
 
-	@Override public String getToolTipText(MouseEvent event, Rectangle bounds, Row row, Column column) {
+	@Override
+	public String getToolTipText(MouseEvent event, Rectangle bounds, Row row, Column column) {
 		if (!(row instanceof ListRow) || ((ListRow) row).isSatisfied()) {
 			return super.getToolTipText(event, bounds, row, column);
 		}

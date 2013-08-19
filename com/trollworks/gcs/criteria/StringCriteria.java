@@ -23,8 +23,8 @@
 
 package com.trollworks.gcs.criteria;
 
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.io.xml.XMLWriter;
+import com.trollworks.ttk.xml.XMLReader;
+import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 
@@ -55,7 +55,8 @@ public class StringCriteria {
 		mQualifier = other.mQualifier;
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -114,7 +115,8 @@ public class StringCriteria {
 		return mType.matches(mQualifier, data);
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		return mType.describe(mQualifier);
 	}
 }

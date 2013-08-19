@@ -23,10 +23,10 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.utility.io.print.PrintManager;
-import com.trollworks.gcs.utility.units.LengthUnits;
-import com.trollworks.gcs.widgets.GraphicsUtilities;
-import com.trollworks.gcs.widgets.UIUtilities;
+import com.trollworks.ttk.print.PrintManager;
+import com.trollworks.ttk.units.LengthUnits;
+import com.trollworks.ttk.utility.GraphicsUtilities;
+import com.trollworks.ttk.utility.UIUtilities;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -61,7 +61,8 @@ public class Page extends JPanel {
 		setSize(pageSize);
 	}
 
-	@Override protected void paintComponent(Graphics gc) {
+	@Override
+	protected void paintComponent(Graphics gc) {
 		super.paintComponent(GraphicsUtilities.prepare(gc));
 		mOwner.drawPageAdornments(this, gc);
 	}

@@ -23,98 +23,116 @@
 
 package com.trollworks.gcs.criteria;
 
-import com.trollworks.gcs.utility.collections.EnumExtractor;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 /** The allowed string comparison types. */
 public enum StringCompareType {
 	/** The comparison for "is anything". */
 	IS_ANYTHING {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_IS_ANYTHING;
 		}
 
-		@Override public boolean matches(String qualifier, String data) {
+		@Override
+		public boolean matches(String qualifier, String data) {
 			return true;
 		}
 	},
 	/** The comparison for "is". */
 	IS {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_IS;
 		}
 
-		@Override public boolean matches(String qualifier, String data) {
+		@Override
+		public boolean matches(String qualifier, String data) {
 			return data.equalsIgnoreCase(qualifier);
 		}
 	},
 	/** The comparison for "is not". */
 	IS_NOT {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_IS_NOT;
 		}
 
-		@Override public boolean matches(String qualifier, String data) {
+		@Override
+		public boolean matches(String qualifier, String data) {
 			return !data.equalsIgnoreCase(qualifier);
 		}
 	},
 	/** The comparison for "contains". */
 	CONTAINS {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_CONTAINS;
 		}
 
-		@Override public boolean matches(String qualifier, String data) {
+		@Override
+		public boolean matches(String qualifier, String data) {
 			return data.toLowerCase().indexOf(qualifier.toLowerCase()) != -1;
 		}
 	},
 	/** The comparison for "does not contain". */
 	DOES_NOT_CONTAIN {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_DOES_NOT_CONTAIN;
 		}
 
-		@Override public boolean matches(String qualifier, String data) {
+		@Override
+		public boolean matches(String qualifier, String data) {
 			return data.toLowerCase().indexOf(qualifier.toLowerCase()) == -1;
 		}
 	},
 	/** The comparison for "starts with". */
 	STARTS_WITH {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_STARTS_WITH;
 		}
 
-		@Override public boolean matches(String qualifier, String data) {
+		@Override
+		public boolean matches(String qualifier, String data) {
 			return data.toLowerCase().startsWith(qualifier.toLowerCase());
 		}
 	},
 	/** The comparison for "does not start with". */
 	DOES_NOT_START_WITH {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_DOES_NOT_START_WITH;
 		}
 
-		@Override public boolean matches(String qualifier, String data) {
+		@Override
+		public boolean matches(String qualifier, String data) {
 			return !data.toLowerCase().startsWith(qualifier.toLowerCase());
 		}
 	},
 	/** The comparison for "ends with". */
 	ENDS_WITH {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_ENDS_WITH;
 		}
 
-		@Override public boolean matches(String qualifier, String data) {
+		@Override
+		public boolean matches(String qualifier, String data) {
 			return data.toLowerCase().endsWith(qualifier.toLowerCase());
 		}
 	},
 	/** The comparison for "does not end with". */
 	DOES_NOT_END_WITH {
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return MSG_DOES_NOT_END_WITH;
 		}
 
-		@Override public boolean matches(String qualifier, String data) {
+		@Override
+		public boolean matches(String qualifier, String data) {
 			return !data.toLowerCase().endsWith(qualifier.toLowerCase());
 		}
 	};

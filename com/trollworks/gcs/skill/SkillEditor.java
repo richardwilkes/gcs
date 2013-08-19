@@ -26,18 +26,18 @@ package com.trollworks.gcs.skill;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.prereq.PrereqsPanel;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.utility.text.TextUtility;
 import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
-import com.trollworks.gcs.widgets.LinkedLabel;
-import com.trollworks.gcs.widgets.NumberFilter;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.layout.ColumnLayout;
-import com.trollworks.gcs.widgets.outline.OutlineModel;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.layout.ColumnLayout;
+import com.trollworks.ttk.text.NumberFilter;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.TextUtility;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.UIUtilities;
+import com.trollworks.ttk.widgets.LinkedLabel;
+import com.trollworks.ttk.widgets.outline.OutlineModel;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -338,7 +338,8 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 		return mEncPenaltyPopup.getSelectedIndex();
 	}
 
-	@Override public boolean applyChangesSelf() {
+	@Override
+	public boolean applyChangesSelf() {
 		boolean modified = mRow.setName(mNameField.getText());
 		modified |= mRow.setReference(mReferenceField.getText());
 		modified |= mRow.setNotes(mNotesField.getText());
@@ -376,7 +377,8 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 		return modified;
 	}
 
-	@Override public void finished() {
+	@Override
+	public void finished() {
 		if (mTabPanel != null) {
 			updateLastTabName(mTabPanel.getTitleAt(mTabPanel.getSelectedIndex()));
 		}

@@ -23,10 +23,10 @@
 
 package com.trollworks.gcs.widgets.search;
 
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.layout.FlexRow;
+import com.trollworks.ttk.layout.FlexRow;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.UIUtilities;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -84,7 +84,8 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 		row.apply(this);
 	}
 
-	@Override public boolean requestFocusInWindow() {
+	@Override
+	public boolean requestFocusInWindow() {
 		return mFilterField.requestFocusInWindow();
 	}
 
@@ -174,7 +175,8 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 		return mFilterField;
 	}
 
-	@Override public void setEnabled(boolean enabled) {
+	@Override
+	public void setEnabled(boolean enabled) {
 		super.setEnabled(enabled);
 		mHits.setEnabled(enabled);
 		mFilterField.setEnabled(enabled);

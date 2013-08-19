@@ -23,10 +23,10 @@
 
 package com.trollworks.gcs.weapon;
 
-import com.trollworks.gcs.utility.io.xml.XMLNodeType;
-import com.trollworks.gcs.utility.io.xml.XMLReader;
-import com.trollworks.gcs.utility.text.TextUtility;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.text.TextUtility;
+import com.trollworks.ttk.xml.XMLNodeType;
+import com.trollworks.ttk.xml.XMLReader;
 
 import java.io.IOException;
 import java.util.ArrayList;

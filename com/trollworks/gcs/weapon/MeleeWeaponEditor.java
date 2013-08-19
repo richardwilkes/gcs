@@ -27,9 +27,9 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.EditorField;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.widgets.EditorField;
 
 import java.awt.Container;
 import java.util.List;
@@ -77,13 +77,15 @@ public class MeleeWeaponEditor extends WeaponEditor {
 		super(owner, weapons, MeleeWeaponStats.class);
 	}
 
-	@Override protected void createFields(Container parent) {
+	@Override
+	protected void createFields(Container parent) {
 		mParry = createTextField(parent, MSG_PARRY, EMPTY);
 		mReach = createTextField(parent, MSG_REACH, EMPTY);
 		mBlock = createTextField(parent, MSG_BLOCK, EMPTY);
 	}
 
-	@Override protected void updateFromField(Object source) {
+	@Override
+	protected void updateFromField(Object source) {
 		if (mReach == source) {
 			changeReach();
 		} else if (mParry == source) {
@@ -108,11 +110,13 @@ public class MeleeWeaponEditor extends WeaponEditor {
 		adjustOutlineToContent();
 	}
 
-	@Override protected WeaponStats createWeaponStats() {
+	@Override
+	protected WeaponStats createWeaponStats() {
 		return new MeleeWeaponStats(getOwner());
 	}
 
-	@Override protected void updateFields() {
+	@Override
+	protected void updateFields() {
 		MeleeWeaponStats weapon = (MeleeWeaponStats) getWeapon();
 		mReach.setValue(weapon.getReach());
 		mParry.setValue(weapon.getParry());
@@ -120,21 +124,24 @@ public class MeleeWeaponEditor extends WeaponEditor {
 		super.updateFields();
 	}
 
-	@Override protected void enableFields(boolean enabled) {
+	@Override
+	protected void enableFields(boolean enabled) {
 		mReach.setEnabled(enabled);
 		mParry.setEnabled(enabled);
 		mBlock.setEnabled(enabled);
 		super.enableFields(enabled);
 	}
 
-	@Override protected void blankFields() {
+	@Override
+	protected void blankFields() {
 		mReach.setValue(EMPTY);
 		mParry.setValue(EMPTY);
 		mBlock.setValue(EMPTY);
 		super.blankFields();
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		return MSG_MELEE_WEAPON;
 	}
 }

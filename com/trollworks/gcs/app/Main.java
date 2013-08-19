@@ -23,22 +23,31 @@
 
 package com.trollworks.gcs.app;
 
+import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.PrerequisitesThread;
 import com.trollworks.gcs.character.SheetWindow;
-import com.trollworks.gcs.utility.Fonts;
-import com.trollworks.gcs.utility.Timing;
-import com.trollworks.gcs.utility.io.LaunchProxy;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.utility.io.Path;
-import com.trollworks.gcs.utility.io.Preferences;
-import com.trollworks.gcs.utility.io.cmdline.CmdLine;
-import com.trollworks.gcs.utility.io.cmdline.CmdLineOption;
-import com.trollworks.gcs.utility.io.print.PrintManager;
-import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.utility.units.LengthUnits;
-import com.trollworks.gcs.widgets.GraphicsUtilities;
+import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.library.LibraryFile;
+import com.trollworks.gcs.library.LibraryWindow;
+import com.trollworks.gcs.skill.Skill;
+import com.trollworks.gcs.spell.Spell;
+import com.trollworks.gcs.template.TemplateWindow;
+import com.trollworks.ttk.cmdline.CmdLine;
+import com.trollworks.ttk.cmdline.CmdLineOption;
+import com.trollworks.ttk.menu.file.FileType;
+import com.trollworks.ttk.preferences.Preferences;
+import com.trollworks.ttk.print.PrintManager;
+import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.units.LengthUnits;
+import com.trollworks.ttk.utility.App;
+import com.trollworks.ttk.utility.Fonts;
+import com.trollworks.ttk.utility.GraphicsUtilities;
+import com.trollworks.ttk.utility.LaunchProxy;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.Path;
+import com.trollworks.ttk.utility.Timing;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -76,6 +85,8 @@ public class Main {
 
 	static {
 		LocalizedMessages.initialize(Main.class);
+		App.setName(MSG_APP_NAME);
+		App.setVersion(MSG_APP_VERSION);
 	}
 
 	private static final CmdLineOption	PDF_OPTION				= new CmdLineOption(MSG_PDF_OPTION, null, "pdf");										//$NON-NLS-1$
@@ -99,12 +110,13 @@ public class Main {
 		options.add(SIZE_OPTION);
 		options.add(MARGIN_OPTION);
 
-		CmdLine cmdLine = new CmdLine(args, options);
+		String versionBanner = getVersionBanner(false);
+		CmdLine cmdLine = new CmdLine(args, options, versionBanner);
 		if (cmdLine.isOptionUsed(HTML_OPTION) || cmdLine.isOptionUsed(PDF_OPTION) || cmdLine.isOptionUsed(PNG_OPTION)) {
 			System.setProperty("java.awt.headless", Boolean.TRUE.toString()); //$NON-NLS-1$
 			initialize();
 			Timing timing = new Timing();
-			System.out.println(Main.getVersionBanner(false));
+			System.out.println(versionBanner);
 			System.out.println();
 			if (convert(cmdLine) < 1) {
 				System.out.println(MSG_NO_FILES_TO_PROCESS);
@@ -116,7 +128,7 @@ public class Main {
 			LaunchProxy.configure("GCSLaunchProxy", 1, cmdLine.getArgumentsAsFiles().toArray(new File[0])); //$NON-NLS-1$
 			if (GraphicsUtilities.areGraphicsSafeToUse()) {
 				initialize();
-				App.INSTANCE.startup(cmdLine);
+				GCSApp.INSTANCE.startup(cmdLine);
 			} else {
 				System.err.println(GraphicsUtilities.getReasonForUnsafeGraphics());
 				System.exit(1);
@@ -134,7 +146,16 @@ public class Main {
 			ex.printStackTrace(System.err);
 		}
 		Preferences.setPreferenceFile("gcs.pref"); //$NON-NLS-1$
+		GCSFonts.register();
 		Fonts.loadFromPreferences();
+		App.setAboutPanel(AboutPanel.class);
+		FileType.register(SheetWindow.SHEET_EXTENSION, GCSImages.getCharacterSheetIcon(false), SheetWindow.class, true);
+		FileType.register(LibraryFile.EXTENSION, GCSImages.getLibraryIcon(false), LibraryWindow.class, true);
+		FileType.register(TemplateWindow.EXTENSION, GCSImages.getTemplateIcon(false), TemplateWindow.class, true);
+		FileType.register(Advantage.OLD_ADVANTAGE_EXTENSION, GCSImages.getAdvantageIcon(false, false), LibraryWindow.class, true);
+		FileType.register(Equipment.OLD_EQUIPMENT_EXTENSION, GCSImages.getEquipmentIcon(false, false), LibraryWindow.class, true);
+		FileType.register(Skill.OLD_SKILL_EXTENSION, GCSImages.getSkillIcon(false, false), LibraryWindow.class, true);
+		FileType.register(Spell.OLD_SPELL_EXTENSION, GCSImages.getSpellIcon(false, false), LibraryWindow.class, true);
 	}
 
 	private static int convert(CmdLine cmdLine) {
@@ -291,22 +312,12 @@ public class Main {
 		return null;
 	}
 
-	/** @return The name of this application. */
-	public static String getName() {
-		return MSG_APP_NAME;
-	}
-
-	/** @return The version of this application. */
-	public static String getVersion() {
-		return MSG_APP_VERSION;
-	}
-
 	/**
 	 * @param useRealCopyrightSymbol Whether or not a real copyright symbol should be used.
 	 * @return A version banner for this application.
 	 */
 	public static String getVersionBanner(boolean useRealCopyrightSymbol) {
-		return MessageFormat.format(MSG_LONG_VERSION_FORMAT, getName(), getVersion(), getCopyrightBanner(useRealCopyrightSymbol));
+		return MessageFormat.format(MSG_LONG_VERSION_FORMAT, App.getName(), App.getVersion(), getCopyrightBanner(useRealCopyrightSymbol));
 	}
 
 	/**

@@ -20,11 +20,14 @@
 		<mkdir dir="${BuildDir}"/>
 
 		<!-- Compile the code. -->
-		<unjar src="libraries/itext-2.0.7.jar" dest="${JavaBuildDir}"/>
-		<unjar src="libraries/AppleJavaExtensions.jar" dest="${JavaBuildDir}"/>
-		<javac srcdir="." destdir="${JavaBuildDir}"
+		<unjar src="libraries/itext-2.0.8.jar" dest="${JavaBuildDir}"/>
+		<unjar src="../ttk/libraries/AppleJavaExtensions.jar" dest="${JavaBuildDir}"/>
+		<javac destdir="${JavaBuildDir}"
 			includes="com/trollworks/gcs/app/Main.java"
-			debug="no" optimize="yes" target="1.5" source="1.5"/>
+			debug="no" optimize="yes" target="1.5" source="1.5">
+			<src path="."/>
+			<src path="../ttk"/>
+		</javac>
 
 		<!-- Remove invalid signing files from iText. -->
 		<delete file="${JavaBuildDir}/META-INF/BRUNO_LO.RSA"/>
@@ -33,6 +36,7 @@
 		<!-- Copy the resources over. -->
 		<copy todir="${JavaBuildDir}">
 			<fileset dir="." includes="com/**/*.txt,com/**/*.properties,com/**/*.png,com/**/*.gif,com/**/*.jpg"/>
+			<fileset dir="../ttk" includes="com/**/*.txt,com/**/*.properties,com/**/*.png,com/**/*.gif,com/**/*.jpg"/>
 		</copy>
 
 		<!-- Create the jar file and the Java 1.1 entry point. -->
@@ -80,11 +84,11 @@
 		<copy file="install/gcs" todir="${InstallDir}"/>
 		<chmod perm="755" file="${InstallDir}/gcs"/>
 
-		<!-- Create the Unix tbz file -->
-		<delete file="${user.home}/Desktop/gcs-${APP_VERSION}.unix.tbz"/>
+		<!-- Create the Unix tar.bz file -->
+		<delete file="${user.home}/Desktop/gcs-${APP_VERSION}.unix.tar.bz"/>
 		<exec executable="tar" failonerror="yes">
 			<arg value="cjf"/>
-			<arg value="${user.home}/Desktop/gcs-${APP_VERSION}.unix.tbz"/>
+			<arg value="${user.home}/Desktop/gcs-${APP_VERSION}.unix.tar.bz"/>
 			<arg value="-C"/>
 			<arg value="${InstallDirParent}"/>
 			<arg value="${InstallDirLeaf}"/>
@@ -128,22 +132,6 @@
 			<arg value="${user.home}/Desktop"/>
 		</exec>
 		<move file="${user.home}/Desktop/${APP_NAME} ${APP_VERSION}.macosx.dmg" tofile="${user.home}/Desktop/gcs-${APP_VERSION}.macosx.dmg"/>
-
-		<!-- Create the source archive area. -->
-		<mkdir dir="${SrcArchiveDir}"/>
-		<copy todir="${SrcArchiveDir}">
-			<fileset dir="." excludes="build/**"/>
-		</copy>
-
-		<!-- Create the source tbz file. -->
-		<delete file="${user.home}/Desktop/gcs-${APP_VERSION}.src.tbz"/>
-		<exec executable="tar" failonerror="yes">
-			<arg value="cjf"/>
-			<arg value="${user.home}/Desktop/gcs-${APP_VERSION}.src.tbz"/>
-			<arg value="-C"/>
-			<arg value="${SrcArchiveDirParent}"/>
-			<arg value="${SrcArchiveDirLeaf}"/>
-		</exec>
 	</target>
 
 	<target name="win_launcher" description="Create the Windows launcher">

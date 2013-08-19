@@ -25,8 +25,8 @@ package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetWindow;
-import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.ttk.menu.Command;
+import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -35,6 +35,8 @@ import javax.swing.JMenuItem;
 
 /** Provides the "New Character Sheet" command. */
 public class NewCharacterSheetCommand extends Command {
+	/** The action command this command will issue. */
+	public static final String						CMD_NEW_CHARACTER_SHEET	= "NewCharacterSheet";				//$NON-NLS-1$
 	private static String							MSG_NEW_CHARACTER_SHEET;
 
 	static {
@@ -42,17 +44,19 @@ public class NewCharacterSheetCommand extends Command {
 	}
 
 	/** The singleton {@link NewCharacterSheetCommand}. */
-	public static final NewCharacterSheetCommand	INSTANCE	= new NewCharacterSheetCommand();
+	public static final NewCharacterSheetCommand	INSTANCE				= new NewCharacterSheetCommand();
 
 	private NewCharacterSheetCommand() {
-		super(MSG_NEW_CHARACTER_SHEET, KeyEvent.VK_N);
+		super(MSG_NEW_CHARACTER_SHEET, CMD_NEW_CHARACTER_SHEET, KeyEvent.VK_N);
 	}
 
-	@Override public void adjustForMenu(JMenuItem item) {
+	@Override
+	public void adjustForMenu(JMenuItem item) {
 		// Do nothing. We're always enabled.
 	}
 
-	@Override public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(ActionEvent event) {
 		newSheet();
 	}
 

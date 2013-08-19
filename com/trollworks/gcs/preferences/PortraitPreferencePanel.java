@@ -23,12 +23,12 @@
 
 package com.trollworks.gcs.preferences;
 
+import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.character.Profile;
-import com.trollworks.gcs.utility.Fonts;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.ActionPanel;
-import com.trollworks.gcs.widgets.BoxedDropShadowBorder;
-import com.trollworks.gcs.widgets.UIUtilities;
+import com.trollworks.ttk.border.BoxedDropShadowBorder;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.UIUtilities;
+import com.trollworks.ttk.widgets.ActionPanel;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -60,12 +60,13 @@ public class PortraitPreferencePanel extends ActionPanel {
 	public PortraitPreferencePanel(BufferedImage image) {
 		super();
 		mImage = image;
-		setBorder(new BoxedDropShadowBorder(UIManager.getFont(Fonts.KEY_LABEL), MSG_PORTRAIT));
+		setBorder(new BoxedDropShadowBorder(UIManager.getFont(GCSFonts.KEY_LABEL), MSG_PORTRAIT));
 		Insets insets = getInsets();
 		UIUtilities.setOnlySize(this, new Dimension(insets.left + insets.right + Profile.PORTRAIT_WIDTH, insets.top + insets.bottom + Profile.PORTRAIT_HEIGHT));
 		setToolTipText(MessageFormat.format(MSG_PORTRAIT_TOOLTIP, new Integer(Profile.PORTRAIT_WIDTH * 2), new Integer(Profile.PORTRAIT_HEIGHT * 2)));
 		addMouseListener(new MouseAdapter() {
-			@Override public void mouseClicked(MouseEvent event) {
+			@Override
+			public void mouseClicked(MouseEvent event) {
 				if (event.getClickCount() == 2) {
 					notifyActionListeners();
 				}
@@ -79,7 +80,8 @@ public class PortraitPreferencePanel extends ActionPanel {
 		repaint();
 	}
 
-	@Override protected void paintComponent(Graphics gc) {
+	@Override
+	protected void paintComponent(Graphics gc) {
 		Insets insets = getInsets();
 		Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
 		gc.setColor(Color.white);
