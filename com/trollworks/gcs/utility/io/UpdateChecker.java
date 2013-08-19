@@ -99,9 +99,8 @@ public class UpdateChecker implements Runnable {
 
 	public void run() {
 		if (mMode == 0) {
-			long currentVersion = Version.extractVersion(Main.getVersion());
-			long versionAvailable = currentVersion;
-
+			int currentVersion = Version.extractVersion(Main.getVersion());
+			int versionAvailable = currentVersion;
 			mMode = 2;
 			try {
 				URL url = new URL(mCheckURL);
@@ -110,13 +109,11 @@ public class UpdateChecker implements Runnable {
 
 				while (line != null) {
 					StringTokenizer tokenizer = new StringTokenizer(line, "\t"); //$NON-NLS-1$
-
 					if (tokenizer.hasMoreTokens()) {
 						try {
 							if (tokenizer.nextToken().equalsIgnoreCase(mProductKey)) {
 								String token = tokenizer.nextToken();
-								long version = Version.extractVersion(token);
-
+								int version = Version.extractVersion(token);
 								if (version > versionAvailable) {
 									versionAvailable = version;
 								}
@@ -133,8 +130,7 @@ public class UpdateChecker implements Runnable {
 
 			if (versionAvailable > currentVersion) {
 				Preferences prefs = Preferences.getInstance();
-				String humanReadableVersion = Version.getHumanReadableVersion(versionAvailable, true);
-
+				String humanReadableVersion = Version.getHumanReadableVersion(versionAvailable);
 				NEW_VERSION_AVAILABLE = true;
 				RESULT = MessageFormat.format(MSG_OUT_OF_DATE, humanReadableVersion);
 				if (versionAvailable > Version.extractVersion(prefs.getStringValue(MODULE, LAST_VERSION_KEY, Main.getVersion()))) {
@@ -150,7 +146,6 @@ public class UpdateChecker implements Runnable {
 		} else if (mMode == 1) {
 			if (App.INSTANCE.isNotificationAllowed()) {
 				String result = getResult();
-
 				mMode = 2;
 				if (WindowUtils.showConfirmDialog(null, result, MSG_UPDATE_TITLE, JOptionPane.OK_CANCEL_OPTION, new String[] { MSG_UPDATE_TITLE, MSG_IGNORE_TITLE }, MSG_UPDATE_TITLE) == JOptionPane.OK_OPTION) {
 					goToUpdate();

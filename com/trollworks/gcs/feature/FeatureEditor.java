@@ -28,9 +28,9 @@ import com.trollworks.gcs.utility.io.Images;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.text.DoubleFormatter;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
+import com.trollworks.gcs.widgets.CommitEnforcer;
 import com.trollworks.gcs.widgets.EditorField;
 import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.WindowUtils;
 import com.trollworks.gcs.widgets.layout.FlexGrid;
 import com.trollworks.gcs.widgets.layout.FlexRow;
 import com.trollworks.gcs.widgets.outline.ListRow;
@@ -204,7 +204,7 @@ public abstract class FeatureEditor extends EditorPanel {
 		} else if (CHANGE_BASE_TYPE.equals(command)) {
 			LAST_ITEM_TYPE = BASE_TYPES[mBaseTypeCombo.getSelectedIndex()];
 			if (!mFeature.getClass().equals(LAST_ITEM_TYPE)) {
-				WindowUtils.forceFocusToAccept();
+				CommitEnforcer.forceFocusToAccept();
 				try {
 					parent.add(create(mRow, (Feature) LAST_ITEM_TYPE.newInstance()), UIUtilities.getIndexOf(parent, this));
 				} catch (Exception exception) {

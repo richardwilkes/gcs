@@ -23,6 +23,7 @@
 
 package com.trollworks.gcs.widgets;
 
+import com.trollworks.gcs.common.NewerVersionException;
 import com.trollworks.gcs.menu.file.RecentFilesMenu;
 import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
@@ -41,6 +42,7 @@ import java.util.HashSet;
 /** Provides standard file dialog handling. */
 public class StdFileDialog implements FilenameFilter {
 	private static String	MSG_UNABLE_TO_OPEN;
+	private static String	MSG_UNABLE_TO_OPEN_WITH_EXCEPTION;
 	private HashSet<String>	mFileNameMatchers	= new HashSet<String>();
 
 	static {
@@ -86,7 +88,7 @@ public class StdFileDialog implements FilenameFilter {
 				RecentFilesMenu.addRecent(file);
 				return file;
 			}
-			showCannotOpenMsg(comp, result);
+			showCannotOpenMsg(comp, result, null);
 		}
 		return null;
 	}
@@ -95,9 +97,14 @@ public class StdFileDialog implements FilenameFilter {
 	 * @param comp The {@link Component} to use for determining the parent {@link Frame} or
 	 *            {@link Dialog}.
 	 * @param name The name of the file that cannot be opened.
+	 * @param exception The {@link Exception}, if any, that caused the failure.
 	 */
-	public static void showCannotOpenMsg(Component comp, String name) {
-		WindowUtils.showError(comp, MessageFormat.format(MSG_UNABLE_TO_OPEN, name));
+	public static void showCannotOpenMsg(Component comp, String name, Exception exception) {
+		if (exception instanceof NewerVersionException) {
+			WindowUtils.showError(comp, MessageFormat.format(MSG_UNABLE_TO_OPEN_WITH_EXCEPTION, name, exception.getMessage()));
+		} else {
+			WindowUtils.showError(comp, MessageFormat.format(MSG_UNABLE_TO_OPEN, name));
+		}
 	}
 
 	/**

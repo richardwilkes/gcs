@@ -57,6 +57,12 @@ public enum BonusAttributeType {
 			return MSG_WILL;
 		}
 	},
+	/** The Fright Check attribute. */
+	FRIGHT_CHECK {
+		@Override public String toString() {
+			return MSG_FRIGHT_CHECK;
+		}
+	},
 	/** The Perception attribute. */
 	PERCEPTION {
 		@Override public String toString() {
@@ -145,6 +151,7 @@ public enum BonusAttributeType {
 	static String	MSG_IQ;
 	static String	MSG_HT;
 	static String	MSG_WILL;
+	static String	MSG_FRIGHT_CHECK;
 	static String	MSG_PERCEPTION;
 	static String	MSG_VISION;
 	static String	MSG_HEARING;

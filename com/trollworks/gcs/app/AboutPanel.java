@@ -77,7 +77,7 @@ public class AboutPanel extends JPanel {
 		gc.setColor(Color.white);
 		Font font = new Font(Fonts.getDefaultFontName(), Font.BOLD, 10);
 		gc.setFont(font);
-		String version = MessageFormat.format(MSG_VERSION, Version.getHumanReadableVersion(Version.extractVersion(Main.getVersion()), true));
+		String version = MessageFormat.format(MSG_VERSION, Version.getHumanReadableVersion(Version.extractVersion(Main.getVersion())));
 		FontRenderContext frc = ((Graphics2D) gc).getFontRenderContext();
 		Dimension size = TextDrawing.getPreferredSize(font, frc, version);
 		Rectangle bounds = new Rectangle(MARGIN, img.getHeight() + MARGIN, size.width, size.height);

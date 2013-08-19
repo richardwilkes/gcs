@@ -150,7 +150,7 @@ public abstract class NameLevelPrereq extends HasPrereq {
 	 * 
 	 * @param out The XML writer to use.
 	 */
-	protected void saveSelf(@SuppressWarnings("unused") XMLWriter out) {
+	protected void saveSelf(XMLWriter out) {
 		// Does nothing
 	}
 

@@ -23,6 +23,7 @@
 
 package com.trollworks.gcs.skill;
 
+import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.io.xml.XMLNodeType;
 import com.trollworks.gcs.utility.io.xml.XMLReader;
 import com.trollworks.gcs.utility.io.xml.XMLWriter;
@@ -45,6 +46,8 @@ public class SkillDefault {
 	/** The tag used for the modifier. */
 	public static final String	TAG_MODIFIER		= "modifier";		//$NON-NLS-1$
 	private static final String	EMPTY				= "";				//$NON-NLS-1$
+	private static String		MSG_PARRY;
+	private static String		MSG_BLOCK;
 	private SkillDefaultType	mType;
 	private String				mName;
 	private String				mSpecialization;
@@ -53,12 +56,16 @@ public class SkillDefault {
 	private int					mAdjLevel;
 	private int					mPoints;
 
+	static {
+		LocalizedMessages.initialize(SkillDefault.class);
+	}
+
 	/**
 	 * Creates a new skill default.
 	 * 
 	 * @param type The type of default.
 	 * @param name The name of the skill to default from. Pass in <code>null</code> if type is not
-	 *            {@link SkillDefaultType#Skill}.
+	 *            skill-based.
 	 * @param specialization The specialization of the skill. Pass in <code>null</code> if this
 	 *            does not default from a skill or the skill doesn't require a specialization.
 	 * @param modifier The modifier to use.
@@ -161,7 +168,7 @@ public class SkillDefault {
 	public void save(XMLWriter out) {
 		out.startSimpleTagEOL(TAG_ROOT);
 		out.simpleTag(TAG_TYPE, mType.name());
-		if (mType == SkillDefaultType.Skill) {
+		if (mType.isSkillBased()) {
 			out.simpleTagNotEmpty(TAG_NAME, mName);
 			out.simpleTagNotEmpty(TAG_SPECIALIZATION, mSpecialization);
 		}
@@ -181,14 +188,18 @@ public class SkillDefault {
 
 	/** @return The full name of the skill to default from. */
 	public String getFullName() {
-		if (mType == SkillDefaultType.Skill) {
+		if (mType.isSkillBased()) {
 			StringBuilder builder = new StringBuilder();
-
 			builder.append(mName);
 			if (mSpecialization.length() > 0) {
 				builder.append(" ("); //$NON-NLS-1$
 				builder.append(mSpecialization);
 				builder.append(')');
+			}
+			if (mType == SkillDefaultType.Parry) {
+				builder.append(MSG_PARRY);
+			} else if (mType == SkillDefaultType.Block) {
+				builder.append(MSG_BLOCK);
 			}
 			return builder.toString();
 		}
@@ -196,8 +207,9 @@ public class SkillDefault {
 	}
 
 	/**
-	 * @return The name of the skill to default from. Only valid when {@link #getType()} returns
-	 *         {@link SkillDefaultType#Skill}.
+	 * @return The name of the skill to default from. Only valid when {@link #getType()} returns a
+	 *         {@link SkillDefaultType} whose {@link SkillDefaultType#isSkillBased()} method returns
+	 *         <code>true</code>.
 	 */
 	public String getName() {
 		return mName;
@@ -210,7 +222,8 @@ public class SkillDefault {
 
 	/**
 	 * @return The specialization of the skill to default from. Only valid when {@link #getType()}
-	 *         returns {@link SkillDefaultType#Skill}.
+	 *         returns a {@link SkillDefaultType} whose {@link SkillDefaultType#isSkillBased()}
+	 *         method returns <code>true</code>.
 	 */
 	public String getSpecialization() {
 		return mSpecialization;
@@ -237,7 +250,6 @@ public class SkillDefault {
 		}
 		if (obj instanceof SkillDefault) {
 			SkillDefault other = (SkillDefault) obj;
-
 			return mType == other.mType && mModifier == other.mModifier && mName.equals(other.mName) && mSpecialization.equals(other.mSpecialization);
 		}
 		return false;

@@ -237,10 +237,8 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 	private void updateRow(ListRow row) {
 		if (row != null) {
 			int count = row.getChildCount();
-
 			for (int i = 0; i < count; i++) {
 				ListRow child = (ListRow) row.getChild(i);
-
 				updateRow(child);
 			}
 			row.update();
@@ -256,7 +254,6 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 	 */
 	protected void addRowsToBeProcessed(ArrayList<ListRow> list, ListRow row) {
 		int count = row.getChildCount();
-
 		list.add(row);
 		for (int i = 0; i < count; i++) {
 			addRowsToBeProcessed(list, (ListRow) row.getChild(i));

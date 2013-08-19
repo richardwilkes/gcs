@@ -30,6 +30,7 @@ import java.awt.Rectangle;
 /** A {@link Component} within a {@link FlexLayout}. */
 public class FlexComponent extends FlexCell {
 	private Component	mComponent;
+	private boolean		mOnlyPreferredSize;
 
 	/**
 	 * Creates a new {@link FlexComponent}.
@@ -38,6 +39,17 @@ public class FlexComponent extends FlexCell {
 	 */
 	public FlexComponent(Component component) {
 		mComponent = component;
+	}
+
+	/**
+	 * Creates a new {@link FlexComponent}.
+	 * 
+	 * @param component The {@link Component} to wrap.
+	 * @param onlyPreferredSize Whether only the preferred size is permitted.
+	 */
+	public FlexComponent(Component component, boolean onlyPreferredSize) {
+		mComponent = component;
+		mOnlyPreferredSize = onlyPreferredSize;
 	}
 
 	/**
@@ -59,25 +71,35 @@ public class FlexComponent extends FlexCell {
 		}
 	}
 
+	/** @param onlyPreferredSize Whether only the preferred size is permitted. */
+	public void setOnlyPreferredSize(boolean onlyPreferredSize) {
+		mOnlyPreferredSize = onlyPreferredSize;
+	}
+
 	@Override protected Dimension getSizeSelf(LayoutSize type) {
+		if (mOnlyPreferredSize) {
+			type = LayoutSize.PREFERRED;
+		}
 		return type.get(mComponent);
 	}
 
 	@Override protected void layoutSelf(Rectangle bounds) {
 		Rectangle compBounds = new Rectangle(bounds);
-		Dimension size = LayoutSize.MINIMUM.get(mComponent);
-		if (compBounds.width < size.width) {
-			compBounds.width = size.width;
-		}
-		if (compBounds.height < size.height) {
-			compBounds.height = size.height;
-		}
-		size = LayoutSize.MAXIMUM.get(mComponent);
-		if (compBounds.width > size.width) {
-			compBounds.width = size.width;
-		}
-		if (compBounds.height > size.height) {
-			compBounds.height = size.height;
+		if (!mOnlyPreferredSize) {
+			Dimension size = LayoutSize.MINIMUM.get(mComponent);
+			if (compBounds.width < size.width) {
+				compBounds.width = size.width;
+			}
+			if (compBounds.height < size.height) {
+				compBounds.height = size.height;
+			}
+			size = LayoutSize.MAXIMUM.get(mComponent);
+			if (compBounds.width > size.width) {
+				compBounds.width = size.width;
+			}
+			if (compBounds.height > size.height) {
+				compBounds.height = size.height;
+			}
 		}
 		mComponent.setBounds(Alignment.position(bounds, compBounds, getHorizontalAlignment(), getVerticalAlignment()));
 	}

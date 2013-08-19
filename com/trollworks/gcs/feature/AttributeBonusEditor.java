@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.widgets.WindowUtils;
+import com.trollworks.gcs.widgets.CommitEnforcer;
 import com.trollworks.gcs.widgets.layout.FlexGrid;
 import com.trollworks.gcs.widgets.layout.FlexRow;
 import com.trollworks.gcs.widgets.layout.FlexSpacer;
@@ -75,7 +75,7 @@ public class AttributeBonusEditor extends FeatureEditor {
 		String command = event.getActionCommand();
 		if (CHANGE_ATTRIBUTE.equals(command)) {
 			((AttributeBonus) getFeature()).setAttribute((BonusAttributeType) ((JComboBox) event.getSource()).getSelectedItem());
-			WindowUtils.forceFocusToAccept();
+			CommitEnforcer.forceFocusToAccept();
 			rebuild();
 		} else if (CHANGE_LIMITATION.equals(command)) {
 			((AttributeBonus) getFeature()).setLimitation((AttributeBonusLimitation) ((JComboBox) event.getSource()).getSelectedItem());

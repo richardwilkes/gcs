@@ -24,6 +24,7 @@
 package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.utility.collections.EnumExtractor;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.io.xml.XMLReader;
@@ -41,6 +42,7 @@ import java.util.HashSet;
 
 /** Model for trait modifiers */
 public class Modifier extends ListRow implements Comparable<Modifier> {
+	private static final int		CURRENT_VERSION		= 1;
 	private static String			MSG_DEFAULT_NAME;
 	private static String			MSG_MODIFIER_TYPE;
 	private static String			MSG_READ_ONLY;
@@ -80,7 +82,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 	private int						mCost;
 	private double					mCostMultiplier;
 	private int						mLevels;
-	private Affects				mAffects;
+	private Affects					mAffects;
 	private boolean					mEnabled;
 	private boolean					mReadOnly;
 
@@ -111,11 +113,12 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 	 * 
 	 * @param file The {@link DataFile} to use.
 	 * @param reader The {@link XMLReader} to use.
+	 * @param state The {@link LoadState} to use.
 	 * @throws IOException
 	 */
-	public Modifier(DataFile file, XMLReader reader) throws IOException {
+	public Modifier(DataFile file, XMLReader reader, LoadState state) throws IOException {
 		super(file, false);
-		load(reader, false);
+		load(reader, state);
 	}
 
 	/**
@@ -276,7 +279,10 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 	}
 
 	@Override public boolean contains(String text, boolean lowerCaseOnly) {
-		return getName().toLowerCase().indexOf(text) != -1;
+		if (getName().toLowerCase().indexOf(text) != -1) {
+			return true;
+		}
+		return super.contains(text, lowerCaseOnly);
 	}
 
 	@Override public RowEditor<Modifier> createEditor() {
@@ -303,14 +309,17 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 		return TAG_MODIFIER;
 	}
 
-	@Override protected void loadAttributes(XMLReader reader, boolean forUndo) {
-		super.loadAttributes(reader, forUndo);
+	@Override public int getXMLTagVersion() {
+		return CURRENT_VERSION;
+	}
+
+	@Override protected void loadAttributes(XMLReader reader, LoadState state) {
+		super.loadAttributes(reader, state);
 		mEnabled = !reader.hasAttribute(ATTRIBUTE_ENABLED) || reader.isAttributeSet(ATTRIBUTE_ENABLED);
 	}
 
-	@Override protected void loadSubElement(XMLReader reader, boolean forUndo) throws IOException {
+	@Override protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
 		String name = reader.getName();
-
 		if (TAG_NAME.equals(name)) {
 			mName = reader.readText().replace("\n", " "); //$NON-NLS-1$ //$NON-NLS-2$
 		} else if (TAG_REFERENCE.equals(name)) {
@@ -327,12 +336,12 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 		} else if (TAG_AFFECTS.equals(name)) {
 			mAffects = (Affects) EnumExtractor.extract(reader.readText(), Affects.values(), Affects.TOTAL);
 		} else {
-			super.loadSubElement(reader, forUndo);
+			super.loadSubElement(reader, state);
 		}
 	}
 
-	@Override protected void prepareForLoad(boolean forUndo) {
-		super.prepareForLoad(forUndo);
+	@Override protected void prepareForLoad(LoadState state) {
+		super.prepareForLoad(state);
 		mName = MSG_DEFAULT_NAME;
 		mCostType = CostType.PERCENTAGE;
 		mCost = 0;

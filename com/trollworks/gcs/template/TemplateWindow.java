@@ -32,6 +32,7 @@ import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.io.Path;
 import com.trollworks.gcs.widgets.AppWindow;
+import com.trollworks.gcs.widgets.ModifiedMarker;
 import com.trollworks.gcs.widgets.WindowUtils;
 import com.trollworks.gcs.widgets.layout.FlexRow;
 import com.trollworks.gcs.widgets.outline.ListOutline;
@@ -76,14 +77,6 @@ public class TemplateWindow extends AppWindow implements Saveable, SearchTarget 
 		ArrayList<TemplateWindow> list = AppWindow.getActiveWindows(TemplateWindow.class);
 
 		return list.isEmpty() ? null : list.get(0);
-	}
-
-	/**
-	 * @param template The template to get the consumer group for.
-	 * @return The consumer group for the specified template.
-	 */
-	static String getConsumerGroup(Template template) {
-		return "CSTemplateWindow:" + template.getUniqueID(); //$NON-NLS-1$
 	}
 
 	/** @return The {@link TemplateSheet}. */
@@ -172,6 +165,7 @@ public class TemplateWindow extends AppWindow implements Saveable, SearchTarget 
 			title = Path.getLeafName(file.getName(), false);
 		}
 		setTitle(title);
+		getRootPane().putClientProperty("Window.documentFile", file); //$NON-NLS-1$
 	}
 
 	@Override public void dispose() {
@@ -185,7 +179,7 @@ public class TemplateWindow extends AppWindow implements Saveable, SearchTarget 
 	}
 
 	@Override public String getWindowPrefsPrefix() {
-		return getConsumerGroup(mTemplate) + "."; //$NON-NLS-1$
+		return "TemplateWindow:" + mTemplate.getUniqueID() + "."; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/**
@@ -295,6 +289,10 @@ public class TemplateWindow extends AppWindow implements Saveable, SearchTarget 
 	}
 
 	@Override protected void createToolBarContents(JToolBar toolbar, FlexRow row) {
+		ModifiedMarker marker = new ModifiedMarker();
+		mTemplate.addDataModifiedListener(marker);
+		toolbar.add(marker);
+		row.add(marker);
 		mSearch = new Search(this);
 		toolbar.add(mSearch);
 		row.add(mSearch);
@@ -305,7 +303,7 @@ public class TemplateWindow extends AppWindow implements Saveable, SearchTarget 
 	}
 
 	public void jumpToSearchField() {
-		mSearch.requestFocus();
+		mSearch.requestFocusInWindow();
 	}
 
 	public Object[] search(String text) {

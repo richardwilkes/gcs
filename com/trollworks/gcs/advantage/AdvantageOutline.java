@@ -26,6 +26,7 @@ package com.trollworks.gcs.advantage;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.utility.collections.FilteredIterator;
@@ -43,7 +44,7 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-/** An outline specifically for (Dis)Advantages. */
+/** An outline specifically for Advantages. */
 public class AdvantageOutline extends ListOutline implements Incrementable {
 	private static String	MSG_INCREMENT;
 	private static String	MSG_DECREMENT;
@@ -59,6 +60,9 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
 		if (dataFile instanceof Template) {
 			return ((Template) dataFile).getAdvantagesModel();
 		}
+		if (dataFile instanceof LibraryFile) {
+			return ((LibraryFile) dataFile).getAdvantageList().getModel();
+		}
 		return ((ListFile) dataFile).getModel();
 	}
 
@@ -68,7 +72,17 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
 	 * @param dataFile The owning data file.
 	 */
 	public AdvantageOutline(DataFile dataFile) {
-		super(dataFile, extractModel(dataFile), Advantage.ID_LIST_CHANGED);
+		this(dataFile, extractModel(dataFile));
+	}
+
+	/**
+	 * Create a new Advantages, Disadvantages & Quirks outline.
+	 * 
+	 * @param dataFile The owning data file.
+	 * @param model The {@link OutlineModel} to use.
+	 */
+	public AdvantageOutline(DataFile dataFile, OutlineModel model) {
+		super(dataFile, model, Advantage.ID_LIST_CHANGED);
 		AdvantageColumn.addColumns(this, dataFile);
 	}
 

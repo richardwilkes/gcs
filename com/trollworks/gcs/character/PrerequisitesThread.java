@@ -31,7 +31,6 @@ import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.widgets.outline.ListRow;
 
@@ -43,18 +42,13 @@ import java.util.Iterator;
  * A thread for doing background updates of the prerequisite status of a character sheet.
  */
 public class PrerequisitesThread extends Thread implements NotifierTarget {
-	private static String										MSG_BULLET_PREFIX;
 	private static HashMap<GURPSCharacter, PrerequisitesThread>	MAP		= new HashMap<GURPSCharacter, PrerequisitesThread>();
 	private static int											COUNTER	= 0;
-	private CharacterSheet												mSheet;
-	private GURPSCharacter											mCharacter;
+	private CharacterSheet										mSheet;
+	private GURPSCharacter										mCharacter;
 	private boolean												mNeedUpdate;
 	private boolean												mNeedRepaint;
 	private boolean												mIsProcessing;
-
-	static {
-		LocalizedMessages.initialize(PrerequisitesThread.class);
-	}
 
 	/**
 	 * @param character The character being processed.
@@ -102,7 +96,7 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 		mSheet = sheet;
 		mCharacter = sheet.getCharacter();
 		mNeedUpdate = true;
-		mCharacter.addTarget(this, GURPSCharacter.ID_STRENGTH, GURPSCharacter.ID_DEXTERITY, GURPSCharacter.ID_INTELLIGENCE, GURPSCharacter.ID_HEALTH, Spell.ID_NAME, Spell.ID_COLLEGE, Spell.ID_POINTS, Spell.ID_LIST_CHANGED, Skill.ID_NAME, Skill.ID_SPECIALIZATION, Skill.ID_LEVEL, Skill.ID_RELATIVE_LEVEL, Skill.ID_ENCUMBRANCE_PENALTY, Skill.ID_POINTS, Skill.ID_TECH_LEVEL, Skill.ID_LIST_CHANGED, Advantage.ID_NAME, Advantage.ID_LEVELS, Advantage.ID_LIST_CHANGED, Equipment.ID_EXTENDED_WEIGHT, Equipment.ID_EQUIPPED, Equipment.ID_QUANTITY, Equipment.ID_LIST_CHANGED);
+		mCharacter.addTarget(this, GURPSCharacter.ID_STRENGTH, GURPSCharacter.ID_DEXTERITY, GURPSCharacter.ID_INTELLIGENCE, GURPSCharacter.ID_HEALTH, Spell.ID_NAME, Spell.ID_COLLEGE, Spell.ID_POINTS, Spell.ID_LIST_CHANGED, Skill.ID_NAME, Skill.ID_SPECIALIZATION, Skill.ID_LEVEL, Skill.ID_RELATIVE_LEVEL, Skill.ID_ENCUMBRANCE_PENALTY, Skill.ID_POINTS, Skill.ID_TECH_LEVEL, Skill.ID_LIST_CHANGED, Advantage.ID_NAME, Advantage.ID_LEVELS, Advantage.ID_LIST_CHANGED, Equipment.ID_EXTENDED_WEIGHT, Equipment.ID_STATE, Equipment.ID_QUANTITY, Equipment.ID_LIST_CHANGED);
 		MAP.put(mCharacter, this);
 	}
 
@@ -124,7 +118,7 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 						processRows(mCharacter.getAdvantagesIterator());
 						processRows(mCharacter.getSkillsIterator());
 						processRows(mCharacter.getSpellsIterator());
-						processRows(mCharacter.getCarriedEquipmentIterator());
+						processRows(mCharacter.getEquipmentIterator());
 						if (mNeedRepaint) {
 							mSheet.repaint();
 						}
@@ -160,7 +154,7 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 		buildFeatureMap(map, mCharacter.getAdvantagesIterator());
 		buildFeatureMap(map, mCharacter.getSkillsIterator());
 		buildFeatureMap(map, mCharacter.getSpellsIterator());
-		buildFeatureMap(map, mCharacter.getCarriedEquipmentIterator());
+		buildFeatureMap(map, mCharacter.getEquipmentIterator());
 		mCharacter.setFeatureMap(map);
 	}
 
@@ -236,9 +230,9 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 
 			builder.setLength(0);
 
-			satisfied = row.getPrereqs().satisfied(mCharacter, row, builder, MSG_BULLET_PREFIX);
+			satisfied = row.getPrereqs().satisfied(mCharacter, row, builder, "<li>"); //$NON-NLS-1$
 			if (satisfied && row instanceof Technique) {
-				satisfied = ((Technique) row).satisfied(builder, MSG_BULLET_PREFIX);
+				satisfied = ((Technique) row).satisfied(builder, "<li>"); //$NON-NLS-1$
 			}
 
 			if (row.isSatisfied() != satisfied) {
@@ -246,6 +240,8 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 				mNeedRepaint = true;
 			}
 			if (!satisfied) {
+				builder.insert(0, "<html><head>Reason</head><body><ul>"); //$NON-NLS-1$
+				builder.append("</ul></body></html>"); //$NON-NLS-1$
 				row.setReasonForUnsatisfied(builder.toString());
 			}
 			checkIfUpdated();

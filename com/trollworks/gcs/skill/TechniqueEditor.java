@@ -32,10 +32,10 @@ import com.trollworks.gcs.utility.text.TextUtility;
 import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
+import com.trollworks.gcs.widgets.CommitEnforcer;
 import com.trollworks.gcs.widgets.LinkedLabel;
 import com.trollworks.gcs.widgets.NumberFilter;
 import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.WindowUtils;
 import com.trollworks.gcs.widgets.layout.ColumnLayout;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 
@@ -61,47 +61,50 @@ import javax.swing.text.Document;
 
 /** The detailed editor for {@link Technique}s. */
 public class TechniqueEditor extends RowEditor<Technique> implements ActionListener, DocumentListener {
-	private static String			MSG_NAME;
-	private static String			MSG_NOTES;
-	private static String			MSG_EDITOR_REFERENCE;
-	private static String			MSG_EDITOR_POINTS;
-	private static String			MSG_EDITOR_LEVEL;
-	private static String			MSG_EDITOR_LEVEL_TOOLTIP;
-	private static String			MSG_EDITOR_DIFFICULTY;
-	private static String			MSG_TECHNIQUE_NAME_TOOLTIP;
-	private static String			MSG_TECHNIQUE_NAME_CANNOT_BE_EMPTY;
-	private static String			MSG_TECHNIQUE_NOTES_TOOLTIP;
-	private static String			MSG_TECHNIQUE_DIFFICULTY_TOOLTIP;
-	private static String			MSG_TECHNIQUE_DIFFICULTY_POPUP_TOOLTIP;
-	private static String			MSG_TECHNIQUE_POINTS_TOOLTIP;
-	private static String			MSG_TECHNIQUE_REFERENCE_TOOLTIP;
-	private static String			MSG_DEFAULTS_TO;
-	private static String			MSG_DEFAULTS_TO_TOOLTIP;
-	private static String			MSG_DEFAULT_NAME_CANNOT_BE_EMPTY;
-	private static String			MSG_DEFAULT_SPECIALIZATION_TOOLTIP;
-	private static String			MSG_DEFAULT_MODIFIER_TOOLTIP;
-	private static String			MSG_LIMIT;
-	private static String			MSG_LIMIT_TOOLTIP;
-	private static String			MSG_LIMIT_AMOUNT_TOOLTIP;
-	private JTextField				mNameField;
-	private JTextField				mNotesField;
-	private JTextField				mReferenceField;
-	private JComboBox				mDifficultyCombo;
-	private JTextField				mPointsField;
-	private JTextField				mLevelField;
-	private JPanel					mDefaultPanel;
-	private LinkedLabel				mDefaultPanelLabel;
-	private JComboBox				mDefaultTypeCombo;
-	private JTextField				mDefaultNameField;
-	private JTextField				mDefaultSpecializationField;
-	private JTextField				mDefaultModifierField;
-	private JCheckBox				mLimitCheckbox;
-	private JTextField				mLimitField;
-	private JTabbedPane				mTabPanel;
-	private PrereqsPanel				mPrereqs;
-	private FeaturesPanel				mFeatures;
-	private SkillDefaultType		mLastDefaultType;
-	private MeleeWeaponEditor		mMeleeWeapons;
+	private static String		MSG_NAME;
+	private static String		MSG_NOTES;
+	private static String		MSG_EDITOR_REFERENCE;
+	private static String		MSG_EDITOR_POINTS;
+	private static String		MSG_EDITOR_LEVEL;
+	private static String		MSG_EDITOR_LEVEL_TOOLTIP;
+	private static String		MSG_EDITOR_DIFFICULTY;
+	private static String		MSG_TECHNIQUE_NAME_TOOLTIP;
+	private static String		MSG_TECHNIQUE_NAME_CANNOT_BE_EMPTY;
+	private static String		MSG_TECHNIQUE_NOTES_TOOLTIP;
+	private static String		MSG_TECHNIQUE_DIFFICULTY_TOOLTIP;
+	private static String		MSG_TECHNIQUE_DIFFICULTY_POPUP_TOOLTIP;
+	private static String		MSG_TECHNIQUE_POINTS_TOOLTIP;
+	private static String		MSG_TECHNIQUE_REFERENCE_TOOLTIP;
+	private static String		MSG_DEFAULTS_TO;
+	private static String		MSG_DEFAULTS_TO_TOOLTIP;
+	private static String		MSG_DEFAULT_NAME_CANNOT_BE_EMPTY;
+	private static String		MSG_DEFAULT_SPECIALIZATION_TOOLTIP;
+	private static String		MSG_DEFAULT_MODIFIER_TOOLTIP;
+	private static String		MSG_LIMIT;
+	private static String		MSG_LIMIT_TOOLTIP;
+	private static String		MSG_LIMIT_AMOUNT_TOOLTIP;
+	private static String		MSG_CATEGORIES;
+	private static String		MSG_CATEGORIES_TOOLTIP;
+	private JTextField			mNameField;
+	private JTextField			mNotesField;
+	private JTextField			mCategoriesField;
+	private JTextField			mReferenceField;
+	private JComboBox			mDifficultyCombo;
+	private JTextField			mPointsField;
+	private JTextField			mLevelField;
+	private JPanel				mDefaultPanel;
+	private LinkedLabel			mDefaultPanelLabel;
+	private JComboBox			mDefaultTypeCombo;
+	private JTextField			mDefaultNameField;
+	private JTextField			mDefaultSpecializationField;
+	private JTextField			mDefaultModifierField;
+	private JCheckBox			mLimitCheckbox;
+	private JTextField			mLimitField;
+	private JTabbedPane			mTabPanel;
+	private PrereqsPanel		mPrereqs;
+	private FeaturesPanel		mFeatures;
+	private SkillDefaultType	mLastDefaultType;
+	private MeleeWeaponEditor	mMeleeWeapons;
 	private RangedWeaponEditor	mRangedWeapons;
 
 	static {
@@ -123,6 +126,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 
 		mNameField = createCorrectableField(fields, fields, MSG_NAME, technique.getName(), MSG_TECHNIQUE_NAME_TOOLTIP);
 		mNotesField = createField(fields, fields, MSG_NOTES, technique.getNotes(), MSG_TECHNIQUE_NOTES_TOOLTIP, 0);
+		mCategoriesField = createField(fields, fields, MSG_CATEGORIES, technique.getCategoriesAsString(), MSG_CATEGORIES_TOOLTIP, 0);
 		createDefaults(fields);
 		createLimits(fields);
 		wrapper = createDifficultyPopups(fields);
@@ -191,8 +195,8 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 		boolean skillBased;
 
 		mLastDefaultType = getDefaultType();
-		skillBased = mLastDefaultType == SkillDefaultType.Skill;
-		WindowUtils.forceFocusToAccept();
+		skillBased = mLastDefaultType.isSkillBased();
+		CommitEnforcer.forceFocusToAccept();
 		while (mDefaultPanel.getComponentCount() > 1) {
 			mDefaultPanel.remove(1);
 		}
@@ -232,8 +236,6 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 		JScrollPane scrollPanel = new JScrollPane(editor);
 
 		scrollPanel.setMinimumSize(new Dimension(500, 120));
-// scrollPanel.getContentBorderView().setBorder(new TKLineBorder(TKLineBorder.LEFT_EDGE |
-// TKLineBorder.TOP_EDGE));
 		scrollPanel.setName(editor.toString());
 		if (!mIsEditable) {
 			UIUtilities.disableControls(editor);
@@ -323,8 +325,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 
 	private SkillDefault createNewDefault() {
 		SkillDefaultType type = getDefaultType();
-
-		if (type == SkillDefaultType.Skill) {
+		if (type.isSkillBased()) {
 			return new SkillDefault(type, mDefaultNameField.getText(), mDefaultSpecializationField.getText(), getDefaultModifier());
 		}
 		return new SkillDefault(type, null, null, getDefaultModifier());
@@ -352,6 +353,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 		modified |= mRow.setDefault(createNewDefault());
 		modified |= mRow.setReference(mReferenceField.getText());
 		modified |= mRow.setNotes(mNotesField.getText());
+		modified |= mRow.setCategories(mCategoriesField.getText());
 		if (mPointsField != null) {
 			modified |= mRow.setPoints(getPoints());
 		}

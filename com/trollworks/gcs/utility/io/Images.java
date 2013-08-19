@@ -654,11 +654,6 @@ public class Images {
 		return get("DownTriangleRoll"); //$NON-NLS-1$
 	}
 
-	/** @return The quick search icon. */
-	public static final BufferedImage getQuickSearchIcon() {
-		return get("QuickSearch"); //$NON-NLS-1$
-	}
-
 	/** @return The preferences icon. */
 	public static final BufferedImage getPreferencesIcon() {
 		return get("Preferences"); //$NON-NLS-1$
@@ -754,6 +749,16 @@ public class Images {
 		return get("Splash"); //$NON-NLS-1$
 	}
 
+	/** @return The modified marker. */
+	public static final BufferedImage getModifiedMarker() {
+		return get("ModifiedMarker"); //$NON-NLS-1$
+	}
+
+	/** @return The not modified marker. */
+	public static final BufferedImage getNotModifiedMarker() {
+		return get("NotModifiedMarker"); //$NON-NLS-1$
+	}
+
 	/**
 	 * @param large The large (32x32) or the small (16x16) version.
 	 * @return The character sheet icon.
@@ -804,5 +809,13 @@ public class Images {
 	 */
 	public static final BufferedImage getEquipmentIcon(boolean large, boolean single) {
 		return get("Equipment" + (large ? LARGE : SMALL) + (single ? SINGLE : FILE)); //$NON-NLS-1$
+	}
+
+	/**
+	 * @param large The large (32x32) or the small (16x16) version.
+	 * @return The library icon.
+	 */
+	public static final BufferedImage getLibraryIcon(boolean large) {
+		return get("Library" + (large ? LARGE : SMALL)); //$NON-NLS-1$
 	}
 }

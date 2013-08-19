@@ -85,12 +85,12 @@ public abstract class Prereq {
 	public abstract Prereq clone(PrereqList parent);
 
 	/** @param set The nameable keys. */
-	public void fillWithNameableKeys(@SuppressWarnings("unused") HashSet<String> set) {
+	public void fillWithNameableKeys(HashSet<String> set) {
 		// Do nothing by default
 	}
 
 	/** @param map The map of nameable keys to names to apply. */
-	public void applyNameableKeys(@SuppressWarnings("unused") HashMap<String, String> map) {
+	public void applyNameableKeys(HashMap<String, String> map) {
 		// Do nothing by default
 	}
 }

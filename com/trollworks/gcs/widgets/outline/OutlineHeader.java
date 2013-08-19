@@ -75,6 +75,7 @@ public class OutlineHeader extends JPanel implements DragGestureListener, DropTa
 		setOpaque(true);
 		addMouseListener(this);
 		addMouseMotionListener(this);
+		setAutoscrolls(true);
 
 		if (!GraphicsUtilities.inHeadlessPrintMode()) {
 			DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
@@ -130,7 +131,7 @@ public class OutlineHeader extends JPanel implements DragGestureListener, DropTa
 	}
 
 	public void mouseDragged(MouseEvent event) {
-		// Not used
+		mOwner.mouseDragged(event);
 	}
 
 	public void mouseMoved(MouseEvent event) {
@@ -265,7 +266,6 @@ public class OutlineHeader extends JPanel implements DragGestureListener, DropTa
 			mOwner.setSourceDragColumn(mSortColumn);
 			if (DragSource.isDragImageSupported()) {
 				Point pt = dge.getDragOrigin();
-
 				dge.startDrag(null, mOwner.getColumnDragImage(mSortColumn), new Point(-(pt.x - mOwner.getColumnStart(mSortColumn)), -pt.y), mSortColumn, this);
 			} else {
 				dge.startDrag(null, mSortColumn, this);

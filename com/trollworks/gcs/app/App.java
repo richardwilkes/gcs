@@ -27,10 +27,11 @@ import com.apple.eawt.Application;
 import com.apple.eawt.ApplicationEvent;
 import com.apple.eawt.ApplicationListener;
 
-import com.trollworks.gcs.advantage.AdvantageListWindow;
+import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.common.ListCollectionThread;
-import com.trollworks.gcs.equipment.EquipmentListWindow;
+import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.data.OpenDataFileCommand;
 import com.trollworks.gcs.menu.edit.PreferencesCommand;
@@ -40,8 +41,8 @@ import com.trollworks.gcs.menu.file.QuitCommand;
 import com.trollworks.gcs.menu.help.AboutCommand;
 import com.trollworks.gcs.preferences.GeneralPreferences;
 import com.trollworks.gcs.preferences.PreferencesWindow;
-import com.trollworks.gcs.skill.SkillListWindow;
-import com.trollworks.gcs.spell.SpellListWindow;
+import com.trollworks.gcs.skill.Skill;
+import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.gcs.utility.DelayedTask;
 import com.trollworks.gcs.utility.Platform;
@@ -79,6 +80,7 @@ import javax.swing.border.LineBorder;
 /** The main application user interface. */
 public class App implements ApplicationListener, Runnable, KeyEventDispatcher {
 	private static String							MSG_SHEET_DESCRIPTION;
+	private static String							MSG_LIBRARY_DESCRIPTION;
 	private static String							MSG_TEMPLATE_DESCRIPTION;
 	private static String							MSG_TRAITS_DESCRIPTION;
 	private static String							MSG_EQUIPMENT_DESCRIPTION;
@@ -175,11 +177,12 @@ public class App implements ApplicationListener, Runnable, KeyEventDispatcher {
 	private void startAsynchronousTasks() {
 		HashMap<String, String> map = new HashMap<String, String>();
 		map.put(SheetWindow.SHEET_EXTENSION.substring(1), MSG_SHEET_DESCRIPTION);
+		map.put(LibraryFile.EXTENSION.substring(1), MSG_LIBRARY_DESCRIPTION);
 		map.put(TemplateWindow.EXTENSION.substring(1), MSG_TEMPLATE_DESCRIPTION);
-		map.put(AdvantageListWindow.EXTENSION.substring(1), MSG_TRAITS_DESCRIPTION);
-		map.put(EquipmentListWindow.EXTENSION.substring(1), MSG_EQUIPMENT_DESCRIPTION);
-		map.put(SkillListWindow.EXTENSION.substring(1), MSG_SKILLS_DESCRIPTION);
-		map.put(SpellListWindow.EXTENSION.substring(1), MSG_SPELLS_DESCRIPTION);
+		map.put(Advantage.OLD_ADVANTAGE_EXTENSION.substring(1), MSG_TRAITS_DESCRIPTION);
+		map.put(Equipment.OLD_EQUIPMENT_EXTENSION.substring(1), MSG_EQUIPMENT_DESCRIPTION);
+		map.put(Skill.OLD_SKILL_EXTENSION.substring(1), MSG_SKILLS_DESCRIPTION);
+		map.put(Spell.OLD_SPELL_EXTENSION.substring(1), MSG_SPELLS_DESCRIPTION);
 		File appDir = new File(System.getProperty("app.home", ".")); //$NON-NLS-1$ //$NON-NLS-2$
 		WindowsRegistry.register("GCS", map, new File(appDir, "GURPS Character Sheet.exe"), new File(appDir, "icons")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
@@ -190,11 +193,12 @@ public class App implements ApplicationListener, Runnable, KeyEventDispatcher {
 
 	public synchronized void run() {
 		setIconForFileExtension(SheetWindow.SHEET_EXTENSION, Images.getCharacterSheetIcon(false));
+		setIconForFileExtension(LibraryFile.EXTENSION, Images.getLibraryIcon(false));
 		setIconForFileExtension(TemplateWindow.EXTENSION, Images.getTemplateIcon(false));
-		setIconForFileExtension(AdvantageListWindow.EXTENSION, Images.getAdvantageIcon(false, false));
-		setIconForFileExtension(EquipmentListWindow.EXTENSION, Images.getEquipmentIcon(false, false));
-		setIconForFileExtension(SkillListWindow.EXTENSION, Images.getSkillIcon(false, false));
-		setIconForFileExtension(SpellListWindow.EXTENSION, Images.getSpellIcon(false, false));
+		setIconForFileExtension(Advantage.OLD_ADVANTAGE_EXTENSION, Images.getAdvantageIcon(false, false));
+		setIconForFileExtension(Equipment.OLD_EQUIPMENT_EXTENSION, Images.getEquipmentIcon(false, false));
+		setIconForFileExtension(Skill.OLD_SKILL_EXTENSION, Images.getSkillIcon(false, false));
+		setIconForFileExtension(Spell.OLD_SPELL_EXTENSION, Images.getSpellIcon(false, false));
 		mOpenersInstalled = true;
 		if (mFilesToOpen != null) {
 			for (File file : mFilesToOpen) {

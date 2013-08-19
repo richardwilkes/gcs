@@ -205,13 +205,16 @@ public class PrereqList extends Prereq {
 		int total = mPrereqs.size();
 		boolean requiresAll = requiresAll();
 		StringBuilder localBuilder = builder != null ? new StringBuilder() : null;
-		String localPrefix = "  " + prefix; //$NON-NLS-1$
 		boolean satisfied;
 
 		for (Prereq prereq : mPrereqs) {
-			if (prereq.satisfied(character, exclude, localBuilder, localPrefix)) {
+			if (prereq.satisfied(character, exclude, localBuilder, prefix)) {
 				satisfiedCount++;
 			}
+		}
+		if (localBuilder != null && localBuilder.length() > 0) {
+			localBuilder.insert(0, "<ul>"); //$NON-NLS-1$
+			localBuilder.append("</ul>"); //$NON-NLS-1$
 		}
 
 		satisfied = satisfiedCount == total || !requiresAll && satisfiedCount > 0;

@@ -29,7 +29,7 @@ import com.trollworks.gcs.widgets.layout.FlexRow;
 import com.trollworks.gcs.widgets.layout.FlexSpacer;
 import com.trollworks.gcs.widgets.outline.ListRow;
 
-/** A (dis)advantage prerequisite editor panel. */
+/** An advantage prerequisite editor panel. */
 public class AdvantagePrereqEditor extends PrereqEditor {
 	private static String	MSG_WHOSE_NAME;
 	private static String	MSG_WHOSE_LEVEL;
@@ -40,7 +40,7 @@ public class AdvantagePrereqEditor extends PrereqEditor {
 	}
 
 	/**
-	 * Creates a new (dis)advantage prerequisite editor panel.
+	 * Creates a new advantage prerequisite editor panel.
 	 * 
 	 * @param row The owning row.
 	 * @param prereq The prerequisite to edit.

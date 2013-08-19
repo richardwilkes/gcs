@@ -23,17 +23,13 @@
 
 package com.trollworks.gcs.widgets.search;
 
-import com.trollworks.gcs.utility.io.Images;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.widgets.IconButton;
 import com.trollworks.gcs.widgets.UIUtilities;
 import com.trollworks.gcs.widgets.layout.FlexRow;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -48,17 +44,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** A standard search control. */
-public class Search extends JPanel implements ActionListener, DocumentListener, KeyListener, FocusListener {
-	private static String		MSG_HIT_TOOLTIP;
-	private static String		MSG_SEARCH_BUTTON_TOOLTIP;
-	private static String		MSG_SEARCH_FIELD_TOOLTIP;
-	/** The commands the tool panel provides. */
-	public static final String	CMD_SEARCH	= "search";	//$NON-NLS-1$
-	private SearchTarget		mTarget;
-	private JLabel				mHits;
-	private JTextField			mFilterField;
-	private SearchDropDown		mFloater;
-	private String				mFilter;
+public class Search extends JPanel implements DocumentListener, KeyListener, FocusListener {
+	private static String	MSG_HIT_TOOLTIP;
+	private static String	MSG_SEARCH_FIELD_TOOLTIP;
+	private SearchTarget	mTarget;
+	private JLabel			mHits;
+	private JTextField		mFilterField;
+	private SearchDropDown	mFloater;
+	private String			mFilter;
 
 	static {
 		LocalizedMessages.initialize(Search.class);
@@ -72,17 +65,12 @@ public class Search extends JPanel implements ActionListener, DocumentListener, 
 	public Search(SearchTarget target) {
 		mTarget = target;
 
-		IconButton button = new IconButton(Images.getQuickSearchIcon(), MSG_SEARCH_BUTTON_TOOLTIP);
-		button.setFocusable(false);
-		button.setActionCommand(CMD_SEARCH);
-		button.addActionListener(this);
-		add(button);
-
 		mFilterField = new JTextField(20);
 		mFilterField.getDocument().addDocumentListener(this);
 		mFilterField.addKeyListener(this);
 		mFilterField.addFocusListener(this);
 		mFilterField.setToolTipText(MSG_SEARCH_FIELD_TOOLTIP);
+		mFilterField.putClientProperty("JTextField.variant", "search"); //$NON-NLS-1$ //$NON-NLS-2$
 		add(mFilterField);
 
 		mHits = new JLabel();
@@ -91,7 +79,6 @@ public class Search extends JPanel implements ActionListener, DocumentListener, 
 		add(mHits);
 
 		FlexRow row = new FlexRow();
-		row.add(button);
 		row.add(mFilterField);
 		row.add(mHits);
 		row.apply(this);
@@ -99,14 +86,6 @@ public class Search extends JPanel implements ActionListener, DocumentListener, 
 
 	@Override public boolean requestFocusInWindow() {
 		return mFilterField.requestFocusInWindow();
-	}
-
-	public void actionPerformed(ActionEvent event) {
-		String command = event.getActionCommand();
-
-		if (CMD_SEARCH.equals(command)) {
-			searchSelect();
-		}
 	}
 
 	private void searchSelect() {

@@ -27,11 +27,11 @@ import com.trollworks.gcs.skill.Defaults;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.utility.io.Images;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
+import com.trollworks.gcs.widgets.CommitEnforcer;
 import com.trollworks.gcs.widgets.EditorField;
 import com.trollworks.gcs.widgets.IconButton;
 import com.trollworks.gcs.widgets.LinkedLabel;
 import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.WindowUtils;
 import com.trollworks.gcs.widgets.layout.ColumnLayout;
 import com.trollworks.gcs.widgets.layout.RowDistribution;
 import com.trollworks.gcs.widgets.outline.ListRow;
@@ -284,7 +284,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 
 	private void setWeapon(WeaponStats weapon) {
 		if (weapon != mWeapon) {
-			WindowUtils.forceFocusToAccept();
+			CommitEnforcer.forceFocusToAccept();
 			mWeapon = weapon;
 			setWeaponState(mWeapon != null);
 		}

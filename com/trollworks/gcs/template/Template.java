@@ -26,6 +26,7 @@ package com.trollworks.gcs.template;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.skill.Skill;
@@ -130,22 +131,20 @@ public class Template extends DataFile implements StateEditable {
 		return Images.getTemplateIcon(large);
 	}
 
-	@Override protected final void loadSelf(XMLReader reader, Object param) throws IOException {
+	@Override protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
 		String marker = reader.getMarker();
-
 		characterInitialize();
 		do {
 			if (reader.next() == XMLNodeType.START_TAG) {
 				String name = reader.getName();
-
 				if (AdvantageList.TAG_ROOT.equals(name)) {
-					loadAdvantageList(reader);
+					loadAdvantageList(reader, state);
 				} else if (SkillList.TAG_ROOT.equals(name)) {
-					loadSkillList(reader);
+					loadSkillList(reader, state);
 				} else if (SpellList.TAG_ROOT.equals(name)) {
-					loadSpellList(reader);
+					loadSpellList(reader, state);
 				} else if (EquipmentList.TAG_ROOT.equals(name)) {
-					loadEquipmentList(reader);
+					loadEquipmentList(reader, state);
 				} else if (TAG_NOTES.equals(name)) {
 					mNotes = reader.readText();
 				} else {
@@ -153,21 +152,18 @@ public class Template extends DataFile implements StateEditable {
 				}
 			}
 		} while (reader.withinMarker(marker));
-
 		calculateAdvantagePoints();
 		calculateSkillPoints();
 		calculateSpellPoints();
 	}
 
-	private void loadAdvantageList(XMLReader reader) throws IOException {
+	private void loadAdvantageList(XMLReader reader, LoadState state) throws IOException {
 		String marker = reader.getMarker();
-
 		do {
 			if (reader.next() == XMLNodeType.START_TAG) {
 				String name = reader.getName();
-
 				if (Advantage.TAG_ADVANTAGE.equals(name) || Advantage.TAG_ADVANTAGE_CONTAINER.equals(name)) {
-					mAdvantages.addRow(new Advantage(this, reader), true);
+					mAdvantages.addRow(new Advantage(this, reader, state), true);
 				} else {
 					reader.skipTag(name);
 				}
@@ -175,17 +171,15 @@ public class Template extends DataFile implements StateEditable {
 		} while (reader.withinMarker(marker));
 	}
 
-	private void loadSkillList(XMLReader reader) throws IOException {
+	private void loadSkillList(XMLReader reader, LoadState state) throws IOException {
 		String marker = reader.getMarker();
-
 		do {
 			if (reader.next() == XMLNodeType.START_TAG) {
 				String name = reader.getName();
-
 				if (Skill.TAG_SKILL.equals(name) || Skill.TAG_SKILL_CONTAINER.equals(name)) {
-					mSkills.addRow(new Skill(this, reader), true);
+					mSkills.addRow(new Skill(this, reader, state), true);
 				} else if (Technique.TAG_TECHNIQUE.equals(name)) {
-					mSkills.addRow(new Technique(this, reader), true);
+					mSkills.addRow(new Technique(this, reader, state), true);
 				} else {
 					reader.skipTag(name);
 				}
@@ -193,15 +187,13 @@ public class Template extends DataFile implements StateEditable {
 		} while (reader.withinMarker(marker));
 	}
 
-	private void loadSpellList(XMLReader reader) throws IOException {
+	private void loadSpellList(XMLReader reader, LoadState state) throws IOException {
 		String marker = reader.getMarker();
-
 		do {
 			if (reader.next() == XMLNodeType.START_TAG) {
 				String name = reader.getName();
-
 				if (Spell.TAG_SPELL.equals(name) || Spell.TAG_SPELL_CONTAINER.equals(name)) {
-					mSpells.addRow(new Spell(this, reader), true);
+					mSpells.addRow(new Spell(this, reader, state), true);
 				} else {
 					reader.skipTag(name);
 				}
@@ -209,15 +201,13 @@ public class Template extends DataFile implements StateEditable {
 		} while (reader.withinMarker(marker));
 	}
 
-	private void loadEquipmentList(XMLReader reader) throws IOException {
+	private void loadEquipmentList(XMLReader reader, LoadState state) throws IOException {
 		String marker = reader.getMarker();
-
 		do {
 			if (reader.next() == XMLNodeType.START_TAG) {
 				String name = reader.getName();
-
 				if (Equipment.TAG_EQUIPMENT.equals(name) || Equipment.TAG_EQUIPMENT_CONTAINER.equals(name)) {
-					mEquipment.addRow(new Equipment(this, reader), true);
+					mEquipment.addRow(new Equipment(this, reader, state), true);
 				} else {
 					reader.skipTag(name);
 				}
@@ -396,12 +386,12 @@ public class Template extends DataFile implements StateEditable {
 		}
 	}
 
-	/** @return The outline model for the (dis)advantages. */
+	/** @return The outline model for the advantages. */
 	public OutlineModel getAdvantagesModel() {
 		return mAdvantages;
 	}
 
-	/** @return A recursive iterator over the (dis)advantages. */
+	/** @return A recursive iterator over the advantages. */
 	public RowIterator<Advantage> getAdvantagesIterator() {
 		return new RowIterator<Advantage>(mAdvantages);
 	}

@@ -26,6 +26,8 @@ package com.trollworks.gcs.spell;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.common.LoadState;
+import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillLevel;
 import com.trollworks.gcs.utility.io.Images;
@@ -49,72 +51,77 @@ import java.util.List;
 
 /** A GURPS Spell. */
 public class Spell extends ListRow {
-	private static String				MSG_DEFAULT_NAME;
-	private static String				MSG_DEFAULT_SPELL_CLASS;
-	private static String				MSG_DEFAULT_CASTING_COST;
-	private static String				MSG_DEFAULT_CASTING_TIME;
-	private static String				MSG_DEFAULT_DURATION;
+	private static final int		CURRENT_VERSION				= 1;
+	private static String			MSG_DEFAULT_NAME;
+	private static String			MSG_DEFAULT_SPELL_CLASS;
+	private static String			MSG_DEFAULT_CASTING_COST;
+	private static String			MSG_DEFAULT_CASTING_TIME;
+	private static String			MSG_DEFAULT_DURATION;
+	/** The extension for Spell lists. */
+	public static final String		OLD_SPELL_EXTENSION			= ".spl";										//$NON-NLS-1$
 	/** The XML tag used for items. */
-	public static final String			TAG_SPELL					= "spell";									//$NON-NLS-1$
+	public static final String		TAG_SPELL					= "spell";										//$NON-NLS-1$
 	/** The XML tag used for containers. */
-	public static final String			TAG_SPELL_CONTAINER			= "spell_container";						//$NON-NLS-1$
-	private static final String			TAG_NAME					= "name";									//$NON-NLS-1$
-	private static final String			TAG_TECH_LEVEL				= "tech_level";							//$NON-NLS-1$
-	private static final String			TAG_COLLEGE					= "college";								//$NON-NLS-1$
-	private static final String			TAG_SPELL_CLASS				= "spell_class";							//$NON-NLS-1$
-	private static final String			TAG_CASTING_COST			= "casting_cost";							//$NON-NLS-1$
-	private static final String			TAG_MAINTENANCE_COST		= "maintenance_cost";						//$NON-NLS-1$
-	private static final String			TAG_CASTING_TIME			= "casting_time";							//$NON-NLS-1$
-	private static final String			TAG_DURATION				= "duration";								//$NON-NLS-1$
-	private static final String			TAG_POINTS					= "points";								//$NON-NLS-1$
-	private static final String			TAG_REFERENCE				= "reference";								//$NON-NLS-1$
-	private static final String			ATTRIBUTE_VERY_HARD			= "very_hard";								//$NON-NLS-1$
+	public static final String		TAG_SPELL_CONTAINER			= "spell_container";							//$NON-NLS-1$
+	private static final String		TAG_NAME					= "name";										//$NON-NLS-1$
+	private static final String		TAG_TECH_LEVEL				= "tech_level";								//$NON-NLS-1$
+	private static final String		TAG_COLLEGE					= "college";									//$NON-NLS-1$
+	private static final String		TAG_SPELL_CLASS				= "spell_class";								//$NON-NLS-1$
+	private static final String		TAG_CASTING_COST			= "casting_cost";								//$NON-NLS-1$
+	private static final String		TAG_MAINTENANCE_COST		= "maintenance_cost";							//$NON-NLS-1$
+	private static final String		TAG_CASTING_TIME			= "casting_time";								//$NON-NLS-1$
+	private static final String		TAG_DURATION				= "duration";									//$NON-NLS-1$
+	private static final String		TAG_POINTS					= "points";									//$NON-NLS-1$
+	private static final String		TAG_REFERENCE				= "reference";									//$NON-NLS-1$
+	private static final String		ATTRIBUTE_VERY_HARD			= "very_hard";									//$NON-NLS-1$
 	/** The prefix used in front of all IDs for the spells. */
-	public static final String			PREFIX						= GURPSCharacter.CHARACTER_PREFIX + "spell.";	//$NON-NLS-1$
+	public static final String		PREFIX						= GURPSCharacter.CHARACTER_PREFIX + "spell.";	//$NON-NLS-1$
 	/** The field ID for name changes. */
-	public static final String			ID_NAME						= PREFIX + "Name";							//$NON-NLS-1$
+	public static final String		ID_NAME						= PREFIX + "Name";								//$NON-NLS-1$
 	/** The field ID for tech level changes. */
-	public static final String			ID_TECH_LEVEL				= PREFIX + "TechLevel";					//$NON-NLS-1$
+	public static final String		ID_TECH_LEVEL				= PREFIX + "TechLevel";						//$NON-NLS-1$
 	/** The field ID for college changes. */
-	public static final String			ID_COLLEGE					= PREFIX + "College";						//$NON-NLS-1$
+	public static final String		ID_COLLEGE					= PREFIX + "College";							//$NON-NLS-1$
 	/** The field ID for spell class changes. */
-	public static final String			ID_SPELL_CLASS				= PREFIX + "Class";						//$NON-NLS-1$
+	public static final String		ID_SPELL_CLASS				= PREFIX + "Class";							//$NON-NLS-1$
 	/** The field ID for casting cost changes */
-	public static final String			ID_CASTING_COST				= PREFIX + "CastingCost";					//$NON-NLS-1$
+	public static final String		ID_CASTING_COST				= PREFIX + "CastingCost";						//$NON-NLS-1$
 	/** The field ID for maintainance cost changes */
-	public static final String			ID_MAINTENANCE_COST			= PREFIX + "MaintenanceCost";				//$NON-NLS-1$
+	public static final String		ID_MAINTENANCE_COST			= PREFIX + "MaintenanceCost";					//$NON-NLS-1$
 	/** The field ID for casting time changes */
-	public static final String			ID_CASTING_TIME				= PREFIX + "CastingTime";					//$NON-NLS-1$
+	public static final String		ID_CASTING_TIME				= PREFIX + "CastingTime";						//$NON-NLS-1$
 	/** The field ID for duration changes */
-	public static final String			ID_DURATION					= PREFIX + "Duration";						//$NON-NLS-1$
+	public static final String		ID_DURATION					= PREFIX + "Duration";							//$NON-NLS-1$
 	/** The field ID for point changes. */
-	public static final String			ID_POINTS					= PREFIX + "Points";						//$NON-NLS-1$
+	public static final String		ID_POINTS					= PREFIX + "Points";							//$NON-NLS-1$
 	/** The field ID for level changes. */
-	public static final String			ID_LEVEL					= PREFIX + "Level";						//$NON-NLS-1$
+	public static final String		ID_LEVEL					= PREFIX + "Level";							//$NON-NLS-1$
 	/** The field ID for page reference changes. */
-	public static final String			ID_REFERENCE				= PREFIX + "Reference";					//$NON-NLS-1$
+	public static final String		ID_REFERENCE				= PREFIX + "Reference";						//$NON-NLS-1$
 	/** The field ID for difficulty changes. */
-	public static final String			ID_IS_VERY_HARD				= PREFIX + "Difficulty";					//$NON-NLS-1$
+	public static final String		ID_IS_VERY_HARD				= PREFIX + "Difficulty";						//$NON-NLS-1$
+	/** The field ID for when the categories change. */
+	public static final String		ID_CATEGORY					= PREFIX + "Category";							//$NON-NLS-1$
 	/** The field ID for when the row hierarchy changes. */
-	public static final String			ID_LIST_CHANGED				= PREFIX + "ListChanged";					//$NON-NLS-1$
+	public static final String		ID_LIST_CHANGED				= PREFIX + "ListChanged";						//$NON-NLS-1$
 	/** The field ID for when the spell becomes or stops being a weapon. */
-	public static final String			ID_WEAPON_STATUS_CHANGED	= PREFIX + "WeaponStatus";					//$NON-NLS-1$
-	private static final String			EMPTY						= "";										//$NON-NLS-1$
-	private static final String			NEWLINE						= "\n";									//$NON-NLS-1$
-	private static final String			SPACE						= " ";										//$NON-NLS-1$
-	private String						mName;
-	private String						mTechLevel;
-	private String						mCollege;
-	private String						mSpellClass;
-	private String						mCastingCost;
-	private String						mMaintenance;
-	private String						mCastingTime;
-	private String						mDuration;
-	private int							mPoints;
-	private int							mLevel;
-	private int							mRelativeLevel;
-	private String						mReference;
-	private boolean						mIsVeryHard;
+	public static final String		ID_WEAPON_STATUS_CHANGED	= PREFIX + "WeaponStatus";						//$NON-NLS-1$
+	private static final String		EMPTY						= "";											//$NON-NLS-1$
+	private static final String		NEWLINE						= "\n";										//$NON-NLS-1$
+	private static final String		SPACE						= " ";											//$NON-NLS-1$
+	private String					mName;
+	private String					mTechLevel;
+	private String					mCollege;
+	private String					mSpellClass;
+	private String					mCastingCost;
+	private String					mMaintenance;
+	private String					mCastingTime;
+	private String					mDuration;
+	private int						mPoints;
+	private int						mLevel;
+	private int						mRelativeLevel;
+	private String					mReference;
+	private boolean					mIsVeryHard;
 	private ArrayList<WeaponStats>	mWeapons;
 
 	static {
@@ -197,11 +204,12 @@ public class Spell extends ListRow {
 	 * 
 	 * @param dataFile The data file to associate it with.
 	 * @param reader The XML reader to load from.
+	 * @param state The {@link LoadState} to use.
 	 * @throws IOException
 	 */
-	public Spell(DataFile dataFile, XMLReader reader) throws IOException {
+	public Spell(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
 		this(dataFile, TAG_SPELL_CONTAINER.equals(reader.getName()));
-		load(reader, false);
+		load(reader, state);
 	}
 
 	@Override public String getLocalizedName() {
@@ -216,14 +224,17 @@ public class Spell extends ListRow {
 		return canHaveChildren() ? TAG_SPELL_CONTAINER : TAG_SPELL;
 	}
 
+	@Override public int getXMLTagVersion() {
+		return CURRENT_VERSION;
+	}
+
 	@Override public String getRowType() {
 		return "Spell"; //$NON-NLS-1$
 	}
 
-	@Override protected void prepareForLoad(boolean forUndo) {
+	@Override protected void prepareForLoad(LoadState state) {
 		boolean isContainer = canHaveChildren();
-
-		super.prepareForLoad(forUndo);
+		super.prepareForLoad(state);
 		mName = MSG_DEFAULT_NAME;
 		mTechLevel = null;
 		mCollege = EMPTY;
@@ -238,14 +249,13 @@ public class Spell extends ListRow {
 		mWeapons = new ArrayList<WeaponStats>();
 	}
 
-	@Override protected void loadAttributes(XMLReader reader, boolean forUndo) {
-		super.loadAttributes(reader, forUndo);
+	@Override protected void loadAttributes(XMLReader reader, LoadState state) {
+		super.loadAttributes(reader, state);
 		mIsVeryHard = reader.isAttributeSet(ATTRIBUTE_VERY_HARD);
 	}
 
-	@Override protected void loadSubElement(XMLReader reader, boolean forUndo) throws IOException {
+	@Override protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
 		String name = reader.getName();
-
 		if (TAG_NAME.equals(name)) {
 			mName = reader.readText().replace(NEWLINE, SPACE);
 			// Fix for legacy format...
@@ -255,13 +265,16 @@ public class Spell extends ListRow {
 			}
 		} else if (TAG_TECH_LEVEL.equals(name)) {
 			mTechLevel = reader.readText();
-			if (mTechLevel != null && getDataFile() instanceof ListFile) {
-				mTechLevel = EMPTY;
+			if (mTechLevel != null) {
+				DataFile dataFile = getDataFile();
+				if (dataFile instanceof ListFile || dataFile instanceof LibraryFile) {
+					mTechLevel = EMPTY;
+				}
 			}
 		} else if (TAG_REFERENCE.equals(name)) {
 			mReference = reader.readText().replace(NEWLINE, SPACE);
-		} else if (!forUndo && (TAG_SPELL.equals(name) || TAG_SPELL_CONTAINER.equals(name))) {
-			addChild(new Spell(mDataFile, reader));
+		} else if (!state.mForUndo && (TAG_SPELL.equals(name) || TAG_SPELL_CONTAINER.equals(name))) {
+			addChild(new Spell(mDataFile, reader, state));
 		} else if (!canHaveChildren()) {
 			if (TAG_COLLEGE.equals(name)) {
 				mCollege = reader.readText().replace(NEWLINE, SPACE).replace("/ ", "/"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -282,10 +295,10 @@ public class Spell extends ListRow {
 			} else if (RangedWeaponStats.TAG_ROOT.equals(name)) {
 				mWeapons.add(new RangedWeaponStats(this, reader));
 			} else {
-				super.loadSubElement(reader, forUndo);
+				super.loadSubElement(reader, state);
 			}
 		} else {
-			super.loadSubElement(reader, forUndo);
+			super.loadSubElement(reader, state);
 		}
 	}
 
@@ -598,12 +611,16 @@ public class Spell extends ListRow {
 	}
 
 	@Override public boolean contains(String text, boolean lowerCaseOnly) {
-		boolean contains = getName().toLowerCase().indexOf(text) != -1;
-
-		if (!contains && canHaveChildren()) {
-			contains = getCollege().toLowerCase().indexOf(text) != -1 || getSpellClass().toLowerCase().indexOf(text) != -1;
+		if (getName().toLowerCase().indexOf(text) != -1) {
+			return true;
 		}
-		return contains;
+		if (getCollege().toLowerCase().indexOf(text) != -1) {
+			return true;
+		}
+		if (getSpellClass().toLowerCase().indexOf(text) != -1) {
+			return true;
+		}
+		return super.contains(text, lowerCaseOnly);
 	}
 
 	@Override public String toString() {
@@ -701,5 +718,9 @@ public class Spell extends ListRow {
 	/** @return The default spell class. */
 	public static final String getDefaultSpellClass() {
 		return MSG_DEFAULT_SPELL_CLASS;
+	}
+
+	@Override protected String getCategoryID() {
+		return ID_CATEGORY;
 	}
 }

@@ -104,6 +104,7 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
 	public void handleNotification(Object producer, String type, Object data) {
 		getBoxedDropShadowBorder().setTitle(getTitle(mCharacter));
 		invalidate();
+		repaint();
 	}
 
 	private static String getTitle(GURPSCharacter character) {

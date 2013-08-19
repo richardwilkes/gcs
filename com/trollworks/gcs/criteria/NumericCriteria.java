@@ -32,9 +32,9 @@ import java.io.IOException;
 
 /** Manages numeric comparison criteria. */
 public abstract class NumericCriteria {
-	private static String			MSG_IS_PREFIX;
+	private static String		MSG_IS_PREFIX;
 	/** The comparison attribute. */
-	public static final String		ATTRIBUTE_COMPARE	= "compare";	//$NON-NLS-1$
+	public static final String	ATTRIBUTE_COMPARE	= "compare";	//$NON-NLS-1$
 	private NumericCompareType	mType;
 
 	static {
@@ -66,7 +66,7 @@ public abstract class NumericCriteria {
 	 * @param reader The reader to load data from.
 	 * @throws IOException
 	 */
-	@SuppressWarnings("unused") public void load(XMLReader reader) throws IOException {
+	public void load(XMLReader reader) throws IOException {
 		setType((NumericCompareType) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
 	}
 

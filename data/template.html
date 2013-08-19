@@ -92,9 +92,9 @@
         		text-align: center;
         	}
         	
-        	.description, .value, .rvalue { width: 100%; }
+        	.description, .value, .rvalue, .natural_damage { width: 100%; }
         	.quantity, .cost, .weight, .cost_summary, .weight_summary, .ref, .level, .accuracy, .damage, .range, .rof, .shots, .bulk, .recoil, .strength, .block, .reach, .points, .spell_level, .relative_spell_level, .skill_level, .relative_skill_level, .rvalue { text-align: right; }
-        	.equipped, .parry { text-align: center; }
+        	.state, .parry, .natural_damage { text-align: center; }
         	
         	.wrapper
         	{
@@ -320,6 +320,10 @@
 							<td class="label">Will:</td>
 							<td class="rvalue">@WILL</td>
 						</tr>
+						<tr>
+							<td class="label">Fright Check:</td>
+							<td class="rvalue">@FRIGHT_CHECK</td>
+						</tr>
 						<tr class="top_border">
 							<td class="label">Basic Speed:</td>
 							<td class="rvalue">@BASIC_SPEED</td>
@@ -349,15 +353,10 @@
 							<td class="rvalue">@TOUCH</td>
 						</tr>
 						<tr class="top_border">
-							<td class="label">Thrust Damage:</td>
-							<td class="rvalue">@THRUST</td>
+							<td class="natural_damage" colspan="2"><span class="label">thr: </span>@THRUST<span class="label">, sw: </span>@SWING</td>
 						</tr>
 						<tr>
-							<td class="label">Swing Damage:</td>
-							<td class="rvalue">@SWING</td>
-						</tr>
-						<tr>
-							<td class="rowspacer2" colspan=2></td>
+							<td class="rowspacer2" colspan="2"></td>
 						</tr>
 					</table>
 				</td>
@@ -645,9 +644,9 @@
             </tr>
             @RANGED_LOOP_END
         </table>
-        <table id="carried_equipment" class="list">
+        <table id="equipment" class="list">
             <tr>
-                <td class="title">Carried Equipment (@CARRIED_WEIGHT; @CARRIED_VALUE)</td>
+                <td class="title">Equipment (@CARRIED_WEIGHT; @CARRIED_VALUE)</td>
                 <td class="title">&radic;</td>
                 <td class="title">#</td>
                 <td class="title">$</td>
@@ -656,10 +655,10 @@
                 <td class="title">&sum; Lb</td>
                 <td class="title">Ref</td>
             </tr>
-            @CARRIED_EQUIPMENT_LOOP_START
+            @EQUIPMENT_LOOP_START
             <tr class="@EVEN_ODD">
 				<td class="description" @STYLE_INDENT_WARNING>@DESCRIPTION</td>
-                <td class="equipped">@EQUIPPED</td>
+                <td class="state">@STATE</td>
                 <td class="quantity">@QTY</td>
                 <td class="cost">@COST</td>
                 <td class="weight">@WEIGHT</td>
@@ -667,29 +666,7 @@
                 <td class="weight_summary">@WEIGHT_SUMMARY</td>
                 <td class="ref">@REF</td>
             </tr>
-            @CARRIED_EQUIPMENT_LOOP_END
-        </table>
-        <table id="other_equipment" class="list">
-            <tr>
-                <td class="title">Other Equipment</td>
-                <td class="title">#</td>
-                <td class="title">$</td>
-                <td class="title">Lb</td>
-                <td class="title">&sum; $</td>
-                <td class="title">&sum; Lb</td>
-                <td class="title">Ref</td>
-            </tr>
-            @OTHER_EQUIPMENT_LOOP_START
-            <tr class="@EVEN_ODD">
-				<td class="description" @STYLE_INDENT_WARNING>@DESCRIPTION</td>
-                <td class="quantity">@QTY</td>
-                <td class="cost">@COST</td>
-                <td class="weight">@WEIGHT</td>
-                <td class="cost_summary">@COST_SUMMARY</td>
-                <td class="weight_summary">@WEIGHT_SUMMARY</td>
-                <td class="ref">@REF</td>
-            </tr>
-            @OTHER_EQUIPMENT_LOOP_END
+            @EQUIPMENT_LOOP_END
         </table>
         <table id="notes" class="list">
             <tr>

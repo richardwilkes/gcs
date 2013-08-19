@@ -24,9 +24,9 @@
 package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.advantage.AdvantageListWindow;
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.library.LibraryWindow;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
@@ -60,8 +60,8 @@ public class NewAdvantageCommand extends Command {
 
 	@Override public void adjustForMenu(JMenuItem item) {
 		Window window = getActiveWindow();
-		if (window instanceof AdvantageListWindow) {
-			setEnabled(!((AdvantageListWindow) window).getOutline().getModel().isLocked());
+		if (window instanceof LibraryWindow) {
+			setEnabled(!((LibraryWindow) window).getOutline().getModel().isLocked());
 		} else {
 			setEnabled(window instanceof SheetWindow || window instanceof TemplateWindow);
 		}
@@ -72,27 +72,27 @@ public class NewAdvantageCommand extends Command {
 		DataFile dataFile;
 
 		Window window = getActiveWindow();
-		if (window instanceof AdvantageListWindow) {
-			AdvantageListWindow listWindow = (AdvantageListWindow) window;
-			dataFile = listWindow.getList();
-			outline = listWindow.getOutline();
+		if (window instanceof LibraryWindow) {
+			LibraryWindow libraryWindow = (LibraryWindow) window;
+			libraryWindow.switchToAdvantages();
+			dataFile = libraryWindow.getLibraryFile();
+			outline = libraryWindow.getOutline();
+		} else if (window instanceof SheetWindow) {
+			SheetWindow sheetWindow = (SheetWindow) window;
+			outline = sheetWindow.getSheet().getAdvantageOutline();
+			dataFile = sheetWindow.getCharacter();
+		} else if (window instanceof TemplateWindow) {
+			TemplateWindow templateWindow = (TemplateWindow) window;
+			outline = templateWindow.getSheet().getAdvantageOutline();
+			dataFile = templateWindow.getTemplate();
 		} else {
-			if (window instanceof SheetWindow) {
-				SheetWindow sheetWindow = (SheetWindow) window;
-				outline = sheetWindow.getSheet().getAdvantageOutline();
-				dataFile = sheetWindow.getCharacter();
-			} else if (window instanceof TemplateWindow) {
-				TemplateWindow templateWindow = (TemplateWindow) window;
-				outline = templateWindow.getSheet().getAdvantageOutline();
-				dataFile = templateWindow.getTemplate();
-			} else {
-				return;
-			}
+			return;
 		}
 
 		Advantage advantage = new Advantage(dataFile, mContainer);
 		outline.addRow(advantage, getTitle(), false);
 		outline.getModel().select(advantage, false);
+		outline.scrollSelectionIntoView();
 		outline.openDetailEditor(true);
 	}
 }

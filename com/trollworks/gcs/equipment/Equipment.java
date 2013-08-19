@@ -25,6 +25,7 @@ package com.trollworks.gcs.equipment;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.utility.collections.EnumExtractor;
 import com.trollworks.gcs.utility.io.Images;
@@ -51,63 +52,69 @@ import java.util.List;
 
 /** A piece of equipment. */
 public class Equipment extends ListRow {
-	private static String				MSG_DEFAULT_NAME;
-	private static final String			NEWLINE						= "\n";										//$NON-NLS-1$
-	private static final String			SPACE						= " ";											//$NON-NLS-1$
-	private static final String			DEFAULT_LEGALITY_CLASS		= "4";											//$NON-NLS-1$
-	private static final String			EMPTY						= "";											//$NON-NLS-1$
+	private static final int		CURRENT_VERSION				= 1;
+	private static String			MSG_DEFAULT_NAME;
+	private static final String		NEWLINE						= "\n";											//$NON-NLS-1$
+	private static final String		SPACE						= " ";												//$NON-NLS-1$
+	private static final String		DEFAULT_LEGALITY_CLASS		= "4";												//$NON-NLS-1$
+	private static final String		EMPTY						= "";												//$NON-NLS-1$
+	/** The extension for Equipment lists. */
+	public static final String		OLD_EQUIPMENT_EXTENSION		= ".eqp";											//$NON-NLS-1$
 	/** The XML tag used for items. */
-	public static final String			TAG_EQUIPMENT				= "equipment";									//$NON-NLS-1$
+	public static final String		TAG_EQUIPMENT				= "equipment";										//$NON-NLS-1$
 	/** The XML tag used for containers. */
-	public static final String			TAG_EQUIPMENT_CONTAINER		= "equipment_container";						//$NON-NLS-1$
-	private static final String			ATTRIBUTE_EQUIPPED			= "equipped";									//$NON-NLS-1$
-	private static final String			TAG_QUANTITY				= "quantity";									//$NON-NLS-1$
-	private static final String			TAG_DESCRIPTION				= "description";								//$NON-NLS-1$
-	private static final String			TAG_TECH_LEVEL				= "tech_level";								//$NON-NLS-1$
-	private static final String			TAG_LEGALITY_CLASS			= "legality_class";							//$NON-NLS-1$
-	private static final String			TAG_VALUE					= "value";										//$NON-NLS-1$
-	private static final String			TAG_WEIGHT					= "weight";									//$NON-NLS-1$
-	private static final String			ATTRIBUTE_UNITS				= "units";										//$NON-NLS-1$
-	private static final String			TAG_REFERENCE				= "reference";									//$NON-NLS-1$
+	public static final String		TAG_EQUIPMENT_CONTAINER		= "equipment_container";							//$NON-NLS-1$
+	private static final String		ATTRIBUTE_STATE				= "state";											//$NON-NLS-1$
+	private static final String		ATTRIBUTE_EQUIPPED			= "equipped";										//$NON-NLS-1$
+	private static final String		TAG_QUANTITY				= "quantity";										//$NON-NLS-1$
+	private static final String		TAG_DESCRIPTION				= "description";									//$NON-NLS-1$
+	private static final String		TAG_TECH_LEVEL				= "tech_level";									//$NON-NLS-1$
+	private static final String		TAG_LEGALITY_CLASS			= "legality_class";								//$NON-NLS-1$
+	private static final String		TAG_VALUE					= "value";											//$NON-NLS-1$
+	private static final String		TAG_WEIGHT					= "weight";										//$NON-NLS-1$
+	private static final String		ATTRIBUTE_UNITS				= "units";											//$NON-NLS-1$
+	private static final String		TAG_REFERENCE				= "reference";										//$NON-NLS-1$
 	/** The prefix used in front of all IDs for the equipment. */
-	public static final String			PREFIX						= GURPSCharacter.CHARACTER_PREFIX + "equipment.";	//$NON-NLS-1$
-	/** The field ID for equipped changes. */
-	public static final String			ID_EQUIPPED					= PREFIX + "Equipped";							//$NON-NLS-1$
+	public static final String		PREFIX						= GURPSCharacter.CHARACTER_PREFIX + "equipment.";	//$NON-NLS-1$
+	/** The field ID for equipped/carried/not carried changes. */
+	public static final String		ID_STATE					= PREFIX + "State";								//$NON-NLS-1$
 	/** The field ID for quantity changes. */
-	public static final String			ID_QUANTITY					= PREFIX + "Quantity";							//$NON-NLS-1$
+	public static final String		ID_QUANTITY					= PREFIX + "Quantity";								//$NON-NLS-1$
 	/** The field ID for description changes. */
-	public static final String			ID_DESCRIPTION				= PREFIX + "Description";						//$NON-NLS-1$
+	public static final String		ID_DESCRIPTION				= PREFIX + "Description";							//$NON-NLS-1$
 	/** The field ID for tech level changes. */
-	public static final String			ID_TECH_LEVEL				= PREFIX + "TechLevel";						//$NON-NLS-1$
+	public static final String		ID_TECH_LEVEL				= PREFIX + "TechLevel";							//$NON-NLS-1$
 	/** The field ID for legality changes. */
-	public static final String			ID_LEGALITY_CLASS			= PREFIX + "LegalityClass";					//$NON-NLS-1$
+	public static final String		ID_LEGALITY_CLASS			= PREFIX + "LegalityClass";						//$NON-NLS-1$
 	/** The field ID for value changes. */
-	public static final String			ID_VALUE					= PREFIX + "Value";							//$NON-NLS-1$
+	public static final String		ID_VALUE					= PREFIX + "Value";								//$NON-NLS-1$
 	/** The field ID for weight changes. */
-	public static final String			ID_WEIGHT					= PREFIX + "Weight";							//$NON-NLS-1$
+	public static final String		ID_WEIGHT					= PREFIX + "Weight";								//$NON-NLS-1$
 	/** The field ID for extended value changes */
-	public static final String			ID_EXTENDED_VALUE			= PREFIX + "ExtendedValue";					//$NON-NLS-1$
+	public static final String		ID_EXTENDED_VALUE			= PREFIX + "ExtendedValue";						//$NON-NLS-1$
 	/** The field ID for extended weight changes */
-	public static final String			ID_EXTENDED_WEIGHT			= PREFIX + "ExtendedWeight";					//$NON-NLS-1$
+	public static final String		ID_EXTENDED_WEIGHT			= PREFIX + "ExtendedWeight";						//$NON-NLS-1$
 	/** The field ID for page reference changes. */
-	public static final String			ID_REFERENCE				= PREFIX + "Reference";						//$NON-NLS-1$
+	public static final String		ID_REFERENCE				= PREFIX + "Reference";							//$NON-NLS-1$
+	/** The field ID for when the categories change. */
+	public static final String		ID_CATEGORY					= PREFIX + "Category";								//$NON-NLS-1$
 	/** The field ID for when the row hierarchy changes. */
-	public static final String			ID_LIST_CHANGED				= PREFIX + "ListChanged";						//$NON-NLS-1$
+	public static final String		ID_LIST_CHANGED				= PREFIX + "ListChanged";							//$NON-NLS-1$
 	/** The field ID for when the equipment becomes or stops being a weapon. */
-	public static final String			ID_WEAPON_STATUS_CHANGED	= PREFIX + "WeaponStatus";						//$NON-NLS-1$
-	private boolean						mEquipped;
-	private int							mQuantity;
-	private String						mDescription;
-	private String						mTechLevel;
-	private String						mLegalityClass;
-	private double						mValue;
-	private double						mWeight;
-	private double						mExtendedValue;
-	private double						mExtendedWeight;
-	private String						mReference;
+	public static final String		ID_WEAPON_STATUS_CHANGED	= PREFIX + "WeaponStatus";							//$NON-NLS-1$
+	private EquipmentState			mState;
+	private int						mQuantity;
+	private String					mDescription;
+	private String					mTechLevel;
+	private String					mLegalityClass;
+	private double					mValue;
+	private double					mWeight;
+	private double					mExtendedValue;
+	private double					mExtendedWeight;
+	private String					mReference;
 	private ArrayList<WeaponStats>	mWeapons;
 	// For load-time conversion only
-	private OldWeapon					mOldWeapon;
+	private OldWeapon				mOldWeapon;
 
 	static {
 		LocalizedMessages.initialize(Equipment.class);
@@ -121,7 +128,7 @@ public class Equipment extends ListRow {
 	 */
 	public Equipment(DataFile dataFile, boolean isContainer) {
 		super(dataFile, isContainer);
-		mEquipped = true;
+		mState = EquipmentState.EQUIPPED;
 		mQuantity = 1;
 		mDescription = MSG_DEFAULT_NAME;
 		mTechLevel = EMPTY;
@@ -140,7 +147,7 @@ public class Equipment extends ListRow {
 	public Equipment(DataFile dataFile, Equipment equipment, boolean deep) {
 		super(dataFile, equipment);
 		boolean forSheet = dataFile instanceof GURPSCharacter;
-		mEquipped = forSheet ? equipment.mEquipped : true;
+		mState = forSheet ? equipment.mState : EquipmentState.EQUIPPED;
 		mQuantity = forSheet ? equipment.mQuantity : 1;
 		mDescription = equipment.mDescription;
 		mTechLevel = equipment.mTechLevel;
@@ -172,11 +179,12 @@ public class Equipment extends ListRow {
 	 * 
 	 * @param dataFile The data file to associate it with.
 	 * @param reader The XML reader to load from.
+	 * @param state The {@link LoadState} to use.
 	 * @throws IOException
 	 */
-	public Equipment(DataFile dataFile, XMLReader reader) throws IOException {
+	public Equipment(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
 		this(dataFile, TAG_EQUIPMENT_CONTAINER.equals(reader.getName()));
-		load(reader, false);
+		load(reader, state);
 	}
 
 	@Override public String getLocalizedName() {
@@ -191,13 +199,17 @@ public class Equipment extends ListRow {
 		return canHaveChildren() ? TAG_EQUIPMENT_CONTAINER : TAG_EQUIPMENT;
 	}
 
+	@Override public int getXMLTagVersion() {
+		return CURRENT_VERSION;
+	}
+
 	@Override public String getRowType() {
 		return "Equipment"; //$NON-NLS-1$
 	}
 
-	@Override protected void prepareForLoad(boolean forUndo) {
-		super.prepareForLoad(forUndo);
-		mEquipped = true;
+	@Override protected void prepareForLoad(LoadState state) {
+		super.prepareForLoad(state);
+		mState = EquipmentState.EQUIPPED;
 		mQuantity = 1;
 		mDescription = MSG_DEFAULT_NAME;
 		mTechLevel = EMPTY;
@@ -208,16 +220,23 @@ public class Equipment extends ListRow {
 		mWeapons = new ArrayList<WeaponStats>();
 	}
 
-	@Override protected void loadAttributes(XMLReader reader, boolean forUndo) {
-		super.loadAttributes(reader, forUndo);
+	@Override protected void loadAttributes(XMLReader reader, LoadState state) {
+		super.loadAttributes(reader, state);
 		if (mDataFile instanceof GURPSCharacter) {
-			setEquipped(reader.isAttributeSet(ATTRIBUTE_EQUIPPED));
+			if (state.mDataItemVersion == 0) {
+				if (state.mDefaultCarried) {
+					setState(reader.isAttributeSet(ATTRIBUTE_EQUIPPED) ? EquipmentState.EQUIPPED : EquipmentState.NOT_CARRIED);
+				} else {
+					setState(EquipmentState.NOT_CARRIED);
+				}
+			} else {
+				setState((EquipmentState) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_STATE), EquipmentState.values(), EquipmentState.NOT_CARRIED));
+			}
 		}
 	}
 
-	@Override protected void loadSubElement(XMLReader reader, boolean forUndo) throws IOException {
+	@Override protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
 		String name = reader.getName();
-
 		if (TAG_DESCRIPTION.equals(name)) {
 			mDescription = reader.readText().replace(NEWLINE, SPACE);
 		} else if (TAG_TECH_LEVEL.equals(name)) {
@@ -230,8 +249,8 @@ public class Equipment extends ListRow {
 			mWeight = WeightUnits.POUNDS.convert((WeightUnits) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_UNITS), WeightUnits.values(), WeightUnits.POUNDS), reader.readDouble(0));
 		} else if (TAG_REFERENCE.equals(name)) {
 			mReference = reader.readText().replace(NEWLINE, SPACE);
-		} else if (!forUndo && (TAG_EQUIPMENT.equals(name) || TAG_EQUIPMENT_CONTAINER.equals(name))) {
-			addChild(new Equipment(mDataFile, reader));
+		} else if (!state.mForUndo && (TAG_EQUIPMENT.equals(name) || TAG_EQUIPMENT_CONTAINER.equals(name))) {
+			addChild(new Equipment(mDataFile, reader, state));
 		} else if (MeleeWeaponStats.TAG_ROOT.equals(name)) {
 			mWeapons.add(new MeleeWeaponStats(this, reader));
 		} else if (RangedWeaponStats.TAG_ROOT.equals(name)) {
@@ -242,10 +261,10 @@ public class Equipment extends ListRow {
 			if (TAG_QUANTITY.equals(name)) {
 				mQuantity = reader.readInteger(1);
 			} else {
-				super.loadSubElement(reader, forUndo);
+				super.loadSubElement(reader, state);
 			}
 		} else {
-			super.loadSubElement(reader, forUndo);
+			super.loadSubElement(reader, state);
 		}
 	}
 
@@ -262,7 +281,7 @@ public class Equipment extends ListRow {
 
 	@Override protected void saveAttributes(XMLWriter out, boolean forUndo) {
 		if (mDataFile instanceof GURPSCharacter) {
-			out.writeAttribute(ATTRIBUTE_EQUIPPED, mEquipped);
+			out.writeAttribute(ATTRIBUTE_STATE, mState.name().toLowerCase());
 		}
 	}
 
@@ -412,12 +431,9 @@ public class Equipment extends ListRow {
 	private boolean updateExtendedWeight(boolean okToNotify) {
 		double savedWeight = mExtendedWeight;
 		int count = getChildCount();
-
 		mExtendedWeight = mQuantity * mWeight;
 		for (int i = 0; i < count; i++) {
-			Equipment child = (Equipment) getChild(i);
-
-			mExtendedWeight += child.mExtendedWeight;
+			mExtendedWeight += ((Equipment) getChild(i)).mExtendedWeight;
 		}
 		if (savedWeight != mExtendedWeight) {
 			if (okToNotify) {
@@ -430,10 +446,8 @@ public class Equipment extends ListRow {
 
 	private void updateContainingWeights(boolean okToNotify) {
 		Row parent = this;
-
 		while (parent != null && parent instanceof Equipment) {
 			Equipment parentRow = (Equipment) parent;
-
 			if (parentRow.updateExtendedWeight(okToNotify)) {
 				parent = parentRow.getParent();
 			} else {
@@ -445,11 +459,9 @@ public class Equipment extends ListRow {
 	private boolean updateExtendedValue(boolean okToNotify) {
 		double savedValue = mExtendedValue;
 		int count = getChildCount();
-
 		mExtendedValue = mQuantity * mValue;
 		for (int i = 0; i < count; i++) {
 			Equipment child = (Equipment) getChild(i);
-
 			mExtendedValue += child.mExtendedValue;
 		}
 		if (savedValue != mExtendedValue) {
@@ -463,10 +475,8 @@ public class Equipment extends ListRow {
 
 	private void updateContainingValues(boolean okToNotify) {
 		Row parent = this;
-
 		while (parent != null && parent instanceof Equipment) {
 			Equipment parentRow = (Equipment) parent;
-
 			if (parentRow.updateExtendedValue(okToNotify)) {
 				parent = parentRow.getParent();
 			} else {
@@ -480,32 +490,36 @@ public class Equipment extends ListRow {
 		return mExtendedWeight;
 	}
 
-	/** @return Whether this item is equipped. */
-	public boolean isEquipped() {
-		return mEquipped;
+	/** @return Whether this item is carried. */
+	public boolean isCarried() {
+		return mState == EquipmentState.CARRIED || mState == EquipmentState.EQUIPPED;
 	}
 
-	/** @return Whether this item and all of its parents are equipped. */
-	public boolean isFullyEquipped() {
-		Equipment equipment = this;
+	/** @return Whether this item is equipped. */
+	public boolean isEquipped() {
+		return mState == EquipmentState.EQUIPPED;
+	}
 
-		while (equipment != null) {
-			if (!equipment.isEquipped()) {
-				return false;
-			}
-			equipment = (Equipment) equipment.getParent();
-		}
-		return true;
+	/** @return The current {@link EquipmentState}. */
+	public EquipmentState getState() {
+		return mState;
 	}
 
 	/**
-	 * @param equipped Whether this item is equipped.
+	 * @param state The new {@link EquipmentState}.
 	 * @return Whether it was changed.
 	 */
-	public boolean setEquipped(boolean equipped) {
-		if (mEquipped != equipped) {
-			mEquipped = equipped;
-			notifySingle(ID_EQUIPPED);
+	public boolean setState(EquipmentState state) {
+		if (mState != state) {
+			mState = state;
+			startNotify();
+			notify(ID_STATE, this);
+			if (canHaveChildren()) {
+				for (Row child : getChildren()) {
+					((Equipment) child).setState(state);
+				}
+			}
+			endNotify();
 			return true;
 		}
 		return false;
@@ -530,7 +544,10 @@ public class Equipment extends ListRow {
 	}
 
 	@Override public boolean contains(String text, boolean lowerCaseOnly) {
-		return getDescription().toLowerCase().indexOf(text) != -1;
+		if (getDescription().toLowerCase().indexOf(text) != -1) {
+			return true;
+		}
+		return super.contains(text, lowerCaseOnly);
 	}
 
 	@Override public Object getData(Column column) {
@@ -592,5 +609,9 @@ public class Equipment extends ListRow {
 				one.applyNameableKeys(map);
 			}
 		}
+	}
+
+	@Override protected String getCategoryID() {
+		return ID_CATEGORY;
 	}
 }

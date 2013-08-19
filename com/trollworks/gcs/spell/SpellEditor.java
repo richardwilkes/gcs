@@ -62,57 +62,60 @@ import javax.swing.text.Document;
 
 /** The detailed editor for {@link Spell}s. */
 public class SpellEditor extends RowEditor<Spell> implements ActionListener, DocumentListener {
-	private static String			MSG_NAME;
-	private static String			MSG_NAME_TOOLTIP;
-	private static String			MSG_NAME_CANNOT_BE_EMPTY;
-	private static String			MSG_TECH_LEVEL;
-	private static String			MSG_TECH_LEVEL_TOOLTIP;
-	private static String			MSG_TECH_LEVEL_REQUIRED;
-	private static String			MSG_TECH_LEVEL_REQUIRED_TOOLTIP;
-	private static String			MSG_COLLEGE;
-	private static String			MSG_COLLEGE_TOOLTIP;
-	private static String			MSG_CLASS;
-	private static String			MSG_CLASS_ONLY_TOOLTIP;
-	private static String			MSG_CLASS_CANNOT_BE_EMPTY;
-	private static String			MSG_CASTING_COST;
-	private static String			MSG_CASTING_COST_TOOLTIP;
-	private static String			MSG_CASTING_COST_CANNOT_BE_EMPTY;
-	private static String			MSG_MAINTENANCE_COST;
-	private static String			MSG_MAINTENANCE_COST_TOOLTIP;
-	private static String			MSG_CASTING_TIME;
-	private static String			MSG_CASTING_TIME_TOOLTIP;
-	private static String			MSG_CASTING_TIME_CANNOT_BE_EMPTY;
-	private static String			MSG_DURATION;
-	private static String			MSG_DURATION_TOOLTIP;
-	private static String			MSG_DURATION_CANNOT_BE_EMPTY;
-	private static String			MSG_NOTES;
-	private static String			MSG_NOTES_TOOLTIP;
-	private static String			MSG_EDITOR_POINTS;
-	private static String			MSG_EDITOR_POINTS_TOOLTIP;
-	private static String			MSG_EDITOR_LEVEL;
-	private static String			MSG_EDITOR_LEVEL_TOOLTIP;
-	private static String			MSG_DIFFICULTY;
-	private static String			MSG_DIFFICULTY_TOOLTIP;
-	private static String			MSG_EDITOR_REFERENCE;
-	private static String			MSG_REFERENCE_TOOLTIP;
-	private JTextField				mNameField;
-	private JTextField				mCollegeField;
-	private JTextField				mClassField;
-	private JTextField				mCastingCostField;
-	private JTextField				mMaintenanceField;
-	private JTextField				mCastingTimeField;
-	private JTextField				mDurationField;
-	private JComboBox				mDifficultyCombo;
-	private JTextField				mNotesField;
-	private JTextField				mPointsField;
-	private JTextField				mLevelField;
-	private JTextField				mReferenceField;
-	private JTabbedPane				mTabPanel;
-	private PrereqsPanel				mPrereqs;
-	private JCheckBox				mHasTechLevel;
-	private JTextField				mTechLevel;
-	private String					mSavedTechLevel;
-	private MeleeWeaponEditor		mMeleeWeapons;
+	private static String		MSG_NAME;
+	private static String		MSG_NAME_TOOLTIP;
+	private static String		MSG_NAME_CANNOT_BE_EMPTY;
+	private static String		MSG_TECH_LEVEL;
+	private static String		MSG_TECH_LEVEL_TOOLTIP;
+	private static String		MSG_TECH_LEVEL_REQUIRED;
+	private static String		MSG_TECH_LEVEL_REQUIRED_TOOLTIP;
+	private static String		MSG_COLLEGE;
+	private static String		MSG_COLLEGE_TOOLTIP;
+	private static String		MSG_CLASS;
+	private static String		MSG_CLASS_ONLY_TOOLTIP;
+	private static String		MSG_CLASS_CANNOT_BE_EMPTY;
+	private static String		MSG_CASTING_COST;
+	private static String		MSG_CASTING_COST_TOOLTIP;
+	private static String		MSG_CASTING_COST_CANNOT_BE_EMPTY;
+	private static String		MSG_MAINTENANCE_COST;
+	private static String		MSG_MAINTENANCE_COST_TOOLTIP;
+	private static String		MSG_CASTING_TIME;
+	private static String		MSG_CASTING_TIME_TOOLTIP;
+	private static String		MSG_CASTING_TIME_CANNOT_BE_EMPTY;
+	private static String		MSG_DURATION;
+	private static String		MSG_DURATION_TOOLTIP;
+	private static String		MSG_DURATION_CANNOT_BE_EMPTY;
+	private static String		MSG_CATEGORIES;
+	private static String		MSG_CATEGORIES_TOOLTIP;
+	private static String		MSG_NOTES;
+	private static String		MSG_NOTES_TOOLTIP;
+	private static String		MSG_EDITOR_POINTS;
+	private static String		MSG_EDITOR_POINTS_TOOLTIP;
+	private static String		MSG_EDITOR_LEVEL;
+	private static String		MSG_EDITOR_LEVEL_TOOLTIP;
+	private static String		MSG_DIFFICULTY;
+	private static String		MSG_DIFFICULTY_TOOLTIP;
+	private static String		MSG_EDITOR_REFERENCE;
+	private static String		MSG_REFERENCE_TOOLTIP;
+	private JTextField			mNameField;
+	private JTextField			mCollegeField;
+	private JTextField			mClassField;
+	private JTextField			mCastingCostField;
+	private JTextField			mMaintenanceField;
+	private JTextField			mCastingTimeField;
+	private JTextField			mDurationField;
+	private JComboBox			mDifficultyCombo;
+	private JTextField			mNotesField;
+	private JTextField			mCategoriesField;
+	private JTextField			mPointsField;
+	private JTextField			mLevelField;
+	private JTextField			mReferenceField;
+	private JTabbedPane			mTabPanel;
+	private PrereqsPanel		mPrereqs;
+	private JCheckBox			mHasTechLevel;
+	private JTextField			mTechLevel;
+	private String				mSavedTechLevel;
+	private MeleeWeaponEditor	mMeleeWeapons;
 	private RangedWeaponEditor	mRangedWeapons;
 
 	static {
@@ -156,6 +159,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 			refParent = ptsPanel;
 		}
 		mNotesField = createField(wrapper3, wrapper3, MSG_NOTES, spell.getNotes(), MSG_NOTES_TOOLTIP, 0);
+		mCategoriesField = createField(wrapper3, wrapper3, MSG_CATEGORIES, spell.getCategoriesAsString(), MSG_CATEGORIES_TOOLTIP, 0);
 		mReferenceField = createField(refParent, noGapWrapper, MSG_EDITOR_REFERENCE, mRow.getReference(), MSG_REFERENCE_TOOLTIP, 6);
 		noGapWrapper.add(new JPanel());
 		refParent.add(noGapWrapper);
@@ -225,8 +229,6 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		JScrollPane scrollPanel = new JScrollPane(editor);
 
 		scrollPanel.setMinimumSize(new Dimension(500, 120));
-// scrollPanel.getContentBorderView().setBorder(new TKLineBorder(TKLineBorder.LEFT_EDGE |
-// TKLineBorder.TOP_EDGE));
 		scrollPanel.setName(editor.toString());
 		if (!mIsEditable) {
 			UIUtilities.disableControls(editor);
@@ -359,6 +361,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 			}
 		}
 		modified |= mRow.setNotes(mNotesField.getText());
+		modified |= mRow.setCategories(mCategoriesField.getText());
 		if (mPrereqs != null) {
 			modified |= mRow.setPrereqs(mPrereqs.getPrereqList());
 		}

@@ -69,7 +69,7 @@ public abstract class Row {
 	 * @param column The column.
 	 * @return The icon for the specified column, or <code>null</code>.
 	 */
-	public BufferedImage getIcon(@SuppressWarnings("unused") Column column) {
+	public BufferedImage getIcon(Column column) {
 		return null;
 	}
 

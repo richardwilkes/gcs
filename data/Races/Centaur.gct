@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="egyb9co5:-7synlagz5791">
+	<advantage_list>
+		<advantage_container open="yes" type="race">
+			<name>Centaur</name>
+			<reference>F105</reference>
+			<advantage>
+				<name>Attribute modifiers: ST +8 (size -10%), IQ-1, HT+2</name>
+				<type>Mental/Physical</type>
+				<base_points>72</base_points>
+				<attribute_bonus>
+					<attribute>ST</attribute>
+					<amount per_level="no">+8</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>IQ</attribute>
+					<amount per_level="no">-1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>HT</attribute>
+					<amount per_level="no">+1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage>
+				<name>Claws (Hooves)</name>
+				<type>Physical</type>
+				<base_points>3</base_points>
+				<melee_weapon>
+					<damage>thr:+1 cr</damage>
+					<reach>C,1</reach>
+					<parry>No</parry>
+					<default>
+						<type>DX</type>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Brawling</name>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Karate</name>
+						<modifier>-2</modifier>
+					</default>
+				</melee_weapon>
+				<reference>B42</reference>
+				<dr_bonus>
+					<location>feet</location>
+					<amount per_level="no">+1</amount>
+				</dr_bonus>
+			</advantage>
+			<advantage>
+				<name>Compulsive carousing</name>
+				<type>Mental</type>
+				<base_points>-1</base_points>
+				<reference>B164</reference>
+			</advantage>
+			<advantage>
+				<name>Enhanced Move (Running)</name>
+				<type>Physical, Exotic</type>
+				<levels>1</levels>
+				<points_per_level>20</points_per_level>
+				<reference>B52</reference>
+			</advantage>
+			<advantage>
+				<name>Extra Legs (4 legs)</name>
+				<type>Physical, Exotic</type>
+				<base_points>5</base_points>
+				<reference>B54</reference>
+			</advantage>
+			<advantage>
+				<name>Fearlessness</name>
+				<type>Mental</type>
+				<levels>1</levels>
+				<points_per_level>2</points_per_level>
+				<reference>B55</reference>
+			</advantage>
+			<advantage>
+				<name>Finds the trappings of domesticated horses particularly odious</name>
+				<type>Mental</type>
+				<base_points>-1</base_points>
+				<reference>B164</reference>
+			</advantage>
+			<advantage>
+				<name>Impulsiveness (CR: 12)</name>
+				<type>Mental</type>
+				<base_points>-10</base_points>
+				<reference>B139</reference>
+			</advantage>
+			<advantage>
+				<name>Overconfidence (CR: 12)</name>
+				<type>Mental</type>
+				<base_points>-5</base_points>
+				<reference>B148</reference>
+			</advantage>
+			<advantage>
+				<name>Secondary characteristic, SM+1 Per +1</name>
+				<type>Physical</type>
+				<base_points>5</base_points>
+				<attribute_bonus>
+					<attribute>perception</attribute>
+					<amount per_level="no">+1</amount>
+				</attribute_bonus>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+</template>

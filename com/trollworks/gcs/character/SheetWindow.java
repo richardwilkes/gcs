@@ -33,6 +33,7 @@ import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.io.Path;
 import com.trollworks.gcs.utility.io.print.PrintManager;
 import com.trollworks.gcs.widgets.AppWindow;
+import com.trollworks.gcs.widgets.ModifiedMarker;
 import com.trollworks.gcs.widgets.WindowUtils;
 import com.trollworks.gcs.widgets.layout.FlexRow;
 import com.trollworks.gcs.widgets.outline.ListOutline;
@@ -84,14 +85,6 @@ public class SheetWindow extends AppWindow implements Saveable, Printable, Searc
 
 	static {
 		LocalizedMessages.initialize(SheetWindow.class);
-	}
-
-	/**
-	 * @param character The character to get the consumer group for.
-	 * @return The consumer group for the specified character.
-	 */
-	static String getConsumerGroup(GURPSCharacter character) {
-		return "CSSheetWindow:" + character.getUniqueID(); //$NON-NLS-1$
 	}
 
 	/** @return The top character sheet window, if any. */
@@ -194,6 +187,7 @@ public class SheetWindow extends AppWindow implements Saveable, Printable, Searc
 			title = Path.getLeafName(file.getName(), false);
 		}
 		setTitle(title);
+		getRootPane().putClientProperty("Window.documentFile", file); //$NON-NLS-1$
 	}
 
 	@Override public void dispose() {
@@ -215,7 +209,7 @@ public class SheetWindow extends AppWindow implements Saveable, Printable, Searc
 	}
 
 	@Override public String getWindowPrefsPrefix() {
-		return getConsumerGroup(mCharacter) + "."; //$NON-NLS-1$
+		return "SheetWindow:" + mCharacter.getUniqueID() + "."; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/**
@@ -259,7 +253,7 @@ public class SheetWindow extends AppWindow implements Saveable, Printable, Searc
 				row = new Spell(mCharacter, (Spell) row, true, true);
 				addCompleteRow(outline, row, selMap);
 			} else if (row instanceof Equipment) {
-				outline = mSheet.getCarriedEquipmentOutline();
+				outline = mSheet.getEquipmentOutline();
 				if (!map.containsKey(outline)) {
 					map.put(outline, new StateEdit(outline.getModel(), MSG_ADD_ROWS));
 				}
@@ -322,6 +316,10 @@ public class SheetWindow extends AppWindow implements Saveable, Printable, Searc
 	}
 
 	@Override protected void createToolBarContents(JToolBar toolbar, FlexRow row) {
+		ModifiedMarker marker = new ModifiedMarker();
+		mCharacter.addDataModifiedListener(marker);
+		toolbar.add(marker);
+		row.add(marker);
 		mSearch = new Search(this);
 		toolbar.add(mSearch);
 		row.add(mSearch);
@@ -342,8 +340,7 @@ public class SheetWindow extends AppWindow implements Saveable, Printable, Searc
 		searchOne(mSheet.getAdvantageOutline(), text, list);
 		searchOne(mSheet.getSkillOutline(), text, list);
 		searchOne(mSheet.getSpellOutline(), text, list);
-		searchOne(mSheet.getCarriedEquipmentOutline(), text, list);
-		searchOne(mSheet.getOtherEquipmentOutline(), text, list);
+		searchOne(mSheet.getEquipmentOutline(), text, list);
 		return list.toArray();
 	}
 
@@ -363,8 +360,7 @@ public class SheetWindow extends AppWindow implements Saveable, Printable, Searc
 		mSheet.getAdvantageOutline().getModel().deselect();
 		mSheet.getSkillOutline().getModel().deselect();
 		mSheet.getSpellOutline().getModel().deselect();
-		mSheet.getCarriedEquipmentOutline().getModel().deselect();
-		mSheet.getOtherEquipmentOutline().getModel().deselect();
+		mSheet.getEquipmentOutline().getModel().deselect();
 
 		for (Object obj : selection) {
 			Row row = (Row) obj;
@@ -391,10 +387,7 @@ public class SheetWindow extends AppWindow implements Saveable, Printable, Searc
 					if (model != primary.getModel()) {
 						primary = mSheet.getSpellOutline();
 						if (model != primary.getModel()) {
-							primary = mSheet.getCarriedEquipmentOutline();
-							if (model != primary.getModel()) {
-								primary = mSheet.getOtherEquipmentOutline();
-							}
+							primary = mSheet.getEquipmentOutline();
 						}
 					}
 				}

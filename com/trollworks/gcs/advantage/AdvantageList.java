@@ -24,36 +24,21 @@
 package com.trollworks.gcs.advantage;
 
 import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.utility.io.Images;
 import com.trollworks.gcs.utility.io.xml.XMLNodeType;
 import com.trollworks.gcs.utility.io.xml.XMLReader;
 import com.trollworks.gcs.widgets.outline.OutlineModel;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 
-/** A list of (Dis)Advantages. */
+/** A list of Advantages. */
 public class AdvantageList extends ListFile {
-	private static final int	CURRENT_VERSION	= 1;
-	/** The XML tag for (dis)advantage lists. */
+	/** The current version. */
+	public static final int		CURRENT_VERSION	= 1;
+	/** The XML tag for advantage lists. */
 	public static final String	TAG_ROOT		= "advantage_list"; //$NON-NLS-1$
-
-	/** Creates a new, empty (Dis)Advantages list. */
-	public AdvantageList() {
-		super(Advantage.ID_LIST_CHANGED);
-	}
-
-	/**
-	 * Creates a new (Dis)Advantages list from the specified file.
-	 * 
-	 * @param file The file to load the data from.
-	 * @throws IOException if the data cannot be read or the file doesn't contain a valid
-	 *             (dis)advantages list.
-	 */
-	public AdvantageList(File file) throws IOException {
-		super(file, Advantage.ID_LIST_CHANGED);
-	}
 
 	@Override public int getXMLTagVersion() {
 		return CURRENT_VERSION;
@@ -67,16 +52,15 @@ public class AdvantageList extends ListFile {
 		return Images.getAdvantageIcon(large, false);
 	}
 
-	@Override protected void loadList(XMLReader reader) throws IOException {
+	@Override protected void loadList(XMLReader reader, LoadState state) throws IOException {
 		OutlineModel model = getModel();
 		String marker = reader.getMarker();
-
 		do {
 			if (reader.next() == XMLNodeType.START_TAG) {
 				String name = reader.getName();
 
 				if (Advantage.TAG_ADVANTAGE.equals(name) || Advantage.TAG_ADVANTAGE_CONTAINER.equals(name)) {
-					model.addRow(new Advantage(this, reader), true);
+					model.addRow(new Advantage(this, reader, state), true);
 				} else {
 					reader.skipTag(name);
 				}

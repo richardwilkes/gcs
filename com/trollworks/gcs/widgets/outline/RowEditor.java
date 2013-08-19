@@ -25,6 +25,7 @@ package com.trollworks.gcs.widgets.outline;
 
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.widgets.ActionPanel;
+import com.trollworks.gcs.widgets.CommitEnforcer;
 import com.trollworks.gcs.widgets.WindowUtils;
 import com.trollworks.gcs.widgets.layout.ColumnLayout;
 import com.trollworks.gcs.widgets.layout.RowDistribution;
@@ -146,10 +147,8 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 	 * @return Whether anything was modified.
 	 */
 	public final boolean applyChanges() {
-		boolean modified;
-
-		WindowUtils.forceFocusToAccept();
-		modified = applyChangesSelf();
+		CommitEnforcer.forceFocusToAccept();
+		boolean modified = applyChangesSelf();
 		if (modified) {
 			mRow.getDataFile().setModified(true);
 		}

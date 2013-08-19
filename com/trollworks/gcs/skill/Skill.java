@@ -26,6 +26,8 @@ package com.trollworks.gcs.skill;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.common.LoadState;
+import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.utility.io.Images;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.io.xml.XMLReader;
@@ -50,61 +52,66 @@ import java.util.List;
 
 /** A GURPS Skill. */
 public class Skill extends ListRow {
+	private static final int		CURRENT_VERSION				= 1;
+	/** The extension for Skill lists. */
+	public static final String		OLD_SKILL_EXTENSION			= ".skl";										//$NON-NLS-1$
 	/** The default name. */
-	protected static String				MSG_DEFAULT_NAME;
+	protected static String			MSG_DEFAULT_NAME;
 	/** The XML tag used for items. */
-	public static final String			TAG_SKILL					= "skill";									//$NON-NLS-1$
+	public static final String		TAG_SKILL					= "skill";										//$NON-NLS-1$
 	/** The XML tag used for containers. */
-	public static final String			TAG_SKILL_CONTAINER			= "skill_container";						//$NON-NLS-1$
-	private static final String			TAG_NAME					= "name";									//$NON-NLS-1$
-	private static final String			TAG_SPECIALIZATION			= "specialization";						//$NON-NLS-1$
-	private static final String			TAG_TECH_LEVEL				= "tech_level";							//$NON-NLS-1$
-	private static final String			TAG_DIFFICULTY				= "difficulty";							//$NON-NLS-1$
-	private static final String			TAG_POINTS					= "points";								//$NON-NLS-1$
-	private static final String			TAG_REFERENCE				= "reference";								//$NON-NLS-1$
-	private static final String			TAG_ENCUMBRANCE_PENALTY		= "encumbrance_penalty_multiplier";		//$NON-NLS-1$
+	public static final String		TAG_SKILL_CONTAINER			= "skill_container";							//$NON-NLS-1$
+	private static final String		TAG_NAME					= "name";										//$NON-NLS-1$
+	private static final String		TAG_SPECIALIZATION			= "specialization";							//$NON-NLS-1$
+	private static final String		TAG_TECH_LEVEL				= "tech_level";								//$NON-NLS-1$
+	private static final String		TAG_DIFFICULTY				= "difficulty";								//$NON-NLS-1$
+	private static final String		TAG_POINTS					= "points";									//$NON-NLS-1$
+	private static final String		TAG_REFERENCE				= "reference";									//$NON-NLS-1$
+	private static final String		TAG_ENCUMBRANCE_PENALTY		= "encumbrance_penalty_multiplier";			//$NON-NLS-1$
 	/** The prefix used in front of all IDs for the skills. */
-	public static final String			PREFIX						= GURPSCharacter.CHARACTER_PREFIX + "skill.";	//$NON-NLS-1$
+	public static final String		PREFIX						= GURPSCharacter.CHARACTER_PREFIX + "skill.";	//$NON-NLS-1$
 	/** The field ID for name changes. */
-	public static final String			ID_NAME						= PREFIX + "Name";							//$NON-NLS-1$
+	public static final String		ID_NAME						= PREFIX + "Name";								//$NON-NLS-1$
 	/** The field ID for specialization changes. */
-	public static final String			ID_SPECIALIZATION			= PREFIX + "Specialization";				//$NON-NLS-1$
+	public static final String		ID_SPECIALIZATION			= PREFIX + "Specialization";					//$NON-NLS-1$
 	/** The field ID for tech level changes. */
-	public static final String			ID_TECH_LEVEL				= PREFIX + "TechLevel";					//$NON-NLS-1$
+	public static final String		ID_TECH_LEVEL				= PREFIX + "TechLevel";						//$NON-NLS-1$
 	/** The field ID for level changes. */
-	public static final String			ID_LEVEL					= PREFIX + "Level";						//$NON-NLS-1$
+	public static final String		ID_LEVEL					= PREFIX + "Level";							//$NON-NLS-1$
 	/** The field ID for relative level changes. */
-	public static final String			ID_RELATIVE_LEVEL			= PREFIX + "RelativeLevel";				//$NON-NLS-1$
+	public static final String		ID_RELATIVE_LEVEL			= PREFIX + "RelativeLevel";					//$NON-NLS-1$
 	/** The field ID for difficulty changes. */
-	public static final String			ID_DIFFICULTY				= PREFIX + "Difficulty";					//$NON-NLS-1$
+	public static final String		ID_DIFFICULTY				= PREFIX + "Difficulty";						//$NON-NLS-1$
 	/** The field ID for point changes. */
-	public static final String			ID_POINTS					= PREFIX + "Points";						//$NON-NLS-1$
+	public static final String		ID_POINTS					= PREFIX + "Points";							//$NON-NLS-1$
 	/** The field ID for page reference changes. */
-	public static final String			ID_REFERENCE				= PREFIX + "Reference";					//$NON-NLS-1$
+	public static final String		ID_REFERENCE				= PREFIX + "Reference";						//$NON-NLS-1$
 	/** The field ID for enumbrance penalty multiplier changes. */
-	public static final String			ID_ENCUMBRANCE_PENALTY		= PREFIX + "EncMultplier";					//$NON-NLS-1$
+	public static final String		ID_ENCUMBRANCE_PENALTY		= PREFIX + "EncMultplier";						//$NON-NLS-1$
+	/** The field ID for when the categories change. */
+	public static final String		ID_CATEGORY					= PREFIX + "Category";							//$NON-NLS-1$
 	/** The field ID for when the row hierarchy changes. */
-	public static final String			ID_LIST_CHANGED				= PREFIX + "ListChanged";					//$NON-NLS-1$
+	public static final String		ID_LIST_CHANGED				= PREFIX + "ListChanged";						//$NON-NLS-1$
 	/** The field ID for when the skill becomes or stops being a weapon. */
-	public static final String			ID_WEAPON_STATUS_CHANGED	= PREFIX + "WeaponStatus";					//$NON-NLS-1$
-	private static final String			NEWLINE						= "\n";									//$NON-NLS-1$
-	private static final String			SPACE						= " ";										//$NON-NLS-1$
-	private static final String			EMPTY						= "";										//$NON-NLS-1$
-	private static final String			ASTERISK					= "*";										//$NON-NLS-1$
-	private static final String			SLASH						= "/";										//$NON-NLS-1$
-	private String						mName;
-	private String						mSpecialization;
-	private String						mTechLevel;
+	public static final String		ID_WEAPON_STATUS_CHANGED	= PREFIX + "WeaponStatus";						//$NON-NLS-1$
+	private static final String		NEWLINE						= "\n";										//$NON-NLS-1$
+	private static final String		SPACE						= " ";											//$NON-NLS-1$
+	private static final String		EMPTY						= "";											//$NON-NLS-1$
+	private static final String		ASTERISK					= "*";											//$NON-NLS-1$
+	private static final String		SLASH						= "/";											//$NON-NLS-1$
+	private String					mName;
+	private String					mSpecialization;
+	private String					mTechLevel;
 	/** The level. */
-	protected int						mLevel;
+	protected int					mLevel;
 	/** The relative level. */
-	protected int						mRelativeLevel;
+	protected int					mRelativeLevel;
 	private SkillAttribute			mAttribute;
 	private SkillDifficulty			mDifficulty;
 	/** The points spent. */
-	protected int						mPoints;
-	private String						mReference;
-	private int							mEncumbrancePenaltyMultiplier;
+	protected int					mPoints;
+	private String					mReference;
+	private int						mEncumbrancePenaltyMultiplier;
 	private ArrayList<WeaponStats>	mWeapons;
 
 	static {
@@ -205,11 +212,12 @@ public class Skill extends ListRow {
 	 * 
 	 * @param dataFile The data file to associate it with.
 	 * @param reader The XML reader to load from.
+	 * @param state The {@link LoadState} to use.
 	 * @throws IOException
 	 */
-	public Skill(DataFile dataFile, XMLReader reader) throws IOException {
+	public Skill(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
 		this(dataFile, TAG_SKILL_CONTAINER.equals(reader.getName()));
-		load(reader, false);
+		load(reader, state);
 	}
 
 	@Override public String getLocalizedName() {
@@ -224,12 +232,16 @@ public class Skill extends ListRow {
 		return canHaveChildren() ? TAG_SKILL_CONTAINER : TAG_SKILL;
 	}
 
+	@Override public int getXMLTagVersion() {
+		return CURRENT_VERSION;
+	}
+
 	@Override public String getRowType() {
 		return "Skill"; //$NON-NLS-1$
 	}
 
-	@Override protected void prepareForLoad(boolean forUndo) {
-		super.prepareForLoad(forUndo);
+	@Override protected void prepareForLoad(LoadState state) {
+		super.prepareForLoad(state);
 		mName = getLocalizedName();
 		mSpecialization = EMPTY;
 		mTechLevel = null;
@@ -241,24 +253,26 @@ public class Skill extends ListRow {
 		mWeapons = new ArrayList<WeaponStats>();
 	}
 
-	@Override protected void loadSubElement(XMLReader reader, boolean forUndo) throws IOException {
+	@Override protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
 		String name = reader.getName();
-
 		if (TAG_NAME.equals(name)) {
 			mName = reader.readText().replace(NEWLINE, SPACE);
 		} else if (TAG_SPECIALIZATION.equals(name)) {
 			mSpecialization = reader.readText().replace(NEWLINE, SPACE);
 		} else if (TAG_TECH_LEVEL.equals(name)) {
 			mTechLevel = reader.readText().replace(NEWLINE, SPACE);
-			if (mTechLevel != null && getDataFile() instanceof ListFile) {
-				mTechLevel = EMPTY;
+			if (mTechLevel != null) {
+				DataFile dataFile = getDataFile();
+				if (dataFile instanceof ListFile || dataFile instanceof LibraryFile) {
+					mTechLevel = EMPTY;
+				}
 			}
 		} else if (TAG_REFERENCE.equals(name)) {
 			mReference = reader.readText().replace(NEWLINE, SPACE);
-		} else if (!forUndo && (TAG_SKILL.equals(name) || TAG_SKILL_CONTAINER.equals(name))) {
-			addChild(new Skill(mDataFile, reader));
-		} else if (!forUndo && Technique.TAG_TECHNIQUE.equals(name)) {
-			addChild(new Technique(mDataFile, reader));
+		} else if (!state.mForUndo && (TAG_SKILL.equals(name) || TAG_SKILL_CONTAINER.equals(name))) {
+			addChild(new Skill(mDataFile, reader, state));
+		} else if (!state.mForUndo && Technique.TAG_TECHNIQUE.equals(name)) {
+			addChild(new Technique(mDataFile, reader, state));
 		} else if (!canHaveChildren()) {
 			if (TAG_DIFFICULTY.equals(name)) {
 				setDifficultyFromText(reader.readText().replace(NEWLINE, SPACE));
@@ -271,10 +285,10 @@ public class Skill extends ListRow {
 			} else if (RangedWeaponStats.TAG_ROOT.equals(name)) {
 				mWeapons.add(new RangedWeaponStats(this, reader));
 			} else {
-				super.loadSubElement(reader, forUndo);
+				super.loadSubElement(reader, state);
 			}
 		} else {
-			super.loadSubElement(reader, forUndo);
+			super.loadSubElement(reader, state);
 		}
 	}
 
@@ -516,7 +530,10 @@ public class Skill extends ListRow {
 	}
 
 	@Override public boolean contains(String text, boolean lowerCaseOnly) {
-		return getName().toLowerCase().indexOf(text) != -1;
+		if (getName().toLowerCase().indexOf(text) != -1) {
+			return true;
+		}
+		return super.contains(text, lowerCaseOnly);
 	}
 
 	@Override public Object getData(Column column) {
@@ -649,14 +666,11 @@ public class Skill extends ListRow {
 
 	private static SkillDefault getBestDefaultWithPoints(GURPSCharacter character, Skill exclude, Collection<SkillDefault> defaults, SkillAttribute attribute, SkillDifficulty difficulty, HashSet<Skill> excludes) {
 		SkillDefault best = getBestDefault(character, exclude, defaults, excludes);
-
 		if (best != null) {
 			int baseLine = attribute.getBaseSkillLevel(character) + difficulty.getBaseRelativeLevel();
 			int level = best.getLevel();
-
-			if (SkillDefaultType.Skill == best.getType()) {
+			if (best.getType().isSkillBased()) {
 				String name = best.getName();
-
 				level -= character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, best.getSpecialization());
 				level -= character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
 			}
@@ -679,11 +693,9 @@ public class Skill extends ListRow {
 			if (!defaults.isEmpty()) {
 				int best = Integer.MIN_VALUE;
 				SkillDefault bestSkill = null;
-
 				excludes.add(exclude);
 				for (SkillDefault skillDefault : defaults) {
 					int level = skillDefault.getType().getSkillLevel(character, skillDefault, excludes);
-
 					if (level > best) {
 						best = level;
 						bestSkill = new SkillDefault(skillDefault);
@@ -717,5 +729,9 @@ public class Skill extends ListRow {
 				one.applyNameableKeys(map);
 			}
 		}
+	}
+
+	@Override protected String getCategoryID() {
+		return ID_CATEGORY;
 	}
 }

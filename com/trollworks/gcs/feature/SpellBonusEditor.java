@@ -25,7 +25,7 @@ package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.WindowUtils;
+import com.trollworks.gcs.widgets.CommitEnforcer;
 import com.trollworks.gcs.widgets.layout.FlexGrid;
 import com.trollworks.gcs.widgets.layout.FlexRow;
 import com.trollworks.gcs.widgets.layout.FlexSpacer;
@@ -88,14 +88,14 @@ public class SpellBonusEditor extends FeatureEditor {
 			switch (((JComboBox) event.getSource()).getSelectedIndex()) {
 				case 0:
 					if (!bonus.allColleges()) {
-						WindowUtils.forceFocusToAccept();
+						CommitEnforcer.forceFocusToAccept();
 						bonus.allColleges(true);
 						rebuild();
 					}
 					break;
 				case 1:
 					if (bonus.allColleges() || !bonus.matchesCollegeName()) {
-						WindowUtils.forceFocusToAccept();
+						CommitEnforcer.forceFocusToAccept();
 						bonus.allColleges(false);
 						bonus.matchesCollegeName(true);
 						rebuild();
@@ -103,7 +103,7 @@ public class SpellBonusEditor extends FeatureEditor {
 					break;
 				case 2:
 					if (bonus.allColleges() || bonus.matchesCollegeName()) {
-						WindowUtils.forceFocusToAccept();
+						CommitEnforcer.forceFocusToAccept();
 						bonus.allColleges(false);
 						bonus.matchesCollegeName(false);
 						rebuild();

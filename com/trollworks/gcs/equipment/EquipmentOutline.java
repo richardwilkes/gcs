@@ -26,6 +26,7 @@ package com.trollworks.gcs.equipment;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.utility.collections.FilteredIterator;
@@ -47,20 +48,20 @@ import java.util.List;
 public class EquipmentOutline extends ListOutline implements Incrementable {
 	private static String	MSG_INCREMENT;
 	private static String	MSG_DECREMENT;
-	private boolean			mIsCarried;
 
 	static {
 		LocalizedMessages.initialize(EquipmentOutline.class);
 	}
 
-	private static OutlineModel extractModel(DataFile dataFile, boolean isCarried) {
+	private static OutlineModel extractModel(DataFile dataFile) {
 		if (dataFile instanceof GURPSCharacter) {
-			GURPSCharacter character = (GURPSCharacter) dataFile;
-
-			return isCarried ? character.getCarriedEquipmentRoot() : character.getOtherEquipmentRoot();
+			return ((GURPSCharacter) dataFile).getEquipmentRoot();
 		}
 		if (dataFile instanceof Template) {
 			return ((Template) dataFile).getEquipmentModel();
+		}
+		if (dataFile instanceof LibraryFile) {
+			return ((LibraryFile) dataFile).getEquipmentList().getModel();
 		}
 		return ((ListFile) dataFile).getModel();
 	}
@@ -69,12 +70,20 @@ public class EquipmentOutline extends ListOutline implements Incrementable {
 	 * Create a new equipment outline.
 	 * 
 	 * @param dataFile The owning data file.
-	 * @param isCarried Whether or not this is the carried equipment.
 	 */
-	public EquipmentOutline(DataFile dataFile, boolean isCarried) {
-		super(dataFile, extractModel(dataFile, isCarried), Equipment.ID_LIST_CHANGED);
-		mIsCarried = isCarried;
-		EquipmentColumn.addColumns(this, dataFile, isCarried);
+	public EquipmentOutline(DataFile dataFile) {
+		this(dataFile, extractModel(dataFile));
+	}
+
+	/**
+	 * Create a new equipment outline.
+	 * 
+	 * @param dataFile The owning data file.
+	 * @param model The {@link OutlineModel} to use.
+	 */
+	public EquipmentOutline(DataFile dataFile, OutlineModel model) {
+		super(dataFile, model, Equipment.ID_LIST_CHANGED);
+		EquipmentColumn.addColumns(this, dataFile);
 	}
 
 	public String getDecrementTitle() {
@@ -142,11 +151,6 @@ public class EquipmentOutline extends ListOutline implements Incrementable {
 			repaintSelection();
 			new MultipleRowUndo(undos);
 		}
-	}
-
-	/** @return Whether or not this is the carried equipment. */
-	public boolean isCarried() {
-		return mIsCarried;
 	}
 
 	@Override protected boolean isRowDragAcceptable(DropTargetDragEvent dtde, Row[] rows) {

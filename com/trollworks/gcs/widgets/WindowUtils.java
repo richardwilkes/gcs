@@ -29,7 +29,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Frame;
-import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -42,6 +41,7 @@ import javax.swing.text.JTextComponent;
 /** Utilities for use with windows. */
 public class WindowUtils {
 	private static String	MSG_ERROR;
+	private static String	MSG_WARNING;
 
 	static {
 		LocalizedMessages.initialize(WindowUtils.class);
@@ -54,6 +54,15 @@ public class WindowUtils {
 	 */
 	public static void showError(Component comp, String msg) {
 		JOptionPane.showMessageDialog(comp, msg, MSG_ERROR, JOptionPane.ERROR_MESSAGE);
+	}
+
+	/**
+	 * @param comp The {@link Component} to use for determining the parent {@link Frame} or
+	 *            {@link Dialog}.
+	 * @param msg The message to display.
+	 */
+	public static void showWarning(Component comp, String msg) {
+		JOptionPane.showMessageDialog(comp, msg, MSG_WARNING, JOptionPane.WARNING_MESSAGE);
 	}
 
 	/**
@@ -87,10 +96,11 @@ public class WindowUtils {
 	 */
 	public static int showOptionDialog(Component parentComponent, Object message, String title, boolean resizable, int optionType, int messageType, Icon icon, Object[] options, Object initialValue) {
 		JOptionPane pane = new JOptionPane(message, messageType, optionType, icon, options, initialValue);
+		pane.setUI(new MyBasicOptionPaneUI(pane.getUI()));
 		pane.setInitialValue(initialValue);
 		pane.setComponentOrientation((parentComponent == null ? JOptionPane.getRootFrame() : parentComponent).getComponentOrientation());
 
-		final JDialog dialog = pane.createDialog(parentComponent, title);
+		final JDialog dialog = pane.createDialog(getWindowForComponent(parentComponent), title);
 		new WindowSizeEnforcer(dialog);
 		pane.selectInitialValue();
 		dialog.setResizable(resizable);
@@ -151,19 +161,6 @@ public class WindowUtils {
 				return (Window) comp;
 			}
 			comp = comp.getParent();
-		}
-	}
-
-	/**
-	 * Temporarily removes focus and then restores it, forcing text fields to "commit" their
-	 * contents.
-	 */
-	public static void forceFocusToAccept() {
-		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-		Component focus = focusManager.getPermanentFocusOwner();
-		if (focus != null) {
-			focusManager.clearGlobalFocusOwner();
-			focus.requestFocus();
 		}
 	}
 }

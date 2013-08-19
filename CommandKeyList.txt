@@ -14,7 +14,7 @@ H
 I		Open Detail Editor
 J		Jump to Find Field
 K		New Skill
-L		New List
+L		New Library
 M
 N		New Character Sheet
 O		Open
@@ -57,14 +57,4 @@ SHIFT+X
 SHIFT+Y
 SHIFT+Z
 
-ALT+A	Advantages List
-ALT+C	Skills by Category List
-ALT+D	Disadvantages List
-ALT+F	Alchemical Formulas List
-ALT+L	Languages List
-ALT+M	Money List
-ALT+P	Powers List
-ALT+Q	Quirks List
-ALT+S	Skills List
-ALT+T	Techniques List
-ALT+Z	Spells (All) List
+ALT+L	Library

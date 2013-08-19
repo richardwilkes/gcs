@@ -26,7 +26,7 @@ package com.trollworks.gcs.menu.file;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.widgets.AppWindow;
-import com.trollworks.gcs.widgets.WindowUtils;
+import com.trollworks.gcs.widgets.CommitEnforcer;
 
 import java.awt.Frame;
 import java.awt.Window;
@@ -71,7 +71,7 @@ public class CloseCommand extends Command {
 	public boolean close(Window window, boolean quitIfLast) {
 		if (window != null && !AppWindow.hasOwnedWindowsShowing(window)) {
 			if (window instanceof Frame && window instanceof Saveable) {
-				WindowUtils.forceFocusToAccept();
+				CommitEnforcer.forceFocusToAccept();
 				Saveable saveable = (Saveable) window;
 				if (saveable.isModified()) {
 					int answer = JOptionPane.showConfirmDialog(window, MessageFormat.format(MSG_SAVE_CHANGES, ((Frame) window).getTitle()), MSG_SAVE, JOptionPane.YES_NO_CANCEL_OPTION);

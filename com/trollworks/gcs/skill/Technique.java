@@ -25,6 +25,8 @@ package com.trollworks.gcs.skill;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.common.LoadState;
+import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.io.xml.XMLReader;
 import com.trollworks.gcs.utility.io.xml.XMLWriter;
 import com.trollworks.gcs.utility.text.NumberUtils;
@@ -47,6 +49,10 @@ public class Technique extends Skill {
 	private SkillDefault		mDefault;
 	private boolean				mLimited;
 	private int					mLimitModifier;
+
+	static {
+		LocalizedMessages.initialize(Technique.class);
+	}
 
 	/**
 	 * Calculates the technique level.
@@ -93,10 +99,8 @@ public class Technique extends Skill {
 
 	private static int getBaseLevel(GURPSCharacter character, SkillDefault def) {
 		SkillDefaultType type = def.getType();
-
-		if (SkillDefaultType.Skill == type) {
+		if (type == SkillDefaultType.Skill) {
 			Skill skill = character != null ? character.getBestSkillNamed(def.getName(), def.getSpecialization(), false, new HashSet<Skill>()) : null;
-
 			return skill != null ? skill.getLevel() : Integer.MIN_VALUE;
 		}
 		// Take the modifier back out, as we wanted the base, not the final value.
@@ -150,11 +154,12 @@ public class Technique extends Skill {
 	 * 
 	 * @param dataFile The data file to associate it with.
 	 * @param reader The XML reader to load from.
+	 * @param state The {@link LoadState} to use.
 	 * @throws IOException
 	 */
-	public Technique(DataFile dataFile, XMLReader reader) throws IOException {
+	public Technique(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
 		this(dataFile);
-		load(reader, false);
+		load(reader, state);
 		if (!(dataFile instanceof GURPSCharacter)) {
 			mPoints = getDifficulty() == SkillDifficulty.A ? 1 : 2;
 		}
@@ -172,16 +177,15 @@ public class Technique extends Skill {
 		return "Technique"; //$NON-NLS-1$
 	}
 
-	@Override protected void prepareForLoad(boolean forUndo) {
-		super.prepareForLoad(forUndo);
+	@Override protected void prepareForLoad(LoadState state) {
+		super.prepareForLoad(state);
 		mDefault = new SkillDefault(SkillDefaultType.Skill, MSG_DEFAULT_NAME, null, 0);
 		mLimited = false;
 		mLimitModifier = 0;
 	}
 
-	@Override protected void loadAttributes(XMLReader reader, boolean forUndo) {
+	@Override protected void loadAttributes(XMLReader reader, LoadState state) {
 		String value = reader.getAttribute(ATTRIBUTE_LIMIT);
-
 		if (value != null && value.length() > 0) {
 			mLimited = true;
 			try {
@@ -191,14 +195,14 @@ public class Technique extends Skill {
 				mLimitModifier = 0;
 			}
 		}
-		super.loadAttributes(reader, forUndo);
+		super.loadAttributes(reader, state);
 	}
 
-	@Override protected void loadSubElement(XMLReader reader, boolean forUndo) throws IOException {
+	@Override protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
 		if (SkillDefault.TAG_ROOT.equals(reader.getName())) {
 			mDefault = new SkillDefault(reader);
 		} else {
-			super.loadSubElement(reader, forUndo);
+			super.loadSubElement(reader, state);
 		}
 	}
 
@@ -220,10 +224,9 @@ public class Technique extends Skill {
 	 * @return <code>true</code> if this technique has its default satisfied.
 	 */
 	public boolean satisfied(StringBuilder builder, String prefix) {
-		if (mDefault.getType() == SkillDefaultType.Skill) {
+		if (mDefault.getType().isSkillBased()) {
 			Skill skill = getCharacter().getBestSkillNamed(mDefault.getName(), mDefault.getSpecialization(), true, new HashSet<Skill>());
 			boolean satisfied = skill != null && skill.getPoints() > 0;
-
 			if (!satisfied && builder != null) {
 				if (skill != null) {
 					builder.append(MessageFormat.format(MSG_REQUIRES_SKILL, prefix, mDefault.getFullName()));

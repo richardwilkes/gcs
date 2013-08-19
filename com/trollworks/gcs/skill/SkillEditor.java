@@ -62,49 +62,52 @@ import javax.swing.event.DocumentListener;
 
 /** The detailed editor for {@link Skill}s. */
 public class SkillEditor extends RowEditor<Skill> implements ActionListener, DocumentListener {
-	private static String			MSG_NAME;
-	private static String			MSG_NAME_TOOLTIP;
-	private static String			MSG_NAME_CANNOT_BE_EMPTY;
-	private static String			MSG_SPECIALIZATION;
-	private static String			MSG_SPECIALIZATION_TOOLTIP;
-	private static String			MSG_NOTES;
-	private static String			MSG_NOTES_TITLE;
-	private static String			MSG_TECH_LEVEL;
-	private static String			MSG_TECH_LEVEL_TOOLTIP;
-	private static String			MSG_TECH_LEVEL_REQUIRED;
-	private static String			MSG_TECH_LEVEL_REQUIRED_TOOLTIP;
-	private static String			MSG_EDITOR_DIFFICULTY;
-	private static String			MSG_EDITOR_DIFFICULTY_TOOLTIP;
-	private static String			MSG_EDITOR_DIFFICULTY_POPUP_TOOLTIP;
-	private static String			MSG_EDITOR_LEVEL;
-	private static String			MSG_EDITOR_LEVEL_TOOLTIP;
-	private static String			MSG_ATTRIBUTE_POPUP_TOOLTIP;
-	private static String			MSG_EDITOR_POINTS;
-	private static String			MSG_EDITOR_POINTS_TOOLTIP;
-	private static String			MSG_EDITOR_REFERENCE;
-	private static String			MSG_REFERENCE_TOOLTIP;
-	private static String			MSG_ENC_PENALTY_MULT;
-	private static String			MSG_ENC_PENALTY_MULT_TOOLTIP;
-	private static String			MSG_NO_ENC_PENALTY;
-	private static String			MSG_ONE_ENC_PENALTY;
-	private static String			MSG_ENC_PENALTY_FORMAT;
-	private JTextField				mNameField;
-	private JTextField				mSpecializationField;
-	private JTextField				mNotesField;
-	private JTextField				mReferenceField;
-	private JCheckBox				mHasTechLevel;
-	private JTextField				mTechLevel;
-	private String					mSavedTechLevel;
-	private JComboBox				mAttributePopup;
-	private JComboBox				mDifficultyPopup;
-	private JTextField				mPointsField;
-	private JTextField				mLevelField;
-	private JComboBox				mEncPenaltyPopup;
-	private JTabbedPane				mTabPanel;
-	private PrereqsPanel				mPrereqs;
-	private FeaturesPanel				mFeatures;
-	private Defaults				mDefaults;
-	private MeleeWeaponEditor		mMeleeWeapons;
+	private static String		MSG_NAME;
+	private static String		MSG_NAME_TOOLTIP;
+	private static String		MSG_NAME_CANNOT_BE_EMPTY;
+	private static String		MSG_SPECIALIZATION;
+	private static String		MSG_SPECIALIZATION_TOOLTIP;
+	private static String		MSG_CATEGORIES;
+	private static String		MSG_CATEGORIES_TOOLTIP;
+	private static String		MSG_NOTES;
+	private static String		MSG_NOTES_TOOLTIP;
+	private static String		MSG_TECH_LEVEL;
+	private static String		MSG_TECH_LEVEL_TOOLTIP;
+	private static String		MSG_TECH_LEVEL_REQUIRED;
+	private static String		MSG_TECH_LEVEL_REQUIRED_TOOLTIP;
+	private static String		MSG_EDITOR_DIFFICULTY;
+	private static String		MSG_EDITOR_DIFFICULTY_TOOLTIP;
+	private static String		MSG_EDITOR_DIFFICULTY_POPUP_TOOLTIP;
+	private static String		MSG_EDITOR_LEVEL;
+	private static String		MSG_EDITOR_LEVEL_TOOLTIP;
+	private static String		MSG_ATTRIBUTE_POPUP_TOOLTIP;
+	private static String		MSG_EDITOR_POINTS;
+	private static String		MSG_EDITOR_POINTS_TOOLTIP;
+	private static String		MSG_EDITOR_REFERENCE;
+	private static String		MSG_REFERENCE_TOOLTIP;
+	private static String		MSG_ENC_PENALTY_MULT;
+	private static String		MSG_ENC_PENALTY_MULT_TOOLTIP;
+	private static String		MSG_NO_ENC_PENALTY;
+	private static String		MSG_ONE_ENC_PENALTY;
+	private static String		MSG_ENC_PENALTY_FORMAT;
+	private JTextField			mNameField;
+	private JTextField			mSpecializationField;
+	private JTextField			mNotesField;
+	private JTextField			mCategoriesField;
+	private JTextField			mReferenceField;
+	private JCheckBox			mHasTechLevel;
+	private JTextField			mTechLevel;
+	private String				mSavedTechLevel;
+	private JComboBox			mAttributePopup;
+	private JComboBox			mDifficultyPopup;
+	private JTextField			mPointsField;
+	private JTextField			mLevelField;
+	private JComboBox			mEncPenaltyPopup;
+	private JTabbedPane			mTabPanel;
+	private PrereqsPanel		mPrereqs;
+	private FeaturesPanel		mFeatures;
+	private Defaults			mDefaults;
+	private MeleeWeaponEditor	mMeleeWeapons;
 	private RangedWeaponEditor	mRangedWeapons;
 
 	static {
@@ -133,7 +136,8 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 			fields.add(wrapper);
 			mEncPenaltyPopup = createEncumbrancePenaltyMultiplierPopup(fields);
 		}
-		mNotesField = createField(fields, fields, MSG_NOTES, skill.getNotes(), MSG_NOTES_TITLE, 0);
+		mNotesField = createField(fields, fields, MSG_NOTES, skill.getNotes(), MSG_NOTES_TOOLTIP, 0);
+		mCategoriesField = createField(fields, fields, MSG_CATEGORIES, skill.getCategoriesAsString(), MSG_CATEGORIES_TOOLTIP, 0);
 		if (notContainer) {
 			wrapper = createDifficultyPopups(fields);
 		} else {
@@ -174,8 +178,6 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 	private JScrollPane embedEditor(Container editor) {
 		JScrollPane scrollPanel = new JScrollPane(editor);
 		scrollPanel.setMinimumSize(new Dimension(500, 120));
-// scrollPanel.getContentBorderView().setBorder(new TKLineBorder(TKLineBorder.LEFT_EDGE |
-// TKLineBorder.TOP_EDGE));
 		scrollPanel.setName(editor.toString());
 		if (!mIsEditable) {
 			UIUtilities.disableControls(editor);
@@ -316,7 +318,6 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 		if (mLevelField != null) {
 			SkillAttribute attribute = getSkillAttribute();
 			SkillLevel level = Skill.calculateLevel(mRow.getCharacter(), mRow, mNameField.getText(), mSpecializationField.getText(), mDefaults.getDefaults(), attribute, getSkillDifficulty(), getSkillPoints(), new HashSet<Skill>(), getEncumbrancePenaltyMultiplier());
-
 			mLevelField.setText(Skill.getSkillDisplayLevel(level.mLevel, level.mRelativeLevel, attribute, false));
 		}
 	}
@@ -339,9 +340,9 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
 	@Override public boolean applyChangesSelf() {
 		boolean modified = mRow.setName(mNameField.getText());
-
 		modified |= mRow.setReference(mReferenceField.getText());
 		modified |= mRow.setNotes(mNotesField.getText());
+		modified |= mRow.setCategories(mCategoriesField.getText());
 		if (mSpecializationField != null) {
 			modified |= mRow.setSpecialization(mSpecializationField.getText());
 		}

@@ -23,51 +23,41 @@
 
 package com.trollworks.gcs.utility;
 
+import com.trollworks.gcs.utility.text.NumberUtils;
+
 /** Provides basic version checking. */
 public class Version {
 	/**
-	 * Utility routine to extract the version number from a string. Version numbers are assumed to
-	 * be formatted as [major].[minor].[bugfix].[build], where only [major] is required, although if
-	 * a number is specified, all numbers up to that portion must also be specified. The period
-	 * (".") separator character may be substituted with the underscore ("_") character.
+	 * Utility routine to extract the version number from a string. Version numbers are formatted as
+	 * [year].[month].[day] of release. The period (".") separator character may be substituted with
+	 * the underscore ("_") character.
 	 * 
 	 * @param versionString The version string to parse.
 	 * @return The version number.
 	 */
-	public static long extractVersion(String versionString) {
-		long version = 0;
-		int shift = 48;
-		long value = 0;
-
-		for (char ch : versionString.toCharArray()) {
-			if (ch >= '0' && ch <= '9') {
-				value *= 10;
-				value += ch - '0';
-			} else if (ch == '.' || ch == '_') {
-				if (value > 0xEFFF) {
-					value = 0xEFFF;
-				}
-				version |= value << shift;
-				value = 0;
-				shift -= 16;
-				if (shift < 0) {
-					break;
-				}
-			} else {
-				if (value > 0xEFFF) {
-					value = 0xEFFF;
-				}
-				version |= value << shift;
-				value = 0;
-				shift -= 16;
-				break;
+	public static int extractVersion(String versionString) {
+		String[] parts = versionString.split("[\\._]", 3); //$NON-NLS-1$
+		int version = 0;
+		if (parts.length > 0) {
+			version = NumberUtils.getNonLocalizedInteger(parts[0], -1);
+			if (version < 0 || version > 99999) {
+				version = 0;
 			}
+			version *= 10000;
 		}
-		if (shift >= 0) {
-			if (value > 0xEFFF) {
-				value = 0xEFFF;
+		if (parts.length > 1) {
+			int value = NumberUtils.getNonLocalizedInteger(parts[1], 0);
+			if (value < 1 || value > 12) {
+				value = 1;
 			}
-			version |= value << shift;
+			version += value * 100;
+		}
+		if (parts.length > 2) {
+			int value = NumberUtils.getNonLocalizedInteger(parts[2], 0);
+			if (value < 1 || value > 31) {
+				value = 1;
+			}
+			version += value;
 		}
 		return version;
 	}
@@ -79,38 +69,22 @@ public class Version {
 	 * @param version The version number.
 	 * @return The human-readable version number.
 	 */
-	public static String getHumanReadableVersion(long version) {
-		return getHumanReadableVersion(version, false);
-	}
-
-	/**
-	 * Converts a version number returned from {@link #extractVersion(String)} back into a
-	 * human-readable string.
-	 * 
-	 * @param version The version number.
-	 * @param includeBuildNumber <code>true</code> to include all version number digits, including
-	 *            the build number, even if they are zero.
-	 * @return The human-readable version number.
-	 */
-	public static String getHumanReadableVersion(long version, boolean includeBuildNumber) {
+	public static String getHumanReadableVersion(int version) {
 		StringBuilder buffer = new StringBuilder();
-
-		buffer.append(version >> 48);
-		version &= 0x0000FFFFFFFFFFFFL;
-		if (includeBuildNumber || (version & 0x0000FFFFFFFF0000L) > 0) {
-			buffer.append('.');
-			buffer.append(version >> 32);
-			version &= 0x00000000FFFFFFFFL;
-			if (includeBuildNumber || (version & 0x00000000FFFF0000L) > 0) {
-				buffer.append('.');
-				buffer.append(version >> 16);
-				version &= 0x000000000000FFFFL;
-				if (includeBuildNumber) {
-					buffer.append('.');
-					buffer.append(version);
-				}
-			}
+		buffer.append(version / 10000);
+		buffer.append('.');
+		version %= 10000;
+		int value = version / 100;
+		if (value < 10) {
+			buffer.append('0');
 		}
+		buffer.append(value);
+		buffer.append('.');
+		version %= 100;
+		if (version < 10) {
+			buffer.append('0');
+		}
+		buffer.append(version);
 		return buffer.toString();
 	}
 }

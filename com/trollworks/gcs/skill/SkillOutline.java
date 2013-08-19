@@ -26,6 +26,7 @@ package com.trollworks.gcs.skill;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.utility.collections.FilteredIterator;
@@ -59,6 +60,9 @@ public class SkillOutline extends ListOutline implements Incrementable {
 		if (dataFile instanceof Template) {
 			return ((Template) dataFile).getSkillsModel();
 		}
+		if (dataFile instanceof LibraryFile) {
+			return ((LibraryFile) dataFile).getSkillList().getModel();
+		}
 		return ((ListFile) dataFile).getModel();
 	}
 
@@ -68,7 +72,17 @@ public class SkillOutline extends ListOutline implements Incrementable {
 	 * @param dataFile The owning data file.
 	 */
 	public SkillOutline(DataFile dataFile) {
-		super(dataFile, extractModel(dataFile), Skill.ID_LIST_CHANGED);
+		this(dataFile, extractModel(dataFile));
+	}
+
+	/**
+	 * Create a new skills outline.
+	 * 
+	 * @param dataFile The owning data file.
+	 * @param model The {@link OutlineModel} to use.
+	 */
+	public SkillOutline(DataFile dataFile, OutlineModel model) {
+		super(dataFile, model, Skill.ID_LIST_CHANGED);
 		SkillColumn.addColumns(this, dataFile);
 	}
 

@@ -20,7 +20,7 @@
 		<mkdir dir="${BuildDir}"/>
 
 		<!-- Compile the code. -->
-		<unjar src="libraries/itext-2.0.4.jar" dest="${JavaBuildDir}"/>
+		<unjar src="libraries/itext-2.0.6.jar" dest="${JavaBuildDir}"/>
 		<unjar src="libraries/AppleJavaExtensions.jar" dest="${JavaBuildDir}"/>
 		<javac srcdir="." destdir="${JavaBuildDir}"
 			includes="com/trollworks/gcs/app/Main.java"
@@ -39,7 +39,7 @@
 		<!-- Copy the data dir. -->
 		<mkdir dir="${InstallDir}/data"/>
 		<copy todir="${InstallDir}/data">
-			<fileset dir="data" includes="**/*.adq,**/*.eqp,**/*.gct,**/*.html,**/*.skl,**/*.spl"/>
+			<fileset dir="data" includes="**/*.glb,**/*.adq,**/*.eqp,**/*.gct,**/*.html,**/*.skl,**/*.spl"/>
 		</copy>
 
 		<!-- Copy the documentation. -->

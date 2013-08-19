@@ -79,10 +79,8 @@ public enum SkillDefaultType {
 
 		@Override public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<Skill> excludes) {
 			int best = Integer.MIN_VALUE;
-
 			for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
 				int level = skill.getLevel();
-
 				if (level > best) {
 					best = level;
 				}
@@ -92,20 +90,88 @@ public enum SkillDefaultType {
 
 		@Override public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, HashSet<Skill> excludes) {
 			int best = Integer.MIN_VALUE;
-
 			for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
 				int level = skill.getLevel(excludes);
-
 				if (level > best) {
 					best = level;
 				}
 			}
 			return finalLevel(skillDefault, best);
 		}
+
+		@Override public boolean isSkillBased() {
+			return true;
+		}
+	},
+	/** The type for Parry-based defaults. */
+	Parry {
+		@Override public String toString() {
+			return MSG_PARRY_SKILL_NAMED;
+		}
+
+		@Override public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<Skill> excludes) {
+			int best = Integer.MIN_VALUE;
+			for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
+				int level = skill.getLevel();
+				if (level > best) {
+					best = level;
+				}
+			}
+			return finalLevel(skillDefault, best / 2 + 3 + character.getParryBonus());
+		}
+
+		@Override public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, HashSet<Skill> excludes) {
+			int best = Integer.MIN_VALUE;
+			for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
+				int level = skill.getLevel(excludes);
+				if (level > best) {
+					best = level;
+				}
+			}
+			return finalLevel(skillDefault, best / 2 + 3 + character.getParryBonus());
+		}
+
+		@Override public boolean isSkillBased() {
+			return true;
+		}
+	},
+	/** The type for Block-based defaults. */
+	Block {
+		@Override public String toString() {
+			return MSG_BLOCK_SKILL_NAMED;
+		}
+
+		@Override public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<Skill> excludes) {
+			int best = Integer.MIN_VALUE;
+			for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
+				int level = skill.getLevel();
+				if (level > best) {
+					best = level;
+				}
+			}
+			return finalLevel(skillDefault, best / 2 + 3 + character.getBlockBonus());
+		}
+
+		@Override public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, HashSet<Skill> excludes) {
+			int best = Integer.MIN_VALUE;
+			for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
+				int level = skill.getLevel(excludes);
+				if (level > best) {
+					best = level;
+				}
+			}
+			return finalLevel(skillDefault, best / 2 + 3 + character.getBlockBonus());
+		}
+
+		@Override public boolean isSkillBased() {
+			return true;
+		}
 	};
 
 	static String	MSG_PERCEPTION;
 	static String	MSG_SKILL_NAMED;
+	static String	MSG_PARRY_SKILL_NAMED;
+	static String	MSG_BLOCK_SKILL_NAMED;
 
 	static {
 		LocalizedMessages.initialize(SkillDefaultType.class);
@@ -114,8 +180,7 @@ public enum SkillDefaultType {
 	/**
 	 * @param name The name of a {@link SkillDefaultType}, as returned from {@link #name()} or
 	 *            {@link #toString()}.
-	 * @return The matching {@link SkillDefaultType}, or {@link #Skill} if a match cannot be
-	 *         found.
+	 * @return The matching {@link SkillDefaultType}, or {@link #Skill} if a match cannot be found.
 	 */
 	public static final SkillDefaultType getByName(String name) {
 		for (SkillDefaultType type : values()) {
@@ -124,6 +189,11 @@ public enum SkillDefaultType {
 			}
 		}
 		return Skill;
+	}
+
+	/** @return Whether the {@link SkillDefaultType} is based on another skill or not. */
+	public boolean isSkillBased() {
+		return false;
 	}
 
 	/**

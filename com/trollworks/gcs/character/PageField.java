@@ -36,6 +36,7 @@ import com.trollworks.gcs.utility.text.WeightFormatter;
 import com.trollworks.gcs.widgets.GraphicsUtilities;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
@@ -112,6 +113,9 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		setFont(UIManager.getFont(Fonts.KEY_FIELD));
 		setBorder(null);
 		setOpaque(false);
+		// Just setting opaque to false isn't enough for some reason, so I'm also setting the
+		// background color to a 100% transparent value.
+		setBackground(new Color(255, 255, 255, 0));
 		setHorizontalAlignment(alignment);
 		setEditable(editable);
 		setEnabled(editable);
@@ -134,6 +138,14 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		setDisabledTextColor(UIManager.getColor("TextField.inactiveForeground")); //$NON-NLS-1$
 	}
 
+	@Override public Dimension getPreferredSize() {
+		Dimension size = super.getPreferredSize();
+		// Don't know why this is needed, but it seems to be. Without it, text is being truncated by
+		// about 2 pixels.
+		size.width += 2;
+		return size;
+	}
+
 	@Override public String getToolTipText() {
 		if (mCustomToolTip != null) {
 			return MessageFormat.format(mCustomToolTip, NumberUtils.format(((Integer) mCharacter.getValueForID(GURPSCharacter.POINTS_PREFIX + mConsumedType)).intValue()));
@@ -144,6 +156,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 	public void handleNotification(Object producer, String name, Object data) {
 		setValue(data);
 		invalidate();
+		repaint();
 	}
 
 	@Override protected void processFocusEvent(FocusEvent event) {
@@ -199,6 +212,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		FACTORY_MAP.put(GURPSCharacter.ID_INTELLIGENCE, factory);
 		FACTORY_MAP.put(GURPSCharacter.ID_HEALTH, factory);
 		FACTORY_MAP.put(GURPSCharacter.ID_WILL, factory);
+		FACTORY_MAP.put(GURPSCharacter.ID_FRIGHT_CHECK, factory);
 		FACTORY_MAP.put(GURPSCharacter.ID_BASIC_MOVE, factory);
 		FACTORY_MAP.put(GURPSCharacter.ID_PERCEPTION, factory);
 		FACTORY_MAP.put(GURPSCharacter.ID_VISION, factory);

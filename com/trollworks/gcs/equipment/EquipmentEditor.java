@@ -23,7 +23,6 @@
 
 package com.trollworks.gcs.equipment;
 
-import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
@@ -46,7 +45,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -59,7 +58,6 @@ import javax.swing.event.DocumentListener;
 /** The detailed editor for {@link Equipment}s. */
 public class EquipmentEditor extends RowEditor<Equipment> implements ActionListener, DocumentListener {
 	private static String		MSG_REFERENCE_TOOLTIP;
-	private static String		MSG_EQUIPPED_TOOLTIP;
 	private static String		MSG_VALUE_TOOLTIP;
 	private static String		MSG_EXT_VALUE_TOOLTIP;
 	private static String		MSG_NAME;
@@ -71,27 +69,30 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 	private static String		MSG_EDITOR_LEGALITY_CLASS_TOOLTIP;
 	private static String		MSG_EDITOR_QUANTITY;
 	private static String		MSG_EDITOR_QUANTITY_TOOLTIP;
-	private static String		MSG_EDITOR_EQUIPPED;
 	private static String		MSG_EDITOR_VALUE;
 	private static String		MSG_EDITOR_EXTENDED_VALUE;
 	private static String		MSG_EDITOR_WEIGHT;
 	private static String		MSG_EDITOR_WEIGHT_TOOLTIP;
 	private static String		MSG_EDITOR_EXTENDED_WEIGHT;
 	private static String		MSG_EDITOR_EXTENDED_WEIGHT_TOOLTIP;
+	private static String		MSG_CATEGORIES;
+	private static String		MSG_CATEGORIES_TOOLTIP;
 	private static String		MSG_NOTES;
 	private static String		MSG_NOTES_TOOLTIP;
 	private static String		MSG_EDITOR_REFERENCE;
 	private static String		MSG_POUNDS;
+	private static String		MSG_STATE_TOOLTIP;
+	private JComboBox			mStateCombo;
 	private JTextField			mDescriptionField;
 	private JTextField			mTechLevelField;
 	private JTextField			mLegalityClassField;
 	private JTextField			mQtyField;
-	private JCheckBox			mEquipped;
 	private JTextField			mValueField;
 	private JTextField			mExtValueField;
 	private JTextField			mWeightField;
 	private JTextField			mExtWeightField;
 	private JTextField			mNotesField;
+	private JTextField			mCategoriesField;
 	private JTextField			mReferenceField;
 	private JTabbedPane			mTabPanel;
 	private PrereqsPanel		mPrereqs;
@@ -122,6 +123,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		createSecondLineFields(fields);
 		createValueAndWeightFields(fields);
 		mNotesField = createField(fields, fields, MSG_NOTES, equipment.getNotes(), MSG_NOTES_TOOLTIP, 0);
+		mCategoriesField = createField(fields, fields, MSG_CATEGORIES, equipment.getCategoriesAsString(), MSG_CATEGORIES_TOOLTIP, 0);
 		mReferenceField = createField(fields, wrapper, MSG_EDITOR_REFERENCE, mRow.getReference(), MSG_REFERENCE_TOOLTIP, 6);
 		wrapper.add(new JPanel());
 		fields.add(wrapper);
@@ -150,29 +152,26 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		add(mTabPanel);
 	}
 
-	private boolean isCarried() {
-		GURPSCharacter character = mRow.getCharacter();
-
-		if (character != null) {
-			return character.getCarriedEquipmentRoot() == mRow.getOwner();
-		}
-		return false;
+	private boolean showEquipmentState() {
+		return mRow.getCharacter() != null;
 	}
 
 	private void createSecondLineFields(Container parent) {
 		boolean isContainer = mRow.canHaveChildren();
-		boolean isCarried = isCarried();
-		JPanel wrapper = new JPanel(new ColumnLayout((isContainer ? 4 : 6) + (isCarried ? 1 : 0)));
+		JPanel wrapper = new JPanel(new ColumnLayout((isContainer ? 4 : 6) + (showEquipmentState() ? 1 : 0)));
 
 		if (!isContainer) {
 			mQtyField = createIntegerNumberField(parent, wrapper, MSG_EDITOR_QUANTITY, mRow.getQuantity(), MSG_EDITOR_QUANTITY_TOOLTIP, 9);
 		}
 		mTechLevelField = createField(isContainer ? parent : wrapper, wrapper, MSG_EDITOR_TECH_LEVEL, mRow.getTechLevel(), MSG_EDITOR_TECH_LEVEL_TOOLTIP, 3);
 		mLegalityClassField = createField(wrapper, wrapper, MSG_EDITOR_LEGALITY_CLASS, mRow.getLegalityClass(), MSG_EDITOR_LEGALITY_CLASS_TOOLTIP, 3);
-		if (isCarried) {
-			mEquipped = new JCheckBox(MSG_EDITOR_EQUIPPED, mRow.isEquipped());
-			mEquipped.setToolTipText(MSG_EQUIPPED_TOOLTIP);
-			wrapper.add(mEquipped);
+		if (showEquipmentState()) {
+			mStateCombo = new JComboBox(EquipmentState.values());
+			mStateCombo.setSelectedItem(mRow.getState());
+			UIUtilities.setOnlySize(mStateCombo, mStateCombo.getPreferredSize());
+			mStateCombo.setEnabled(mIsEditable);
+			mStateCombo.setToolTipText(MSG_STATE_TOOLTIP);
+			wrapper.add(mStateCombo);
 		}
 		wrapper.add(new JPanel());
 		parent.add(wrapper);
@@ -269,17 +268,17 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
 	@Override public boolean applyChangesSelf() {
 		boolean modified = mRow.setDescription(mDescriptionField.getText());
-
 		modified |= mRow.setReference(mReferenceField.getText());
 		modified |= mRow.setTechLevel(mTechLevelField.getText());
 		modified |= mRow.setLegalityClass(mLegalityClassField.getText());
 		modified |= mRow.setQuantity(getQty());
 		modified |= mRow.setValue(NumberUtils.getDouble(mValueField.getText(), 0.0));
 		modified |= mRow.setWeight(NumberUtils.getDouble(mWeightField.getText(), 0.0));
-		if (isCarried()) {
-			modified |= mRow.setEquipped(mEquipped.isSelected());
+		if (showEquipmentState()) {
+			modified |= mRow.setState((EquipmentState) mStateCombo.getSelectedItem());
 		}
 		modified |= mRow.setNotes(mNotesField.getText());
+		modified |= mRow.setCategories(mCategoriesField.getText());
 		if (mPrereqs != null) {
 			modified |= mRow.setPrereqs(mPrereqs.getPrereqList());
 		}
@@ -303,7 +302,6 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
 	public void actionPerformed(ActionEvent event) {
 		Object src = event.getSource();
-
 		if (src == mValueField) {
 			valueChanged();
 		} else if (src == mWeightField) {

@@ -26,6 +26,7 @@ package com.trollworks.gcs.advantage;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.utility.io.Images;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
@@ -140,7 +141,7 @@ public enum AdvantageColumn {
 		}
 
 		@Override public boolean shouldDisplay(DataFile dataFile) {
-			return dataFile instanceof ListFile;
+			return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
 		}
 
 		@Override public Object getData(Advantage advantage) {
@@ -219,6 +220,32 @@ public enum AdvantageColumn {
 			return advantage.getTypeAsText();
 		}
 	},
+	/** The category. */
+	CATEGORY {
+		@Override public String toString() {
+			return MSG_CATEGORY;
+		}
+
+		@Override public String getToolTip() {
+			return MSG_CATEGORY_TOOLTIP;
+		}
+
+		@Override public Cell getCell() {
+			return new ListTextCell(SwingConstants.LEFT, true);
+		}
+
+		@Override public boolean shouldDisplay(DataFile dataFile) {
+			return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
+		}
+
+		@Override public Object getData(Advantage advantage) {
+			return getDataAsText(advantage);
+		}
+
+		@Override public String getDataAsText(Advantage advantage) {
+			return advantage.getCategoriesAsString();
+		}
+	},
 	/** The page reference. */
 	REFERENCE {
 		@Override public String toString() {
@@ -252,6 +279,8 @@ public enum AdvantageColumn {
 	static String	MSG_POINTS_TOOLTIP;
 	static String	MSG_TYPE;
 	static String	MSG_TYPE_TOOLTIP;
+	static String	MSG_CATEGORY;
+	static String	MSG_CATEGORY_TOOLTIP;
 	static String	MSG_REFERENCE;
 	static String	MSG_REFERENCE_TOOLTIP;
 
@@ -292,7 +321,6 @@ public enum AdvantageColumn {
 	public static void addColumns(Outline outline, DataFile dataFile) {
 		boolean sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
 		OutlineModel model = outline.getModel();
-
 		for (AdvantageColumn one : values()) {
 			if (one.shouldDisplay(dataFile)) {
 				Column column = new Column(one.ordinal(), one.toString(), one.getToolTip(), one.getCell());

@@ -376,7 +376,7 @@ public enum WeaponColumn {
 	 * @param forEditor Whether this is for an editor or not.
 	 * @return Whether this column is valid for the specified weapon class.
 	 */
-	public boolean isValidFor(@SuppressWarnings("unused") Class<? extends WeaponStats> weaponClass, @SuppressWarnings("unused") boolean forEditor) {
+	public boolean isValidFor(Class<? extends WeaponStats> weaponClass, boolean forEditor) {
 		return true;
 	}
 

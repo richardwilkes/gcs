@@ -27,7 +27,7 @@ import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.equipment.EquipmentListWindow;
+import com.trollworks.gcs.library.LibraryWindow;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
@@ -41,8 +41,6 @@ import javax.swing.JMenuItem;
 
 /** Provides the "New Equipment" command. */
 public class NewEquipmentCommand extends Command {
-	private static String					MSG_CARRIED_EQUIPMENT;
-	private static String					MSG_CARRIED_EQUIPMENT_CONTAINER;
 	private static String					MSG_EQUIPMENT;
 	private static String					MSG_EQUIPMENT_CONTAINER;
 
@@ -51,30 +49,22 @@ public class NewEquipmentCommand extends Command {
 	}
 
 	/** The "New Carried Equipment" command. */
-	public static final NewEquipmentCommand	CARRIED_INSTANCE			= new NewEquipmentCommand(false, true, MSG_CARRIED_EQUIPMENT, KeyEvent.VK_E, COMMAND_MODIFIER);
+	public static final NewEquipmentCommand	CARRIED_INSTANCE			= new NewEquipmentCommand(false, MSG_EQUIPMENT, KeyEvent.VK_E, COMMAND_MODIFIER);
 	/** The "New Carried Equipment Container" command. */
-	public static final NewEquipmentCommand	CARRIED_CONTAINER_INSTANCE	= new NewEquipmentCommand(true, true, MSG_CARRIED_EQUIPMENT_CONTAINER, KeyEvent.VK_E, SHIFTED_COMMAND_MODIFIER);
-	/** The "New Equipment" command. */
-	public static final NewEquipmentCommand	INSTANCE					= new NewEquipmentCommand(false, false, MSG_EQUIPMENT, KeyEvent.VK_F, COMMAND_MODIFIER);
-	/** The "New Equipment Container" command. */
-	public static final NewEquipmentCommand	CONTAINER_INSTANCE			= new NewEquipmentCommand(true, false, MSG_EQUIPMENT_CONTAINER, KeyEvent.VK_F, SHIFTED_COMMAND_MODIFIER);
+	public static final NewEquipmentCommand	CARRIED_CONTAINER_INSTANCE	= new NewEquipmentCommand(true, MSG_EQUIPMENT_CONTAINER, KeyEvent.VK_E, SHIFTED_COMMAND_MODIFIER);
 	private boolean							mContainer;
-	private boolean							mCarried;
 
-	private NewEquipmentCommand(boolean container, boolean carried, String title, int keyCode, int modifiers) {
+	private NewEquipmentCommand(boolean container, String title, int keyCode, int modifiers) {
 		super(title, keyCode, modifiers);
 		mContainer = container;
-		mCarried = carried;
 	}
 
 	@Override public void adjustForMenu(JMenuItem item) {
 		Window window = getActiveWindow();
-		if (window instanceof EquipmentListWindow) {
-			setEnabled(!mCarried && !((EquipmentListWindow) window).getOutline().getModel().isLocked());
-		} else if (window instanceof TemplateWindow) {
-			setEnabled(!mCarried);
+		if (window instanceof LibraryWindow) {
+			setEnabled(!((LibraryWindow) window).getOutline().getModel().isLocked());
 		} else {
-			setEnabled(window instanceof SheetWindow);
+			setEnabled(window instanceof SheetWindow || window instanceof TemplateWindow);
 		}
 	}
 
@@ -83,28 +73,28 @@ public class NewEquipmentCommand extends Command {
 		DataFile dataFile;
 
 		Window window = getActiveWindow();
-		if (window instanceof EquipmentListWindow) {
-			EquipmentListWindow listWindow = (EquipmentListWindow) window;
-			dataFile = listWindow.getList();
-			outline = listWindow.getOutline();
+		if (window instanceof LibraryWindow) {
+			LibraryWindow libraryWindow = (LibraryWindow) window;
+			libraryWindow.switchToEquipment();
+			dataFile = libraryWindow.getLibraryFile();
+			outline = libraryWindow.getOutline();
+		} else if (window instanceof SheetWindow) {
+			SheetWindow sheetWindow = (SheetWindow) window;
+			CharacterSheet sheet = sheetWindow.getSheet();
+			outline = sheet.getEquipmentOutline();
+			dataFile = sheetWindow.getCharacter();
+		} else if (window instanceof TemplateWindow) {
+			TemplateWindow templateWindow = (TemplateWindow) window;
+			outline = templateWindow.getSheet().getEquipmentOutline();
+			dataFile = templateWindow.getTemplate();
 		} else {
-			if (window instanceof SheetWindow) {
-				SheetWindow sheetWindow = (SheetWindow) window;
-				CharacterSheet sheet = sheetWindow.getSheet();
-				outline = mCarried ? sheet.getCarriedEquipmentOutline() : sheet.getOtherEquipmentOutline();
-				dataFile = sheetWindow.getCharacter();
-			} else if (window instanceof TemplateWindow) {
-				TemplateWindow templateWindow = (TemplateWindow) window;
-				outline = templateWindow.getSheet().getEquipmentOutline();
-				dataFile = templateWindow.getTemplate();
-			} else {
-				return;
-			}
+			return;
 		}
 
 		Equipment equipment = new Equipment(dataFile, mContainer);
 		outline.addRow(equipment, getTitle(), false);
 		outline.getModel().select(equipment, false);
+		outline.scrollSelectionIntoView();
 		outline.openDetailEditor(true);
 	}
 }

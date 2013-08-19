@@ -57,8 +57,6 @@ public class ItemMenu extends JMenu {
 		addSeparator();
 		add(new JMenuItem(NewEquipmentCommand.CARRIED_INSTANCE));
 		add(new JMenuItem(NewEquipmentCommand.CARRIED_CONTAINER_INSTANCE));
-		add(new JMenuItem(NewEquipmentCommand.INSTANCE));
-		add(new JMenuItem(NewEquipmentCommand.CONTAINER_INSTANCE));
 		DynamicMenuEnabler.add(this);
 	}
 }

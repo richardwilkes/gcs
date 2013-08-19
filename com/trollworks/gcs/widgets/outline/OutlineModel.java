@@ -89,74 +89,56 @@ public class OutlineModel implements Selection.Owner, StateEditable {
 	}
 
 	private void notifyOfRowAdditions(Row[] rows) {
-		OutlineModelListener[] listeners = getCurrentListeners();
-
-		for (OutlineModelListener element : listeners) {
-			element.rowsAdded(this, rows);
+		for (OutlineModelListener listener : getCurrentListeners()) {
+			listener.rowsAdded(this, rows);
 		}
 	}
 
 	private void notifyOfSortCleared() {
-		OutlineModelListener[] listeners = getCurrentListeners();
-
-		for (OutlineModelListener element : listeners) {
-			element.sortCleared(this);
+		for (OutlineModelListener listener : getCurrentListeners()) {
+			listener.sortCleared(this);
 		}
 	}
 
 	private void notifyOfLockedStateWillChange() {
-		OutlineModelListener[] listeners = getCurrentListeners();
-
-		for (OutlineModelListener element : listeners) {
-			element.lockedStateWillChange(this);
+		for (OutlineModelListener listener : getCurrentListeners()) {
+			listener.lockedStateWillChange(this);
 		}
 	}
 
 	private void notifyOfLockedStateDidChange() {
-		OutlineModelListener[] listeners = getCurrentListeners();
-
-		for (OutlineModelListener element : listeners) {
-			element.lockedStateDidChange(this);
+		for (OutlineModelListener listener : getCurrentListeners()) {
+			listener.lockedStateDidChange(this);
 		}
 	}
 
 	private void notifyOfSort(boolean restoring) {
-		OutlineModelListener[] listeners = getCurrentListeners();
-
-		for (OutlineModelListener element : listeners) {
-			element.sorted(this, restoring);
+		for (OutlineModelListener listener : getCurrentListeners()) {
+			listener.sorted(this, restoring);
 		}
 	}
 
 	private void notifyOfRowsWillBeRemoved(Row[] rows) {
-		OutlineModelListener[] listeners = getCurrentListeners();
-
-		for (OutlineModelListener element : listeners) {
-			element.rowsWillBeRemoved(this, rows);
+		for (OutlineModelListener listener : getCurrentListeners()) {
+			listener.rowsWillBeRemoved(this, rows);
 		}
 	}
 
 	private void notifyOfRowsWereRemoved(Row[] rows) {
-		OutlineModelListener[] listeners = getCurrentListeners();
-
-		for (OutlineModelListener element : listeners) {
-			element.rowsWereRemoved(this, rows);
+		for (OutlineModelListener listener : getCurrentListeners()) {
+			listener.rowsWereRemoved(this, rows);
 		}
 	}
 
 	private void notifyOfUndoWillHappen() {
-		OutlineModelListener[] listeners = getCurrentListeners();
-
-		for (OutlineModelListener element : listeners) {
-			element.undoWillHappen(this);
+		for (OutlineModelListener listener : getCurrentListeners()) {
+			listener.undoWillHappen(this);
 		}
 	}
 
 	private void notifyOfUndoDidHappen() {
-		OutlineModelListener[] listeners = getCurrentListeners();
-
-		for (OutlineModelListener element : listeners) {
-			element.undoDidHappen(this);
+		for (OutlineModelListener listener : getCurrentListeners()) {
+			listener.undoDidHappen(this);
 		}
 	}
 
@@ -205,10 +187,8 @@ public class OutlineModel implements Selection.Owner, StateEditable {
 	 */
 	public Column getColumnWithID(int id) {
 		int count = getColumnCount();
-
 		for (int i = 0; i < count; i++) {
 			Column column = getColumnAtIndex(i);
-
 			if (column.getID() == id) {
 				return column;
 			}
@@ -235,7 +215,6 @@ public class OutlineModel implements Selection.Owner, StateEditable {
 	/** @return The number of columns that can be displayed. */
 	public int getVisibleColumnCount() {
 		int count = 0;
-
 		for (Column column : mColumns) {
 			if (column.isVisible()) {
 				count++;
@@ -247,7 +226,6 @@ public class OutlineModel implements Selection.Owner, StateEditable {
 	/** @return The columns that can have been hidden. */
 	public Collection<Column> getHiddenColumns() {
 		ArrayList<Column> list = new ArrayList<Column>();
-
 		for (Column column : mColumns) {
 			if (!column.isVisible()) {
 				list.add(column);
@@ -313,7 +291,6 @@ public class OutlineModel implements Selection.Owner, StateEditable {
 
 	private void addChildren(Row row) {
 		List<Row> list = collectRowsAndSetOwner(new ArrayList<Row>(), row, true);
-
 		preserveSelection();
 		mRows.addAll(getIndexOfRow(row) + 1, list);
 		mSelection.setSize(mRows.size());
@@ -373,7 +350,6 @@ public class OutlineModel implements Selection.Owner, StateEditable {
 
 		for (i = 0; i < rows.length; i++) {
 			int index = getIndexOfRow(rows[i]);
-
 			if (index > -1) {
 				collectRows(set, index);
 			}
@@ -503,7 +479,6 @@ public class OutlineModel implements Selection.Owner, StateEditable {
 	/** @return The top-level rows (i.e. those with a <code>null</code> parent). */
 	public List<Row> getTopLevelRows() {
 		ArrayList<Row> list = new ArrayList<Row>();
-
 		for (Row row : mRows) {
 			if (row.getParent() == null) {
 				list.add(row);
@@ -614,7 +589,6 @@ public class OutlineModel implements Selection.Owner, StateEditable {
 	 */
 	public void applySortConfig(String config) {
 		int result = applySortConfigInternal(config);
-
 		if (result == 0) {
 			notifyOfSortCleared();
 		} else if (result == 1) {
@@ -624,20 +598,16 @@ public class OutlineModel implements Selection.Owner, StateEditable {
 
 	private int applySortConfigInternal(String config) {
 		int result = -1;
-
 		if (config != null && config.startsWith("S")) { //$NON-NLS-1$
 			try {
 				StringTokenizer tokenizer = new StringTokenizer(config, "\t"); //$NON-NLS-1$
-
 				if (NumberUtils.getInteger(tokenizer.nextToken().substring(1), 0) == CONFIG_VERSION) {
 					int count = NumberUtils.getInteger(tokenizer.nextToken(), 0);
-
 					if (clearSortInternal()) {
 						result = 0;
 					}
 					for (int i = 0; i < count; i++) {
 						Column column = getColumnWithID(NumberUtils.getInteger(tokenizer.nextToken(), 0));
-
 						if (column == null) {
 							throw new Exception();
 						}
@@ -664,7 +634,6 @@ public class OutlineModel implements Selection.Owner, StateEditable {
 
 		for (int i = 0; i < mRows.size(); i++) {
 			Row row = getRowAtIndex(i);
-
 			if (row.canHaveChildren()) {
 				if (first) {
 					open = !row.isOpen();
@@ -752,7 +721,6 @@ public class OutlineModel implements Selection.Owner, StateEditable {
 	/** @return The first selected row. Returns <code>null</code> if no row is selected. */
 	public Row getFirstSelectedRow() {
 		int index = getFirstSelectedRowIndex();
-
 		return index == -1 ? null : getRowAtIndex(index);
 	}
 
@@ -764,7 +732,6 @@ public class OutlineModel implements Selection.Owner, StateEditable {
 	/** @return The last selected row. Returns <code>null</code> if no row is selected. */
 	public Row getLastSelectedRow() {
 		int index = getLastSelectedRowIndex();
-
 		return index == -1 ? null : getRowAtIndex(index);
 	}
 
@@ -788,7 +755,6 @@ public class OutlineModel implements Selection.Owner, StateEditable {
 
 			if (minimal) {
 				Row parent = row.getParent();
-
 				while (parent != null) {
 					if (mSelection.isSelected(getIndexOfRow(parent))) {
 						add = false;

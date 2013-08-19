@@ -38,7 +38,7 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 
-/** A (Dis)Advantage prerequisite. */
+/** An Advantage prerequisite. */
 public class AdvantagePrereq extends NameLevelPrereq {
 	private static String		MSG_NAME_PART;
 	private static String		MSG_NOTES_PART;
@@ -46,7 +46,7 @@ public class AdvantagePrereq extends NameLevelPrereq {
 	public static final String	TAG_ROOT	= "advantage_prereq";	//$NON-NLS-1$
 	private static final String	TAG_NOTES	= "notes";				//$NON-NLS-1$
 	private static final String	EMPTY		= "";					//$NON-NLS-1$
-	private StringCriteria	mNotesCriteria;
+	private StringCriteria		mNotesCriteria;
 
 	static {
 		LocalizedMessages.initialize(AdvantagePrereq.class);

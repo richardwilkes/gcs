@@ -24,36 +24,21 @@
 package com.trollworks.gcs.equipment;
 
 import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.utility.io.Images;
 import com.trollworks.gcs.utility.io.xml.XMLNodeType;
 import com.trollworks.gcs.utility.io.xml.XMLReader;
 import com.trollworks.gcs.widgets.outline.OutlineModel;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 
 /** A list of equipment. */
 public class EquipmentList extends ListFile {
-	private static final int	CURRENT_VERSION	= 1;
+	/** The current version. */
+	public static final int		CURRENT_VERSION	= 1;
 	/** The XML tag for Equipment lists. */
 	public static final String	TAG_ROOT		= "equipment_list"; //$NON-NLS-1$
-
-	/** Creates a new, empty equipment list. */
-	public EquipmentList() {
-		super(Equipment.ID_LIST_CHANGED);
-	}
-
-	/**
-	 * Creates a new equipment list from the specified file.
-	 * 
-	 * @param file The file to load the data from.
-	 * @throws IOException if the data cannot be read or the file doesn't contain a valid equipment
-	 *             list.
-	 */
-	public EquipmentList(File file) throws IOException {
-		super(file, Equipment.ID_LIST_CHANGED);
-	}
 
 	@Override public int getXMLTagVersion() {
 		return CURRENT_VERSION;
@@ -67,16 +52,14 @@ public class EquipmentList extends ListFile {
 		return Images.getEquipmentIcon(large, false);
 	}
 
-	@Override protected void loadList(XMLReader reader) throws IOException {
+	@Override protected void loadList(XMLReader reader, LoadState state) throws IOException {
 		OutlineModel model = getModel();
 		String marker = reader.getMarker();
-
 		do {
 			if (reader.next() == XMLNodeType.START_TAG) {
 				String name = reader.getName();
-
 				if (Equipment.TAG_EQUIPMENT.equals(name) || Equipment.TAG_EQUIPMENT_CONTAINER.equals(name)) {
-					model.addRow(new Equipment(this, reader), true);
+					model.addRow(new Equipment(this, reader, state), true);
 				} else {
 					reader.skipTag(name);
 				}

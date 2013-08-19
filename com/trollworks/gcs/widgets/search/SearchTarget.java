@@ -23,10 +23,12 @@
 
 package com.trollworks.gcs.widgets.search;
 
+import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
+
 import javax.swing.ListCellRenderer;
 
 /** Defines the methods which must be implemented to be the target of a {@link Search} control. */
-public interface SearchTarget {
+public interface SearchTarget extends JumpToSearchTarget {
 	/**
 	 * Called to obtain a {@link ListCellRenderer} for displaying in the drop-down list.
 	 * 
@@ -49,7 +51,4 @@ public interface SearchTarget {
 	 * @param selection The objects to select.
 	 */
 	void searchSelect(Object[] selection);
-
-	/** Cause the search field to become focused. */
-	void jumpToSearchField();
 }

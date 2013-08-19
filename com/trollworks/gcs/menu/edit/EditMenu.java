@@ -54,7 +54,7 @@ public class EditMenu extends JMenu {
 		addSeparator();
 		add(new JMenuItem(IncrementCommand.INSTANCE));
 		add(new JMenuItem(DecrementCommand.INSTANCE));
-		add(new JMenuItem(ToggleEquippedCommand.INSTANCE));
+		add(new JMenuItem(RotateEquipmentStateCommand.INSTANCE));
 		addSeparator();
 		add(new JMenuItem(JumpToSearchCommand.INSTANCE));
 		addSeparator();

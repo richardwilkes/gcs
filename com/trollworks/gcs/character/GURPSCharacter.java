@@ -27,6 +27,7 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageContainerType;
 import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.feature.AttributeBonusLimitation;
@@ -150,6 +151,8 @@ public class GURPSCharacter extends DataFile {
 	public static final String					ID_TOUCH								= ATTRIBUTES_PREFIX + BonusAttributeType.TOUCH.name();
 	/** The field ID for will changes. */
 	public static final String					ID_WILL									= ATTRIBUTES_PREFIX + BonusAttributeType.WILL.name();
+	/** The field ID for fright check changes. */
+	public static final String					ID_FRIGHT_CHECK							= ATTRIBUTES_PREFIX + BonusAttributeType.FRIGHT_CHECK.name();
 	/** The field ID for basic speed changes. */
 	public static final String					ID_BASIC_SPEED							= ATTRIBUTES_PREFIX + BonusAttributeType.SPEED.name();
 	/** The field ID for basic move changes. */
@@ -174,17 +177,17 @@ public class GURPSCharacter extends DataFile {
 	/** The field ID for basic lift changes. */
 	public static final String					ID_BASIC_LIFT							= LIFT_PREFIX + "BasicLift";									//$NON-NLS-1$
 	/** The field ID for one-handed lift changes. */
-	public static final String					ID_ONE_HANDED_LIFT						= LIFT_PREFIX + ".OneHandedLift";								//$NON-NLS-1$
+	public static final String					ID_ONE_HANDED_LIFT						= LIFT_PREFIX + "OneHandedLift";								//$NON-NLS-1$
 	/** The field ID for two-handed lift changes. */
-	public static final String					ID_TWO_HANDED_LIFT						= LIFT_PREFIX + ".TwoHandedLift";								//$NON-NLS-1$
+	public static final String					ID_TWO_HANDED_LIFT						= LIFT_PREFIX + "TwoHandedLift";								//$NON-NLS-1$
 	/** The field ID for shove and knock over changes. */
-	public static final String					ID_SHOVE_AND_KNOCK_OVER					= LIFT_PREFIX + ".ShoveAndKnockOver";							//$NON-NLS-1$
+	public static final String					ID_SHOVE_AND_KNOCK_OVER					= LIFT_PREFIX + "ShoveAndKnockOver";							//$NON-NLS-1$
 	/** The field ID for running shove and knock over changes. */
-	public static final String					ID_RUNNING_SHOVE_AND_KNOCK_OVER			= LIFT_PREFIX + ".RunningShoveAndKnockOver";					//$NON-NLS-1$
+	public static final String					ID_RUNNING_SHOVE_AND_KNOCK_OVER			= LIFT_PREFIX + "RunningShoveAndKnockOver";					//$NON-NLS-1$
 	/** The field ID for carry on back changes. */
-	public static final String					ID_CARRY_ON_BACK						= LIFT_PREFIX + ".CarryOnBack";								//$NON-NLS-1$
+	public static final String					ID_CARRY_ON_BACK						= LIFT_PREFIX + "CarryOnBack";									//$NON-NLS-1$
 	/** The field ID for carry on back changes. */
-	public static final String					ID_SHIFT_SLIGHTLY						= LIFT_PREFIX + ".ShiftSlightly";								//$NON-NLS-1$
+	public static final String					ID_SHIFT_SLIGHTLY						= LIFT_PREFIX + "ShiftSlightly";								//$NON-NLS-1$
 	/** The prefix used in front of all IDs for point summaries. */
 	public static final String					POINT_SUMMARY_PREFIX					= CHARACTER_PREFIX + "ps.";									//$NON-NLS-1$
 	/** The field ID for point total changes. */
@@ -273,6 +276,7 @@ public class GURPSCharacter extends DataFile {
 	private int									mHealthCostReduction;
 	private int									mWill;
 	private int									mWillBonus;
+	private int									mFrightCheckBonus;
 	private int									mPerception;
 	private int									mPerceptionBonus;
 	private int									mVisionBonus;
@@ -298,8 +302,7 @@ public class GURPSCharacter extends DataFile {
 	private OutlineModel						mAdvantages;
 	private OutlineModel						mSkills;
 	private OutlineModel						mSpells;
-	private OutlineModel						mCarriedEquipment;
-	private OutlineModel						mOtherEquipment;
+	private OutlineModel						mEquipment;
 	private boolean								mDidModify;
 	private boolean								mNeedAttributePointCalculation;
 	private boolean								mNeedAdvantagesPointCalculation;
@@ -347,8 +350,7 @@ public class GURPSCharacter extends DataFile {
 		mAdvantages = new OutlineModel();
 		mSkills = new OutlineModel();
 		mSpells = new OutlineModel();
-		mCarriedEquipment = new OutlineModel();
-		mOtherEquipment = new OutlineModel();
+		mEquipment = new OutlineModel();
 		mStrength = 10;
 		mDexterity = 10;
 		mIntelligence = 10;
@@ -380,7 +382,7 @@ public class GURPSCharacter extends DataFile {
 		return Images.getCharacterSheetIcon(large);
 	}
 
-	@Override protected final void loadSelf(XMLReader reader, Object param) throws IOException {
+	@Override protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
 		String marker = reader.getMarker();
 		int unspentPoints = 0;
 
@@ -389,7 +391,7 @@ public class GURPSCharacter extends DataFile {
 			if (reader.next() == XMLNodeType.START_TAG) {
 				String name = reader.getName();
 
-				if (getVersion() == 0) {
+				if (state.mDataFileVersion == 0) {
 					if (mDescription.loadTag(reader, name)) {
 						continue;
 					}
@@ -436,13 +438,13 @@ public class GURPSCharacter extends DataFile {
 				} else if (TAG_INCLUDE_BOOTS.equals(name)) {
 					mIncludeKickBoots = reader.readBoolean();
 				} else if (AdvantageList.TAG_ROOT.equals(name)) {
-					loadAdvantageList(reader);
+					loadAdvantageList(reader, state);
 				} else if (SkillList.TAG_ROOT.equals(name)) {
-					loadSkillList(reader);
+					loadSkillList(reader, state);
 				} else if (SpellList.TAG_ROOT.equals(name)) {
-					loadSpellList(reader);
+					loadSpellList(reader, state);
 				} else if (EquipmentList.TAG_ROOT.equals(name)) {
-					loadEquipmentList(reader);
+					loadEquipmentList(reader, state);
 				} else if (PrintManager.TAG_ROOT.equals(name)) {
 					if (mPageSettings != null) {
 						mPageSettings.load(reader);
@@ -459,15 +461,13 @@ public class GURPSCharacter extends DataFile {
 		}
 	}
 
-	private void loadAdvantageList(XMLReader reader) throws IOException {
+	private void loadAdvantageList(XMLReader reader, LoadState state) throws IOException {
 		String marker = reader.getMarker();
-
 		do {
 			if (reader.next() == XMLNodeType.START_TAG) {
 				String name = reader.getName();
-
 				if (Advantage.TAG_ADVANTAGE.equals(name) || Advantage.TAG_ADVANTAGE_CONTAINER.equals(name)) {
-					mAdvantages.addRow(new Advantage(this, reader), true);
+					mAdvantages.addRow(new Advantage(this, reader, state), true);
 				} else {
 					reader.skipTag(name);
 				}
@@ -475,17 +475,15 @@ public class GURPSCharacter extends DataFile {
 		} while (reader.withinMarker(marker));
 	}
 
-	private void loadSkillList(XMLReader reader) throws IOException {
+	private void loadSkillList(XMLReader reader, LoadState state) throws IOException {
 		String marker = reader.getMarker();
-
 		do {
 			if (reader.next() == XMLNodeType.START_TAG) {
 				String name = reader.getName();
-
 				if (Skill.TAG_SKILL.equals(name) || Skill.TAG_SKILL_CONTAINER.equals(name)) {
-					mSkills.addRow(new Skill(this, reader), true);
+					mSkills.addRow(new Skill(this, reader, state), true);
 				} else if (Technique.TAG_TECHNIQUE.equals(name)) {
-					mSkills.addRow(new Technique(this, reader), true);
+					mSkills.addRow(new Technique(this, reader, state), true);
 				} else {
 					reader.skipTag(name);
 				}
@@ -493,15 +491,13 @@ public class GURPSCharacter extends DataFile {
 		} while (reader.withinMarker(marker));
 	}
 
-	private void loadSpellList(XMLReader reader) throws IOException {
+	private void loadSpellList(XMLReader reader, LoadState state) throws IOException {
 		String marker = reader.getMarker();
-
 		do {
 			if (reader.next() == XMLNodeType.START_TAG) {
 				String name = reader.getName();
-
 				if (Spell.TAG_SPELL.equals(name) || Spell.TAG_SPELL_CONTAINER.equals(name)) {
-					mSpells.addRow(new Spell(this, reader), true);
+					mSpells.addRow(new Spell(this, reader, state), true);
 				} else {
 					reader.skipTag(name);
 				}
@@ -509,22 +505,14 @@ public class GURPSCharacter extends DataFile {
 		} while (reader.withinMarker(marker));
 	}
 
-	private void loadEquipmentList(XMLReader reader) throws IOException {
+	private void loadEquipmentList(XMLReader reader, LoadState state) throws IOException {
 		String marker = reader.getMarker();
-		boolean carried = reader.isAttributeSet(ATTRIBUTE_CARRIED);
-
+		state.mDefaultCarried = state.mDataFileVersion != 0 ? true : reader.isAttributeSet(ATTRIBUTE_CARRIED);
 		do {
 			if (reader.next() == XMLNodeType.START_TAG) {
 				String name = reader.getName();
-
 				if (Equipment.TAG_EQUIPMENT.equals(name) || Equipment.TAG_EQUIPMENT_CONTAINER.equals(name)) {
-					Equipment equipment = new Equipment(this, reader);
-
-					if (carried) {
-						mCarriedEquipment.addRow(equipment, true);
-					} else {
-						mOtherEquipment.addRow(equipment, true);
-					}
+					mEquipment.addRow(new Equipment(this, reader, state), true);
 				} else {
 					reader.skipTag(name);
 				}
@@ -572,8 +560,7 @@ public class GURPSCharacter extends DataFile {
 		saveList(AdvantageList.TAG_ROOT, mAdvantages, out);
 		saveList(SkillList.TAG_ROOT, mSkills, out);
 		saveList(SpellList.TAG_ROOT, mSpells, out);
-		saveEquipmentList(EquipmentList.TAG_ROOT, true, mCarriedEquipment, out);
-		saveEquipmentList(EquipmentList.TAG_ROOT, false, mOtherEquipment, out);
+		saveList(EquipmentList.TAG_ROOT, mEquipment, out);
 
 		if (mPageSettings != null) {
 			mPageSettings.save(out, LengthUnits.INCHES);
@@ -584,18 +571,6 @@ public class GURPSCharacter extends DataFile {
 		if (model.getRowCount() > 0) {
 			out.startSimpleTagEOL(tag);
 			for (ListRow row : new FilteredIterator<ListRow>(model.getTopLevelRows(), ListRow.class)) {
-				row.save(out, false);
-			}
-			out.endTagEOL(tag, true);
-		}
-	}
-
-	private void saveEquipmentList(String tag, boolean carried, OutlineModel model, XMLWriter out) {
-		if (model.getRowCount() > 0) {
-			out.startTag(tag);
-			out.writeAttribute(ATTRIBUTE_CARRIED, carried);
-			out.finishTagEOL();
-			for (Equipment row : new FilteredIterator<Equipment>(model.getTopLevelRows(), Equipment.class)) {
 				row.save(out, false);
 			}
 			out.endTagEOL(tag, true);
@@ -665,6 +640,8 @@ public class GURPSCharacter extends DataFile {
 			return new Integer(getTouch());
 		} else if (ID_WILL.equals(id)) {
 			return new Integer(getWill());
+		} else if (ID_FRIGHT_CHECK.equals(id)) {
+			return new Integer(getFrightCheck());
 		} else if (ID_ATTRIBUTE_POINTS.equals(id)) {
 			return new Integer(getAttributePoints());
 		} else if (ID_ADVANTAGE_POINTS.equals(id)) {
@@ -1365,7 +1342,6 @@ public class GURPSCharacter extends DataFile {
 	 */
 	public int getEncumbranceLevel() {
 		double carried = getWeightCarried();
-
 		for (int i = ENCUMBRANCE_NONE; i < ENCUMBRANCE_LEVELS; i++) {
 			if (carried <= getMaximumCarry(i)) {
 				return i;
@@ -1387,10 +1363,11 @@ public class GURPSCharacter extends DataFile {
 	private void calculateWeightAndWealthCarried() {
 		mCachedWeightCarried = 0.0;
 		mCachedWealthCarried = 0.0;
-		for (Equipment equipment : getCarriedEquipmentIterator()) {
+		for (Equipment equipment : getEquipmentIterator()) {
 			int quantity = equipment.getQuantity();
-
-			mCachedWeightCarried += quantity * equipment.getWeight();
+			if (equipment.isCarried()) {
+				mCachedWeightCarried += quantity * equipment.getWeight();
+			}
 			mCachedWealthCarried += quantity * equipment.getValue();
 		}
 	}
@@ -1550,6 +1527,7 @@ public class GURPSCharacter extends DataFile {
 		newWill = getWill();
 		if (newWill != will) {
 			notify(ID_WILL, new Integer(newWill));
+			notify(ID_FRIGHT_CHECK, new Integer(getFrightCheck()));
 		}
 		updateSkills();
 		updateSpells();
@@ -1937,14 +1915,9 @@ public class GURPSCharacter extends DataFile {
 		return mWill + mWillBonus + getIntelligence();
 	}
 
-	/**
-	 * Sets the will.
-	 * 
-	 * @param will The new will.
-	 */
+	/** @param will The new will. */
 	public void setWill(int will) {
 		int oldWill = getWill();
-
 		if (oldWill != will) {
 			postUndoEdit(MSG_WILL_UNDO, ID_WILL, new Integer(oldWill), new Integer(will));
 			updateWillInfo(will - (mWillBonus + getIntelligence()), mWillBonus);
@@ -1969,6 +1942,7 @@ public class GURPSCharacter extends DataFile {
 
 		startNotify();
 		notify(ID_WILL, new Integer(getWill()));
+		notify(ID_FRIGHT_CHECK, new Integer(getFrightCheck()));
 		updateSkills();
 		mNeedAttributePointCalculation = true;
 		endNotify();
@@ -1977,6 +1951,26 @@ public class GURPSCharacter extends DataFile {
 	/** @return The number of points spent on will. */
 	public int getWillPoints() {
 		return mWill * 5;
+	}
+
+	/** @return The fright check. */
+	public int getFrightCheck() {
+		return getWill() + mFrightCheckBonus;
+	}
+
+	/** @return The fright check bonus. */
+	public int getFrightCheckBonus() {
+		return mFrightCheckBonus;
+	}
+
+	/** @param bonus The new fright check bonus. */
+	public void setFrightCheckBonus(int bonus) {
+		if (mFrightCheckBonus != bonus) {
+			mFrightCheckBonus = bonus;
+			startNotify();
+			notify(ID_FRIGHT_CHECK, new Integer(getFrightCheck()));
+			endNotify();
+		}
 	}
 
 	/** @return The vision. */
@@ -2071,7 +2065,6 @@ public class GURPSCharacter extends DataFile {
 	 */
 	public void setPerception(int perception) {
 		int oldPerception = getPerception();
-
 		if (oldPerception != perception) {
 			postUndoEdit(MSG_PERCEPTION_UNDO, ID_PERCEPTION, new Integer(oldPerception), new Integer(perception));
 			updatePerceptionInfo(perception - (mPerceptionBonus + getIntelligence()), mPerceptionBonus);
@@ -2205,21 +2198,21 @@ public class GURPSCharacter extends DataFile {
 		return mArmor;
 	}
 
-	/** @return The outline model for the character's (dis)advantages. */
+	/** @return The outline model for the character's advantages. */
 	public OutlineModel getAdvantagesModel() {
 		return mAdvantages;
 	}
 
-	/** @return A recursive iterator over the character's (dis)advantages. */
+	/** @return A recursive iterator over the character's advantages. */
 	public RowIterator<Advantage> getAdvantagesIterator() {
 		return new RowIterator<Advantage>(mAdvantages);
 	}
 
 	/**
-	 * Searches the character's current (dis)advantages list for the specified name.
+	 * Searches the character's current advantages list for the specified name.
 	 * 
 	 * @param name The name to look for.
-	 * @return The (dis)advantage, if present, or <code>null</code>.
+	 * @return The advantage, if present, or <code>null</code>.
 	 */
 	public Advantage getAdvantageNamed(String name) {
 		for (Advantage advantage : getAdvantagesIterator()) {
@@ -2231,7 +2224,7 @@ public class GURPSCharacter extends DataFile {
 	}
 
 	/**
-	 * Searches the character's current (dis)advantages list for the specified name.
+	 * Searches the character's current advantages list for the specified name.
 	 * 
 	 * @param name The name to look for.
 	 * @return Whether it is present or not.
@@ -2314,24 +2307,14 @@ public class GURPSCharacter extends DataFile {
 		return new RowIterator<Spell>(mSpells);
 	}
 
-	/** @return The outline model for the character's carried equipment. */
-	public OutlineModel getCarriedEquipmentRoot() {
-		return mCarriedEquipment;
+	/** @return The outline model for the character's equipment. */
+	public OutlineModel getEquipmentRoot() {
+		return mEquipment;
 	}
 
-	/** @return A recursive iterator over the character's carried equipment. */
-	public RowIterator<Equipment> getCarriedEquipmentIterator() {
-		return new RowIterator<Equipment>(mCarriedEquipment);
-	}
-
-	/** @return The outline model for the character's other equipment. */
-	public OutlineModel getOtherEquipmentRoot() {
-		return mOtherEquipment;
-	}
-
-	/** @return A recursive iterator over the character's other equipment. */
-	public RowIterator<Equipment> getOtherEquipmentIterator() {
-		return new RowIterator<Equipment>(mOtherEquipment);
+	/** @return A recursive iterator over the character's equipment. */
+	public RowIterator<Equipment> getEquipmentIterator() {
+		return new RowIterator<Equipment>(mEquipment);
 	}
 
 	/** @param map The new feature map. */
@@ -2352,6 +2335,7 @@ public class GURPSCharacter extends DataFile {
 		setHealthBonus(getIntegerBonusFor(ID_HEALTH));
 		setHealthCostReduction(getCostReductionFor(ID_HEALTH));
 		setWillBonus(getIntegerBonusFor(ID_WILL));
+		setFrightCheckBonus(getIntegerBonusFor(ID_FRIGHT_CHECK));
 		setPerceptionBonus(getIntegerBonusFor(ID_PERCEPTION));
 		setVisionBonus(getIntegerBonusFor(ID_VISION));
 		setHearingBonus(getIntegerBonusFor(ID_HEARING));

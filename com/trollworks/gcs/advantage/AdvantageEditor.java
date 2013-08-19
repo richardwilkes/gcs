@@ -83,6 +83,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	private static String		MSG_LEVEL_TOOLTIP;
 	private static String		MSG_NOTES;
 	private static String		MSG_NOTES_TOOLTIP;
+	private static String		MSG_CATEGORIES;
+	private static String		MSG_CATEGORIES_TOOLTIP;
 	private static String		MSG_TYPE;
 	private static String		MSG_TYPE_TOOLTIP;
 	private static String		MSG_CONTAINER_TYPE;
@@ -104,6 +106,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	private EditorField			mLevelPointsField;
 	private EditorField			mPointsField;
 	private EditorField			mNotesField;
+	private EditorField			mCategoriesField;
 	private EditorField			mReferenceField;
 	private JTabbedPane			mTabPanel;
 	private PrereqsPanel		mPrereqs;
@@ -198,6 +201,10 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		mNotesField = createField(advantage.getNotes(), null, MSG_NOTES_TOOLTIP);
 		innerGrid.add(new FlexComponent(createLabel(MSG_NOTES, mNotesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
 		innerGrid.add(mNotesField, ri++, 1);
+
+		mCategoriesField = createField(advantage.getCategoriesAsString(), null, MSG_CATEGORIES_TOOLTIP);
+		innerGrid.add(new FlexComponent(createLabel(MSG_CATEGORIES, mCategoriesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
+		innerGrid.add(mCategoriesField, ri++, 1);
 
 		FlexRow row = new FlexRow();
 		innerGrid.add(row, ri, 1);
@@ -390,6 +397,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		}
 		modified |= mRow.setReference((String) mReferenceField.getValue());
 		modified |= mRow.setNotes((String) mNotesField.getValue());
+		modified |= mRow.setCategories((String) mCategoriesField.getValue());
 		return modified;
 	}
 

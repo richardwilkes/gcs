@@ -24,36 +24,21 @@
 package com.trollworks.gcs.skill;
 
 import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.utility.io.Images;
 import com.trollworks.gcs.utility.io.xml.XMLNodeType;
 import com.trollworks.gcs.utility.io.xml.XMLReader;
 import com.trollworks.gcs.widgets.outline.OutlineModel;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 
 /** A list of skills. */
 public class SkillList extends ListFile {
-	private static final int	CURRENT_VERSION	= 1;
+	/** The current version. */
+	public static final int		CURRENT_VERSION	= 1;
 	/** The XML tag for Skill lists. */
 	public static final String	TAG_ROOT		= "skill_list"; //$NON-NLS-1$
-
-	/** Creates a new, empty skills list. */
-	public SkillList() {
-		super(Skill.ID_LIST_CHANGED);
-	}
-
-	/**
-	 * Creates a new skills list from the specified file.
-	 * 
-	 * @param file The file to load the data from.
-	 * @throws IOException if the data cannot be read or the file doesn't contain a valid skills
-	 *             list.
-	 */
-	public SkillList(File file) throws IOException {
-		super(file, Skill.ID_LIST_CHANGED);
-	}
 
 	@Override public int getXMLTagVersion() {
 		return CURRENT_VERSION;
@@ -67,18 +52,17 @@ public class SkillList extends ListFile {
 		return Images.getSkillIcon(large, false);
 	}
 
-	@Override protected void loadList(XMLReader reader) throws IOException {
+	@Override protected void loadList(XMLReader reader, LoadState state) throws IOException {
 		OutlineModel model = getModel();
 		String marker = reader.getMarker();
-
 		do {
 			if (reader.next() == XMLNodeType.START_TAG) {
 				String name = reader.getName();
 
 				if (Skill.TAG_SKILL.equals(name) || Skill.TAG_SKILL_CONTAINER.equals(name)) {
-					model.addRow(new Skill(this, reader), true);
+					model.addRow(new Skill(this, reader, state), true);
 				} else if (Technique.TAG_TECHNIQUE.equals(name)) {
-					model.addRow(new Technique(this, reader), true);
+					model.addRow(new Technique(this, reader, state), true);
 				} else {
 					reader.skipTag(name);
 				}

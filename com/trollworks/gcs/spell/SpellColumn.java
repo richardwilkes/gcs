@@ -25,6 +25,8 @@ package com.trollworks.gcs.spell;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.text.NumberUtils;
@@ -283,6 +285,32 @@ public enum SpellColumn {
 			return spell.canHaveChildren() ? "" : NumberUtils.format(spell.getPoints()); //$NON-NLS-1$
 		}
 	},
+	/** The category. */
+	CATEGORY {
+		@Override public String toString() {
+			return MSG_CATEGORY;
+		}
+
+		@Override public String getToolTip() {
+			return MSG_CATEGORY_TOOLTIP;
+		}
+
+		@Override public Cell getCell() {
+			return new ListTextCell(SwingConstants.LEFT, true);
+		}
+
+		@Override public boolean shouldDisplay(DataFile dataFile) {
+			return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
+		}
+
+		@Override public Object getData(Spell spell) {
+			return getDataAsText(spell);
+		}
+
+		@Override public String getDataAsText(Spell spell) {
+			return spell.getCategoriesAsString();
+		}
+	},
 	/** The page reference. */
 	REFERENCE {
 		@Override public String toString() {
@@ -324,6 +352,8 @@ public enum SpellColumn {
 	static String	MSG_LEVEL_TOOLTIP;
 	static String	MSG_RELATIVE_LEVEL;
 	static String	MSG_RELATIVE_LEVEL_TOOLTIP;
+	static String	MSG_CATEGORY;
+	static String	MSG_CATEGORY_TOOLTIP;
 	static String	MSG_REFERENCE;
 	static String	MSG_REFERENCE_TOOLTIP;
 

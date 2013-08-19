@@ -239,7 +239,7 @@ public abstract class WeaponStats {
 			HashSet<LeveledAmount> bonuses = new HashSet<LeveledAmount>();
 
 			for (SkillDefault one : getDefaults()) {
-				if (one.getType() == SkillDefaultType.Skill) {
+				if (one.getType().isSkillBased()) {
 					bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", one.getName(), one.getSpecialization())); //$NON-NLS-1$
 					bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + one.getName(), one.getName(), one.getSpecialization())); //$NON-NLS-1$
 				}

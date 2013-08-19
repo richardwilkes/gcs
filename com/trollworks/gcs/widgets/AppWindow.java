@@ -215,6 +215,7 @@ public class AppWindow extends JFrame implements Comparable<AppWindow>, WindowLi
 	 */
 	public void invalidate(Component comp) {
 		comp.invalidate();
+		comp.repaint();
 		if (comp instanceof Container) {
 			for (Component child : ((Container) comp).getComponents()) {
 				invalidate(child);
@@ -370,7 +371,7 @@ public class AppWindow extends JFrame implements Comparable<AppWindow>, WindowLi
 	 *            foreground. <code>false</code> will be passed in when the window is not in the
 	 *            foreground.
 	 */
-	protected void foregroundStateChanged(@SuppressWarnings("unused") boolean inForeground) {
+	protected void foregroundStateChanged(boolean inForeground) {
 		// Nothing to do...
 	}
 

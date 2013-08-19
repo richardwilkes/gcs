@@ -25,7 +25,6 @@ package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
-import com.trollworks.gcs.widgets.search.SearchTarget;
 
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
@@ -52,20 +51,20 @@ public class JumpToSearchCommand extends Command {
 	@Override public void adjustForMenu(JMenuItem item) {
 		KeyboardFocusManager mgr = KeyboardFocusManager.getCurrentKeyboardFocusManager();
 		Component focus = mgr.getPermanentFocusOwner();
-		if (!(focus instanceof SearchTarget)) {
+		if (!(focus instanceof JumpToSearchTarget)) {
 			focus = mgr.getActiveWindow();
 		}
-		setEnabled(focus instanceof SearchTarget);
+		setEnabled(focus instanceof JumpToSearchTarget);
 	}
 
 	@Override public void actionPerformed(ActionEvent event) {
 		KeyboardFocusManager mgr = KeyboardFocusManager.getCurrentKeyboardFocusManager();
 		Component focus = mgr.getPermanentFocusOwner();
-		if (!(focus instanceof SearchTarget)) {
+		if (!(focus instanceof JumpToSearchTarget)) {
 			focus = mgr.getActiveWindow();
 		}
-		if (focus instanceof SearchTarget) {
-			((SearchTarget) focus).jumpToSearchField();
+		if (focus instanceof JumpToSearchTarget) {
+			((JumpToSearchTarget) focus).jumpToSearchField();
 		}
 	}
 }

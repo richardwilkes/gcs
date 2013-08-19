@@ -68,7 +68,7 @@ public class ImageCell implements Cell {
 	 * @param active Whether the outline is active.
 	 * @return The icon, if any.
 	 */
-	protected BufferedImage getIcon(Row row, Column column, @SuppressWarnings("unused") boolean selected, @SuppressWarnings("unused") boolean active) {
+	protected BufferedImage getIcon(Row row, Column column, boolean selected, boolean active) {
 		Object data = row.getData(column);
 
 		return data instanceof BufferedImage ? (BufferedImage) data : null;

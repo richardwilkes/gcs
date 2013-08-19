@@ -134,8 +134,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private static String		MSG_ADVANTAGES;
 	private static String		MSG_SKILLS;
 	private static String		MSG_SPELLS;
-	private static String		MSG_CARRIED_EQUIPMENT;
-	private static String		MSG_OTHER_EQUIPMENT;
+	private static String		MSG_EQUIPMENT;
 	private static String		MSG_CONTINUED;
 	private static String		MSG_NATURAL;
 	private static String		MSG_PUNCH;
@@ -152,8 +151,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private AdvantageOutline	mAdvantageOutline;
 	private SkillOutline		mSkillOutline;
 	private SpellOutline		mSpellOutline;
-	private EquipmentOutline	mCarriedEquipmentOutline;
-	private EquipmentOutline	mOtherEquipmentOutline;
+	private EquipmentOutline	mEquipmentOutline;
 	private Outline				mMeleeWeaponOutline;
 	private Outline				mRangedWeaponOutline;
 	private boolean				mRebuildPending;
@@ -234,8 +232,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		createSpellOutline();
 		createMeleeWeaponOutline();
 		createRangedWeaponOutline();
-		createCarriedEquipmentOutline();
-		createOtherEquipmentOutline();
+		createEquipmentOutline();
 
 		// Clear out the old pages
 		removeAll();
@@ -256,8 +253,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		addOutline(pageAssembler, mSpellOutline, MSG_SPELLS);
 		addOutline(pageAssembler, mMeleeWeaponOutline, MSG_MELEE_WEAPONS);
 		addOutline(pageAssembler, mRangedWeaponOutline, MSG_RANGED_WEAPONS);
-		addOutline(pageAssembler, mCarriedEquipmentOutline, MSG_CARRIED_EQUIPMENT);
-		addOutline(pageAssembler, mOtherEquipmentOutline, MSG_OTHER_EQUIPMENT);
+		addOutline(pageAssembler, mEquipmentOutline, MSG_EQUIPMENT);
 
 		pageAssembler.addNotes();
 
@@ -266,8 +262,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		OutlineSyncer.remove(mAdvantageOutline);
 		OutlineSyncer.remove(mSkillOutline);
 		OutlineSyncer.remove(mSpellOutline);
-		OutlineSyncer.remove(mCarriedEquipmentOutline);
-		OutlineSyncer.remove(mOtherEquipmentOutline);
+		OutlineSyncer.remove(mEquipmentOutline);
 		mCharacter.addTarget(this, GURPSCharacter.CHARACTER_PREFIX);
 		if (focusKey != null) {
 			restoreFocusToKey(focusKey, this);
@@ -383,31 +378,17 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		}
 	}
 
-	/** @return The outline containing the carried equipment. */
-	public EquipmentOutline getCarriedEquipmentOutline() {
-		return mCarriedEquipmentOutline;
+	/** @return The outline containing the equipment. */
+	public EquipmentOutline getEquipmentOutline() {
+		return mEquipmentOutline;
 	}
 
-	private void createCarriedEquipmentOutline() {
-		if (mCarriedEquipmentOutline == null) {
-			mCarriedEquipmentOutline = new EquipmentOutline(mCharacter, true);
-			initOutline(mCarriedEquipmentOutline);
+	private void createEquipmentOutline() {
+		if (mEquipmentOutline == null) {
+			mEquipmentOutline = new EquipmentOutline(mCharacter);
+			initOutline(mEquipmentOutline);
 		} else {
-			resetOutline(mCarriedEquipmentOutline);
-		}
-	}
-
-	/** @return The outline containing the other equipment. */
-	public EquipmentOutline getOtherEquipmentOutline() {
-		return mOtherEquipmentOutline;
-	}
-
-	private void createOtherEquipmentOutline() {
-		if (mOtherEquipmentOutline == null) {
-			mOtherEquipmentOutline = new EquipmentOutline(mCharacter, false);
-			initOutline(mOtherEquipmentOutline);
-		} else {
-			resetOutline(mOtherEquipmentOutline);
+			resetOutline(mEquipmentOutline);
 		}
 	}
 
@@ -528,8 +509,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			}
 		}
 
-		for (Equipment equipment : mCharacter.getCarriedEquipmentIterator()) {
-			if (equipment.getQuantity() > 0) {
+		for (Equipment equipment : mCharacter.getEquipmentIterator()) {
+			if (equipment.getQuantity() > 0 && equipment.isEquipped()) {
 				for (WeaponStats weapon : equipment.getWeapons()) {
 					if (weaponClass.isInstance(weapon)) {
 						weaponMap.put(new HashedWeapon(weapon), new WeaponDisplayRow(weapon));
@@ -661,8 +642,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			} else if (type.startsWith(Spell.PREFIX)) {
 				OutlineSyncer.add(mSpellOutline);
 			} else if (type.startsWith(Equipment.PREFIX)) {
-				OutlineSyncer.add(mCarriedEquipmentOutline);
-				OutlineSyncer.add(mOtherEquipmentOutline);
+				OutlineSyncer.add(mEquipmentOutline);
 			}
 
 			if (GURPSCharacter.ID_LAST_MODIFIED.equals(type)) {
@@ -677,16 +657,15 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 					bounds.height = insets.bottom;
 					repaint(bounds);
 				}
-			} else if (Equipment.ID_QUANTITY.equals(type) || Equipment.ID_WEAPON_STATUS_CHANGED.equals(type) || Advantage.ID_WEAPON_STATUS_CHANGED.equals(type) || Spell.ID_WEAPON_STATUS_CHANGED.equals(type) || Skill.ID_WEAPON_STATUS_CHANGED.equals(type) || GURPSCharacter.ID_INCLUDE_PUNCH.equals(type) || GURPSCharacter.ID_INCLUDE_KICK.equals(type) || GURPSCharacter.ID_INCLUDE_BOOTS.equals(type)) {
+			} else if (Equipment.ID_STATE.equals(type) || Equipment.ID_QUANTITY.equals(type) || Equipment.ID_WEAPON_STATUS_CHANGED.equals(type) || Advantage.ID_WEAPON_STATUS_CHANGED.equals(type) || Spell.ID_WEAPON_STATUS_CHANGED.equals(type) || Skill.ID_WEAPON_STATUS_CHANGED.equals(type) || GURPSCharacter.ID_INCLUDE_PUNCH.equals(type) || GURPSCharacter.ID_INCLUDE_KICK.equals(type) || GURPSCharacter.ID_INCLUDE_BOOTS.equals(type)) {
 				mSyncWeapons = true;
 				markForRebuild();
 			} else if (GURPSCharacter.ID_PARRY_BONUS.equals(type) || Skill.ID_LEVEL.equals(type)) {
 				OutlineSyncer.add(mMeleeWeaponOutline);
 				OutlineSyncer.add(mRangedWeaponOutline);
 			} else if (GURPSCharacter.ID_CARRIED_WEIGHT.equals(type) || GURPSCharacter.ID_CARRIED_WEALTH.equals(type)) {
-				Column column = mCarriedEquipmentOutline.getModel().getColumnWithID(EquipmentColumn.DESCRIPTION.ordinal());
-
-				column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter, true));
+				Column column = mEquipmentOutline.getModel().getColumnWithID(EquipmentColumn.DESCRIPTION.ordinal());
+				column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter));
 			} else if (!mBatchMode) {
 				validate();
 			}
@@ -796,7 +775,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	private void syncRoots() {
-		if (mSyncWeapons || mRootsToSync.contains(mCarriedEquipmentOutline) || mRootsToSync.contains(mAdvantageOutline) || mRootsToSync.contains(mSpellOutline) || mRootsToSync.contains(mSkillOutline)) {
+		if (mSyncWeapons || mRootsToSync.contains(mEquipmentOutline) || mRootsToSync.contains(mAdvantageOutline) || mRootsToSync.contains(mSpellOutline) || mRootsToSync.contains(mSkillOutline)) {
 			OutlineModel outlineModel = mMeleeWeaponOutline.getModel();
 			String sortConfig = outlineModel.getSortConfig();
 
@@ -823,6 +802,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		Dimension size = getLayout().preferredLayoutSize(this);
 		if (!getSize().equals(size)) {
 			invalidate();
+			repaint();
 			setSize(size);
 		}
 	}
@@ -1121,6 +1101,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			writeXMLText(out, NumberUtils.format(mCharacter.getHealth()));
 		} else if (key.equals("WILL")) { //$NON-NLS-1$
 			writeXMLText(out, NumberUtils.format(mCharacter.getWill()));
+		} else if (key.equals("FRIGHT_CHECK")) { //$NON-NLS-1$
+			writeXMLText(out, NumberUtils.format(mCharacter.getFrightCheck()));
 		} else if (key.equals("BASIC_SPEED")) { //$NON-NLS-1$
 			writeXMLText(out, NumberUtils.format(mCharacter.getBasicSpeed()));
 		} else if (key.equals("BASIC_MOVE")) { //$NON-NLS-1$
@@ -1199,10 +1181,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getWeightCarried()));
 		} else if (key.equals("CARRIED_VALUE")) { //$NON-NLS-1$
 			writeXMLText(out, "$" + NumberUtils.format(mCharacter.getWealthCarried())); //$NON-NLS-1$
-		} else if (key.startsWith("CARRIED_EQUIPMENT_LOOP_START")) { //$NON-NLS-1$
-			processEquipmentLoop(out, extractUpToMarker(in, "CARRIED_EQUIPMENT_LOOP_END"), true); //$NON-NLS-1$
-		} else if (key.startsWith("OTHER_EQUIPMENT_LOOP_START")) { //$NON-NLS-1$
-			processEquipmentLoop(out, extractUpToMarker(in, "OTHER_EQUIPMENT_LOOP_END"), false); //$NON-NLS-1$
+		} else if (key.startsWith("EQUIPMENT_LOOP_START")) { //$NON-NLS-1$
+			processEquipmentLoop(out, extractUpToMarker(in, "EQUIPMENT_LOOP_END")); //$NON-NLS-1$
 		} else if (key.equals("NOTES")) { //$NON-NLS-1$
 			writeXMLText(out, description.getNotes());
 		} else {
@@ -1708,13 +1688,13 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		}
 	}
 
-	private void processEquipmentLoop(BufferedWriter out, String contents, boolean carried) throws IOException {
+	private void processEquipmentLoop(BufferedWriter out, String contents) throws IOException {
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
 		int state = 0;
 		boolean odd = true;
 
-		for (Equipment equipment : carried ? mCharacter.getCarriedEquipmentIterator() : mCharacter.getOtherEquipmentIterator()) {
+		for (Equipment equipment : mCharacter.getEquipmentIterator()) {
 			for (int i = 0; i < length; i++) {
 				char ch = contents.charAt(i);
 
@@ -1760,10 +1740,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 							} else if (key.equals("DESCRIPTION")) { //$NON-NLS-1$
 								writeXMLText(out, equipment.toString());
 								writeNote(out, equipment.getNotes());
-							} else if (carried && key.equals("EQUIPPED")) { //$NON-NLS-1$
-								if (equipment.isEquipped()) {
-									out.write("&radic;"); //$NON-NLS-1$
-								}
+							} else if (key.equals("STATE")) { //$NON-NLS-1$
+								out.write(equipment.getState().toShortString());
 							} else if (key.equals("QTY")) { //$NON-NLS-1$
 								writeXMLText(out, NumberUtils.format(equipment.getQuantity()));
 							} else if (key.equals("COST")) { //$NON-NLS-1$

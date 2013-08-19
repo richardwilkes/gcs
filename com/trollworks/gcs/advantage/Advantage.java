@@ -25,6 +25,7 @@ package com.trollworks.gcs.advantage;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.utility.collections.EnumExtractor;
@@ -50,9 +51,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-/** A GURPS (Dis)Advantage. */
+/** A GURPS Advantage. */
 public class Advantage extends ListRow {
+	private static final int		CURRENT_VERSION				= 1;
 	private static String			MSG_DEFAULT_NAME;
+	/** The extension for the old Advantage lists. */
+	public static final String		OLD_ADVANTAGE_EXTENSION		= ".adq";											//$NON-NLS-1$
 	/** The XML tag used for items. */
 	public static final String		TAG_ADVANTAGE				= "advantage";										//$NON-NLS-1$
 	/** The XML tag used for containers. */
@@ -69,7 +73,7 @@ public class Advantage extends ListRow {
 	private static final String		TYPE_SOCIAL					= "Social";										//$NON-NLS-1$
 	private static final String		TYPE_EXOTIC					= "Exotic";										//$NON-NLS-1$
 	private static final String		TYPE_SUPERNATURAL			= "Supernatural";									//$NON-NLS-1$
-	/** The prefix used in front of all IDs for the (dis)advantages. */
+	/** The prefix used in front of all IDs for the advantages. */
 	public static final String		PREFIX						= GURPSCharacter.CHARACTER_PREFIX + "advantage.";	//$NON-NLS-1$
 	/** The field ID for type changes. */
 	public static final String		ID_TYPE						= PREFIX + "Type";									//$NON-NLS-1$
@@ -83,21 +87,23 @@ public class Advantage extends ListRow {
 	public static final String		ID_POINTS					= PREFIX + "Points";								//$NON-NLS-1$
 	/** The field ID for page reference changes. */
 	public static final String		ID_REFERENCE				= PREFIX + "Reference";							//$NON-NLS-1$
+	/** The field ID for when the categories change. */
+	public static final String		ID_CATEGORY					= PREFIX + "Category";								//$NON-NLS-1$
 	/** The field ID for when the row hierarchy changes. */
 	public static final String		ID_LIST_CHANGED				= PREFIX + "ListChanged";							//$NON-NLS-1$
 	/** The field ID for when the advantage becomes or stops being a weapon. */
 	public static final String		ID_WEAPON_STATUS_CHANGED	= PREFIX + "WeaponStatus";							//$NON-NLS-1$
 	/** The field ID for when the advantage gets Modifiers. */
 	public static final String		ID_MODIFIER_STATUS_CHANGED	= PREFIX + "Modifier";								//$NON-NLS-1$
-	/** The type mask for mental (dis)advantages. */
+	/** The type mask for mental advantages. */
 	public static final int			TYPE_MASK_MENTAL			= 1 << 0;
-	/** The type mask for physical (dis)advantages. */
+	/** The type mask for physical advantages. */
 	public static final int			TYPE_MASK_PHYSICAL			= 1 << 1;
-	/** The type mask for social (dis)advantages. */
+	/** The type mask for social advantages. */
 	public static final int			TYPE_MASK_SOCIAL			= 1 << 2;
-	/** The type mask for exotic (dis)advantages. */
+	/** The type mask for exotic advantages. */
 	public static final int			TYPE_MASK_EXOTIC			= 1 << 3;
-	/** The type mask for supernatural (dis)advantages. */
+	/** The type mask for supernatural advantages. */
 	public static final int			TYPE_MASK_SUPERNATURAL		= 1 << 4;
 	private int						mType;
 	private String					mName;
@@ -117,7 +123,7 @@ public class Advantage extends ListRow {
 	}
 
 	/**
-	 * Creates a new (dis)advantage.
+	 * Creates a new advantage.
 	 * 
 	 * @param dataFile The data file to associate it with.
 	 * @param isContainer Whether or not this row allows children.
@@ -134,10 +140,10 @@ public class Advantage extends ListRow {
 	}
 
 	/**
-	 * Creates a clone of an existing (dis)advantage and associates it with the specified data file.
+	 * Creates a clone of an existing advantage and associates it with the specified data file.
 	 * 
 	 * @param dataFile The data file to associate it with.
-	 * @param advantage The (dis)advantage to clone.
+	 * @param advantage The advantage to clone.
 	 * @param deep Whether or not to clone the children, grandchildren, etc.
 	 */
 	public Advantage(DataFile dataFile, Advantage advantage, boolean deep) {
@@ -171,15 +177,16 @@ public class Advantage extends ListRow {
 	}
 
 	/**
-	 * Loads an (dis)advantage and associates it with the specified data file.
+	 * Loads an advantage and associates it with the specified data file.
 	 * 
 	 * @param dataFile The data file to associate it with.
 	 * @param reader The XML reader to load from.
+	 * @param state The {@link LoadState} to use.
 	 * @throws IOException
 	 */
-	public Advantage(DataFile dataFile, XMLReader reader) throws IOException {
+	public Advantage(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
 		this(dataFile, TAG_ADVANTAGE_CONTAINER.equals(reader.getName()));
-		load(reader, false);
+		load(reader, state);
 	}
 
 	@Override public String getListChangedID() {
@@ -187,11 +194,11 @@ public class Advantage extends ListRow {
 	}
 
 	@Override public String getRowType() {
-		return "(Dis)Advantage"; //$NON-NLS-1$
+		return "Advantage"; //$NON-NLS-1$
 	}
 
-	@Override protected void prepareForLoad(boolean forUndo) {
-		super.prepareForLoad(forUndo);
+	@Override protected void prepareForLoad(LoadState state) {
+		super.prepareForLoad(state);
 		mType = TYPE_MASK_PHYSICAL;
 		mName = MSG_DEFAULT_NAME;
 		mLevels = -1;
@@ -204,24 +211,24 @@ public class Advantage extends ListRow {
 		mModifiers = new ArrayList<Modifier>();
 	}
 
-	@Override protected void loadAttributes(XMLReader reader, boolean forUndo) {
-		super.loadAttributes(reader, forUndo);
+	@Override protected void loadAttributes(XMLReader reader, LoadState state) {
+		super.loadAttributes(reader, state);
 		if (canHaveChildren()) {
 			mContainerType = (AdvantageContainerType) EnumExtractor.extract(reader.getAttribute(TAG_TYPE), AdvantageContainerType.values(), AdvantageContainerType.GROUP);
 		}
 	}
 
-	@Override protected void loadSubElement(XMLReader reader, boolean forUndo) throws IOException {
+	@Override protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
 		String name = reader.getName();
 
 		if (TAG_NAME.equals(name)) {
 			mName = reader.readText().replace("\n", " "); //$NON-NLS-1$ //$NON-NLS-2$
 		} else if (TAG_REFERENCE.equals(name)) {
 			mReference = reader.readText().replace("\n", " "); //$NON-NLS-1$ //$NON-NLS-2$
-		} else if (!forUndo && (TAG_ADVANTAGE.equals(name) || TAG_ADVANTAGE_CONTAINER.equals(name))) {
-			addChild(new Advantage(mDataFile, reader));
+		} else if (!state.mForUndo && (TAG_ADVANTAGE.equals(name) || TAG_ADVANTAGE_CONTAINER.equals(name))) {
+			addChild(new Advantage(mDataFile, reader, state));
 		} else if (Modifier.TAG_MODIFIER.equals(name)) {
-			mModifiers.add(new Modifier(getDataFile(), reader));
+			mModifiers.add(new Modifier(getDataFile(), reader, state));
 		} else if (!canHaveChildren()) {
 			if (TAG_TYPE.equals(name)) {
 				mType = getTypeFromText(reader.readText());
@@ -240,10 +247,10 @@ public class Advantage extends ListRow {
 			} else if (OldWeapon.TAG_ROOT.equals(name)) {
 				mOldWeapon = new OldWeapon(reader);
 			} else {
-				super.loadSubElement(reader, forUndo);
+				super.loadSubElement(reader, state);
 			}
 		} else {
-			super.loadSubElement(reader, forUndo);
+			super.loadSubElement(reader, state);
 		}
 	}
 
@@ -286,6 +293,10 @@ public class Advantage extends ListRow {
 
 	@Override public String getXMLTagName() {
 		return canHaveChildren() ? TAG_ADVANTAGE_CONTAINER : TAG_ADVANTAGE;
+	}
+
+	@Override public int getXMLTagVersion() {
+		return CURRENT_VERSION;
 	}
 
 	@Override protected void saveAttributes(XMLWriter out, boolean forUndo) {
@@ -569,7 +580,10 @@ public class Advantage extends ListRow {
 	}
 
 	@Override public boolean contains(String text, boolean lowerCaseOnly) {
-		return getName().toLowerCase().indexOf(text) != -1;
+		if (getName().toLowerCase().indexOf(text) != -1) {
+			return true;
+		}
+		return super.contains(text, lowerCaseOnly);
 	}
 
 	private int getTypeFromText(String text) {
@@ -749,5 +763,9 @@ public class Advantage extends ListRow {
 			return builder.toString();
 		}
 		return ""; //$NON-NLS-1$
+	}
+
+	@Override protected String getCategoryID() {
+		return ID_CATEGORY;
 	}
 }

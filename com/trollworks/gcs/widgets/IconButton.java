@@ -37,7 +37,7 @@ public class IconButton extends JButton {
 	 * @param image The image to use for the icon.
 	 */
 	public IconButton(BufferedImage image) {
-		this(new ImageIcon(image));
+		this(image, null);
 	}
 
 	/**
@@ -47,31 +47,9 @@ public class IconButton extends JButton {
 	 * @param tooltip The tooltip to use.
 	 */
 	public IconButton(BufferedImage image, String tooltip) {
-		this(new ImageIcon(image), tooltip);
-	}
-
-	/**
-	 * Creates a new {@link IconButton}.
-	 * 
-	 * @param icon The icon to use.
-	 */
-	public IconButton(ImageIcon icon) {
-		this(icon, null);
-	}
-
-	/**
-	 * Creates a new {@link IconButton}.
-	 * 
-	 * @param icon The icon to use.
-	 * @param tooltip The tooltip to use.
-	 */
-	public IconButton(ImageIcon icon, String tooltip) {
-		super(icon);
+		super(new ImageIcon(image));
 		setOpaque(false);
 		setToolTipText(tooltip);
-
-		// This is done since Linux & Windows both do screwy things with the width of icon-only
-		// buttons.
 		Dimension size = getPreferredSize();
 		size.width = size.height;
 		UIUtilities.setOnlySize(this, size);

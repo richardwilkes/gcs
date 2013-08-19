@@ -26,6 +26,7 @@ package com.trollworks.gcs.common;
 import com.trollworks.gcs.utility.Debug;
 import com.trollworks.gcs.utility.StdUndoManager;
 import com.trollworks.gcs.utility.UniqueID;
+import com.trollworks.gcs.utility.io.Path;
 import com.trollworks.gcs.utility.io.SafeFileUpdater;
 import com.trollworks.gcs.utility.io.xml.XMLNodeType;
 import com.trollworks.gcs.utility.io.xml.XMLReader;
@@ -39,24 +40,24 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.swing.undo.UndoableEdit;
 
 /** A common super class for all data file-based model objects. */
 public abstract class DataFile {
-	private static final String	ATTRIBUTE_UNIQUE_ID	= "unique_id";	//$NON-NLS-1$
-	private static final String	ATTRIBUTE_VERSION	= "version";	//$NON-NLS-1$
-	private File				mFile;
-	private int					mVersion;
-	private UniqueID			mUniqueID;
-	private Notifier			mNotifier;
-	private boolean				mModified;
-	private StdUndoManager		mUndoManager;
+	/** The 'unique ID' attribute. */
+	public static final String				ATTRIBUTE_UNIQUE_ID		= "unique_id";								//$NON-NLS-1$
+	private File							mFile;
+	private UniqueID						mUniqueID;
+	private Notifier						mNotifier;
+	private boolean							mModified;
+	private StdUndoManager					mUndoManager;
+	private ArrayList<DataModifiedListener>	mDataModifiedListeners	= new ArrayList<DataModifiedListener>();
 
 	/** Creates a new data file object. */
 	protected DataFile() {
 		mUniqueID = new UniqueID();
-		mVersion = getXMLTagVersion();
 		mNotifier = new Notifier();
 	}
 
@@ -67,19 +68,18 @@ public abstract class DataFile {
 	 * @throws IOException if the data cannot be read or the file doesn't contain valid information.
 	 */
 	protected DataFile(File file) throws IOException {
-		this(file, null);
+		this(file, new LoadState());
 	}
 
 	/**
 	 * Creates a new data file object from the specified file.
 	 * 
 	 * @param file The file to load the data from.
-	 * @param param A parameter to pass through to the call to {@link #loadSelf(XMLReader,Object)}.
+	 * @param state The {@link LoadState} to use.
 	 * @throws IOException if the data cannot be read or the file doesn't contain valid information.
 	 */
-	protected DataFile(File file, Object param) throws IOException {
-		mVersion = getXMLTagVersion();
-		mFile = file;
+	protected DataFile(File file, LoadState state) throws IOException {
+		setFile(file);
 		mNotifier = new Notifier();
 		XMLReader reader = new XMLReader(new FileReader(file));
 		XMLNodeType type = reader.next();
@@ -88,13 +88,10 @@ public abstract class DataFile {
 		while (type != XMLNodeType.END_DOCUMENT) {
 			if (type == XMLNodeType.START_TAG) {
 				String name = reader.getName();
-
-				if (getXMLTagName().equals(name)) {
+				if (matchesRootTag(name)) {
 					if (!found) {
 						found = true;
-						mUniqueID = new UniqueID(reader.getAttribute(ATTRIBUTE_UNIQUE_ID));
-						mVersion = reader.getAttributeAsInteger(ATTRIBUTE_VERSION, 0);
-						loadSelf(reader, param);
+						load(reader, state);
 					} else {
 						throw new IOException();
 					}
@@ -110,19 +107,28 @@ public abstract class DataFile {
 		setModified(false);
 	}
 
-	/** @return The version. */
-	public int getVersion() {
-		return mVersion;
+	/**
+	 * @param reader The {@link XMLReader} to load data from.
+	 * @param state The {@link LoadState} to use.
+	 * @throws IOException
+	 */
+	public void load(XMLReader reader, LoadState state) throws IOException {
+		mUniqueID = new UniqueID(reader.getAttribute(ATTRIBUTE_UNIQUE_ID));
+		state.mDataFileVersion = reader.getAttributeAsInteger(LoadState.ATTRIBUTE_VERSION, 0);
+		if (state.mDataFileVersion > getXMLTagVersion()) {
+			throw new NewerVersionException();
+		}
+		loadSelf(reader, state);
 	}
 
 	/**
 	 * Called to load the data file.
 	 * 
-	 * @param reader The XML reader to load data from.
-	 * @param param A parameter passed through from the constructor.
+	 * @param reader The {@link XMLReader} to load data from.
+	 * @param state The {@link LoadState} to use.
 	 * @throws IOException
 	 */
-	protected abstract void loadSelf(XMLReader reader, Object param) throws IOException;
+	protected abstract void loadSelf(XMLReader reader, LoadState state) throws IOException;
 
 	/**
 	 * Saves the data out to the specified file. Does not affect the result of {@link #getFile()}.
@@ -133,13 +139,11 @@ public abstract class DataFile {
 	public boolean save(File file) {
 		SafeFileUpdater transaction = new SafeFileUpdater();
 		boolean success = false;
-
 		transaction.begin();
 		try {
 			XMLWriter out = new XMLWriter(new BufferedOutputStream(new FileOutputStream(transaction.getTransactionFile(file))));
-
 			out.writeHeader();
-			save(out);
+			save(out, true, false);
 			out.close();
 			if (out.checkError()) {
 				transaction.abort();
@@ -159,13 +163,20 @@ public abstract class DataFile {
 	 * Saves the root tag.
 	 * 
 	 * @param out The XML writer to use.
+	 * @param includeUniqueID Whether the {@link UniqueID} should be included in the attribute list.
+	 * @param onlyIfNotEmpty Whether to write something even if the file contents are empty.
 	 */
-	public void save(XMLWriter out) {
-		out.startTag(getXMLTagName());
-		out.writeAttribute(ATTRIBUTE_UNIQUE_ID, getUniqueID().toString());
-		out.finishTagEOL();
-		saveSelf(out);
-		out.endTagEOL(getXMLTagName(), true);
+	public void save(XMLWriter out, boolean includeUniqueID, boolean onlyIfNotEmpty) {
+		if (!onlyIfNotEmpty || !isEmpty()) {
+			out.startTag(getXMLTagName());
+			if (includeUniqueID) {
+				out.writeAttribute(ATTRIBUTE_UNIQUE_ID, getUniqueID().toString());
+			}
+			out.writeAttribute(LoadState.ATTRIBUTE_VERSION, getXMLTagVersion());
+			out.finishTagEOL();
+			saveSelf(out);
+			out.endTagEOL(getXMLTagName(), true);
+		}
 	}
 
 	/**
@@ -175,11 +186,26 @@ public abstract class DataFile {
 	 */
 	protected abstract void saveSelf(XMLWriter out);
 
+	/** @return Whether the file is empty. By default, returns <code>false</code>. */
+	public boolean isEmpty() {
+		return false;
+	}
+
 	/** @return The most recent version of the XML tag this object knows how to load. */
 	public abstract int getXMLTagVersion();
 
 	/** @return The XML root container tag name for this particular file. */
 	public abstract String getXMLTagName();
+
+	/**
+	 * Called to match an XML tag name with the root tag for this data file.
+	 * 
+	 * @param name The tag name to check.
+	 * @return Whether it matches the root tag or not.
+	 */
+	public boolean matchesRootTag(String name) {
+		return getXMLTagName().equals(name);
+	}
 
 	/**
 	 * @param large The large (32x32) or the small (16x16) version.
@@ -201,22 +227,41 @@ public abstract class DataFile {
 
 	/** @param file The file associated with this data file. */
 	public void setFile(File file) {
+		if (file != null) {
+			file = Path.getFile(Path.getFullPath(file));
+		}
 		mFile = file;
 	}
 
 	/** @return The unique ID for this data file. */
-	public UniqueID getUniqueID() {
+	public final UniqueID getUniqueID() {
 		return mUniqueID;
 	}
 
 	/** @return <code>true</code> if the data has been modified. */
-	public boolean isModified() {
+	public final boolean isModified() {
 		return mModified;
 	}
 
 	/** @param modified Whether or not the data has been modified. */
-	public void setModified(boolean modified) {
-		mModified = modified;
+	public final void setModified(boolean modified) {
+		if (mModified != modified) {
+			mModified = modified;
+			for (DataModifiedListener listener : mDataModifiedListeners.toArray(new DataModifiedListener[mDataModifiedListeners.size()])) {
+				listener.dataModificationStateChanged(this, mModified);
+			}
+		}
+	}
+
+	/** @param listener The listener to add. */
+	public void addDataModifiedListener(DataModifiedListener listener) {
+		mDataModifiedListeners.remove(listener);
+		mDataModifiedListeners.add(listener);
+	}
+
+	/** @param listener The listener to remove. */
+	public void removeDataModifiedListener(DataModifiedListener listener) {
+		mDataModifiedListeners.remove(listener);
 	}
 
 	/** Resets the underlying {@link Notifier} by removing all targets. */

@@ -100,6 +100,18 @@
 				<key>CFBundleTypeRole</key>
 					<string>Editor</string>
 			</dict>
+			<dict>
+				<key>CFBundleTypeExtensions</key>
+					<array>
+						<string>glb</string>
+					</array>
+				<key>CFBundleTypeIconFile</key>
+					<string>glb.icns</string>
+				<key>CFBundleTypeName</key>
+					<string>GCS Library</string>
+				<key>CFBundleTypeRole</key>
+					<string>Editor</string>
+			</dict>
 		</array>
 </dict>
 </plist>

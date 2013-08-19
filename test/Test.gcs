@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<character unique_id="ehqs9dby:8miu0dkj1jxa">
+<character unique_id="ehqs9dby:8miu0dkj1jxa" version="1">
 	<created_date>Dec 27, 2005</created_date>
-	<modified_date>May 5, 2007 2:20 PM</modified_date>
+	<modified_date>Sep 9, 2007 3:31 PM</modified_date>
 	<profile>
 		<player_name>NPC</player_name>
 		<campaign>Testing...</campaign>
-		<name>Corina Rinaldi</name>
+		<name>Testy Tester</name>
 		<title>Sergeant, Arabel Infantry</title>
 		<age>20</age>
 		<birthday>July 16</birthday>
@@ -14,7 +14,7 @@
 		<skin>Dark Tan</skin>
 		<handedness>Right</handedness>
 		<height units="in">64</height>
-		<weight units="lb">127.0</weight>
+		<weight units="lbs">127.0</weight>
 		<SM>0</SM>
 		<gender>Female</gender>
 		<race>Human</race>
@@ -1485,23 +1485,10 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 	<include_punch>true</include_punch>
 	<include_kick>true</include_kick>
 	<include_kick_with_boots>true</include_kick_with_boots>
-	<print_settings printer="HP Color LaserJet 3800 [9F68CA]" units="in">
-		<orientation>Portrait</orientation>
-		<width>8.5</width>
-		<height>11</height>
-		<top_margin>0.5</top_margin>
-		<left_margin>0.5</left_margin>
-		<bottom_margin>0.25</bottom_margin>
-		<right_margin>0.5</right_margin>
-		<ink_chromaticity>Monochrome</ink_chromaticity>
-		<sides>Duplex</sides>
-		<quality>Normal</quality>
-		<resolution>120000</resolution>
-	</print_settings>
 	<advantage_list>
-		<advantage_container open="yes">
+		<advantage_container version="1" open="yes">
 			<name>Advantages</name>
-			<advantage>
+			<advantage version="1">
 				<name>Absolute Direction</name>
 				<type>Mental/Physical</type>
 				<base_points>5</base_points>
@@ -1527,7 +1514,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 					<amount>3</amount>
 				</skill_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="1">
 				<name>Acute Hearing</name>
 				<type>Physical</type>
 				<levels>2</levels>
@@ -1538,7 +1525,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 					<amount per_level="yes">1</amount>
 				</attribute_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="1">
 				<name>Acute Vision</name>
 				<type>Physical</type>
 				<levels>2</levels>
@@ -1549,20 +1536,20 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 					<amount per_level="yes">1</amount>
 				</attribute_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="1">
 				<name>Alcohol Tolerance</name>
 				<type>Physical</type>
 				<base_points>1</base_points>
 				<reference>B100</reference>
 			</advantage>
-			<advantage>
+			<advantage version="1">
 				<name>Fit, Very</name>
 				<type>Physical</type>
 				<base_points>15</base_points>
 				<reference>B55</reference>
 				<notes>+2 to all HT rolls to stay conscious, avoid death, resist disease, resist poison; recover FP at twice the normal rate; lose FP at half the normal rate (in both cases, not FP spent for spells or psi powers)</notes>
 			</advantage>
-			<advantage>
+			<advantage version="1">
 				<name>Combat Reflexes</name>
 				<type>Mental</type>
 				<base_points>15</base_points>
@@ -1586,70 +1573,70 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 					<amount>1</amount>
 				</attribute_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="1">
 				<name>High Pain Threshold</name>
 				<type>Physical</type>
 				<base_points>10</base_points>
 				<reference>B59</reference>
 				<notes>Never suffer shock penalties when injured; +3 on all HT rolls to avoid knockdown and stunning; +3 to resist torture</notes>
 			</advantage>
-			<advantage>
+			<advantage version="1">
 				<name>Less Sleep</name>
 				<type>Physical</type>
 				<levels>3</levels>
 				<points_per_level>2</points_per_level>
 				<reference>B65</reference>
 			</advantage>
-			<advantage>
+			<advantage version="1">
 				<name>Luck</name>
 				<type>Mental</type>
 				<base_points>15</base_points>
 				<reference>B66</reference>
 				<notes>Usable once per hour of play</notes>
 			</advantage>
-			<advantage>
+			<advantage version="1">
 				<name>Magery</name>
 				<type>Mental, Supernatural</type>
 				<levels>4</levels>
 				<base_points>5</base_points>
 				<points_per_level>10</points_per_level>
-				<modifier enabled="no">
+				<modifier version="1" enabled="no">
 					<name>Dance</name>
 					<cost type="percentage">-40</cost>
 					<affects>levels_only</affects>
 				</modifier>
-				<modifier enabled="no">
+				<modifier version="1" enabled="no">
 					<name>Dark-Aspected</name>
 					<cost type="percentage">-50</cost>
 					<affects>levels_only</affects>
 				</modifier>
-				<modifier enabled="no">
+				<modifier version="1" enabled="no">
 					<name>Day-Aspected</name>
 					<cost type="percentage">-40</cost>
 					<affects>levels_only</affects>
 				</modifier>
-				<modifier enabled="no">
+				<modifier version="1" enabled="no">
 					<name>Musical</name>
 					<cost type="percentage">-50</cost>
 					<affects>levels_only</affects>
 				</modifier>
-				<modifier enabled="no">
+				<modifier version="1" enabled="no">
 					<name>Night-Aspected</name>
 					<cost type="percentage">-40</cost>
 					<affects>levels_only</affects>
 				</modifier>
-				<modifier>
+				<modifier version="1">
 					<name>One College</name>
 					<cost type="percentage">-40</cost>
 					<affects>levels_only</affects>
 					<notes>Healing</notes>
 				</modifier>
-				<modifier enabled="no">
+				<modifier version="1" enabled="no">
 					<name>Solitary</name>
 					<cost type="percentage">-40</cost>
 					<affects>levels_only</affects>
 				</modifier>
-				<modifier enabled="no">
+				<modifier version="1" enabled="no">
 					<name>Song</name>
 					<cost type="percentage">-40</cost>
 					<affects>levels_only</affects>
@@ -1664,7 +1651,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 					<amount per_level="yes">1</amount>
 				</skill_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="1">
 				<name>Rank, Military</name>
 				<type>Social</type>
 				<levels>1</levels>
@@ -1672,7 +1659,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<reference>B29</reference>
 				<notes>Sergeant, Arabel Infantry</notes>
 			</advantage>
-			<advantage>
+			<advantage version="1">
 				<name>Night Vision</name>
 				<type>Physical</type>
 				<levels>5</levels>
@@ -1680,28 +1667,28 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<reference>B71</reference>
 			</advantage>
 		</advantage_container>
-		<advantage_container open="yes">
+		<advantage_container version="1" open="yes">
 			<name>Disadvantages</name>
-			<advantage>
+			<advantage version="1">
 				<name>Code of Honor (Soldier's)</name>
 				<type>Mental</type>
 				<base_points>-10</base_points>
 				<reference>B127</reference>
 			</advantage>
-			<advantage>
+			<advantage version="1">
 				<name>Duty (FR: 15)</name>
 				<type>Social</type>
 				<base_points>-20</base_points>
 				<reference>B133</reference>
 				<notes>Forest Patrol; Extremely Hazardous</notes>
 			</advantage>
-			<advantage>
+			<advantage version="1">
 				<name>Post-Combat Shakes (CR: 12)</name>
 				<type>Mental</type>
 				<base_points>-5</base_points>
 				<reference>B150</reference>
 			</advantage>
-			<advantage>
+			<advantage version="1">
 				<name>Sense of Duty</name>
 				<type>Mental</type>
 				<base_points>-5</base_points>
@@ -1709,24 +1696,24 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<notes>Friends &amp; Companions</notes>
 			</advantage>
 		</advantage_container>
-		<advantage_container open="yes">
+		<advantage_container version="1" open="yes">
 			<name>Languages</name>
-			<advantage>
+			<advantage version="1">
 				<name>Native Language: Human</name>
 				<type>Mental</type>
 				<reference>B24</reference>
 				<notes>Spoken: Native, Written: Native</notes>
 			</advantage>
 		</advantage_container>
-		<advantage_container open="yes">
+		<advantage_container version="1" open="yes">
 			<name>Quirks</name>
-			<advantage>
+			<advantage version="1">
 				<name>Broad-Minded</name>
 				<type>Mental</type>
 				<base_points>-1</base_points>
 				<reference>B163</reference>
 			</advantage>
-			<advantage>
+			<advantage version="1">
 				<name>Incompetence at Cooking</name>
 				<type>Mental</type>
 				<levels>0</levels>
@@ -1738,14 +1725,14 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 					<amount>-4</amount>
 				</skill_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="1">
 				<name>Likes green clothing</name>
 				<type>Mental</type>
 				<levels>0</levels>
 				<base_points>-1</base_points>
 				<reference>B164</reference>
 			</advantage>
-			<advantage>
+			<advantage version="1">
 				<name>Responsive</name>
 				<type>Mental</type>
 				<base_points>-1</base_points>
@@ -1754,7 +1741,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 		</advantage_container>
 	</advantage_list>
 	<skill_list>
-		<skill>
+		<skill version="1">
 			<name>Area Knowledge</name>
 			<specialization>Hullack Forest</specialization>
 			<difficulty>IQ/E</difficulty>
@@ -1771,7 +1758,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-3</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Area Knowledge</name>
 			<specialization>Kingdom of Cormyr</specialization>
 			<difficulty>IQ/E</difficulty>
@@ -1788,7 +1775,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-3</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Broadsword</name>
 			<difficulty>DX/A</difficulty>
 			<points>2</points>
@@ -1823,7 +1810,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-5</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Camouflage</name>
 			<difficulty>IQ/E</difficulty>
 			<points>2</points>
@@ -1838,7 +1825,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-2</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Climbing</name>
 			<encumbrance_penalty_multiplier>1</encumbrance_penalty_multiplier>
 			<difficulty>DX/A</difficulty>
@@ -1849,7 +1836,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-5</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Crossbow</name>
 			<difficulty>DX/E</difficulty>
 			<points>2</points>
@@ -1859,7 +1846,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-4</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Detect Lies</name>
 			<difficulty>Per/H</difficulty>
 			<points>1</points>
@@ -1879,21 +1866,21 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-4</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Fast-Draw</name>
 			<specialization>Knife</specialization>
 			<difficulty>DX/E</difficulty>
 			<points>4</points>
 			<reference>B194</reference>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Fast-Draw</name>
 			<specialization>Sword</specialization>
 			<difficulty>DX/E</difficulty>
 			<points>2</points>
 			<reference>B194</reference>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>First Aid</name>
 			<tech_level>3</tech_level>
 			<difficulty>IQ/E</difficulty>
@@ -1919,7 +1906,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-4</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Knife</name>
 			<difficulty>DX/E</difficulty>
 			<points>8</points>
@@ -1944,7 +1931,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-4</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Leadership</name>
 			<difficulty>IQ/A</difficulty>
 			<points>2</points>
@@ -1954,7 +1941,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-5</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Lip Reading</name>
 			<difficulty>Per/A</difficulty>
 			<points>1</points>
@@ -1964,7 +1951,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-10</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Navigation</name>
 			<specialization>Land</specialization>
 			<tech_level>3</tech_level>
@@ -1999,7 +1986,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-2</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Packing</name>
 			<difficulty>IQ/A</difficulty>
 			<points>1</points>
@@ -2015,7 +2002,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-5</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Riding</name>
 			<specialization>Equine</specialization>
 			<difficulty>DX/A</difficulty>
@@ -2032,7 +2019,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-3</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Savoir-Faire</name>
 			<specialization>Military</specialization>
 			<difficulty>IQ/E</difficulty>
@@ -2043,7 +2030,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-4</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Search</name>
 			<difficulty>Per/A</difficulty>
 			<points>2</points>
@@ -2058,7 +2045,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-5</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Shield</name>
 			<specialization>Buckler</specialization>
 			<difficulty>DX/E</difficulty>
@@ -2075,7 +2062,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-2</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Shield</name>
 			<specialization>Shield</specialization>
 			<difficulty>DX/E</difficulty>
@@ -2086,7 +2073,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-4</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Shortsword</name>
 			<difficulty>DX/A</difficulty>
 			<points>8</points>
@@ -2131,7 +2118,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-5</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Singing</name>
 			<difficulty>HT/E</difficulty>
 			<points>1</points>
@@ -2141,7 +2128,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-4</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Soldier</name>
 			<tech_level>3</tech_level>
 			<difficulty>IQ/A</difficulty>
@@ -2152,7 +2139,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-5</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Spear</name>
 			<difficulty>DX/A</difficulty>
 			<points>1</points>
@@ -2172,7 +2159,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-2</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Stealth</name>
 			<encumbrance_penalty_multiplier>1</encumbrance_penalty_multiplier>
 			<difficulty>DX/A</difficulty>
@@ -2187,7 +2174,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-5</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Survival</name>
 			<specialization>Mountain</specialization>
 			<difficulty>Per/A</difficulty>
@@ -2245,7 +2232,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-3</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Survival</name>
 			<specialization>Woodlands</specialization>
 			<difficulty>Per/A</difficulty>
@@ -2303,7 +2290,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-3</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Swimming</name>
 			<encumbrance_penalty_multiplier>2</encumbrance_penalty_multiplier>
 			<difficulty>HT/E</difficulty>
@@ -2314,7 +2301,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-4</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Tactics</name>
 			<difficulty>IQ/H</difficulty>
 			<points>4</points>
@@ -2329,7 +2316,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-6</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Teaching</name>
 			<difficulty>IQ/A</difficulty>
 			<points>2</points>
@@ -2339,7 +2326,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-5</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Thrown Weapon</name>
 			<specialization>Knife</specialization>
 			<difficulty>DX/E</difficulty>
@@ -2350,7 +2337,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-4</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Thrown Weapon</name>
 			<specialization>Spear</specialization>
 			<difficulty>DX/E</difficulty>
@@ -2372,7 +2359,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-2</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Tracking</name>
 			<difficulty>Per/A</difficulty>
 			<points>4</points>
@@ -2387,7 +2374,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier>-5</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="1">
 			<name>Traps</name>
 			<tech_level>3</tech_level>
 			<difficulty>IQ/A</difficulty>
@@ -2405,7 +2392,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 		</skill>
 	</skill_list>
 	<spell_list>
-		<spell>
+		<spell version="1">
 			<name>Awaken</name>
 			<college>Healing</college>
 			<spell_class>Area</spell_class>
@@ -2420,7 +2407,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				</spell_prereq>
 			</prereq_list>
 		</spell>
-		<spell>
+		<spell version="1">
 			<name>Lend Energy</name>
 			<college>Healing</college>
 			<spell_class>Regular</spell_class>
@@ -2448,7 +2435,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				</advantage_prereq>
 			</prereq_list>
 		</spell>
-		<spell>
+		<spell version="1">
 			<name>Lend Vitality</name>
 			<college>Healing</college>
 			<spell_class>Regular</spell_class>
@@ -2463,7 +2450,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				</spell_prereq>
 			</prereq_list>
 		</spell>
-		<spell very_hard="yes">
+		<spell version="1" very_hard="yes">
 			<name>Major Healing</name>
 			<college>Healing</college>
 			<spell_class>Regular</spell_class>
@@ -2491,7 +2478,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				</spell_prereq>
 			</prereq_list>
 		</spell>
-		<spell>
+		<spell version="1">
 			<name>Minor healing</name>
 			<college>Healing</college>
 			<spell_class>Regular</spell_class>
@@ -2508,14 +2495,14 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 			</prereq_list>
 		</spell>
 	</spell_list>
-	<equipment_list carried="yes">
-		<equipment equipped="yes">
+	<equipment_list>
+		<equipment version="1" state="equipped">
 			<quantity>1</quantity>
 			<description>Mail Hauberk</description>
 			<tech_level>2</tech_level>
 			<legality_class>3</legality_class>
 			<value>230</value>
-			<weight units="lb">25.0</weight>
+			<weight units="lbs">25.0</weight>
 			<reference>B283</reference>
 			<dr_bonus>
 				<location>torso</location>
@@ -2526,39 +2513,39 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<amount>4</amount>
 			</dr_bonus>
 		</equipment>
-		<equipment equipped="yes">
+		<equipment version="1" state="equipped">
 			<quantity>1</quantity>
 			<description>Boots</description>
 			<tech_level>2</tech_level>
 			<legality_class>-</legality_class>
 			<value>80</value>
-			<weight units="lb">3.0</weight>
+			<weight units="lbs">3.0</weight>
 			<reference>B284</reference>
 			<dr_bonus>
 				<location>feet</location>
 				<amount>2</amount>
 			</dr_bonus>
 		</equipment>
-		<equipment equipped="yes">
+		<equipment version="1" state="equipped">
 			<quantity>1</quantity>
 			<description>Leather Gloves</description>
 			<tech_level>1</tech_level>
 			<legality_class>-</legality_class>
 			<value>30</value>
-			<weight units="lb">0.0</weight>
+			<weight units="lbs">0.0</weight>
 			<reference>B284</reference>
 			<dr_bonus>
 				<location>hands</location>
 				<amount>2</amount>
 			</dr_bonus>
 		</equipment>
-		<equipment equipped="yes">
+		<equipment version="1" state="equipped">
 			<quantity>1</quantity>
 			<description>Mail Coif</description>
 			<tech_level>2</tech_level>
 			<legality_class>3</legality_class>
 			<value>55</value>
-			<weight units="lb">4.0</weight>
+			<weight units="lbs">4.0</weight>
 			<reference>B284</reference>
 			<dr_bonus>
 				<location>skull</location>
@@ -2569,39 +2556,39 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<amount>4</amount>
 			</dr_bonus>
 		</equipment>
-		<equipment equipped="yes">
+		<equipment version="1" state="equipped">
 			<quantity>1</quantity>
 			<description>Mail Leggings</description>
 			<tech_level>2</tech_level>
 			<legality_class>3</legality_class>
 			<value>110</value>
-			<weight units="lb">15.0</weight>
+			<weight units="lbs">15.0</weight>
 			<reference>B283</reference>
 			<dr_bonus>
 				<location>legs</location>
 				<amount>4</amount>
 			</dr_bonus>
 		</equipment>
-		<equipment equipped="yes">
+		<equipment version="1" state="equipped">
 			<quantity>1</quantity>
 			<description>Mail Sleeves</description>
 			<tech_level>2</tech_level>
 			<legality_class>3</legality_class>
 			<value>70</value>
-			<weight units="lb">9.0</weight>
+			<weight units="lbs">9.0</weight>
 			<reference>B283</reference>
 			<dr_bonus>
 				<location>arms</location>
 				<amount>4</amount>
 			</dr_bonus>
 		</equipment>
-		<equipment equipped="yes">
+		<equipment version="1" state="equipped">
 			<quantity>1</quantity>
 			<description>Crossbow (ST14)</description>
 			<tech_level>2</tech_level>
 			<legality_class>4</legality_class>
 			<value>195</value>
-			<weight units="lb">6.0</weight>
+			<weight units="lbs">6.0</weight>
 			<reference>B276</reference>
 			<ranged_weapon>
 				<damage>2d imp</damage>
@@ -2622,44 +2609,44 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				</default>
 			</ranged_weapon>
 		</equipment>
-		<equipment_container open="yes" equipped="yes">
+		<equipment_container version="1" open="yes" state="equipped">
 			<description>Bolt Case</description>
 			<legality_class>4</legality_class>
 			<value>20</value>
-			<weight units="lb">1.0</weight>
+			<weight units="lbs">1.0</weight>
 			<notes>Holds 20 bolts</notes>
 			<prereq_list all="yes">
-				<contained_weight_prereq has="yes" compare="at_most" units="lb">1.21</contained_weight_prereq>
+				<contained_weight_prereq has="yes" compare="at_most" units="lbs">1.21</contained_weight_prereq>
 			</prereq_list>
-			<equipment equipped="yes">
+			<equipment version="1" state="equipped">
 				<quantity>19</quantity>
 				<description>Crossbow Bolt</description>
 				<tech_level>2</tech_level>
 				<legality_class>4</legality_class>
 				<value>2</value>
-				<weight units="lb">0.06</weight>
+				<weight units="lbs">0.06</weight>
 				<reference>B276</reference>
 			</equipment>
 		</equipment_container>
-		<equipment_container open="yes" equipped="yes">
+		<equipment_container version="1" open="yes" state="equipped">
 			<description>Leather Belt</description>
 			<tech_level>2</tech_level>
 			<legality_class>-</legality_class>
 			<value>5</value>
-			<weight units="lb">0.25</weight>
-			<equipment_container open="yes" equipped="yes">
+			<weight units="lbs">0.25</weight>
+			<equipment_container version="1" open="yes" state="equipped">
 				<description>Scabbard, Sword</description>
 				<tech_level>1</tech_level>
 				<legality_class>4</legality_class>
 				<value>5</value>
-				<weight units="lb">0.5</weight>
-				<equipment equipped="yes">
+				<weight units="lbs">0.5</weight>
+				<equipment version="1" state="equipped">
 					<quantity>1</quantity>
 					<description>Shortsword</description>
 					<tech_level>2</tech_level>
 					<legality_class>4</legality_class>
 					<value>400</value>
-					<weight units="lb">2.0</weight>
+					<weight units="lbs">2.0</weight>
 					<reference>B273</reference>
 					<melee_weapon>
 						<damage>sw cut</damage>
@@ -2773,19 +2760,19 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 					</melee_weapon>
 				</equipment>
 			</equipment_container>
-			<equipment_container open="yes" equipped="yes">
+			<equipment_container version="1" open="yes" state="equipped">
 				<description>Scabbard, Knife</description>
 				<tech_level>1</tech_level>
 				<legality_class>4</legality_class>
 				<value>3</value>
-				<weight units="lb">0.3</weight>
-				<equipment equipped="yes">
+				<weight units="lbs">0.3</weight>
+				<equipment version="1" state="equipped">
 					<quantity>1</quantity>
 					<description>Small Knife</description>
 					<tech_level>0</tech_level>
 					<legality_class>4</legality_class>
 					<value>30</value>
-					<weight units="lb">0.5</weight>
+					<weight units="lbs">0.5</weight>
 					<reference>B272</reference>
 					<melee_weapon>
 						<damage>sw-3 cut</damage>
@@ -2897,77 +2884,103 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 					</melee_weapon>
 				</equipment>
 			</equipment_container>
-			<equipment_container open="yes" equipped="yes">
+			<equipment_container version="1" open="yes" state="equipped">
 				<description>Purse, Small</description>
 				<tech_level>1</tech_level>
 				<legality_class>4</legality_class>
 				<value>10</value>
-				<weight units="lb">0.2</weight>
+				<weight units="lbs">0.2</weight>
 				<reference>B288</reference>
 				<prereq_list all="yes">
-					<contained_weight_prereq has="yes" compare="at_most" units="lb">1.0</contained_weight_prereq>
+					<contained_weight_prereq has="yes" compare="at_most" units="lbs">1.0</contained_weight_prereq>
 				</prereq_list>
-				<equipment equipped="yes">
+				<equipment version="1" state="equipped">
 					<quantity>12</quantity>
 					<description>Copper Penny</description>
 					<legality_class>4</legality_class>
 					<value>1</value>
-					<weight units="lb">0.0080</weight>
+					<weight units="lbs">0.0080</weight>
 				</equipment>
-				<equipment equipped="yes">
+				<equipment version="1" state="equipped">
 					<quantity>9</quantity>
 					<description>Copper Slug</description>
 					<legality_class>4</legality_class>
 					<value>4</value>
-					<weight units="lb">0.032</weight>
+					<weight units="lbs">0.032</weight>
 				</equipment>
-				<equipment equipped="yes">
+				<equipment version="1" state="equipped">
 					<quantity>6</quantity>
 					<description>Silver Eagle</description>
 					<legality_class>4</legality_class>
 					<value>20</value>
-					<weight units="lb">0.0040</weight>
+					<weight units="lbs">0.0040</weight>
 				</equipment>
 			</equipment_container>
 		</equipment_container>
-		<equipment_container open="yes" equipped="yes">
+		<equipment_container version="1" open="yes" state="equipped">
 			<description>Backpack, Small</description>
 			<tech_level>1</tech_level>
 			<legality_class>4</legality_class>
 			<value>60</value>
-			<weight units="lb">3.0</weight>
+			<weight units="lbs">3.0</weight>
 			<reference>B288</reference>
 			<prereq_list all="yes">
-				<contained_weight_prereq has="yes" compare="at_most" units="lb">40.0</contained_weight_prereq>
+				<contained_weight_prereq has="yes" compare="at_most" units="lbs">40.0</contained_weight_prereq>
 			</prereq_list>
-			<equipment equipped="yes">
+			<equipment version="1" state="equipped">
 				<quantity>3</quantity>
 				<description>Traveler's Rations</description>
 				<tech_level>0</tech_level>
 				<legality_class>4</legality_class>
 				<value>2</value>
-				<weight units="lb">0.5</weight>
+				<weight units="lbs">0.5</weight>
 				<reference>B288</reference>
 				<notes>One meal</notes>
 			</equipment>
-			<equipment_container open="yes" equipped="yes">
+			<equipment_container version="1" open="yes" state="equipped">
 				<description>Wineskin</description>
 				<tech_level>0</tech_level>
 				<legality_class>4</legality_class>
 				<value>10</value>
-				<weight units="lb">0.25</weight>
+				<weight units="lbs">0.25</weight>
 				<reference>B288</reference>
 				<prereq_list all="yes">
-					<contained_weight_prereq has="yes" compare="at_most" units="lb">8.0</contained_weight_prereq>
+					<contained_weight_prereq has="yes" compare="at_most" units="lbs">8.0</contained_weight_prereq>
 				</prereq_list>
-				<equipment equipped="yes">
+				<equipment version="1" state="equipped">
 					<quantity>1</quantity>
 					<description>Water, 1 pint</description>
 					<legality_class>4</legality_class>
 					<value>0</value>
-					<weight units="lb">2.0</weight>
+					<weight units="lbs">2.0</weight>
 				</equipment>
 			</equipment_container>
 		</equipment_container>
+		<equipment_container version="1" open="yes" state="not_carried">
+			<description>Draft Horse (ST 60, DX 9, IQ 4, HT 16, Move 12)</description>
+			<legality_class>4</legality_class>
+			<value>2000</value>
+			<weight units="lbs">2000.0</weight>
+			<equipment version="1" state="not_carried">
+				<quantity>1</quantity>
+				<description>Tack &amp; Harness</description>
+				<legality_class>4</legality_class>
+				<value>150</value>
+				<weight units="lbs">20.0</weight>
+			</equipment>
+		</equipment_container>
 	</equipment_list>
+	<print_settings printer="HP Color LaserJet 3800 [9F68CA]" units="in">
+		<orientation>Portrait</orientation>
+		<width>8.5</width>
+		<height>11</height>
+		<top_margin>0.5</top_margin>
+		<left_margin>0.5</left_margin>
+		<bottom_margin>0.25</bottom_margin>
+		<right_margin>0.5</right_margin>
+		<ink_chromaticity>Monochrome</ink_chromaticity>
+		<sides>Duplex</sides>
+		<quality>Normal</quality>
+		<resolution>120000</resolution>
+	</print_settings>
 </character>

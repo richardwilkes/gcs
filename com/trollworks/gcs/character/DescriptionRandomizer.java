@@ -26,7 +26,6 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.utility.MultipleUndo;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.text.NumberUtils;
-import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.widgets.layout.ColumnLayout;
 
@@ -80,7 +79,7 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
 		addField(wrapper, DescriptionPanel.MSG_GENDER, null, GENDER_INDEX, description.getGender());
 		addField(wrapper, DescriptionPanel.MSG_AGE, null, AGE_INDEX, NumberUtils.format(description.getAge()));
 		addField(wrapper, DescriptionPanel.MSG_BIRTHDAY, null, BIRTHDAY_INDEX, description.getBirthday());
-		addField(wrapper, DescriptionPanel.MSG_HEIGHT, null, HEIGHT_INDEX, LengthUnits.FEET.format(description.getHeight()));
+		addField(wrapper, DescriptionPanel.MSG_HEIGHT, null, HEIGHT_INDEX, NumberUtils.formatHeight(description.getHeight()));
 		addField(wrapper, DescriptionPanel.MSG_WEIGHT, null, WEIGHT_INDEX, WeightUnits.POUNDS.format(description.getWeight()));
 		addField(wrapper, DescriptionPanel.MSG_HAIR, DescriptionPanel.MSG_HAIR_TOOLTIP, HAIR_INDEX, description.getHair());
 		addField(wrapper, DescriptionPanel.MSG_EYE_COLOR, DescriptionPanel.MSG_EYE_COLOR_TOOLTIP, EYES_INDEX, description.getEyeColor());
@@ -104,20 +103,21 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
 	}
 
 	public void actionPerformed(ActionEvent event) {
+		Profile description = mCharacter.getDescription();
 		if (mCheckBoxes[GENDER_INDEX].isSelected()) {
 			mFields[GENDER_INDEX].setText(Profile.getRandomGender());
 		}
 		if (mCheckBoxes[AGE_INDEX].isSelected()) {
-			mFields[AGE_INDEX].setText(NumberUtils.format(mCharacter.getDescription().getRandomAge()));
+			mFields[AGE_INDEX].setText(NumberUtils.format(description.getRandomAge()));
 		}
 		if (mCheckBoxes[BIRTHDAY_INDEX].isSelected()) {
 			mFields[BIRTHDAY_INDEX].setText(Profile.getRandomMonthAndDay());
 		}
 		if (mCheckBoxes[HEIGHT_INDEX].isSelected()) {
-			mFields[HEIGHT_INDEX].setText(NumberUtils.formatHeight(Profile.getRandomHeight(mCharacter.getStrength())));
+			mFields[HEIGHT_INDEX].setText(NumberUtils.formatHeight(Profile.getRandomHeight(mCharacter.getStrength(), description.getSizeModifier())));
 		}
 		if (mCheckBoxes[WEIGHT_INDEX].isSelected()) {
-			mFields[WEIGHT_INDEX].setText(WeightUnits.POUNDS.format(Profile.getRandomWeight(mCharacter.getStrength(), mCharacter.getDescription().getWeightMultiplier())));
+			mFields[WEIGHT_INDEX].setText(WeightUnits.POUNDS.format(Profile.getRandomWeight(mCharacter.getStrength(), description.getSizeModifier(), description.getWeightMultiplier())));
 		}
 		if (mCheckBoxes[HAIR_INDEX].isSelected()) {
 			mFields[HAIR_INDEX].setText(Profile.getRandomHair());

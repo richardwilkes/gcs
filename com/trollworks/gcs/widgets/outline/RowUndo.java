@@ -24,6 +24,7 @@
 package com.trollworks.gcs.widgets.outline;
 
 import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.io.xml.XMLNodeType;
 import com.trollworks.gcs.utility.io.xml.XMLReader;
@@ -103,10 +104,11 @@ public class RowUndo extends AbstractUndoableEdit {
 		try {
 			XMLReader reader = new XMLReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(buffer))));
 			XMLNodeType type = reader.next();
-
+			LoadState state = new LoadState();
+			state.mForUndo = true;
 			while (type != XMLNodeType.END_DOCUMENT) {
 				if (type == XMLNodeType.START_TAG) {
-					mRow.load(reader, true);
+					mRow.load(reader, state);
 					type = reader.getType();
 				} else {
 					type = reader.next();

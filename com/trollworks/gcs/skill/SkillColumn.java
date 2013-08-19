@@ -26,6 +26,7 @@ package com.trollworks.gcs.skill;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.text.NumberUtils;
@@ -90,7 +91,7 @@ public enum SkillColumn {
 		}
 
 		@Override public boolean shouldDisplay(DataFile dataFile) {
-			return dataFile instanceof ListFile;
+			return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
 		}
 
 		@Override public Object getData(Skill skill) {
@@ -244,6 +245,32 @@ public enum SkillColumn {
 			return NumberUtils.format(skill.getPoints());
 		}
 	},
+	/** The category. */
+	CATEGORY {
+		@Override public String toString() {
+			return MSG_CATEGORY;
+		}
+
+		@Override public String getToolTip() {
+			return MSG_CATEGORY_TOOLTIP;
+		}
+
+		@Override public Cell getCell() {
+			return new ListTextCell(SwingConstants.LEFT, true);
+		}
+
+		@Override public boolean shouldDisplay(DataFile dataFile) {
+			return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
+		}
+
+		@Override public Object getData(Skill skill) {
+			return getDataAsText(skill);
+		}
+
+		@Override public String getDataAsText(Skill skill) {
+			return skill.getCategoriesAsString();
+		}
+	},
 	/** The page reference. */
 	REFERENCE {
 		@Override public String toString() {
@@ -281,6 +308,8 @@ public enum SkillColumn {
 	static String	MSG_POINTS_TOOLTIP;
 	static String	MSG_DIFFICULTY;
 	static String	MSG_DIFFICULTY_TOOLTIP;
+	static String	MSG_CATEGORY;
+	static String	MSG_CATEGORY_TOOLTIP;
 	static String	MSG_REFERENCE;
 	static String	MSG_REFERENCE_TOOLTIP;
 
@@ -321,7 +350,6 @@ public enum SkillColumn {
 	public static void addColumns(Outline outline, DataFile dataFile) {
 		boolean sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
 		OutlineModel model = outline.getModel();
-
 		for (SkillColumn one : values()) {
 			if (one.shouldDisplay(dataFile)) {
 				Column column = new Column(one.ordinal(), one.toString(), one.getToolTip(), one.getCell());

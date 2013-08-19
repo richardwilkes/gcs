@@ -27,9 +27,9 @@ import com.trollworks.gcs.common.EditorPanel;
 import com.trollworks.gcs.utility.io.Images;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
+import com.trollworks.gcs.widgets.CommitEnforcer;
 import com.trollworks.gcs.widgets.EditorField;
 import com.trollworks.gcs.widgets.UIUtilities;
-import com.trollworks.gcs.widgets.WindowUtils;
 import com.trollworks.gcs.widgets.layout.Alignment;
 import com.trollworks.gcs.widgets.layout.FlexGrid;
 import com.trollworks.gcs.widgets.layout.FlexRow;
@@ -112,7 +112,7 @@ public class SkillDefaultEditor extends EditorPanel {
 			UIUtilities.setOnlySize(mModifierField, mModifierField.getPreferredSize());
 			add(mModifierField);
 
-			if (SkillDefaultType.Skill == current) {
+			if (current.isSkillBased()) {
 				row.add(new FlexSpacer(0, 0, true, false));
 				row = new FlexRow();
 				row.setInsets(new Insets(0, 20, 0, 0));
@@ -177,7 +177,7 @@ public class SkillDefaultEditor extends EditorPanel {
 		JComponent parent = (JComponent) getParent();
 
 		if (ADD.equals(command)) {
-			SkillDefault skillDefault = new SkillDefault(LAST_ITEM_TYPE, LAST_ITEM_TYPE == SkillDefaultType.Skill ? "" : null, null, 0); //$NON-NLS-1$
+			SkillDefault skillDefault = new SkillDefault(LAST_ITEM_TYPE, LAST_ITEM_TYPE.isSkillBased() ? "" : null, null, 0); //$NON-NLS-1$
 			parent.add(new SkillDefaultEditor(skillDefault));
 			if (mDefault == null) {
 				parent.remove(this);
@@ -197,7 +197,7 @@ public class SkillDefaultEditor extends EditorPanel {
 			SkillDefaultType current = mDefault.getType();
 			SkillDefaultType value = (SkillDefaultType) ((JComboBox) src).getSelectedItem();
 			if (!current.equals(value)) {
-				WindowUtils.forceFocusToAccept();
+				CommitEnforcer.forceFocusToAccept();
 				mDefault.setType(value);
 				rebuild();
 				notifyActionListeners();

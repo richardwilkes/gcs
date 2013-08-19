@@ -90,18 +90,16 @@ public class TextCell implements Cell {
 	 * @param column The column.
 	 * @return The foreground color.
 	 */
-	public Color getColor(boolean selected, boolean active, @SuppressWarnings("unused") Row row, @SuppressWarnings("unused") Column column) {
+	public Color getColor(boolean selected, boolean active, Row row, Column column) {
 		return Outline.getListForeground(selected, active);
 	}
 
 	public int getPreferredWidth(Row row, Column column) {
 		int width = TextDrawing.getPreferredSize(getFont(row, column), null, getPresentationText(row, column)).width;
 		BufferedImage icon = row == null ? column.getIcon() : row.getIcon(column);
-
 		if (icon != null) {
 			width += icon.getWidth() + H_MARGIN;
 		}
-
 		return H_MARGIN_WIDTH + width;
 	}
 
@@ -110,15 +108,12 @@ public class TextCell implements Cell {
 		int minHeight = TextDrawing.getPreferredSize(font, null, "Mg").height; //$NON-NLS-1$
 		int height = TextDrawing.getPreferredSize(font, null, getPresentationText(row, column)).height;
 		BufferedImage icon = row == null ? column.getIcon() : row.getIcon(column);
-
 		if (icon != null) {
 			int iconHeight = icon.getHeight();
-
 			if (height < iconHeight) {
 				height = iconHeight;
 			}
 		}
-
 		return minHeight > height ? minHeight : height;
 	}
 
@@ -194,13 +189,10 @@ public class TextCell implements Cell {
 	 */
 	protected String getPresentationText(Row row, Column column) {
 		String text = getData(row, column, false);
-
 		if (!mWrapped || row == null) {
 			return text;
 		}
-
 		int width = column.getWidth();
-
 		if (width == -1) {
 			return text;
 		}
@@ -236,7 +228,7 @@ public class TextCell implements Cell {
 	 * @param column The column.
 	 * @return The font.
 	 */
-	public Font getFont(@SuppressWarnings("unused") Row row, @SuppressWarnings("unused") Column column) {
+	public Font getFont(Row row, Column column) {
 		return UIManager.getFont("TextField.font"); //$NON-NLS-1$
 	}
 

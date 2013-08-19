@@ -43,10 +43,7 @@ public class FileMenu extends JMenu {
 		super(MSG_FILE);
 		add(new JMenuItem(NewCharacterSheetCommand.INSTANCE));
 		add(new JMenuItem(NewCharacterTemplateCommand.INSTANCE));
-		add(new JMenuItem(NewListCommand.ADVANTAGES));
-		add(new JMenuItem(NewListCommand.SKILLS));
-		add(new JMenuItem(NewListCommand.SPELLS));
-		add(new JMenuItem(NewListCommand.EQUIPMENT));
+		add(new JMenuItem(NewLibraryCommand.INSTANCE));
 		addSeparator();
 		add(new JMenuItem(OpenCommand.INSTANCE));
 		add(new RecentFilesMenu());

@@ -154,7 +154,6 @@ public class HeaderCell extends TextCell {
 
 	@Override public int getPreferredWidth(Row row, Column column) {
 		int width = super.getPreferredWidth(row, column);
-
 		if (mAllowSort) {
 			width += SORTER_WIDTH + 4;
 		}

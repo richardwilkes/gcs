@@ -204,7 +204,7 @@ public class Column implements Transferable {
 	 *            example, during sort operations.
 	 * @return The cell used for the specified row.
 	 */
-	public Cell getRowCell(@SuppressWarnings("unused") Row row) {
+	public Cell getRowCell(Row row) {
 		return mRowCell;
 	}
 
@@ -255,10 +255,8 @@ public class Column implements Transferable {
 	public int getPreferredWidth(Outline outline) {
 		int preferredWidth = getPreferredHeaderWidth();
 		OutlineModel model = outline.getModel();
-
 		for (Row row : model.getRows()) {
 			int width = getRowCell(row).getPreferredWidth(row, this) + model.getIndentWidth(row, this);
-
 			if (width > preferredWidth) {
 				preferredWidth = width;
 			}
@@ -302,7 +300,7 @@ public class Column implements Transferable {
 	 * @param bounds The bounds of the header cell.
 	 * @return The tooltip text for this column, typically associated with the header.
 	 */
-	public String getToolTipText(@SuppressWarnings("unused") MouseEvent event, @SuppressWarnings("unused") Rectangle bounds) {
+	public String getToolTipText(MouseEvent event, Rectangle bounds) {
 		return mToolTipText;
 	}
 

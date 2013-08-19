@@ -23,12 +23,13 @@
 
 package com.trollworks.gcs.menu.file;
 
-import com.trollworks.gcs.advantage.AdvantageListWindow;
+import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.SheetWindow;
-import com.trollworks.gcs.equipment.EquipmentListWindow;
+import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.data.OpenDataFileCommand;
-import com.trollworks.gcs.skill.SkillListWindow;
-import com.trollworks.gcs.spell.SpellListWindow;
+import com.trollworks.gcs.skill.Skill;
+import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
@@ -45,12 +46,12 @@ import javax.swing.event.MenuListener;
 
 /** The standard "Recent Files" menu. */
 public class RecentFilesMenu extends JMenu implements MenuListener {
-	private static final String				PREFS_MODULE		= "RecentFiles";																																									//$NON-NLS-1$
+	private static final String				PREFS_MODULE		= "RecentFiles";																																														//$NON-NLS-1$
 	private static final int				PREFS_VERSION		= 1;
 	private static String					MSG_TITLE;
 	private static final int				MAX_RECENTS			= 20;
 	private static final ArrayList<File>	RECENTS				= new ArrayList<File>();
-	private static final String[]			ALLOWED_EXTENSIONS	= { SheetWindow.SHEET_EXTENSION, TemplateWindow.EXTENSION, AdvantageListWindow.EXTENSION, SkillListWindow.EXTENSION, SpellListWindow.EXTENSION, EquipmentListWindow.EXTENSION };
+	private static final String[]			ALLOWED_EXTENSIONS	= { SheetWindow.SHEET_EXTENSION, LibraryFile.EXTENSION, TemplateWindow.EXTENSION, Advantage.OLD_ADVANTAGE_EXTENSION, Skill.OLD_SKILL_EXTENSION, Spell.OLD_SPELL_EXTENSION, Equipment.OLD_EQUIPMENT_EXTENSION };
 
 	static {
 		LocalizedMessages.initialize(RecentFilesMenu.class);
@@ -61,7 +62,7 @@ public class RecentFilesMenu extends JMenu implements MenuListener {
 			if (path == null) {
 				break;
 			}
-			addRecent(new File(path));
+			addRecent(Path.getFile(Path.normalizeFullPath(path)));
 		}
 	}
 
@@ -89,7 +90,7 @@ public class RecentFilesMenu extends JMenu implements MenuListener {
 		for (String allowed : ALLOWED_EXTENSIONS) {
 			if (allowed.equals(extension)) {
 				if (file.canRead()) {
-					file = file.getAbsoluteFile();
+					file = Path.getFile(Path.getFullPath(file));
 					RECENTS.remove(file);
 					RECENTS.add(0, file);
 					if (RECENTS.size() > MAX_RECENTS) {
@@ -108,7 +109,7 @@ public class RecentFilesMenu extends JMenu implements MenuListener {
 		prefs.removePreferences(PREFS_MODULE);
 		int count = RECENTS.size();
 		for (int i = 0; i < count; i++) {
-			prefs.setValue(PREFS_MODULE, Integer.toString(i), RECENTS.get(i).getAbsolutePath());
+			prefs.setValue(PREFS_MODULE, Integer.toString(count - (i + 1)), RECENTS.get(i).getAbsolutePath());
 		}
 		prefs.endBatch();
 	}

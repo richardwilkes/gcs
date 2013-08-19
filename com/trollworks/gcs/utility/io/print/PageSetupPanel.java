@@ -26,6 +26,7 @@ package com.trollworks.gcs.utility.io.print;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.text.DoubleFormatter;
 import com.trollworks.gcs.utility.units.LengthUnits;
+import com.trollworks.gcs.widgets.CommitEnforcer;
 import com.trollworks.gcs.widgets.EditorField;
 import com.trollworks.gcs.widgets.GraphicsUtilities;
 import com.trollworks.gcs.widgets.LinkedLabel;
@@ -441,7 +442,7 @@ public class PageSetupPanel extends JPanel implements ActionListener {
 	 * @return The {@link PrintService} selected by the user.
 	 */
 	@SuppressWarnings("unchecked") public PrintService accept(PrintRequestAttributeSet set) {
-		WindowUtils.forceFocusToAccept();
+		CommitEnforcer.forceFocusToAccept();
 		mService = ((ObjectWrapper<PrintService>) mServices.getSelectedItem()).getObject();
 		PrintUtilities.setPageOrientation(set, (PageOrientation) mOrientation.getSelectedItem());
 		if (mPaperType != null) {

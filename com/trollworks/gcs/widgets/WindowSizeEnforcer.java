@@ -51,8 +51,17 @@ public class WindowSizeEnforcer implements ComponentListener {
 	}
 
 	public void componentResized(ComponentEvent event) {
-		Dimension origSize = mWindow.getSize();
-		Dimension otherSize = mWindow.getMinimumSize();
+		enforce(mWindow);
+	}
+
+	public void componentShown(ComponentEvent event) {
+		// Not used.
+	}
+
+	/** @param window The window to enforce min/max size on. */
+	public static void enforce(Window window) {
+		Dimension origSize = window.getSize();
+		Dimension otherSize = window.getMinimumSize();
 		int width = origSize.width;
 		int height = origSize.height;
 
@@ -62,7 +71,7 @@ public class WindowSizeEnforcer implements ComponentListener {
 		if (height < otherSize.height) {
 			height = otherSize.height;
 		}
-		otherSize = mWindow.getMaximumSize();
+		otherSize = window.getMaximumSize();
 		if (width > otherSize.width) {
 			width = otherSize.width;
 		}
@@ -70,11 +79,7 @@ public class WindowSizeEnforcer implements ComponentListener {
 			height = otherSize.height;
 		}
 		if (width != origSize.width || height != origSize.height) {
-			mWindow.setSize(width, height);
+			window.setSize(width, height);
 		}
-	}
-
-	public void componentShown(ComponentEvent event) {
-		// Not used.
 	}
 }

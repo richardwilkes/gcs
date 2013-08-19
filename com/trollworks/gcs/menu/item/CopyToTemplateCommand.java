@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.menu.item;
 
-import com.trollworks.gcs.common.ListWindow;
+import com.trollworks.gcs.library.LibraryWindow;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
@@ -52,8 +52,8 @@ public class CopyToTemplateCommand extends Command {
 
 	@Override public void adjustForMenu(JMenuItem item) {
 		Window window = getActiveWindow();
-		if (window instanceof ListWindow) {
-			setEnabled(((ListWindow) window).getOutline().getModel().hasSelection() && TemplateWindow.getTopTemplate() != null);
+		if (window instanceof LibraryWindow) {
+			setEnabled(((LibraryWindow) window).getOutline().getModel().hasSelection() && TemplateWindow.getTopTemplate() != null);
 		} else {
 			setEnabled(false);
 		}
@@ -61,8 +61,8 @@ public class CopyToTemplateCommand extends Command {
 
 	@Override public void actionPerformed(ActionEvent event) {
 		Window window = getActiveWindow();
-		if (window instanceof ListWindow) {
-			OutlineModel outlineModel = ((ListWindow) window).getOutline().getModel();
+		if (window instanceof LibraryWindow) {
+			OutlineModel outlineModel = ((LibraryWindow) window).getOutline().getModel();
 			if (outlineModel.hasSelection()) {
 				TemplateWindow template = TemplateWindow.getTopTemplate();
 				if (template != null) {

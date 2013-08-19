@@ -14,6 +14,90 @@
 </head>
 <body>
 	<p class=category>GURPS Character Sheet Release Notes</p>
+	<p class=rversion>Version 2007.12.01 &mdash; December 1, 2007</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li>Replaced the various data list windows with a single-window
+				library interface for accessing most of the data normally kept
+				in separate data files.</li>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=185516&atid=913592&aid=1772495">Feature #1772495</a>:
+				Fright Checks as attributes. Added 'Fright Check' as a new
+				attribute field. Adjusted 'Combat Reflexes' to modify it
+				appropriately.</li>
+			<li>The size modifier is now used when generating random height and
+				weight.</li>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=185516&atid=913592&aid=1678543">Feature #1678543</a>:
+				Eliminated the 'Other Equipment' list and incorporated it
+				directly into the main equipment list. What used to be the
+				'Equipped' attribute is now a three-way state that can mark an
+				item as 'equipped & carried', 'carried', or 'not carried'.</li>
+			<li>Implemented file and internal item versioning. Main purpose at
+				the moment is to disallow loading of data created by newer
+				versions of GCS, although it also provides a cleaner upgrade
+				mechanism for older files.</li>
+			<li>The recently used files list in the initial startup dialog will
+				now respond to the 'return' and 'enter' keys.</li>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1807099&group_id=185516&atid=913592">Feature #1807099</a>:
+				Added support for defaulting to the Parry or Block value of a Skill.
+				Contributed by Sebastien Wilhelmi.</li>
+			<li>Added categories to each of the main list data types.</li>
+			<li>Added a 'data modified' indicator in each window's toolbar. On
+				Mac OS X 10.5+ (and possibly earlier, depending on the JVM in
+				use), also mark the window's close box with the 'dirty'
+				indicator.</li>
+			<li>On Mac OS X 10.5+ (once again, possibly earlier, depending on
+				the JVM in use), mark the current file a window represents so
+				that command-clicking in its title will show the path to the
+				file.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li><a href="http://sourceforge.net/tracker/func=detail&aid=1836396&group_id=185516&atid=913589">Bug #1836396</a>:
+				Point total not updating when earned points changed. Fixed a
+				number of places where a call to invalidate() was not followed
+				by a call to repaint(), when it really should have been.</li>
+			<li>When saving the recent files list to preferences, store them out
+				such that they'll be read back in the right order at startup.</li>
+			<li>Ensure the recent files list gets updated whenever a file is
+				opened.</li>
+			<li>Fixed the 'Jump To Search' command so that it is now handled by
+				windows other than character sheets.</li>
+			<li>Overrode the default Swing option pane behavior to respect
+				minimum sizes.</li>
+			<li>Fixed some of the column resize &amp; drag-n-drop functionality
+				in the lists that got broken when moving over to Swing.</li>
+			<li>Fixed a problem with drag images not being visible when there
+				was any amount of scroll state.</li>
+			<li>Fixed some graphic anomalies caused by defective Swing components.</li>
+			<li>Forced the various lists to have tooltips enabled by default,
+				since the normal dynamic tooltips that they possess were being
+				ignored by Swing.</li>
+			<li>Replaced the plain text tooltip for unsatisfied prerequisites in
+				lists with HTML. While this allows the full text to be show, the
+				HTML renderer in the tooltip view seems to be exceedingly poor...
+				but that's better than nothing at all.</li>
+		</ul>
+	</div>
+	<p class=rheader>Data Files</p>
+	<div class=indent>
+		<ul>
+			<li>Added martial arts skills, techniques and perks, contributed by
+				Sebastien Wilhelmi.</li>
+			<li>Fixed the 'Lance' skill to not require a particular specialty
+				of the 'Riding' skill.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>Switched to a date-based version numbering scheme for the
+				application.</li>
+			<li>Updated to iText 2.0.6.</li>
+		</ul>
+	</div>
 	<p class=rversion>Version 3.2.0.2 &mdash; September 8, 2007</p>
 	<p class=rheader>Features</p>
 	<div class=indent>

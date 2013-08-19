@@ -25,6 +25,7 @@ package com.trollworks.gcs.character.names;
 
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.text.TextUtility;
+import com.trollworks.gcs.widgets.CommitEnforcer;
 import com.trollworks.gcs.widgets.UIUtilities;
 import com.trollworks.gcs.widgets.WindowUtils;
 import com.trollworks.gcs.widgets.layout.Alignment;
@@ -167,7 +168,7 @@ public class Namer extends JPanel {
 	}
 
 	private void applyChanges() {
-		WindowUtils.forceFocusToAccept();
+		CommitEnforcer.forceFocusToAccept();
 		HashMap<String, String> map = new HashMap<String, String>();
 		for (JTextField field : mFields) {
 			map.put(field.getName(), field.getText());

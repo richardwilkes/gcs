@@ -25,9 +25,9 @@ package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.library.LibraryWindow;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.skill.Skill;
-import com.trollworks.gcs.skill.SkillListWindow;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
@@ -66,8 +66,8 @@ public class NewSkillCommand extends Command {
 
 	@Override public void adjustForMenu(JMenuItem item) {
 		Window window = getActiveWindow();
-		if (window instanceof SkillListWindow) {
-			setEnabled(!((SkillListWindow) window).getOutline().getModel().isLocked());
+		if (window instanceof LibraryWindow) {
+			setEnabled(!((LibraryWindow) window).getOutline().getModel().isLocked());
 		} else {
 			setEnabled(window instanceof SheetWindow || window instanceof TemplateWindow);
 		}
@@ -78,27 +78,27 @@ public class NewSkillCommand extends Command {
 		DataFile dataFile;
 
 		Window window = getActiveWindow();
-		if (window instanceof SkillListWindow) {
-			SkillListWindow listWindow = (SkillListWindow) window;
-			dataFile = listWindow.getList();
-			outline = listWindow.getOutline();
+		if (window instanceof LibraryWindow) {
+			LibraryWindow libraryWindow = (LibraryWindow) window;
+			libraryWindow.switchToSkills();
+			dataFile = libraryWindow.getLibraryFile();
+			outline = libraryWindow.getOutline();
+		} else if (window instanceof SheetWindow) {
+			SheetWindow sheetWindow = (SheetWindow) window;
+			outline = sheetWindow.getSheet().getSkillOutline();
+			dataFile = sheetWindow.getCharacter();
+		} else if (window instanceof TemplateWindow) {
+			TemplateWindow templateWindow = (TemplateWindow) window;
+			outline = templateWindow.getSheet().getSkillOutline();
+			dataFile = templateWindow.getTemplate();
 		} else {
-			if (window instanceof SheetWindow) {
-				SheetWindow sheetWindow = (SheetWindow) window;
-				outline = sheetWindow.getSheet().getSkillOutline();
-				dataFile = sheetWindow.getCharacter();
-			} else if (window instanceof TemplateWindow) {
-				TemplateWindow templateWindow = (TemplateWindow) window;
-				outline = templateWindow.getSheet().getSkillOutline();
-				dataFile = templateWindow.getTemplate();
-			} else {
-				return;
-			}
+			return;
 		}
 
 		Skill skill = mTechnique ? new Technique(dataFile) : new Skill(dataFile, mContainer);
 		outline.addRow(skill, getTitle(), false);
 		outline.getModel().select(skill, false);
+		outline.scrollSelectionIntoView();
 		outline.openDetailEditor(true);
 	}
 }

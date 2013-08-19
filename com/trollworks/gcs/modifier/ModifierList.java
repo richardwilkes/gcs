@@ -24,6 +24,7 @@
 package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.utility.io.xml.XMLNodeType;
 import com.trollworks.gcs.utility.io.xml.XMLReader;
 import com.trollworks.gcs.widgets.outline.OutlineModel;
@@ -35,12 +36,12 @@ import java.io.IOException;
 /** Data Object to hold several {@link Modifier} */
 public class ModifierList extends ListFile {
 	private static final int	CURRENT_VERSION	= 1;
-	/** The XML tag for (dis)advantage lists. */
+	/** The XML tag for advantage lists. */
 	public static final String	TAG_ROOT		= "modifier_list";	//$NON-NLS-1$
 
 	/** Creates new {@link ModifierList}. */
 	public ModifierList() {
-		super(Modifier.ID_LIST_CHANGED);
+		super();
 	}
 
 	/**
@@ -55,16 +56,15 @@ public class ModifierList extends ListFile {
 		}
 	}
 
-	@Override protected void loadList(XMLReader reader) throws IOException {
+	@Override protected void loadList(XMLReader reader, LoadState state) throws IOException {
 		OutlineModel model = getModel();
 		String marker = reader.getMarker();
-
 		do {
 			if (reader.next() == XMLNodeType.START_TAG) {
 				String name = reader.getName();
 
 				if (Modifier.TAG_MODIFIER.equals(name)) {
-					model.addRow(new Modifier(this, reader), true);
+					model.addRow(new Modifier(this, reader, state), true);
 				} else {
 					reader.skipTag(name);
 				}

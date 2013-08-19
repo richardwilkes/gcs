@@ -23,9 +23,10 @@
 
 package com.trollworks.gcs.app;
 
+import com.trollworks.gcs.menu.data.DataMenu;
 import com.trollworks.gcs.menu.file.NewCharacterSheetCommand;
 import com.trollworks.gcs.menu.file.NewCharacterTemplateCommand;
-import com.trollworks.gcs.menu.file.NewListCommand;
+import com.trollworks.gcs.menu.file.NewLibraryCommand;
 import com.trollworks.gcs.menu.file.OpenCommand;
 import com.trollworks.gcs.menu.file.RecentFilesMenu;
 import com.trollworks.gcs.utility.io.Images;
@@ -47,6 +48,8 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
@@ -66,23 +69,17 @@ import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
 /** The initial dialog user's see upon launch if no files have been specified. */
-public class StartupDialog extends JDialog implements WindowFocusListener, ActionListener, MouseListener {
+public class StartupDialog extends JDialog implements WindowFocusListener, ActionListener, MouseListener, KeyListener {
 	private static String	MSG_TITLE;
 	private static String	MSG_NEW;
 	private static String	MSG_OPEN;
 	private static String	MSG_NEW_CHARACTER_SHEET;
+	private static String	MSG_NEW_LIBRARY;
 	private static String	MSG_NEW_TEMPLATE;
-	private static String	MSG_NEW_ADVANTAGE_LIST;
-	private static String	MSG_NEW_SKILL_LIST;
-	private static String	MSG_NEW_SPELL_LIST;
-	private static String	MSG_NEW_EQUIPMENT_LIST;
 	private static String	MSG_OTHER;
 	private JButton			mSheetButton;
+	private JButton			mLibraryButton;
 	private JButton			mTemplateButton;
-	private JButton			mAdvantageListButton;
-	private JButton			mSkillListButton;
-	private JButton			mSpellListButton;
-	private JButton			mEquipmentListButton;
 	private JButton			mOpenButton;
 	private JList			mRecentFilesList;
 
@@ -99,21 +96,15 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 		JPanel newPanel = new JPanel();
 		newPanel.setBorder(new TitledBorder(MSG_NEW));
 		mSheetButton = createButton(newPanel, MSG_NEW_CHARACTER_SHEET, Images.getCharacterSheetIcon(true));
+		mLibraryButton = createButton(newPanel, MSG_NEW_LIBRARY, Images.getLibraryIcon(true));
 		mTemplateButton = createButton(newPanel, MSG_NEW_TEMPLATE, Images.getTemplateIcon(true));
-		mAdvantageListButton = createButton(newPanel, MSG_NEW_ADVANTAGE_LIST, Images.getAdvantageIcon(true, false));
-		mSkillListButton = createButton(newPanel, MSG_NEW_SKILL_LIST, Images.getSkillIcon(true, false));
-		mSpellListButton = createButton(newPanel, MSG_NEW_SPELL_LIST, Images.getSpellIcon(true, false));
-		mEquipmentListButton = createButton(newPanel, MSG_NEW_EQUIPMENT_LIST, Images.getEquipmentIcon(true, false));
 		UIUtilities.adjustToSameSize(newPanel.getComponents());
 		content.add(newPanel);
 
 		FlexColumn column = new FlexColumn();
 		column.add(mSheetButton);
 		column.add(mTemplateButton);
-		column.add(mAdvantageListButton);
-		column.add(mEquipmentListButton);
-		column.add(mSkillListButton);
-		column.add(mSpellListButton);
+		column.add(mLibraryButton);
 		column.add(new FlexSpacer(0, 0, false, true));
 		column.apply(newPanel);
 
@@ -123,15 +114,16 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 		mRecentFilesList.setCellRenderer(new DefaultListCellRenderer() {
 			@Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				setText(Path.getLeafName(((File) value).getName(), false));
+				setText(DataMenu.filterTitle(Path.getLeafName(((File) value).getName(), false)));
 				setIcon(new ImageIcon(App.getIconForFile((File) value)));
 				return this;
 			}
 		});
 		mRecentFilesList.setSize(mRecentFilesList.getPreferredSize());
 		mRecentFilesList.addMouseListener(this);
+		mRecentFilesList.addKeyListener(this);
 		JScrollPane scrollPane = new JScrollPane(mRecentFilesList);
-		scrollPane.setMinimumSize(new Dimension(150, 100));
+		scrollPane.setMinimumSize(new Dimension(150, 75));
 		openPanel.add(scrollPane);
 		mOpenButton = new JButton(MSG_OTHER);
 		mOpenButton.addActionListener(this);
@@ -162,6 +154,7 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 		JButton button = new JButton(title, new ImageIcon(image));
 		button.setHorizontalTextPosition(SwingConstants.CENTER);
 		button.setVerticalTextPosition(SwingConstants.BOTTOM);
+		button.setHorizontalAlignment(SwingConstants.CENTER);
 		button.addActionListener(this);
 		panel.add(button);
 		return button;
@@ -181,16 +174,10 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		if (obj == mSheetButton) {
 			NewCharacterSheetCommand.INSTANCE.newSheet();
+		} else if (obj == mLibraryButton) {
+			NewLibraryCommand.INSTANCE.newLibrary();
 		} else if (obj == mTemplateButton) {
 			NewCharacterTemplateCommand.INSTANCE.newTemplate();
-		} else if (obj == mAdvantageListButton) {
-			NewListCommand.ADVANTAGES.newList();
-		} else if (obj == mEquipmentListButton) {
-			NewListCommand.EQUIPMENT.newList();
-		} else if (obj == mSkillListButton) {
-			NewListCommand.SKILLS.newList();
-		} else if (obj == mSpellListButton) {
-			NewListCommand.SPELLS.newList();
 		} else if (obj == mOpenButton) {
 			OpenCommand.INSTANCE.open();
 		}
@@ -202,19 +189,20 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 	}
 
 	public void mouseClicked(MouseEvent event) {
-		if (event.getClickCount() > 1) {
-			int index = mRecentFilesList.locationToIndex(event.getPoint());
-			if (index != -1) {
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				for (Object obj : mRecentFilesList.getSelectedValues()) {
-					OpenCommand.INSTANCE.open((File) obj);
-				}
-				if (AppWindow.getAllWindows().isEmpty()) {
-					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-				} else {
-					dispose();
-				}
-			}
+		if (event.getClickCount() > 1 && mRecentFilesList.locationToIndex(event.getPoint()) != -1) {
+			openSelectedRecents();
+		}
+	}
+
+	private void openSelectedRecents() {
+		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		for (Object obj : mRecentFilesList.getSelectedValues()) {
+			OpenCommand.INSTANCE.open((File) obj);
+		}
+		if (AppWindow.getAllWindows().isEmpty()) {
+			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		} else {
+			dispose();
 		}
 	}
 
@@ -231,6 +219,21 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 	}
 
 	public void mouseReleased(MouseEvent event) {
+		// Not used.
+	}
+
+	public void keyPressed(KeyEvent event) {
+		char key = event.getKeyChar();
+		if (key == '\n' || key == '\r') {
+			openSelectedRecents();
+		}
+	}
+
+	public void keyReleased(KeyEvent event) {
+		// Not used.
+	}
+
+	public void keyTyped(KeyEvent event) {
 		// Not used.
 	}
 }

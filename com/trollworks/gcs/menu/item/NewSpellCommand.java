@@ -25,9 +25,9 @@ package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.library.LibraryWindow;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.spell.SpellListWindow;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.widgets.outline.ListOutline;
@@ -60,8 +60,8 @@ public class NewSpellCommand extends Command {
 
 	@Override public void adjustForMenu(JMenuItem item) {
 		Window window = getActiveWindow();
-		if (window instanceof SpellListWindow) {
-			setEnabled(!((SpellListWindow) window).getOutline().getModel().isLocked());
+		if (window instanceof LibraryWindow) {
+			setEnabled(!((LibraryWindow) window).getOutline().getModel().isLocked());
 		} else {
 			setEnabled(window instanceof SheetWindow || window instanceof TemplateWindow);
 		}
@@ -72,27 +72,27 @@ public class NewSpellCommand extends Command {
 		DataFile dataFile;
 
 		Window window = getActiveWindow();
-		if (window instanceof SpellListWindow) {
-			SpellListWindow listWindow = (SpellListWindow) window;
-			dataFile = listWindow.getList();
-			outline = listWindow.getOutline();
+		if (window instanceof LibraryWindow) {
+			LibraryWindow libraryWindow = (LibraryWindow) window;
+			libraryWindow.switchToSpells();
+			dataFile = libraryWindow.getLibraryFile();
+			outline = libraryWindow.getOutline();
+		} else if (window instanceof SheetWindow) {
+			SheetWindow sheetWindow = (SheetWindow) window;
+			outline = sheetWindow.getSheet().getSpellOutline();
+			dataFile = sheetWindow.getCharacter();
+		} else if (window instanceof TemplateWindow) {
+			TemplateWindow templateWindow = (TemplateWindow) window;
+			outline = templateWindow.getSheet().getSpellOutline();
+			dataFile = templateWindow.getTemplate();
 		} else {
-			if (window instanceof SheetWindow) {
-				SheetWindow sheetWindow = (SheetWindow) window;
-				outline = sheetWindow.getSheet().getSpellOutline();
-				dataFile = sheetWindow.getCharacter();
-			} else if (window instanceof TemplateWindow) {
-				TemplateWindow templateWindow = (TemplateWindow) window;
-				outline = templateWindow.getSheet().getSpellOutline();
-				dataFile = templateWindow.getTemplate();
-			} else {
-				return;
-			}
+			return;
 		}
 
 		Spell spell = new Spell(dataFile, mContainer);
 		outline.addRow(spell, getTitle(), false);
 		outline.getModel().select(spell, false);
+		outline.scrollSelectionIntoView();
 		outline.openDetailEditor(true);
 	}
 }

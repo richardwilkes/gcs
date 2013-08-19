@@ -102,7 +102,7 @@ public class MultiCell implements Cell {
 	 * @param column The column.
 	 * @return The foreground color.
 	 */
-	public Color getColor(boolean selected, boolean active, @SuppressWarnings("unused") Row row, @SuppressWarnings("unused") Column column) {
+	public Color getColor(boolean selected, boolean active, Row row, Column column) {
 		if (((ListRow) row).isSatisfied()) {
 			return Outline.getListForeground(selected, active);
 		}

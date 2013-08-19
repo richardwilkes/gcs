@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry including="com/" kind="src" path=""/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="libraries/itext-2.0.4.jar" sourcepath="libraries/itext-src-2.0.4.zip"/>
+	<classpathentry kind="lib" path="libraries/itext-2.0.6.jar" sourcepath="libraries/itext-src-2.0.6.zip"/>
 	<classpathentry kind="lib" path="libraries/AppleJavaExtensions.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

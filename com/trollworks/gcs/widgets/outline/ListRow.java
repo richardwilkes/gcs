@@ -25,6 +25,8 @@ package com.trollworks.gcs.widgets.outline;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.common.LoadState;
+import com.trollworks.gcs.common.NewerVersionException;
 import com.trollworks.gcs.feature.AttributeBonus;
 import com.trollworks.gcs.feature.CostReduction;
 import com.trollworks.gcs.feature.DRBonus;
@@ -43,15 +45,21 @@ import com.trollworks.gcs.utility.io.xml.XMLWriter;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /** A common row super-class for the model. */
 public abstract class ListRow extends Row {
-	private static final String		ATTRIBUTE_OPEN	= "open";	//$NON-NLS-1$
-	private static final String		TAG_NOTES		= "notes";	//$NON-NLS-1$
+	private static final String		ATTRIBUTE_OPEN	= "open";		//$NON-NLS-1$
+	private static final String		TAG_NOTES		= "notes";		//$NON-NLS-1$
+	private static final String		TAG_CATEGORIES	= "categories"; //$NON-NLS-1$
+	private static final String		TAG_CATEGORY	= "category";	//$NON-NLS-1$
 	/** The data file the row is associated with. */
 	protected DataFile				mDataFile;
 	private ArrayList<Feature>		mFeatures;
@@ -60,6 +68,7 @@ public abstract class ListRow extends Row {
 	private boolean					mIsSatisfied;
 	private String					mUnsatisfiedReason;
 	private String					mNotes;
+	private TreeSet<String>			mCategories;
 
 	/**
 	 * Extracts any "nameable" portions of the buffer and puts their keys into the provided set.
@@ -94,7 +103,6 @@ public abstract class ListRow extends Row {
 			String key = data.substring(first + 1, last);
 			String replacement = map.get(key);
 
-			buffer.setLength(0);
 			if (first != 0) {
 				buffer.append(data.substring(0, first));
 			}
@@ -133,6 +141,7 @@ public abstract class ListRow extends Row {
 		mDefaults = new ArrayList<SkillDefault>();
 		mIsSatisfied = true;
 		mNotes = ""; //$NON-NLS-1$
+		mCategories = new TreeSet<String>();
 	}
 
 	/**
@@ -154,6 +163,7 @@ public abstract class ListRow extends Row {
 		for (SkillDefault skillDefault : rowToClone.mDefaults) {
 			mDefaults.add(new SkillDefault(skillDefault));
 		}
+		mCategories = new TreeSet<String>(rowToClone.mCategories);
 	}
 
 	/** @return Creates a detailed editor for this row. */
@@ -176,6 +186,9 @@ public abstract class ListRow extends Row {
 
 	/** @return The XML root container tag name for this particular row. */
 	public abstract String getXMLTagName();
+
+	/** @return The most recent version of the XML tag this object knows how to load. */
+	public abstract int getXMLTagVersion();
 
 	/** @return The type of row. */
 	public abstract String getRowType();
@@ -207,18 +220,20 @@ public abstract class ListRow extends Row {
 	 * Loads this row's contents.
 	 * 
 	 * @param reader The XML reader to load from.
-	 * @param forUndo Whether this is being called to load undo state.
+	 * @param state The {@link LoadState} to use.
 	 * @throws IOException
 	 */
-	public final void load(XMLReader reader, boolean forUndo) throws IOException {
+	public final void load(XMLReader reader, LoadState state) throws IOException {
 		String marker = reader.getMarker();
-
-		prepareForLoad(forUndo);
-		loadAttributes(reader, forUndo);
+		state.mDataItemVersion = reader.getAttributeAsInteger(LoadState.ATTRIBUTE_VERSION, 0);
+		if (state.mDataItemVersion > getXMLTagVersion()) {
+			throw new NewerVersionException();
+		}
+		prepareForLoad(state);
+		loadAttributes(reader, state);
 		do {
 			if (reader.next() == XMLNodeType.START_TAG) {
 				String name = reader.getName();
-
 				if (AttributeBonus.TAG_ROOT.equals(name)) {
 					mFeatures.add(new AttributeBonus(reader));
 				} else if (DRBonus.TAG_ROOT.equals(name)) {
@@ -237,8 +252,20 @@ public abstract class ListRow extends Row {
 					mDefaults.add(new SkillDefault(reader));
 				} else if (TAG_NOTES.equals(name)) {
 					mNotes = reader.readText();
+				} else if (TAG_CATEGORIES.equals(name)) {
+					String subMarker = reader.getMarker();
+					do {
+						if (reader.next() == XMLNodeType.START_TAG) {
+							name = reader.getName();
+							if (TAG_CATEGORY.equals(name)) {
+								mCategories.add(reader.readText());
+							} else {
+								reader.skipTag(name);
+							}
+						}
+					} while (reader.withinMarker(subMarker));
 				} else {
-					loadSubElement(reader, forUndo);
+					loadSubElement(reader, state);
 				}
 			}
 		} while (reader.withinMarker(marker));
@@ -248,22 +275,23 @@ public abstract class ListRow extends Row {
 	/**
 	 * Called to prepare the row for loading.
 	 * 
-	 * @param forUndo Whether this is being called to load undo state.
+	 * @param state The {@link LoadState} to use.
 	 */
-	protected void prepareForLoad(@SuppressWarnings("unused") boolean forUndo) {
+	protected void prepareForLoad(LoadState state) {
 		mNotes = ""; //$NON-NLS-1$
 		mFeatures.clear();
 		mDefaults.clear();
 		mPrereqList = new PrereqList(null, true);
+		mCategories.clear();
 	}
 
 	/**
 	 * Loads this row's custom attributes from the specified element.
 	 * 
 	 * @param reader The XML reader to load from.
-	 * @param forUndo Whether this is being called to load undo state.
+	 * @param state The {@link LoadState} to use.
 	 */
-	protected void loadAttributes(XMLReader reader, @SuppressWarnings("unused") boolean forUndo) {
+	protected void loadAttributes(XMLReader reader, LoadState state) {
 		if (canHaveChildren()) {
 			setOpen(reader.isAttributeSet(ATTRIBUTE_OPEN));
 		}
@@ -273,12 +301,11 @@ public abstract class ListRow extends Row {
 	 * Loads this row's custom data from the specified element.
 	 * 
 	 * @param reader The XML reader to load from.
-	 * @param forUndo Whether this is being called to load undo state.
+	 * @param state The {@link LoadState} to use.
 	 * @throws IOException
 	 */
-	protected void loadSubElement(XMLReader reader, @SuppressWarnings("unused") boolean forUndo) throws IOException {
+	protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
 		reader.skipTag(reader.getName());
-
 	}
 
 	/** Called when loading of this row is complete. Does nothing by default. */
@@ -294,6 +321,7 @@ public abstract class ListRow extends Row {
 	 */
 	public void save(XMLWriter out, boolean forUndo) {
 		out.startTag(getXMLTagName());
+		out.writeAttribute(LoadState.ATTRIBUTE_VERSION, getXMLTagVersion());
 		if (canHaveChildren()) {
 			out.writeAttribute(ATTRIBUTE_OPEN, isOpen());
 		}
@@ -301,6 +329,14 @@ public abstract class ListRow extends Row {
 		out.finishTagEOL();
 		saveSelf(out, forUndo);
 		out.simpleTagNotEmpty(TAG_NOTES, mNotes);
+
+		if (!mCategories.isEmpty()) {
+			out.startSimpleTagEOL(TAG_CATEGORIES);
+			for (String category : mCategories) {
+				out.simpleTag(TAG_CATEGORY, category);
+			}
+			out.endTagEOL(TAG_CATEGORIES, true);
+		}
 
 		if (!mFeatures.isEmpty()) {
 			for (Feature feature : mFeatures) {
@@ -338,7 +374,7 @@ public abstract class ListRow extends Row {
 	 * @param out The XML writer to use.
 	 * @param forUndo Whether this is being called to save undo state.
 	 */
-	protected void saveAttributes(@SuppressWarnings("unused") XMLWriter out, @SuppressWarnings("unused") boolean forUndo) {
+	protected void saveAttributes(XMLWriter out, boolean forUndo) {
 		// Does nothing by default.
 	}
 
@@ -358,7 +394,7 @@ public abstract class ListRow extends Row {
 	 * @param type The notification type.
 	 * @param data Extra data specific to this notification.
 	 */
-	public void notify(String type, @SuppressWarnings("unused") Object data) {
+	public void notify(String type, Object data) {
 		if (mDataFile != null) {
 			mDataFile.notify(type, this);
 		}
@@ -421,6 +457,77 @@ public abstract class ListRow extends Row {
 		return false;
 	}
 
+	/** @return The categories this data row belongs to. */
+	public Set<String> getCategories() {
+		return Collections.unmodifiableSet(mCategories);
+	}
+
+	/** @return The categories this data row belongs to. */
+	public String getCategoriesAsString() {
+		StringBuilder buffer = new StringBuilder();
+		for (String category : mCategories) {
+			if (buffer.length() > 0) {
+				buffer.append(", "); //$NON-NLS-1$
+			}
+			buffer.append(category);
+		}
+		return buffer.toString();
+	}
+
+	/**
+	 * @param categories The categories this data row belongs to.
+	 * @return Whether there was a change or not.
+	 */
+	public boolean setCategories(Collection<String> categories) {
+		TreeSet<String> old = mCategories;
+		mCategories = new TreeSet<String>();
+		for (String category : categories) {
+			category = category.trim();
+			if (category.length() > 0) {
+				mCategories.add(category);
+			}
+		}
+		if (!old.equals(mCategories)) {
+			String id = getCategoryID();
+			if (id != null) {
+				notifySingle(id);
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * @param categories The categories this data row belongs to. Use commas to separate categories.
+	 * @return Whether there was a change or not.
+	 */
+	public final boolean setCategories(String categories) {
+		return setCategories(Arrays.asList(categories.split(","))); //$NON-NLS-1$
+	}
+
+	/**
+	 * @param category The category to add.
+	 * @return Whether there was a change or not.
+	 */
+	public boolean addCategory(String category) {
+		category = category.trim();
+		if (category.length() > 0) {
+			if (mCategories.add(category)) {
+				String id = getCategoryID();
+				if (id != null) {
+					notifySingle(id);
+				}
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** @return The notification ID to use with categories. */
+	protected String getCategoryID() {
+		return null;
+	}
+
 	/** @return The prerequisites needed by this data row. */
 	public PrereqList getPrereqs() {
 		return mPrereqList;
@@ -464,7 +571,9 @@ public abstract class ListRow extends Row {
 	 * @param lowerCaseOnly The passed in text is all lowercase.
 	 * @return <code>true</code> if this row contains the text.
 	 */
-	public abstract boolean contains(String text, boolean lowerCaseOnly);
+	public boolean contains(String text, boolean lowerCaseOnly) {
+		return false;
+	}
 
 	/**
 	 * @param large Whether to return the small (16x16) or large (32x32) image.

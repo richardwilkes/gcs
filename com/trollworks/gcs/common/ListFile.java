@@ -29,7 +29,6 @@ import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.OutlineModel;
 import com.trollworks.gcs.widgets.outline.Row;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -37,47 +36,30 @@ import java.util.List;
 public abstract class ListFile extends DataFile {
 	private OutlineModel	mModel;
 
-	/**
-	 * Creates a new, empty row list.
-	 * 
-	 * @param listChangedID The ID to use for "list changed".
-	 */
-	public ListFile(@SuppressWarnings("unused") String listChangedID) {
+	/** Creates a new, empty row list. */
+	public ListFile() {
 		super();
 		mModel = new OutlineModel();
 		initialize();
 	}
 
-	/**
-	 * Creates a new row list from the specified file.
-	 * 
-	 * @param file The file to load the data from.
-	 * @param listChangedID The ID to use for "list changed".
-	 * @throws IOException if the data cannot be read or the file doesn't contain a valid list.
-	 */
-	public ListFile(File file, String listChangedID) throws IOException {
-		super(file, listChangedID);
-		initialize();
-	}
-
-	@Override protected final void loadSelf(XMLReader reader, Object param) throws IOException {
+	@Override protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
 		mModel = new OutlineModel();
-		loadList(reader);
+		loadList(reader, state);
 	}
 
 	/**
 	 * Called to load the individual rows.
 	 * 
 	 * @param reader The XML reader to load from.
+	 * @param state The {@link LoadState} to use.
 	 * @throws IOException
 	 */
-	protected abstract void loadList(XMLReader reader) throws IOException;
+	protected abstract void loadList(XMLReader reader, LoadState state) throws IOException;
 
 	@Override protected final void saveSelf(XMLWriter out) {
-		for (Row row2 : getTopLevelRows()) {
-			ListRow row = (ListRow) row2;
-
-			row.save(out, false);
+		for (Row one : getTopLevelRows()) {
+			((ListRow) one).save(out, false);
 		}
 	}
 
@@ -89,5 +71,9 @@ public abstract class ListFile extends DataFile {
 	/** @return The outline model. */
 	public OutlineModel getModel() {
 		return mModel;
+	}
+
+	@Override public boolean isEmpty() {
+		return mModel.getRowCount() == 0;
 	}
 }

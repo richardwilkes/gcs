@@ -329,4 +329,17 @@ public class UIUtilities {
 			mgr.paintDirtyRegions();
 		}
 	}
+
+	/**
+	 * @param component The component whose ancestor chain is to be looked at.
+	 * @param type The type of ancestor being looked for.
+	 * @return The ancestor, or <code>null</code>.
+	 */
+	public static Container getAncestorOfType(Component component, Class<? extends Container> type) {
+		Container parent = component.getParent();
+		while (parent != null && !type.isAssignableFrom(parent.getClass())) {
+			parent = parent.getParent();
+		}
+		return parent;
+	}
 }

@@ -221,8 +221,8 @@ public class Profile {
 		mHair = full ? getRandomHair() : EMPTY;
 		mSkinColor = full ? getRandomSkinColor() : EMPTY;
 		mHandedness = full ? getRandomHandedness() : EMPTY;
-		mHeight = full ? getRandomHeight(mCharacter.getStrength()) : 0;
-		mWeight = full ? getRandomWeight(mCharacter.getStrength(), 1.0) : 0.0;
+		mHeight = full ? getRandomHeight(mCharacter.getStrength(), getSizeModifier()) : 0;
+		mWeight = full ? getRandomWeight(mCharacter.getStrength(), getSizeModifier(), 1.0) : 0.0;
 		mGender = full ? getRandomGender() : EMPTY;
 		mName = full ? USCensusNames.INSTANCE.getFullName(mGender == MSG_MALE) : EMPTY;
 		mRace = full ? MSG_DEFAULT_RACE : EMPTY;
@@ -925,9 +925,10 @@ public class Profile {
 
 	/**
 	 * @param strength The strength to base the height on.
+	 * @param sm The size modifier to use.
 	 * @return A random height, in inches.
 	 */
-	public static int getRandomHeight(int strength) {
+	public static int getRandomHeight(int strength, int sm) {
 		int base;
 
 		if (strength < 7) {
@@ -941,15 +942,20 @@ public class Profile {
 		} else {
 			base = 74;
 		}
-		return base + RANDOM.nextInt(11);
+		base += RANDOM.nextInt(11);
+		if (sm != 0) {
+			base = (int) Math.max(Math.round(base * Math.pow(10.0, sm / 6.0)), 1);
+		}
+		return base;
 	}
 
 	/**
 	 * @param strength The strength to base the weight on.
+	 * @param sm The size modifier to use.
 	 * @param multiplier The weight multiplier for being under- or overweight.
 	 * @return A random weight, in pounds.
 	 */
-	public static int getRandomWeight(int strength, double multiplier) {
+	public static int getRandomWeight(int strength, int sm, double multiplier) {
 		int base;
 		int range;
 
@@ -969,7 +975,11 @@ public class Profile {
 			base = 170;
 			range = 101;
 		}
-		return (int) Math.round((base + RANDOM.nextInt(range)) * multiplier);
+		base += RANDOM.nextInt(range);
+		if (sm != 0) {
+			base = (int) Math.round(base * Math.pow(1000.0, sm / 6.0));
+		}
+		return (int) Math.max(Math.round(base * multiplier), 1);
 	}
 
 	/** @return The default player name. */

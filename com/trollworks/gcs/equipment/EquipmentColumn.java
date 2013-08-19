@@ -26,6 +26,7 @@ package com.trollworks.gcs.equipment;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.utility.io.LocalizedMessages;
 import com.trollworks.gcs.utility.text.NumberUtils;
@@ -54,18 +55,18 @@ public enum EquipmentColumn {
 			return MSG_EQUIPMENT_TOOLTIP;
 		}
 
-		@Override public String toString(GURPSCharacter character, boolean carried) {
-			if (carried && character != null) {
-				return MessageFormat.format(MSG_CARRIED_EQUIPMENT, WeightUnits.POUNDS.format(character.getWeightCarried()), NumberUtils.format(character.getWealthCarried()));
+		@Override public String toString(GURPSCharacter character) {
+			if (character != null) {
+				return MessageFormat.format(MSG_EQUIPMENT_TOTALS, WeightUnits.POUNDS.format(character.getWeightCarried()), NumberUtils.format(character.getWealthCarried()));
 			}
-			return super.toString(character, carried);
+			return super.toString(character);
 		}
 
 		@Override public Cell getCell() {
 			return new MultiCell();
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile, boolean carried) {
+		@Override public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
@@ -85,30 +86,30 @@ public enum EquipmentColumn {
 			return builder.toString();
 		}
 	},
-	/** Whether the equipment is equipped or not (only for carried lists). */
-	EQUIPPED {
+	/** The current equipment state. */
+	STATE {
 		@Override public String toString() {
-			return MSG_EQUIPPED;
+			return MSG_STATE;
 		}
 
 		@Override public String getToolTip() {
-			return MSG_EQUIPPED_TOOLTIP;
+			return MSG_STATE_TOOLTIP;
 		}
 
 		@Override public Cell getCell() {
 			return new ListTextCell(SwingConstants.CENTER, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile, boolean carried) {
-			return carried && dataFile instanceof GURPSCharacter;
+		@Override public boolean shouldDisplay(DataFile dataFile) {
+			return dataFile instanceof GURPSCharacter;
 		}
 
 		@Override public Object getData(Equipment equipment) {
-			return equipment.isEquipped() ? Boolean.TRUE : Boolean.FALSE;
+			return equipment.getState();
 		}
 
 		@Override public String getDataAsText(Equipment equipment) {
-			return equipment.isFullyEquipped() ? MSG_EQUIPPED : ""; //$NON-NLS-1$
+			return equipment.getState().toShortString();
 		}
 	},
 	/** The quantity. */
@@ -125,8 +126,8 @@ public enum EquipmentColumn {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile, boolean carried) {
-			return !(dataFile instanceof ListFile);
+		@Override public boolean shouldDisplay(DataFile dataFile) {
+			return !(dataFile instanceof ListFile) && !(dataFile instanceof LibraryFile);
 		}
 
 		@Override public Object getData(Equipment equipment) {
@@ -151,8 +152,8 @@ public enum EquipmentColumn {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile, boolean carried) {
-			return dataFile instanceof ListFile;
+		@Override public boolean shouldDisplay(DataFile dataFile) {
+			return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
 		}
 
 		@Override public Object getData(Equipment equipment) {
@@ -177,8 +178,8 @@ public enum EquipmentColumn {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile, boolean carried) {
-			return dataFile instanceof ListFile;
+		@Override public boolean shouldDisplay(DataFile dataFile) {
+			return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
 		}
 
 		@Override public Object getData(Equipment equipment) {
@@ -203,7 +204,7 @@ public enum EquipmentColumn {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile, boolean carried) {
+		@Override public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
@@ -229,7 +230,7 @@ public enum EquipmentColumn {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile, boolean carried) {
+		@Override public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
@@ -255,8 +256,8 @@ public enum EquipmentColumn {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile, boolean carried) {
-			return !(dataFile instanceof ListFile);
+		@Override public boolean shouldDisplay(DataFile dataFile) {
+			return !(dataFile instanceof ListFile) && !(dataFile instanceof LibraryFile);
 		}
 
 		@Override public Object getData(Equipment equipment) {
@@ -270,19 +271,19 @@ public enum EquipmentColumn {
 	/** The weight. */
 	EXT_WEIGHT {
 		@Override public String toString() {
-			return MSG_WEIGHT;
+			return MSG_EXT_WEIGHT;
 		}
 
 		@Override public String getToolTip() {
-			return MSG_WEIGHT_TOOLTIP;
+			return MSG_EXT_WEIGHT_TOOLTIP;
 		}
 
 		@Override public Cell getCell() {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile, boolean carried) {
-			return !(dataFile instanceof ListFile);
+		@Override public boolean shouldDisplay(DataFile dataFile) {
+			return !(dataFile instanceof ListFile) && !(dataFile instanceof LibraryFile);
 		}
 
 		@Override public Object getData(Equipment equipment) {
@@ -291,6 +292,32 @@ public enum EquipmentColumn {
 
 		@Override public String getDataAsText(Equipment equipment) {
 			return NumberUtils.format(equipment.getExtendedWeight());
+		}
+	},
+	/** The category. */
+	CATEGORY {
+		@Override public String toString() {
+			return MSG_CATEGORY;
+		}
+
+		@Override public String getToolTip() {
+			return MSG_CATEGORY_TOOLTIP;
+		}
+
+		@Override public Cell getCell() {
+			return new ListTextCell(SwingConstants.LEFT, true);
+		}
+
+		@Override public boolean shouldDisplay(DataFile dataFile) {
+			return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
+		}
+
+		@Override public Object getData(Equipment equipment) {
+			return getDataAsText(equipment);
+		}
+
+		@Override public String getDataAsText(Equipment equipment) {
+			return equipment.getCategoriesAsString();
 		}
 	},
 	/** The page reference. */
@@ -307,7 +334,7 @@ public enum EquipmentColumn {
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
-		@Override public boolean shouldDisplay(DataFile dataFile, boolean carried) {
+		@Override public boolean shouldDisplay(DataFile dataFile) {
 			return true;
 		}
 
@@ -321,9 +348,10 @@ public enum EquipmentColumn {
 	};
 
 	static String	MSG_EQUIPMENT;
-	static String	MSG_CARRIED_EQUIPMENT;
+	static String	MSG_EQUIPMENT_TOTALS;
 	static String	MSG_EQUIPMENT_TOOLTIP;
-	static String	MSG_EQUIPPED;
+	static String	MSG_STATE;
+	static String	MSG_STATE_TOOLTIP;
 	static String	MSG_TECH_LEVEL;
 	static String	MSG_TECH_LEVEL_TOOLTIP;
 	static String	MSG_LEGALITY_CLASS;
@@ -331,16 +359,17 @@ public enum EquipmentColumn {
 	static String	MSG_QUANTITY;
 	static String	MSG_QUANTITY_TOOLTIP;
 	static String	MSG_VALUE;
+	static String	MSG_VALUE_TOOLTIP;
 	static String	MSG_WEIGHT;
 	static String	MSG_WEIGHT_TOOLTIP;
 	static String	MSG_EXT_VALUE;
+	static String	MSG_EXT_VALUE_TOOLTIP;
 	static String	MSG_EXT_WEIGHT;
 	static String	MSG_EXT_WEIGHT_TOOLTIP;
+	static String	MSG_CATEGORY;
+	static String	MSG_CATEGORY_TOOLTIP;
 	static String	MSG_REFERENCE;
 	static String	MSG_REFERENCE_TOOLTIP;
-	static String	MSG_EQUIPPED_TOOLTIP;
-	static String	MSG_VALUE_TOOLTIP;
-	static String	MSG_EXT_VALUE_TOOLTIP;
 
 	static {
 		LocalizedMessages.initialize(EquipmentColumn.class);
@@ -366,18 +395,16 @@ public enum EquipmentColumn {
 
 	/**
 	 * @param dataFile The {@link DataFile} to use.
-	 * @param carried Whether this is for the "carried" equipment list.
 	 * @return Whether this column should be displayed for the specified data file.
 	 */
-	public abstract boolean shouldDisplay(DataFile dataFile, boolean carried);
+	public abstract boolean shouldDisplay(DataFile dataFile);
 
 	/**
 	 * @param character The {@link GURPSCharacter} this equipment list is associated with, or
 	 *            <code>null</code>.
-	 * @param carried Whether this is for the "carried" equipment list.
 	 * @return The header title.
 	 */
-	public String toString(@SuppressWarnings("unused") GURPSCharacter character, @SuppressWarnings("unused") boolean carried) {
+	public String toString(GURPSCharacter character) {
 		return toString();
 	}
 
@@ -386,16 +413,15 @@ public enum EquipmentColumn {
 	 * 
 	 * @param outline The {@link Outline} to use.
 	 * @param dataFile The {@link DataFile} that data is being displayed for.
-	 * @param carried Whether this is for the "carried" equipment list.
 	 */
-	public static void addColumns(Outline outline, DataFile dataFile, boolean carried) {
+	public static void addColumns(Outline outline, DataFile dataFile) {
 		GURPSCharacter character = dataFile instanceof GURPSCharacter ? (GURPSCharacter) dataFile : null;
 		boolean sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
 		OutlineModel model = outline.getModel();
 
 		for (EquipmentColumn one : values()) {
-			if (one.shouldDisplay(dataFile, carried)) {
-				Column column = new Column(one.ordinal(), one.toString(character, carried), one.getToolTip(), one.getCell());
+			if (one.shouldDisplay(dataFile)) {
+				Column column = new Column(one.ordinal(), one.toString(character), one.getToolTip(), one.getCell());
 
 				column.setHeaderCell(new ListHeaderCell(sheetOrTemplate));
 				model.addColumn(column);

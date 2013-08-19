@@ -23,11 +23,12 @@
 
 package com.trollworks.gcs.common;
 
-import com.trollworks.gcs.advantage.AdvantageListWindow;
-import com.trollworks.gcs.equipment.EquipmentListWindow;
+import com.trollworks.gcs.advantage.Advantage;
+import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.data.DataMenu;
-import com.trollworks.gcs.skill.SkillListWindow;
-import com.trollworks.gcs.spell.SpellListWindow;
+import com.trollworks.gcs.skill.Skill;
+import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.gcs.utility.Debug;
 import com.trollworks.gcs.utility.io.Path;
@@ -58,7 +59,7 @@ public class ListCollectionThread extends Thread {
 		super("List Collection"); //$NON-NLS-1$
 		setPriority(NORM_PRIORITY);
 		setDaemon(true);
-		mListDir = (new File(System.getProperty("app.home", "."), "data")).getAbsoluteFile(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		mListDir = new File(System.getProperty("app.home", "."), "data").getAbsoluteFile(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 
 	/** @return The current list of lists. */
@@ -115,7 +116,7 @@ public class ListCollectionThread extends Thread {
 					} else {
 						String ext = Path.getExtension(element.getName());
 
-						if (AdvantageListWindow.EXTENSION.equalsIgnoreCase(ext) || EquipmentListWindow.EXTENSION.equalsIgnoreCase(ext) || SkillListWindow.EXTENSION.equalsIgnoreCase(ext) || SpellListWindow.EXTENSION.equalsIgnoreCase(ext) || TemplateWindow.EXTENSION.equalsIgnoreCase(ext)) {
+						if (LibraryFile.EXTENSION.equalsIgnoreCase(ext) || Advantage.OLD_ADVANTAGE_EXTENSION.equalsIgnoreCase(ext) || Equipment.OLD_EQUIPMENT_EXTENSION.equalsIgnoreCase(ext) || Skill.OLD_SKILL_EXTENSION.equalsIgnoreCase(ext) || Spell.OLD_SPELL_EXTENSION.equalsIgnoreCase(ext) || TemplateWindow.EXTENSION.equalsIgnoreCase(ext)) {
 							list.add(element);
 						}
 					}

@@ -23,18 +23,15 @@
 
 package com.trollworks.gcs.menu.file;
 
-import com.trollworks.gcs.advantage.AdvantageList;
-import com.trollworks.gcs.advantage.AdvantageListWindow;
+import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetWindow;
-import com.trollworks.gcs.common.ListWindow;
-import com.trollworks.gcs.equipment.EquipmentList;
-import com.trollworks.gcs.equipment.EquipmentListWindow;
+import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.library.LibraryFile;
+import com.trollworks.gcs.library.LibraryWindow;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.skill.SkillList;
-import com.trollworks.gcs.skill.SkillListWindow;
-import com.trollworks.gcs.spell.SpellList;
-import com.trollworks.gcs.spell.SpellListWindow;
+import com.trollworks.gcs.skill.Skill;
+import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.gcs.utility.Debug;
@@ -58,7 +55,14 @@ public class OpenCommand extends Command {
 	}
 
 	/** The singleton {@link OpenCommand}. */
-	public static final OpenCommand	INSTANCE	= new OpenCommand();
+	public static final OpenCommand	INSTANCE			= new OpenCommand();
+	private static final String		CHARACTER_MATCHER	= StdFileDialog.createExtensionMatcher(SheetWindow.SHEET_EXTENSION);
+	private static final String		TEMPLATE_MATCHER	= StdFileDialog.createExtensionMatcher(TemplateWindow.EXTENSION);
+	private static final String		LIBRARY_MATCHER		= StdFileDialog.createExtensionMatcher(LibraryFile.EXTENSION);
+	private static final String		ADVANTAGE_MATCHER	= StdFileDialog.createExtensionMatcher(Advantage.OLD_ADVANTAGE_EXTENSION);
+	private static final String		SKILL_MATCHER		= StdFileDialog.createExtensionMatcher(Skill.OLD_SKILL_EXTENSION);
+	private static final String		SPELL_MATCHER		= StdFileDialog.createExtensionMatcher(Spell.OLD_SPELL_EXTENSION);
+	private static final String		EQUIPMENT_MATCHER	= StdFileDialog.createExtensionMatcher(Equipment.OLD_EQUIPMENT_EXTENSION);
 
 	private OpenCommand() {
 		super(MSG_OPEN, KeyEvent.VK_O);
@@ -75,7 +79,7 @@ public class OpenCommand extends Command {
 	/** Ask the user to open a file. */
 	public void open() {
 		Component focus = getFocusOwner();
-		open(StdFileDialog.choose(focus, true, MSG_OPEN, null, null, SheetWindow.SHEET_EXTENSION, TemplateWindow.EXTENSION, AdvantageListWindow.EXTENSION, SkillListWindow.EXTENSION, SpellListWindow.EXTENSION, EquipmentListWindow.EXTENSION));
+		open(StdFileDialog.choose(focus, true, MSG_OPEN, null, null, SheetWindow.SHEET_EXTENSION, LibraryFile.EXTENSION, TemplateWindow.EXTENSION, Advantage.OLD_ADVANTAGE_EXTENSION, Skill.OLD_SKILL_EXTENSION, Spell.OLD_SPELL_EXTENSION, Equipment.OLD_EQUIPMENT_EXTENSION));
 	}
 
 	/** @param file The file to open. */
@@ -83,24 +87,18 @@ public class OpenCommand extends Command {
 		if (file != null) {
 			try {
 				String name = file.getName();
-				if (name.matches(StdFileDialog.createExtensionMatcher(SheetWindow.SHEET_EXTENSION))) {
+				if (name.matches(CHARACTER_MATCHER)) {
 					openCharacterSheet(file);
-				} else if (name.matches(StdFileDialog.createExtensionMatcher(TemplateWindow.EXTENSION))) {
+				} else if (name.matches(LIBRARY_MATCHER) || name.matches(ADVANTAGE_MATCHER) || name.matches(SKILL_MATCHER) || name.matches(SPELL_MATCHER) || name.matches(EQUIPMENT_MATCHER)) {
+					openLibrary(file);
+				} else if (name.matches(TEMPLATE_MATCHER)) {
 					openTemplateSheet(file);
-				} else if (name.matches(StdFileDialog.createExtensionMatcher(AdvantageListWindow.EXTENSION))) {
-					openAdvantageList(file);
-				} else if (name.matches(StdFileDialog.createExtensionMatcher(SkillListWindow.EXTENSION))) {
-					openSkillList(file);
-				} else if (name.matches(StdFileDialog.createExtensionMatcher(SpellListWindow.EXTENSION))) {
-					openSpellList(file);
-				} else if (name.matches(StdFileDialog.createExtensionMatcher(EquipmentListWindow.EXTENSION))) {
-					openEquipmentList(file);
 				} else {
 					throw new IOException("Unknown file extension"); //$NON-NLS-1$
 				}
 			} catch (Exception exception) {
 				Debug.diagnoseLoadAndSave(exception);
-				StdFileDialog.showCannotOpenMsg(getFocusOwner(), file.getName());
+				StdFileDialog.showCannotOpenMsg(getFocusOwner(), file.getName(), exception);
 			}
 		}
 	}
@@ -113,6 +111,18 @@ public class OpenCommand extends Command {
 		} else {
 			window.toFront();
 		}
+		RecentFilesMenu.addRecent(file);
+	}
+
+	private void openLibrary(File file) throws IOException {
+		LibraryWindow window = LibraryWindow.findLibraryWindow(file);
+		if (window == null) {
+			window = new LibraryWindow(new LibraryFile(file));
+			window.setVisible(true);
+		} else {
+			window.toFront();
+		}
+		RecentFilesMenu.addRecent(file);
 	}
 
 	private void openTemplateSheet(File file) throws IOException {
@@ -123,45 +133,6 @@ public class OpenCommand extends Command {
 		} else {
 			window.toFront();
 		}
-	}
-
-	private void openAdvantageList(File file) throws IOException {
-		AdvantageListWindow window = (AdvantageListWindow) ListWindow.findListWindow(file);
-		if (window == null) {
-			window = new AdvantageListWindow(new AdvantageList(file));
-			window.setVisible(true);
-		} else {
-			window.toFront();
-		}
-	}
-
-	private void openSkillList(File file) throws IOException {
-		SkillListWindow window = (SkillListWindow) ListWindow.findListWindow(file);
-		if (window == null) {
-			window = new SkillListWindow(new SkillList(file));
-			window.setVisible(true);
-		} else {
-			window.toFront();
-		}
-	}
-
-	private void openSpellList(File file) throws IOException {
-		SpellListWindow window = (SpellListWindow) ListWindow.findListWindow(file);
-		if (window == null) {
-			window = new SpellListWindow(new SpellList(file));
-			window.setVisible(true);
-		} else {
-			window.toFront();
-		}
-	}
-
-	private void openEquipmentList(File file) throws IOException {
-		EquipmentListWindow window = (EquipmentListWindow) ListWindow.findListWindow(file);
-		if (window == null) {
-			window = new EquipmentListWindow(new EquipmentList(file));
-			window.setVisible(true);
-		} else {
-			window.toFront();
-		}
+		RecentFilesMenu.addRecent(file);
 	}
 }
