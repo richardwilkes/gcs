@@ -23,6 +23,7 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.widgets.outline.ColumnUtils;
 import com.trollworks.ttk.border.BoxedDropShadowBorder;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.widgets.outline.Outline;
@@ -43,13 +44,16 @@ public class OutlineInfo {
 	 * Creates a new outline information holder.
 	 * 
 	 * @param outline The outline to collect information about.
+	 * @param contentWidth The content width.
 	 */
-	public OutlineInfo(Outline outline) {
+	public OutlineInfo(Outline outline, int contentWidth) {
 		Insets insets = new BoxedDropShadowBorder().getBorderInsets(null);
 		OutlineModel outlineModel = outline.getModel();
 		int count = outlineModel.getRowCount();
 		List<Column> columns = outlineModel.getColumns();
 		boolean hasRowDividers = outline.shouldDrawRowDividers();
+
+		ColumnUtils.pack(outline, contentWidth - (insets.left + insets.right));
 
 		mRowIndex = -1;
 		mHeights = new int[count];

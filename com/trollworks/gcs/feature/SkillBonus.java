@@ -75,13 +75,14 @@ public class SkillBonus extends Bonus {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
 		if (obj instanceof SkillBonus && super.equals(obj)) {
-			SkillBonus other = (SkillBonus) obj;
-
-			return mNameCriteria.equals(other.mNameCriteria) && mSpecializationCriteria.equals(other.mSpecializationCriteria);
+			SkillBonus sb = (SkillBonus) obj;
+			if (mNameCriteria.equals(sb.mNameCriteria)) {
+				return mSpecializationCriteria.equals(sb.mSpecializationCriteria);
+			}
 		}
 		return false;
 	}
@@ -109,9 +110,10 @@ public class SkillBonus extends Bonus {
 
 	@Override
 	protected void loadSelf(XMLReader reader) throws IOException {
-		if (TAG_NAME.equals(reader.getName())) {
+		String name = reader.getName();
+		if (TAG_NAME.equals(name)) {
 			mNameCriteria.load(reader);
-		} else if (TAG_SPECIALIZATION.equals(reader.getName())) {
+		} else if (TAG_SPECIALIZATION.equals(name)) {
 			mSpecializationCriteria.load(reader);
 		} else {
 			super.loadSelf(reader);

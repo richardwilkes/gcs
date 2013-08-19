@@ -91,7 +91,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 		super(new BorderLayout());
 		mOwner = owner;
 		mWeaponClass = weaponClass;
-		mAddButton = new IconButton(ToolkitImage.getAddIcon());
+		mAddButton = new IconButton(ToolkitImage.getAddIcon(), false);
 		mAddButton.addActionListener(this);
 		add(mAddButton, BorderLayout.WEST);
 		add(createOutline(weapons, weaponClass), BorderLayout.NORTH);

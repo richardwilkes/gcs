@@ -24,7 +24,7 @@
 package com.trollworks.gcs.widgets.search;
 
 import com.trollworks.ttk.layout.FlexRow;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 
@@ -107,7 +107,7 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 	 */
 	public Object[] adjustHits() {
 		Object[] hits = mFilter != null ? mTarget.search(mFilter) : new Object[0];
-		mHits.setText(NumberUtils.format(hits.length));
+		mHits.setText(Numbers.format(hits.length));
 		if (mFloater != null) {
 			mFloater.adjustToHits(hits);
 		}

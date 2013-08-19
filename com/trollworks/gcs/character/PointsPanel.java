@@ -26,7 +26,7 @@ package com.trollworks.gcs.character;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.layout.RowDistribution;
 import com.trollworks.ttk.notification.NotifierTarget;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.Wrapper;
@@ -107,6 +107,10 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
 	}
 
 	private static String getTitle(GURPSCharacter character) {
-		return MessageFormat.format(MSG_POINTS, NumberUtils.format(character.getTotalPoints()));
+		return MessageFormat.format(MSG_POINTS, Numbers.format(character.getTotalPoints()));
+	}
+
+	public int getNotificationPriority() {
+		return 0;
 	}
 }

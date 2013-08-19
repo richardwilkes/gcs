@@ -24,7 +24,7 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.collections.Enums;
 import com.trollworks.ttk.xml.XMLNodeType;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
@@ -73,13 +73,12 @@ public class CostReduction implements Feature {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
 		if (obj instanceof CostReduction) {
-			CostReduction other = (CostReduction) obj;
-
-			return mPercentage == other.mPercentage && mAttribute == other.mAttribute;
+			CostReduction cr = (CostReduction) obj;
+			return mPercentage == cr.mPercentage && mAttribute == cr.mAttribute;
 		}
 		return false;
 	}
@@ -118,7 +117,7 @@ public class CostReduction implements Feature {
 				String name = reader.getName();
 
 				if (TAG_ATTRIBUTE.equals(name)) {
-					setAttribute((BonusAttributeType) EnumExtractor.extract(reader.readText(), TYPES, BonusAttributeType.ST));
+					setAttribute(Enums.extract(reader.readText(), TYPES, BonusAttributeType.ST));
 				} else if (TAG_PERCENTAGE.equals(name)) {
 					setPercentage(reader.readInteger(0));
 				} else {

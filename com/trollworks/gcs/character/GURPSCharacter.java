@@ -51,7 +51,7 @@ import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.ttk.collections.FilteredIterator;
 import com.trollworks.ttk.print.PageOrientation;
 import com.trollworks.ttk.print.PrintManager;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.undo.StdUndoManager;
 import com.trollworks.ttk.units.LengthUnits;
 import com.trollworks.ttk.utility.Dice;
@@ -404,9 +404,9 @@ public class GURPSCharacter extends DataFile {
 				if (Profile.TAG_ROOT.equals(name)) {
 					mDescription.load(reader);
 				} else if (TAG_CREATED_DATE.equals(name)) {
-					mCreatedOn = NumberUtils.getDate(reader.readText());
+					mCreatedOn = Numbers.getDate(reader.readText());
 				} else if (TAG_MODIFIED_DATE.equals(name)) {
-					mLastModified = NumberUtils.getDateTime(reader.readText());
+					mLastModified = Numbers.getDateTime(reader.readText());
 				} else if (BonusAttributeType.HP.getXMLTag().equals(name)) {
 					mHitPoints = reader.readInteger(0);
 				} else if (TAG_CURRENT_HP.equals(name)) {
@@ -586,8 +586,7 @@ public class GURPSCharacter extends DataFile {
 
 	/**
 	 * @param id The field ID to retrieve the data for.
-	 * @return The value of the specified field ID, or <code>null</code> if the field ID is
-	 *         invalid.
+	 * @return The value of the specified field ID, or <code>null</code> if the field ID is invalid.
 	 */
 	public Object getValueForID(String id) {
 		if (id == null) {
@@ -894,7 +893,7 @@ public class GURPSCharacter extends DataFile {
 	 * @param date The new created on date.
 	 */
 	public void setCreatedOn(String date) {
-		setCreatedOn(NumberUtils.getDate(date));
+		setCreatedOn(Numbers.getDate(date));
 	}
 
 	private void updateSkills() {
@@ -1028,7 +1027,7 @@ public class GURPSCharacter extends DataFile {
 	private int getPointsForAttribute(int delta, int ptsPerLevel, int reduction) {
 		int amt = delta * ptsPerLevel;
 
-		if (reduction > 0) {
+		if (reduction > 0 && delta > 0) {
 			int rounder = delta < 0 ? -99 : 99;
 
 			if (reduction > 80) {
@@ -2290,8 +2289,8 @@ public class GURPSCharacter extends DataFile {
 	 * that matches the name.
 	 * 
 	 * @param name The {@link Skill} name to look for.
-	 * @param specialization An optional specialization to look for. Pass <code>null</code> if it
-	 *            is not needed.
+	 * @param specialization An optional specialization to look for. Pass <code>null</code> if it is
+	 *            not needed.
 	 * @param requirePoints Only look at {@link Skill}s that have points.
 	 * @param excludes The set of {@link Skill}s to exclude from consideration.
 	 * @return The {@link Skill} that matches with the highest level.
@@ -2515,8 +2514,16 @@ public class GURPSCharacter extends DataFile {
 	 */
 	void postUndoEdit(String name, String id, Object before, Object after) {
 		StdUndoManager mgr = getUndoManager();
-		if (mgr != null && !mgr.isInTransaction() && !before.equals(after)) {
-			addEdit(new CharacterFieldUndo(this, name, id, before, after));
+		if (mgr != null && !mgr.isInTransaction()) {
+			boolean add;
+			if (before instanceof ListRow) {
+				add = !((ListRow) before).isEquivalentTo(after);
+			} else {
+				add = !before.equals(after);
+			}
+			if (add) {
+				addEdit(new CharacterFieldUndo(this, name, id, before, after));
+			}
 		}
 	}
 }

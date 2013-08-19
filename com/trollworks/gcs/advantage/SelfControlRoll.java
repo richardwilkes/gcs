@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.advantage;
 
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.xml.XMLWriter;
 
@@ -142,7 +142,7 @@ public enum SelfControlRoll {
 	 * @return The actual {@link SelfControlRoll}.
 	 */
 	public static final SelfControlRoll get(String tagValue) {
-		int value = NumberUtils.getNonLocalizedInteger(tagValue, Integer.MAX_VALUE);
+		int value = Numbers.getInteger(tagValue, Integer.MAX_VALUE);
 		for (SelfControlRoll cr : values()) {
 			if (cr.getCR() == value) {
 				return cr;

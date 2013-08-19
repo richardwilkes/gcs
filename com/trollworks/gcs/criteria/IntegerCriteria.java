@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.criteria;
 
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.xml.XMLReader;
 
 import java.io.IOException;
@@ -55,11 +55,12 @@ public class IntegerCriteria extends NumericCriteria {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
 		if (obj instanceof IntegerCriteria && super.equals(obj)) {
-			return mQualifier == ((IntegerCriteria) obj).mQualifier;
+			IntegerCriteria criteria = (IntegerCriteria) obj;
+			return mQualifier == criteria.mQualifier;
 		}
 		return false;
 	}
@@ -77,7 +78,7 @@ public class IntegerCriteria extends NumericCriteria {
 
 	@Override
 	public String getQualifierAsString(boolean allowAdornments) {
-		return allowAdornments ? NumberUtils.format(mQualifier) : Integer.toString(mQualifier);
+		return allowAdornments ? Numbers.format(mQualifier) : Integer.toString(mQualifier);
 	}
 
 	/** @param qualifier The qualifier to match against. */

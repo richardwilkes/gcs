@@ -87,7 +87,6 @@ public class MultiCell implements Cell {
 		String notes = getSecondaryText(theRow);
 		Font font = UIManager.getFont(GCSFonts.KEY_FIELD);
 		int pos;
-
 		gc.setColor(getColor(selected, active, row, column));
 		gc.setFont(font);
 		pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP);
@@ -115,11 +114,10 @@ public class MultiCell implements Cell {
 
 	public int getPreferredWidth(Row row, Column column) {
 		ListRow theRow = (ListRow) row;
-		int width = TextDrawing.getWidth(UIManager.getFont(GCSFonts.KEY_FIELD), null, getPrimaryText(theRow));
+		int width = TextDrawing.getWidth(UIManager.getFont(GCSFonts.KEY_FIELD), getPrimaryText(theRow));
 		String notes = getSecondaryText(theRow);
-
 		if (notes.trim().length() > 0) {
-			int notesWidth = TextDrawing.getWidth(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES), null, notes);
+			int notesWidth = TextDrawing.getWidth(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES), notes);
 
 			if (notesWidth > width) {
 				width = notesWidth;
@@ -132,33 +130,30 @@ public class MultiCell implements Cell {
 	public int getPreferredHeight(Row row, Column column) {
 		ListRow theRow = (ListRow) row;
 		Font font = UIManager.getFont(GCSFonts.KEY_FIELD);
-		int height = TextDrawing.getPreferredSize(font, null, wrap(theRow, column, getPrimaryText(theRow), font)).height;
+		int height = TextDrawing.getPreferredSize(font, wrap(theRow, column, getPrimaryText(theRow), font)).height;
 		String notes = getSecondaryText(theRow);
-
 		if (notes.trim().length() > 0) {
 			font = UIManager.getFont(GCSFonts.KEY_FIELD_NOTES);
-			height += TextDrawing.getPreferredSize(font, null, wrap(theRow, column, notes, font)).height;
+			height += TextDrawing.getPreferredSize(font, wrap(theRow, column, notes, font)).height;
 		}
 		return height;
 	}
 
 	private String wrap(ListRow row, Column column, String text, Font font) {
 		int width = column.getWidth();
-
 		if (width == -1) {
 			if (mMaxPreferredWidth == -1) {
 				return text;
 			}
 			width = mMaxPreferredWidth;
 		}
-		return TextDrawing.wrapToPixelWidth(font, null, text, width - (row.getOwner().getIndentWidth(row, column) + H_MARGIN * 2));
+		return TextDrawing.wrapToPixelWidth(font, text, width - (row.getOwner().getIndentWidth(row, column) + H_MARGIN * 2));
 	}
 
 	public int compare(Column column, Row one, Row two) {
 		ListRow r1 = (ListRow) one;
 		ListRow r2 = (ListRow) two;
 		int result = NumericStringComparator.caselessCompareStrings(getPrimaryText(r1), getPrimaryText(r2));
-
 		if (result == 0) {
 			result = NumericStringComparator.caselessCompareStrings(getSecondaryText(r1), getSecondaryText(r2));
 		}

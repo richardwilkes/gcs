@@ -83,11 +83,11 @@ public class WeaponDescriptionCell implements Cell {
 
 	public int getPreferredWidth(Row row, Column column) {
 		WeaponDisplayRow theRow = (WeaponDisplayRow) row;
-		int width = TextDrawing.getWidth(UIManager.getFont(GCSFonts.KEY_FIELD), null, getPrimaryText(theRow));
+		int width = TextDrawing.getWidth(UIManager.getFont(GCSFonts.KEY_FIELD), getPrimaryText(theRow));
 		String notes = getSecondaryText(theRow);
 
 		if (notes.trim().length() > 0) {
-			int notesWidth = TextDrawing.getWidth(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES), null, notes);
+			int notesWidth = TextDrawing.getWidth(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES), notes);
 
 			if (notesWidth > width) {
 				width = notesWidth;
@@ -99,12 +99,12 @@ public class WeaponDescriptionCell implements Cell {
 	public int getPreferredHeight(Row row, Column column) {
 		WeaponDisplayRow theRow = (WeaponDisplayRow) row;
 		Font font = UIManager.getFont(GCSFonts.KEY_FIELD);
-		int height = TextDrawing.getPreferredSize(font, null, wrap(theRow, column, getPrimaryText(theRow), font)).height;
+		int height = TextDrawing.getPreferredSize(font, wrap(theRow, column, getPrimaryText(theRow), font)).height;
 		String notes = getSecondaryText(theRow);
 
 		if (notes.trim().length() > 0) {
 			font = UIManager.getFont(GCSFonts.KEY_FIELD_NOTES);
-			height += TextDrawing.getPreferredSize(font, null, wrap(theRow, column, notes, font)).height;
+			height += TextDrawing.getPreferredSize(font, wrap(theRow, column, notes, font)).height;
 		}
 		return height;
 	}
@@ -115,7 +115,7 @@ public class WeaponDescriptionCell implements Cell {
 		if (width == -1) {
 			return text;
 		}
-		return TextDrawing.wrapToPixelWidth(font, null, text, width - (row.getOwner().getIndentWidth(row, column) + H_MARGIN * 2));
+		return TextDrawing.wrapToPixelWidth(font, text, width - (row.getOwner().getIndentWidth(row, column) + H_MARGIN * 2));
 	}
 
 	public int compare(Column column, Row one, Row two) {

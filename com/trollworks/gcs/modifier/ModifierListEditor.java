@@ -117,7 +117,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 		JScrollPane scroller;
 		OutlineModel model;
 
-		mAddButton = new IconButton(ToolkitImage.getAddIcon());
+		mAddButton = new IconButton(ToolkitImage.getAddIcon(), false);
 		mAddButton.addActionListener(this);
 
 		mOutline = new ModifierOutline();

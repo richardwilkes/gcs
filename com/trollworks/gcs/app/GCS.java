@@ -23,148 +23,283 @@
 
 package com.trollworks.gcs.app;
 
-import java.awt.BorderLayout;
-import java.awt.Button;
-import java.awt.Color;
-import java.awt.Frame;
-import java.awt.TextArea;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.lang.reflect.Method;
-import java.text.MessageFormat;
+import com.trollworks.gcs.advantage.Advantage;
+import com.trollworks.gcs.character.CharacterSheet;
+import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.character.PrerequisitesThread;
+import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.library.LibraryFile;
+import com.trollworks.gcs.library.LibraryWindow;
+import com.trollworks.gcs.skill.Skill;
+import com.trollworks.gcs.spell.Spell;
+import com.trollworks.gcs.template.TemplateWindow;
+import com.trollworks.ttk.cmdline.CmdLine;
+import com.trollworks.ttk.cmdline.CmdLineOption;
+import com.trollworks.ttk.menu.file.FileType;
+import com.trollworks.ttk.preferences.Preferences;
+import com.trollworks.ttk.print.PrintManager;
+import com.trollworks.ttk.text.Numbers;
+import com.trollworks.ttk.units.LengthUnits;
+import com.trollworks.ttk.utility.App;
+import com.trollworks.ttk.utility.Fonts;
+import com.trollworks.ttk.utility.GraphicsUtilities;
+import com.trollworks.ttk.utility.LaunchProxy;
+import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.utility.Path;
+import com.trollworks.ttk.utility.Timing;
 
-/**
- * The main entry point for the character sheet. This stub class is intended to be compiled with
- * Java 1.1, allowing it to be loaded and executed even on very old JVM's. Should the minimum
- * requirements not be achieved, then a simple error window is displayed, and the program exits.
- * <p>
- * We do not use any classes from the com.trollworks tree, since those are all compiled with a Java
- * version greater than 1.1. This means things like localization is not performed for this class.
- */
+import java.io.File;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
+
+/** The main entry point for the character sheet. */
 public class GCS {
+	private static String				MSG_APP_NAME;
+	private static String				MSG_APP_VERSION;
+	private static String				MSG_APP_COPYRIGHT_YEARS;
+	private static String				MSG_APP_COPYRIGHT_OWNER;
+	private static String				MSG_PDF_OPTION;
+	private static String				MSG_HTML_OPTION;
+	private static String				MSG_HTML_TEMPLATE_OPTION;
+	private static String				MSG_HTML_TEMPLATE_ARG;
+	private static String				MSG_PNG_OPTION;
+	private static String				MSG_SIZE_OPTION;
+	private static String				MSG_MARGIN_OPTION;
+	private static String				MSG_NO_FILES_TO_PROCESS;
+	private static String				MSG_LOADING;
+	private static String				MSG_CREATING_PDF;
+	private static String				MSG_CREATING_HTML;
+	private static String				MSG_CREATING_PNG;
+	private static String				MSG_PROCESSING_FAILED;
+	private static String				MSG_FINISHED;
+	private static String				MSG_CREATED;
+	private static String				MSG_INVALID_PAPER_SIZE;
+	private static String				MSG_INVALID_PAPER_MARGINS;
+	private static String				MSG_TEMPLATE_USED;
+
+	static {
+		LocalizedMessages.initialize(GCS.class);
+		App.setName(MSG_APP_NAME);
+		App.setVersion(MSG_APP_VERSION);
+		App.setCopyrightYears(MSG_APP_COPYRIGHT_YEARS);
+		App.setCopyrightOwner(MSG_APP_COPYRIGHT_OWNER);
+	}
+
+	private static final CmdLineOption	PDF_OPTION				= new CmdLineOption(MSG_PDF_OPTION, null, "pdf");										//$NON-NLS-1$
+	private static final CmdLineOption	HTML_OPTION				= new CmdLineOption(MSG_HTML_OPTION, null, "html");									//$NON-NLS-1$
+	private static final CmdLineOption	HTML_TEMPLATE_OPTION	= new CmdLineOption(MSG_HTML_TEMPLATE_OPTION, MSG_HTML_TEMPLATE_ARG, "html_template");	//$NON-NLS-1$
+	private static final CmdLineOption	PNG_OPTION				= new CmdLineOption(MSG_PNG_OPTION, null, "png");										//$NON-NLS-1$
+	private static final CmdLineOption	SIZE_OPTION				= new CmdLineOption(MSG_SIZE_OPTION, "SIZE", "paper");									//$NON-NLS-1$ //$NON-NLS-2$
+	private static final CmdLineOption	MARGIN_OPTION			= new CmdLineOption(MSG_MARGIN_OPTION, "MARGINS", "margins");							//$NON-NLS-1$ //$NON-NLS-2$
+
 	/**
 	 * The main entry point for the character sheet.
 	 * 
-	 * @param args The command line arguments.
+	 * @param args Arguments to the program.
 	 */
 	public static void main(String[] args) {
-		if (checkJavaVersion("1.5")) { //$NON-NLS-1$
-			try {
-				Method method = Class.forName("com.trollworks.gcs.app.Main").getMethod("main", new Class[] { String[].class }); //$NON-NLS-1$ //$NON-NLS-2$
-				method.invoke(null, new Object[] { args });
-			} catch (Throwable throwable) {
-				throwable.printStackTrace();
-				error("Unable to load the main GCS class."); //$NON-NLS-1$
+		ArrayList<CmdLineOption> options = new ArrayList<CmdLineOption>();
+		options.add(HTML_OPTION);
+		options.add(HTML_TEMPLATE_OPTION);
+		options.add(PDF_OPTION);
+		options.add(PNG_OPTION);
+		options.add(SIZE_OPTION);
+		options.add(MARGIN_OPTION);
+
+		String versionBanner = App.getVersionBanner(false);
+		CmdLine cmdLine = new CmdLine(args, options, versionBanner);
+		if (cmdLine.isOptionUsed(HTML_OPTION) || cmdLine.isOptionUsed(PDF_OPTION) || cmdLine.isOptionUsed(PNG_OPTION)) {
+			System.setProperty("java.awt.headless", Boolean.TRUE.toString()); //$NON-NLS-1$
+			initialize();
+			Timing timing = new Timing();
+			System.out.println(versionBanner);
+			System.out.println();
+			if (convert(cmdLine) < 1) {
+				System.out.println(MSG_NO_FILES_TO_PROCESS);
+				System.exit(1);
 			}
-		}
-	}
-
-	private static void error(String msg) {
-		try {
-			Frame frame = new Frame("Error"); //$NON-NLS-1$
-			TextArea text = new TextArea(msg);
-			Button button = new Button("OK"); //$NON-NLS-1$
-
-			text.setEditable(false);
-			text.setBackground(Color.white);
-			text.setForeground(Color.black);
-
-			button.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent event) {
-					System.exit(0);
-				}
-			});
-
-			frame.setLayout(new BorderLayout());
-			frame.add(text, BorderLayout.CENTER);
-			frame.add(button, BorderLayout.SOUTH);
-			frame.pack();
-			frame.addWindowListener(new WindowListener() {
-				// Didn't use a WindowAdapter, since that would have required me (with the settings
-				// I use in Eclipse) to mark the one method I'm actually using with an override
-				// notation, which is not compatible with Java 1.1.
-				public void windowClosing(WindowEvent event) {
-					System.exit(0);
-				}
-
-				public void windowActivated(WindowEvent event) {
-					// Not used.
-				}
-
-				public void windowClosed(WindowEvent event) {
-					// Not used.
-				}
-
-				public void windowDeactivated(WindowEvent event) {
-					// Not used.
-				}
-
-				public void windowDeiconified(WindowEvent event) {
-					// Not used.
-				}
-
-				public void windowIconified(WindowEvent event) {
-					// Not used.
-				}
-
-				public void windowOpened(WindowEvent event) {
-					// Not used.
-				}
-			});
-			frame.setVisible(true);
-		} catch (Throwable throwable) {
-			System.err.println(msg);
-		}
-	}
-
-	private static boolean checkJavaVersion(String minimumVersion) {
-		String javaVersion = System.getProperty("java.version"); //$NON-NLS-1$
-		if (extractVersion(javaVersion) < extractVersion(minimumVersion)) {
-			error(MessageFormat.format("The currently installed version of Java is {0}.\nThis software requires Java version {1} or greater.\n", new Object[] { javaVersion, minimumVersion })); //$NON-NLS-1$
-			return false;
-		}
-		return true;
-	}
-
-	private static long extractVersion(String versionString) {
-		char[] chars = versionString.toCharArray();
-		long version = 0;
-		int shift = 48;
-		long value = 0;
-
-		for (int i = 0; i < chars.length; i++) {
-			char ch = chars[i];
-			if (ch >= '0' && ch <= '9') {
-				value *= 10;
-				value += ch - '0';
-			} else if (ch == '.' || ch == '_') {
-				if (value > 0xEFFF) {
-					value = 0xEFFF;
-				}
-				version |= value << shift;
-				value = 0;
-				shift -= 16;
-				if (shift < 0) {
-					break;
-				}
+			System.out.println(MessageFormat.format(MSG_FINISHED, timing));
+			System.exit(0);
+		} else {
+			LaunchProxy.configure(cmdLine.getArgumentsAsFiles().toArray(new File[0]));
+			if (GraphicsUtilities.areGraphicsSafeToUse()) {
+				initialize();
+				GCSApp.INSTANCE.startup(cmdLine);
 			} else {
-				if (value > 0xEFFF) {
-					value = 0xEFFF;
+				System.err.println(GraphicsUtilities.getReasonForUnsafeGraphics());
+				System.exit(1);
+			}
+		}
+	}
+
+	private static void initialize() {
+		GraphicsUtilities.configureStandardUI();
+		Preferences.setPreferenceFile("gcs.pref"); //$NON-NLS-1$
+		GCSFonts.register();
+		Fonts.loadFromPreferences();
+		App.setAboutPanel(AboutPanel.class);
+		FileType.register(SheetWindow.SHEET_EXTENSION, GCSImages.getCharacterSheetIcon(false), SheetWindow.class, true);
+		FileType.register(LibraryFile.EXTENSION, GCSImages.getLibraryIcon(false), LibraryWindow.class, true);
+		FileType.register(TemplateWindow.EXTENSION, GCSImages.getTemplateIcon(false), TemplateWindow.class, true);
+		FileType.register(Advantage.OLD_ADVANTAGE_EXTENSION, GCSImages.getAdvantageIcon(false, false), LibraryWindow.class, true);
+		FileType.register(Equipment.OLD_EQUIPMENT_EXTENSION, GCSImages.getEquipmentIcon(false, false), LibraryWindow.class, true);
+		FileType.register(Skill.OLD_SKILL_EXTENSION, GCSImages.getSkillIcon(false, false), LibraryWindow.class, true);
+		FileType.register(Spell.OLD_SPELL_EXTENSION, GCSImages.getSpellIcon(false, false), LibraryWindow.class, true);
+	}
+
+	private static int convert(CmdLine cmdLine) {
+		boolean html = cmdLine.isOptionUsed(GCS.HTML_OPTION);
+		boolean pdf = cmdLine.isOptionUsed(GCS.PDF_OPTION);
+		boolean png = cmdLine.isOptionUsed(GCS.PNG_OPTION);
+		int count = 0;
+
+		if (html || pdf || png) {
+			double[] paperSize = getPaperSize(cmdLine);
+			double[] margins = getMargins(cmdLine);
+			Timing timing = new Timing();
+			String htmlTemplateOption = cmdLine.getOptionArgument(GCS.HTML_TEMPLATE_OPTION);
+			File htmlTemplate = null;
+
+			if (htmlTemplateOption != null) {
+				htmlTemplate = new File(htmlTemplateOption);
+			}
+			GraphicsUtilities.setHeadlessPrintMode(true);
+			for (File file : cmdLine.getArgumentsAsFiles()) {
+				if (SheetWindow.SHEET_EXTENSION.equals(Path.getExtension(file.getName())) && file.canRead()) {
+					System.out.print(MessageFormat.format(MSG_LOADING, file));
+					System.out.flush();
+					timing.reset();
+					try {
+						GURPSCharacter character = new GURPSCharacter(file);
+						CharacterSheet sheet = new CharacterSheet(character);
+						PrerequisitesThread prereqs = new PrerequisitesThread(sheet);
+						PrintManager settings = character.getPageSettings();
+						File output;
+						boolean success;
+
+						sheet.addNotify(); // Required to allow layout to work
+						sheet.rebuild();
+						prereqs.start();
+						PrerequisitesThread.waitForProcessingToFinish(character);
+
+						if (paperSize != null && settings != null) {
+							settings.setPageSize(paperSize, LengthUnits.INCHES);
+						}
+						if (margins != null && settings != null) {
+							settings.setPageMargins(margins, LengthUnits.INCHES);
+						}
+						sheet.rebuild();
+						sheet.setSize(sheet.getPreferredSize());
+
+						System.out.println(timing);
+						if (html) {
+							StringBuilder builder = new StringBuilder();
+
+							System.out.print(MSG_CREATING_HTML);
+							System.out.flush();
+							output = new File(file.getParentFile(), Path.getLeafName(file.getName(), false) + SheetWindow.HTML_EXTENSION);
+							timing.reset();
+							success = sheet.saveAsHTML(output, htmlTemplate, builder);
+							System.out.println(timing);
+							System.out.println(MessageFormat.format(MSG_TEMPLATE_USED, builder));
+							if (success) {
+								System.out.println(MessageFormat.format(MSG_CREATED, output));
+								count++;
+							}
+						}
+						if (pdf) {
+							System.out.print(MSG_CREATING_PDF);
+							System.out.flush();
+							output = new File(file.getParentFile(), Path.getLeafName(file.getName(), false) + SheetWindow.PDF_EXTENSION);
+							timing.reset();
+							success = sheet.saveAsPDF(output);
+							System.out.println(timing);
+							if (success) {
+								System.out.println(MessageFormat.format(MSG_CREATED, output));
+								count++;
+							}
+						}
+						if (png) {
+							ArrayList<File> result = new ArrayList<File>();
+
+							System.out.print(MSG_CREATING_PNG);
+							System.out.flush();
+							output = new File(file.getParentFile(), Path.getLeafName(file.getName(), false) + SheetWindow.PNG_EXTENSION);
+							timing.reset();
+							success = sheet.saveAsPNG(output, result);
+							System.out.println(timing);
+							for (File one : result) {
+								System.out.println(MessageFormat.format(MSG_CREATED, one));
+								count++;
+							}
+						}
+						sheet.dispose();
+					} catch (Exception exception) {
+						exception.printStackTrace();
+						System.out.println(MSG_PROCESSING_FAILED);
+					}
 				}
-				version |= value << shift;
-				value = 0;
-				shift -= 16;
-				break;
 			}
+			GraphicsUtilities.setHeadlessPrintMode(false);
 		}
-		if (shift >= 0) {
-			if (value > 0xEFFF) {
-				value = 0xEFFF;
+		return count;
+	}
+
+	private static double[] getPaperSize(CmdLine cmdLine) {
+		if (cmdLine.isOptionUsed(GCS.SIZE_OPTION)) {
+			String argument = cmdLine.getOptionArgument(GCS.SIZE_OPTION);
+			int index;
+
+			if ("LETTER".equalsIgnoreCase(argument)) { //$NON-NLS-1$
+				return new double[] { 8.5, 11 };
 			}
-			version |= value << shift;
+
+			if ("A4".equalsIgnoreCase(argument)) { //$NON-NLS-1$
+				return new double[] { LengthUnits.INCHES.convert(LengthUnits.CENTIMETERS, 21), LengthUnits.INCHES.convert(LengthUnits.CENTIMETERS, 29.7) };
+			}
+
+			index = argument.indexOf('x');
+			if (index == -1) {
+				index = argument.indexOf('X');
+			}
+			if (index != -1) {
+				double width = Numbers.getLocalizedDouble(argument.substring(0, index), -1.0);
+				double height = Numbers.getLocalizedDouble(argument.substring(index + 1), -1.0);
+
+				if (width > 0.0 && height > 0.0) {
+					return new double[] { width, height };
+				}
+			}
+			System.out.println(MSG_INVALID_PAPER_SIZE);
 		}
-		return version;
+		return null;
+	}
+
+	private static double[] getMargins(CmdLine cmdLine) {
+		if (cmdLine.isOptionUsed(GCS.MARGIN_OPTION)) {
+			StringTokenizer tokenizer = new StringTokenizer(cmdLine.getOptionArgument(GCS.MARGIN_OPTION), ":"); //$NON-NLS-1$
+			double[] values = new double[4];
+			int index = 0;
+
+			while (tokenizer.hasMoreTokens()) {
+				String token = tokenizer.nextToken();
+
+				if (index < 4) {
+					values[index] = Numbers.getLocalizedDouble(token, -1.0);
+					if (values[index] < 0.0) {
+						System.out.println(MSG_INVALID_PAPER_MARGINS);
+						return null;
+					}
+				}
+				index++;
+			}
+			if (index == 4) {
+				return values;
+			}
+			System.out.println(MSG_INVALID_PAPER_MARGINS);
+		}
+		return null;
 	}
 }

@@ -34,7 +34,8 @@ import com.trollworks.ttk.layout.FlexSpacer;
 import com.trollworks.ttk.preferences.PreferencePanel;
 import com.trollworks.ttk.preferences.Preferences;
 import com.trollworks.ttk.preferences.PreferencesWindow;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
+import com.trollworks.ttk.utility.App;
 import com.trollworks.ttk.utility.Dice;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Path;
@@ -168,7 +169,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 	/** @return The default HTML template to use when exporting to HTML. */
 	public static String getDefaultHTMLTemplate() {
-		return Path.normalizeFullPath(Path.getFullPath(System.getProperty("app.home", "."), "data/template.html")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		return Path.getFullPath(new File(new File(App.APP_HOME_DIR, "data"), "template.html")); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/** @return The initial points to start a new character with. */
@@ -371,7 +372,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		} else if (mTechLevel.getDocument() == document) {
 			Profile.setDefaultTechLevel(mTechLevel.getText());
 		} else if (mInitialPoints.getDocument() == document) {
-			Preferences.getInstance().setValue(MODULE, INITIAL_POINTS_KEY, NumberUtils.getInteger(mInitialPoints.getText(), 0));
+			Preferences.getInstance().setValue(MODULE, INITIAL_POINTS_KEY, Numbers.getLocalizedInteger(mInitialPoints.getText(), 0));
 		} else if (mHTMLTemplatePath.getDocument() == document) {
 			Preferences.getInstance().setValue(MODULE, HTML_TEMPLATE_OVERRIDE, mHTMLTemplatePath.getText());
 		}

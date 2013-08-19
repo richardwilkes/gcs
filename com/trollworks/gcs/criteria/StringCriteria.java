@@ -57,13 +57,12 @@ public class StringCriteria {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
-		if (obj instanceof StringCriteria && super.equals(obj)) {
-			StringCriteria other = (StringCriteria) obj;
-
-			return mType == other.mType && mQualifier.equalsIgnoreCase(other.mQualifier);
+		if (obj instanceof StringCriteria) {
+			StringCriteria sc = (StringCriteria) obj;
+			return mType == sc.mType && mQualifier.equalsIgnoreCase(sc.mQualifier);
 		}
 		return false;
 	}

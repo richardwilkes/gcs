@@ -58,7 +58,7 @@ public class AttributeBonusEditor extends FeatureEditor {
 		LeveledAmount amount = bonus.getAmount();
 		BonusAttributeType attribute = bonus.getAttribute();
 		row.add(addLeveledAmountField(amount, -999999, 999999));
-		row.add(addLeveledAmountCombo(amount, !attribute.isIntegerOnly()));
+		row.add(addLeveledAmountCombo(amount, false));
 		row.add(new FlexSpacer(0, 0, true, false));
 		grid.add(row, 0, 0);
 

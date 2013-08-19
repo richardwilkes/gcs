@@ -34,7 +34,7 @@ import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.collections.Enums;
 import com.trollworks.ttk.units.WeightUnits;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Column;
@@ -113,8 +113,6 @@ public class Equipment extends ListRow {
 	private double					mExtendedWeight;
 	private String					mReference;
 	private ArrayList<WeaponStats>	mWeapons;
-	// For load-time conversion only
-	private OldWeapon				mOldWeapon;
 
 	static {
 		LocalizedMessages.initialize(Equipment.class);
@@ -188,6 +186,20 @@ public class Equipment extends ListRow {
 	}
 
 	@Override
+	public boolean isEquivalentTo(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (obj instanceof Equipment && super.isEquivalentTo(obj)) {
+			Equipment row = (Equipment) obj;
+			if (mQuantity == row.mQuantity && mValue == row.mValue && mWeight == row.mWeight && mState == row.mState && mDescription.equals(row.mDescription) && mTechLevel.equals(row.mTechLevel) && mLegalityClass.equals(row.mLegalityClass) && mReference.equals(row.mReference)) {
+				return mWeapons.equals(row.mWeapons);
+			}
+		}
+		return false;
+	}
+
+	@Override
 	public String getLocalizedName() {
 		return MSG_DEFAULT_NAME;
 	}
@@ -237,7 +249,7 @@ public class Equipment extends ListRow {
 					setState(EquipmentState.NOT_CARRIED);
 				}
 			} else {
-				setState((EquipmentState) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_STATE), EquipmentState.values(), EquipmentState.NOT_CARRIED));
+				setState(Enums.extract(reader.getAttribute(ATTRIBUTE_STATE), EquipmentState.values(), EquipmentState.NOT_CARRIED));
 			}
 		}
 	}
@@ -254,7 +266,7 @@ public class Equipment extends ListRow {
 		} else if (TAG_VALUE.equals(name)) {
 			mValue = reader.readDouble(0.0);
 		} else if (TAG_WEIGHT.equals(name)) {
-			mWeight = WeightUnits.POUNDS.convert((WeightUnits) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_UNITS), WeightUnits.values(), WeightUnits.POUNDS), reader.readDouble(0));
+			mWeight = WeightUnits.POUNDS.convert(Enums.extract(reader.getAttribute(ATTRIBUTE_UNITS), WeightUnits.values(), WeightUnits.POUNDS), reader.readDouble(0));
 		} else if (TAG_REFERENCE.equals(name)) {
 			mReference = reader.readText().replace(NEWLINE, SPACE);
 		} else if (!state.mForUndo && (TAG_EQUIPMENT.equals(name) || TAG_EQUIPMENT_CONTAINER.equals(name))) {
@@ -264,7 +276,7 @@ public class Equipment extends ListRow {
 		} else if (RangedWeaponStats.TAG_ROOT.equals(name)) {
 			mWeapons.add(new RangedWeaponStats(this, reader));
 		} else if (OldWeapon.TAG_ROOT.equals(name)) {
-			mOldWeapon = new OldWeapon(reader);
+			state.mOldWeapons.put(this, new OldWeapon(reader));
 		} else if (!canHaveChildren()) {
 			if (TAG_QUANTITY.equals(name)) {
 				mQuantity = reader.readInteger(1);
@@ -277,15 +289,16 @@ public class Equipment extends ListRow {
 	}
 
 	@Override
-	protected void finishedLoading() {
-		if (mOldWeapon != null) {
-			mWeapons.addAll(mOldWeapon.getWeapons(this));
-			mOldWeapon = null;
+	protected void finishedLoading(LoadState state) {
+		OldWeapon oldWeapon = state.mOldWeapons.remove(this);
+		if (oldWeapon != null) {
+			mWeapons.addAll(oldWeapon.getWeapons(this));
 		}
 		// We no longer have defaults... that was solely for the weapons
 		setDefaults(new ArrayList<SkillDefault>());
 		updateExtendedValue(false);
 		updateExtendedWeight(false);
+		super.finishedLoading(state);
 	}
 
 	@Override

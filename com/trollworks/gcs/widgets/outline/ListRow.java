@@ -26,7 +26,6 @@ package com.trollworks.gcs.widgets.outline;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
-import com.trollworks.gcs.common.NewerVersionException;
 import com.trollworks.gcs.feature.AttributeBonus;
 import com.trollworks.gcs.feature.CostReduction;
 import com.trollworks.gcs.feature.DRBonus;
@@ -38,6 +37,7 @@ import com.trollworks.gcs.prereq.PrereqList;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.template.Template;
+import com.trollworks.ttk.utility.VersionException;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.widgets.outline.Row;
 import com.trollworks.ttk.xml.XMLNodeType;
@@ -168,6 +168,37 @@ public abstract class ListRow extends Row {
 		mCategories = new TreeSet<String>(rowToClone.mCategories);
 	}
 
+	/**
+	 * @param obj The other object to compare against.
+	 * @return Whether or not this {@link ListRow} is equivalent.
+	 */
+	public boolean isEquivalentTo(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (obj instanceof ListRow) {
+			ListRow row = (ListRow) obj;
+			if (mNotes.equals(row.mNotes) && mCategories.equals(row.mCategories)) {
+				if (mDefaults.equals(row.mDefaults)) {
+					if (mPrereqList.equals(row.mPrereqList)) {
+						if (mFeatures.equals(row.mFeatures)) {
+							int childCount = getChildCount();
+							if (childCount == row.getChildCount()) {
+								for (int i = 0; i < childCount; i++) {
+									if (!((ListRow) getChild(i)).isEquivalentTo(row.getChild(i))) {
+										return false;
+									}
+								}
+								return true;
+							}
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+
 	/** @return Creates a detailed editor for this row. */
 	public abstract RowEditor<? extends ListRow> createEditor();
 
@@ -230,7 +261,7 @@ public abstract class ListRow extends Row {
 		String marker = reader.getMarker();
 		state.mDataItemVersion = reader.getAttributeAsInteger(LoadState.ATTRIBUTE_VERSION, 0);
 		if (state.mDataItemVersion > getXMLTagVersion()) {
-			throw new NewerVersionException();
+			throw VersionException.createTooNew();
 		}
 		prepareForLoad(state);
 		loadAttributes(reader, state);
@@ -272,7 +303,7 @@ public abstract class ListRow extends Row {
 				}
 			}
 		} while (reader.withinMarker(marker));
-		finishedLoading();
+		finishedLoading(state);
 	}
 
 	/**
@@ -311,8 +342,12 @@ public abstract class ListRow extends Row {
 		reader.skipTag(reader.getName());
 	}
 
-	/** Called when loading of this row is complete. Does nothing by default. */
-	protected void finishedLoading() {
+	/**
+	 * Called when loading of this row is complete. Does nothing by default.
+	 * 
+	 * @param state The {@link LoadState} to use.
+	 */
+	protected void finishedLoading(LoadState state) {
 		// Nothing to do.
 	}
 

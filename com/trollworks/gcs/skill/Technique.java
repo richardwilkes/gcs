@@ -28,7 +28,7 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
@@ -118,7 +118,7 @@ public class Technique extends Skill {
 		if (level < 0) {
 			return "-"; //$NON-NLS-1$
 		}
-		return NumberUtils.format(level) + "/" + NumberUtils.format(relativeLevel + modifier, true); //$NON-NLS-1$
+		return Numbers.format(level) + "/" + Numbers.formatWithForcedSign(relativeLevel + modifier); //$NON-NLS-1$
 	}
 
 	/**
@@ -162,6 +162,20 @@ public class Technique extends Skill {
 		if (!(dataFile instanceof GURPSCharacter)) {
 			mPoints = getDifficulty() == SkillDifficulty.A ? 1 : 2;
 		}
+	}
+
+	@Override
+	public boolean isEquivalentTo(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (obj instanceof Technique && super.isEquivalentTo(obj)) {
+			Technique row = (Technique) obj;
+			if (mLimited == row.mLimited && mLimitModifier == row.mLimitModifier) {
+				return mDefault.equals(row.mDefault);
+			}
+		}
+		return false;
 	}
 
 	@Override

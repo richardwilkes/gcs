@@ -26,7 +26,7 @@ package com.trollworks.gcs.weapon;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
 
@@ -243,7 +243,7 @@ public class RangedWeaponStats extends WeaponStats {
 						buffer.append(range.substring(0, where));
 					}
 					strength *= value;
-					buffer.append(NumberUtils.format(strength));
+					buffer.append(Numbers.format(strength));
 					if (last < max) {
 						buffer.append(range.substring(last));
 					}
@@ -326,10 +326,9 @@ public class RangedWeaponStats extends WeaponStats {
 		if (obj == this) {
 			return true;
 		}
-		if (obj instanceof RangedWeaponStats) {
-			RangedWeaponStats other = (RangedWeaponStats) obj;
-
-			return mAccuracy.equals(other.mAccuracy) && mRange.equals(other.mRange) && mRateOfFire.equals(other.mRateOfFire) && mShots.equals(other.mShots) && mBulk.equals(other.mBulk) && mRecoil.equals(other.mRecoil) && super.equals(obj);
+		if (obj instanceof RangedWeaponStats && super.equals(obj)) {
+			RangedWeaponStats rws = (RangedWeaponStats) obj;
+			return mAccuracy.equals(rws.mAccuracy) && mRange.equals(rws.mRange) && mRateOfFire.equals(rws.mRateOfFire) && mShots.equals(rws.mShots) && mBulk.equals(rws.mBulk) && mRecoil.equals(rws.mRecoil);
 		}
 		return false;
 	}

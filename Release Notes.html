@@ -14,6 +14,62 @@
 </head>
 <body>
 	<p class=category>GURPS Character Sheet Release Notes</p>
+	<p class=rversion>Version 2008.?.? &mdash; ? ?, 2008</p>
+	<p class=rheader>Features</p>
+	<div class=indent>
+		<ul>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&atid=913592&aid=1984474&group_id=185516">Feature 1984474</a>:
+				For HTML export, added @GENERAL_DR (maps to torso DR),
+				@CURRENT_DODGE, @BEST_CURRENT_PARRY, and @BEST_CURRENT_BLOCK.</li>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&atid=913592&aid=1984470&group_id=185516">Feature 1984470</a>:
+				For HTML export, added @DESCRIPTION_PRIMARY and @DESCRIPTION_NOTES for
+				weapons, just like the other loops have.</li>
+			<li>Added an 'ID' output key to the various lists when exporting.</li>
+		</ul>
+	</div>
+	<p class=rheader>Bug Fixes</p>
+	<div class=indent>
+		<ul>
+			<li>Fixed some problems with character sheet layout, especially when
+				one or more entries had wrapped text.</li>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&atid=913589&aid=1985991&group_id=185516">Bug #1985991</a>:
+				Size Modifier decreasing refunded points.</li>
+			<li>Selecting a range within a filtered list and then dragging or
+				copying it to the character sheet will no longer bring along
+				items that weren't being shown.</li>
+			<li>When quitting, windows with modified contents should now always
+				give the user a chance to save their data.</li>
+			<li>Fix layout of note sections.</li>
+			<li>Turned on word-wrap in the note editor.</li>
+			<li>Force labels in the character sheet to be drawn in black rather
+				than whatever the system label color happens to be.</li>
+		</ul>
+	</div>
+	<p class=rheader>Data Files</p>
+	<div class=indent>
+		<ul>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&atid=913589&aid=1990090&group_id=185516">Bug #1990090</a>:
+				Dungeon Fantasy Gnome Race: Decreased Basic Move is Wrong.</li>
+			<li>Fixed some minor glitches in prereqs and re-added the Judo skill,
+				as it went MIA at some point.</li>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&atid=913589&aid=1933951&group_id=185516">Bug #1933951</a>:
+				Blur has wrong prereqs. Fixed prerequisites.</li>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&atid=913589&aid=1925004&group_id=185516">Bug #1925004</a>:
+				Gigantism and Disguise (Animals). Fixed prerequisites.</li>
+			<li><a href="http://sourceforge.net/tracker/index.php?func=detail&atid=913589&aid=1925001&group_id=185516">Bug #1925001</a>:
+				Naturalist skill has wrong difficulty. Fixed difficulty.</li>
+			<li>Removed the redundant frequency modifier on the Reputation
+				advantages.</li>
+			<li>Fixed prerequisites for 'Essential Acid'.</li>
+		</ul>
+	</div>
+	<p class=rheader>Miscellaneous</p>
+	<div class=indent>
+		<ul>
+			<li>Updated to iText 2.1.2u and added the iTextAsian support so that
+				asian languages can be supported in the PDF output.</li>
+		</ul>
+	</div>
 	<p class=rversion>Version 2008.03.21 &mdash; March 21, 2008</p>
 	<p class=rheader>Features</p>
 	<div class=indent>

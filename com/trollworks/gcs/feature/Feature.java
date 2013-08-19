@@ -31,24 +31,24 @@ import java.util.HashSet;
 /** Describes a feature of an advantage, skill, spell, or piece of equipment. */
 public interface Feature {
 	/** @return The XML tag representing this feature. */
-	public String getXMLTag();
+	String getXMLTag();
 
 	/** @return The feature key used in the feature map. */
-	public String getKey();
+	String getKey();
 
 	/** @return An exact clone of this feature. */
-	public Feature cloneFeature();
+	Feature cloneFeature();
 
 	/**
 	 * Saves the feature.
 	 * 
 	 * @param out The XML writer to use.
 	 */
-	public void save(XMLWriter out);
+	void save(XMLWriter out);
 
 	/** @param set The nameable keys. */
-	public void fillWithNameableKeys(HashSet<String> set);
+	void fillWithNameableKeys(HashSet<String> set);
 
 	/** @param map The map of nameable keys to names to apply. */
-	public void applyNameableKeys(HashMap<String, String> map);
+	void applyNameableKeys(HashMap<String, String> map);
 }

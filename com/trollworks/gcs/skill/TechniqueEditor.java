@@ -32,7 +32,7 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.text.NumberFilter;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.text.TextUtility;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
@@ -277,7 +277,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 	}
 
 	private JTextField createNumberField(Container labelParent, Container fieldParent, String title, String tooltip, int value, int maxDigits) {
-		JTextField field = createField(labelParent, fieldParent, title, NumberUtils.format(value, true), tooltip, maxDigits + 1);
+		JTextField field = createField(labelParent, fieldParent, title, Numbers.formatWithForcedSign(value), tooltip, maxDigits + 1);
 		new NumberFilter(field, false, true, false, maxDigits);
 		return field;
 	}
@@ -336,15 +336,15 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 	}
 
 	private int getPoints() {
-		return NumberUtils.getInteger(mPointsField.getText(), 0);
+		return Numbers.getLocalizedInteger(mPointsField.getText(), 0);
 	}
 
 	private int getDefaultModifier() {
-		return NumberUtils.getInteger(mDefaultModifierField.getText(), 0);
+		return Numbers.getLocalizedInteger(mDefaultModifierField.getText(), 0);
 	}
 
 	private int getLimitModifier() {
-		return NumberUtils.getInteger(mLimitField.getText(), 0);
+		return Numbers.getLocalizedInteger(mLimitField.getText(), 0);
 	}
 
 	@Override

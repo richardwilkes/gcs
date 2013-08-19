@@ -74,7 +74,7 @@ public class DataMenu extends JMenu {
 		int count = list.size();
 		for (int i = 1; i < count; i++) {
 			Object entry = list.get(i);
-			if (entry instanceof ArrayList) {
+			if (entry instanceof ArrayList<?>) {
 				ArrayList<?> subList = (ArrayList<?>) entry;
 				JMenu subMenu = new JMenu((String) subList.get(0));
 				subMenu.setIcon(new ImageIcon(ToolkitImage.getFolderIcon()));

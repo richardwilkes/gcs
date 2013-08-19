@@ -23,6 +23,7 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.widgets.outline.ColumnUtils;
 import com.trollworks.ttk.border.BoxedDropShadowBorder;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.widgets.outline.Outline;
@@ -36,7 +37,6 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.LayoutManager2;
 import java.awt.Rectangle;
-import java.util.ArrayList;
 
 /** An outline panel. */
 public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
@@ -78,11 +78,9 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
 		int width = insets.left + insets.right;
 		OutlineModel outlineModel = mOutline.getModel();
 		int count = outlineModel.getColumnCount();
-
 		if (mOutline.shouldDrawColumnDividers()) {
 			width += count - 1;
 		}
-
 		for (int i = 0; i < count; i++) {
 			Column column = outlineModel.getColumnAtIndex(i);
 			width += column.getPreferredWidth(mOutline);
@@ -93,96 +91,12 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
 	public void layoutContainer(Container parent) {
 		Insets insets = getInsets();
 		Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
-		int width = bounds.width;
 		int height = mHeader.getPreferredSize().height;
-		OutlineModel outlineModel = mOutline.getModel();
-		int count = outlineModel.getColumnCount();
-		ArrayList<Column> changed = new ArrayList<Column>();
-		int[] widths = new int[count];
-		Column column;
-
-		mHeader.setBounds(bounds.x, bounds.y, width, height);
+		mHeader.setBounds(bounds.x, bounds.y, bounds.width, height);
 		bounds.y += height;
 		bounds.height -= height;
-		mOutline.setBounds(bounds.x, bounds.y, width, bounds.height);
-		if (mOutline.shouldDrawColumnDividers()) {
-			width -= count - 1;
-		}
-
-		for (int i = 0; i < count; i++) {
-			column = outlineModel.getColumnAtIndex(i);
-			widths[i] = column.getPreferredWidth(mOutline);
-			width -= widths[i];
-		}
-
-		if (width >= 0) {
-			widths[0] += width;
-		} else {
-			int pos = 0;
-			int[] list = new int[count];
-			int[] minList = new int[count];
-
-			for (int i = 0; i < count; i++) {
-				column = outlineModel.getColumnAtIndex(i);
-				if (column.getRowCell(null).participatesInDynamicRowLayout()) {
-					int min = column.getPreferredHeaderWidth();
-
-					if (min < widths[i]) {
-						list[pos] = i;
-						minList[pos++] = min;
-					}
-				}
-			}
-
-			int[] list2 = new int[count];
-			int[] minList2 = new int[count];
-			int pos2 = 0;
-
-			while (width < 0 && pos > 0) {
-				int amt;
-
-				if (-width > pos) {
-					amt = width / pos;
-				} else {
-					amt = -1;
-				}
-				for (int i = 0; i < pos && width < 0; i++) {
-					int which = list[i];
-					int minWidth = minList[i];
-
-					widths[which] += amt;
-					width -= amt;
-					if (widths[which] < minWidth) {
-						width -= minWidth - widths[which];
-						widths[which] = minWidth;
-					} else if (widths[which] > minWidth) {
-						list2[pos2] = which;
-						minList2[pos2++] = minWidth;
-					}
-				}
-
-				int[] swap = list;
-				list = list2;
-				list2 = swap;
-
-				swap = minList;
-				minList = minList2;
-				minList2 = swap;
-
-				pos = pos2;
-				pos2 = 0;
-			}
-		}
-
-		for (int i = 0; i < count; i++) {
-			column = outlineModel.getColumnAtIndex(i);
-			if (widths[i] != column.getWidth()) {
-				column.setWidth(widths[i]);
-				changed.add(column);
-			}
-		}
-
-		mOutline.updateRowHeightsIfNeeded(changed);
+		mOutline.setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
+		ColumnUtils.pack(mOutline, bounds.width);
 	}
 
 	public Dimension minimumLayoutSize(Container parent) {

@@ -28,7 +28,7 @@ import com.trollworks.gcs.criteria.DoubleCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.collections.Enums;
 import com.trollworks.ttk.units.WeightUnits;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.xml.XMLReader;
@@ -70,8 +70,8 @@ public class ContainedWeightPrereq extends HasPrereq {
 	public ContainedWeightPrereq(PrereqList parent, XMLReader reader) throws IOException {
 		this(parent);
 		loadHasAttribute(reader);
-		mWeightCompare.setType((NumericCompareType) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
-		mWeightCompare.setQualifier(WeightUnits.POUNDS.convert((WeightUnits) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_UNITS), WeightUnits.values(), WeightUnits.POUNDS), reader.readDouble(0)));
+		mWeightCompare.setType(Enums.extract(reader.getAttribute(ATTRIBUTE_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
+		mWeightCompare.setQualifier(WeightUnits.POUNDS.convert(Enums.extract(reader.getAttribute(ATTRIBUTE_UNITS), WeightUnits.values(), WeightUnits.POUNDS), reader.readDouble(0)));
 	}
 
 	/**
@@ -87,7 +87,7 @@ public class ContainedWeightPrereq extends HasPrereq {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
 		if (obj instanceof ContainedWeightPrereq && super.equals(obj)) {

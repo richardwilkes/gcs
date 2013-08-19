@@ -38,14 +38,6 @@ public class GCSImages {
 		Images.addLocation(GCSImages.class.getResource("images/")); //$NON-NLS-1$
 	}
 
-	/**
-	 * @param name The name to search for.
-	 * @return The image for the specified name.
-	 */
-	public static final synchronized BufferedImage get(String name) {
-		return Images.get(name, true);
-	}
-
 	/** @return The exotic type icon. */
 	public static final BufferedImage getExoticTypeIcon() {
 		return Images.get("ExoticType"); //$NON-NLS-1$

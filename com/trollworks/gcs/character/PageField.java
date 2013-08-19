@@ -30,7 +30,7 @@ import com.trollworks.ttk.text.DiceFormatter;
 import com.trollworks.ttk.text.DoubleFormatter;
 import com.trollworks.ttk.text.HeightFormatter;
 import com.trollworks.ttk.text.IntegerFormatter;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.text.WeightFormatter;
 import com.trollworks.ttk.utility.GraphicsUtilities;
 import com.trollworks.ttk.utility.Platform;
@@ -152,7 +152,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 	@Override
 	public String getToolTipText() {
 		if (mCustomToolTip != null) {
-			return MessageFormat.format(mCustomToolTip, NumberUtils.format(((Integer) mCharacter.getValueForID(GURPSCharacter.POINTS_PREFIX + mConsumedType)).intValue()));
+			return MessageFormat.format(mCustomToolTip, Numbers.format(((Integer) mCharacter.getValueForID(GURPSCharacter.POINTS_PREFIX + mConsumedType)).intValue()));
 		}
 		return super.getToolTipText();
 	}
@@ -282,5 +282,9 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 	private static AbstractFormatterFactory getFormatterFactoryForType(String type) {
 		AbstractFormatterFactory factory = FACTORY_MAP.get(type);
 		return factory != null ? factory : DEFAULT_FACTORY;
+	}
+
+	public int getNotificationPriority() {
+		return 0;
 	}
 }

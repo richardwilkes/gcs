@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.criteria;
 
-import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.collections.Enums;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
@@ -52,7 +52,7 @@ public abstract class NumericCriteria {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
 		if (obj instanceof NumericCriteria) {
@@ -68,7 +68,7 @@ public abstract class NumericCriteria {
 	 * @throws IOException
 	 */
 	public void load(XMLReader reader) throws IOException {
-		setType((NumericCompareType) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
+		setType(Enums.extract(reader.getAttribute(ATTRIBUTE_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
 	}
 
 	/**

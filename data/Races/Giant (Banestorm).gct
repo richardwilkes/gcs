@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="fp1hpdr1:ldqm14eygq36" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes" type="race">
+			<name>Race: Giant</name>
+			<reference>BA191</reference>
+			<categories>
+				<category>Race</category>
+			</categories>
+			<advantage version="2">
+				<name>Acute Taste &amp; Smell</name>
+				<type>Physical</type>
+				<levels>3</levels>
+				<points_per_level>2</points_per_level>
+				<reference>B35</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>taste_smell</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Bad Temper</name>
+				<type>Mental</type>
+				<base_points>-10</base_points>
+				<cr>12</cr>
+				<reference>B124</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Damage Resistance</name>
+				<type>Physical, Exotic</type>
+				<levels>2</levels>
+				<points_per_level>5</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>Ablative</name>
+					<cost type="percentage">-80</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Absorbtion</name>
+					<cost type="percentage">80</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>Enhances @Trait@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Absorbtion</name>
+					<cost type="percentage">100</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>Enhances any trait</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Absorbtion</name>
+					<cost type="percentage">80</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>Healing only</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Can't wear armor</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Directional</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+					<notes>@Direction: Back, Right, Left, Top or Underside@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Directional</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+					<notes>Front</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Flexible</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Hardened</name>
+					<cost type="percentage">20</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Limited</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>@Common Attack Form@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Limited</name>
+					<cost type="percentage">-60</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>@Occasional Attack Form@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Limited</name>
+					<cost type="percentage">-80</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>@Rare Attack Form@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Limited</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>@Very Common Attack Form@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Reflection</name>
+					<cost type="percentage">100</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Semi-Ablative</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Tough Skin</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<reference>B47</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<dr_bonus>
+					<location>full_body_except_eyes</location>
+					<amount per_level="yes">1</amount>
+				</dr_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Decreased Dexterity</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>-20</points_per_level>
+				<reference>B15</reference>
+				<categories>
+					<category>Attribute</category>
+					<category>Disadvantage</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dx</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Decreased Speed</name>
+				<type>Mental/Physical</type>
+				<levels>1</levels>
+				<points_per_level>-5</points_per_level>
+				<reference>B16</reference>
+				<categories>
+					<category>Attribute</category>
+					<category>Disadvantage</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>speed</attribute>
+					<amount per_level="yes">-0.25</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Enhanced Move (Ground)</name>
+				<type>Physical, Exotic</type>
+				<levels>1</levels>
+				<points_per_level>20</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>Handling Bonus</name>
+					<cost type="percentage">5</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+					<reference>B52</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Handling Penalty</name>
+					<cost type="percentage">-5</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+					<reference>B52</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Newtonian</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+					<reference>B52</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Road-Bound</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+					<reference>B52</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>All-Out</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>P49</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Cosmic</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>Sup26</reference>
+					<notes>Instantaneous Acceleration</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Cosmic</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>Sup27</reference>
+					<notes>Complete Maneuverability</notes>
+				</modifier>
+				<reference>B52</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Hates ogres and being compared to ogres</name>
+				<type>Physical</type>
+				<base_points>-1</base_points>
+			</advantage>
+			<advantage version="2">
+				<name>High Pain Threshold</name>
+				<type>Physical</type>
+				<base_points>10</base_points>
+				<reference>B59</reference>
+				<notes>Never suffer shock penalties when injured; +3 on all HT rolls to avoid knockdown and stunning; +3 to resist torture</notes>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Health</name>
+				<type>Physical</type>
+				<levels>2</levels>
+				<points_per_level>10</points_per_level>
+				<reference>B14</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>ht</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Size</name>
+				<type>Physical</type>
+				<levels>2</levels>
+				<attribute_bonus>
+					<attribute>sm</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Strength</name>
+				<type>Physical</type>
+				<levels>15</levels>
+				<points_per_level>10</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>No Fine Manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B15</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Size</name>
+					<cost type="percentage">-10</cost>
+					<levels>2</levels>
+					<affects>total</affects>
+					<reference>B15</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Super-Effort</name>
+					<cost type="percentage">300</cost>
+					<affects>total</affects>
+					<reference>Sup24</reference>
+				</modifier>
+				<reference>B14</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>st</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Penetrating Voice</name>
+				<type>Physical</type>
+				<base_points>1</base_points>
+				<reference>B101</reference>
+				<categories>
+					<category>Perk</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Shyness (Severe)</name>
+				<type>Mental</type>
+				<base_points>-10</base_points>
+				<reference>B154</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">acting</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">carousing</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">diplomacy</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">fast-talk</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">intimidation</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">leadership</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">merchant</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">panhandling</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">performance</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">politics</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">public speaking</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="contains">savoir-faire</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">sex appeal</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">streetwise</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">teaching</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-2</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Social Stigma (Oversized Barbarian)</name>
+				<type>Social</type>
+				<base_points>-10</base_points>
+				<reference>B155</reference>
+				<notes>-2 Reaction</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Stubbornness</name>
+				<type>Mental</type>
+				<base_points>-5</base_points>
+				<reference>B157</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+	<notes>Most giants look much like humans, only nine or more feet tall. However, they vary remarkably, and 
+some giants have only one eye, two heads, or other unusual features.
+
+Yrth&#8217;s giants are generally private, preferring the solitude of their homes. They can be unexpectedly dangerous if roused. Most giants have very &#8220;human&#8221; personalities but are uncomfortable in human lands, where all the furniture is built for midgets.
+
+Giants resent being compared to ogres. They react very poorly to that race, and to anyone who mentions them in any but the most disparaging terms. Unfortunately, many smaller beings mistakenly believe the biggest difference between the two races is that giants aren&#8217;t as ugly.
+
+For PC giants, calculate height based on ST before adding the racial +15, and then increase it by 60%. Weight is 4 times that of a man of the same ST (again, before the racial bonus).</notes>
+</template>

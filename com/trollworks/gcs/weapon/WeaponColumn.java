@@ -25,7 +25,7 @@ package com.trollworks.gcs.weapon;
 
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Cell;
 import com.trollworks.ttk.widgets.outline.Column;
@@ -127,7 +127,7 @@ public enum WeaponColumn {
 			if (level < 0) {
 				return "-"; //$NON-NLS-1$
 			}
-			return NumberUtils.format(level);
+			return Numbers.format(level);
 		}
 	},
 	/** The weapon accuracy. */

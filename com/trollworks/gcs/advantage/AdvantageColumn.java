@@ -33,7 +33,7 @@ import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
 import com.trollworks.ttk.image.Images;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Cell;
 import com.trollworks.ttk.widgets.outline.Column;
@@ -134,7 +134,7 @@ public enum AdvantageColumn {
 					return ""; //$NON-NLS-1$
 				}
 			}
-			return NumberUtils.format(advantage.getAdjustedPoints());
+			return Numbers.format(advantage.getAdjustedPoints());
 		}
 	},
 	/** The type. */

@@ -28,7 +28,7 @@ import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.collections.Enums;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
@@ -77,9 +77,9 @@ public class AttributePrereq extends HasPrereq {
 	public AttributePrereq(PrereqList parent, XMLReader reader) throws IOException {
 		this(parent);
 		loadHasAttribute(reader);
-		setWhich((BonusAttributeType) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_WHICH), TYPES, BonusAttributeType.ST));
-		setCombinedWith((BonusAttributeType) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_COMBINED_WITH), TYPES));
-		mValueCompare.setType((NumericCompareType) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
+		setWhich(Enums.extract(reader.getAttribute(ATTRIBUTE_WHICH), TYPES, BonusAttributeType.ST));
+		setCombinedWith(Enums.extract(reader.getAttribute(ATTRIBUTE_COMBINED_WITH), TYPES));
+		mValueCompare.setType(Enums.extract(reader.getAttribute(ATTRIBUTE_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
 		mValueCompare.setQualifier(reader.readInteger(10));
 	}
 
@@ -98,13 +98,12 @@ public class AttributePrereq extends HasPrereq {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
 		if (obj instanceof AttributePrereq && super.equals(obj)) {
-			AttributePrereq other = (AttributePrereq) obj;
-
-			return mWhich == other.mWhich && mCombinedWith == other.mCombinedWith && mValueCompare.equals(other.mValueCompare);
+			AttributePrereq ap = (AttributePrereq) obj;
+			return mWhich == ap.mWhich && mCombinedWith == ap.mCombinedWith && mValueCompare.equals(ap.mValueCompare);
 		}
 		return false;
 	}

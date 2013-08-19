@@ -33,7 +33,7 @@ import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.utility.Dice;
 import com.trollworks.ttk.xml.XMLNodeType;
 import com.trollworks.ttk.xml.XMLReader;
@@ -430,10 +430,8 @@ public abstract class WeaponStats {
 		StringBuilder builder = new StringBuilder();
 		int count = mStrength.length();
 		boolean started = false;
-
 		for (int i = 0; i < count; i++) {
 			char ch = mStrength.charAt(i);
-
 			if (Character.isDigit(ch)) {
 				builder.append(ch);
 				started = true;
@@ -441,8 +439,7 @@ public abstract class WeaponStats {
 				break;
 			}
 		}
-
-		return started ? NumberUtils.getInteger(builder.toString(), -1) : -1;
+		return started ? Numbers.getInteger(builder.toString(), -1) : -1;
 	}
 
 	/** @return The usage. */
@@ -497,9 +494,8 @@ public abstract class WeaponStats {
 			return true;
 		}
 		if (obj instanceof WeaponStats) {
-			WeaponStats other = (WeaponStats) obj;
-
-			return mDamage.equals(other.mDamage) && mStrength.equals(other.mStrength) && mUsage.equals(other.mUsage) && mDefaults.equals(other.mDefaults);
+			WeaponStats ws = (WeaponStats) obj;
+			return mDamage.equals(ws.mDamage) && mStrength.equals(ws.mStrength) && mUsage.equals(ws.mUsage) && mDefaults.equals(ws.mDefaults);
 		}
 		return false;
 	}

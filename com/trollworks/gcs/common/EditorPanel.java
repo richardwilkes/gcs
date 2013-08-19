@@ -83,7 +83,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 	 * @return The button that was added.
 	 */
 	protected IconButton addButton(BufferedImage icon, String command, String tooltip) {
-		IconButton button = new IconButton(icon, tooltip);
+		IconButton button = new IconButton(icon, tooltip, false);
 		button.setActionCommand(command);
 		button.addActionListener(this);
 		add(button);

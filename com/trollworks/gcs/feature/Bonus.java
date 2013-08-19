@@ -66,7 +66,7 @@ public abstract class Bonus implements Feature {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
 		if (obj instanceof Bonus) {

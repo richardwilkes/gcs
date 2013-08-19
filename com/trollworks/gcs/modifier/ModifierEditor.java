@@ -27,7 +27,7 @@ import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.text.NumberFilter;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.text.TextUtility;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
@@ -225,7 +225,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		JTextField field = new JTextField(TextUtility.makeFiller(maxDigits, '9') + TextUtility.makeFiller(maxDigits / 3, ',') + (allowSign ? "-" : EMPTY)); //$NON-NLS-1$
 
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
-		field.setText(NumberUtils.format(value));
+		field.setText(Numbers.format(value));
 		field.setToolTipText(tooltip);
 		field.setEnabled(mIsEditable);
 		new NumberFilter(field, false, allowSign, true, maxDigits);
@@ -239,7 +239,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		JTextField field = new JTextField(TextUtility.makeFiller(maxDigits, '9') + TextUtility.makeFiller(maxDigits / 3, ',') + '.');
 
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
-		field.setText(NumberUtils.format(value));
+		field.setText(Numbers.format(value));
 		field.setToolTipText(tooltip);
 		field.setEnabled(mIsEditable);
 		new NumberFilter(field, true, false, true, maxDigits);
@@ -295,9 +295,9 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		boolean hasLevels = hasLevels();
 
 		if (hasLevels) {
-			mLevelField.setText(NumberUtils.format(mLastLevel));
+			mLevelField.setText(Numbers.format(mLastLevel));
 		} else {
-			mLastLevel = NumberUtils.getInteger(mLevelField.getText(), 0);
+			mLastLevel = Numbers.getLocalizedInteger(mLevelField.getText(), 0);
 			mLevelField.setText(EMPTY);
 		}
 		mLevelField.setEnabled(hasLevels);
@@ -308,10 +308,10 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 	private void updateCostField() {
 		if (getCostType() == CostType.MULTIPLIER) {
 			new NumberFilter(mCostField, true, false, true, 5);
-			mCostField.setText(NumberUtils.format(Math.abs(NumberUtils.getDouble(mCostField.getText(), 0))));
+			mCostField.setText(Numbers.format(Math.abs(Numbers.getLocalizedDouble(mCostField.getText(), 0))));
 		} else {
 			new NumberFilter(mCostField, false, true, true, 5);
-			mCostField.setText(NumberUtils.format(NumberUtils.getInteger(mCostField.getText(), 0), true));
+			mCostField.setText(Numbers.formatWithForcedSign(Numbers.getLocalizedInteger(mCostField.getText(), 0)));
 		}
 	}
 
@@ -319,17 +319,17 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		boolean enabled = true;
 
 		if (hasLevels()) {
-			mCostModifierField.setText(NumberUtils.format(getCost() * getLevels(), true) + "%"); //$NON-NLS-1$
+			mCostModifierField.setText(Numbers.formatWithForcedSign(getCost() * getLevels()) + "%"); //$NON-NLS-1$
 		} else {
 			switch (getCostType()) {
 				case PERCENTAGE:
-					mCostModifierField.setText(NumberUtils.format(getCost(), true) + "%"); //$NON-NLS-1$
+					mCostModifierField.setText(Numbers.formatWithForcedSign(getCost()) + "%"); //$NON-NLS-1$
 					break;
 				case POINTS:
-					mCostModifierField.setText(NumberUtils.format(getCost(), true));
+					mCostModifierField.setText(Numbers.formatWithForcedSign(getCost()));
 					break;
 				case MULTIPLIER:
-					mCostModifierField.setText("x" + NumberUtils.format(getCostMultiplier())); //$NON-NLS-1$
+					mCostModifierField.setText("x" + Numbers.format(getCostMultiplier())); //$NON-NLS-1$
 					mAffects.setSelectedItem(Affects.TOTAL);
 					enabled = false;
 					break;
@@ -347,15 +347,15 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 	}
 
 	private int getCost() {
-		return NumberUtils.getInteger(mCostField.getText(), 0);
+		return Numbers.getLocalizedInteger(mCostField.getText(), 0);
 	}
 
 	private double getCostMultiplier() {
-		return NumberUtils.getDouble(mCostField.getText(), 0);
+		return Numbers.getLocalizedDouble(mCostField.getText(), 0);
 	}
 
 	private int getLevels() {
-		return NumberUtils.getInteger(mLevelField.getText(), 0);
+		return Numbers.getLocalizedInteger(mLevelField.getText(), 0);
 	}
 
 	public void changedUpdate(DocumentEvent event) {

@@ -28,7 +28,7 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
 
@@ -188,7 +188,7 @@ public class MeleeWeaponStats extends WeaponStats {
 								}
 								skillLevel = best != Integer.MIN_VALUE ? best : 0;
 							}
-							num = NumberUtils.format(skillLevel + (neg ? -modifier : modifier));
+							num = Numbers.format(skillLevel + (neg ? -modifier : modifier));
 							if (i < max) {
 								buffer.append(num);
 								token = token.substring(i);
@@ -264,10 +264,9 @@ public class MeleeWeaponStats extends WeaponStats {
 		if (obj == this) {
 			return true;
 		}
-		if (obj instanceof MeleeWeaponStats) {
-			MeleeWeaponStats other = (MeleeWeaponStats) obj;
-
-			return mReach.equals(other.mReach) && mParry.equals(other.mParry) && mBlock.equals(other.mBlock) && super.equals(obj);
+		if (obj instanceof MeleeWeaponStats && super.equals(obj)) {
+			MeleeWeaponStats mws = (MeleeWeaponStats) obj;
+			return mReach.equals(mws.mReach) && mParry.equals(mws.mParry) && mBlock.equals(mws.mBlock);
 		}
 		return false;
 	}

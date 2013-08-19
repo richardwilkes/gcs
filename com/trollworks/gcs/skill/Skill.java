@@ -34,7 +34,7 @@ import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.widgets.outline.Row;
@@ -134,7 +134,7 @@ public class Skill extends ListRow {
 		if (level < 0) {
 			return "-"; //$NON-NLS-1$
 		}
-		return NumberUtils.format(level) + SLASH + attribute + NumberUtils.format(relativeLevel, true);
+		return Numbers.format(level) + SLASH + attribute + Numbers.formatWithForcedSign(relativeLevel);
 	}
 
 	/**
@@ -219,6 +219,38 @@ public class Skill extends ListRow {
 	}
 
 	@Override
+	public boolean isEquivalentTo(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (obj instanceof Skill && getClass() == obj.getClass() && super.isEquivalentTo(obj)) {
+			Skill row = (Skill) obj;
+			if (mLevel == row.mLevel) {
+				if (mPoints == row.mPoints) {
+					if (mEncumbrancePenaltyMultiplier == row.mEncumbrancePenaltyMultiplier) {
+						if (mRelativeLevel == row.mRelativeLevel) {
+							if (mAttribute == row.mAttribute) {
+								if (mDifficulty == row.mDifficulty) {
+									if (mName.equals(row.mName)) {
+										if (mTechLevel == null ? row.mTechLevel == null : mTechLevel.equals(row.mTechLevel)) {
+											if (mSpecialization.equals(row.mSpecialization)) {
+												if (mReference.equals(row.mReference)) {
+													return mWeapons.equals(row.mWeapons);
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
 	public String getLocalizedName() {
 		return MSG_DEFAULT_NAME;
 	}
@@ -298,8 +330,9 @@ public class Skill extends ListRow {
 	}
 
 	@Override
-	protected void finishedLoading() {
+	protected void finishedLoading(LoadState state) {
 		updateLevel(false);
+		super.finishedLoading(state);
 	}
 
 	@Override

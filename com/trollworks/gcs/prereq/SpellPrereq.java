@@ -50,13 +50,13 @@ public class SpellPrereq extends HasPrereq {
 	private static String		MSG_COLLEGE_COUNT;
 	/** The XML tag for this class. */
 	public static final String	TAG_ROOT			= "spell_prereq";	//$NON-NLS-1$
-	/** The tag/type for name comparision. */
+	/** The tag/type for name comparison. */
 	public static final String	TAG_NAME			= "name";			//$NON-NLS-1$
 	/** The tag/type for any. */
 	public static final String	TAG_ANY				= "any";			//$NON-NLS-1$
-	/** The tag/type for college name comparision. */
+	/** The tag/type for college name comparison. */
 	public static final String	TAG_COLLEGE			= "college";		//$NON-NLS-1$
-	/** The tag/type for college count comparision. */
+	/** The tag/type for college count comparison. */
 	public static final String	TAG_COLLEGE_COUNT	= "college_count";	//$NON-NLS-1$
 	private static final String	TAG_QUANTITY		= "quantity";		//$NON-NLS-1$
 	private static final String	EMPTY				= "";				//$NON-NLS-1$
@@ -133,13 +133,12 @@ public class SpellPrereq extends HasPrereq {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
 		if (obj instanceof SpellPrereq && super.equals(obj)) {
-			SpellPrereq other = (SpellPrereq) obj;
-
-			return mType.equals(other.mType) && mStringCriteria.equals(other.mStringCriteria) && mQuantityCriteria.equals(other.mQuantityCriteria);
+			SpellPrereq sp = (SpellPrereq) obj;
+			return mType.equals(sp.mType) && mStringCriteria.equals(sp.mStringCriteria) && mQuantityCriteria.equals(sp.mQuantityCriteria);
 		}
 		return false;
 	}

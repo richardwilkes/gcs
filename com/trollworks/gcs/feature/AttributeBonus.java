@@ -24,7 +24,7 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.collections.Enums;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
 
@@ -70,13 +70,12 @@ public class AttributeBonus extends Bonus {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
 		if (obj instanceof AttributeBonus && super.equals(obj)) {
-			AttributeBonus other = (AttributeBonus) obj;
-
-			return mAttribute == other.mAttribute && mLimitation == other.mLimitation;
+			AttributeBonus ab = (AttributeBonus) obj;
+			return mAttribute == ab.mAttribute && mLimitation == ab.mLimitation;
 		}
 		return false;
 	}
@@ -103,8 +102,8 @@ public class AttributeBonus extends Bonus {
 	@Override
 	protected void loadSelf(XMLReader reader) throws IOException {
 		if (TAG_ATTRIBUTE.equals(reader.getName())) {
-			setLimitation((AttributeBonusLimitation) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_LIMITATION), AttributeBonusLimitation.values(), AttributeBonusLimitation.NONE));
-			setAttribute((BonusAttributeType) EnumExtractor.extract(reader.readText(), BonusAttributeType.values(), BonusAttributeType.ST));
+			setLimitation(Enums.extract(reader.getAttribute(ATTRIBUTE_LIMITATION), AttributeBonusLimitation.values(), AttributeBonusLimitation.NONE));
+			setAttribute(Enums.extract(reader.readText(), BonusAttributeType.values(), BonusAttributeType.ST));
 		} else {
 			super.loadSelf(reader);
 		}

@@ -31,7 +31,7 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Cell;
 import com.trollworks.ttk.widgets.outline.Column;
@@ -152,7 +152,7 @@ public enum SkillColumn {
 			if (level < 0) {
 				return "-"; //$NON-NLS-1$
 			}
-			return NumberUtils.format(level);
+			return Numbers.format(level);
 		}
 	},
 	/** The relative skill level. */
@@ -234,7 +234,7 @@ public enum SkillColumn {
 				if (!(skill instanceof Technique)) {
 					builder.append(skill.getAttribute());
 				}
-				builder.append(NumberUtils.format(level, true));
+				builder.append(Numbers.formatWithForcedSign(level));
 				return builder.toString();
 			}
 			return ""; //$NON-NLS-1$
@@ -272,7 +272,7 @@ public enum SkillColumn {
 			if (skill.canHaveChildren()) {
 				return ""; //$NON-NLS-1$
 			}
-			return NumberUtils.format(skill.getPoints());
+			return Numbers.format(skill.getPoints());
 		}
 	},
 	/** The category. */

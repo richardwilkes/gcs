@@ -43,6 +43,7 @@ import com.trollworks.ttk.preferences.Preferences;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Path;
 import com.trollworks.ttk.widgets.AppWindow;
+import com.trollworks.ttk.widgets.BaseWindow;
 import com.trollworks.ttk.widgets.ModifiedMarker;
 import com.trollworks.ttk.widgets.WindowUtils;
 import com.trollworks.ttk.widgets.outline.Outline;
@@ -96,7 +97,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 	 * @return The template window for the specified template, if any.
 	 */
 	public static TemplateWindow findTemplateWindow(Template template) {
-		for (TemplateWindow window : AppWindow.getWindows(TemplateWindow.class)) {
+		for (TemplateWindow window : BaseWindow.getWindows(TemplateWindow.class)) {
 			if (window.getTemplate() == template) {
 				return window;
 			}
@@ -114,7 +115,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 	public static TemplateWindow findTemplateWindow(File file) {
 		String fullPath = Path.getFullPath(file);
 
-		for (TemplateWindow window : AppWindow.getWindows(TemplateWindow.class)) {
+		for (TemplateWindow window : BaseWindow.getWindows(TemplateWindow.class)) {
 			File wFile = window.getTemplate().getFile();
 
 			if (wFile != null) {
@@ -176,7 +177,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 		String title;
 
 		if (file == null) {
-			title = AppWindow.getNextUntitledWindowName(TemplateWindow.class, MSG_UNTITLED, this);
+			title = BaseWindow.getNextUntitledWindowName(TemplateWindow.class, MSG_UNTITLED, this);
 		} else {
 			title = Path.getLeafName(file.getName(), false);
 		}
@@ -439,5 +440,9 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 
 	public void handleNotification(Object producer, String name, Object data) {
 		mTemplate.notifySingle(Advantage.ID_LIST_CHANGED, null);
+	}
+
+	public int getNotificationPriority() {
+		return 0;
 	}
 }

@@ -27,9 +27,9 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.collections.Enums;
 import com.trollworks.ttk.notification.Notifier;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.xml.XMLReader;
@@ -139,6 +139,18 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 		mLevels = 0;
 		mAffects = Affects.TOTAL;
 		mEnabled = true;
+	}
+
+	@Override
+	public boolean isEquivalentTo(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (obj instanceof Modifier && super.isEquivalentTo(obj)) {
+			Modifier row = (Modifier) obj;
+			return mEnabled == row.mEnabled && mLevels == row.mLevels && mCost == row.mCost && mCostMultiplier == row.mCostMultiplier && mCostType == row.mCostType && mAffects == row.mAffects && mName.equals(row.mName) && mReference.equals(row.mReference);
+		}
+		return false;
 	}
 
 	/** @return The enabled. */
@@ -339,7 +351,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 		} else if (TAG_REFERENCE.equals(name)) {
 			mReference = reader.readText().replace("\n", " "); //$NON-NLS-1$ //$NON-NLS-2$
 		} else if (TAG_COST.equals(name)) {
-			mCostType = (CostType) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_COST_TYPE), CostType.values(), CostType.PERCENTAGE);
+			mCostType = Enums.extract(reader.getAttribute(ATTRIBUTE_COST_TYPE), CostType.values(), CostType.PERCENTAGE);
 			if (mCostType == CostType.MULTIPLIER) {
 				mCostMultiplier = reader.readDouble(1.0);
 			} else {
@@ -348,7 +360,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 		} else if (TAG_LEVELS.equals(name)) {
 			mLevels = reader.readInteger(0);
 		} else if (TAG_AFFECTS.equals(name)) {
-			mAffects = (Affects) EnumExtractor.extract(reader.readText(), Affects.values(), Affects.TOTAL);
+			mAffects = Enums.extract(reader.readText(), Affects.values(), Affects.TOTAL);
 		} else {
 			super.loadSubElement(reader, state);
 		}
@@ -436,7 +448,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 		switch (costType) {
 			case PERCENTAGE:
 			case POINTS:
-				builder.append(NumberUtils.format(getCostModifier(), true));
+				builder.append(Numbers.formatWithForcedSign(getCostModifier()));
 				if (costType == CostType.PERCENTAGE) {
 					builder.append('%');
 				}
@@ -448,7 +460,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 				break;
 			case MULTIPLIER:
 				builder.append('x');
-				builder.append(NumberUtils.format(getCostMultiplier()));
+				builder.append(Numbers.format(getCostMultiplier()));
 				break;
 		}
 		return builder.toString();

@@ -28,6 +28,7 @@ import com.trollworks.ttk.menu.help.AboutCommand;
 import com.trollworks.ttk.menu.help.OpenLocalFileCommand;
 import com.trollworks.ttk.menu.help.OpenURLCommand;
 import com.trollworks.ttk.menu.help.UpdateCommand;
+import com.trollworks.ttk.utility.App;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Platform;
 
@@ -60,9 +61,8 @@ public class HelpMenu extends JMenu {
 		}
 		add(new JMenuItem(UpdateCommand.INSTANCE));
 		addSeparator();
-		File docsDir = new File(System.getProperty("app.home", ".")); //$NON-NLS-1$ //$NON-NLS-2$
-		add(new JMenuItem(new OpenLocalFileCommand(MSG_RELEASE_NOTES, new File(docsDir, "Release Notes.html")))); //$NON-NLS-1$
-		add(new JMenuItem(new OpenLocalFileCommand(MSG_LICENSE, new File(docsDir, "License.html")))); //$NON-NLS-1$
+		add(new JMenuItem(new OpenLocalFileCommand(MSG_RELEASE_NOTES, new File(App.APP_HOME_DIR, "Release Notes.html")))); //$NON-NLS-1$
+		add(new JMenuItem(new OpenLocalFileCommand(MSG_LICENSE, new File(App.APP_HOME_DIR, "License.html")))); //$NON-NLS-1$
 		addSeparator();
 		add(new JMenuItem(new OpenURLCommand(MSG_WEB_SITE, "http://gcs.trollworks.com"))); //$NON-NLS-1$
 		add(new JMenuItem(new OpenURLCommand(MSG_WIKI, "http://gcs-java.wiki.sourceforge.net"))); //$NON-NLS-1$

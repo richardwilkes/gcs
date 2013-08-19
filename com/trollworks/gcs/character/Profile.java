@@ -27,11 +27,11 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.feature.BonusAttributeType;
-import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.collections.Enums;
 import com.trollworks.ttk.image.Images;
 import com.trollworks.ttk.preferences.Preferences;
 import com.trollworks.ttk.text.Base64;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.text.TextUtility;
 import com.trollworks.ttk.units.LengthUnits;
 import com.trollworks.ttk.units.WeightUnits;
@@ -271,16 +271,16 @@ public class Profile {
 		} else if (TAG_HANDEDNESS.equals(tag)) {
 			mHandedness = reader.readText();
 		} else if (TAG_HEIGHT.equals(tag)) {
-			LengthUnits units = (LengthUnits) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_UNITS), LengthUnits.values());
+			LengthUnits units = Enums.extract(reader.getAttribute(ATTRIBUTE_UNITS), LengthUnits.values());
 			if (units == null) {
 				// Old output didn't include a units attribute, as it was in a mixed
 				// feet/inches format.
-				mHeight = NumberUtils.getHeight(reader.readText());
+				mHeight = Numbers.getHeight(reader.readText());
 			} else {
 				mHeight = (int) LengthUnits.INCHES.convert(units, reader.readDouble(0));
 			}
 		} else if (TAG_WEIGHT.equals(tag)) {
-			mWeight = WeightUnits.POUNDS.convert((WeightUnits) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_UNITS), WeightUnits.values(), WeightUnits.POUNDS), reader.readDouble(0));
+			mWeight = WeightUnits.POUNDS.convert(Enums.extract(reader.getAttribute(ATTRIBUTE_UNITS), WeightUnits.values(), WeightUnits.POUNDS), reader.readDouble(0));
 		} else if (BonusAttributeType.SM.getXMLTag().equals(tag) || "size_modifier".equals(tag)) { //$NON-NLS-1$
 			mSizeModifier = reader.readInteger(0);
 		} else if (TAG_GENDER.equals(tag)) {
@@ -346,9 +346,9 @@ public class Profile {
 	}
 
 	/**
-	 * @param forPrinting Pass in <code>true</code> to retrieve the double resolution portrait
-	 *            (for printing), or <code>false</code> to retrieve the normal resolution portrait
-	 *            (for display).
+	 * @param forPrinting Pass in <code>true</code> to retrieve the double resolution portrait (for
+	 *            printing), or <code>false</code> to retrieve the normal resolution portrait (for
+	 *            display).
 	 * @return The portrait.
 	 */
 	public BufferedImage getPortrait(boolean forPrinting) {
@@ -779,8 +779,7 @@ public class Profile {
 
 	/**
 	 * @param id The field ID to retrieve the data for.
-	 * @return The value of the specified field ID, or <code>null</code> if the field ID is
-	 *         invalid.
+	 * @return The value of the specified field ID, or <code>null</code> if the field ID is invalid.
 	 */
 	public Object getValueForID(String id) {
 		if (id != null && id.startsWith(PROFILE_PREFIX)) {

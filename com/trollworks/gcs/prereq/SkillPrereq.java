@@ -85,13 +85,11 @@ public class SkillPrereq extends NameLevelPrereq {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
-		if (obj instanceof SkillPrereq) {
-			SkillPrereq other = (SkillPrereq) obj;
-
-			return super.equals(other) && mSpecializationCriteria.equals(other.mSpecializationCriteria);
+		if (obj instanceof SkillPrereq && super.equals(obj)) {
+			return mSpecializationCriteria.equals(((SkillPrereq) obj).mSpecializationCriteria);
 		}
 		return false;
 	}
@@ -136,7 +134,6 @@ public class SkillPrereq extends NameLevelPrereq {
 				satisfied = levelCriteria.matches(skill.getLevel());
 				if (satisfied && techLevel != null) {
 					String otherTL = skill.getTechLevel();
-
 					satisfied = otherTL == null || techLevel.equals(otherTL);
 				}
 				break;

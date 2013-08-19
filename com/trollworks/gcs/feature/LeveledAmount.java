@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
 
@@ -74,13 +74,12 @@ public class LeveledAmount {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
 		if (obj instanceof LeveledAmount) {
-			LeveledAmount other = (LeveledAmount) obj;
-
-			return mPerLevel == other.mPerLevel && mInteger == other.mInteger && mLevel == other.mLevel && mAmount == other.mAmount;
+			LeveledAmount amt = (LeveledAmount) obj;
+			return mPerLevel == amt.mPerLevel && mInteger == amt.mInteger && mLevel == amt.mLevel && mAmount == amt.mAmount;
 		}
 		return false;
 	}
@@ -162,9 +161,9 @@ public class LeveledAmount {
 	/** @return The amount, as a {@link String}. */
 	public String getAmountAsString() {
 		if (mInteger) {
-			return NumberUtils.format(getIntegerAmount(), true);
+			return Numbers.formatWithForcedSign(getIntegerAmount());
 		}
-		return NumberUtils.format(mAmount, true);
+		return Numbers.formatWithForcedSign(mAmount);
 	}
 
 	/** @param amount The amount. */

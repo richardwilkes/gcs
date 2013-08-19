@@ -23,6 +23,7 @@
 
 package com.trollworks.gcs.weapon;
 
+import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.widgets.outline.Row;
 
@@ -38,6 +39,20 @@ public class WeaponDisplayRow extends Row {
 	public WeaponDisplayRow(WeaponStats weapon) {
 		super();
 		mWeapon = weapon;
+	}
+
+	/**
+	 * @param obj The other object to compare against.
+	 * @return Whether or not this {@link ListRow} is equivalent.
+	 */
+	public boolean isEquivalentTo(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (obj instanceof WeaponDisplayRow) {
+			return mWeapon.equals(((WeaponDisplayRow) obj).mWeapon);
+		}
+		return false;
 	}
 
 	/** @return The weapon. */

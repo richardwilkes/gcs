@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.criteria;
 
-import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.collections.Enums;
 import com.trollworks.ttk.units.WeightUnits;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
@@ -62,13 +62,12 @@ public class DoubleCriteria extends NumericCriteria {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
 		if (obj instanceof DoubleCriteria && super.equals(obj)) {
-			DoubleCriteria other = (DoubleCriteria) obj;
-
-			return mIsWeight == other.mIsWeight && mQualifier == other.mQualifier;
+			DoubleCriteria criteria = (DoubleCriteria) obj;
+			return mIsWeight == criteria.mIsWeight && mQualifier == criteria.mQualifier;
 		}
 		return false;
 	}
@@ -77,7 +76,7 @@ public class DoubleCriteria extends NumericCriteria {
 	public void load(XMLReader reader) throws IOException {
 		super.load(reader);
 		if (mIsWeight) {
-			setQualifier(WeightUnits.POUNDS.convert((WeightUnits) EnumExtractor.extract(reader.getAttribute(ATTRIBUTE_UNITS), WeightUnits.values(), WeightUnits.POUNDS), reader.readDouble(0)));
+			setQualifier(WeightUnits.POUNDS.convert(Enums.extract(reader.getAttribute(ATTRIBUTE_UNITS), WeightUnits.values(), WeightUnits.POUNDS), reader.readDouble(0)));
 		} else {
 			setQualifier(reader.readDouble(0.0));
 		}
@@ -110,7 +109,7 @@ public class DoubleCriteria extends NumericCriteria {
 	@Override
 	public String getQualifierAsString(boolean allowAdornments) {
 		if (mIsWeight && allowAdornments) {
-			return WeightUnits.POUNDS.format(mQualifier);
+			return WeightUnits.POUNDS.format(mQualifier, true);
 		}
 		return Double.toString(mQualifier);
 	}

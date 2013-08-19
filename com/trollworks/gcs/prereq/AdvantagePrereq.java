@@ -85,13 +85,11 @@ public class AdvantagePrereq extends NameLevelPrereq {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
-		if (obj instanceof AdvantagePrereq) {
-			AdvantagePrereq other = (AdvantagePrereq) obj;
-
-			return super.equals(other) && mNotesCriteria.equals(other.mNotesCriteria);
+		if (obj instanceof AdvantagePrereq && super.equals(obj)) {
+			return mNotesCriteria.equals(((AdvantagePrereq) obj).mNotesCriteria);
 		}
 		return false;
 	}

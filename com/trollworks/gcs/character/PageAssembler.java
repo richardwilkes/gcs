@@ -55,23 +55,27 @@ public class PageAssembler {
 		NotesPanel notes = new NotesPanel(mSheet.getCharacter().getDescription().getNotes(), false);
 		Insets insets = notes.getInsets();
 		int width = mContentWidth - (insets.left + insets.right);
-
-		if (mRemaining < notes.getMinimumSize().height) {
-			addPageInternal();
-		}
+		boolean addPage = mRemaining < notes.getMinimumSize().height;
 		notes.addActionListener(mSheet);
 		notes.setWrapWidth(width);
 		while (true) {
+			if (addPage) {
+				addPageInternal();
+			}
 			String text = notes.setMaxHeight(mRemaining);
-			addToContent(notes, null, null);
+			addPage = !addToContent(notes, null, null);
 			if (text == null) {
 				break;
 			}
 			notes = new NotesPanel(text, true);
 			notes.addActionListener(mSheet);
 			notes.setWrapWidth(width);
-			addPageInternal();
 		}
+	}
+
+	/** @return The content width. */
+	public int getContentWidth() {
+		return mContentWidth;
 	}
 
 	private void addPageInternal() {
@@ -114,7 +118,7 @@ public class PageAssembler {
 		} else {
 			height += panel.getPreferredSize().height;
 		}
-		if (mRemaining <= height) {
+		if (mRemaining < height) {
 			addPageInternal();
 		}
 		mContent.add(panel);
@@ -161,7 +165,7 @@ public class PageAssembler {
 			return false;
 		}
 
-		if (mRemaining > height) {
+		if (mRemaining >= height) {
 			mRemaining -= height;
 			return false;
 		}

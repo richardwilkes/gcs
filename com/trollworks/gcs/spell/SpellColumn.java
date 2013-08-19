@@ -31,7 +31,7 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Cell;
 import com.trollworks.ttk.widgets.outline.Column;
@@ -240,7 +240,7 @@ public enum SpellColumn {
 			if (level < 0) {
 				return "-"; //$NON-NLS-1$
 			}
-			return NumberUtils.format(level);
+			return Numbers.format(level);
 		}
 	},
 	/** The relative spell level. */
@@ -290,7 +290,7 @@ public enum SpellColumn {
 				if (level == Integer.MIN_VALUE) {
 					return "-"; //$NON-NLS-1$
 				}
-				return "IQ" + NumberUtils.format(level, true); //$NON-NLS-1$
+				return "IQ" + Numbers.formatWithForcedSign(level); //$NON-NLS-1$
 			}
 			return ""; //$NON-NLS-1$
 		}
@@ -324,7 +324,7 @@ public enum SpellColumn {
 
 		@Override
 		public String getDataAsText(Spell spell) {
-			return spell.canHaveChildren() ? "" : NumberUtils.format(spell.getPoints()); //$NON-NLS-1$
+			return spell.canHaveChildren() ? "" : Numbers.format(spell.getPoints()); //$NON-NLS-1$
 		}
 	},
 	/** The category. */

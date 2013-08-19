@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <project name="gcs" default="installers">
-	<property file="com/trollworks/gcs/app/Main.properties"/>
+	<property file="com/trollworks/gcs/app/GCS.properties"/>
 
 	<target name="installers" description="Build GCS">
 		<property name="BuildDir" value="${java.io.tmpdir}/${user.name}/gcs_build"/>
@@ -20,11 +20,13 @@
 		<mkdir dir="${BuildDir}"/>
 
 		<!-- Compile the code. -->
-		<unjar src="libraries/itext-2.0.8.jar" dest="${JavaBuildDir}"/>
+		<unjar src="libraries/iText-2.1.2u.jar" dest="${JavaBuildDir}"/>
+		<unjar src="libraries/iTextAsian.jar" dest="${JavaBuildDir}"/>
 		<unjar src="../ttk/libraries/AppleJavaExtensions.jar" dest="${JavaBuildDir}"/>
-		<javac destdir="${JavaBuildDir}"
-			includes="com/trollworks/gcs/app/Main.java"
-			debug="no" optimize="yes" target="1.5" source="1.5">
+		<unjar src="../ttk/libraries/jsr173_1.0_api.jar" dest="${JavaBuildDir}"/>
+		<unjar src="../ttk/libraries/sjsxp-20080610.jar" dest="${JavaBuildDir}"/>
+		<unjar src="../ttk/libraries/trove-2.0.4.jar" dest="${JavaBuildDir}"/>
+		<javac destdir="${JavaBuildDir}" includes="com/trollworks/gcs/app/GCS.java" debug="no" optimize="yes" target="1.5" source="1.5">
 			<src path="."/>
 			<src path="../ttk"/>
 		</javac>
@@ -40,8 +42,7 @@
 		</copy>
 
 		<!-- Create the jar file and the Java 1.1 entry point. -->
-		<javac srcdir="." destdir="${JavaBuildDir}" includes="com/trollworks/gcs/app/GCS.java"
-				debug="no" optimize="yes" target="1.1" source="1.1"/>
+		<javac srcdir="../ttk" destdir="${JavaBuildDir}" includes="com/trollworks/ttk/Launcher.java" debug="no" optimize="yes" target="1.1" source="1.1"/>
 		<jar destfile="${InstallDir}/GCS.jar" basedir="${JavaBuildDir}" manifest="install/gcs.mf" duplicate="fail"/>
 
 		<!-- Copy the data dir. -->
@@ -181,6 +182,7 @@
 			<arg value="CoreFoundation"/>
 			<arg value="-o"/>
 			<arg value="install/macosx/${APP_NAME}"/>
+			<env key="MACOSX_DEPLOYMENT_TARGET" value="10.4"/>
 		</exec>
 	</target>
 </project>

@@ -31,7 +31,7 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.units.WeightUnits;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Cell;
@@ -60,7 +60,7 @@ public enum EquipmentColumn {
 		@Override
 		public String toString(GURPSCharacter character) {
 			if (character != null) {
-				return MessageFormat.format(MSG_EQUIPMENT_TOTALS, WeightUnits.POUNDS.format(character.getWeightCarried()), NumberUtils.format(character.getWealthCarried()));
+				return MessageFormat.format(MSG_EQUIPMENT_TOTALS, WeightUnits.POUNDS.format(character.getWeightCarried(), true), Numbers.format(character.getWealthCarried()));
 			}
 			return super.toString(character);
 		}
@@ -154,7 +154,7 @@ public enum EquipmentColumn {
 
 		@Override
 		public String getDataAsText(Equipment equipment) {
-			return NumberUtils.format(equipment.getQuantity());
+			return Numbers.format(equipment.getQuantity());
 		}
 	},
 	/** The tech level. */
@@ -250,7 +250,7 @@ public enum EquipmentColumn {
 
 		@Override
 		public String getDataAsText(Equipment equipment) {
-			return NumberUtils.format(equipment.getValue());
+			return Numbers.format(equipment.getValue());
 		}
 	},
 	/** The weight. */
@@ -282,7 +282,7 @@ public enum EquipmentColumn {
 
 		@Override
 		public String getDataAsText(Equipment equipment) {
-			return NumberUtils.format(equipment.getWeight());
+			return Numbers.format(equipment.getWeight());
 		}
 	},
 	/** The value. */
@@ -314,7 +314,7 @@ public enum EquipmentColumn {
 
 		@Override
 		public String getDataAsText(Equipment equipment) {
-			return NumberUtils.format(equipment.getExtendedValue());
+			return Numbers.format(equipment.getExtendedValue());
 		}
 	},
 	/** The weight. */
@@ -346,7 +346,7 @@ public enum EquipmentColumn {
 
 		@Override
 		public String getDataAsText(Equipment equipment) {
-			return NumberUtils.format(equipment.getExtendedWeight());
+			return Numbers.format(equipment.getExtendedWeight());
 		}
 	},
 	/** The category. */

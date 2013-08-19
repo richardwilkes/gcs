@@ -213,6 +213,26 @@ public class Spell extends ListRow {
 	}
 
 	@Override
+	public boolean isEquivalentTo(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (obj instanceof Spell && super.isEquivalentTo(obj)) {
+			Spell row = (Spell) obj;
+			if (mIsVeryHard == row.mIsVeryHard && mPoints == row.mPoints && mLevel == row.mLevel && mRelativeLevel == row.mRelativeLevel) {
+				if (mTechLevel == null ? row.mTechLevel == null : mTechLevel.equals(row.mTechLevel)) {
+					if (mName.equals(row.mName) && mCollege.equals(row.mCollege) && mSpellClass.equals(row.mSpellClass) && mReference.equals(row.mReference)) {
+						if (mCastingCost.equals(row.mCastingCost) && mMaintenance.equals(row.mMaintenance) && mCastingTime.equals(row.mCastingTime) && mDuration.equals(row.mDuration)) {
+							return mWeapons.equals(row.mWeapons);
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
 	public String getLocalizedName() {
 		return MSG_DEFAULT_NAME;
 	}
@@ -311,8 +331,9 @@ public class Spell extends ListRow {
 	}
 
 	@Override
-	protected void finishedLoading() {
+	protected void finishedLoading(LoadState state) {
 		updateLevel(false);
+		super.finishedLoading(state);
 	}
 
 	@Override

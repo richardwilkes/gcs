@@ -66,8 +66,8 @@ public class SkillDefault {
 	 * @param type The type of default.
 	 * @param name The name of the skill to default from. Pass in <code>null</code> if type is not
 	 *            skill-based.
-	 * @param specialization The specialization of the skill. Pass in <code>null</code> if this
-	 *            does not default from a skill or the skill doesn't require a specialization.
+	 * @param specialization The specialization of the skill. Pass in <code>null</code> if this does
+	 *            not default from a skill or the skill doesn't require a specialization.
 	 * @param modifier The modifier to use.
 	 */
 	public SkillDefault(SkillDefaultType type, String name, String specialization, int modifier) {
@@ -250,8 +250,8 @@ public class SkillDefault {
 			return true;
 		}
 		if (obj instanceof SkillDefault) {
-			SkillDefault other = (SkillDefault) obj;
-			return mType == other.mType && mModifier == other.mModifier && mName.equals(other.mName) && mSpecialization.equals(other.mSpecialization);
+			SkillDefault sd = (SkillDefault) obj;
+			return mType == sd.mType && mModifier == sd.mModifier && mName.equals(sd.mName) && mSpecialization.equals(sd.mSpecialization);
 		}
 		return false;
 	}

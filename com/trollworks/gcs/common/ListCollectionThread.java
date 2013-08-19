@@ -30,6 +30,7 @@ import com.trollworks.gcs.menu.data.DataMenu;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.template.TemplateWindow;
+import com.trollworks.ttk.utility.App;
 import com.trollworks.ttk.utility.Debug;
 import com.trollworks.ttk.utility.Path;
 
@@ -59,7 +60,7 @@ public class ListCollectionThread extends Thread {
 		super("List Collection"); //$NON-NLS-1$
 		setPriority(NORM_PRIORITY);
 		setDaemon(true);
-		mListDir = new File(System.getProperty("app.home", "."), "data").getAbsoluteFile(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		mListDir = new File(App.APP_HOME_DIR, "data").getAbsoluteFile(); //$NON-NLS-1$ 
 	}
 
 	/** @return The current list of lists. */
@@ -83,7 +84,6 @@ public class ListCollectionThread extends Thread {
 			try {
 				while (true) {
 					ArrayList<Object> lists = collectLists(mListDir, 0);
-
 					if (!lists.equals(mLists)) {
 						mLists = lists;
 						EventQueue.invokeLater(this);
@@ -98,10 +98,8 @@ public class ListCollectionThread extends Thread {
 
 	private static ArrayList<Object> collectLists(File dir, int depth) {
 		ArrayList<Object> list = new ArrayList<Object>();
-
 		try {
 			File[] files = dir.listFiles();
-
 			if (files != null) {
 				Arrays.sort(files);
 				list.add(dir.getName());
@@ -109,14 +107,12 @@ public class ListCollectionThread extends Thread {
 					if (element.isDirectory()) {
 						if (depth < 5) {
 							ArrayList<Object> subList = collectLists(element, depth + 1);
-
 							if (!subList.isEmpty()) {
 								list.add(subList);
 							}
 						}
 					} else {
 						String ext = Path.getExtension(element.getName());
-
 						if (LibraryFile.EXTENSION.equalsIgnoreCase(ext) || Advantage.OLD_ADVANTAGE_EXTENSION.equalsIgnoreCase(ext) || Equipment.OLD_EQUIPMENT_EXTENSION.equalsIgnoreCase(ext) || Skill.OLD_SKILL_EXTENSION.equalsIgnoreCase(ext) || Spell.OLD_SPELL_EXTENSION.equalsIgnoreCase(ext) || TemplateWindow.EXTENSION.equalsIgnoreCase(ext)) {
 							list.add(element);
 						}

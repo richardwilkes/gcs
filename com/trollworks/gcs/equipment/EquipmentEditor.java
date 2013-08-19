@@ -31,7 +31,7 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.text.NumberFilter;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.text.TextUtility;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
@@ -242,7 +242,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		JTextField field = new JTextField(TextUtility.makeFiller(maxDigits, '9') + TextUtility.makeFiller(maxDigits / 3, ','));
 
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
-		field.setText(NumberUtils.format(value));
+		field.setText(Numbers.format(value));
 		field.setToolTipText(tooltip);
 		field.setEnabled(mIsEditable);
 		new NumberFilter(field, false, false, true, maxDigits);
@@ -256,7 +256,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		JTextField field = new JTextField(TextUtility.makeFiller(maxDigits, '9') + TextUtility.makeFiller(maxDigits / 3, ',') + "."); //$NON-NLS-1$
 
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
-		field.setText(NumberUtils.format(value));
+		field.setText(Numbers.format(value));
 		field.setToolTipText(tooltip);
 		field.setEnabled(mIsEditable);
 		new NumberFilter(field, true, false, true, maxDigits);
@@ -273,8 +273,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		modified |= mRow.setTechLevel(mTechLevelField.getText());
 		modified |= mRow.setLegalityClass(mLegalityClassField.getText());
 		modified |= mRow.setQuantity(getQty());
-		modified |= mRow.setValue(NumberUtils.getDouble(mValueField.getText(), 0.0));
-		modified |= mRow.setWeight(NumberUtils.getDouble(mWeightField.getText(), 0.0));
+		modified |= mRow.setValue(Numbers.getLocalizedDouble(mValueField.getText(), 0.0));
+		modified |= mRow.setWeight(Numbers.getLocalizedDouble(mWeightField.getText(), 0.0));
 		if (showEquipmentState()) {
 			modified |= mRow.setState((EquipmentState) mStateCombo.getSelectedItem());
 		}
@@ -316,7 +316,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
 	private int getQty() {
 		if (mQtyField != null) {
-			return NumberUtils.getInteger(mQtyField.getText(), 0);
+			return Numbers.getLocalizedInteger(mQtyField.getText(), 0);
 		}
 		return 1;
 	}
@@ -328,9 +328,9 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		if (qty < 1) {
 			value = 0;
 		} else {
-			value = qty * NumberUtils.getDouble(mValueField.getText(), 0.0) + mContainedValue;
+			value = qty * Numbers.getLocalizedDouble(mValueField.getText(), 0.0) + mContainedValue;
 		}
-		mExtValueField.setText(NumberUtils.format(value));
+		mExtValueField.setText(Numbers.format(value));
 	}
 
 	private void weightChanged() {
@@ -340,9 +340,9 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		if (qty < 1) {
 			value = 0;
 		} else {
-			value = qty * NumberUtils.getDouble(mWeightField.getText(), 0.0) + mContainedWeight;
+			value = qty * Numbers.getLocalizedDouble(mWeightField.getText(), 0.0) + mContainedWeight;
 		}
-		mExtWeightField.setText(NumberUtils.format(value));
+		mExtWeightField.setText(Numbers.format(value));
 	}
 
 	public void changedUpdate(DocumentEvent event) {

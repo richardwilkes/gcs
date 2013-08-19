@@ -80,6 +80,8 @@ public class TextEditor extends JDialog implements ActionListener, WindowFocusLi
 		add(content, BorderLayout.CENTER);
 
 		mEditor = new JTextArea(text);
+		mEditor.setLineWrap(true);
+		mEditor.setWrapStyleWord(true);
 		JScrollPane scroller = new JScrollPane(mEditor, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 		scroller.setMinimumSize(new Dimension(400, 300));
 		content.add(scroller, BorderLayout.CENTER);

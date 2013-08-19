@@ -30,6 +30,7 @@ import com.trollworks.ttk.utility.Debug;
 import com.trollworks.ttk.utility.Path;
 import com.trollworks.ttk.utility.SafeFileUpdater;
 import com.trollworks.ttk.utility.UniqueID;
+import com.trollworks.ttk.utility.VersionException;
 import com.trollworks.ttk.widgets.DataModifiedListener;
 import com.trollworks.ttk.xml.XMLNodeType;
 import com.trollworks.ttk.xml.XMLReader;
@@ -117,7 +118,7 @@ public abstract class DataFile {
 		mUniqueID = new UniqueID(reader.getAttribute(ATTRIBUTE_UNIQUE_ID));
 		state.mDataFileVersion = reader.getAttributeAsInteger(LoadState.ATTRIBUTE_VERSION, 0);
 		if (state.mDataFileVersion > getXMLTagVersion()) {
-			throw new NewerVersionException();
+			throw VersionException.createTooNew();
 		}
 		loadSelf(reader, state);
 	}

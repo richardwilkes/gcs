@@ -33,7 +33,7 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.text.NumberFilter;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.text.TextUtility;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
@@ -309,7 +309,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		if (level < 0) {
 			return "-"; //$NON-NLS-1$
 		}
-		return NumberUtils.format(level) + "/IQ" + NumberUtils.format(relativeLevel, true); //$NON-NLS-1$
+		return Numbers.format(level) + "/IQ" + Numbers.formatWithForcedSign(relativeLevel); //$NON-NLS-1$
 	}
 
 	private JTextField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
@@ -409,7 +409,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 	}
 
 	private int getSpellPoints() {
-		return NumberUtils.getInteger(mPointsField.getText(), 0);
+		return Numbers.getLocalizedInteger(mPointsField.getText(), 0);
 	}
 
 	private boolean isVeryHard() {

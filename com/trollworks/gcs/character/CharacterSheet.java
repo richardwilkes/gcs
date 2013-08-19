@@ -32,7 +32,6 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageColumn;
 import com.trollworks.gcs.advantage.AdvantageOutline;
 import com.trollworks.gcs.app.GCSFonts;
-import com.trollworks.gcs.app.Main;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.equipment.EquipmentOutline;
@@ -58,9 +57,10 @@ import com.trollworks.ttk.layout.RowDistribution;
 import com.trollworks.ttk.notification.BatchNotifierTarget;
 import com.trollworks.ttk.preferences.Preferences;
 import com.trollworks.ttk.print.PrintManager;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.undo.StdUndoManager;
 import com.trollworks.ttk.units.WeightUnits;
+import com.trollworks.ttk.utility.App;
 import com.trollworks.ttk.utility.Debug;
 import com.trollworks.ttk.utility.Fonts;
 import com.trollworks.ttk.utility.GraphicsUtilities;
@@ -260,6 +260,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		pageAssembler.addNotes();
 
 		// Ensure everything is laid out and register for notification
+		repaint();
 		validate();
 		OutlineSyncer.remove(mAdvantageOutline);
 		OutlineSyncer.remove(mSkillOutline);
@@ -297,7 +298,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 	private void addOutline(PageAssembler pageAssembler, Outline outline, String title) {
 		if (outline.getModel().getRowCount() > 0) {
-			OutlineInfo info = new OutlineInfo(outline);
+			OutlineInfo info = new OutlineInfo(outline, pageAssembler.getContentWidth());
 			boolean useProxy = false;
 
 			while (pageAssembler.addToContent(new SingleOutlinePanel(outline, title, useProxy), info, null)) {
@@ -310,8 +311,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	private void addOutline(PageAssembler pageAssembler, Outline leftOutline, String leftTitle, Outline rightOutline, String rightTitle) {
-		OutlineInfo infoLeft = new OutlineInfo(leftOutline);
-		OutlineInfo infoRight = new OutlineInfo(rightOutline);
+		int width = pageAssembler.getContentWidth() / 2 - 1;
+		OutlineInfo infoLeft = new OutlineInfo(leftOutline, width);
+		OutlineInfo infoRight = new OutlineInfo(rightOutline, width);
 		boolean useProxy = false;
 
 		while (pageAssembler.addToContent(new DoubleOutlinePanel(leftOutline, leftTitle, rightOutline, rightTitle, useProxy), infoLeft, infoRight)) {
@@ -336,6 +338,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		outline.setAllowColumnContextMenu(false);
 		header.setIgnoreResizeOK(true);
 		header.setBackground(Color.black);
+		header.setTopDividerColor(Color.black);
 	}
 
 	/** @return The outline containing the Advantages, Disadvantages & Quirks. */
@@ -677,8 +680,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		bounds.x = insets.left;
 		bounds.y = insets.top;
 		int pageNumber = 1 + UIUtilities.getIndexOf(this, page);
-		String pageString = MessageFormat.format(MSG_PAGE_NUMBER, NumberUtils.format(pageNumber), NumberUtils.format(getPageCount()));
-		String copyright1 = Main.getCopyrightBanner(true);
+		String pageString = MessageFormat.format(MSG_PAGE_NUMBER, Numbers.format(pageNumber), Numbers.format(getPageCount()));
+		String copyright1 = App.getCopyrightBanner(true);
 		String copyright2 = copyright1.substring(copyright1.indexOf('\n') + 1);
 		Font font1 = UIManager.getFont(GCSFonts.KEY_SECONDARY_FOOTER);
 		Font font2 = UIManager.getFont(GCSFonts.KEY_PRIMARY_FOOTER);
@@ -1044,39 +1047,39 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		} else if (key.equals("CAMPAIGN")) { //$NON-NLS-1$
 			writeXMLText(out, description.getCampaign());
 		} else if (key.equals("TOTAL_POINTS")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getTotalPoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getTotalPoints()));
 		} else if (key.equals("ATTRIBUTE_POINTS")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getAttributePoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getAttributePoints()));
 		} else if (key.equals("ADVANTAGE_POINTS")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getAdvantagePoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getAdvantagePoints()));
 		} else if (key.equals("DISADVANTAGE_POINTS")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getDisadvantagePoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getDisadvantagePoints()));
 		} else if (key.equals("QUIRK_POINTS")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getQuirkPoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getQuirkPoints()));
 		} else if (key.equals("SKILL_POINTS")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getSkillPoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getSkillPoints()));
 		} else if (key.equals("SPELL_POINTS")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getSpellPoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getSpellPoints()));
 		} else if (key.equals("RACE_POINTS")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getRacePoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getRacePoints()));
 		} else if (key.equals("EARNED_POINTS")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getEarnedPoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getEarnedPoints()));
 		} else if (key.equals("RACE")) { //$NON-NLS-1$
 			writeXMLText(out, description.getRace());
 		} else if (key.equals("HEIGHT")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.formatHeight(description.getHeight()));
+			writeXMLText(out, Numbers.formatHeight(description.getHeight()));
 		} else if (key.equals("HAIR")) { //$NON-NLS-1$
 			writeXMLText(out, description.getHair());
 		} else if (key.equals("GENDER")) { //$NON-NLS-1$
 			writeXMLText(out, description.getGender());
 		} else if (key.equals("WEIGHT")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(description.getWeight()));
+			writeXMLText(out, WeightUnits.POUNDS.format(description.getWeight(), true));
 		} else if (key.equals("EYES")) { //$NON-NLS-1$
 			writeXMLText(out, description.getEyeColor());
 		} else if (key.equals("AGE")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(description.getAge()));
+			writeXMLText(out, Numbers.format(description.getAge()));
 		} else if (key.equals("SIZE")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(description.getSizeModifier(), true));
+			writeXMLText(out, Numbers.formatWithForcedSign(description.getSizeModifier()));
 		} else if (key.equals("SKIN")) { //$NON-NLS-1$
 			writeXMLText(out, description.getSkinColor());
 		} else if (key.equals("BIRTHDAY")) { //$NON-NLS-1$
@@ -1086,31 +1089,31 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		} else if (key.equals("HAND")) { //$NON-NLS-1$
 			writeXMLText(out, description.getHandedness());
 		} else if (key.equals("ST")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getStrength()));
+			writeXMLText(out, Numbers.format(mCharacter.getStrength()));
 		} else if (key.equals("DX")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getDexterity()));
+			writeXMLText(out, Numbers.format(mCharacter.getDexterity()));
 		} else if (key.equals("IQ")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getIntelligence()));
+			writeXMLText(out, Numbers.format(mCharacter.getIntelligence()));
 		} else if (key.equals("HT")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getHealth()));
+			writeXMLText(out, Numbers.format(mCharacter.getHealth()));
 		} else if (key.equals("WILL")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getWill()));
+			writeXMLText(out, Numbers.format(mCharacter.getWill()));
 		} else if (key.equals("FRIGHT_CHECK")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getFrightCheck()));
+			writeXMLText(out, Numbers.format(mCharacter.getFrightCheck()));
 		} else if (key.equals("BASIC_SPEED")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getBasicSpeed()));
+			writeXMLText(out, Numbers.format(mCharacter.getBasicSpeed()));
 		} else if (key.equals("BASIC_MOVE")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getBasicMove()));
+			writeXMLText(out, Numbers.format(mCharacter.getBasicMove()));
 		} else if (key.equals("PERCEPTION")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getPerception()));
+			writeXMLText(out, Numbers.format(mCharacter.getPerception()));
 		} else if (key.equals("VISION")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getVision()));
+			writeXMLText(out, Numbers.format(mCharacter.getVision()));
 		} else if (key.equals("HEARING")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getHearing()));
+			writeXMLText(out, Numbers.format(mCharacter.getHearing()));
 		} else if (key.equals("TASTE_SMELL")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getTasteAndSmell()));
+			writeXMLText(out, Numbers.format(mCharacter.getTasteAndSmell()));
 		} else if (key.equals("TOUCH")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getTouch()));
+			writeXMLText(out, Numbers.format(mCharacter.getTouch()));
 		} else if (key.equals("THRUST")) { //$NON-NLS-1$
 			writeXMLText(out, mCharacter.getThrust().toString());
 		} else if (key.equals("SWING")) { //$NON-NLS-1$
@@ -1119,48 +1122,82 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			processEncumbranceLoop(out, extractUpToMarker(in, "ENCUMBRANCE_LOOP_END")); //$NON-NLS-1$
 		} else if (key.startsWith("HIT_LOCATION_LOOP_START")) { //$NON-NLS-1$
 			processHitLocationLoop(out, extractUpToMarker(in, "HIT_LOCATION_LOOP_END")); //$NON-NLS-1$
+		} else if (key.equals("GENERAL_DR")) { //$NON-NLS-1$
+			writeXMLText(out, Numbers.format(((Integer) mCharacter.getValueForID(Armor.ID_TORSO_DR)).intValue()));
+		} else if (key.equals("CURRENT_DODGE")) { //$NON-NLS-1$
+			writeXMLText(out, Numbers.format(mCharacter.getDodge(mCharacter.getEncumbranceLevel())));
+		} else if (key.equals("BEST_CURRENT_PARRY")) { //$NON-NLS-1$
+			String best = "-"; //$NON-NLS-1$
+			int bestValue = Integer.MIN_VALUE;
+			for (WeaponDisplayRow row : new FilteredIterator<WeaponDisplayRow>(getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
+				MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
+				String parry = weapon.getResolvedParry().trim();
+				if (parry.length() > 0 && !"No".equals(parry)) { //$NON-NLS-1$
+					int value = Numbers.getInteger(parry, 0);
+					if (value > bestValue) {
+						bestValue = value;
+						best = parry;
+					}
+				}
+			}
+			writeXMLText(out, best);
+		} else if (key.equals("BEST_CURRENT_BLOCK")) { //$NON-NLS-1$
+			String best = "-"; //$NON-NLS-1$
+			int bestValue = Integer.MIN_VALUE;
+			for (WeaponDisplayRow row : new FilteredIterator<WeaponDisplayRow>(getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
+				MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
+				String block = weapon.getResolvedBlock().trim();
+				if (block.length() > 0 && !"No".equals(block)) { //$NON-NLS-1$
+					int value = Numbers.getInteger(block, 0);
+					if (value > bestValue) {
+						bestValue = value;
+						best = block;
+					}
+				}
+			}
+			writeXMLText(out, best);
 		} else if (key.equals("FP")) { //$NON-NLS-1$
 			writeXMLText(out, mCharacter.getCurrentFatiguePoints());
 		} else if (key.equals("BASIC_FP")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getFatiguePoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getFatiguePoints()));
 		} else if (key.equals("TIRED")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getTiredFatiguePoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getTiredFatiguePoints()));
 		} else if (key.equals("FP_COLLAPSE")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getUnconsciousChecksFatiguePoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getUnconsciousChecksFatiguePoints()));
 		} else if (key.equals("UNCONSCIOUS")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getUnconsciousFatiguePoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getUnconsciousFatiguePoints()));
 		} else if (key.equals("HP")) { //$NON-NLS-1$
 			writeXMLText(out, mCharacter.getCurrentHitPoints());
 		} else if (key.equals("BASIC_HP")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getHitPoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getHitPoints()));
 		} else if (key.equals("REELING")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getReelingHitPoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getReelingHitPoints()));
 		} else if (key.equals("HP_COLLAPSE")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getUnconsciousChecksHitPoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getUnconsciousChecksHitPoints()));
 		} else if (key.equals("DEATH_CHECK_1")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getDeathCheck1HitPoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getDeathCheck1HitPoints()));
 		} else if (key.equals("DEATH_CHECK_2")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getDeathCheck2HitPoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getDeathCheck2HitPoints()));
 		} else if (key.equals("DEATH_CHECK_3")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getDeathCheck3HitPoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getDeathCheck3HitPoints()));
 		} else if (key.equals("DEATH_CHECK_4")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getDeathCheck4HitPoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getDeathCheck4HitPoints()));
 		} else if (key.equals("DEAD")) { //$NON-NLS-1$
-			writeXMLText(out, NumberUtils.format(mCharacter.getDeadHitPoints()));
+			writeXMLText(out, Numbers.format(mCharacter.getDeadHitPoints()));
 		} else if (key.equals("BASIC_LIFT")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getBasicLift()));
+			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getBasicLift(), true));
 		} else if (key.equals("ONE_HANDED_LIFT")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getOneHandedLift()));
+			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getOneHandedLift(), true));
 		} else if (key.equals("TWO_HANDED_LIFT")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getTwoHandedLift()));
+			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getTwoHandedLift(), true));
 		} else if (key.equals("SHOVE")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getShoveAndKnockOver()));
+			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getShoveAndKnockOver(), true));
 		} else if (key.equals("RUNNING_SHOVE")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getRunningShoveAndKnockOver()));
+			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getRunningShoveAndKnockOver(), true));
 		} else if (key.equals("CARRY_ON_BACK")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getCarryOnBack()));
+			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getCarryOnBack(), true));
 		} else if (key.equals("SHIFT_SLIGHTLY")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getShiftSlightly()));
+			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getShiftSlightly(), true));
 		} else if (key.startsWith("ADVANTAGES_LOOP_START")) { //$NON-NLS-1$
 			processAdvantagesLoop(out, extractUpToMarker(in, "ADVANTAGES_LOOP_END")); //$NON-NLS-1$
 		} else if (key.startsWith("SKILLS_LOOP_START")) { //$NON-NLS-1$
@@ -1172,9 +1209,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		} else if (key.startsWith("RANGED_LOOP_START")) { //$NON-NLS-1$
 			processRangedLoop(out, extractUpToMarker(in, "RANGED_LOOP_END")); //$NON-NLS-1$
 		} else if (key.equals("CARRIED_WEIGHT")) { //$NON-NLS-1$
-			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getWeightCarried()));
+			writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getWeightCarried(), true));
 		} else if (key.equals("CARRIED_VALUE")) { //$NON-NLS-1$
-			writeXMLText(out, "$" + NumberUtils.format(mCharacter.getWealthCarried())); //$NON-NLS-1$
+			writeXMLText(out, "$" + Numbers.format(mCharacter.getWealthCarried())); //$NON-NLS-1$
 		} else if (key.startsWith("EQUIPMENT_LOOP_START")) { //$NON-NLS-1$
 			processEquipmentLoop(out, extractUpToMarker(in, "EQUIPMENT_LOOP_END")); //$NON-NLS-1$
 		} else if (key.equals("NOTES")) { //$NON-NLS-1$
@@ -1264,13 +1301,13 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 									out.write(" class=\"encumbrance\" "); //$NON-NLS-1$
 								}
 							} else if (key.equals("LEVEL")) { //$NON-NLS-1$
-								writeXMLText(out, MessageFormat.format(level == mCharacter.getEncumbranceLevel() ? EncumbrancePanel.MSG_CURRENT_ENCUMBRANCE_FORMAT : EncumbrancePanel.MSG_ENCUMBRANCE_FORMAT, EncumbrancePanel.ENCUMBRANCE_TITLES[level], NumberUtils.format(level)));
+								writeXMLText(out, MessageFormat.format(level == mCharacter.getEncumbranceLevel() ? EncumbrancePanel.MSG_CURRENT_ENCUMBRANCE_FORMAT : EncumbrancePanel.MSG_ENCUMBRANCE_FORMAT, EncumbrancePanel.ENCUMBRANCE_TITLES[level], Numbers.format(level)));
 							} else if (key.equals("MAX_LOAD")) { //$NON-NLS-1$
-								writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getMaximumCarry(level)));
+								writeXMLText(out, WeightUnits.POUNDS.format(mCharacter.getMaximumCarry(level), true));
 							} else if (key.equals("MOVE")) { //$NON-NLS-1$
-								writeXMLText(out, NumberUtils.format(mCharacter.getMove(level)));
+								writeXMLText(out, Numbers.format(mCharacter.getMove(level)));
 							} else if (key.equals("DODGE")) { //$NON-NLS-1$
-								writeXMLText(out, NumberUtils.format(mCharacter.getDodge(level)));
+								writeXMLText(out, Numbers.format(mCharacter.getDodge(level)));
 							} else {
 								writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 							}
@@ -1315,7 +1352,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 							} else if (key.equals("PENALTY")) { //$NON-NLS-1$
 								writeXMLText(out, HitLocationPanel.PENALTIES[which]);
 							} else if (key.equals("DR")) { //$NON-NLS-1$
-								writeXMLText(out, NumberUtils.format(((Integer) mCharacter.getValueForID(HitLocationPanel.DR_KEYS[which])).intValue()));
+								writeXMLText(out, Numbers.format(((Integer) mCharacter.getValueForID(HitLocationPanel.DR_KEYS[which])).intValue()));
 							} else {
 								writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 							}
@@ -1330,12 +1367,12 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
 		int state = 0;
+		int counter = 0;
 		boolean odd = true;
-
 		for (Advantage advantage : mCharacter.getAdvantagesIterator()) {
+			counter++;
 			for (int i = 0; i < length; i++) {
 				char ch = contents.charAt(i);
-
 				switch (state) {
 					case 0:
 						if (ch == '@') {
@@ -1349,17 +1386,17 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 							keyBuffer.append(ch);
 						} else {
 							String key = keyBuffer.toString();
-
 							i--;
 							keyBuffer.setLength(0);
 							state = 0;
-
 							if (!processStyleIndentWarning(key, out, advantage, odd)) {
 								if (!processDescription(key, out, advantage)) {
 									if (key.equals("POINTS")) { //$NON-NLS-1$
 										writeXMLText(out, AdvantageColumn.POINTS.getDataAsText(advantage));
 									} else if (key.equals("REF")) { //$NON-NLS-1$
 										writeXMLText(out, AdvantageColumn.REFERENCE.getDataAsText(advantage));
+									} else if (key.equals("ID")) { //$NON-NLS-1$
+										writeXMLText(out, Integer.toString(counter));
 									} else {
 										writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 									}
@@ -1415,12 +1452,12 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
 		int state = 0;
+		int counter = 0;
 		boolean odd = true;
-
 		for (Skill skill : mCharacter.getSkillsIterator()) {
+			counter++;
 			for (int i = 0; i < length; i++) {
 				char ch = contents.charAt(i);
-
 				switch (state) {
 					case 0:
 						if (ch == '@') {
@@ -1434,11 +1471,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 							keyBuffer.append(ch);
 						} else {
 							String key = keyBuffer.toString();
-
 							i--;
 							keyBuffer.setLength(0);
 							state = 0;
-
 							if (!processStyleIndentWarning(key, out, skill, odd)) {
 								if (!processDescription(key, out, skill)) {
 									if (key.equals("SL")) { //$NON-NLS-1$
@@ -1449,6 +1484,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 										writeXMLText(out, SkillColumn.POINTS.getDataAsText(skill));
 									} else if (key.equals("REF")) { //$NON-NLS-1$
 										writeXMLText(out, SkillColumn.REFERENCE.getDataAsText(skill));
+									} else if (key.equals("ID")) { //$NON-NLS-1$
+										writeXMLText(out, Integer.toString(counter));
 									} else {
 										writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 									}
@@ -1484,7 +1521,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				out.write(style.toString());
 			}
 		} else if (key.startsWith("DEPTHx")) { //$NON-NLS-1$
-			int amt = NumberUtils.getNonLocalizedInteger(key.substring(6), 1);
+			int amt = Numbers.getInteger(key.substring(6), 1);
 			out.write("" + amt * row.getDepth()); //$NON-NLS-1$
 		} else if (key.equals("SATISFIED")) { //$NON-NLS-1$
 			out.write(row.isSatisfied() ? "Y" : "N"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1498,12 +1535,12 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
 		int state = 0;
+		int counter = 0;
 		boolean odd = true;
-
 		for (Spell spell : mCharacter.getSpellsIterator()) {
+			counter++;
 			for (int i = 0; i < length; i++) {
 				char ch = contents.charAt(i);
-
 				switch (state) {
 					case 0:
 						if (ch == '@') {
@@ -1517,11 +1554,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 							keyBuffer.append(ch);
 						} else {
 							String key = keyBuffer.toString();
-
 							i--;
 							keyBuffer.setLength(0);
 							state = 0;
-
 							if (!processStyleIndentWarning(key, out, spell, odd)) {
 								if (!processDescription(key, out, spell)) {
 									if (key.equals("CLASS")) { //$NON-NLS-1$
@@ -1544,6 +1579,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 										writeXMLText(out, SpellColumn.POINTS.getDataAsText(spell));
 									} else if (key.equals("REF")) { //$NON-NLS-1$
 										writeXMLText(out, SpellColumn.REFERENCE.getDataAsText(spell));
+									} else if (key.equals("ID")) { //$NON-NLS-1$
+										writeXMLText(out, Integer.toString(counter));
 									} else {
 										writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 									}
@@ -1561,14 +1598,13 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
 		int state = 0;
+		int counter = 0;
 		boolean odd = true;
-
 		for (WeaponDisplayRow row : new FilteredIterator<WeaponDisplayRow>(getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
+			counter++;
 			MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
-
 			for (int i = 0; i < length; i++) {
 				char ch = contents.charAt(i);
-
 				switch (state) {
 					case 0:
 						if (ch == '@') {
@@ -1582,32 +1618,31 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 							keyBuffer.append(ch);
 						} else {
 							String key = keyBuffer.toString();
-
 							i--;
 							keyBuffer.setLength(0);
 							state = 0;
-
 							if (key.equals("EVEN_ODD")) { //$NON-NLS-1$
 								out.write(odd ? "odd" : "even"); //$NON-NLS-1$  //$NON-NLS-2$
-							} else if (key.equals("DESCRIPTION")) { //$NON-NLS-1$
-								writeXMLText(out, weapon.toString());
-								writeNote(out, weapon.getNotes());
-							} else if (key.equals("USAGE")) { //$NON-NLS-1$
-								writeXMLText(out, weapon.getUsage());
-							} else if (key.equals("LEVEL")) { //$NON-NLS-1$
-								writeXMLText(out, NumberUtils.format(weapon.getSkillLevel()));
-							} else if (key.equals("PARRY")) { //$NON-NLS-1$
-								writeXMLText(out, weapon.getResolvedParry());
-							} else if (key.equals("BLOCK")) { //$NON-NLS-1$
-								writeXMLText(out, weapon.getResolvedBlock());
-							} else if (key.equals("DAMAGE")) { //$NON-NLS-1$
-								writeXMLText(out, weapon.getResolvedDamage());
-							} else if (key.equals("REACH")) { //$NON-NLS-1$
-								writeXMLText(out, weapon.getReach());
-							} else if (key.equals("STRENGTH")) { //$NON-NLS-1$
-								writeXMLText(out, weapon.getStrength());
-							} else {
-								writeXMLText(out, MSG_UNIDENTIFIED_KEY);
+							} else if (!processDescription(key, out, weapon)) {
+								if (key.equals("USAGE")) { //$NON-NLS-1$
+									writeXMLText(out, weapon.getUsage());
+								} else if (key.equals("LEVEL")) { //$NON-NLS-1$
+									writeXMLText(out, Numbers.format(weapon.getSkillLevel()));
+								} else if (key.equals("PARRY")) { //$NON-NLS-1$
+									writeXMLText(out, weapon.getResolvedParry());
+								} else if (key.equals("BLOCK")) { //$NON-NLS-1$
+									writeXMLText(out, weapon.getResolvedBlock());
+								} else if (key.equals("DAMAGE")) { //$NON-NLS-1$
+									writeXMLText(out, weapon.getResolvedDamage());
+								} else if (key.equals("REACH")) { //$NON-NLS-1$
+									writeXMLText(out, weapon.getReach());
+								} else if (key.equals("STRENGTH")) { //$NON-NLS-1$
+									writeXMLText(out, weapon.getStrength());
+								} else if (key.equals("ID")) { //$NON-NLS-1$
+									writeXMLText(out, Integer.toString(counter));
+								} else {
+									writeXMLText(out, MSG_UNIDENTIFIED_KEY);
+								}
 							}
 						}
 						break;
@@ -1617,18 +1652,31 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		}
 	}
 
+	private boolean processDescription(String key, BufferedWriter out, WeaponStats stats) throws IOException {
+		if (key.equals("DESCRIPTION")) { //$NON-NLS-1$
+			writeXMLText(out, stats.toString());
+			writeNote(out, stats.getNotes());
+		} else if (key.equals("DESCRIPTION_PRIMARY")) { //$NON-NLS-1$
+			writeXMLText(out, stats.toString());
+		} else if (key.startsWith("DESCRIPTION_NOTES")) { //$NON-NLS-1$
+			writeXMLTextWithOptionalParens(key, out, stats.getNotes());
+		} else {
+			return false;
+		}
+		return true;
+	}
+
 	private void processRangedLoop(BufferedWriter out, String contents) throws IOException {
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
 		int state = 0;
+		int counter = 0;
 		boolean odd = true;
-
 		for (WeaponDisplayRow row : new FilteredIterator<WeaponDisplayRow>(getRangedWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
+			counter++;
 			RangedWeaponStats weapon = (RangedWeaponStats) row.getWeapon();
-
 			for (int i = 0; i < length; i++) {
 				char ch = contents.charAt(i);
-
 				switch (state) {
 					case 0:
 						if (ch == '@') {
@@ -1642,38 +1690,37 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 							keyBuffer.append(ch);
 						} else {
 							String key = keyBuffer.toString();
-
 							i--;
 							keyBuffer.setLength(0);
 							state = 0;
-
 							if (key.equals("EVEN_ODD")) { //$NON-NLS-1$
 								out.write(odd ? "odd" : "even"); //$NON-NLS-1$ //$NON-NLS-2$
-							} else if (key.equals("DESCRIPTION")) { //$NON-NLS-1$
-								writeXMLText(out, weapon.toString());
-								writeNote(out, weapon.getNotes());
-							} else if (key.equals("USAGE")) { //$NON-NLS-1$
-								writeXMLText(out, weapon.getUsage());
-							} else if (key.equals("LEVEL")) { //$NON-NLS-1$
-								writeXMLText(out, NumberUtils.format(weapon.getSkillLevel()));
-							} else if (key.equals("ACCURACY")) { //$NON-NLS-1$
-								writeXMLText(out, weapon.getAccuracy());
-							} else if (key.equals("DAMAGE")) { //$NON-NLS-1$
-								writeXMLText(out, weapon.getResolvedDamage());
-							} else if (key.equals("RANGE")) { //$NON-NLS-1$
-								writeXMLText(out, weapon.getResolvedRange());
-							} else if (key.equals("ROF")) { //$NON-NLS-1$
-								writeXMLText(out, weapon.getRateOfFire());
-							} else if (key.equals("SHOTS")) { //$NON-NLS-1$
-								writeXMLText(out, weapon.getShots());
-							} else if (key.equals("BULK")) { //$NON-NLS-1$
-								writeXMLText(out, weapon.getBulk());
-							} else if (key.equals("RECOIL")) { //$NON-NLS-1$
-								writeXMLText(out, weapon.getRecoil());
-							} else if (key.equals("STRENGTH")) { //$NON-NLS-1$
-								writeXMLText(out, weapon.getStrength());
-							} else {
-								writeXMLText(out, MSG_UNIDENTIFIED_KEY);
+							} else if (!processDescription(key, out, weapon)) {
+								if (key.equals("USAGE")) { //$NON-NLS-1$
+									writeXMLText(out, weapon.getUsage());
+								} else if (key.equals("LEVEL")) { //$NON-NLS-1$
+									writeXMLText(out, Numbers.format(weapon.getSkillLevel()));
+								} else if (key.equals("ACCURACY")) { //$NON-NLS-1$
+									writeXMLText(out, weapon.getAccuracy());
+								} else if (key.equals("DAMAGE")) { //$NON-NLS-1$
+									writeXMLText(out, weapon.getResolvedDamage());
+								} else if (key.equals("RANGE")) { //$NON-NLS-1$
+									writeXMLText(out, weapon.getResolvedRange());
+								} else if (key.equals("ROF")) { //$NON-NLS-1$
+									writeXMLText(out, weapon.getRateOfFire());
+								} else if (key.equals("SHOTS")) { //$NON-NLS-1$
+									writeXMLText(out, weapon.getShots());
+								} else if (key.equals("BULK")) { //$NON-NLS-1$
+									writeXMLText(out, weapon.getBulk());
+								} else if (key.equals("RECOIL")) { //$NON-NLS-1$
+									writeXMLText(out, weapon.getRecoil());
+								} else if (key.equals("STRENGTH")) { //$NON-NLS-1$
+									writeXMLText(out, weapon.getStrength());
+								} else if (key.equals("ID")) { //$NON-NLS-1$
+									writeXMLText(out, Integer.toString(counter));
+								} else {
+									writeXMLText(out, MSG_UNIDENTIFIED_KEY);
+								}
 							}
 						}
 						break;
@@ -1687,12 +1734,12 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
 		int state = 0;
+		int counter = 0;
 		boolean odd = true;
-
 		for (Equipment equipment : mCharacter.getEquipmentIterator()) {
+			counter++;
 			for (int i = 0; i < length; i++) {
 				char ch = contents.charAt(i);
-
 				switch (state) {
 					case 0:
 						if (ch == '@') {
@@ -1706,27 +1753,27 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 							keyBuffer.append(ch);
 						} else {
 							String key = keyBuffer.toString();
-
 							i--;
 							keyBuffer.setLength(0);
 							state = 0;
-
 							if (!processStyleIndentWarning(key, out, equipment, odd)) {
 								if (!processDescription(key, out, equipment)) {
 									if (key.equals("STATE")) { //$NON-NLS-1$
 										out.write(equipment.getState().toShortString());
 									} else if (key.equals("QTY")) { //$NON-NLS-1$
-										writeXMLText(out, NumberUtils.format(equipment.getQuantity()));
+										writeXMLText(out, Numbers.format(equipment.getQuantity()));
 									} else if (key.equals("COST")) { //$NON-NLS-1$
-										writeXMLText(out, NumberUtils.format(equipment.getValue()));
+										writeXMLText(out, Numbers.format(equipment.getValue()));
 									} else if (key.equals("WEIGHT")) { //$NON-NLS-1$
-										writeXMLText(out, WeightUnits.POUNDS.format(equipment.getWeight()));
+										writeXMLText(out, WeightUnits.POUNDS.format(equipment.getWeight(), true));
 									} else if (key.equals("COST_SUMMARY")) { //$NON-NLS-1$
-										writeXMLText(out, NumberUtils.format(equipment.getExtendedValue()));
+										writeXMLText(out, Numbers.format(equipment.getExtendedValue()));
 									} else if (key.equals("WEIGHT_SUMMARY")) { //$NON-NLS-1$
-										writeXMLText(out, WeightUnits.POUNDS.format(equipment.getExtendedWeight()));
+										writeXMLText(out, WeightUnits.POUNDS.format(equipment.getExtendedWeight(), true));
 									} else if (key.equals("REF")) { //$NON-NLS-1$
 										writeXMLText(out, equipment.getReference());
+									} else if (key.equals("ID")) { //$NON-NLS-1$
+										writeXMLText(out, Integer.toString(counter));
 									} else {
 										writeXMLText(out, MSG_UNIDENTIFIED_KEY);
 									}
@@ -1793,5 +1840,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		} catch (Exception exception) {
 			return false;
 		}
+	}
+
+	public int getNotificationPriority() {
+		return 0;
 	}
 }

@@ -32,7 +32,7 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.text.NumberFilter;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.text.TextUtility;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
@@ -331,7 +331,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 	}
 
 	private int getSkillPoints() {
-		return NumberUtils.getInteger(mPointsField.getText(), 0);
+		return Numbers.getLocalizedInteger(mPointsField.getText(), 0);
 	}
 
 	private int getEncumbrancePenaltyMultiplier() {

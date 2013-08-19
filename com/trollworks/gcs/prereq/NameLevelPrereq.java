@@ -107,13 +107,12 @@ public abstract class NameLevelPrereq extends HasPrereq {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
 		if (obj instanceof NameLevelPrereq && super.equals(obj)) {
-			NameLevelPrereq other = (NameLevelPrereq) obj;
-
-			return mTag.equals(other.mTag) && mNameCriteria.equals(other.mNameCriteria) && mLevelCriteria.equals(other.mLevelCriteria);
+			NameLevelPrereq nlp = (NameLevelPrereq) obj;
+			return mTag.equals(nlp.mTag) && mNameCriteria.equals(nlp.mNameCriteria) && mLevelCriteria.equals(nlp.mLevelCriteria);
 		}
 		return false;
 	}

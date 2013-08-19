@@ -87,7 +87,7 @@ public class NotesPanel extends ActionPanel {
 
 	/** @param width The width to wrap at. */
 	public void setWrapWidth(int width) {
-		mNotes = TextDrawing.wrapToPixelWidth(UIManager.getFont(GCSFonts.KEY_NOTES), null, mNotes, width);
+		mNotes = TextDrawing.wrapToPixelWidth(UIManager.getFont(GCSFonts.KEY_NOTES), mNotes, width);
 	}
 
 	/**
@@ -97,7 +97,7 @@ public class NotesPanel extends ActionPanel {
 	public String setMaxHeight(int height) {
 		StringBuilder buffer = new StringBuilder();
 		Insets insets = getInsets();
-		int lineHeight = TextDrawing.getPreferredSize(UIManager.getFont(GCSFonts.KEY_NOTES), null, "Mg").height; //$NON-NLS-1$
+		int lineHeight = TextDrawing.getPreferredSize(UIManager.getFont(GCSFonts.KEY_NOTES), "Mg").height; //$NON-NLS-1$
 		StringTokenizer tokenizer = new StringTokenizer(mNotes, NEWLINE, true);
 		boolean wasReturn = false;
 
@@ -137,14 +137,14 @@ public class NotesPanel extends ActionPanel {
 	@Override
 	public Dimension getMinimumSize() {
 		Insets insets = getInsets();
-		int height = TextDrawing.getPreferredSize(UIManager.getFont(GCSFonts.KEY_NOTES), null, "Mg").height; //$NON-NLS-1$
+		int height = TextDrawing.getPreferredSize(UIManager.getFont(GCSFonts.KEY_NOTES), "Mg").height; //$NON-NLS-1$
 		return new Dimension(insets.left + insets.right, height + insets.top + insets.bottom);
 	}
 
 	@Override
 	public Dimension getPreferredSize() {
 		Insets insets = getInsets();
-		Dimension size = TextDrawing.getPreferredSize(UIManager.getFont(GCSFonts.KEY_NOTES), null, mNotes);
+		Dimension size = TextDrawing.getPreferredSize(UIManager.getFont(GCSFonts.KEY_NOTES), mNotes);
 		size.width += insets.left + insets.right;
 		size.height += insets.top + insets.bottom;
 		Dimension minSize = getMinimumSize();

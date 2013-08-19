@@ -41,6 +41,7 @@ import com.trollworks.ttk.print.PrintManager;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Path;
 import com.trollworks.ttk.widgets.AppWindow;
+import com.trollworks.ttk.widgets.BaseWindow;
 import com.trollworks.ttk.widgets.ModifiedMarker;
 import com.trollworks.ttk.widgets.WindowUtils;
 import com.trollworks.ttk.widgets.outline.Outline;
@@ -103,7 +104,7 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 	 * @return The character sheet window for the specified character, if any.
 	 */
 	public static SheetWindow findSheetWindow(GURPSCharacter character) {
-		for (SheetWindow window : AppWindow.getWindows(SheetWindow.class)) {
+		for (SheetWindow window : BaseWindow.getWindows(SheetWindow.class)) {
 			if (window.getCharacter() == character) {
 				return window;
 			}
@@ -121,7 +122,7 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 	public static SheetWindow findSheetWindow(File file) {
 		String fullPath = Path.getFullPath(file);
 
-		for (SheetWindow window : AppWindow.getWindows(SheetWindow.class)) {
+		for (SheetWindow window : BaseWindow.getWindows(SheetWindow.class)) {
 			File wFile = window.getCharacter().getFile();
 
 			if (wFile != null) {
@@ -194,7 +195,7 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 		String title;
 
 		if (file == null) {
-			title = AppWindow.getNextUntitledWindowName(SheetWindow.class, MSG_UNTITLED_SHEET, this);
+			title = BaseWindow.getNextUntitledWindowName(SheetWindow.class, MSG_UNTITLED_SHEET, this);
 		} else {
 			title = Path.getLeafName(file.getName(), false);
 		}

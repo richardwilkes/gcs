@@ -66,7 +66,7 @@ public abstract class HasPrereq extends Prereq {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
 		if (obj instanceof HasPrereq) {
@@ -94,16 +94,16 @@ public abstract class HasPrereq extends Prereq {
 	}
 
 	/**
-	 * @return <code>true</code> if the specified criteria should exist, <code>false</code> if
-	 *         it should not.
+	 * @return <code>true</code> if the specified criteria should exist, <code>false</code> if it
+	 *         should not.
 	 */
 	public boolean has() {
 		return mHas;
 	}
 
 	/**
-	 * @param has <code>true</code> if the specified criteria should exist, <code>false</code>
-	 *            if it should not.
+	 * @param has <code>true</code> if the specified criteria should exist, <code>false</code> if it
+	 *            should not.
 	 */
 	public void has(boolean has) {
 		mHas = has;

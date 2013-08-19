@@ -36,7 +36,7 @@ import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.collections.Enums;
 import com.trollworks.ttk.collections.FilteredIterator;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Column;
@@ -121,8 +121,6 @@ public class Advantage extends ListRow {
 	private AdvantageContainerType		mContainerType;
 	private ArrayList<WeaponStats>		mWeapons;
 	private ArrayList<Modifier>			mModifiers;
-	// For load-time conversion only
-	private OldWeapon					mOldWeapon;
 
 	static {
 		LocalizedMessages.initialize(Advantage.class);
@@ -200,6 +198,22 @@ public class Advantage extends ListRow {
 	}
 
 	@Override
+	public boolean isEquivalentTo(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (obj instanceof Advantage && super.isEquivalentTo(obj)) {
+			Advantage row = (Advantage) obj;
+			if (mType == row.mType && mLevels == row.mLevels && mPoints == row.mPoints && mPointsPerLevel == row.mPointsPerLevel && mContainerType == row.mContainerType && mCR == row.mCR && mCRAdj == row.mCRAdj && mName.equals(row.mName) && mReference.equals(row.mReference)) {
+				if (mWeapons.equals(row.mWeapons)) {
+					return mModifiers.equals(row.mModifiers);
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
 	public String getListChangedID() {
 		return ID_LIST_CHANGED;
 	}
@@ -230,7 +244,7 @@ public class Advantage extends ListRow {
 	protected void loadAttributes(XMLReader reader, LoadState state) {
 		super.loadAttributes(reader, state);
 		if (canHaveChildren()) {
-			mContainerType = (AdvantageContainerType) EnumExtractor.extract(reader.getAttribute(TAG_TYPE), AdvantageContainerType.values(), AdvantageContainerType.GROUP);
+			mContainerType = Enums.extract(reader.getAttribute(TAG_TYPE), AdvantageContainerType.values(), AdvantageContainerType.GROUP);
 		}
 	}
 
@@ -241,7 +255,7 @@ public class Advantage extends ListRow {
 		if (TAG_NAME.equals(name)) {
 			mName = reader.readText().replace("\n", " "); //$NON-NLS-1$ //$NON-NLS-2$
 		} else if (TAG_CR.equals(name)) {
-			mCRAdj = (SelfControlRollAdjustments) EnumExtractor.extract(reader.getAttribute(SelfControlRoll.ATTR_ADJUSTMENT), SelfControlRollAdjustments.values(), SelfControlRollAdjustments.NONE);
+			mCRAdj = Enums.extract(reader.getAttribute(SelfControlRoll.ATTR_ADJUSTMENT), SelfControlRollAdjustments.values(), SelfControlRollAdjustments.NONE);
 			mCR = SelfControlRoll.get(reader.readText());
 		} else if (TAG_REFERENCE.equals(name)) {
 			mReference = reader.readText().replace("\n", " "); //$NON-NLS-1$ //$NON-NLS-2$
@@ -265,7 +279,7 @@ public class Advantage extends ListRow {
 			} else if (RangedWeaponStats.TAG_ROOT.equals(name)) {
 				mWeapons.add(new RangedWeaponStats(this, reader));
 			} else if (OldWeapon.TAG_ROOT.equals(name)) {
-				mOldWeapon = new OldWeapon(reader);
+				state.mOldWeapons.put(this, new OldWeapon(reader));
 			} else {
 				super.loadSubElement(reader, state);
 			}
@@ -275,7 +289,7 @@ public class Advantage extends ListRow {
 	}
 
 	@Override
-	protected void finishedLoading() {
+	protected void finishedLoading(LoadState state) {
 		if (mOldPointsString != null) {
 			// All this is here solely to support loading old data files
 			mOldPointsString = mOldPointsString.trim();
@@ -301,13 +315,13 @@ public class Advantage extends ListRow {
 			}
 			mOldPointsString = null;
 		}
-		if (mOldWeapon != null) {
-			mWeapons.addAll(mOldWeapon.getWeapons(this));
-			mOldWeapon = null;
+		OldWeapon oldWeapon = state.mOldWeapons.remove(this);
+		if (oldWeapon != null) {
+			mWeapons.addAll(oldWeapon.getWeapons(this));
 		}
 		// We no longer have defaults... that was solely for the weapons
 		setDefaults(new ArrayList<SkillDefault>());
-		super.finishedLoading();
+		super.finishedLoading(state);
 	}
 
 	@Override

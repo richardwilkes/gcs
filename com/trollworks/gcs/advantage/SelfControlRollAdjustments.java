@@ -28,7 +28,7 @@ import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.feature.Bonus;
 import com.trollworks.gcs.feature.LeveledAmount;
 import com.trollworks.gcs.feature.SkillBonus;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.text.MessageFormat;
@@ -65,7 +65,7 @@ public enum SelfControlRollAdjustments {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
 				return EMPTY;
 			}
-			return MessageFormat.format(MSG_ACTION_PENALTY_DESCRIPTION, NumberUtils.format(getAdjustment(cr), true));
+			return MessageFormat.format(MSG_ACTION_PENALTY_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
 		}
 
 		@Override
@@ -85,7 +85,7 @@ public enum SelfControlRollAdjustments {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
 				return EMPTY;
 			}
-			return MessageFormat.format(MSG_REACTION_PENALTY_DESCRIPTION, NumberUtils.format(getAdjustment(cr), true));
+			return MessageFormat.format(MSG_REACTION_PENALTY_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
 		}
 
 		@Override
@@ -105,7 +105,7 @@ public enum SelfControlRollAdjustments {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
 				return EMPTY;
 			}
-			return MessageFormat.format(MSG_FRIGHT_CHECK_PENALTY_DESCRIPTION, NumberUtils.format(getAdjustment(cr), true));
+			return MessageFormat.format(MSG_FRIGHT_CHECK_PENALTY_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
 		}
 
 		@Override
@@ -125,7 +125,7 @@ public enum SelfControlRollAdjustments {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
 				return EMPTY;
 			}
-			return MessageFormat.format(MSG_FRIGHT_CHECK_BONUS_DESCRIPTION, NumberUtils.format(getAdjustment(cr), true));
+			return MessageFormat.format(MSG_FRIGHT_CHECK_BONUS_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
 		}
 
 		@Override
@@ -145,7 +145,7 @@ public enum SelfControlRollAdjustments {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
 				return EMPTY;
 			}
-			return MessageFormat.format(MSG_MINOR_COST_OF_LIVING_INCREASE_DESCRIPTION, NumberUtils.format(getAdjustment(cr), true));
+			return MessageFormat.format(MSG_MINOR_COST_OF_LIVING_INCREASE_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
 		}
 
 		@Override
@@ -165,7 +165,7 @@ public enum SelfControlRollAdjustments {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
 				return EMPTY;
 			}
-			return MessageFormat.format(MSG_MAJOR_COST_OF_LIVING_INCREASE_DESCRIPTION, NumberUtils.format(getAdjustment(cr), true));
+			return MessageFormat.format(MSG_MAJOR_COST_OF_LIVING_INCREASE_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
 		}
 
 		@Override

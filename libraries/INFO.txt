@@ -1,4 +1,4 @@
 This directory contains various third-party libraries that GCS makes use of:
 
-iText, version 2.0.8
+iText, version 2.1.2u
 Obtained from http://www.lowagie.com/iText

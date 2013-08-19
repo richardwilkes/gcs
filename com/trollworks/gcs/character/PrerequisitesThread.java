@@ -70,10 +70,8 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 	 */
 	public static PrerequisitesThread waitForProcessingToFinish(GURPSCharacter character) {
 		PrerequisitesThread thread = getThread(character);
-
 		if (thread != null && thread != Thread.currentThread()) {
 			boolean checkAgain = true;
-
 			while (checkAgain) {
 				synchronized (thread) {
 					checkAgain = thread.mIsProcessing || thread.mNeedUpdate;
@@ -113,7 +111,6 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 			while (!mSheet.hasBeenDisposed()) {
 				try {
 					boolean needUpdate;
-
 					synchronized (this) {
 						needUpdate = mNeedUpdate;
 						mNeedUpdate = false;
@@ -150,7 +147,7 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 				}
 			}
 		} catch (InterruptedException outerIEx) {
-			// Someone is tring to terminate us... let them.
+			// Someone is trying to terminate us... let them.
 		}
 		mNeedUpdate = mIsProcessing = false;
 		Preferences.getInstance().getNotifier().remove(this);
@@ -171,7 +168,6 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 	private void buildFeatureMap(HashMap<String, ArrayList<Feature>> map, Iterator<? extends ListRow> iterator) throws Exception {
 		while (iterator.hasNext()) {
 			ListRow row = iterator.next();
-
 			if (row instanceof Equipment) {
 				Equipment equipment = (Equipment) row;
 				if (!equipment.isEquipped() || equipment.getQuantity() < 1) {
@@ -179,11 +175,9 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 					continue;
 				}
 			}
-
 			for (Feature feature : row.getFeatures()) {
 				processFeature(map, row instanceof Advantage ? ((Advantage) row).getLevels() : 0, feature);
 			}
-
 			if (row instanceof Advantage) {
 				Advantage advantage = (Advantage) row;
 				for (Bonus bonus : advantage.getCRAdj().getBonuses(advantage.getCR())) {
@@ -197,7 +191,6 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 					}
 				}
 			}
-
 			checkIfUpdated();
 		}
 	}
@@ -217,7 +210,6 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 
 	private void checkIfUpdated() throws Exception {
 		boolean needUpdate;
-
 		synchronized (this) {
 			needUpdate = mNeedUpdate;
 		}
@@ -228,18 +220,13 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 
 	private void processRows(Iterator<? extends ListRow> iterator) throws Exception {
 		StringBuilder builder = new StringBuilder();
-
 		while (iterator.hasNext()) {
 			ListRow row = iterator.next();
-			boolean satisfied;
-
 			builder.setLength(0);
-
-			satisfied = row.getPrereqs().satisfied(mCharacter, row, builder, "<li>"); //$NON-NLS-1$
+			boolean satisfied = row.getPrereqs().satisfied(mCharacter, row, builder, "<li>"); //$NON-NLS-1$
 			if (satisfied && row instanceof Technique) {
 				satisfied = ((Technique) row).satisfied(builder, "<li>"); //$NON-NLS-1$
 			}
-
 			if (row.isSatisfied() != satisfied) {
 				row.setSatisfied(satisfied);
 				mNeedRepaint = true;
@@ -267,5 +254,9 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 			mCharacter.notifySingle(Advantage.ID_LIST_CHANGED, null);
 		}
 		markForUpdate();
+	}
+
+	public int getNotificationPriority() {
+		return 0;
 	}
 }

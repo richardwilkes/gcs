@@ -26,6 +26,8 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.ttk.widgets.LinkedLabel;
 
+import java.awt.Color;
+
 import javax.swing.JComponent;
 
 /** A label for a field in a page. */
@@ -38,6 +40,7 @@ public class PageLabel extends LinkedLabel {
 	 */
 	public PageLabel(String title, JComponent field) {
 		super(title, GCSFonts.KEY_LABEL, field);
+		setForeground(Color.BLACK);
 	}
 
 	/**
@@ -49,5 +52,6 @@ public class PageLabel extends LinkedLabel {
 	 */
 	public PageLabel(String title, JComponent field, int alignment) {
 		super(title, GCSFonts.KEY_LABEL, field, alignment);
+		setForeground(Color.BLACK);
 	}
 }

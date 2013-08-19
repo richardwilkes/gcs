@@ -25,9 +25,12 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.weapon.WeaponStats;
 
+import java.util.HashMap;
+
 /**
- * Provides a wrapper around a {@link WeaponStats} suitable for putting into a
- * {@link java.util.HashMap} as a key.
+ * Provides a wrapper around a {@link WeaponStats} suitable for putting into a {@link HashMap} as a
+ * key. Note that this will not work correctly if the {@link WeaponStats} object is changed while
+ * the {@link HashedWeapon} is within the {@link HashMap}.
  */
 class HashedWeapon {
 	private WeaponStats	mWeapon;
@@ -41,17 +44,18 @@ class HashedWeapon {
 		mWeapon = weapon;
 	}
 
-	@Override public int hashCode() {
+	@Override
+	public int hashCode() {
 		return mWeapon.getDescription().hashCode();
 	}
 
-	@Override public boolean equals(Object obj) {
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
 		if (obj instanceof HashedWeapon) {
 			HashedWeapon other = (HashedWeapon) obj;
-
 			return mWeapon.equals(other.mWeapon) && mWeapon.getDescription().equals(other.mWeapon.getDescription());
 		}
 		return false;

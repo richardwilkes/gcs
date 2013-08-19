@@ -23,7 +23,7 @@
 
 package com.trollworks.gcs.criteria;
 
-import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.collections.Enums;
 import com.trollworks.ttk.utility.LocalizedMessages;
 
 /** The allowed string comparison types. */
@@ -178,7 +178,7 @@ public enum StringCompareType {
 	 * @return The units representing the buffer's description.
 	 */
 	public static final StringCompareType get(String buffer) {
-		StringCompareType result = (StringCompareType) EnumExtractor.extract(buffer, values());
+		StringCompareType result = Enums.extract(buffer, values());
 		if (result == null) {
 			// Check a few others, for legacy reasons
 			if ("starts".equalsIgnoreCase(buffer)) { //$NON-NLS-1$

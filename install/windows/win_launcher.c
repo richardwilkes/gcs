@@ -22,7 +22,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 // The class that will be run
-#define MAIN_CLASS com/trollworks/gcs/app/GCS
+#define MAIN_CLASS com/trollworks/ttk/Launcher
 
 // The maximum amount of RAM the VM will use for the app
 #ifndef MAX_RAM

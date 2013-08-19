@@ -126,4 +126,8 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 	public void handleNotification(Object producer, String type, Object data) {
 		repaint();
 	}
+
+	public int getNotificationPriority() {
+		return 0;
+	}
 }

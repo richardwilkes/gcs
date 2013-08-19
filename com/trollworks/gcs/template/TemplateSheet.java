@@ -164,6 +164,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		outline.setAllowColumnContextMenu(false);
 		header.setIgnoreResizeOK(true);
 		header.setBackground(Color.black);
+		header.setTopDividerColor(Color.black);
 	}
 
 	/** @return The outline containing the Advantages, Disadvantages & Quirks. */
@@ -289,5 +290,9 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 
 	public void dragExit(DropTargetEvent dte) {
 		mDragRows = null;
+	}
+
+	public int getNotificationPriority() {
+		return 0;
 	}
 }

@@ -24,7 +24,7 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.character.Armor;
-import com.trollworks.ttk.collections.EnumExtractor;
+import com.trollworks.ttk.collections.Enums;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
 
@@ -66,7 +66,7 @@ public class DRBonus extends Bonus {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
 		if (obj instanceof DRBonus && super.equals(obj)) {
@@ -94,7 +94,7 @@ public class DRBonus extends Bonus {
 	@Override
 	protected void loadSelf(XMLReader reader) throws IOException {
 		if (TAG_LOCATION.equals(reader.getName())) {
-			setLocation((HitLocation) EnumExtractor.extract(reader.readText(), HitLocation.values(), HitLocation.TORSO));
+			setLocation(Enums.extract(reader.readText(), HitLocation.values(), HitLocation.TORSO));
 		} else {
 			super.loadSelf(reader);
 		}

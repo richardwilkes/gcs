@@ -47,9 +47,9 @@ import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Path;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.utility.WindowSizeEnforcer;
-import com.trollworks.ttk.widgets.AppWindow;
+import com.trollworks.ttk.widgets.BaseWindow;
+import com.trollworks.ttk.widgets.IconButton;
 import com.trollworks.ttk.widgets.ModifiedMarker;
-import com.trollworks.ttk.widgets.ToolBarIconButton;
 import com.trollworks.ttk.widgets.WindowUtils;
 import com.trollworks.ttk.widgets.outline.OutlineHeader;
 import com.trollworks.ttk.widgets.outline.OutlineModel;
@@ -94,9 +94,9 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	static String				MSG_EQUIPMENT;
 	private LibraryFile			mFile;
 	private JTextField			mFilterField;
-	private ToolBarIconButton	mToggleLockButton;
-	private ToolBarIconButton	mToggleRowsButton;
-	private ToolBarIconButton	mSizeColumnsButton;
+	private IconButton			mToggleLockButton;
+	private IconButton			mToggleRowsButton;
+	private IconButton			mSizeColumnsButton;
 	private boolean				mLocked;
 	private JComboBox			mTypeCombo;
 	private JComboBox			mCategoryCombo;
@@ -119,7 +119,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	 * @return The {@link LibraryWindow} for the specified file, if any.
 	 */
 	public static LibraryWindow findLibraryWindow(LibraryFile file) {
-		for (LibraryWindow window : AppWindow.getWindows(LibraryWindow.class)) {
+		for (LibraryWindow window : BaseWindow.getWindows(LibraryWindow.class)) {
 			if (window.getLibraryFile() == file) {
 				return window;
 			}
@@ -135,7 +135,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	 */
 	public static LibraryWindow findLibraryWindow(File file) {
 		String fullPath = Path.getFullPath(file);
-		for (LibraryWindow window : AppWindow.getWindows(LibraryWindow.class)) {
+		for (LibraryWindow window : BaseWindow.getWindows(LibraryWindow.class)) {
 			File wFile = window.getLibraryFile().getFile();
 			if (wFile != null) {
 				if (Path.getFullPath(wFile).equals(fullPath)) {
@@ -234,7 +234,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 			outline.applyConfig(config);
 		}
 		outlineModel.setLocked(mLocked);
-		outline.setRowFilter(this);
+		outlineModel.setRowFilter(this);
 	}
 
 	@Override
@@ -249,7 +249,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 		if (mFile.wasImported()) {
 			title = mFile.getSuggestedFileNameFromImport();
 		} else if (file == null) {
-			title = AppWindow.getNextUntitledWindowName(getClass(), MSG_TITLE, this);
+			title = BaseWindow.getNextUntitledWindowName(getClass(), MSG_TITLE, this);
 		} else {
 			title = Path.getLeafName(file.getName(), false);
 		}
@@ -283,8 +283,8 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 		secondRow.add(mFilterField);
 	}
 
-	private ToolBarIconButton createToolBarButton(JToolBar toolbar, FlexRow row, BufferedImage image, String tooltip) {
-		ToolBarIconButton button = new ToolBarIconButton(image, tooltip);
+	private IconButton createToolBarButton(JToolBar toolbar, FlexRow row, BufferedImage image, String tooltip) {
+		IconButton button = new IconButton(image, tooltip, true);
 		button.addActionListener(this);
 		toolbar.add(button);
 		row.add(button);
@@ -546,5 +546,9 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	public void switchToEquipment() {
 		mTypeCombo.setSelectedItem(MSG_EQUIPMENT);
 		mFilterField.setText(""); //$NON-NLS-1$
+	}
+
+	public int getNotificationPriority() {
+		return 0;
 	}
 }

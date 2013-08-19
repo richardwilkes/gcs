@@ -25,7 +25,7 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.notification.NotifierTarget;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.Wrapper;
@@ -101,7 +101,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 	}
 
 	private String getMarkerText(int which, int current) {
-		return MessageFormat.format(which == current ? MSG_CURRENT_ENCUMBRANCE_FORMAT : MSG_ENCUMBRANCE_FORMAT, ENCUMBRANCE_TITLES[which], NumberUtils.format(which));
+		return MessageFormat.format(which == current ? MSG_CURRENT_ENCUMBRANCE_FORMAT : MSG_ENCUMBRANCE_FORMAT, ENCUMBRANCE_TITLES[which], Numbers.format(which));
 	}
 
 	private Container createDivider() {
@@ -123,5 +123,9 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 		}
 		revalidate();
 		repaint();
+	}
+
+	public int getNotificationPriority() {
+		return 0;
 	}
 }

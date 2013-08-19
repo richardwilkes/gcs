@@ -81,13 +81,12 @@ public class WeaponBonus extends Bonus {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
 		if (obj instanceof WeaponBonus && super.equals(obj)) {
-			WeaponBonus other = (WeaponBonus) obj;
-
-			return mNameCriteria.equals(other.mNameCriteria) && mSpecializationCriteria.equals(other.mSpecializationCriteria) && mLevelCriteria.equals(other.mLevelCriteria);
+			WeaponBonus wb = (WeaponBonus) obj;
+			return mNameCriteria.equals(wb.mNameCriteria) && mSpecializationCriteria.equals(wb.mSpecializationCriteria) && mLevelCriteria.equals(wb.mLevelCriteria);
 		}
 		return false;
 	}

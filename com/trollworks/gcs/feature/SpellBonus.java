@@ -81,13 +81,12 @@ public class SpellBonus extends Bonus {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
 		if (obj instanceof SpellBonus && super.equals(obj)) {
-			SpellBonus other = (SpellBonus) obj;
-
-			return mAllColleges == other.mAllColleges && mMatchCollegeName == other.mMatchCollegeName && mNameCriteria.equals(other.mNameCriteria);
+			SpellBonus sb = (SpellBonus) obj;
+			return mAllColleges == sb.mAllColleges && mMatchCollegeName == sb.mMatchCollegeName && mNameCriteria.equals(sb.mNameCriteria);
 		}
 		return false;
 	}

@@ -24,13 +24,14 @@
 package com.trollworks.gcs.widgets;
 
 import com.trollworks.gcs.menu.data.DataMenu;
+import com.trollworks.ttk.menu.file.SignificantFrame;
 import com.trollworks.ttk.widgets.AppWindow;
 
 import java.awt.GraphicsConfiguration;
 import java.awt.image.BufferedImage;
 
 /** Provides a base OS-level window. */
-public class GCSWindow extends AppWindow {
+public class GCSWindow extends AppWindow implements SignificantFrame {
 	/**
 	 * Creates a new {@link AppWindow}.
 	 * 

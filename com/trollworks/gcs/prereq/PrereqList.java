@@ -27,7 +27,7 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.ttk.text.NumberUtils;
+import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.xml.XMLNodeType;
 import com.trollworks.ttk.xml.XMLReader;
@@ -123,12 +123,12 @@ public class PrereqList extends Prereq {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (obj == this) {
 			return true;
 		}
 		if (obj instanceof PrereqList) {
-			PrereqList other = (PrereqList) obj;
-			return mAll == other.mAll && mWhenTLCriteria.equals(other.mWhenTLCriteria) && mPrereqs.equals(other.mPrereqs);
+			PrereqList list = (PrereqList) obj;
+			return mAll == list.mAll && mWhenTLCriteria.equals(list.mWhenTLCriteria) && mPrereqs.equals(list.mPrereqs);
 		}
 		return false;
 	}
@@ -234,7 +234,7 @@ public class PrereqList extends Prereq {
 	@Override
 	public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
 		if (isWhenTLEnabled(mWhenTLCriteria)) {
-			if (!mWhenTLCriteria.matches(NumberUtils.getNonLocalizedInteger(character.getDescription().getTechLevel(), 0))) {
+			if (!mWhenTLCriteria.matches(Numbers.getInteger(character.getDescription().getTechLevel(), 0))) {
 				return true;
 			}
 		}

@@ -35,9 +35,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.font.FontRenderContext;
 import java.awt.image.BufferedImage;
 import java.text.MessageFormat;
 
@@ -79,22 +77,21 @@ public class AboutPanel extends JPanel {
 		Font font = new Font(Fonts.getDefaultFontName(), Font.BOLD, 10);
 		gc.setFont(font);
 		String version = MessageFormat.format(MSG_VERSION, Version.getHumanReadableVersion(Version.extractVersion(App.getVersion())));
-		FontRenderContext frc = ((Graphics2D) gc).getFontRenderContext();
-		Dimension size = TextDrawing.getPreferredSize(font, frc, version);
+		Dimension size = TextDrawing.getPreferredSize(font, version);
 		Rectangle bounds = new Rectangle(MARGIN, img.getHeight() + MARGIN, size.width, size.height);
 		TextDrawing.draw(gc, bounds, version, SwingConstants.LEFT, SwingConstants.TOP);
 
 		// Copyright
-		String copyright = Main.getCopyrightBanner(true);
+		String copyright = App.getCopyrightBanner(true);
 		font = new Font(Fonts.getDefaultFontName(), Font.PLAIN, 10);
 		gc.setFont(font);
-		size = TextDrawing.getPreferredSize(font, frc, copyright);
+		size = TextDrawing.getPreferredSize(font, copyright);
 		bounds.width = size.width;
 		bounds.y += bounds.height;
 		bounds.height = size.height;
 		TextDrawing.draw(gc, bounds, copyright, SwingConstants.LEFT, SwingConstants.TOP);
 		String javaVersion = MessageFormat.format(MSG_JAVA_VERSION, System.getProperty("java.version")); //$NON-NLS-1$
-		size = TextDrawing.getPreferredSize(font, frc, javaVersion);
+		size = TextDrawing.getPreferredSize(font, javaVersion);
 		bounds.width = size.width;
 		int compWidth = getWidth();
 		bounds.x = compWidth - (size.width + MARGIN);
@@ -103,17 +100,17 @@ public class AboutPanel extends JPanel {
 
 		// iText License
 		font = new Font(Fonts.getDefaultFontName(), Font.PLAIN, 9);
-		String license = TextDrawing.wrapToPixelWidth(font, frc, MSG_ITEXT_LICENSE, compWidth - MARGIN * 2);
+		String license = TextDrawing.wrapToPixelWidth(font, MSG_ITEXT_LICENSE, compWidth - MARGIN * 2);
 		gc.setFont(font);
-		size = TextDrawing.getPreferredSize(font, frc, license);
+		size = TextDrawing.getPreferredSize(font, license);
 		bounds.width = size.width;
 		bounds.y = getHeight() - (size.height + MARGIN);
 		bounds.height = size.height;
 		TextDrawing.draw(gc, bounds, license, SwingConstants.LEFT, SwingConstants.TOP);
 
 		// SJG License
-		license = TextDrawing.wrapToPixelWidth(font, frc, MSG_GURPS_LICENSE, compWidth - MARGIN * 2);
-		size = TextDrawing.getPreferredSize(font, frc, license);
+		license = TextDrawing.wrapToPixelWidth(font, MSG_GURPS_LICENSE, compWidth - MARGIN * 2);
+		size = TextDrawing.getPreferredSize(font, license);
 		bounds.width = size.width;
 		bounds.y -= size.height + MARGIN;
 		bounds.height = size.height;
