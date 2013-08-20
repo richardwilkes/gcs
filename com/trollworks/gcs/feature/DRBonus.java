@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
  * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2011 the Initial Developer. All Rights Reserved.
+ * 2005-2013 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *

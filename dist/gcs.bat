@@ -15,8 +15,8 @@ REM
 REM The Original Code is GURPS Character Sheet.
 REM
 REM The Initial Developer of the Original Code is Richard A. Wilkes.
-REM Portions created by the Initial Developer are Copyright (C) 1998-2002,
-REM 2005-2011 the Initial Developer. All Rights Reserved.
+REM Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+REM Initial Developer. All Rights Reserved.
 REM
 REM Contributor(s):
 REM
