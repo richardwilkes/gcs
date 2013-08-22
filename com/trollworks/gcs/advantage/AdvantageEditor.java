@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.advantage;
+
+import static com.trollworks.gcs.advantage.AdvantageEditor_LS.*;
 
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.feature.FeaturesPanel;
@@ -32,13 +34,14 @@ import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.Alignment;
 import com.trollworks.ttk.layout.FlexComponent;
 import com.trollworks.ttk.layout.FlexGrid;
 import com.trollworks.ttk.layout.FlexRow;
 import com.trollworks.ttk.layout.FlexSpacer;
 import com.trollworks.ttk.text.IntegerFormatter;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.EditorField;
 import com.trollworks.ttk.widgets.LinkedLabel;
@@ -68,39 +71,40 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 
+@Localized({
+				@LS(key = "NAME", msg = "Name"),
+				@LS(key = "NAME_TOOLTIP", msg = "The name of the advantage, without any notes"),
+				@LS(key = "NAME_CANNOT_BE_EMPTY", msg = "The name field may not be empty"),
+				@LS(key = "CR", msg = "Self-Control Roll"),
+				@LS(key = "CR_ADJ_TOOLTIP", msg = "Adjustments that are applied due to Self-Control Roll limitations"),
+				@LS(key = "TOTAL_POINTS", msg = "Total"),
+				@LS(key = "TOTAL_POINTS_TOOLTIP", msg = "The total point cost of this advantage"),
+				@LS(key = "BASE_POINTS", msg = "Base Point Cost"),
+				@LS(key = "BASE_POINTS_TOOLTIP", msg = "The base point cost of this advantage"),
+				@LS(key = "LEVEL_POINTS", msg = "Point Cost Per Level"),
+				@LS(key = "LEVEL_POINTS_TOOLTIP", msg = "The per level cost of this advantage. If this is set to zero\nand there is a value other than zero in the level field, then the\nvalue in the base points field will be used"),
+				@LS(key = "LEVEL", msg = "Level"),
+				@LS(key = "LEVEL_TOOLTIP", msg = "The level of this advantage"),
+				@LS(key = "CATEGORIES", msg = "Categories"),
+				@LS(key = "CATEGORIES_TOOLTIP", msg = "The category or categories the advantage belongs to (separate multiple categories with a comma)"),
+				@LS(key = "NOTES", msg = "Notes"),
+				@LS(key = "NOTES_TOOLTIP", msg = "Any notes that you would like to show up in the list along with this advantage"),
+				@LS(key = "TYPE", msg = "Type"),
+				@LS(key = "TYPE_TOOLTIP", msg = "The type of advantage this is"),
+				@LS(key = "CONTAINER_TYPE", msg = "Container Type"),
+				@LS(key = "CONTAINER_TYPE_TOOLTIP", msg = "The type of container this is"),
+				@LS(key = "REFERENCE", msg = "Ref"),
+				@LS(key = "REFERENCE_TOOLTIP", msg = "Page Reference"),
+				@LS(key = "NO_LEVELS", msg = "Has No Levels"),
+				@LS(key = "HAS_LEVELS", msg = "Has Levels"),
+				@LS(key = "MENTAL", msg = "Mental"),
+				@LS(key = "PHYSICAL", msg = "Physical"),
+				@LS(key = "SOCIAL", msg = "Social"),
+				@LS(key = "EXOTIC", msg = "Exotic"),
+				@LS(key = "SUPERNATURAL", msg = "Supernatural"),
+})
 /** The detailed editor for {@link Advantage}s. */
 public class AdvantageEditor extends RowEditor<Advantage> implements ActionListener, DocumentListener, PropertyChangeListener {
-	private static String							MSG_NAME;
-	private static String							MSG_NAME_TOOLTIP;
-	private static String							MSG_NAME_CANNOT_BE_EMPTY;
-	private static String							MSG_TOTAL_POINTS;
-	private static String							MSG_TOTAL_POINTS_TOOLTIP;
-	private static String							MSG_BASE_POINTS;
-	private static String							MSG_BASE_POINTS_TOOLTIP;
-	private static String							MSG_LEVEL_POINTS;
-	private static String							MSG_LEVEL_POINTS_TOOLTIP;
-	private static String							MSG_LEVEL;
-	private static String							MSG_LEVEL_TOOLTIP;
-	private static String							MSG_NOTES;
-	private static String							MSG_NOTES_TOOLTIP;
-	private static String							MSG_CATEGORIES;
-	private static String							MSG_CATEGORIES_TOOLTIP;
-	private static String							MSG_CR;
-	private static String							MSG_CR_ADJ_TOOLTIP;
-	private static String							MSG_TYPE;
-	private static String							MSG_TYPE_TOOLTIP;
-	private static String							MSG_CONTAINER_TYPE;
-	private static String							MSG_CONTAINER_TYPE_TOOLTIP;
-	private static String							MSG_REFERENCE;
-	private static String							MSG_REFERENCE_TOOLTIP;
-	private static String							MSG_NO_LEVELS;
-	private static String							MSG_HAS_LEVELS;
-	private static String							MSG_MENTAL;
-	private static String							MSG_PHYSICAL;
-	private static String							MSG_SOCIAL;
-	private static String							MSG_EXOTIC;
-	private static String							MSG_SUPERNATURAL;
-	private static final String						EMPTY	= "";				//$NON-NLS-1$
 	private EditorField								mNameField;
 	private JComboBox<String>						mLevelTypeCombo;
 	private EditorField								mBasePointsField;
@@ -128,10 +132,6 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	private JComboBox<SelfControlRoll>				mCRCombo;
 	private JComboBox<SelfControlRollAdjustments>	mCRAdjCombo;
 
-	static {
-		LocalizedMessages.initialize(AdvantageEditor.class);
-	}
-
 	/**
 	 * Creates a new {@link Advantage} editor.
 	 * 
@@ -151,9 +151,9 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		int ri = 0;
 		outerGrid.add(innerGrid, 0, 1);
 
-		mNameField = createField(advantage.getName(), null, MSG_NAME_TOOLTIP);
+		mNameField = createField(advantage.getName(), null, NAME_TOOLTIP);
 		mNameField.getDocument().addDocumentListener(this);
-		innerGrid.add(new FlexComponent(createLabel(MSG_NAME, mNameField), Alignment.RIGHT_BOTTOM, null), ri, 0);
+		innerGrid.add(new FlexComponent(createLabel(NAME, mNameField), Alignment.RIGHT_BOTTOM, null), ri, 0);
 		innerGrid.add(mNameField, ri++, 1);
 
 		boolean notContainer = !advantage.canHaveChildren();
@@ -166,12 +166,12 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
 			FlexRow row = new FlexRow();
 
-			mBasePointsField = createField(-9999, 9999, mRow.getPoints(), MSG_BASE_POINTS_TOOLTIP);
+			mBasePointsField = createField(-9999, 9999, mRow.getPoints(), BASE_POINTS_TOOLTIP);
 			row.add(mBasePointsField);
-			innerGrid.add(new FlexComponent(createLabel(MSG_BASE_POINTS, mBasePointsField), Alignment.RIGHT_BOTTOM, null), ri, 0);
+			innerGrid.add(new FlexComponent(createLabel(BASE_POINTS, mBasePointsField), Alignment.RIGHT_BOTTOM, null), ri, 0);
 			innerGrid.add(row, ri++, 1);
 
-			mLevelTypeCombo = new JComboBox<>(new String[] { MSG_NO_LEVELS, MSG_HAS_LEVELS });
+			mLevelTypeCombo = new JComboBox<>(new String[] { NO_LEVELS, HAS_LEVELS });
 			mLevelTypeCombo.setSelectedIndex(mRow.isLeveled() ? 1 : 0);
 			UIUtilities.setOnlySize(mLevelTypeCombo, mLevelTypeCombo.getPreferredSize());
 			mLevelTypeCombo.setEnabled(mIsEditable);
@@ -179,35 +179,35 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 			add(mLevelTypeCombo);
 			row.add(mLevelTypeCombo);
 
-			mLevelField = createField(0, 999, mLastLevel, MSG_LEVEL_TOOLTIP);
-			row.add(createLabel(MSG_LEVEL, mLevelField));
+			mLevelField = createField(0, 999, mLastLevel, LEVEL_TOOLTIP);
+			row.add(createLabel(LEVEL, mLevelField));
 			row.add(mLevelField);
 
-			mLevelPointsField = createField(-9999, 9999, mLastPointsPerLevel, MSG_LEVEL_POINTS_TOOLTIP);
-			row.add(createLabel(MSG_LEVEL_POINTS, mLevelPointsField));
+			mLevelPointsField = createField(-9999, 9999, mLastPointsPerLevel, LEVEL_POINTS_TOOLTIP);
+			row.add(createLabel(LEVEL_POINTS, mLevelPointsField));
 			row.add(mLevelPointsField);
 
 			row.add(new FlexSpacer(0, 0, true, false));
 
-			mPointsField = createField(-9999999, 9999999, mRow.getAdjustedPoints(), MSG_TOTAL_POINTS_TOOLTIP);
+			mPointsField = createField(-9999999, 9999999, mRow.getAdjustedPoints(), TOTAL_POINTS_TOOLTIP);
 			mPointsField.setEnabled(false);
-			row.add(createLabel(MSG_TOTAL_POINTS, mPointsField));
+			row.add(createLabel(TOTAL_POINTS, mPointsField));
 			row.add(mPointsField);
 
 			if (!mRow.isLeveled()) {
-				mLevelField.setText(EMPTY);
+				mLevelField.setText(""); //$NON-NLS-1$
 				mLevelField.setEnabled(false);
-				mLevelPointsField.setText(EMPTY);
+				mLevelPointsField.setText(""); //$NON-NLS-1$
 				mLevelPointsField.setEnabled(false);
 			}
 		}
 
-		mNotesField = createField(advantage.getNotes(), null, MSG_NOTES_TOOLTIP);
-		innerGrid.add(new FlexComponent(createLabel(MSG_NOTES, mNotesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
+		mNotesField = createField(advantage.getNotes(), null, NOTES_TOOLTIP);
+		innerGrid.add(new FlexComponent(createLabel(NOTES, mNotesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
 		innerGrid.add(mNotesField, ri++, 1);
 
-		mCategoriesField = createField(advantage.getCategoriesAsString(), null, MSG_CATEGORIES_TOOLTIP);
-		innerGrid.add(new FlexComponent(createLabel(MSG_CATEGORIES, mCategoriesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
+		mCategoriesField = createField(advantage.getCategoriesAsString(), null, CATEGORIES_TOOLTIP);
+		innerGrid.add(new FlexComponent(createLabel(CATEGORIES, mCategoriesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
 		innerGrid.add(mCategoriesField, ri++, 1);
 
 		mCRCombo = new JComboBox<>(SelfControlRoll.values());
@@ -217,12 +217,12 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		mCRCombo.addActionListener(this);
 		add(mCRCombo);
 		mCRAdjCombo = new JComboBox<>(SelfControlRollAdjustments.values());
-		mCRAdjCombo.setToolTipText(MSG_CR_ADJ_TOOLTIP);
+		mCRAdjCombo.setToolTipText(CR_ADJ_TOOLTIP);
 		mCRAdjCombo.setSelectedIndex(mRow.getCRAdj().ordinal());
 		UIUtilities.setOnlySize(mCRAdjCombo, mCRAdjCombo.getPreferredSize());
 		mCRAdjCombo.setEnabled(mIsEditable && mRow.getCR() != SelfControlRoll.NONE_REQUIRED);
 		add(mCRAdjCombo);
-		innerGrid.add(new FlexComponent(createLabel(MSG_CR, mCRCombo), Alignment.RIGHT_BOTTOM, null), ri, 0);
+		innerGrid.add(new FlexComponent(createLabel(CR, mCRCombo), Alignment.RIGHT_BOTTOM, null), ri, 0);
 		FlexRow row = new FlexRow();
 		row.add(mCRCombo);
 		row.add(mCRAdjCombo);
@@ -231,44 +231,44 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		row = new FlexRow();
 		innerGrid.add(row, ri, 1);
 		if (notContainer) {
-			JLabel label = new JLabel(MSG_TYPE, SwingConstants.RIGHT);
-			label.setToolTipText(MSG_TYPE_TOOLTIP);
+			JLabel label = new JLabel(TYPE, SwingConstants.RIGHT);
+			label.setToolTipText(TYPE_TOOLTIP);
 			add(label);
 			innerGrid.add(new FlexComponent(label, Alignment.RIGHT_BOTTOM, null), ri++, 0);
 
-			mMentalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_MENTAL) == Advantage.TYPE_MASK_MENTAL, MSG_MENTAL);
+			mMentalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_MENTAL) == Advantage.TYPE_MASK_MENTAL, MENTAL);
 			row.add(mMentalType);
 			row.add(createTypeLabel(GCSImages.getMentalTypeIcon(), mMentalType));
 
-			mPhysicalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_PHYSICAL) == Advantage.TYPE_MASK_PHYSICAL, MSG_PHYSICAL);
+			mPhysicalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_PHYSICAL) == Advantage.TYPE_MASK_PHYSICAL, PHYSICAL);
 			row.add(mPhysicalType);
 			row.add(createTypeLabel(GCSImages.getPhysicalTypeIcon(), mPhysicalType));
 
-			mSocialType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SOCIAL) == Advantage.TYPE_MASK_SOCIAL, MSG_SOCIAL);
+			mSocialType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SOCIAL) == Advantage.TYPE_MASK_SOCIAL, SOCIAL);
 			row.add(mSocialType);
 			row.add(createTypeLabel(GCSImages.getSocialTypeIcon(), mSocialType));
 
-			mExoticType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_EXOTIC) == Advantage.TYPE_MASK_EXOTIC, MSG_EXOTIC);
+			mExoticType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_EXOTIC) == Advantage.TYPE_MASK_EXOTIC, EXOTIC);
 			row.add(mExoticType);
 			row.add(createTypeLabel(GCSImages.getExoticTypeIcon(), mExoticType));
 
-			mSupernaturalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SUPERNATURAL) == Advantage.TYPE_MASK_SUPERNATURAL, MSG_SUPERNATURAL);
+			mSupernaturalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SUPERNATURAL) == Advantage.TYPE_MASK_SUPERNATURAL, SUPERNATURAL);
 			row.add(mSupernaturalType);
 			row.add(createTypeLabel(GCSImages.getSupernaturalTypeIcon(), mSupernaturalType));
 		} else {
 			mContainerTypeCombo = new JComboBox<>(AdvantageContainerType.values());
 			mContainerTypeCombo.setSelectedItem(mRow.getContainerType());
 			UIUtilities.setOnlySize(mContainerTypeCombo, mContainerTypeCombo.getPreferredSize());
-			mContainerTypeCombo.setToolTipText(MSG_CONTAINER_TYPE_TOOLTIP);
+			mContainerTypeCombo.setToolTipText(CONTAINER_TYPE_TOOLTIP);
 			add(mContainerTypeCombo);
 			row.add(mContainerTypeCombo);
-			innerGrid.add(new FlexComponent(new LinkedLabel(MSG_CONTAINER_TYPE, mContainerTypeCombo), Alignment.RIGHT_BOTTOM, null), ri++, 0);
+			innerGrid.add(new FlexComponent(new LinkedLabel(CONTAINER_TYPE, mContainerTypeCombo), Alignment.RIGHT_BOTTOM, null), ri++, 0);
 		}
 
 		row.add(new FlexSpacer(0, 0, true, false));
 
-		mReferenceField = createField(mRow.getReference(), "MMMMMM", MSG_REFERENCE_TOOLTIP); //$NON-NLS-1$
-		row.add(createLabel(MSG_REFERENCE, mReferenceField));
+		mReferenceField = createField(mRow.getReference(), "MMMMMM", REFERENCE_TOOLTIP); //$NON-NLS-1$
+		row.add(createLabel(REFERENCE, mReferenceField));
 		row.add(mReferenceField);
 
 		mTabPanel = new JTabbedPane();
@@ -454,7 +454,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	}
 
 	private boolean isLeveled() {
-		return mLevelTypeCombo.getSelectedItem() == MSG_HAS_LEVELS;
+		return mLevelTypeCombo.getSelectedItem() == HAS_LEVELS;
 	}
 
 	private void levelTypeChanged() {
@@ -466,8 +466,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		} else {
 			mLastLevel = getLevels();
 			mLastPointsPerLevel = getPointsPerLevel();
-			mLevelField.setText(EMPTY);
-			mLevelPointsField.setText(EMPTY);
+			mLevelField.setText(""); //$NON-NLS-1$
+			mLevelPointsField.setText(""); //$NON-NLS-1$
 		}
 		mLevelField.setEnabled(isLeveled);
 		mLevelPointsField.setEnabled(isLeveled);
@@ -523,7 +523,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	}
 
 	private void nameChanged() {
-		LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : MSG_NAME_CANNOT_BE_EMPTY);
+		LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : NAME_CANNOT_BE_EMPTY);
 	}
 
 	@Override

@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,55 +23,38 @@
 
 package com.trollworks.gcs.advantage;
 
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 
+@Localized({
+				@LS(key = "GROUP", msg = "Group"),
+				@LS(key = "METATRAIT", msg = "Meta-Trait"),
+				@LS(key = "RACE", msg = "Race"),
+				@LS(key = "ALTERNATIVE_ABILITIES", msg = "Alternative Abilities"),
+})
 /** The types of {@link Advantage} containers. */
 public enum AdvantageContainerType {
 	/** The standard grouping container type. */
-	GROUP {
-		@Override
-		public String toString() {
-			return MSG_GROUP;
-		}
-	},
+	GROUP,
 	/**
 	 * The meta-trait grouping container type. Acts as one normal trait, listed as an advantage if
 	 * its point total is positive, or a disadvantage if it is negative.
 	 */
-	METATRAIT {
-		@Override
-		public String toString() {
-			return MSG_METATRAIT;
-		}
-	},
+	METATRAIT,
 	/**
 	 * The race grouping container type. Its point cost is tracked separately from normal advantages
 	 * and disadvantages.
 	 */
-	RACE {
-		@Override
-		public String toString() {
-			return MSG_RACE;
-		}
-	},
+	RACE,
 	/**
 	 * The alternative abilities grouping container type. It behaves similar to a {@link #METATRAIT}
 	 * , but applies the rules for alternative abilities (see B61 and P11) to its immediate
 	 * children.
 	 */
-	ALTERNATIVE_ABILITIES {
-		@Override
-		public String toString() {
-			return MSG_ALTERNATIVE_ABILITIES;
-		}
-	};
+	ALTERNATIVE_ABILITIES;
 
-	static String	MSG_GROUP;
-	static String	MSG_METATRAIT;
-	static String	MSG_RACE;
-	static String	MSG_ALTERNATIVE_ABILITIES;
-
-	static {
-		LocalizedMessages.initialize(AdvantageContainerType.class);
+	@Override
+	public String toString() {
+		return AdvantageContainerType_LS.toString(this);
 	}
 }

@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.advantage;
+
+import static com.trollworks.gcs.advantage.AdvantageColumn_LS.*;
 
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
@@ -32,9 +34,10 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.image.Images;
 import com.trollworks.ttk.text.Numbers;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Cell;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.widgets.outline.ImageCell;
@@ -48,18 +51,25 @@ import java.util.HashMap;
 
 import javax.swing.SwingConstants;
 
+@Localized({
+				@LS(key = "DESCRIPTION", msg = "Advantages & Disadvantages"),
+				@LS(key = "DESCRIPTION_TOOLTIP", msg = "The name, level and notes describing an advantage"),
+				@LS(key = "POINTS", msg = "Pts"),
+				@LS(key = "POINTS_TOOLTIP", msg = "The points spent in the advantage"),
+				@LS(key = "TYPE", msg = "Type"),
+				@LS(key = "TYPE_TOOLTIP", msg = "The type of advantage"),
+				@LS(key = "CATEGORY", msg = "Category"),
+				@LS(key = "CATEGORY_TOOLTIP", msg = "The category or categories the advantage belongs to"),
+				@LS(key = "REFERENCE", msg = "Ref"),
+				@LS(key = "REFERENCE_TOOLTIP", msg = "A reference to the book and page this advantage appears\non (e.g. B22 would refer to \"Basic Set\", page 22)"),
+})
 /** Definitions for advantage columns. */
 public enum AdvantageColumn {
 	/** The advantage name/description. */
 	DESCRIPTION {
 		@Override
-		public String toString() {
-			return MSG_DESCRIPTION;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_DESCRIPTION_TOOLTIP;
+			return DESCRIPTION_TOOLTIP;
 		}
 
 		@Override
@@ -98,13 +108,8 @@ public enum AdvantageColumn {
 	/** The points spent in the advantage. */
 	POINTS {
 		@Override
-		public String toString() {
-			return MSG_POINTS;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_POINTS_TOOLTIP;
+			return POINTS_TOOLTIP;
 		}
 
 		@Override
@@ -132,13 +137,8 @@ public enum AdvantageColumn {
 		private HashMap<Integer, BufferedImage>	mMap;
 
 		@Override
-		public String toString() {
-			return MSG_TYPE;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_TYPE_TOOLTIP;
+			return TYPE_TOOLTIP;
 		}
 
 		@Override
@@ -232,13 +232,8 @@ public enum AdvantageColumn {
 	/** The category. */
 	CATEGORY {
 		@Override
-		public String toString() {
-			return MSG_CATEGORY;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_CATEGORY_TOOLTIP;
+			return CATEGORY_TOOLTIP;
 		}
 
 		@Override
@@ -264,13 +259,8 @@ public enum AdvantageColumn {
 	/** The page reference. */
 	REFERENCE {
 		@Override
-		public String toString() {
-			return MSG_REFERENCE;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_REFERENCE_TOOLTIP;
+			return REFERENCE_TOOLTIP;
 		}
 
 		@Override
@@ -294,19 +284,9 @@ public enum AdvantageColumn {
 		}
 	};
 
-	static String	MSG_DESCRIPTION;
-	static String	MSG_DESCRIPTION_TOOLTIP;
-	static String	MSG_POINTS;
-	static String	MSG_POINTS_TOOLTIP;
-	static String	MSG_TYPE;
-	static String	MSG_TYPE_TOOLTIP;
-	static String	MSG_CATEGORY;
-	static String	MSG_CATEGORY_TOOLTIP;
-	static String	MSG_REFERENCE;
-	static String	MSG_REFERENCE_TOOLTIP;
-
-	static {
-		LocalizedMessages.initialize(AdvantageColumn.class);
+	@Override
+	public String toString() {
+		return AdvantageColumn_LS.toString(this);
 	}
 
 	/**

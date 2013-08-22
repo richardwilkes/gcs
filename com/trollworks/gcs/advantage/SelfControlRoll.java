@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,10 +23,18 @@
 
 package com.trollworks.gcs.advantage;
 
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.text.Numbers;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.xml.XMLWriter;
 
+@Localized({
+				@LS(key = "CR6", msg = "CR: 6 (Rarely)"),
+				@LS(key = "CR9", msg = "CR: 9 (Fairly Often)"),
+				@LS(key = "CR12", msg = "CR: 12 (Quite Often)"),
+				@LS(key = "CR15", msg = "CR: 15 (Almost All The Time)"),
+				@LS(key = "NONE_REQUIRED", msg = "None Required"),
+})
 /** The possible self-control rolls, from page B121. */
 public enum SelfControlRoll {
 	/** Rarely. */
@@ -34,11 +42,6 @@ public enum SelfControlRoll {
 		@Override
 		public double getMultiplier() {
 			return 2;
-		}
-
-		@Override
-		public String toString() {
-			return MSG_CR6;
 		}
 
 		@Override
@@ -54,11 +57,6 @@ public enum SelfControlRoll {
 		}
 
 		@Override
-		public String toString() {
-			return MSG_CR9;
-		}
-
-		@Override
 		public int getCR() {
 			return 9;
 		}
@@ -68,11 +66,6 @@ public enum SelfControlRoll {
 		@Override
 		public double getMultiplier() {
 			return 1;
-		}
-
-		@Override
-		public String toString() {
-			return MSG_CR12;
 		}
 
 		@Override
@@ -88,11 +81,6 @@ public enum SelfControlRoll {
 		}
 
 		@Override
-		public String toString() {
-			return MSG_CR15;
-		}
-
-		@Override
 		public int getCR() {
 			return 15;
 		}
@@ -102,11 +90,6 @@ public enum SelfControlRoll {
 		@Override
 		public double getMultiplier() {
 			return 1;
-		}
-
-		@Override
-		public String toString() {
-			return MSG_NONE;
 		}
 
 		@Override
@@ -125,17 +108,8 @@ public enum SelfControlRoll {
 		}
 	};
 
-	static String				MSG_CR6;
-	static String				MSG_CR9;
-	static String				MSG_CR12;
-	static String				MSG_CR15;
-	static String				MSG_NONE;
 	/** The attribute tag use for {@link SelfControlRollAdjustments}. */
 	public static final String	ATTR_ADJUSTMENT	= "adj";	//$NON-NLS-1$
-
-	static {
-		LocalizedMessages.initialize(SelfControlRoll.class);
-	}
 
 	/**
 	 * @param tagValue The value within a tag representing a {@link SelfControlRoll}.
@@ -149,6 +123,11 @@ public enum SelfControlRoll {
 			}
 		}
 		return NONE_REQUIRED;
+	}
+
+	@Override
+	public String toString() {
+		return SelfControlRoll_LS.toString(this);
 	}
 
 	/** @return The description, along with the cost. */

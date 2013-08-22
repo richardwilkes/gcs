@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.advantage;
+
+import static com.trollworks.gcs.advantage.Advantage_LS.*;
 
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
@@ -36,9 +38,10 @@ import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.collections.Enums;
 import com.trollworks.ttk.collections.FilteredIterator;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
@@ -52,10 +55,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+@Localized({
+				@LS(key = "DEFAULT_NAME", msg = "Advantage"),
+})
 /** A GURPS Advantage. */
 public class Advantage extends ListRow {
 	private static final int			CURRENT_VERSION				= 2;
-	private static String				MSG_DEFAULT_NAME;
 	/** The extension for the old Advantage lists. */
 	public static final String			OLD_ADVANTAGE_EXTENSION		= ".adq";											//$NON-NLS-1$
 	/** The XML tag used for items. */
@@ -122,10 +127,6 @@ public class Advantage extends ListRow {
 	private ArrayList<WeaponStats>		mWeapons;
 	private ArrayList<Modifier>			mModifiers;
 
-	static {
-		LocalizedMessages.initialize(Advantage.class);
-	}
-
 	/**
 	 * Creates a new advantage.
 	 * 
@@ -135,7 +136,7 @@ public class Advantage extends ListRow {
 	public Advantage(DataFile dataFile, boolean isContainer) {
 		super(dataFile, isContainer);
 		mType = TYPE_MASK_PHYSICAL;
-		mName = MSG_DEFAULT_NAME;
+		mName = DEFAULT_NAME;
 		mCR = SelfControlRoll.NONE_REQUIRED;
 		mCRAdj = SelfControlRollAdjustments.NONE;
 		mLevels = -1;
@@ -226,7 +227,7 @@ public class Advantage extends ListRow {
 	protected void prepareForLoad(LoadState state) {
 		super.prepareForLoad(state);
 		mType = TYPE_MASK_PHYSICAL;
-		mName = MSG_DEFAULT_NAME;
+		mName = DEFAULT_NAME;
 		mCR = SelfControlRoll.NONE_REQUIRED;
 		mCRAdj = SelfControlRollAdjustments.NONE;
 		mLevels = -1;
@@ -405,7 +406,7 @@ public class Advantage extends ListRow {
 
 	@Override
 	public String getLocalizedName() {
-		return MSG_DEFAULT_NAME;
+		return DEFAULT_NAME;
 	}
 
 	/** @return The name. */

@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,29 +23,44 @@
 
 package com.trollworks.gcs.advantage;
 
+import static com.trollworks.gcs.advantage.SelfControlRollAdjustments_LS.*;
+
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.feature.Bonus;
 import com.trollworks.gcs.feature.LeveledAmount;
 import com.trollworks.gcs.feature.SkillBonus;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.text.Numbers;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
+@Localized({
+				@LS(key = "NONE", msg = "None"),
+				@LS(key = "ACTION_PENALTY", msg = "Includes an Action Penalty for Failure"),
+				@LS(key = "ACTION_PENALTY_DESCRIPTION", msg = "{0} Action Penalty"),
+				@LS(key = "REACTION_PENALTY", msg = "Includes a Reaction Penalty for Failure"),
+				@LS(key = "REACTION_PENALTY_DESCRIPTION", msg = "{0} Reaction Penalty"),
+				@LS(key = "FRIGHT_CHECK_PENALTY", msg = "Includes Fright Check Penalty"),
+				@LS(key = "FRIGHT_CHECK_PENALTY_DESCRIPTION", msg = "{0} Fright Check Penalty"),
+				@LS(key = "FRIGHT_CHECK_BONUS", msg = "Includes Fright Check Bonus"),
+				@LS(key = "FRIGHT_CHECK_BONUS_DESCRIPTION", msg = "{0} Fright Check Bonus"),
+				@LS(key = "MINOR_COST_OF_LIVING_INCREASE", msg = "Includes a Minor Cost of Living Increase"),
+				@LS(key = "MINOR_COST_OF_LIVING_INCREASE_DESCRIPTION", msg = "{0}% Cost of Living Increase"),
+				@LS(key = "MAJOR_COST_OF_LIVING_INCREASE", msg = "Includes a Major Cost of Living Increase and Merchant Skill Penalty"),
+				@LS(key = "MAJOR_COST_OF_LIVING_INCREASE_DESCRIPTION", msg = "{0}% Cost of Living Increase"),
+})
 /** The possible adjustments for self-control rolls. */
 public enum SelfControlRollAdjustments {
 	/** None. */
 	NONE {
 		@Override
-		public String toString() {
-			return MSG_NONE;
-		}
-
-		@Override
 		public String getDescription(SelfControlRoll cr) {
-			return EMPTY;
+			return ""; //$NON-NLS-1$
 		}
 
 		@Override
@@ -56,16 +71,11 @@ public enum SelfControlRollAdjustments {
 	/** General action penalty. */
 	ACTION_PENALTY {
 		@Override
-		public String toString() {
-			return MSG_ACTION_PENALTY;
-		}
-
-		@Override
 		public String getDescription(SelfControlRoll cr) {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
-				return EMPTY;
+				return ""; //$NON-NLS-1$
 			}
-			return MessageFormat.format(MSG_ACTION_PENALTY_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
+			return MessageFormat.format(ACTION_PENALTY_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
 		}
 
 		@Override
@@ -76,16 +86,11 @@ public enum SelfControlRollAdjustments {
 	/** Reaction penalty. */
 	REACTION_PENALTY {
 		@Override
-		public String toString() {
-			return MSG_REACTION_PENALTY;
-		}
-
-		@Override
 		public String getDescription(SelfControlRoll cr) {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
-				return EMPTY;
+				return ""; //$NON-NLS-1$
 			}
-			return MessageFormat.format(MSG_REACTION_PENALTY_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
+			return MessageFormat.format(REACTION_PENALTY_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
 		}
 
 		@Override
@@ -96,16 +101,11 @@ public enum SelfControlRollAdjustments {
 	/** Fright Check penalty. */
 	FRIGHT_CHECK_PENALTY {
 		@Override
-		public String toString() {
-			return MSG_FRIGHT_CHECK_PENALTY;
-		}
-
-		@Override
 		public String getDescription(SelfControlRoll cr) {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
-				return EMPTY;
+				return ""; //$NON-NLS-1$
 			}
-			return MessageFormat.format(MSG_FRIGHT_CHECK_PENALTY_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
+			return MessageFormat.format(FRIGHT_CHECK_PENALTY_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
 		}
 
 		@Override
@@ -116,16 +116,11 @@ public enum SelfControlRollAdjustments {
 	/** Fright Check bonus. */
 	FRIGHT_CHECK_BONUS {
 		@Override
-		public String toString() {
-			return MSG_FRIGHT_CHECK_BONUS;
-		}
-
-		@Override
 		public String getDescription(SelfControlRoll cr) {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
-				return EMPTY;
+				return ""; //$NON-NLS-1$
 			}
-			return MessageFormat.format(MSG_FRIGHT_CHECK_BONUS_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
+			return MessageFormat.format(FRIGHT_CHECK_BONUS_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
 		}
 
 		@Override
@@ -136,16 +131,11 @@ public enum SelfControlRollAdjustments {
 	/** Minor cost of living increase. */
 	MINOR_COST_OF_LIVING_INCREASE {
 		@Override
-		public String toString() {
-			return MSG_MINOR_COST_OF_LIVING_INCREASE;
-		}
-
-		@Override
 		public String getDescription(SelfControlRoll cr) {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
-				return EMPTY;
+				return ""; //$NON-NLS-1$
 			}
-			return MessageFormat.format(MSG_MINOR_COST_OF_LIVING_INCREASE_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
+			return MessageFormat.format(MINOR_COST_OF_LIVING_INCREASE_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
 		}
 
 		@Override
@@ -156,16 +146,11 @@ public enum SelfControlRollAdjustments {
 	/** Major cost of living increase plus merchant penalty. */
 	MAJOR_COST_OF_LIVING_INCREASE {
 		@Override
-		public String toString() {
-			return MSG_MAJOR_COST_OF_LIVING_INCREASE;
-		}
-
-		@Override
 		public String getDescription(SelfControlRoll cr) {
 			if (cr == SelfControlRoll.NONE_REQUIRED) {
-				return EMPTY;
+				return ""; //$NON-NLS-1$
 			}
-			return MessageFormat.format(MSG_MAJOR_COST_OF_LIVING_INCREASE_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
+			return MessageFormat.format(MAJOR_COST_OF_LIVING_INCREASE_DESCRIPTION, Numbers.formatWithForcedSign(getAdjustment(cr)));
 		}
 
 		@Override
@@ -185,8 +170,8 @@ public enum SelfControlRollAdjustments {
 		}
 
 		@Override
-		public ArrayList<Bonus> getBonuses(SelfControlRoll cr) {
-			ArrayList<Bonus> list = new ArrayList<>();
+		public List<Bonus> getBonuses(SelfControlRoll cr) {
+			List<Bonus> list = new ArrayList<>();
 			SkillBonus bonus = new SkillBonus();
 			StringCriteria criteria = bonus.getNameCriteria();
 			criteria.setType(StringCompareType.IS);
@@ -202,23 +187,9 @@ public enum SelfControlRollAdjustments {
 		}
 	};
 
-	static String		MSG_NONE;
-	static String		MSG_ACTION_PENALTY;
-	static String		MSG_ACTION_PENALTY_DESCRIPTION;
-	static String		MSG_REACTION_PENALTY;
-	static String		MSG_REACTION_PENALTY_DESCRIPTION;
-	static String		MSG_FRIGHT_CHECK_PENALTY;
-	static String		MSG_FRIGHT_CHECK_PENALTY_DESCRIPTION;
-	static String		MSG_FRIGHT_CHECK_BONUS;
-	static String		MSG_FRIGHT_CHECK_BONUS_DESCRIPTION;
-	static String		MSG_MINOR_COST_OF_LIVING_INCREASE;
-	static String		MSG_MINOR_COST_OF_LIVING_INCREASE_DESCRIPTION;
-	static String		MSG_MAJOR_COST_OF_LIVING_INCREASE;
-	static String		MSG_MAJOR_COST_OF_LIVING_INCREASE_DESCRIPTION;
-	static final String	EMPTY	= "";									//$NON-NLS-1$
-
-	static {
-		LocalizedMessages.initialize(SelfControlRollAdjustments.class);
+	@Override
+	public String toString() {
+		return SelfControlRollAdjustments_LS.toString(this);
 	}
 
 	/**
@@ -238,7 +209,7 @@ public enum SelfControlRollAdjustments {
 	 * @return The set of bonuses that this adjustment provides.
 	 */
 	@SuppressWarnings("static-method")
-	public ArrayList<Bonus> getBonuses(SelfControlRoll cr) {
-		return new ArrayList<>();
+	public List<Bonus> getBonuses(SelfControlRoll cr) {
+		return Collections.emptyList();
 	}
 }

@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.advantage;
+
+import static com.trollworks.gcs.advantage.AdvantageOutline_LS.*;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
@@ -34,8 +36,9 @@ import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.MultipleRowUndo;
 import com.trollworks.gcs.widgets.outline.RowPostProcessor;
 import com.trollworks.gcs.widgets.outline.RowUndo;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.collections.FilteredIterator;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.OutlineModel;
 import com.trollworks.ttk.widgets.outline.Row;
 
@@ -44,15 +47,12 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+@Localized({
+				@LS(key = "INCREMENT", msg = "Increment Level"),
+				@LS(key = "DECREMENT", msg = "Decrement Level"),
+})
 /** An outline specifically for Advantages. */
 public class AdvantageOutline extends ListOutline implements Incrementable {
-	private static String	MSG_INCREMENT;
-	private static String	MSG_DECREMENT;
-
-	static {
-		LocalizedMessages.initialize(AdvantageOutline.class);
-	}
-
 	private static OutlineModel extractModel(DataFile dataFile) {
 		if (dataFile instanceof GURPSCharacter) {
 			return ((GURPSCharacter) dataFile).getAdvantagesModel();
@@ -114,12 +114,12 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
 
 	@Override
 	public String getIncrementTitle() {
-		return MSG_INCREMENT;
+		return INCREMENT;
 	}
 
 	@Override
 	public String getDecrementTitle() {
-		return MSG_DECREMENT;
+		return DECREMENT;
 	}
 
 	@Override
