@@ -20,7 +20,6 @@
 		</copy>
 
 		<!-- Update the version and copyright values. -->
-		<property file="build.number"/>
 		<tstamp>
 			<format property="VERSION_YEAR" pattern="yyyy"/>
 		</tstamp>
@@ -32,7 +31,7 @@
 					replace='\1 ${VERSION}'/>
 		<replaceregexp file="${JavaBuildDir}/com/trollworks/gcs/app/GCS.properties"
 					match='(APP_COPYRIGHT_YEARS.+=)(.*)'
-					replace='\1 1998-2002, 2005-${VERSION_YEAR}'/>
+					replace='\1 1998-${VERSION_YEAR}'/>
 
 		<!-- Load the remaining property values. -->
 		<property file="${JavaBuildDir}/com/trollworks/gcs/app/GCS.properties"/>
