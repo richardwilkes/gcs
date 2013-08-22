@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,15 +23,18 @@
 
 package com.trollworks.gcs.app;
 
+import static com.trollworks.gcs.app.StartupDialog_LS.*;
+
 import com.trollworks.gcs.menu.data.DataMenu;
 import com.trollworks.gcs.menu.file.NewCharacterSheetCommand;
 import com.trollworks.gcs.menu.file.NewCharacterTemplateCommand;
 import com.trollworks.gcs.menu.file.NewLibraryCommand;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.PrecisionLayout;
 import com.trollworks.ttk.menu.file.FileType;
 import com.trollworks.ttk.menu.file.OpenCommand;
 import com.trollworks.ttk.menu.file.RecentFilesMenu;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Path;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.utility.WindowSizeEnforcer;
@@ -65,30 +68,28 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+@Localized({
+				@LS(key = "TITLE", msg = "Choose An Action"),
+				@LS(key = "CREATE", msg = "Create"),
+				@LS(key = "RECENT_FILES", msg = "Recent Files"),
+				@LS(key = "NEW_CHARACTER_SHEET", msg = "Character Sheet"),
+				@LS(key = "NEW_LIBRARY", msg = "Library"),
+				@LS(key = "NEW_TEMPLATE", msg = "Template"),
+				@LS(key = "CHOOSE_OTHER", msg = "Other\u2026"),
+				@LS(key = "OPEN", msg = "Open"),
+})
 /** The initial dialog user's see upon launch if no files have been specified. */
 public class StartupDialog extends JDialog implements WindowFocusListener, ActionListener, MouseListener, KeyListener, ListSelectionListener {
-	private static String	MSG_TITLE;
-	private static String	MSG_CREATE;
-	private static String	MSG_RECENT_FILES;
-	private static String	MSG_NEW_CHARACTER_SHEET;
-	private static String	MSG_NEW_LIBRARY;
-	private static String	MSG_NEW_TEMPLATE;
-	private static String	MSG_CHOOSE_OTHER;
-	private static String	MSG_OPEN;
-	private JButton			mSheetButton;
-	private JButton			mLibraryButton;
-	private JButton			mTemplateButton;
-	private JButton			mChooseOtherButton;
-	private JButton			mOpenButton;
-	private JList<File>		mRecentFilesList;
-
-	static {
-		LocalizedMessages.initialize(StartupDialog.class);
-	}
+	private JButton		mSheetButton;
+	private JButton		mLibraryButton;
+	private JButton		mTemplateButton;
+	private JButton		mChooseOtherButton;
+	private JButton		mOpenButton;
+	private JList<File>	mRecentFilesList;
 
 	/** Creates a new {@link StartupDialog}. */
 	public StartupDialog() {
-		super(JOptionPane.getRootFrame(), MSG_TITLE, true);
+		super(JOptionPane.getRootFrame(), TITLE, true);
 		Container content = getContentPane();
 		content.setLayout(new PrecisionLayout("margins:10 columns:2")); //$NON-NLS-1$
 		content.add(createCreatePanel(), "vGrab:yes vAlign:fill hAlign:fill"); //$NON-NLS-1$
@@ -103,17 +104,17 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 
 	private JPanel createCreatePanel() {
 		JPanel panel = new JPanel(new PrecisionLayout());
-		panel.setBorder(new TitledBorder(MSG_CREATE));
-		mSheetButton = createButton(panel, MSG_NEW_CHARACTER_SHEET, GCSImages.getCharacterSheetIcon(true));
-		mLibraryButton = createButton(panel, MSG_NEW_LIBRARY, GCSImages.getLibraryIcon(true));
-		mTemplateButton = createButton(panel, MSG_NEW_TEMPLATE, GCSImages.getTemplateIcon(true));
+		panel.setBorder(new TitledBorder(CREATE));
+		mSheetButton = createButton(panel, NEW_CHARACTER_SHEET, GCSImages.getCharacterSheetIcon(true));
+		mLibraryButton = createButton(panel, NEW_LIBRARY, GCSImages.getLibraryIcon(true));
+		mTemplateButton = createButton(panel, NEW_TEMPLATE, GCSImages.getTemplateIcon(true));
 		UIUtilities.adjustToSameSize(panel.getComponents());
 		return panel;
 	}
 
 	private JPanel createRecentFilesPanel() {
 		JPanel panel = new JPanel(new PrecisionLayout("columns:2 equalColumns:yes")); //$NON-NLS-1$
-		panel.setBorder(new TitledBorder(MSG_RECENT_FILES));
+		panel.setBorder(new TitledBorder(RECENT_FILES));
 		mRecentFilesList = new JList<>(RecentFilesMenu.getRecents().toArray(new File[0]));
 		mRecentFilesList.setCellRenderer(new DefaultListCellRenderer() {
 			@Override
@@ -130,10 +131,10 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 		JScrollPane scrollPane = new JScrollPane(mRecentFilesList);
 		scrollPane.setMinimumSize(new Dimension(150, 75));
 		panel.add(scrollPane, "hSpan:2 vGrab:yes hGrab:yes vAlign:fill hAlign:fill"); //$NON-NLS-1$
-		mChooseOtherButton = new JButton(MSG_CHOOSE_OTHER);
+		mChooseOtherButton = new JButton(CHOOSE_OTHER);
 		mChooseOtherButton.addActionListener(this);
 		panel.add(mChooseOtherButton, "hAlign:middle"); //$NON-NLS-1$
-		mOpenButton = new JButton(MSG_OPEN);
+		mOpenButton = new JButton(OPEN);
 		mOpenButton.setEnabled(false);
 		mOpenButton.addActionListener(this);
 		mOpenButton.setDefaultCapable(true);

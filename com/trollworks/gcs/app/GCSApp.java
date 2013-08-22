@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.app;
+
+import static com.trollworks.gcs.app.GCSApp_LS.*;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.SheetWindow;
@@ -38,6 +40,8 @@ import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.template.TemplateWindow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.cmdline.CmdLine;
 import com.trollworks.ttk.menu.StdMenuBar;
 import com.trollworks.ttk.menu.window.WindowMenu;
@@ -45,7 +49,6 @@ import com.trollworks.ttk.preferences.FontPreferences;
 import com.trollworks.ttk.preferences.MenuKeyPreferences;
 import com.trollworks.ttk.preferences.PreferencesWindow;
 import com.trollworks.ttk.utility.App;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UpdateChecker;
 import com.trollworks.ttk.utility.WindowsRegistry;
 import com.trollworks.ttk.widgets.AppWindow;
@@ -53,20 +56,17 @@ import com.trollworks.ttk.widgets.AppWindow;
 import java.io.File;
 import java.util.HashMap;
 
+@Localized({
+				@LS(key = "SHEET_DESCRIPTION", msg = "GURPS Character Sheet"),
+				@LS(key = "LIBRARY_DESCRIPTION", msg = "GCS Library"),
+				@LS(key = "TEMPLATE_DESCRIPTION", msg = "GCS Character Template"),
+				@LS(key = "TRAITS_DESCRIPTION", msg = "GCS Traits"),
+				@LS(key = "EQUIPMENT_DESCRIPTION", msg = "GCS Equipment"),
+				@LS(key = "SKILLS_DESCRIPTION", msg = "GCS Skills"),
+				@LS(key = "SPELLS_DESCRIPTION", msg = "GCS Spells"),
+})
 /** The main application user interface. */
 public class GCSApp extends App {
-	private static String		MSG_SHEET_DESCRIPTION;
-	private static String		MSG_LIBRARY_DESCRIPTION;
-	private static String		MSG_TEMPLATE_DESCRIPTION;
-	private static String		MSG_TRAITS_DESCRIPTION;
-	private static String		MSG_EQUIPMENT_DESCRIPTION;
-	private static String		MSG_SKILLS_DESCRIPTION;
-	private static String		MSG_SPELLS_DESCRIPTION;
-
-	static {
-		LocalizedMessages.initialize(GCSApp.class);
-	}
-
 	/** The one and only instance of this class. */
 	public static final GCSApp	INSTANCE	= new GCSApp();
 
@@ -79,13 +79,13 @@ public class GCSApp extends App {
 	@Override
 	public void configureApplication(CmdLine cmdLine) {
 		HashMap<String, String> map = new HashMap<>();
-		map.put(SheetWindow.SHEET_EXTENSION.substring(1), MSG_SHEET_DESCRIPTION);
-		map.put(LibraryFile.EXTENSION.substring(1), MSG_LIBRARY_DESCRIPTION);
-		map.put(TemplateWindow.EXTENSION.substring(1), MSG_TEMPLATE_DESCRIPTION);
-		map.put(Advantage.OLD_ADVANTAGE_EXTENSION.substring(1), MSG_TRAITS_DESCRIPTION);
-		map.put(Equipment.OLD_EQUIPMENT_EXTENSION.substring(1), MSG_EQUIPMENT_DESCRIPTION);
-		map.put(Skill.OLD_SKILL_EXTENSION.substring(1), MSG_SKILLS_DESCRIPTION);
-		map.put(Spell.OLD_SPELL_EXTENSION.substring(1), MSG_SPELLS_DESCRIPTION);
+		map.put(SheetWindow.SHEET_EXTENSION.substring(1), SHEET_DESCRIPTION);
+		map.put(LibraryFile.EXTENSION.substring(1), LIBRARY_DESCRIPTION);
+		map.put(TemplateWindow.EXTENSION.substring(1), TEMPLATE_DESCRIPTION);
+		map.put(Advantage.OLD_ADVANTAGE_EXTENSION.substring(1), TRAITS_DESCRIPTION);
+		map.put(Equipment.OLD_EQUIPMENT_EXTENSION.substring(1), EQUIPMENT_DESCRIPTION);
+		map.put(Skill.OLD_SKILL_EXTENSION.substring(1), SKILLS_DESCRIPTION);
+		map.put(Spell.OLD_SPELL_EXTENSION.substring(1), SPELLS_DESCRIPTION);
 		WindowsRegistry.register("GCS", map, new File(APP_HOME_DIR, "gcs.bat"), new File(APP_HOME_DIR, "GURPS Character Sheet.app/Contents/Resources")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 		UpdateChecker.check("gcs", "http://gurpscharactersheet.com/current.txt", "http://gurpscharactersheet.com"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
