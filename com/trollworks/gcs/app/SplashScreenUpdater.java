@@ -25,9 +25,9 @@ package com.trollworks.gcs.app;
 
 import static com.trollworks.gcs.app.SplashScreenUpdater_LS.*;
 
+import com.trollworks.ttk.Launcher;
 import com.trollworks.ttk.annotation.LS;
 import com.trollworks.ttk.annotation.Localized;
-import com.trollworks.ttk.utility.App;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -72,10 +72,10 @@ public class SplashScreenUpdater {
 		gc.setColor(Color.WHITE);
 		int right = size.width - HMARGIN;
 		int y = draw(gc, LICENSES, size.height - HMARGIN, right, true, true);
-		int y2 = draw(gc, String.format(COPYRIGHT_FORMAT, App.getCopyrightYears(), App.getCopyrightOwner()), y, right, false, true);
+		int y2 = draw(gc, String.format(COPYRIGHT_FORMAT, Launcher.getCopyrightYears(), Launcher.getCopyrightOwner()), y, right, false, true);
 		draw(gc, String.format(PLATFORM_FORMAT, System.getProperty("os.name"), System.getProperty("os.version"), System.getProperty("os.arch"), System.getProperty("java.version")), y, right, false, false);//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		gc.setFont(baseFont.deriveFont(Font.BOLD, 11f));
-		draw(gc, String.format(VERSION_FORMAT, App.getVersion()), y2, right, false, true);
+		draw(gc, String.format(VERSION_FORMAT, Launcher.getVersion()), y2, right, false, true);
 		gc.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, savedTextAA);
 	}
 

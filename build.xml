@@ -2,6 +2,8 @@
 <project name="gcs" default="dist">
 	<property name="BuildDir" value="gcs_build"/>
 	<property name="JavaBuildDir" value="${BuildDir}/java"/>
+	<property name="AnnotationsBuildDir" value="${BuildDir}/annotations"/>
+	<property name="AnnotationsJar" value="../ttk/libraries/annotations.jar"/>
 
 	<target name="clean" description="Clean up after a build">
 		<delete dir="${BuildDir}"/>
@@ -11,8 +13,8 @@
 	</target>
 
 	<target name="dist" description="Build GCS" depends="clean">
-		<mkdir dir="${BuildDir}"/>
 		<mkdir dir="${JavaBuildDir}"/>
+		<mkdir dir="${AnnotationsBuildDir}"/>
 
 		<!-- Copy the resources over. -->
 		<copy todir="${JavaBuildDir}">
@@ -26,15 +28,15 @@
 		<tstamp>
 			<format property="VERSION" pattern="yyyy.MM.dd.HHmm"/>
 		</tstamp>
-		<replaceregexp file="${JavaBuildDir}/com/trollworks/gcs/app/GCS.properties"
+		<replaceregexp file="${JavaBuildDir}/com/trollworks/LaunchConfig.properties"
 					match='(APP_VERSION.+=)(.*)'
 					replace='\1 ${VERSION}'/>
-		<replaceregexp file="${JavaBuildDir}/com/trollworks/gcs/app/GCS.properties"
+		<replaceregexp file="${JavaBuildDir}/com/trollworks/LaunchConfig.properties"
 					match='(APP_COPYRIGHT_YEARS.+=)(.*)'
 					replace='\1 1998-${VERSION_YEAR}'/>
 
 		<!-- Load the remaining property values. -->
-		<property file="${JavaBuildDir}/com/trollworks/gcs/app/GCS.properties"/>
+		<property file="${JavaBuildDir}/com/trollworks/LaunchConfig.properties"/>
 		<property name="DistDirName" value="GCS-${APP_VERSION}"/>
 		<property name="DistBuildDir" value="${BuildDir}/${DistDirName}"/>
 		<property name="AppBundle" value="${DistBuildDir}/${APP_NAME}.app/Contents"/>
@@ -63,8 +65,9 @@
 		</replace>
 
 		<!-- Compile the code. -->
-		<javac destdir="${JavaBuildDir}"
-					includes="com/trollworks/gcs/app/GCS.java"
+		<javac srcdir="."
+					destdir="${JavaBuildDir}"
+					includes="com/trollworks/gcs/**/*.java"
 					debug="no"
 					optimize="yes"
 					target="1.7"
@@ -76,8 +79,11 @@
 				<pathelement location="../ttk/libraries/Trove.jar"/>
 				<pathelement location="libraries/iText.jar"/>
 			</classpath>
-			<src path="."/>
 			<!-- <compilerarg value="-Xlint:unchecked"/> -->
+			<compilerarg value="-processorpath"/>
+			<compilerarg value="${AnnotationsJar}"/>
+			<compilerarg value="-s"/>
+			<compilerarg value="${AnnotationsBuildDir}"/>
 		</javac>
 
 		<!-- Create the GCS jar file and copy over the various library jar files. -->

@@ -23,6 +23,8 @@
 
 package com.trollworks.gcs.app;
 
+import static com.trollworks.gcs.app.GCS_LS.*;
+
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.GURPSCharacter;
@@ -34,6 +36,8 @@ import com.trollworks.gcs.library.LibraryWindow;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.template.TemplateWindow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.cmdline.CmdLine;
 import com.trollworks.ttk.cmdline.CmdLineOption;
 import com.trollworks.ttk.menu.file.FileType;
@@ -45,7 +49,6 @@ import com.trollworks.ttk.utility.App;
 import com.trollworks.ttk.utility.Fonts;
 import com.trollworks.ttk.utility.GraphicsUtilities;
 import com.trollworks.ttk.utility.LaunchProxy;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Path;
 import com.trollworks.ttk.utility.Timing;
 
@@ -54,46 +57,38 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+@Localized({
+				@LS(key = "PDF_OPTION_DESCRIPTION", msg = "Create PDF versions of sheets specified on the command line."),
+				@LS(key = "HTML_OPTION_DESCRIPTION", msg = "Create HTML versions of sheets specified on the command line."),
+				@LS(key = "HTML_TEMPLATE_OPTION_DESCRIPTION", msg = "A template to use when creating HTML versions of the sheets. If this is not specified, then the template found in the data directory will be used by default."),
+				@LS(key = "HTML_TEMPLATE_ARG", msg = "FILE"),
+				@LS(key = "PNG_OPTION_DESCRIPTION", msg = "Create PNG versions of sheets specified on the command line."),
+				@LS(key = "SIZE_OPTION_DESCRIPTION", msg = "When generating PDF or PNG from the command line, allows you to specify a paper size to use, rather than the one embedded in the file. Valid choices are: LETTER, A4, or the width and height, expressed in inches and separated by an 'x', such as '5x7'."),
+				@LS(key = "MARGIN_OPTION_DESCRIPTION", msg = "When generating PDF or PNG from the command line, allows you to specify the margins to use, rather than the ones embedded in the file. The top, left, bottom, and right margins must all be specified in inches, separated by colons, such as '1:1:1:1'."),
+				@LS(key = "NO_FILES_TO_PROCESS", msg = "You must specify one or more sheet files to process."),
+				@LS(key = "LOADING", msg = "Loading \"{0}\"... "),
+				@LS(key = "CREATING_PDF", msg = "  Creating PDF... "),
+				@LS(key = "CREATING_HTML", msg = "  Creating HMTL... "),
+				@LS(key = "CREATING_PNG", msg = "  Creating PNG... "),
+				@LS(key = "PROCESSING_FAILED", msg = "  ** ERROR ENCOUNTERED **"),
+				@LS(key = "FINISHED", msg = "\nDone! {0} overall."),
+				@LS(key = "CREATED", msg = "    Created \"{0}\"."),
+				@LS(key = "INVALID_PAPER_SIZE", msg = "WARNING: Invalid paper size specification."),
+				@LS(key = "INVALID_PAPER_MARGINS", msg = "WARNING: Invalid paper margins specification."),
+				@LS(key = "TEMPLATE_USED", msg = "    Used template file \"{0}\"."),
+})
 /** The main entry point for the character sheet. */
 public class GCS {
-	private static String				MSG_APP_NAME;
-	private static String				MSG_APP_VERSION;
-	private static String				MSG_APP_COPYRIGHT_YEARS;
-	private static String				MSG_APP_COPYRIGHT_OWNER;
-	private static String				MSG_PDF_OPTION;
-	private static String				MSG_HTML_OPTION;
-	private static String				MSG_HTML_TEMPLATE_OPTION;
-	private static String				MSG_HTML_TEMPLATE_ARG;
-	private static String				MSG_PNG_OPTION;
-	private static String				MSG_SIZE_OPTION;
-	private static String				MSG_MARGIN_OPTION;
-	private static String				MSG_NO_FILES_TO_PROCESS;
-	private static String				MSG_LOADING;
-	private static String				MSG_CREATING_PDF;
-	private static String				MSG_CREATING_HTML;
-	private static String				MSG_CREATING_PNG;
-	private static String				MSG_PROCESSING_FAILED;
-	private static String				MSG_FINISHED;
-	private static String				MSG_CREATED;
-	private static String				MSG_INVALID_PAPER_SIZE;
-	private static String				MSG_INVALID_PAPER_MARGINS;
-	private static String				MSG_TEMPLATE_USED;
-
 	static {
-		LocalizedMessages.initialize(GCS.class);
-		App.setName(MSG_APP_NAME);
-		App.setVersion(MSG_APP_VERSION);
-		App.setCopyrightYears(MSG_APP_COPYRIGHT_YEARS);
-		App.setCopyrightOwner(MSG_APP_COPYRIGHT_OWNER);
 		SplashScreenUpdater.update();
 	}
 
-	private static final CmdLineOption	PDF_OPTION				= new CmdLineOption(MSG_PDF_OPTION, null, "pdf");										//$NON-NLS-1$
-	private static final CmdLineOption	HTML_OPTION				= new CmdLineOption(MSG_HTML_OPTION, null, "html");									//$NON-NLS-1$
-	private static final CmdLineOption	HTML_TEMPLATE_OPTION	= new CmdLineOption(MSG_HTML_TEMPLATE_OPTION, MSG_HTML_TEMPLATE_ARG, "html_template");	//$NON-NLS-1$
-	private static final CmdLineOption	PNG_OPTION				= new CmdLineOption(MSG_PNG_OPTION, null, "png");										//$NON-NLS-1$
-	private static final CmdLineOption	SIZE_OPTION				= new CmdLineOption(MSG_SIZE_OPTION, "SIZE", "paper");									//$NON-NLS-1$ //$NON-NLS-2$
-	private static final CmdLineOption	MARGIN_OPTION			= new CmdLineOption(MSG_MARGIN_OPTION, "MARGINS", "margins");							//$NON-NLS-1$ //$NON-NLS-2$
+	private static final CmdLineOption	PDF_OPTION				= new CmdLineOption(PDF_OPTION_DESCRIPTION, null, "pdf");									//$NON-NLS-1$
+	private static final CmdLineOption	HTML_OPTION				= new CmdLineOption(HTML_OPTION_DESCRIPTION, null, "html");								//$NON-NLS-1$
+	private static final CmdLineOption	HTML_TEMPLATE_OPTION	= new CmdLineOption(HTML_TEMPLATE_OPTION_DESCRIPTION, HTML_TEMPLATE_ARG, "html_template");	//$NON-NLS-1$
+	private static final CmdLineOption	PNG_OPTION				= new CmdLineOption(PNG_OPTION_DESCRIPTION, null, "png");									//$NON-NLS-1$
+	private static final CmdLineOption	SIZE_OPTION				= new CmdLineOption(SIZE_OPTION_DESCRIPTION, "SIZE", "paper");								//$NON-NLS-1$ //$NON-NLS-2$
+	private static final CmdLineOption	MARGIN_OPTION			= new CmdLineOption(MARGIN_OPTION_DESCRIPTION, "MARGINS", "margins");						//$NON-NLS-1$ //$NON-NLS-2$
 
 	/**
 	 * The main entry point for the character sheet.
@@ -109,10 +104,10 @@ public class GCS {
 			System.out.println(App.getVersionBanner(false));
 			System.out.println();
 			if (convert(cmdLine) < 1) {
-				System.out.println(MSG_NO_FILES_TO_PROCESS);
+				System.out.println(NO_FILES_TO_PROCESS);
 				System.exit(1);
 			}
-			System.out.println(MessageFormat.format(MSG_FINISHED, timing));
+			System.out.println(MessageFormat.format(FINISHED, timing));
 			System.exit(0);
 		} else {
 			LaunchProxy.configure(cmdLine.getArgumentsAsFiles().toArray(new File[0]));
@@ -160,7 +155,7 @@ public class GCS {
 			GraphicsUtilities.setHeadlessPrintMode(true);
 			for (File file : cmdLine.getArgumentsAsFiles()) {
 				if (SheetWindow.SHEET_EXTENSION.equals(Path.getExtension(file.getName())) && file.canRead()) {
-					System.out.print(MessageFormat.format(MSG_LOADING, file));
+					System.out.print(MessageFormat.format(LOADING, file));
 					System.out.flush();
 					timing.reset();
 					try {
@@ -189,48 +184,48 @@ public class GCS {
 						if (html) {
 							StringBuilder builder = new StringBuilder();
 
-							System.out.print(MSG_CREATING_HTML);
+							System.out.print(CREATING_HTML);
 							System.out.flush();
 							output = new File(file.getParentFile(), Path.getLeafName(file.getName(), false) + SheetWindow.HTML_EXTENSION);
 							timing.reset();
 							success = sheet.saveAsHTML(output, htmlTemplate, builder);
 							System.out.println(timing);
-							System.out.println(MessageFormat.format(MSG_TEMPLATE_USED, builder));
+							System.out.println(MessageFormat.format(TEMPLATE_USED, builder));
 							if (success) {
-								System.out.println(MessageFormat.format(MSG_CREATED, output));
+								System.out.println(MessageFormat.format(CREATED, output));
 								count++;
 							}
 						}
 						if (pdf) {
-							System.out.print(MSG_CREATING_PDF);
+							System.out.print(CREATING_PDF);
 							System.out.flush();
 							output = new File(file.getParentFile(), Path.getLeafName(file.getName(), false) + SheetWindow.PDF_EXTENSION);
 							timing.reset();
 							success = sheet.saveAsPDF(output);
 							System.out.println(timing);
 							if (success) {
-								System.out.println(MessageFormat.format(MSG_CREATED, output));
+								System.out.println(MessageFormat.format(CREATED, output));
 								count++;
 							}
 						}
 						if (png) {
 							ArrayList<File> result = new ArrayList<>();
 
-							System.out.print(MSG_CREATING_PNG);
+							System.out.print(CREATING_PNG);
 							System.out.flush();
 							output = new File(file.getParentFile(), Path.getLeafName(file.getName(), false) + SheetWindow.PNG_EXTENSION);
 							timing.reset();
 							success = sheet.saveAsPNG(output, result);
 							System.out.println(timing);
 							for (File one : result) {
-								System.out.println(MessageFormat.format(MSG_CREATED, one));
+								System.out.println(MessageFormat.format(CREATED, one));
 								count++;
 							}
 						}
 						sheet.dispose();
 					} catch (Exception exception) {
 						exception.printStackTrace();
-						System.out.println(MSG_PROCESSING_FAILED);
+						System.out.println(PROCESSING_FAILED);
 					}
 				}
 			}
@@ -264,7 +259,7 @@ public class GCS {
 					return new double[] { width, height };
 				}
 			}
-			System.out.println(MSG_INVALID_PAPER_SIZE);
+			System.out.println(INVALID_PAPER_SIZE);
 		}
 		return null;
 	}
@@ -281,7 +276,7 @@ public class GCS {
 				if (index < 4) {
 					values[index] = Numbers.getLocalizedDouble(token, -1.0);
 					if (values[index] < 0.0) {
-						System.out.println(MSG_INVALID_PAPER_MARGINS);
+						System.out.println(INVALID_PAPER_MARGINS);
 						return null;
 					}
 				}
@@ -290,7 +285,7 @@ public class GCS {
 			if (index == 4) {
 				return values;
 			}
-			System.out.println(MSG_INVALID_PAPER_MARGINS);
+			System.out.println(INVALID_PAPER_MARGINS);
 		}
 		return null;
 	}
