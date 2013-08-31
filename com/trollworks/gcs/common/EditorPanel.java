@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.common;
+
+import static com.trollworks.gcs.common.EditorPanel_LS.*;
 
 import com.trollworks.gcs.criteria.DoubleCriteria;
 import com.trollworks.gcs.criteria.IntegerCriteria;
@@ -30,11 +32,12 @@ import com.trollworks.gcs.criteria.NumericCriteria;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.criteria.WeightCriteria;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.text.DoubleFormatter;
 import com.trollworks.ttk.text.IntegerFormatter;
 import com.trollworks.ttk.text.WeightFormatter;
 import com.trollworks.ttk.units.WeightValue;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.ActionPanel;
 import com.trollworks.ttk.widgets.EditorField;
@@ -53,15 +56,13 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 
+@Localized({
+				@LS(key = "EXACTLY", msg = "exactly"),
+})
 /** A generic editor panel. */
 public abstract class EditorPanel extends ActionPanel implements ActionListener, PropertyChangeListener {
 	private static final int	GAP			= 5;
-	private static String		MSG_EXACTLY;
 	private static final String	COMPARISON	= "Comparison"; //$NON-NLS-1$
-
-	static {
-		LocalizedMessages.initialize(EditorPanel.class);
-	}
 
 	/** Creates a new {@link EditorPanel}. */
 	protected EditorPanel() {
@@ -167,9 +168,9 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 			values = new Object[orig.length];
 			System.arraycopy(orig, 0, values, 0, orig.length);
 			selection = compare.getType();
-			values[NumericCompareType.IS.ordinal()] = MSG_EXACTLY;
+			values[NumericCompareType.IS.ordinal()] = EXACTLY;
 			if (selection == NumericCompareType.IS) {
-				selection = MSG_EXACTLY;
+				selection = EXACTLY;
 			}
 		} else {
 			ArrayList<String> list = new ArrayList<>();
