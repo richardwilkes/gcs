@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,7 +23,11 @@
 
 package com.trollworks.gcs.character.names;
 
+import static com.trollworks.gcs.character.names.Namer_LS.*;
+
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.Alignment;
 import com.trollworks.ttk.layout.FlexColumn;
 import com.trollworks.ttk.layout.FlexComponent;
@@ -31,7 +35,6 @@ import com.trollworks.ttk.layout.FlexGrid;
 import com.trollworks.ttk.layout.FlexSpacer;
 import com.trollworks.ttk.layout.LayoutSize;
 import com.trollworks.ttk.text.TextUtility;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.CommitEnforcer;
 import com.trollworks.ttk.widgets.WindowUtils;
@@ -52,20 +55,18 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+@Localized({
+				@LS(key = "NAME_TITLE", msg = "Name {0}"),
+				@LS(key = "ONE_REMAINING", msg = "1 item remaining to be named."),
+				@LS(key = "REMAINING", msg = "{0} items remaining to be named."),
+				@LS(key = "APPLY", msg = "Apply"),
+				@LS(key = "CANCEL", msg = "Cancel"),
+				@LS(key = "CANCEL_REST", msg = "Cancel Remaining"),
+})
 /** Asks the user to name items that have been marked to be customized. */
 public class Namer extends JPanel {
-	private static String			MSG_NAME_TITLE;
-	private static String			MSG_ONE_REMAINING;
-	private static String			MSG_REMAINING;
-	private static String			MSG_APPLY;
-	private static String			MSG_CANCEL;
-	private static String			MSG_CANCEL_REST;
 	private ListRow					mRow;
 	private ArrayList<JTextField>	mFields;
-
-	static {
-		LocalizedMessages.initialize(Namer.class);
-	}
 
 	/**
 	 * Brings up a modal naming dialog for each row in the list.
@@ -95,9 +96,9 @@ public class Namer extends JPanel {
 			ListRow row = rowList.get(i);
 			boolean hasMore = i != count - 1;
 			int type = hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION;
-			String[] options = hasMore ? new String[] { MSG_APPLY, MSG_CANCEL, MSG_CANCEL_REST } : new String[] { MSG_APPLY, MSG_CANCEL };
+			String[] options = hasMore ? new String[] { APPLY, CANCEL, CANCEL_REST } : new String[] { APPLY, CANCEL };
 			Namer panel = new Namer(row, setList.get(i), count - i - 1);
-			switch (WindowUtils.showOptionDialog(owner, panel, MessageFormat.format(MSG_NAME_TITLE, row.getLocalizedName()), true, type, JOptionPane.PLAIN_MESSAGE, new ImageIcon(row.getImage(true)), options, MSG_APPLY)) {
+			switch (WindowUtils.showOptionDialog(owner, panel, MessageFormat.format(NAME_TITLE, row.getLocalizedName()), true, type, JOptionPane.PLAIN_MESSAGE, new ImageIcon(row.getImage(true)), options, APPLY)) {
 				case JOptionPane.YES_OPTION:
 					panel.applyChanges();
 					modified = true;
@@ -120,7 +121,7 @@ public class Namer extends JPanel {
 
 		FlexColumn column = new FlexColumn();
 		if (remaining > 0) {
-			label = new JLabel(remaining == 1 ? MSG_ONE_REMAINING : MessageFormat.format(MSG_REMAINING, new Integer(remaining)), SwingConstants.CENTER);
+			label = new JLabel(remaining == 1 ? ONE_REMAINING : MessageFormat.format(REMAINING, new Integer(remaining)), SwingConstants.CENTER);
 			Dimension size = label.getMaximumSize();
 			size.width = LayoutSize.MAXIMUM_SIZE;
 			label.setMaximumSize(size);
