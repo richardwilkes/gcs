@@ -14,14 +14,17 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.character;
+
+import static com.trollworks.gcs.character.CharacterSheet_LS.*;
+import static com.trollworks.gcs.character.EncumbrancePanel_LS.*;
 
 import com.lowagie.text.pdf.DefaultFontMapper;
 import com.lowagie.text.pdf.PdfContentByte;
@@ -49,6 +52,8 @@ import com.trollworks.gcs.weapon.WeaponDisplayRow;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.GCSWindow;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.collections.FilteredIterator;
 import com.trollworks.ttk.image.Images;
 import com.trollworks.ttk.layout.ColumnLayout;
@@ -62,7 +67,6 @@ import com.trollworks.ttk.utility.App;
 import com.trollworks.ttk.utility.Debug;
 import com.trollworks.ttk.utility.Fonts;
 import com.trollworks.ttk.utility.GraphicsUtilities;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Path;
 import com.trollworks.ttk.utility.Selection;
 import com.trollworks.ttk.utility.UIUtilities;
@@ -126,23 +130,25 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+@Localized({
+				@LS(key = "PAGE_NUMBER", msg = "Page {0} of {1}"),
+				@LS(key = "ADVERTISEMENT", msg = "Visit us at gurpscharactersheet.com"),
+				@LS(key = "MELEE_WEAPONS", msg = "Melee Weapons"),
+				@LS(key = "RANGED_WEAPONS", msg = "Ranged Weapons"),
+				@LS(key = "ADVANTAGES", msg = "Advantages, Disadvantages & Quirks"),
+				@LS(key = "SKILLS", msg = "Skills"),
+				@LS(key = "SPELLS", msg = "Spells"),
+				@LS(key = "EQUIPMENT", msg = "Equipment"),
+				@LS(key = "CONTINUED", msg = "{0} (continued)"),
+				@LS(key = "NATURAL", msg = "Natural"),
+				@LS(key = "PUNCH", msg = "Punch"),
+				@LS(key = "KICK", msg = "Kick"),
+				@LS(key = "BOOTS", msg = "Kick w/Boots"),
+				@LS(key = "UNIDENTIFIED_KEY", msg = "Unidentified key!"),
+				@LS(key = "NOTES", msg = "Notes"),
+})
 /** The character sheet. */
 public class CharacterSheet extends JPanel implements ChangeListener, Scrollable, BatchNotifierTarget, PageOwner, Printable, ActionListener, Runnable, DropTargetListener {
-	private static String		MSG_PAGE_NUMBER;
-	private static String		MSG_ADVERTISEMENT;
-	private static String		MSG_MELEE_WEAPONS;
-	private static String		MSG_RANGED_WEAPONS;
-	private static String		MSG_ADVANTAGES;
-	private static String		MSG_SKILLS;
-	private static String		MSG_SPELLS;
-	private static String		MSG_EQUIPMENT;
-	private static String		MSG_CONTINUED;
-	private static String		MSG_NATURAL;
-	private static String		MSG_PUNCH;
-	private static String		MSG_KICK;
-	private static String		MSG_BOOTS;
-	private static String		MSG_UNIDENTIFIED_KEY;
-	private static String		MSG_NOTES;
 	private static final String	BOXING_SKILL_NAME	= "Boxing";	//$NON-NLS-1$
 	private static final String	KARATE_SKILL_NAME	= "Karate";	//$NON-NLS-1$
 	private static final String	BRAWLING_SKILL_NAME	= "Brawling";	//$NON-NLS-1$
@@ -159,10 +165,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private HashSet<Outline>	mRootsToSync;
 	private boolean				mSyncWeapons;
 	private boolean				mDisposed;
-
-	static {
-		LocalizedMessages.initialize(CharacterSheet.class);
-	}
 
 	/**
 	 * Creates a new character sheet display. {@link #rebuild()} must be called prior to the first
@@ -246,15 +248,15 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 		// Add our outlines
 		if (mAdvantageOutline.getModel().getRowCount() > 0 && mSkillOutline.getModel().getRowCount() > 0) {
-			addOutline(pageAssembler, mAdvantageOutline, MSG_ADVANTAGES, mSkillOutline, MSG_SKILLS);
+			addOutline(pageAssembler, mAdvantageOutline, ADVANTAGES, mSkillOutline, SKILLS);
 		} else {
-			addOutline(pageAssembler, mAdvantageOutline, MSG_ADVANTAGES);
-			addOutline(pageAssembler, mSkillOutline, MSG_SKILLS);
+			addOutline(pageAssembler, mAdvantageOutline, ADVANTAGES);
+			addOutline(pageAssembler, mSkillOutline, SKILLS);
 		}
-		addOutline(pageAssembler, mSpellOutline, MSG_SPELLS);
-		addOutline(pageAssembler, mMeleeWeaponOutline, MSG_MELEE_WEAPONS);
-		addOutline(pageAssembler, mRangedWeaponOutline, MSG_RANGED_WEAPONS);
-		addOutline(pageAssembler, mEquipmentOutline, MSG_EQUIPMENT);
+		addOutline(pageAssembler, mSpellOutline, SPELLS);
+		addOutline(pageAssembler, mMeleeWeaponOutline, MELEE_WEAPONS);
+		addOutline(pageAssembler, mRangedWeaponOutline, RANGED_WEAPONS);
+		addOutline(pageAssembler, mEquipmentOutline, EQUIPMENT);
 
 		pageAssembler.addNotes();
 
@@ -303,7 +305,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 			while (pageAssembler.addToContent(new SingleOutlinePanel(outline, title, useProxy), info, null)) {
 				if (!useProxy) {
-					title = MessageFormat.format(MSG_CONTINUED, title);
+					title = MessageFormat.format(CONTINUED, title);
 					useProxy = true;
 				}
 			}
@@ -318,8 +320,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 		while (pageAssembler.addToContent(new DoubleOutlinePanel(leftOutline, leftTitle, rightOutline, rightTitle, useProxy), infoLeft, infoRight)) {
 			if (!useProxy) {
-				leftTitle = MessageFormat.format(MSG_CONTINUED, leftTitle);
-				rightTitle = MessageFormat.format(MSG_CONTINUED, rightTitle);
+				leftTitle = MessageFormat.format(CONTINUED, leftTitle);
+				rightTitle = MessageFormat.format(CONTINUED, rightTitle);
 				useProxy = true;
 			}
 		}
@@ -454,7 +456,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			mCharacter.setUndoManager(null);
 
 			phantom = new Advantage(mCharacter, false);
-			phantom.setName(MSG_NATURAL);
+			phantom.setName(NATURAL);
 
 			if (mCharacter.includePunch()) {
 				defaults.add(new SkillDefault(SkillDefaultType.DX, null, null, 0));
@@ -462,7 +464,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				defaults.add(new SkillDefault(SkillDefaultType.Skill, BRAWLING_SKILL_NAME, null, 0));
 				defaults.add(new SkillDefault(SkillDefaultType.Skill, KARATE_SKILL_NAME, null, 0));
 				weapon = new MeleeWeaponStats(phantom);
-				weapon.setUsage(MSG_PUNCH);
+				weapon.setUsage(PUNCH);
 				weapon.setDefaults(defaults);
 				weapon.setDamage("thr-1 cr"); //$NON-NLS-1$
 				weapon.setReach("C"); //$NON-NLS-1$
@@ -477,7 +479,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 			if (mCharacter.includeKick()) {
 				weapon = new MeleeWeaponStats(phantom);
-				weapon.setUsage(MSG_KICK);
+				weapon.setUsage(KICK);
 				weapon.setDefaults(defaults);
 				weapon.setDamage("thr cr"); //$NON-NLS-1$
 				weapon.setReach("C,1"); //$NON-NLS-1$
@@ -487,7 +489,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 			if (mCharacter.includeKickBoots()) {
 				weapon = new MeleeWeaponStats(phantom);
-				weapon.setUsage(MSG_BOOTS);
+				weapon.setUsage(BOOTS);
 				weapon.setDefaults(defaults);
 				weapon.setDamage("thr+1 cr"); //$NON-NLS-1$
 				weapon.setReach("C,1"); //$NON-NLS-1$
@@ -685,7 +687,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		bounds.x = insets.left;
 		bounds.y = insets.top;
 		int pageNumber = 1 + UIUtilities.getIndexOf(this, page);
-		String pageString = MessageFormat.format(MSG_PAGE_NUMBER, Numbers.format(pageNumber), Numbers.format(getPageCount()));
+		String pageString = MessageFormat.format(PAGE_NUMBER, Numbers.format(pageNumber), Numbers.format(getPageCount()));
 		String copyright1 = App.getCopyrightBanner(true);
 		String copyright2 = copyright1.substring(copyright1.indexOf('\n') + 1);
 		Font font1 = UIManager.getFont(GCSFonts.KEY_SECONDARY_FOOTER);
@@ -730,7 +732,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		gc.setFont(font1);
 		gc.drawString(left, bounds.x, y);
 		gc.drawString(right, bounds.x + bounds.width - (int) fm1.getStringBounds(right, gc).getWidth(), y);
-		gc.drawString(MSG_ADVERTISEMENT, bounds.x + (bounds.width - (int) fm1.getStringBounds(MSG_ADVERTISEMENT, gc).getWidth()) / 2, y);
+		gc.drawString(ADVERTISEMENT, bounds.x + (bounds.width - (int) fm1.getStringBounds(ADVERTISEMENT, gc).getWidth()) / 2, y);
 
 		gc.setFont(savedFont);
 	}
@@ -761,7 +763,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			markForRebuild();
 		} else if (NotesPanel.CMD_EDIT_NOTES.equals(command)) {
 			Profile description = mCharacter.getDescription();
-			String notes = TextEditor.edit(MSG_NOTES, description.getNotes());
+			String notes = TextEditor.edit(NOTES, description.getNotes());
 			if (notes != null) {
 				description.setNotes(notes);
 				rebuild();
@@ -1253,7 +1255,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		} else if (key.equals("NOTES")) { //$NON-NLS-1$
 			writeXMLText(out, description.getNotes());
 		} else {
-			writeXMLText(out, MSG_UNIDENTIFIED_KEY);
+			writeXMLText(out, UNIDENTIFIED_KEY);
 		}
 	}
 
@@ -1326,7 +1328,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 								out.write(" class=\"encumbrance\" "); //$NON-NLS-1$
 							}
 						} else if (key.equals("LEVEL")) { //$NON-NLS-1$
-							writeXMLText(out, MessageFormat.format(level == mCharacter.getEncumbranceLevel() ? EncumbrancePanel.MSG_CURRENT_ENCUMBRANCE_FORMAT : EncumbrancePanel.MSG_ENCUMBRANCE_FORMAT, EncumbrancePanel.ENCUMBRANCE_TITLES[level], Numbers.format(level)));
+							writeXMLText(out, MessageFormat.format(level == mCharacter.getEncumbranceLevel() ? CURRENT_ENCUMBRANCE_FORMAT : ENCUMBRANCE_FORMAT, EncumbrancePanel.ENCUMBRANCE_TITLES[level], Numbers.format(level)));
 						} else if (key.equals("MAX_LOAD")) { //$NON-NLS-1$
 							writeXMLText(out, mCharacter.getMaximumCarry(level).toString());
 						} else if (key.equals("MOVE")) { //$NON-NLS-1$
@@ -1334,7 +1336,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 						} else if (key.equals("DODGE")) { //$NON-NLS-1$
 							writeXMLText(out, Numbers.format(mCharacter.getDodge(level)));
 						} else {
-							writeXMLText(out, MSG_UNIDENTIFIED_KEY);
+							writeXMLText(out, UNIDENTIFIED_KEY);
 						}
 					}
 				}
@@ -1372,7 +1374,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 						} else if (key.equals("DR")) { //$NON-NLS-1$
 							writeXMLText(out, Numbers.format(((Integer) mCharacter.getValueForID(HitLocationPanel.DR_KEYS[which])).intValue()));
 						} else {
-							writeXMLText(out, MSG_UNIDENTIFIED_KEY);
+							writeXMLText(out, UNIDENTIFIED_KEY);
 						}
 					}
 				}
@@ -1413,7 +1415,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 								} else if (key.equals("ID")) { //$NON-NLS-1$
 									writeXMLText(out, Integer.toString(counter));
 								} else {
-									writeXMLText(out, MSG_UNIDENTIFIED_KEY);
+									writeXMLText(out, UNIDENTIFIED_KEY);
 								}
 							}
 						}
@@ -1499,7 +1501,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 								} else if (key.equals("ID")) { //$NON-NLS-1$
 									writeXMLText(out, Integer.toString(counter));
 								} else {
-									writeXMLText(out, MSG_UNIDENTIFIED_KEY);
+									writeXMLText(out, UNIDENTIFIED_KEY);
 								}
 							}
 						}
@@ -1591,7 +1593,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 								} else if (key.equals("ID")) { //$NON-NLS-1$
 									writeXMLText(out, Integer.toString(counter));
 								} else {
-									writeXMLText(out, MSG_UNIDENTIFIED_KEY);
+									writeXMLText(out, UNIDENTIFIED_KEY);
 								}
 							}
 						}
@@ -1647,7 +1649,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 							} else if (key.equals("ID")) { //$NON-NLS-1$
 								writeXMLText(out, Integer.toString(counter));
 							} else {
-								writeXMLText(out, MSG_UNIDENTIFIED_KEY);
+								writeXMLText(out, UNIDENTIFIED_KEY);
 							}
 						}
 					}
@@ -1722,7 +1724,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 							} else if (key.equals("ID")) { //$NON-NLS-1$
 								writeXMLText(out, Integer.toString(counter));
 							} else {
-								writeXMLText(out, MSG_UNIDENTIFIED_KEY);
+								writeXMLText(out, UNIDENTIFIED_KEY);
 							}
 						}
 					}
@@ -1775,7 +1777,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 								} else if (key.equals("ID")) { //$NON-NLS-1$
 									writeXMLText(out, Integer.toString(counter));
 								} else {
-									writeXMLText(out, MSG_UNIDENTIFIED_KEY);
+									writeXMLText(out, UNIDENTIFIED_KEY);
 								}
 							}
 						}

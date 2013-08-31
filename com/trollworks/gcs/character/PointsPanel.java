@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,11 +23,14 @@
 
 package com.trollworks.gcs.character;
 
+import static com.trollworks.gcs.character.PointsPanel_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.layout.RowDistribution;
 import com.trollworks.ttk.notification.NotifierTarget;
 import com.trollworks.ttk.text.Numbers;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.Wrapper;
 
@@ -37,30 +40,28 @@ import java.text.MessageFormat;
 
 import javax.swing.SwingConstants;
 
+@Localized({
+				@LS(key = "POINTS", msg = "{0} Points"),
+				@LS(key = "ATTRIBUTE_POINTS", msg = "Attributes:"),
+				@LS(key = "ATTRIBUTE_POINTS_TOOLTIP", msg = "A summary of all points spent on attributes for this character"),
+				@LS(key = "ADVANTAGE_POINTS", msg = "Advantages:"),
+				@LS(key = "ADVANTAGE_POINTS_TOOLTIP", msg = "A summary of all points spent on advantages for this character"),
+				@LS(key = "DISADVANTAGE_POINTS", msg = "Disadvantages:"),
+				@LS(key = "DISADVANTAGE_POINTS_TOOLTIP", msg = "A summary of all points spent on disadvantages for this character"),
+				@LS(key = "QUIRK_POINTS", msg = "Quirks:"),
+				@LS(key = "QUIRK_POINTS_TOOLTIP", msg = "A summary of all points spent on quirks for this character"),
+				@LS(key = "SKILL_POINTS", msg = "Skills:"),
+				@LS(key = "SKILL_POINTS_TOOLTIP", msg = "A summary of all points spent on skills for this character"),
+				@LS(key = "SPELL_POINTS", msg = "Spells:"),
+				@LS(key = "SPELL_POINTS_TOOLTIP", msg = "A summary of all points spent on spells for this character"),
+				@LS(key = "RACE_POINTS", msg = "Race:"),
+				@LS(key = "RACE_POINTS_TOOLTIP", msg = "A summary of all points spent on a racial package for this character"),
+				@LS(key = "EARNED_POINTS", msg = "Earned:"),
+				@LS(key = "EARNED_POINTS_TOOLTIP", msg = "Points that have been earned but not yet been spent"),
+})
 /** The character points panel. */
 public class PointsPanel extends DropPanel implements NotifierTarget {
-	private static String	MSG_POINTS;
-	private static String	MSG_ATTRIBUTE_POINTS;
-	private static String	MSG_ATTRIBUTE_POINTS_TOOLTIP;
-	private static String	MSG_ADVANTAGE_POINTS;
-	private static String	MSG_ADVANTAGE_POINTS_TOOLTIP;
-	private static String	MSG_DISADVANTAGE_POINTS;
-	private static String	MSG_DISADVANTAGE_POINTS_TOOLTIP;
-	private static String	MSG_QUIRK_POINTS;
-	private static String	MSG_QUIRK_POINTS_TOOLTIP;
-	private static String	MSG_SKILL_POINTS;
-	private static String	MSG_SKILL_POINTS_TOOLTIP;
-	private static String	MSG_SPELL_POINTS;
-	private static String	MSG_SPELL_POINTS_TOOLTIP;
-	private static String	MSG_RACE_POINTS;
-	private static String	MSG_RACE_POINTS_TOOLTIP;
-	private static String	MSG_EARNED_POINTS;
-	private static String	MSG_EARNED_POINTS_TOOLTIP;
 	private GURPSCharacter	mCharacter;
-
-	static {
-		LocalizedMessages.initialize(PointsPanel.class);
-	}
 
 	/**
 	 * Creates a new points panel.
@@ -70,15 +71,15 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
 	public PointsPanel(GURPSCharacter character) {
 		super(new ColumnLayout(2, 2, 0, RowDistribution.DISTRIBUTE_HEIGHT), getTitle(character));
 		mCharacter = character;
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_ATTRIBUTE_POINTS, MSG_ATTRIBUTE_POINTS, MSG_ATTRIBUTE_POINTS_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_ADVANTAGE_POINTS, MSG_ADVANTAGE_POINTS, MSG_ADVANTAGE_POINTS_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_DISADVANTAGE_POINTS, MSG_DISADVANTAGE_POINTS, MSG_DISADVANTAGE_POINTS_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_QUIRK_POINTS, MSG_QUIRK_POINTS, MSG_QUIRK_POINTS_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_SKILL_POINTS, MSG_SKILL_POINTS, MSG_SKILL_POINTS_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_SPELL_POINTS, MSG_SPELL_POINTS, MSG_SPELL_POINTS_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_RACE_POINTS, MSG_RACE_POINTS, MSG_RACE_POINTS_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, character, GURPSCharacter.ID_ATTRIBUTE_POINTS, ATTRIBUTE_POINTS, ATTRIBUTE_POINTS_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, character, GURPSCharacter.ID_ADVANTAGE_POINTS, ADVANTAGE_POINTS, ADVANTAGE_POINTS_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, character, GURPSCharacter.ID_DISADVANTAGE_POINTS, DISADVANTAGE_POINTS, DISADVANTAGE_POINTS_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, character, GURPSCharacter.ID_QUIRK_POINTS, QUIRK_POINTS, QUIRK_POINTS_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, character, GURPSCharacter.ID_SKILL_POINTS, SKILL_POINTS, SKILL_POINTS_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, character, GURPSCharacter.ID_SPELL_POINTS, SPELL_POINTS, SPELL_POINTS_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, character, GURPSCharacter.ID_RACE_POINTS, RACE_POINTS, RACE_POINTS_TOOLTIP, SwingConstants.RIGHT);
 		createDivider();
-		createLabelAndField(this, character, GURPSCharacter.ID_EARNED_POINTS, MSG_EARNED_POINTS, MSG_EARNED_POINTS_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndField(this, character, GURPSCharacter.ID_EARNED_POINTS, EARNED_POINTS, EARNED_POINTS_TOOLTIP, SwingConstants.RIGHT);
 		mCharacter.addTarget(this, GURPSCharacter.ID_TOTAL_POINTS);
 	}
 
@@ -108,7 +109,7 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
 	}
 
 	private static String getTitle(GURPSCharacter character) {
-		return MessageFormat.format(MSG_POINTS, Numbers.format(character.getTotalPoints()));
+		return MessageFormat.format(POINTS, Numbers.format(character.getTotalPoints()));
 	}
 
 	@Override

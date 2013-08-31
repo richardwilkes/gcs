@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,7 +23,10 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.ttk.utility.LocalizedMessages;
+import static com.trollworks.gcs.character.TextEditor_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.utility.WindowSizeEnforcer;
 
 import java.awt.BorderLayout;
@@ -43,17 +46,15 @@ import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 
+@Localized({
+				@LS(key = "CANCEL", msg = "Cancel"),
+				@LS(key = "SET", msg = "Set"),
+})
 /** Provides simplistic text editing. */
 public class TextEditor extends JDialog implements ActionListener, WindowFocusListener {
-	private static String	MSG_CANCEL;
-	private static String	MSG_SET;
-	private JTextArea		mEditor;
-	private JButton			mSetButton;
-	private boolean			mSet;
-
-	static {
-		LocalizedMessages.initialize(TextEditor.class);
-	}
+	private JTextArea	mEditor;
+	private JButton		mSetButton;
+	private boolean		mSet;
 
 	/**
 	 * Puts up a modal text editor.
@@ -87,8 +88,8 @@ public class TextEditor extends JDialog implements ActionListener, WindowFocusLi
 		content.add(scroller, BorderLayout.CENTER);
 
 		JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-		createButton(panel, MSG_CANCEL);
-		mSetButton = createButton(panel, MSG_SET);
+		createButton(panel, CANCEL);
+		mSetButton = createButton(panel, SET);
 		content.add(panel, BorderLayout.SOUTH);
 
 		WindowSizeEnforcer.monitor(this);

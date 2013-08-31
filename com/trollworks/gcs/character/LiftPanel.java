@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,46 +23,46 @@
 
 package com.trollworks.gcs.character;
 
+import static com.trollworks.gcs.character.LiftPanel_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.ColumnLayout;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import javax.swing.SwingConstants;
 
+@Localized({
+				@LS(key = "LIFT_MOVE", msg = "Lifting & Moving Things"),
+				@LS(key = "BASIC_LIFT", msg = "Basic Lift:"),
+				@LS(key = "BASIC_LIFT_TOOLTIP", msg = "<html><body>The weight the character can lift overhead<br>with one hand in one second</body></html>"),
+				@LS(key = "ONE_HANDED_LIFT", msg = "One-Handed Lift:"),
+				@LS(key = "ONE_HANDED_LIFT_TOOLTIP", msg = "<html><body>The weight the character can lift overhead<br>with one hand in two seconds</body></html>"),
+				@LS(key = "TWO_HANDED_LIFT", msg = "Two-Handed Lift:"),
+				@LS(key = "TWO_HANDED_LIFT_TOOLTIP", msg = "<html><body>The weight the character can lift overhead<br>with both hands in four seconds</body></html>"),
+				@LS(key = "SHOVE_KNOCK_OVER", msg = "Shove & Knock Over:"),
+				@LS(key = "SHOVE_KNOCK_OVER_TOOLTIP", msg = "<html><body>The weight of an object the character<br>can shove and knock over</body></html>"),
+				@LS(key = "RUNNING_SHOVE", msg = "Running Shove & Knock Over:"),
+				@LS(key = "RUNNING_SHOVE_TOOLTIP", msg = "<html><body>The weight of an object the character can shove<br> and knock over with a running start</body></html>"),
+				@LS(key = "CARRY_ON_BACK", msg = "Carry On Back:"),
+				@LS(key = "CARRY_ON_BACK_TOOLTIP", msg = "The weight the character can carry slung across the back"),
+				@LS(key = "SHIFT_SLIGHTLY", msg = "Shift Slightly:"),
+				@LS(key = "SHIFT_SLIGHTLY_TOOLTIP", msg = "<html><body>The weight of an object the character<br>can shift slightly on a floor</body></html>"),
+})
 /** The character damage panel. */
 public class LiftPanel extends DropPanel {
-	private static String	MSG_LIFT_MOVE;
-	private static String	MSG_BASIC_LIFT;
-	private static String	MSG_BASIC_LIFT_TOOLTIP;
-	private static String	MSG_ONE_HANDED_LIFT;
-	private static String	MSG_ONE_HANDED_LIFT_TOOLTIP;
-	private static String	MSG_TWO_HANDED_LIFT;
-	private static String	MSG_TWO_HANDED_LIFT_TOOLTIP;
-	private static String	MSG_SHOVE_KNOCK_OVER;
-	private static String	MSG_SHOVE_KNOCK_OVER_TOOLTIP;
-	private static String	MSG_RUNNING_SHOVE;
-	private static String	MSG_RUNNING_SHOVE_TOOLTIP;
-	private static String	MSG_CARRY_ON_BACK;
-	private static String	MSG_CARRY_ON_BACK_TOOLTIP;
-	private static String	MSG_SHIFT_SLIGHTLY;
-	private static String	MSG_SHIFT_SLIGHTLY_TOOLTIP;
-
-	static {
-		LocalizedMessages.initialize(LiftPanel.class);
-	}
-
 	/**
 	 * Creates a new damage panel.
 	 * 
 	 * @param character The character to display the data for.
 	 */
 	public LiftPanel(GURPSCharacter character) {
-		super(new ColumnLayout(2, 2, 0), MSG_LIFT_MOVE);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_BASIC_LIFT, MSG_BASIC_LIFT, MSG_BASIC_LIFT_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_ONE_HANDED_LIFT, MSG_ONE_HANDED_LIFT, MSG_ONE_HANDED_LIFT_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_TWO_HANDED_LIFT, MSG_TWO_HANDED_LIFT, MSG_TWO_HANDED_LIFT_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_SHOVE_AND_KNOCK_OVER, MSG_SHOVE_KNOCK_OVER, MSG_SHOVE_KNOCK_OVER_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_RUNNING_SHOVE_AND_KNOCK_OVER, MSG_RUNNING_SHOVE, MSG_RUNNING_SHOVE_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_CARRY_ON_BACK, MSG_CARRY_ON_BACK, MSG_CARRY_ON_BACK_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_SHIFT_SLIGHTLY, MSG_SHIFT_SLIGHTLY, MSG_SHIFT_SLIGHTLY_TOOLTIP, SwingConstants.RIGHT);
+		super(new ColumnLayout(2, 2, 0), LIFT_MOVE);
+		createLabelAndDisabledField(this, character, GURPSCharacter.ID_BASIC_LIFT, BASIC_LIFT, BASIC_LIFT_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, character, GURPSCharacter.ID_ONE_HANDED_LIFT, ONE_HANDED_LIFT, ONE_HANDED_LIFT_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, character, GURPSCharacter.ID_TWO_HANDED_LIFT, TWO_HANDED_LIFT, TWO_HANDED_LIFT_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, character, GURPSCharacter.ID_SHOVE_AND_KNOCK_OVER, SHOVE_KNOCK_OVER, SHOVE_KNOCK_OVER_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, character, GURPSCharacter.ID_RUNNING_SHOVE_AND_KNOCK_OVER, RUNNING_SHOVE, RUNNING_SHOVE_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, character, GURPSCharacter.ID_CARRY_ON_BACK, CARRY_ON_BACK, CARRY_ON_BACK_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, character, GURPSCharacter.ID_SHIFT_SLIGHTLY, SHIFT_SLIGHTLY, SHIFT_SLIGHTLY_TOOLTIP, SwingConstants.RIGHT);
 	}
 }

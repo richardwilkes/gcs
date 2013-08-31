@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,10 +23,13 @@
 
 package com.trollworks.gcs.character;
 
+import static com.trollworks.gcs.character.EncumbrancePanel_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.notification.NotifierTarget;
 import com.trollworks.ttk.text.Numbers;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.Wrapper;
 
@@ -37,32 +40,29 @@ import java.text.MessageFormat;
 
 import javax.swing.SwingConstants;
 
+@Localized({
+				@LS(key = "ENCUMBRANCE_MOVE_DODGE", msg = "Encumbrance, Move & Dodge"),
+				@LS(key = "ENCUMBRANCE_LEVEL", msg = "Level"),
+				@LS(key = "MAX_CARRY", msg = "Max Load"),
+				@LS(key = "MOVE", msg = "Move"),
+				@LS(key = "DODGE", msg = "Dodge"),
+				@LS(key = "ENCUMBRANCE_TOOLTIP", msg = "The encumbrance level"),
+				@LS(key = "MAX_CARRY_TOOLTIP", msg = "The maximum load a character can carry and still remain within a specific encumbrance level"),
+				@LS(key = "MOVE_TOOLTIP", msg = "The character's ground movement rate for a specific encumbrance level"),
+				@LS(key = "DODGE_TOOLTIP", msg = "The character's dodge for a specific encumbrance level"),
+				@LS(key = "NONE", msg = "None"),
+				@LS(key = "LIGHT", msg = "Light"),
+				@LS(key = "MEDIUM", msg = "Medium"),
+				@LS(key = "HEAVY", msg = "Heavy"),
+				@LS(key = "EXTRA_HEAVY", msg = "X-Heavy"),
+				@LS(key = "ENCUMBRANCE_FORMAT", msg = "{0} ({1})"),
+				@LS(key = "CURRENT_ENCUMBRANCE_FORMAT", msg = "\u2022 {0} ({1})"),
+})
 /** The character encumbrance panel. */
 public class EncumbrancePanel extends DropPanel implements NotifierTarget {
-	private static String			MSG_ENCUMBRANCE_MOVE_DODGE;
-	private static String			MSG_ENCUMBRANCE_LEVEL;
-	private static String			MSG_MAX_CARRY;
-	private static String			MSG_MOVE;
-	private static String			MSG_DODGE;
-	private static String			MSG_ENCUMBRANCE_TOOLTIP;
-	private static String			MSG_MAX_CARRY_TOOLTIP;
-	private static String			MSG_MOVE_TOOLTIP;
-	private static String			MSG_DODGE_TOOLTIP;
-	private static String			MSG_NONE;
-	private static String			MSG_LIGHT;
-	private static String			MSG_MEDIUM;
-	private static String			MSG_HEAVY;
-	private static String			MSG_EXTRA_HEAVY;
-	static String					MSG_ENCUMBRANCE_FORMAT;
-	static String					MSG_CURRENT_ENCUMBRANCE_FORMAT;
-
-	static {
-		LocalizedMessages.initialize(EncumbrancePanel.class);
-	}
-
 	private static final Color		CURRENT_ENCUMBRANCE_COLOR	= new Color(252, 242, 196);
 	/** The various encumbrance titles. */
-	public static final String[]	ENCUMBRANCE_TITLES			= new String[] { MSG_NONE, MSG_LIGHT, MSG_MEDIUM, MSG_HEAVY, MSG_EXTRA_HEAVY };
+	public static final String[]	ENCUMBRANCE_TITLES			= new String[] { NONE, LIGHT, MEDIUM, HEAVY, EXTRA_HEAVY };
 	private GURPSCharacter			mCharacter;
 	private PageLabel[]				mMarkers;
 
@@ -72,17 +72,17 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 	 * @param character The character to display the data for.
 	 */
 	public EncumbrancePanel(GURPSCharacter character) {
-		super(new ColumnLayout(7, 2, 0), MSG_ENCUMBRANCE_MOVE_DODGE, true);
+		super(new ColumnLayout(7, 2, 0), ENCUMBRANCE_MOVE_DODGE, true);
 		mCharacter = character;
 		mMarkers = new PageLabel[GURPSCharacter.ENCUMBRANCE_LEVELS];
-		PageHeader header = createHeader(this, MSG_ENCUMBRANCE_LEVEL, MSG_ENCUMBRANCE_TOOLTIP);
+		PageHeader header = createHeader(this, ENCUMBRANCE_LEVEL, ENCUMBRANCE_TOOLTIP);
 		addHorizontalBackground(header, Color.black);
 		addVerticalBackground(createDivider(), Color.black);
-		createHeader(this, MSG_MAX_CARRY, MSG_MAX_CARRY_TOOLTIP);
+		createHeader(this, MAX_CARRY, MAX_CARRY_TOOLTIP);
 		addVerticalBackground(createDivider(), Color.black);
-		createHeader(this, MSG_MOVE, MSG_MOVE_TOOLTIP);
+		createHeader(this, MOVE, MOVE_TOOLTIP);
 		addVerticalBackground(createDivider(), Color.black);
-		createHeader(this, MSG_DODGE, MSG_DODGE_TOOLTIP);
+		createHeader(this, DODGE, DODGE_TOOLTIP);
 		int current = character.getEncumbranceLevel();
 		for (int i = 0; i < GURPSCharacter.ENCUMBRANCE_LEVELS; i++) {
 			mMarkers[i] = new PageLabel(getMarkerText(i, current), header);
@@ -91,17 +91,17 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 				addHorizontalBackground(mMarkers[i], CURRENT_ENCUMBRANCE_COLOR);
 			}
 			createDivider();
-			createDisabledField(this, character, GURPSCharacter.MAXIMUM_CARRY_PREFIX + i, MSG_MAX_CARRY_TOOLTIP, SwingConstants.RIGHT);
+			createDisabledField(this, character, GURPSCharacter.MAXIMUM_CARRY_PREFIX + i, MAX_CARRY_TOOLTIP, SwingConstants.RIGHT);
 			createDivider();
-			createDisabledField(this, character, GURPSCharacter.MOVE_PREFIX + i, MSG_MOVE_TOOLTIP, SwingConstants.RIGHT);
+			createDisabledField(this, character, GURPSCharacter.MOVE_PREFIX + i, MOVE_TOOLTIP, SwingConstants.RIGHT);
 			createDivider();
-			createDisabledField(this, character, GURPSCharacter.DODGE_PREFIX + i, MSG_DODGE_TOOLTIP, SwingConstants.RIGHT);
+			createDisabledField(this, character, GURPSCharacter.DODGE_PREFIX + i, DODGE_TOOLTIP, SwingConstants.RIGHT);
 		}
 		character.addTarget(this, GURPSCharacter.ID_CARRIED_WEIGHT, GURPSCharacter.ID_BASIC_LIFT);
 	}
 
 	private static String getMarkerText(int which, int current) {
-		return MessageFormat.format(which == current ? MSG_CURRENT_ENCUMBRANCE_FORMAT : MSG_ENCUMBRANCE_FORMAT, ENCUMBRANCE_TITLES[which], Numbers.format(which));
+		return MessageFormat.format(which == current ? CURRENT_ENCUMBRANCE_FORMAT : ENCUMBRANCE_FORMAT, ENCUMBRANCE_TITLES[which], Numbers.format(which));
 	}
 
 	private Container createDivider() {

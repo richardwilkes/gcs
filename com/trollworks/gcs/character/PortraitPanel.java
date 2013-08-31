@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,13 +23,16 @@
 
 package com.trollworks.gcs.character;
 
+import static com.trollworks.gcs.character.PortraitPanel_LS.*;
+
 import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.widgets.GCSWindow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.border.BoxedDropShadowBorder;
 import com.trollworks.ttk.image.Images;
 import com.trollworks.ttk.notification.NotifierTarget;
 import com.trollworks.ttk.utility.GraphicsUtilities;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Path;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.StdFileDialog;
@@ -50,17 +53,15 @@ import java.text.MessageFormat;
 
 import javax.swing.UIManager;
 
+@Localized({
+				@LS(key = "SELECT_PORTRAIT", msg = "Select A Portrait"),
+				@LS(key = "PORTRAIT", msg = "Portrait"),
+				@LS(key = "PORTRAIT_TOOLTIP", msg = "<html><body><b>Double-click</b> to set a character portrait.<br><br>The dimensions of the chosen picture should be in a ratio of<br><b>3 pixels wide for every 4 pixels tall</b> to scale without distortion.<br><br>Dimensions of <b>{0}x{1}</b> are ideal.</body></html>"),
+				@LS(key = "BAD_IMAGE", msg = "Unable to load\n{0}."),
+})
 /** The character portrait. */
 public class PortraitPanel extends DropPanel implements NotifierTarget {
-	private static String	MSG_SELECT_PORTRAIT;
-	private static String	MSG_PORTRAIT;
-	private static String	MSG_PORTRAIT_TOOLTIP;
-	private static String	MSG_BAD_IMAGE;
 	private GURPSCharacter	mCharacter;
-
-	static {
-		LocalizedMessages.initialize(PortraitPanel.class);
-	}
 
 	/**
 	 * Creates a new character portrait.
@@ -69,11 +70,11 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 	 */
 	public PortraitPanel(GURPSCharacter character) {
 		super(null, true);
-		setBorder(new BoxedDropShadowBorder(UIManager.getFont(GCSFonts.KEY_LABEL), MSG_PORTRAIT));
+		setBorder(new BoxedDropShadowBorder(UIManager.getFont(GCSFonts.KEY_LABEL), PORTRAIT));
 		mCharacter = character;
 		Insets insets = getInsets();
 		UIUtilities.setOnlySize(this, new Dimension(insets.left + insets.right + Profile.PORTRAIT_WIDTH, insets.top + insets.bottom + Profile.PORTRAIT_HEIGHT));
-		setToolTipText(MessageFormat.format(MSG_PORTRAIT_TOOLTIP, new Integer(Profile.PORTRAIT_WIDTH * 2), new Integer(Profile.PORTRAIT_HEIGHT * 2)));
+		setToolTipText(MessageFormat.format(PORTRAIT_TOOLTIP, new Integer(Profile.PORTRAIT_WIDTH * 2), new Integer(Profile.PORTRAIT_HEIGHT * 2)));
 		mCharacter.addTarget(this, Profile.ID_PORTRAIT);
 		addMouseListener(new MouseAdapter() {
 			@Override
@@ -87,12 +88,12 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 
 	/** Allows the user to choose a portrait for their character. */
 	public void choosePortrait() {
-		File file = StdFileDialog.choose(this, true, MSG_SELECT_PORTRAIT, null, null, "png", "jpg", "gif", "jpeg"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		File file = StdFileDialog.choose(this, true, SELECT_PORTRAIT, null, null, "png", "jpg", "gif", "jpeg"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		if (file != null) {
 			try {
 				mCharacter.getDescription().setPortrait(Images.loadImage(file));
 			} catch (Exception exception) {
-				WindowUtils.showError(this, MessageFormat.format(MSG_BAD_IMAGE, Path.getFullPath(file)));
+				WindowUtils.showError(this, MessageFormat.format(BAD_IMAGE, Path.getFullPath(file)));
 			}
 		}
 	}

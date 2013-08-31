@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,31 +23,31 @@
 
 package com.trollworks.gcs.character;
 
+import static com.trollworks.gcs.character.PlayerInfoPanel_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.ColumnLayout;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import javax.swing.SwingConstants;
 
+@Localized({
+				@LS(key = "PLAYER_INFO", msg = "Player Information"),
+				@LS(key = "PLAYER_NAME", msg = "Player:"),
+				@LS(key = "CAMPAIGN", msg = "Campaign:"),
+				@LS(key = "CREATED_ON", msg = "Created On:"),
+})
 /** The character player info panel. */
 public class PlayerInfoPanel extends DropPanel {
-	private static String	MSG_PLAYER_INFO;
-	private static String	MSG_PLAYER_NAME;
-	private static String	MSG_CAMPAIGN;
-	private static String	MSG_CREATED_ON;
-
-	static {
-		LocalizedMessages.initialize(PlayerInfoPanel.class);
-	}
-
 	/**
 	 * Creates a new player info panel.
 	 * 
 	 * @param character The character to display the data for.
 	 */
 	public PlayerInfoPanel(GURPSCharacter character) {
-		super(new ColumnLayout(2, 2, 0), MSG_PLAYER_INFO);
-		createLabelAndField(this, character, Profile.ID_PLAYER_NAME, MSG_PLAYER_NAME, null, SwingConstants.LEFT);
-		createLabelAndField(this, character, Profile.ID_CAMPAIGN, MSG_CAMPAIGN, null, SwingConstants.LEFT);
-		createLabelAndField(this, character, GURPSCharacter.ID_CREATED_ON, MSG_CREATED_ON, null, SwingConstants.LEFT);
+		super(new ColumnLayout(2, 2, 0), PLAYER_INFO);
+		createLabelAndField(this, character, Profile.ID_PLAYER_NAME, PLAYER_NAME, null, SwingConstants.LEFT);
+		createLabelAndField(this, character, Profile.ID_CAMPAIGN, CAMPAIGN, null, SwingConstants.LEFT);
+		createLabelAndField(this, character, GURPSCharacter.ID_CREATED_ON, CREATED_ON, null, SwingConstants.LEFT);
 	}
 }

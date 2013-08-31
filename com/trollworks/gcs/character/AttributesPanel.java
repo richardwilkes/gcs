@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,12 +23,15 @@
 
 package com.trollworks.gcs.character;
 
+import static com.trollworks.gcs.character.AttributesPanel_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.Alignment;
 import com.trollworks.ttk.layout.FlexComponent;
 import com.trollworks.ttk.layout.FlexGrid;
 import com.trollworks.ttk.layout.FlexRow;
 import com.trollworks.ttk.layout.FlexSpacer;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.Wrapper;
 
@@ -37,68 +40,65 @@ import java.awt.Dimension;
 
 import javax.swing.SwingConstants;
 
+@Localized({
+				@LS(key = "ATTRIBUTES", msg = "Attributes"),
+				@LS(key = "ST", msg = "Strength (ST):"),
+				@LS(key = "ST_TOOLTIP", msg = "<html><body><b>{0} points</b> have been spent to modify <b>Strength</b></body></html>"),
+				@LS(key = "DX", msg = "Dexterity (DX):"),
+				@LS(key = "DX_TOOLTIP", msg = "<html><body><b>{0} points</b> have been spent to modify <b>Dexterity</b></body></html>"),
+				@LS(key = "IQ", msg = "Intelligence (IQ):"),
+				@LS(key = "IQ_TOOLTIP", msg = "<html><body><b>{0} points</b> have been spent to modify <b>Intelligence</b></body></html>"),
+				@LS(key = "HT", msg = "Health (HT):"),
+				@LS(key = "HT_TOOLTIP", msg = "<html><body><b>{0} points</b> have been spent to modify <b>Health</b></body></html>"),
+				@LS(key = "WILL", msg = "Will:"),
+				@LS(key = "WILL_TOOLTIP", msg = "<html><body><b>{0} points</b> have been spent to modify <b>Will</b></body></html>"),
+				@LS(key = "FRIGHT_CHECK", msg = "Fright Check:"),
+				@LS(key = "PERCEPTION", msg = "Perception:"),
+				@LS(key = "PERCEPTION_TOOLTIP", msg = "<html><body><b>{0} points</b> have been spent to modify <b>Perception</b></body></html>"),
+				@LS(key = "VISION", msg = "Vision:"),
+				@LS(key = "HEARING", msg = "Hearing:"),
+				@LS(key = "TOUCH", msg = "Touch:"),
+				@LS(key = "TASTE_SMELL", msg = "Taste & Smell:"),
+				@LS(key = "BASIC_SPEED", msg = "Basic Speed:"),
+				@LS(key = "BASIC_SPEED_TOOLTIP", msg = "<html><body><b>{0} points</b> have been spent to modify <b>Basic Speed</b></body></html>"),
+				@LS(key = "BASIC_MOVE", msg = "Basic Move:"),
+				@LS(key = "BASIC_MOVE_TOOLTIP", msg = "<html><body><b>{0} points</b> have been spent to modify <b>Basic Move</b></body></html>"),
+				@LS(key = "BASIC_THRUST", msg = "thr:"),
+				@LS(key = "BASIC_THRUST_TOOLTIP", msg = "The basic damage value for thrust attacks"),
+				@LS(key = "BASIC_SWING", msg = "sw:"),
+				@LS(key = "BASIC_SWING_TOOLTIP", msg = "The basic damage value for swing attacks"),
+})
 /** The character attributes panel. */
 public class AttributesPanel extends DropPanel {
-	private static String	MSG_ATTRIBUTES;
-	private static String	MSG_ST;
-	private static String	MSG_ST_TOOLTIP;
-	private static String	MSG_DX;
-	private static String	MSG_DX_TOOLTIP;
-	private static String	MSG_IQ;
-	private static String	MSG_IQ_TOOLTIP;
-	private static String	MSG_HT;
-	private static String	MSG_HT_TOOLTIP;
-	private static String	MSG_WILL;
-	private static String	MSG_WILL_TOOLTIP;
-	private static String	MSG_FRIGHT_CHECK;
-	private static String	MSG_PERCEPTION;
-	private static String	MSG_PERCEPTION_TOOLTIP;
-	private static String	MSG_VISION;
-	private static String	MSG_HEARING;
-	private static String	MSG_TOUCH;
-	private static String	MSG_TASTE_SMELL;
-	private static String	MSG_BASIC_SPEED;
-	private static String	MSG_BASIC_SPEED_TOOLTIP;
-	private static String	MSG_BASIC_MOVE;
-	private static String	MSG_BASIC_MOVE_TOOLTIP;
-	private static String	MSG_BASIC_THRUST;
-	private static String	MSG_BASIC_THRUST_TOOLTIP;
-	private static String	MSG_BASIC_SWING;
-	private static String	MSG_BASIC_SWING_TOOLTIP;
-
-	static {
-		LocalizedMessages.initialize(AttributesPanel.class);
-	}
-
 	/**
 	 * Creates a new attributes panel.
 	 * 
 	 * @param character The character to display the data for.
 	 */
 	public AttributesPanel(GURPSCharacter character) {
-		super(null, MSG_ATTRIBUTES, true);
+		super(null, ATTRIBUTES, true);
 		FlexGrid grid = new FlexGrid();
 		grid.setVerticalGap(0);
 		int row = 0;
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_STRENGTH, MSG_ST, MSG_ST_TOOLTIP, SwingConstants.RIGHT, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_DEXTERITY, MSG_DX, MSG_DX_TOOLTIP, SwingConstants.RIGHT, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_INTELLIGENCE, MSG_IQ, MSG_IQ_TOOLTIP, SwingConstants.RIGHT, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_HEALTH, MSG_HT, MSG_HT_TOOLTIP, SwingConstants.RIGHT, true);
+		createLabelAndField(grid, row++, character, GURPSCharacter.ID_STRENGTH, ST, ST_TOOLTIP, SwingConstants.RIGHT, true);
+		createLabelAndField(grid, row++, character, GURPSCharacter.ID_DEXTERITY, DX, DX_TOOLTIP, SwingConstants.RIGHT, true);
+		createLabelAndField(grid, row++, character, GURPSCharacter.ID_INTELLIGENCE, IQ, IQ_TOOLTIP, SwingConstants.RIGHT, true);
+		createLabelAndField(grid, row++, character, GURPSCharacter.ID_HEALTH, HT, HT_TOOLTIP, SwingConstants.RIGHT, true);
 		createDivider(grid, row++, false);
 		createDivider(grid, row++, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_WILL, MSG_WILL, MSG_WILL_TOOLTIP, SwingConstants.RIGHT, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_FRIGHT_CHECK, MSG_FRIGHT_CHECK, null, SwingConstants.RIGHT, false);
+		createLabelAndField(grid, row++, character, GURPSCharacter.ID_WILL, WILL, WILL_TOOLTIP, SwingConstants.RIGHT, true);
+		createLabelAndField(grid, row++, character, GURPSCharacter.ID_FRIGHT_CHECK, FRIGHT_CHECK, null, SwingConstants.RIGHT, false);
 		createDivider(grid, row++, false);
 		createDivider(grid, row++, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_BASIC_SPEED, MSG_BASIC_SPEED, MSG_BASIC_SPEED_TOOLTIP, SwingConstants.RIGHT, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_BASIC_MOVE, MSG_BASIC_MOVE, MSG_BASIC_MOVE_TOOLTIP, SwingConstants.RIGHT, true);
+		createLabelAndField(grid, row++, character, GURPSCharacter.ID_BASIC_SPEED, BASIC_SPEED, BASIC_SPEED_TOOLTIP, SwingConstants.RIGHT, true);
+		createLabelAndField(grid, row++, character, GURPSCharacter.ID_BASIC_MOVE, BASIC_MOVE, BASIC_MOVE_TOOLTIP, SwingConstants.RIGHT, true);
 		createDivider(grid, row++, false);
 		createDivider(grid, row++, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_PERCEPTION, MSG_PERCEPTION, MSG_PERCEPTION_TOOLTIP, SwingConstants.RIGHT, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_VISION, MSG_VISION, null, SwingConstants.RIGHT, false);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_HEARING, MSG_HEARING, null, SwingConstants.RIGHT, false);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_TASTE_AND_SMELL, MSG_TASTE_SMELL, null, SwingConstants.RIGHT, false);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_TOUCH, MSG_TOUCH, null, SwingConstants.RIGHT, false);
+		createLabelAndField(grid, row++, character, GURPSCharacter.ID_PERCEPTION, PERCEPTION, PERCEPTION_TOOLTIP, SwingConstants.RIGHT, true);
+		createLabelAndField(grid, row++, character, GURPSCharacter.ID_VISION, VISION, null, SwingConstants.RIGHT, false);
+		createLabelAndField(grid, row++, character, GURPSCharacter.ID_HEARING, HEARING, null, SwingConstants.RIGHT, false);
+		createLabelAndField(grid, row++, character, GURPSCharacter.ID_TASTE_AND_SMELL, TASTE_SMELL, null, SwingConstants.RIGHT, false);
+		createLabelAndField(grid, row++, character, GURPSCharacter.ID_TOUCH, TOUCH, null, SwingConstants.RIGHT, false);
 		createDivider(grid, row++, false);
 		createDivider(grid, row++, true);
 		createDamageFields(grid, row++, character);
@@ -117,9 +117,9 @@ public class AttributesPanel extends DropPanel {
 	private void createDamageFields(FlexGrid grid, int rowIndex, GURPSCharacter character) {
 		FlexRow row = new FlexRow();
 		row.setHorizontalAlignment(Alignment.CENTER);
-		createDamageLabelAndField(row, character, GURPSCharacter.ID_BASIC_THRUST, MSG_BASIC_THRUST, MSG_BASIC_THRUST_TOOLTIP);
+		createDamageLabelAndField(row, character, GURPSCharacter.ID_BASIC_THRUST, BASIC_THRUST, BASIC_THRUST_TOOLTIP);
 		row.add(new FlexSpacer(0, 0, false, false));
-		createDamageLabelAndField(row, character, GURPSCharacter.ID_BASIC_SWING, MSG_BASIC_SWING, MSG_BASIC_SWING_TOOLTIP);
+		createDamageLabelAndField(row, character, GURPSCharacter.ID_BASIC_SWING, BASIC_SWING, BASIC_SWING_TOOLTIP);
 		grid.add(row, rowIndex, 0, 1, 2);
 	}
 

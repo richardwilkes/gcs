@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,11 +23,15 @@
 
 package com.trollworks.gcs.character;
 
+import static com.trollworks.gcs.character.Profile_LS.*;
+
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.image.Images;
 import com.trollworks.ttk.preferences.Preferences;
 import com.trollworks.ttk.text.Base64;
@@ -36,7 +40,6 @@ import com.trollworks.ttk.units.LengthUnits;
 import com.trollworks.ttk.units.LengthValue;
 import com.trollworks.ttk.units.WeightUnits;
 import com.trollworks.ttk.units.WeightValue;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.xml.XMLNodeType;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
@@ -53,138 +56,135 @@ import java.util.Random;
 
 import javax.imageio.ImageIO;
 
+@Localized({
+				@LS(key = "HAIR_FORMAT", msg = "{0}, {1}, {2}"),
+				@LS(key = "BROWN", msg = "Brown"),
+				@LS(key = "BLACK", msg = "Black"),
+				@LS(key = "BLOND", msg = "Blond"),
+				@LS(key = "REDHEAD", msg = "Redhead"),
+				@LS(key = "BALD", msg = "Bald"),
+				@LS(key = "STRAIGHT", msg = "Straight"),
+				@LS(key = "CURLY", msg = "Curly"),
+				@LS(key = "WAVY", msg = "Wavy"),
+				@LS(key = "SHORT", msg = "Short"),
+				@LS(key = "MEDIUM", msg = "Medium"),
+				@LS(key = "LONG", msg = "Long"),
+				@LS(key = "BLUE", msg = "Blue"),
+				@LS(key = "GREEN", msg = "Green"),
+				@LS(key = "GREY", msg = "Grey"),
+				@LS(key = "VIOLET", msg = "Violet"),
+				@LS(key = "FRECKLED", msg = "Freckled"),
+				@LS(key = "TAN", msg = "Tan"),
+				@LS(key = "LIGHT_TAN", msg = "Light Tan"),
+				@LS(key = "DARK_TAN", msg = "Dark Tan"),
+				@LS(key = "LIGHT_BROWN", msg = "Light Brown"),
+				@LS(key = "DARK_BROWN", msg = "Dark Brown"),
+				@LS(key = "PALE", msg = "Pale"),
+				@LS(key = "RIGHT", msg = "Right"),
+				@LS(key = "LEFT", msg = "Left"),
+				@LS(key = "MALE", msg = "Male"),
+				@LS(key = "FEMALE", msg = "Female"),
+				@LS(key = "DEFAULT_RACE", msg = "Human"),
+				@LS(key = "NAME_UNDO", msg = "Name Change"),
+				@LS(key = "TITLE_UNDO", msg = "Title Change"),
+				@LS(key = "AGE_UNDO", msg = "Age Change"),
+				@LS(key = "BIRTHDAY_UNDO", msg = "Birthday Change"),
+				@LS(key = "EYE_COLOR_UNDO", msg = "Eye Color Change"),
+				@LS(key = "HAIR_UNDO", msg = "Hair Change"),
+				@LS(key = "SKIN_COLOR_UNDO", msg = "Skin Color Change"),
+				@LS(key = "HANDEDNESS_UNDO", msg = "Handedness Change"),
+				@LS(key = "HEIGHT_UNDO", msg = "Height Change"),
+				@LS(key = "WEIGHT_UNDO", msg = "Weight Change"),
+				@LS(key = "GENDER_UNDO", msg = "Gender Change"),
+				@LS(key = "RACE_UNDO", msg = "Race Change"),
+				@LS(key = "RELIGION_UNDO", msg = "Religion Change"),
+				@LS(key = "PLAYER_NAME_UNDO", msg = "Player Name Change"),
+				@LS(key = "CAMPAIGN_UNDO", msg = "Campaign Change"),
+				@LS(key = "SIZE_MODIFIER_UNDO", msg = "Size Modifier Change"),
+				@LS(key = "TECH_LEVEL_UNDO", msg = "Tech Level Change"),
+				@LS(key = "PORTRAIT_UNDO", msg = "Portrait Change"),
+				@LS(key = "PORTRAIT_COMMENT", msg = "The portrait is a PNG file encoded as Base64."),
+				@LS(key = "PORTRAIT_WRITE_ERROR", msg = "Could not write portrait."),
+				@LS(key = "NOTES_UNDO", msg = "Notes Change"),
+})
 /** Holds the character profile. */
 public class Profile {
-	private static String			MSG_HAIR_FORMAT;
-	private static String			MSG_BROWN;
-	private static String			MSG_BLACK;
-	private static String			MSG_BLOND;
-	private static String			MSG_REDHEAD;
-	private static String			MSG_BALD;
-	private static String			MSG_STRAIGHT;
-	private static String			MSG_CURLY;
-	private static String			MSG_WAVY;
-	private static String			MSG_SHORT;
-	private static String			MSG_MEDIUM;
-	private static String			MSG_LONG;
-	private static String			MSG_BLUE;
-	private static String			MSG_GREEN;
-	private static String			MSG_GREY;
-	private static String			MSG_VIOLET;
-	private static String			MSG_FRECKLED;
-	private static String			MSG_TAN;
-	private static String			MSG_LIGHT_TAN;
-	private static String			MSG_DARK_TAN;
-	private static String			MSG_LIGHT_BROWN;
-	private static String			MSG_DARK_BROWN;
-	private static String			MSG_PALE;
-	private static String			MSG_RIGHT;
-	private static String			MSG_LEFT;
-	private static String			MSG_MALE;
-	private static String			MSG_FEMALE;
-	private static String			MSG_DEFAULT_RACE;
-	private static String			MSG_NAME_UNDO;
-	private static String			MSG_TITLE_UNDO;
-	private static String			MSG_AGE_UNDO;
-	private static String			MSG_BIRTHDAY_UNDO;
-	private static String			MSG_EYE_COLOR_UNDO;
-	private static String			MSG_HAIR_UNDO;
-	private static String			MSG_SKIN_COLOR_UNDO;
-	private static String			MSG_HANDEDNESS_UNDO;
-	private static String			MSG_HEIGHT_UNDO;
-	private static String			MSG_WEIGHT_UNDO;
-	private static String			MSG_GENDER_UNDO;
-	private static String			MSG_RACE_UNDO;
-	private static String			MSG_RELIGION_UNDO;
-	private static String			MSG_PLAYER_NAME_UNDO;
-	private static String			MSG_CAMPAIGN_UNDO;
-	private static String			MSG_SIZE_MODIFIER_UNDO;
-	private static String			MSG_TECH_LEVEL_UNDO;
-	private static String			MSG_PORTRAIT_UNDO;
-	private static String			MSG_PORTRAIT_COMMENT;
-	private static String			MSG_PORTRAIT_WRITE_ERROR;
-	private static String			MSG_NOTES_UNDO;
-
-	static {
-		LocalizedMessages.initialize(Profile.class);
-	}
-
 	/** The root XML tag. */
-	public static final String		TAG_ROOT			= "profile";																													//$NON-NLS-1$
+	public static final String		TAG_ROOT			= "profile";																					//$NON-NLS-1$
 	/** The preferences module name. */
-	public static final String		MODULE				= "GURPSCharacter";																											//$NON-NLS-1$
+	public static final String		MODULE				= "GURPSCharacter";																			//$NON-NLS-1$
 	/** The prefix used in front of all IDs for profile. */
-	public static final String		PROFILE_PREFIX		= GURPSCharacter.CHARACTER_PREFIX + "pi.";																						//$NON-NLS-1$
+	public static final String		PROFILE_PREFIX		= GURPSCharacter.CHARACTER_PREFIX + "pi.";														//$NON-NLS-1$
 	/** The field ID for portrait changes. */
-	public static final String		ID_PORTRAIT			= PROFILE_PREFIX + "Portrait";																									//$NON-NLS-1$
+	public static final String		ID_PORTRAIT			= PROFILE_PREFIX + "Portrait";																	//$NON-NLS-1$
 	/** The field ID for name changes. */
-	public static final String		ID_NAME				= PROFILE_PREFIX + "Name";																										//$NON-NLS-1$
+	public static final String		ID_NAME				= PROFILE_PREFIX + "Name";																		//$NON-NLS-1$
 	/** The field ID for notes changes. */
-	public static final String		ID_NOTES			= PROFILE_PREFIX + "Notes";																									//$NON-NLS-1$
+	public static final String		ID_NOTES			= PROFILE_PREFIX + "Notes";																	//$NON-NLS-1$
 	/** The field ID for title changes. */
-	public static final String		ID_TITLE			= PROFILE_PREFIX + "Title";																									//$NON-NLS-1$
+	public static final String		ID_TITLE			= PROFILE_PREFIX + "Title";																	//$NON-NLS-1$
 	/** The field ID for age changes. */
-	public static final String		ID_AGE				= PROFILE_PREFIX + "Age";																										//$NON-NLS-1$
+	public static final String		ID_AGE				= PROFILE_PREFIX + "Age";																		//$NON-NLS-1$
 	/** The field ID for birthday changes. */
-	public static final String		ID_BIRTHDAY			= PROFILE_PREFIX + "Birthday";																									//$NON-NLS-1$
+	public static final String		ID_BIRTHDAY			= PROFILE_PREFIX + "Birthday";																	//$NON-NLS-1$
 	/** The field ID for eye color changes. */
-	public static final String		ID_EYE_COLOR		= PROFILE_PREFIX + "EyeColor";																									//$NON-NLS-1$
+	public static final String		ID_EYE_COLOR		= PROFILE_PREFIX + "EyeColor";																	//$NON-NLS-1$
 	/** The field ID for hair color changes. */
-	public static final String		ID_HAIR				= PROFILE_PREFIX + "Hair";																										//$NON-NLS-1$
+	public static final String		ID_HAIR				= PROFILE_PREFIX + "Hair";																		//$NON-NLS-1$
 	/** The field ID for skin color changes. */
-	public static final String		ID_SKIN_COLOR		= PROFILE_PREFIX + "SkinColor";																								//$NON-NLS-1$
+	public static final String		ID_SKIN_COLOR		= PROFILE_PREFIX + "SkinColor";																//$NON-NLS-1$
 	/** The field ID for handedness changes. */
-	public static final String		ID_HANDEDNESS		= PROFILE_PREFIX + "Handedness";																								//$NON-NLS-1$
+	public static final String		ID_HANDEDNESS		= PROFILE_PREFIX + "Handedness";																//$NON-NLS-1$
 	/** The field ID for height changes. */
-	public static final String		ID_HEIGHT			= PROFILE_PREFIX + "Height";																									//$NON-NLS-1$
+	public static final String		ID_HEIGHT			= PROFILE_PREFIX + "Height";																	//$NON-NLS-1$
 	/** The field ID for weight changes. */
-	public static final String		ID_WEIGHT			= PROFILE_PREFIX + "Weight";																									//$NON-NLS-1$
+	public static final String		ID_WEIGHT			= PROFILE_PREFIX + "Weight";																	//$NON-NLS-1$
 	/** The field ID for gender changes. */
-	public static final String		ID_GENDER			= PROFILE_PREFIX + "Gender";																									//$NON-NLS-1$
+	public static final String		ID_GENDER			= PROFILE_PREFIX + "Gender";																	//$NON-NLS-1$
 	/** The field ID for race changes. */
-	public static final String		ID_RACE				= PROFILE_PREFIX + "Race";																										//$NON-NLS-1$
+	public static final String		ID_RACE				= PROFILE_PREFIX + "Race";																		//$NON-NLS-1$
 	/** The field ID for religion changes. */
-	public static final String		ID_RELIGION			= PROFILE_PREFIX + "Religion";																									//$NON-NLS-1$
+	public static final String		ID_RELIGION			= PROFILE_PREFIX + "Religion";																	//$NON-NLS-1$
 	/** The field ID for player name changes. */
-	public static final String		ID_PLAYER_NAME		= PROFILE_PREFIX + "PlayerName";																								//$NON-NLS-1$
+	public static final String		ID_PLAYER_NAME		= PROFILE_PREFIX + "PlayerName";																//$NON-NLS-1$
 	/** The field ID for campaign changes. */
-	public static final String		ID_CAMPAIGN			= PROFILE_PREFIX + "Campaign";																									//$NON-NLS-1$
+	public static final String		ID_CAMPAIGN			= PROFILE_PREFIX + "Campaign";																	//$NON-NLS-1$
 	/** The field ID for tech level changes. */
-	public static final String		ID_TECH_LEVEL		= PROFILE_PREFIX + "TechLevel";																								//$NON-NLS-1$
+	public static final String		ID_TECH_LEVEL		= PROFILE_PREFIX + "TechLevel";																//$NON-NLS-1$
 	/** The field ID for size modifier changes. */
 	public static final String		ID_SIZE_MODIFIER	= PROFILE_PREFIX + BonusAttributeType.SM.name();
 	/** The default portrait marker. */
-	public static final String		DEFAULT_PORTRAIT	= "!\000";																														//$NON-NLS-1$
+	public static final String		DEFAULT_PORTRAIT	= "!\000";																						//$NON-NLS-1$
 	/** The default Tech Level. */
-	public static final String		DEFAULT_TECH_LEVEL	= "4";																															//$NON-NLS-1$
+	public static final String		DEFAULT_TECH_LEVEL	= "4";																							//$NON-NLS-1$
 	/** The height, in 1/72nds of an inch, of the portrait. */
 	public static final int			PORTRAIT_HEIGHT		= 96;
 	/** The width, in 1/72nds of an inch, of the portrait. */
 	public static final int			PORTRAIT_WIDTH		= 3 * PORTRAIT_HEIGHT / 4;
-	private static final String		TAG_PLAYER_NAME		= "player_name";																												//$NON-NLS-1$
-	private static final String		TAG_CAMPAIGN		= "campaign";																													//$NON-NLS-1$
-	private static final String		TAG_NAME			= "name";																														//$NON-NLS-1$
-	private static final String		TAG_TITLE			= "title";																														//$NON-NLS-1$
-	private static final String		TAG_AGE				= "age";																														//$NON-NLS-1$
-	private static final String		TAG_BIRTHDAY		= "birthday";																													//$NON-NLS-1$
-	private static final String		TAG_EYES			= "eyes";																														//$NON-NLS-1$
-	private static final String		TAG_HAIR			= "hair";																														//$NON-NLS-1$
-	private static final String		TAG_SKIN			= "skin";																														//$NON-NLS-1$
-	private static final String		TAG_HANDEDNESS		= "handedness";																												//$NON-NLS-1$
-	private static final String		TAG_HEIGHT			= "height";																													//$NON-NLS-1$
-	private static final String		TAG_WEIGHT			= "weight";																													//$NON-NLS-1$
-	private static final String		TAG_GENDER			= "gender";																													//$NON-NLS-1$
-	private static final String		TAG_RACE			= "race";																														//$NON-NLS-1$
-	private static final String		TAG_TECH_LEVEL		= "tech_level";																												//$NON-NLS-1$
-	private static final String		TAG_RELIGION		= "religion";																													//$NON-NLS-1$
-	private static final String		TAG_PORTRAIT		= "portrait";																													//$NON-NLS-1$
-	private static final String		TAG_NOTES			= "notes";																														//$NON-NLS-1$
-	private static final String		EMPTY				= "";																															//$NON-NLS-1$
+	private static final String		TAG_PLAYER_NAME		= "player_name";																				//$NON-NLS-1$
+	private static final String		TAG_CAMPAIGN		= "campaign";																					//$NON-NLS-1$
+	private static final String		TAG_NAME			= "name";																						//$NON-NLS-1$
+	private static final String		TAG_TITLE			= "title";																						//$NON-NLS-1$
+	private static final String		TAG_AGE				= "age";																						//$NON-NLS-1$
+	private static final String		TAG_BIRTHDAY		= "birthday";																					//$NON-NLS-1$
+	private static final String		TAG_EYES			= "eyes";																						//$NON-NLS-1$
+	private static final String		TAG_HAIR			= "hair";																						//$NON-NLS-1$
+	private static final String		TAG_SKIN			= "skin";																						//$NON-NLS-1$
+	private static final String		TAG_HANDEDNESS		= "handedness";																				//$NON-NLS-1$
+	private static final String		TAG_HEIGHT			= "height";																					//$NON-NLS-1$
+	private static final String		TAG_WEIGHT			= "weight";																					//$NON-NLS-1$
+	private static final String		TAG_GENDER			= "gender";																					//$NON-NLS-1$
+	private static final String		TAG_RACE			= "race";																						//$NON-NLS-1$
+	private static final String		TAG_TECH_LEVEL		= "tech_level";																				//$NON-NLS-1$
+	private static final String		TAG_RELIGION		= "religion";																					//$NON-NLS-1$
+	private static final String		TAG_PORTRAIT		= "portrait";																					//$NON-NLS-1$
+	private static final String		TAG_NOTES			= "notes";																						//$NON-NLS-1$
+	private static final String		EMPTY				= "";																							//$NON-NLS-1$
 	private static final Random		RANDOM				= new Random();
-	private static final String[]	EYE_OPTIONS			= new String[] { MSG_BROWN, MSG_BROWN, MSG_BLUE, MSG_BLUE, MSG_GREEN, MSG_GREY, MSG_VIOLET };
-	private static final String[]	SKIN_OPTIONS		= new String[] { MSG_FRECKLED, MSG_TAN, MSG_LIGHT_TAN, MSG_DARK_TAN, MSG_BROWN, MSG_LIGHT_BROWN, MSG_DARK_BROWN, MSG_PALE };
-	private static final String[]	HANDEDNESS_OPTIONS	= new String[] { MSG_RIGHT, MSG_RIGHT, MSG_RIGHT, MSG_LEFT };
-	private static final String[]	GENDER_OPTIONS		= new String[] { MSG_MALE, MSG_MALE, MSG_MALE, MSG_FEMALE };
+	private static final String[]	EYE_OPTIONS			= new String[] { BROWN, BROWN, BLUE, BLUE, GREEN, GREY, VIOLET };
+	private static final String[]	SKIN_OPTIONS		= new String[] { FRECKLED, TAN, LIGHT_TAN, DARK_TAN, BROWN, LIGHT_BROWN, DARK_BROWN, PALE };
+	private static final String[]	HANDEDNESS_OPTIONS	= new String[] { RIGHT, RIGHT, RIGHT, LEFT };
+	private static final String[]	GENDER_OPTIONS		= new String[] { MALE, MALE, MALE, FEMALE };
 	private static final String[]	HAIR_OPTIONS;
 	private GURPSCharacter			mCharacter;
 	private boolean					mCustomPortrait;
@@ -225,8 +225,8 @@ public class Profile {
 		mHeight = full ? getRandomHeight(mCharacter.getStrength(), getSizeModifier()) : new LengthValue(0, SheetPreferences.getLengthUnits());
 		mWeight = full ? getRandomWeight(mCharacter.getStrength(), getSizeModifier(), 1.0) : new WeightValue(0, SheetPreferences.getWeightUnits());
 		mGender = full ? getRandomGender() : EMPTY;
-		mName = full && SheetPreferences.isNewCharacterAutoNamed() ? USCensusNames.INSTANCE.getFullName(mGender == MSG_MALE) : EMPTY;
-		mRace = full ? MSG_DEFAULT_RACE : EMPTY;
+		mName = full && SheetPreferences.isNewCharacterAutoNamed() ? USCensusNames.INSTANCE.getFullName(mGender == MALE) : EMPTY;
+		mRace = full ? DEFAULT_RACE : EMPTY;
 		mTechLevel = full ? getDefaultTechLevel() : EMPTY;
 		mReligion = EMPTY;
 		mPlayerName = full ? getDefaultPlayerName() : EMPTY;
@@ -325,13 +325,13 @@ public class Profile {
 			try {
 				try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 					ImageIO.write(mPortrait, "png", baos); //$NON-NLS-1$
-					out.writeComment(MSG_PORTRAIT_COMMENT);
+					out.writeComment(PORTRAIT_COMMENT);
 					out.startSimpleTagEOL(TAG_PORTRAIT);
 					out.println(Base64.encode(baos.toByteArray()));
 					out.endTagEOL(TAG_PORTRAIT, true);
 				}
 			} catch (Exception ex) {
-				throw new RuntimeException(MSG_PORTRAIT_WRITE_ERROR);
+				throw new RuntimeException(PORTRAIT_WRITE_ERROR);
 			}
 		}
 		out.endTagEOL(TAG_ROOT, true);
@@ -359,7 +359,7 @@ public class Profile {
 	public void setPortrait(BufferedImage portrait) {
 		if (mPortrait != portrait) {
 			mCustomPortrait = true;
-			mCharacter.postUndoEdit(MSG_PORTRAIT_UNDO, ID_PORTRAIT, mPortrait, portrait);
+			mCharacter.postUndoEdit(PORTRAIT_UNDO, ID_PORTRAIT, mPortrait, portrait);
 			setPortraitInternal(portrait);
 			mCharacter.notifySingle(ID_PORTRAIT, mPortrait);
 		}
@@ -390,7 +390,7 @@ public class Profile {
 	 */
 	public void setName(String name) {
 		if (!mName.equals(name)) {
-			mCharacter.postUndoEdit(MSG_NAME_UNDO, ID_NAME, mName, name);
+			mCharacter.postUndoEdit(NAME_UNDO, ID_NAME, mName, name);
 			mName = name;
 			mCharacter.notifySingle(ID_NAME, mName);
 		}
@@ -408,7 +408,7 @@ public class Profile {
 	 */
 	public void setGender(String gender) {
 		if (!mGender.equals(gender)) {
-			mCharacter.postUndoEdit(MSG_GENDER_UNDO, ID_GENDER, mGender, gender);
+			mCharacter.postUndoEdit(GENDER_UNDO, ID_GENDER, mGender, gender);
 			mGender = gender;
 			mCharacter.notifySingle(ID_GENDER, mGender);
 		}
@@ -426,7 +426,7 @@ public class Profile {
 	 */
 	public void setRace(String race) {
 		if (!mRace.equals(race)) {
-			mCharacter.postUndoEdit(MSG_RACE_UNDO, ID_RACE, mRace, race);
+			mCharacter.postUndoEdit(RACE_UNDO, ID_RACE, mRace, race);
 			mRace = race;
 			mCharacter.notifySingle(ID_RACE, mRace);
 		}
@@ -444,7 +444,7 @@ public class Profile {
 	 */
 	public void setReligion(String religion) {
 		if (!mReligion.equals(religion)) {
-			mCharacter.postUndoEdit(MSG_RELIGION_UNDO, ID_RELIGION, mReligion, religion);
+			mCharacter.postUndoEdit(RELIGION_UNDO, ID_RELIGION, mReligion, religion);
 			mReligion = religion;
 			mCharacter.notifySingle(ID_RELIGION, mReligion);
 		}
@@ -462,7 +462,7 @@ public class Profile {
 	 */
 	public void setPlayerName(String player) {
 		if (!mPlayerName.equals(player)) {
-			mCharacter.postUndoEdit(MSG_PLAYER_NAME_UNDO, ID_PLAYER_NAME, mPlayerName, player);
+			mCharacter.postUndoEdit(PLAYER_NAME_UNDO, ID_PLAYER_NAME, mPlayerName, player);
 			mPlayerName = player;
 			mCharacter.notifySingle(ID_PLAYER_NAME, mPlayerName);
 		}
@@ -480,7 +480,7 @@ public class Profile {
 	 */
 	public void setCampaign(String campaign) {
 		if (!mCampaign.equals(campaign)) {
-			mCharacter.postUndoEdit(MSG_CAMPAIGN_UNDO, ID_CAMPAIGN, mCampaign, campaign);
+			mCharacter.postUndoEdit(CAMPAIGN_UNDO, ID_CAMPAIGN, mCampaign, campaign);
 			mCampaign = campaign;
 			mCharacter.notifySingle(ID_CAMPAIGN, mCampaign);
 		}
@@ -498,7 +498,7 @@ public class Profile {
 	 */
 	public void setTechLevel(String techLevel) {
 		if (!mTechLevel.equals(techLevel)) {
-			mCharacter.postUndoEdit(MSG_TECH_LEVEL_UNDO, ID_TECH_LEVEL, mTechLevel, techLevel);
+			mCharacter.postUndoEdit(TECH_LEVEL_UNDO, ID_TECH_LEVEL, mTechLevel, techLevel);
 			mTechLevel = techLevel;
 			mCharacter.notifySingle(ID_TECH_LEVEL, mTechLevel);
 		}
@@ -516,7 +516,7 @@ public class Profile {
 	 */
 	public void setTitle(String title) {
 		if (!mTitle.equals(title)) {
-			mCharacter.postUndoEdit(MSG_TITLE_UNDO, ID_TITLE, mTitle, title);
+			mCharacter.postUndoEdit(TITLE_UNDO, ID_TITLE, mTitle, title);
 			mTitle = title;
 			mCharacter.notifySingle(ID_TITLE, mTitle);
 		}
@@ -536,7 +536,7 @@ public class Profile {
 		if (mAge != age) {
 			Integer value = new Integer(age);
 
-			mCharacter.postUndoEdit(MSG_AGE_UNDO, ID_AGE, new Integer(mAge), value);
+			mCharacter.postUndoEdit(AGE_UNDO, ID_AGE, new Integer(mAge), value);
 			mAge = age;
 			mCharacter.notifySingle(ID_AGE, value);
 		}
@@ -592,7 +592,7 @@ public class Profile {
 	 */
 	public void setBirthday(String birthday) {
 		if (!mBirthday.equals(birthday)) {
-			mCharacter.postUndoEdit(MSG_BIRTHDAY_UNDO, ID_BIRTHDAY, mBirthday, birthday);
+			mCharacter.postUndoEdit(BIRTHDAY_UNDO, ID_BIRTHDAY, mBirthday, birthday);
 			mBirthday = birthday;
 			mCharacter.notifySingle(ID_BIRTHDAY, mBirthday);
 		}
@@ -610,7 +610,7 @@ public class Profile {
 	 */
 	public void setEyeColor(String eyeColor) {
 		if (!mEyeColor.equals(eyeColor)) {
-			mCharacter.postUndoEdit(MSG_EYE_COLOR_UNDO, ID_EYE_COLOR, mEyeColor, eyeColor);
+			mCharacter.postUndoEdit(EYE_COLOR_UNDO, ID_EYE_COLOR, mEyeColor, eyeColor);
 			mEyeColor = eyeColor;
 			mCharacter.notifySingle(ID_EYE_COLOR, mEyeColor);
 		}
@@ -628,7 +628,7 @@ public class Profile {
 	 */
 	public void setHair(String hair) {
 		if (!mHair.equals(hair)) {
-			mCharacter.postUndoEdit(MSG_HAIR_UNDO, ID_HAIR, mHair, hair);
+			mCharacter.postUndoEdit(HAIR_UNDO, ID_HAIR, mHair, hair);
 			mHair = hair;
 			mCharacter.notifySingle(ID_HAIR, mHair);
 		}
@@ -646,7 +646,7 @@ public class Profile {
 	 */
 	public void setSkinColor(String skinColor) {
 		if (!mSkinColor.equals(skinColor)) {
-			mCharacter.postUndoEdit(MSG_SKIN_COLOR_UNDO, ID_SKIN_COLOR, mSkinColor, skinColor);
+			mCharacter.postUndoEdit(SKIN_COLOR_UNDO, ID_SKIN_COLOR, mSkinColor, skinColor);
 			mSkinColor = skinColor;
 			mCharacter.notifySingle(ID_SKIN_COLOR, mSkinColor);
 		}
@@ -664,7 +664,7 @@ public class Profile {
 	 */
 	public void setHandedness(String handedness) {
 		if (!mHandedness.equals(handedness)) {
-			mCharacter.postUndoEdit(MSG_HANDEDNESS_UNDO, ID_HANDEDNESS, mHandedness, handedness);
+			mCharacter.postUndoEdit(HANDEDNESS_UNDO, ID_HANDEDNESS, mHandedness, handedness);
 			mHandedness = handedness;
 			mCharacter.notifySingle(ID_HANDEDNESS, mHandedness);
 		}
@@ -683,7 +683,7 @@ public class Profile {
 	public void setHeight(LengthValue height) {
 		if (!mHeight.equals(height)) {
 			height = new LengthValue(height);
-			mCharacter.postUndoEdit(MSG_HEIGHT_UNDO, ID_HEIGHT, new LengthValue(mHeight), height);
+			mCharacter.postUndoEdit(HEIGHT_UNDO, ID_HEIGHT, new LengthValue(mHeight), height);
 			mHeight = height;
 			mCharacter.notifySingle(ID_HEIGHT, height);
 		}
@@ -702,7 +702,7 @@ public class Profile {
 	public void setWeight(WeightValue weight) {
 		if (!mWeight.equals(weight)) {
 			weight = new WeightValue(weight);
-			mCharacter.postUndoEdit(MSG_WEIGHT_UNDO, ID_WEIGHT, new WeightValue(mWeight), weight);
+			mCharacter.postUndoEdit(WEIGHT_UNDO, ID_WEIGHT, new WeightValue(mWeight), weight);
 			mWeight = weight;
 			mCharacter.notifySingle(ID_WEIGHT, weight);
 		}
@@ -720,7 +720,7 @@ public class Profile {
 	 */
 	public void setNotes(String notes) {
 		if (!mNotes.equals(notes)) {
-			mCharacter.postUndoEdit(MSG_NOTES_UNDO, ID_NOTES, mNotes, notes);
+			mCharacter.postUndoEdit(NOTES_UNDO, ID_NOTES, mNotes, notes);
 			mNotes = notes;
 			mCharacter.notifySingle(ID_NOTES, mNotes);
 		}
@@ -757,7 +757,7 @@ public class Profile {
 		if (totalSizeModifier != size) {
 			Integer value = new Integer(size);
 
-			mCharacter.postUndoEdit(MSG_SIZE_MODIFIER_UNDO, ID_SIZE_MODIFIER, new Integer(totalSizeModifier), value);
+			mCharacter.postUndoEdit(SIZE_MODIFIER_UNDO, ID_SIZE_MODIFIER, new Integer(totalSizeModifier), value);
 			mSizeModifier = size - mSizeModifierBonus;
 			mCharacter.notifySingle(ID_SIZE_MODIFIER, value);
 		}
@@ -870,18 +870,18 @@ public class Profile {
 
 	static {
 		ArrayList<String> hair = new ArrayList<>(100);
-		String[] colors = { MSG_BROWN, MSG_BROWN, MSG_BROWN, MSG_BLACK, MSG_BLACK, MSG_BLACK, MSG_BLOND, MSG_BLOND, MSG_REDHEAD };
-		String[] styles = { MSG_STRAIGHT, MSG_CURLY, MSG_WAVY };
-		String[] lengths = { MSG_SHORT, MSG_MEDIUM, MSG_LONG };
+		String[] colors = { BROWN, BROWN, BROWN, BLACK, BLACK, BLACK, BLOND, BLOND, REDHEAD };
+		String[] styles = { STRAIGHT, CURLY, WAVY };
+		String[] lengths = { SHORT, MEDIUM, LONG };
 
 		for (String element : colors) {
 			for (String style : styles) {
 				for (String length : lengths) {
-					hair.add(MessageFormat.format(MSG_HAIR_FORMAT, element, style, length));
+					hair.add(MessageFormat.format(HAIR_FORMAT, element, style, length));
 				}
 			}
 		}
-		hair.add(MSG_BALD);
+		hair.add(BALD);
 		HAIR_OPTIONS = hair.toArray(new String[hair.size()]);
 	}
 

@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.character;
+
+import static com.trollworks.gcs.character.SheetWindow_LS.*;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.equipment.Equipment;
@@ -35,10 +37,11 @@ import com.trollworks.gcs.widgets.outline.RowItemRenderer;
 import com.trollworks.gcs.widgets.outline.RowPostProcessor;
 import com.trollworks.gcs.widgets.search.Search;
 import com.trollworks.gcs.widgets.search.SearchTarget;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.FlexRow;
 import com.trollworks.ttk.menu.file.Saveable;
 import com.trollworks.ttk.print.PrintManager;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Path;
 import com.trollworks.ttk.widgets.AppWindow;
 import com.trollworks.ttk.widgets.BaseWindow;
@@ -65,14 +68,16 @@ import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
 
+@Localized({
+				@LS(key = "SAVE_AS_PNG_ERROR", msg = "An error occurred while trying to save the sheet as a PNG."),
+				@LS(key = "SAVE_AS_PDF_ERROR", msg = "An error occurred while trying to save the sheet as a PDF."),
+				@LS(key = "SAVE_AS_HTML_ERROR", msg = "An error occurred while trying to save the sheet as HTML."),
+				@LS(key = "SAVE_ERROR", msg = "An error occurred while trying to save the sheet."),
+				@LS(key = "UNTITLED_SHEET", msg = "Untitled Sheet"),
+				@LS(key = "ADD_ROWS", msg = "Add Rows"),
+})
 /** The character sheet window. */
 public class SheetWindow extends GCSWindow implements Saveable, Printable, SearchTarget {
-	private static String		MSG_SAVE_AS_PNG_ERROR;
-	private static String		MSG_SAVE_AS_PDF_ERROR;
-	private static String		MSG_SAVE_AS_HTML_ERROR;
-	private static String		MSG_SAVE_ERROR;
-	private static String		MSG_UNTITLED_SHEET;
-	private static String		MSG_ADD_ROWS;
 	/** The extension for character sheets. */
 	public static final String	SHEET_EXTENSION	= ".gcs";	//$NON-NLS-1$
 	/** The PNG extension. */
@@ -85,10 +90,6 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 	private GURPSCharacter		mCharacter;
 	private Search				mSearch;
 	private PrerequisitesThread	mPrereqThread;
-
-	static {
-		LocalizedMessages.initialize(SheetWindow.class);
-	}
 
 	/** @return The top character sheet window, if any. */
 	public static SheetWindow getTopSheet() {
@@ -194,7 +195,7 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 		String title;
 
 		if (file == null) {
-			title = BaseWindow.getNextUntitledWindowName(SheetWindow.class, MSG_UNTITLED_SHEET, this);
+			title = BaseWindow.getNextUntitledWindowName(SheetWindow.class, UNTITLED_SHEET, this);
 		} else {
 			title = Path.getLeafName(file.getName(), false);
 		}
@@ -243,35 +244,35 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 			if (row instanceof Advantage) {
 				outline = mSheet.getAdvantageOutline();
 				if (!map.containsKey(outline)) {
-					map.put(outline, new StateEdit(outline.getModel(), MSG_ADD_ROWS));
+					map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
 				}
 				row = new Advantage(mCharacter, (Advantage) row, true);
 				addCompleteRow(outline, row, selMap);
 			} else if (row instanceof Technique) {
 				outline = mSheet.getSkillOutline();
 				if (!map.containsKey(outline)) {
-					map.put(outline, new StateEdit(outline.getModel(), MSG_ADD_ROWS));
+					map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
 				}
 				row = new Technique(mCharacter, (Technique) row, true);
 				addCompleteRow(outline, row, selMap);
 			} else if (row instanceof Skill) {
 				outline = mSheet.getSkillOutline();
 				if (!map.containsKey(outline)) {
-					map.put(outline, new StateEdit(outline.getModel(), MSG_ADD_ROWS));
+					map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
 				}
 				row = new Skill(mCharacter, (Skill) row, true, true);
 				addCompleteRow(outline, row, selMap);
 			} else if (row instanceof Spell) {
 				outline = mSheet.getSpellOutline();
 				if (!map.containsKey(outline)) {
-					map.put(outline, new StateEdit(outline.getModel(), MSG_ADD_ROWS));
+					map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
 				}
 				row = new Spell(mCharacter, (Spell) row, true, true);
 				addCompleteRow(outline, row, selMap);
 			} else if (row instanceof Equipment) {
 				outline = mSheet.getEquipmentOutline();
 				if (!map.containsKey(outline)) {
-					map.put(outline, new StateEdit(outline.getModel(), MSG_ADD_ROWS));
+					map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
 				}
 				row = new Equipment(mCharacter, (Equipment) row, true);
 				addCompleteRow(outline, row, selMap);
@@ -483,17 +484,17 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 			if (mSheet.saveAsHTML(file, null, null)) {
 				result.add(file);
 			} else {
-				WindowUtils.showError(this, MSG_SAVE_AS_HTML_ERROR);
+				WindowUtils.showError(this, SAVE_AS_HTML_ERROR);
 			}
 		} else if (PNG_EXTENSION.equals(extension)) {
 			if (!mSheet.saveAsPNG(file, result)) {
-				WindowUtils.showError(this, MSG_SAVE_AS_PNG_ERROR);
+				WindowUtils.showError(this, SAVE_AS_PNG_ERROR);
 			}
 		} else if (PDF_EXTENSION.equals(extension)) {
 			if (mSheet.saveAsPDF(file)) {
 				result.add(file);
 			} else {
-				WindowUtils.showError(this, MSG_SAVE_AS_PDF_ERROR);
+				WindowUtils.showError(this, SAVE_AS_PDF_ERROR);
 			}
 		} else {
 			if (mCharacter.save(file)) {
@@ -501,7 +502,7 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 				mCharacter.setFile(file);
 				adjustWindowTitle();
 			} else {
-				WindowUtils.showError(this, MSG_SAVE_ERROR);
+				WindowUtils.showError(this, SAVE_ERROR);
 			}
 		}
 		return result.toArray(new File[result.size()]);

@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,12 +23,16 @@
 
 package com.trollworks.gcs.character;
 
+import static com.trollworks.gcs.character.DescriptionPanel_LS.*;
+import static com.trollworks.gcs.character.DescriptionRandomizer_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.undo.MultipleUndo;
 import com.trollworks.ttk.units.LengthValue;
 import com.trollworks.ttk.units.WeightValue;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -41,10 +45,12 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
+@Localized({
+				@LS(key = "RANDOMIZE", msg = "Randomize"),
+				@LS(key = "UNDO_RANDOMIZE", msg = "Description Randomization"),
+})
 /** A character description randomizer. */
 public class DescriptionRandomizer extends JPanel implements ActionListener {
-	private static String		MSG_RANDOMIZE;
-	private static String		MSG_UNDO_RANDOMIZE;
 	private static final int	GENDER_INDEX	= 0;
 	private static final int	AGE_INDEX		= 1;
 	private static final int	BIRTHDAY_INDEX	= 2;
@@ -60,10 +66,6 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
 	private JTextField[]		mFields;
 	private JButton				mRandomize;
 
-	static {
-		LocalizedMessages.initialize(DescriptionRandomizer.class);
-	}
-
 	/**
 	 * Creates a new {@link DescriptionRandomizer}.
 	 * 
@@ -77,17 +79,17 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
 		JPanel wrapper = new JPanel(new ColumnLayout(2));
 		wrapper.setBorder(new EmptyBorder(10, 10, 10, 10));
 		Profile description = mCharacter.getDescription();
-		addField(wrapper, DescriptionPanel.MSG_GENDER, null, GENDER_INDEX, description.getGender());
-		addField(wrapper, DescriptionPanel.MSG_AGE, null, AGE_INDEX, Numbers.format(description.getAge()));
-		addField(wrapper, DescriptionPanel.MSG_BIRTHDAY, null, BIRTHDAY_INDEX, description.getBirthday());
-		addField(wrapper, DescriptionPanel.MSG_HEIGHT, null, HEIGHT_INDEX, description.getHeight().toString());
-		addField(wrapper, DescriptionPanel.MSG_WEIGHT, null, WEIGHT_INDEX, description.getWeight().toString());
-		addField(wrapper, DescriptionPanel.MSG_HAIR, DescriptionPanel.MSG_HAIR_TOOLTIP, HAIR_INDEX, description.getHair());
-		addField(wrapper, DescriptionPanel.MSG_EYE_COLOR, DescriptionPanel.MSG_EYE_COLOR_TOOLTIP, EYES_INDEX, description.getEyeColor());
-		addField(wrapper, DescriptionPanel.MSG_SKIN_COLOR, DescriptionPanel.MSG_SKIN_COLOR_TOOLTIP, SKIN_INDEX, description.getSkinColor());
-		addField(wrapper, DescriptionPanel.MSG_HANDEDNESS, DescriptionPanel.MSG_HANDEDNESS_TOOLTIP, HAND_INDEX, description.getHandedness());
+		addField(wrapper, GENDER, null, GENDER_INDEX, description.getGender());
+		addField(wrapper, AGE, null, AGE_INDEX, Numbers.format(description.getAge()));
+		addField(wrapper, BIRTHDAY, null, BIRTHDAY_INDEX, description.getBirthday());
+		addField(wrapper, DescriptionPanel_LS.HEIGHT, null, HEIGHT_INDEX, description.getHeight().toString());
+		addField(wrapper, WEIGHT, null, WEIGHT_INDEX, description.getWeight().toString());
+		addField(wrapper, HAIR, HAIR_TOOLTIP, HAIR_INDEX, description.getHair());
+		addField(wrapper, EYE_COLOR, EYE_COLOR_TOOLTIP, EYES_INDEX, description.getEyeColor());
+		addField(wrapper, SKIN_COLOR, SKIN_COLOR_TOOLTIP, SKIN_INDEX, description.getSkinColor());
+		addField(wrapper, HANDEDNESS, HANDEDNESS_TOOLTIP, HAND_INDEX, description.getHandedness());
 		add(wrapper, BorderLayout.CENTER);
-		mRandomize = new JButton(MSG_RANDOMIZE);
+		mRandomize = new JButton(RANDOMIZE);
 		mRandomize.addActionListener(this);
 		add(mRandomize, BorderLayout.SOUTH);
 	}
@@ -137,7 +139,7 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
 
 	/** Apply the changes. */
 	public void applyChanges() {
-		MultipleUndo edit = new MultipleUndo(MSG_UNDO_RANDOMIZE);
+		MultipleUndo edit = new MultipleUndo(UNDO_RANDOMIZE);
 		Profile description = mCharacter.getDescription();
 		mCharacter.addEdit(edit);
 		mCharacter.startNotify();

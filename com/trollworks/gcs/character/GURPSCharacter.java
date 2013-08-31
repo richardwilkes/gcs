@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.character;
+
+import static com.trollworks.gcs.character.GURPSCharacter_LS.*;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageContainerType;
@@ -47,6 +49,8 @@ import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.collections.FilteredIterator;
 import com.trollworks.ttk.print.PageOrientation;
 import com.trollworks.ttk.print.PrintManager;
@@ -56,7 +60,6 @@ import com.trollworks.ttk.units.LengthUnits;
 import com.trollworks.ttk.units.WeightUnits;
 import com.trollworks.ttk.units.WeightValue;
 import com.trollworks.ttk.utility.Dice;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.OutlineModel;
 import com.trollworks.ttk.widgets.outline.RowIterator;
 import com.trollworks.ttk.xml.XMLNodeType;
@@ -73,31 +76,28 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 
+@Localized({
+				@LS(key = "LAST_MODIFIED", msg = "Modified at {0} on {1}"),
+				@LS(key = "CREATED_ON_UNDO", msg = "Created On Change"),
+				@LS(key = "STRENGTH_UNDO", msg = "Strength Change"),
+				@LS(key = "DEXTERITY_UNDO", msg = "Dexterity Change"),
+				@LS(key = "INTELLIGENCE_UNDO", msg = "Intelligence Change"),
+				@LS(key = "HEALTH_UNDO", msg = "Health Change"),
+				@LS(key = "BASIC_SPEED_UNDO", msg = "Basic Speed Change"),
+				@LS(key = "BASIC_MOVE_UNDO", msg = "Basic Move Change"),
+				@LS(key = "PERCEPTION_UNDO", msg = "Perception Change"),
+				@LS(key = "WILL_UNDO", msg = "Will Change"),
+				@LS(key = "EARNED_POINTS_UNDO", msg = "Earned Points Change"),
+				@LS(key = "HIT_POINTS_UNDO", msg = "Hit Points Change"),
+				@LS(key = "CURRENT_HIT_POINTS_UNDO", msg = "Current Hit Points Change"),
+				@LS(key = "FATIGUE_POINTS_UNDO", msg = "Fatigue Points Change"),
+				@LS(key = "CURRENT_FATIGUE_POINTS_UNDO", msg = "Current Fatigue Points Change"),
+				@LS(key = "INCLUDE_PUNCH_UNDO", msg = "Include Punch In Weapons"),
+				@LS(key = "INCLUDE_KICK_UNDO", msg = "Include Kick In Weapons"),
+				@LS(key = "INCLUDE_BOOTS_UNDO", msg = "Include Kick w/Boots In Weapons"),
+})
 /** A GURPS character. */
 public class GURPSCharacter extends DataFile {
-	private static String						MSG_LAST_MODIFIED;
-	private static String						MSG_CREATED_ON_UNDO;
-	private static String						MSG_STRENGTH_UNDO;
-	private static String						MSG_DEXTERITY_UNDO;
-	private static String						MSG_INTELLIGENCE_UNDO;
-	private static String						MSG_HEALTH_UNDO;
-	private static String						MSG_BASIC_SPEED_UNDO;
-	private static String						MSG_BASIC_MOVE_UNDO;
-	private static String						MSG_PERCEPTION_UNDO;
-	private static String						MSG_WILL_UNDO;
-	private static String						MSG_EARNED_POINTS_UNDO;
-	private static String						MSG_HIT_POINTS_UNDO;
-	private static String						MSG_CURRENT_HIT_POINTS_UNDO;
-	private static String						MSG_FATIGUE_POINTS_UNDO;
-	private static String						MSG_CURRENT_FATIGUE_POINTS_UNDO;
-	private static String						MSG_INCLUDE_PUNCH_UNDO;
-	private static String						MSG_INCLUDE_KICK_UNDO;
-	private static String						MSG_INCLUDE_BOOTS_UNDO;
-
-	static {
-		LocalizedMessages.initialize(GURPSCharacter.class);
-	}
-
 	private static final int					CURRENT_VERSION							= 2;
 	private static final String					EMPTY									= "";															//$NON-NLS-1$
 	private static final String					TAG_ROOT								= "character";													//$NON-NLS-1$
@@ -858,7 +858,7 @@ public class GURPSCharacter extends DataFile {
 	/** @return The last modified date and time. */
 	public String getLastModified() {
 		Date date = new Date(mLastModified);
-		return MessageFormat.format(MSG_LAST_MODIFIED, DateFormat.getTimeInstance(DateFormat.SHORT).format(date), DateFormat.getDateInstance(DateFormat.MEDIUM).format(date));
+		return MessageFormat.format(LAST_MODIFIED, DateFormat.getTimeInstance(DateFormat.SHORT).format(date), DateFormat.getDateInstance(DateFormat.MEDIUM).format(date));
 	}
 
 	/** @return The created on date. */
@@ -874,7 +874,7 @@ public class GURPSCharacter extends DataFile {
 	public void setCreatedOn(long date) {
 		if (mCreatedOn != date) {
 			Long value = new Long(date);
-			postUndoEdit(MSG_CREATED_ON_UNDO, ID_CREATED_ON, new Long(mCreatedOn), value);
+			postUndoEdit(CREATED_ON_UNDO, ID_CREATED_ON, new Long(mCreatedOn), value);
 			mCreatedOn = date;
 			notifySingle(ID_CREATED_ON, value);
 		}
@@ -917,7 +917,7 @@ public class GURPSCharacter extends DataFile {
 		int oldStrength = getStrength();
 
 		if (oldStrength != strength) {
-			postUndoEdit(MSG_STRENGTH_UNDO, ID_STRENGTH, new Integer(oldStrength), new Integer(strength));
+			postUndoEdit(STRENGTH_UNDO, ID_STRENGTH, new Integer(oldStrength), new Integer(strength));
 			updateStrengthInfo(strength - mStrengthBonus, mStrengthBonus, mLiftingStrengthBonus, mStrikingStrengthBonus);
 		}
 	}
@@ -1171,7 +1171,7 @@ public class GURPSCharacter extends DataFile {
 		double oldBasicSpeed = getBasicSpeed();
 
 		if (oldBasicSpeed != speed) {
-			postUndoEdit(MSG_BASIC_SPEED_UNDO, ID_BASIC_SPEED, new Double(oldBasicSpeed), new Double(speed));
+			postUndoEdit(BASIC_SPEED_UNDO, ID_BASIC_SPEED, new Double(oldBasicSpeed), new Double(speed));
 			updateBasicSpeedInfo(speed - (mSpeedBonus + getRawBasicSpeed()), mSpeedBonus);
 		}
 	}
@@ -1234,7 +1234,7 @@ public class GURPSCharacter extends DataFile {
 		int oldBasicMove = getBasicMove();
 
 		if (oldBasicMove != move) {
-			postUndoEdit(MSG_BASIC_MOVE_UNDO, ID_BASIC_MOVE, new Integer(oldBasicMove), new Integer(move));
+			postUndoEdit(BASIC_MOVE_UNDO, ID_BASIC_MOVE, new Integer(oldBasicMove), new Integer(move));
 			updateBasicMoveInfo(move - (mMoveBonus + getRawBasicMove()), mMoveBonus);
 		}
 	}
@@ -1440,7 +1440,7 @@ public class GURPSCharacter extends DataFile {
 		int oldDexterity = getDexterity();
 
 		if (oldDexterity != dexterity) {
-			postUndoEdit(MSG_DEXTERITY_UNDO, ID_DEXTERITY, new Integer(oldDexterity), new Integer(dexterity));
+			postUndoEdit(DEXTERITY_UNDO, ID_DEXTERITY, new Integer(oldDexterity), new Integer(dexterity));
 			updateDexterityInfo(dexterity - mDexterityBonus, mDexterityBonus);
 		}
 	}
@@ -1509,7 +1509,7 @@ public class GURPSCharacter extends DataFile {
 	public void setIntelligence(int intelligence) {
 		int oldIntelligence = getIntelligence();
 		if (oldIntelligence != intelligence) {
-			postUndoEdit(MSG_INTELLIGENCE_UNDO, ID_INTELLIGENCE, new Integer(oldIntelligence), new Integer(intelligence));
+			postUndoEdit(INTELLIGENCE_UNDO, ID_INTELLIGENCE, new Integer(oldIntelligence), new Integer(intelligence));
 			updateIntelligenceInfo(intelligence - mIntelligenceBonus, mIntelligenceBonus);
 		}
 	}
@@ -1583,7 +1583,7 @@ public class GURPSCharacter extends DataFile {
 		int oldHealth = getHealth();
 
 		if (oldHealth != health) {
-			postUndoEdit(MSG_HEALTH_UNDO, ID_HEALTH, new Integer(oldHealth), new Integer(health));
+			postUndoEdit(HEALTH_UNDO, ID_HEALTH, new Integer(oldHealth), new Integer(health));
 			updateHealthInfo(health - mHealthBonus, mHealthBonus);
 		}
 	}
@@ -1668,7 +1668,7 @@ public class GURPSCharacter extends DataFile {
 		if (current != earned) {
 			Integer value = new Integer(earned);
 
-			postUndoEdit(MSG_EARNED_POINTS_UNDO, ID_EARNED_POINTS, new Integer(current), value);
+			postUndoEdit(EARNED_POINTS_UNDO, ID_EARNED_POINTS, new Integer(current), value);
 			mTotalPoints = earned + getSpentPoints();
 			startNotify();
 			notify(ID_EARNED_POINTS, value);
@@ -1777,7 +1777,7 @@ public class GURPSCharacter extends DataFile {
 	/** @param include Whether to include the punch natural weapon or not. */
 	public void setIncludePunch(boolean include) {
 		if (mIncludePunch != include) {
-			postUndoEdit(MSG_INCLUDE_PUNCH_UNDO, ID_INCLUDE_PUNCH, new Boolean(mIncludePunch), new Boolean(include));
+			postUndoEdit(INCLUDE_PUNCH_UNDO, ID_INCLUDE_PUNCH, new Boolean(mIncludePunch), new Boolean(include));
 			mIncludePunch = include;
 			notifySingle(ID_INCLUDE_PUNCH, new Boolean(mIncludePunch));
 		}
@@ -1791,7 +1791,7 @@ public class GURPSCharacter extends DataFile {
 	/** @param include Whether to include the kick natural weapon or not. */
 	public void setIncludeKick(boolean include) {
 		if (mIncludeKick != include) {
-			postUndoEdit(MSG_INCLUDE_KICK_UNDO, ID_INCLUDE_KICK, new Boolean(mIncludeKick), new Boolean(include));
+			postUndoEdit(INCLUDE_KICK_UNDO, ID_INCLUDE_KICK, new Boolean(mIncludeKick), new Boolean(include));
 			mIncludeKick = include;
 			notifySingle(ID_INCLUDE_KICK, new Boolean(mIncludeKick));
 		}
@@ -1805,7 +1805,7 @@ public class GURPSCharacter extends DataFile {
 	/** @param include Whether to include the kick w/boots natural weapon or not. */
 	public void setIncludeKickBoots(boolean include) {
 		if (mIncludeKickBoots != include) {
-			postUndoEdit(MSG_INCLUDE_BOOTS_UNDO, ID_INCLUDE_BOOTS, new Boolean(mIncludeKickBoots), new Boolean(include));
+			postUndoEdit(INCLUDE_BOOTS_UNDO, ID_INCLUDE_BOOTS, new Boolean(mIncludeKickBoots), new Boolean(include));
 			mIncludeKickBoots = include;
 			notifySingle(ID_INCLUDE_BOOTS, new Boolean(mIncludeKickBoots));
 		}
@@ -1825,7 +1825,7 @@ public class GURPSCharacter extends DataFile {
 		int oldHP = getHitPoints();
 
 		if (oldHP != hp) {
-			postUndoEdit(MSG_HIT_POINTS_UNDO, ID_HIT_POINTS, new Integer(oldHP), new Integer(hp));
+			postUndoEdit(HIT_POINTS_UNDO, ID_HIT_POINTS, new Integer(oldHP), new Integer(hp));
 			startNotify();
 			mHitPoints = hp - (getStrength() + mHitPointBonus);
 			mNeedAttributePointCalculation = true;
@@ -1895,7 +1895,7 @@ public class GURPSCharacter extends DataFile {
 	 */
 	public void setCurrentHitPoints(String hp) {
 		if (!mCurrentHitPoints.equals(hp)) {
-			postUndoEdit(MSG_CURRENT_HIT_POINTS_UNDO, ID_CURRENT_HIT_POINTS, mCurrentHitPoints, hp);
+			postUndoEdit(CURRENT_HIT_POINTS_UNDO, ID_CURRENT_HIT_POINTS, mCurrentHitPoints, hp);
 			mCurrentHitPoints = hp;
 			notifySingle(ID_CURRENT_HIT_POINTS, mCurrentHitPoints);
 		}
@@ -1948,7 +1948,7 @@ public class GURPSCharacter extends DataFile {
 	public void setWill(int will) {
 		int oldWill = getWill();
 		if (oldWill != will) {
-			postUndoEdit(MSG_WILL_UNDO, ID_WILL, new Integer(oldWill), new Integer(will));
+			postUndoEdit(WILL_UNDO, ID_WILL, new Integer(oldWill), new Integer(will));
 			updateWillInfo(will - (mWillBonus + (SheetPreferences.areOptionalIQRulesUsed() ? 10 : getIntelligence())), mWillBonus);
 		}
 	}
@@ -2101,7 +2101,7 @@ public class GURPSCharacter extends DataFile {
 	public void setPerception(int perception) {
 		int oldPerception = getPerception();
 		if (oldPerception != perception) {
-			postUndoEdit(MSG_PERCEPTION_UNDO, ID_PERCEPTION, new Integer(oldPerception), new Integer(perception));
+			postUndoEdit(PERCEPTION_UNDO, ID_PERCEPTION, new Integer(oldPerception), new Integer(perception));
 			updatePerceptionInfo(perception - (mPerceptionBonus + (SheetPreferences.areOptionalIQRulesUsed() ? 10 : getIntelligence())), mPerceptionBonus);
 		}
 	}
@@ -2152,7 +2152,7 @@ public class GURPSCharacter extends DataFile {
 		int oldFP = getFatiguePoints();
 
 		if (oldFP != fp) {
-			postUndoEdit(MSG_FATIGUE_POINTS_UNDO, ID_FATIGUE_POINTS, new Integer(oldFP), new Integer(fp));
+			postUndoEdit(FATIGUE_POINTS_UNDO, ID_FATIGUE_POINTS, new Integer(oldFP), new Integer(fp));
 			startNotify();
 			mFatiguePoints = fp - (getHealth() + mFatiguePointBonus);
 			mNeedAttributePointCalculation = true;
@@ -2200,7 +2200,7 @@ public class GURPSCharacter extends DataFile {
 	 */
 	public void setCurrentFatiguePoints(String fp) {
 		if (!mCurrentFatiguePoints.equals(fp)) {
-			postUndoEdit(MSG_CURRENT_FATIGUE_POINTS_UNDO, ID_CURRENT_FATIGUE_POINTS, mCurrentFatiguePoints, fp);
+			postUndoEdit(CURRENT_FATIGUE_POINTS_UNDO, ID_CURRENT_FATIGUE_POINTS, mCurrentFatiguePoints, fp);
 			mCurrentFatiguePoints = fp;
 			notifySingle(ID_CURRENT_FATIGUE_POINTS, mCurrentFatiguePoints);
 		}

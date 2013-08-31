@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,8 +23,11 @@
 
 package com.trollworks.gcs.character;
 
+import static com.trollworks.gcs.character.HitLocationPanel_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.ColumnLayout;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.Wrapper;
 
@@ -35,37 +38,34 @@ import java.text.MessageFormat;
 
 import javax.swing.SwingConstants;
 
+@Localized({
+				@LS(key = "HIT_LOCATION", msg = "Hit Location"),
+				@LS(key = "ROLL", msg = "Roll"),
+				@LS(key = "ROLL_TOOLTIP", msg = "<html><body>The random roll needed to hit the <b>{0}</b> hit location</body></html>"),
+				@LS(key = "LOCATION", msg = "Where"),
+				@LS(key = "PENALTY", msg = "-"),
+				@LS(key = "PENALTY_TITLE_TOOLTIP", msg = "The hit penalty for targeting a specific hit location"),
+				@LS(key = "PENALTY_TOOLTIP", msg = "<html><body>The hit penalty for targeting the <b>{0}</b> hit location</body></html>"),
+				@LS(key = "DR", msg = "DR"),
+				@LS(key = "DR_TOOLTIP", msg = "<html><body>The total DR protecting the <b>{0}</b> hit location</body></html>"),
+				@LS(key = "EYE", msg = "Eye"),
+				@LS(key = "SKULL", msg = "Skull"),
+				@LS(key = "FACE", msg = "Face"),
+				@LS(key = "RIGHT_LEG", msg = "R. Leg"),
+				@LS(key = "RIGHT_ARM", msg = "R. Arm"),
+				@LS(key = "TORSO", msg = "Torso"),
+				@LS(key = "GROIN", msg = "Groin"),
+				@LS(key = "LEFT_ARM", msg = "L. Arm"),
+				@LS(key = "LEFT_LEG", msg = "L. Leg"),
+				@LS(key = "HAND", msg = "Hand"),
+				@LS(key = "FOOT", msg = "Foot"),
+				@LS(key = "NECK", msg = "Neck"),
+				@LS(key = "VITALS", msg = "Vitals"),
+})
 /** The character hit location panel. */
 public class HitLocationPanel extends DropPanel {
-	private static String			MSG_HIT_LOCATION;
-	private static String			MSG_ROLL;
-	private static String			MSG_ROLL_TOOLTIP;
-	private static String			MSG_LOCATION;
-	private static String			MSG_PENALTY;
-	private static String			MSG_PENALTY_TITLE_TOOLTIP;
-	private static String			MSG_PENALTY_TOOLTIP;
-	private static String			MSG_DR;
-	private static String			MSG_DR_TOOLTIP;
-	private static String			MSG_EYE;
-	private static String			MSG_SKULL;
-	private static String			MSG_FACE;
-	private static String			MSG_RIGHT_LEG;
-	private static String			MSG_RIGHT_ARM;
-	private static String			MSG_TORSO;
-	private static String			MSG_GROIN;
-	private static String			MSG_LEFT_ARM;
-	private static String			MSG_LEFT_LEG;
-	private static String			MSG_HAND;
-	private static String			MSG_FOOT;
-	private static String			MSG_NECK;
-	private static String			MSG_VITALS;
-
-	static {
-		LocalizedMessages.initialize(HitLocationPanel.class);
-	}
-
 	/** The various hit locations. */
-	public static final String[]	LOCATIONS	= new String[] { MSG_EYE, MSG_SKULL, MSG_FACE, MSG_RIGHT_LEG, MSG_RIGHT_ARM, MSG_TORSO, MSG_GROIN, MSG_LEFT_ARM, MSG_LEFT_LEG, MSG_HAND, MSG_FOOT, MSG_NECK, MSG_VITALS };
+	public static final String[]	LOCATIONS	= new String[] { EYE, SKULL, FACE, RIGHT_LEG, RIGHT_ARM, TORSO, GROIN, LEFT_ARM, LEFT_LEG, HAND, FOOT, NECK, VITALS };
 	/** The rolls needed for various hit locations. */
 	public static final String[]	ROLLS		= new String[] { "-", "3-4", "5", "6-7", "8", "9-10", "11", "12", "13-14", "15", "16", "17-18", "-" };																																							//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$ //$NON-NLS-13$
 	/** The to hit penalties for various hit locations. */
@@ -79,15 +79,15 @@ public class HitLocationPanel extends DropPanel {
 	 * @param character The character to display the data for.
 	 */
 	public HitLocationPanel(GURPSCharacter character) {
-		super(new ColumnLayout(7, 2, 0), MSG_HIT_LOCATION);
+		super(new ColumnLayout(7, 2, 0), HIT_LOCATION);
 
 		int i;
 
 		Wrapper wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
-		PageHeader header = createHeader(wrapper, MSG_ROLL, null);
+		PageHeader header = createHeader(wrapper, ROLL, null);
 		addHorizontalBackground(header, Color.black);
 		for (i = 0; i < LOCATIONS.length; i++) {
-			createLabel(wrapper, ROLLS[i], MessageFormat.format(MSG_ROLL_TOOLTIP, LOCATIONS[i]), SwingConstants.CENTER);
+			createLabel(wrapper, ROLLS[i], MessageFormat.format(ROLL_TOOLTIP, LOCATIONS[i]), SwingConstants.CENTER);
 		}
 		wrapper.setAlignmentY(TOP_ALIGNMENT);
 		add(wrapper);
@@ -95,7 +95,7 @@ public class HitLocationPanel extends DropPanel {
 		createDivider();
 
 		wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
-		header = createHeader(wrapper, MSG_LOCATION, null);
+		header = createHeader(wrapper, LOCATION, null);
 		for (i = 0; i < LOCATIONS.length; i++) {
 			wrapper.add(new PageLabel(LOCATIONS[i], header, SwingConstants.CENTER));
 		}
@@ -105,9 +105,9 @@ public class HitLocationPanel extends DropPanel {
 		createDivider();
 
 		wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
-		header = createHeader(wrapper, MSG_PENALTY, MSG_PENALTY_TITLE_TOOLTIP);
+		header = createHeader(wrapper, PENALTY, PENALTY_TITLE_TOOLTIP);
 		for (i = 0; i < LOCATIONS.length; i++) {
-			createLabel(wrapper, PENALTIES[i], MessageFormat.format(MSG_PENALTY_TOOLTIP, LOCATIONS[i]), SwingConstants.RIGHT);
+			createLabel(wrapper, PENALTIES[i], MessageFormat.format(PENALTY_TOOLTIP, LOCATIONS[i]), SwingConstants.RIGHT);
 		}
 		wrapper.setAlignmentY(TOP_ALIGNMENT);
 		add(wrapper);
@@ -115,9 +115,9 @@ public class HitLocationPanel extends DropPanel {
 		createDivider();
 
 		wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
-		header = createHeader(wrapper, MSG_DR, null);
+		header = createHeader(wrapper, DR, null);
 		for (i = 0; i < LOCATIONS.length; i++) {
-			createDisabledField(wrapper, character, DR_KEYS[i], MessageFormat.format(MSG_DR_TOOLTIP, LOCATIONS[i]), SwingConstants.RIGHT);
+			createDisabledField(wrapper, character, DR_KEYS[i], MessageFormat.format(DR_TOOLTIP, LOCATIONS[i]), SwingConstants.RIGHT);
 		}
 		wrapper.setAlignmentY(TOP_ALIGNMENT);
 		add(wrapper);
