@@ -1761,7 +1761,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 						if (!processStyleIndentWarning(key, out, equipment, odd)) {
 							if (!processDescription(key, out, equipment)) {
 								if (key.equals("STATE")) { //$NON-NLS-1$
-									out.write(equipment.getState().toShortString());
+									out.write(equipment.getState().toShortName());
 								} else if (key.equals("QTY")) { //$NON-NLS-1$
 									writeXMLText(out, Numbers.format(equipment.getQuantity()));
 								} else if (key.equals("COST")) { //$NON-NLS-1$

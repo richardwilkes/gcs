@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,18 +23,21 @@
 
 package com.trollworks.gcs.equipment;
 
+import static com.trollworks.gcs.equipment.EquipmentEditor_LS.*;
+
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.text.NumberFilter;
 import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.text.TextUtility;
 import com.trollworks.ttk.units.WeightValue;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.LinkedLabel;
 
@@ -58,32 +61,34 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+@Localized({
+				@LS(key = "REFERENCE_TOOLTIP", msg = "A reference to the book and page this equipment appears\non (e.g. B22 would refer to \"Basic Set\", page 22)"),
+				@LS(key = "VALUE_TOOLTIP", msg = "The value of one of these pieces of equipment"),
+				@LS(key = "EXT_VALUE_TOOLTIP", msg = "The value of all of these pieces of equipment,\nplus the value of any contained equipment"),
+				@LS(key = "NAME", msg = "Name"),
+				@LS(key = "NAME_TOOLTIP", msg = "The name/description of the equipment, without any notes"),
+				@LS(key = "NAME_CANNOT_BE_EMPTY", msg = "The name field may not be empty"),
+				@LS(key = "EDITOR_TECH_LEVEL", msg = "Tech Level"),
+				@LS(key = "EDITOR_TECH_LEVEL_TOOLTIP", msg = "The first Tech Level this equipment is available at"),
+				@LS(key = "EDITOR_LEGALITY_CLASS", msg = "Legality Class"),
+				@LS(key = "EDITOR_LEGALITY_CLASS_TOOLTIP", msg = "The legality class of this equipment"),
+				@LS(key = "EDITOR_QUANTITY", msg = "Quantity"),
+				@LS(key = "EDITOR_QUANTITY_TOOLTIP", msg = "The number of this equipment present"),
+				@LS(key = "EDITOR_VALUE", msg = "Value"),
+				@LS(key = "EDITOR_EXTENDED_VALUE", msg = "Extended Value"),
+				@LS(key = "EDITOR_WEIGHT", msg = "Weight"),
+				@LS(key = "EDITOR_WEIGHT_TOOLTIP", msg = "The weight of one of these pieces of equipment"),
+				@LS(key = "EDITOR_EXTENDED_WEIGHT", msg = "Extended Weight"),
+				@LS(key = "EDITOR_EXTENDED_WEIGHT_TOOLTIP", msg = "The total weight of this quantity of equipment, plus everything contained by it"),
+				@LS(key = "CATEGORIES", msg = "Categories"),
+				@LS(key = "CATEGORIES_TOOLTIP", msg = "The category or categories the equipment belongs to (separate multiple categories with a comma)"),
+				@LS(key = "NOTES", msg = "Notes"),
+				@LS(key = "NOTES_TOOLTIP", msg = "Any notes that you would like to show up in the list along with this equipment"),
+				@LS(key = "EDITOR_REFERENCE", msg = "Page Reference"),
+				@LS(key = "STATE_TOOLTIP", msg = "Items that are not equipped do not apply any features they may\nnormally contribute to the character."),
+})
 /** The detailed editor for {@link Equipment}s. */
 public class EquipmentEditor extends RowEditor<Equipment> implements ActionListener, DocumentListener, FocusListener {
-	private static String				MSG_REFERENCE_TOOLTIP;
-	private static String				MSG_VALUE_TOOLTIP;
-	private static String				MSG_EXT_VALUE_TOOLTIP;
-	private static String				MSG_NAME;
-	private static String				MSG_NAME_TOOLTIP;
-	private static String				MSG_NAME_CANNOT_BE_EMPTY;
-	private static String				MSG_EDITOR_TECH_LEVEL;
-	private static String				MSG_EDITOR_TECH_LEVEL_TOOLTIP;
-	private static String				MSG_EDITOR_LEGALITY_CLASS;
-	private static String				MSG_EDITOR_LEGALITY_CLASS_TOOLTIP;
-	private static String				MSG_EDITOR_QUANTITY;
-	private static String				MSG_EDITOR_QUANTITY_TOOLTIP;
-	private static String				MSG_EDITOR_VALUE;
-	private static String				MSG_EDITOR_EXTENDED_VALUE;
-	private static String				MSG_EDITOR_WEIGHT;
-	private static String				MSG_EDITOR_WEIGHT_TOOLTIP;
-	private static String				MSG_EDITOR_EXTENDED_WEIGHT;
-	private static String				MSG_EDITOR_EXTENDED_WEIGHT_TOOLTIP;
-	private static String				MSG_CATEGORIES;
-	private static String				MSG_CATEGORIES_TOOLTIP;
-	private static String				MSG_NOTES;
-	private static String				MSG_NOTES_TOOLTIP;
-	private static String				MSG_EDITOR_REFERENCE;
-	private static String				MSG_STATE_TOOLTIP;
 	private JComboBox<EquipmentState>	mStateCombo;
 	private JTextField					mDescriptionField;
 	private JTextField					mTechLevelField;
@@ -104,10 +109,6 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 	private double						mContainedValue;
 	private WeightValue					mContainedWeight;
 
-	static {
-		LocalizedMessages.initialize(EquipmentEditor.class);
-	}
-
 	/**
 	 * Creates a new {@link Equipment} editor.
 	 * 
@@ -121,12 +122,12 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		JLabel icon = new JLabel(new ImageIcon(equipment.getImage(true)));
 		JPanel wrapper = new JPanel(new ColumnLayout(2));
 
-		mDescriptionField = createCorrectableField(fields, MSG_NAME, equipment.getDescription(), MSG_NAME_TOOLTIP);
+		mDescriptionField = createCorrectableField(fields, NAME, equipment.getDescription(), NAME_TOOLTIP);
 		createSecondLineFields(fields);
 		createValueAndWeightFields(fields);
-		mNotesField = createField(fields, fields, MSG_NOTES, equipment.getNotes(), MSG_NOTES_TOOLTIP, 0);
-		mCategoriesField = createField(fields, fields, MSG_CATEGORIES, equipment.getCategoriesAsString(), MSG_CATEGORIES_TOOLTIP, 0);
-		mReferenceField = createField(fields, wrapper, MSG_EDITOR_REFERENCE, mRow.getReference(), MSG_REFERENCE_TOOLTIP, 6);
+		mNotesField = createField(fields, fields, NOTES, equipment.getNotes(), NOTES_TOOLTIP, 0);
+		mCategoriesField = createField(fields, fields, CATEGORIES, equipment.getCategoriesAsString(), CATEGORIES_TOOLTIP, 0);
+		mReferenceField = createField(fields, wrapper, EDITOR_REFERENCE, mRow.getReference(), REFERENCE_TOOLTIP, 6);
 		wrapper.add(new JPanel());
 		fields.add(wrapper);
 		icon.setVerticalAlignment(SwingConstants.TOP);
@@ -163,16 +164,16 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		JPanel wrapper = new JPanel(new ColumnLayout((isContainer ? 4 : 6) + (showEquipmentState() ? 1 : 0)));
 
 		if (!isContainer) {
-			mQtyField = createIntegerNumberField(parent, wrapper, MSG_EDITOR_QUANTITY, mRow.getQuantity(), MSG_EDITOR_QUANTITY_TOOLTIP, 9);
+			mQtyField = createIntegerNumberField(parent, wrapper, EDITOR_QUANTITY, mRow.getQuantity(), EDITOR_QUANTITY_TOOLTIP, 9);
 		}
-		mTechLevelField = createField(isContainer ? parent : wrapper, wrapper, MSG_EDITOR_TECH_LEVEL, mRow.getTechLevel(), MSG_EDITOR_TECH_LEVEL_TOOLTIP, 3);
-		mLegalityClassField = createField(wrapper, wrapper, MSG_EDITOR_LEGALITY_CLASS, mRow.getLegalityClass(), MSG_EDITOR_LEGALITY_CLASS_TOOLTIP, 3);
+		mTechLevelField = createField(isContainer ? parent : wrapper, wrapper, EDITOR_TECH_LEVEL, mRow.getTechLevel(), EDITOR_TECH_LEVEL_TOOLTIP, 3);
+		mLegalityClassField = createField(wrapper, wrapper, EDITOR_LEGALITY_CLASS, mRow.getLegalityClass(), EDITOR_LEGALITY_CLASS_TOOLTIP, 3);
 		if (showEquipmentState()) {
 			mStateCombo = new JComboBox<>(EquipmentState.values());
 			mStateCombo.setSelectedItem(mRow.getState());
 			UIUtilities.setOnlySize(mStateCombo, mStateCombo.getPreferredSize());
 			mStateCombo.setEnabled(mIsEditable);
-			mStateCombo.setToolTipText(MSG_STATE_TOOLTIP);
+			mStateCombo.setToolTipText(STATE_TOOLTIP);
 			wrapper.add(mStateCombo);
 		}
 		wrapper.add(new JPanel());
@@ -184,8 +185,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		Component first;
 
 		mContainedValue = mRow.getExtendedValue() - mRow.getValue() * mRow.getQuantity();
-		mValueField = createNumberField(parent, wrapper, MSG_EDITOR_VALUE, mRow.getValue(), MSG_VALUE_TOOLTIP, 13);
-		mExtValueField = createNumberField(wrapper, wrapper, MSG_EDITOR_EXTENDED_VALUE, mRow.getExtendedValue(), MSG_EXT_VALUE_TOOLTIP, 13);
+		mValueField = createNumberField(parent, wrapper, EDITOR_VALUE, mRow.getValue(), VALUE_TOOLTIP, 13);
+		mExtValueField = createNumberField(wrapper, wrapper, EDITOR_EXTENDED_VALUE, mRow.getExtendedValue(), EXT_VALUE_TOOLTIP, 13);
 		first = wrapper.getComponent(1);
 		mExtValueField.setEnabled(false);
 		wrapper.add(new JPanel());
@@ -196,8 +197,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		WeightValue weight = new WeightValue(mRow.getWeight());
 		weight.setValue(weight.getValue() * mRow.getQuantity());
 		mContainedWeight.subtract(weight);
-		mWeightField = createWeightField(parent, wrapper, MSG_EDITOR_WEIGHT, mRow.getWeight(), MSG_EDITOR_WEIGHT_TOOLTIP, 13);
-		mExtWeightField = createWeightField(wrapper, wrapper, MSG_EDITOR_EXTENDED_WEIGHT, mRow.getExtendedWeight(), MSG_EDITOR_EXTENDED_WEIGHT_TOOLTIP, 13);
+		mWeightField = createWeightField(parent, wrapper, EDITOR_WEIGHT, mRow.getWeight(), EDITOR_WEIGHT_TOOLTIP, 13);
+		mExtWeightField = createWeightField(wrapper, wrapper, EDITOR_EXTENDED_WEIGHT, mRow.getExtendedWeight(), EDITOR_EXTENDED_WEIGHT_TOOLTIP, 13);
 		mExtWeightField.setEnabled(false);
 		UIUtilities.adjustToSameSize(new Component[] { first, wrapper.getComponent(1) });
 		parent.add(wrapper);
@@ -366,7 +367,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 	}
 
 	private void descriptionChanged() {
-		LinkedLabel.setErrorMessage(mDescriptionField, mDescriptionField.getText().trim().length() != 0 ? null : MSG_NAME_CANNOT_BE_EMPTY);
+		LinkedLabel.setErrorMessage(mDescriptionField, mDescriptionField.getText().trim().length() != 0 ? null : NAME_CANNOT_BE_EMPTY);
 	}
 
 	@Override

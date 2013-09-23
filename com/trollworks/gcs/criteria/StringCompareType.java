@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,18 +23,25 @@
 
 package com.trollworks.gcs.criteria;
 
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.collections.Enums;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
+@Localized({
+				@LS(key = "IS_ANYTHING", msg = "is anything"),
+				@LS(key = "IS", msg = "is"),
+				@LS(key = "IS_NOT", msg = "is not"),
+				@LS(key = "CONTAINS", msg = "contains"),
+				@LS(key = "DOES_NOT_CONTAIN", msg = "does not contain"),
+				@LS(key = "STARTS_WITH", msg = "starts with"),
+				@LS(key = "DOES_NOT_START_WITH", msg = "does not start with"),
+				@LS(key = "ENDS_WITH", msg = "ends with"),
+				@LS(key = "DOES_NOT_END_WITH", msg = "does not end with"),
+})
 /** The allowed string comparison types. */
 public enum StringCompareType {
 	/** The comparison for "is anything". */
 	IS_ANYTHING {
-		@Override
-		public String toString() {
-			return MSG_IS_ANYTHING;
-		}
-
 		@Override
 		public boolean matches(String qualifier, String data) {
 			return true;
@@ -43,22 +50,12 @@ public enum StringCompareType {
 	/** The comparison for "is". */
 	IS {
 		@Override
-		public String toString() {
-			return MSG_IS;
-		}
-
-		@Override
 		public boolean matches(String qualifier, String data) {
 			return data.equalsIgnoreCase(qualifier);
 		}
 	},
 	/** The comparison for "is not". */
 	IS_NOT {
-		@Override
-		public String toString() {
-			return MSG_IS_NOT;
-		}
-
 		@Override
 		public boolean matches(String qualifier, String data) {
 			return !data.equalsIgnoreCase(qualifier);
@@ -67,22 +64,12 @@ public enum StringCompareType {
 	/** The comparison for "contains". */
 	CONTAINS {
 		@Override
-		public String toString() {
-			return MSG_CONTAINS;
-		}
-
-		@Override
 		public boolean matches(String qualifier, String data) {
 			return data.toLowerCase().indexOf(qualifier.toLowerCase()) != -1;
 		}
 	},
 	/** The comparison for "does not contain". */
 	DOES_NOT_CONTAIN {
-		@Override
-		public String toString() {
-			return MSG_DOES_NOT_CONTAIN;
-		}
-
 		@Override
 		public boolean matches(String qualifier, String data) {
 			return data.toLowerCase().indexOf(qualifier.toLowerCase()) == -1;
@@ -91,22 +78,12 @@ public enum StringCompareType {
 	/** The comparison for "starts with". */
 	STARTS_WITH {
 		@Override
-		public String toString() {
-			return MSG_STARTS_WITH;
-		}
-
-		@Override
 		public boolean matches(String qualifier, String data) {
 			return data.toLowerCase().startsWith(qualifier.toLowerCase());
 		}
 	},
 	/** The comparison for "does not start with". */
 	DOES_NOT_START_WITH {
-		@Override
-		public String toString() {
-			return MSG_DOES_NOT_START_WITH;
-		}
-
 		@Override
 		public boolean matches(String qualifier, String data) {
 			return !data.toLowerCase().startsWith(qualifier.toLowerCase());
@@ -115,11 +92,6 @@ public enum StringCompareType {
 	/** The comparison for "ends with". */
 	ENDS_WITH {
 		@Override
-		public String toString() {
-			return MSG_ENDS_WITH;
-		}
-
-		@Override
 		public boolean matches(String qualifier, String data) {
 			return data.toLowerCase().endsWith(qualifier.toLowerCase());
 		}
@@ -127,28 +99,14 @@ public enum StringCompareType {
 	/** The comparison for "does not end with". */
 	DOES_NOT_END_WITH {
 		@Override
-		public String toString() {
-			return MSG_DOES_NOT_END_WITH;
-		}
-
-		@Override
 		public boolean matches(String qualifier, String data) {
 			return !data.toLowerCase().endsWith(qualifier.toLowerCase());
 		}
 	};
 
-	static String	MSG_IS;
-	static String	MSG_IS_ANYTHING;
-	static String	MSG_IS_NOT;
-	static String	MSG_CONTAINS;
-	static String	MSG_DOES_NOT_CONTAIN;
-	static String	MSG_STARTS_WITH;
-	static String	MSG_DOES_NOT_START_WITH;
-	static String	MSG_ENDS_WITH;
-	static String	MSG_DOES_NOT_END_WITH;
-
-	static {
-		LocalizedMessages.initialize(StringCompareType.class);
+	@Override
+	public String toString() {
+		return StringCompareType_LS.toString(this);
 	}
 
 	/**

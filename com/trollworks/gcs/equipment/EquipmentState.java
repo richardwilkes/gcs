@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -24,61 +24,42 @@
 package com.trollworks.gcs.equipment;
 
 import com.trollworks.gcs.feature.Feature;
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 
+@Localized({
+				@LS(key = "EQUIPPED", msg = "Equipped"),
+				@LS(key = "CARRIED", msg = "Carried"),
+				@LS(key = "NOT_CARRIED", msg = "Not Carried"),
+})
 /** The possible states for a piece of equipment. */
 public enum EquipmentState {
 	/**
 	 * The state for a piece of equipment that is being carried and should also have any of its
 	 * {@link Feature}s applied. For example, a magic ring that is being worn on a finger.
 	 */
-	EQUIPPED {
-		@Override
-		public String toString() {
-			return MSG_EQUIPPED;
-		}
-
-		@Override
-		public String toShortString() {
-			return "E"; //$NON-NLS-1$
-		}
-	},
+	EQUIPPED("E"), //$NON-NLS-1$
 	/**
 	 * The state for a piece of equipment that is being carried, but should not have any of its
 	 * {@link Feature}s applied. For example, a magic ring that is being stored in a pouch.
 	 */
-	CARRIED {
-		@Override
-		public String toString() {
-			return MSG_CARRIED;
-		}
-
-		@Override
-		public String toShortString() {
-			return "C"; //$NON-NLS-1$
-		}
-	},
+	CARRIED("C"), //$NON-NLS-1$
 	/** The state of a piece of equipment that is not being carried. */
-	NOT_CARRIED {
-		@Override
-		public String toString() {
-			return MSG_NOT_CARRIED;
-		}
+	NOT_CARRIED("-"); //$NON-NLS-1$
 
-		@Override
-		public String toShortString() {
-			return "-"; //$NON-NLS-1$
-		}
-	};
+	private String	mShortName;
 
-	static String	MSG_EQUIPPED;
-	static String	MSG_CARRIED;
-	static String	MSG_NOT_CARRIED;
+	private EquipmentState(String shortName) {
+		mShortName = shortName;
+	}
 
-	static {
-		LocalizedMessages.initialize(EquipmentState.class);
+	@Override
+	public String toString() {
+		return EquipmentState_LS.toString(this);
 	}
 
 	/** @return The short form of its description, typically a single character. */
-	public abstract String toShortString();
+	public String toShortName() {
+		return mShortName;
+	}
 }

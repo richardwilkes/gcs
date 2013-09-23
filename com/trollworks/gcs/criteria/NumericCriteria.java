@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,23 +23,24 @@
 
 package com.trollworks.gcs.criteria;
 
+import static com.trollworks.gcs.criteria.NumericCriteria_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.collections.Enums;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 
+@Localized({
+				@LS(key = "IS_PREFIX", msg = "is "),
+})
 /** Manages numeric comparison criteria. */
 public abstract class NumericCriteria {
-	private static String		MSG_IS_PREFIX;
 	/** The comparison attribute. */
 	public static final String	ATTRIBUTE_COMPARE	= "compare";	//$NON-NLS-1$
 	private NumericCompareType	mType;
-
-	static {
-		LocalizedMessages.initialize(NumericCriteria.class);
-	}
 
 	/**
 	 * Creates a new numeric comparison.
@@ -104,7 +105,7 @@ public abstract class NumericCriteria {
 
 	@Override
 	public String toString() {
-		return toString(MSG_IS_PREFIX);
+		return toString(IS_PREFIX);
 	}
 
 	/**

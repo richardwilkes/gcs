@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.equipment;
+
+import static com.trollworks.gcs.equipment.EquipmentColumn_LS.*;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
@@ -31,8 +33,9 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.text.Numbers;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Cell;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.widgets.outline.Outline;
@@ -42,24 +45,44 @@ import java.text.MessageFormat;
 
 import javax.swing.SwingConstants;
 
+@Localized({
+				@LS(key = "DESCRIPTION", msg = "Equipment"),
+				@LS(key = "DESCRIPTION_TOOLTIP", msg = "The name and notes describing a piece of equipment"),
+				@LS(key = "DESCRIPTION_TOTALS", msg = "Equipment ({0}; ${1})"),
+				@LS(key = "STATE", msg = "?"),
+				@LS(key = "STATE_TOOLTIP", msg = "Whether this piece of equipment is carried & equipped (E), just\ncarried (C), or not carried (-). Items that are not equipped do\nnot apply any features they may normally contribute to the\ncharacter."),
+				@LS(key = "TECH_LEVEL", msg = "TL"),
+				@LS(key = "TECH_LEVEL_TOOLTIP", msg = "The tech level of this piece of equipment"),
+				@LS(key = "LEGALITY_CLASS", msg = "LC"),
+				@LS(key = "LEGALITY_CLASS_TOOLTIP", msg = "The legality class of this piece of equipment"),
+				@LS(key = "QUANTITY", msg = "#"),
+				@LS(key = "QUANTITY_TOOLTIP", msg = "The quantity of this piece of equipment"),
+				@LS(key = "VALUE", msg = "$"),
+				@LS(key = "VALUE_TOOLTIP", msg = "The value of one of these pieces of equipment"),
+				@LS(key = "WEIGHT", msg = "W"),
+				@LS(key = "WEIGHT_TOOLTIP", msg = "The weight of one of these pieces of equipment"),
+				@LS(key = "EXT_VALUE", msg = "\u2211 $"),
+				@LS(key = "EXT_VALUE_TOOLTIP", msg = "The value of all of these pieces of equipment,\nplus the value of any contained equipment"),
+				@LS(key = "EXT_WEIGHT", msg = "\u2211 W"),
+				@LS(key = "EXT_WEIGHT_TOOLTIP", msg = "The weight of all of these pieces of equipment\n, plus the weight of any contained equipment"),
+				@LS(key = "CATEGORY", msg = "Category"),
+				@LS(key = "CATEGORY_TOOLTIP", msg = "The category or categories the equipment belongs to"),
+				@LS(key = "REFERENCE", msg = "Ref"),
+				@LS(key = "REFERENCE_TOOLTIP", msg = "A reference to the book and page this equipment appears\non (e.g. B22 would refer to \"Basic Set\", page 22)"),
+})
 /** Definitions for equipment columns. */
 public enum EquipmentColumn {
 	/** The equipment name/description. */
 	DESCRIPTION {
 		@Override
-		public String toString() {
-			return MSG_EQUIPMENT;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_EQUIPMENT_TOOLTIP;
+			return DESCRIPTION_TOOLTIP;
 		}
 
 		@Override
 		public String toString(GURPSCharacter character) {
 			if (character != null) {
-				return MessageFormat.format(MSG_EQUIPMENT_TOTALS, character.getWeightCarried().toString(), Numbers.format(character.getWealthCarried()));
+				return MessageFormat.format(DESCRIPTION_TOTALS, character.getWeightCarried().toString(), Numbers.format(character.getWealthCarried()));
 			}
 			return super.toString(character);
 		}
@@ -95,13 +118,8 @@ public enum EquipmentColumn {
 	/** The current equipment state. */
 	STATE {
 		@Override
-		public String toString() {
-			return MSG_STATE;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_STATE_TOOLTIP;
+			return STATE_TOOLTIP;
 		}
 
 		@Override
@@ -121,19 +139,14 @@ public enum EquipmentColumn {
 
 		@Override
 		public String getDataAsText(Equipment equipment) {
-			return equipment.getState().toShortString();
+			return equipment.getState().toShortName();
 		}
 	},
 	/** The quantity. */
 	QUANTITY {
 		@Override
-		public String toString() {
-			return MSG_QUANTITY;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_QUANTITY_TOOLTIP;
+			return QUANTITY_TOOLTIP;
 		}
 
 		@Override
@@ -157,15 +170,10 @@ public enum EquipmentColumn {
 		}
 	},
 	/** The tech level. */
-	TL {
-		@Override
-		public String toString() {
-			return MSG_TECH_LEVEL;
-		}
-
+	TECH_LEVEL {
 		@Override
 		public String getToolTip() {
-			return MSG_TECH_LEVEL_TOOLTIP;
+			return TECH_LEVEL_TOOLTIP;
 		}
 
 		@Override
@@ -189,15 +197,10 @@ public enum EquipmentColumn {
 		}
 	},
 	/** The legality class. */
-	LC {
-		@Override
-		public String toString() {
-			return MSG_LEGALITY_CLASS;
-		}
-
+	LEGALITY_CLASS {
 		@Override
 		public String getToolTip() {
-			return MSG_LEGALITY_CLASS_TOOLTIP;
+			return LEGALITY_CLASS_TOOLTIP;
 		}
 
 		@Override
@@ -223,13 +226,8 @@ public enum EquipmentColumn {
 	/** The value. */
 	VALUE {
 		@Override
-		public String toString() {
-			return MSG_VALUE;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_VALUE_TOOLTIP;
+			return VALUE_TOOLTIP;
 		}
 
 		@Override
@@ -255,13 +253,8 @@ public enum EquipmentColumn {
 	/** The weight. */
 	WEIGHT {
 		@Override
-		public String toString() {
-			return MSG_WEIGHT;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_WEIGHT_TOOLTIP;
+			return WEIGHT_TOOLTIP;
 		}
 
 		@Override
@@ -287,13 +280,8 @@ public enum EquipmentColumn {
 	/** The value. */
 	EXT_VALUE {
 		@Override
-		public String toString() {
-			return MSG_EXT_VALUE;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_EXT_VALUE_TOOLTIP;
+			return EXT_VALUE_TOOLTIP;
 		}
 
 		@Override
@@ -319,13 +307,8 @@ public enum EquipmentColumn {
 	/** The weight. */
 	EXT_WEIGHT {
 		@Override
-		public String toString() {
-			return MSG_EXT_WEIGHT;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_EXT_WEIGHT_TOOLTIP;
+			return EXT_WEIGHT_TOOLTIP;
 		}
 
 		@Override
@@ -351,13 +334,8 @@ public enum EquipmentColumn {
 	/** The category. */
 	CATEGORY {
 		@Override
-		public String toString() {
-			return MSG_CATEGORY;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_CATEGORY_TOOLTIP;
+			return CATEGORY_TOOLTIP;
 		}
 
 		@Override
@@ -383,13 +361,8 @@ public enum EquipmentColumn {
 	/** The page reference. */
 	REFERENCE {
 		@Override
-		public String toString() {
-			return MSG_REFERENCE;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_REFERENCE_TOOLTIP;
+			return REFERENCE_TOOLTIP;
 		}
 
 		@Override
@@ -413,32 +386,18 @@ public enum EquipmentColumn {
 		}
 	};
 
-	static String	MSG_EQUIPMENT;
-	static String	MSG_EQUIPMENT_TOTALS;
-	static String	MSG_EQUIPMENT_TOOLTIP;
-	static String	MSG_STATE;
-	static String	MSG_STATE_TOOLTIP;
-	static String	MSG_TECH_LEVEL;
-	static String	MSG_TECH_LEVEL_TOOLTIP;
-	static String	MSG_LEGALITY_CLASS;
-	static String	MSG_LEGALITY_CLASS_TOOLTIP;
-	static String	MSG_QUANTITY;
-	static String	MSG_QUANTITY_TOOLTIP;
-	static String	MSG_VALUE;
-	static String	MSG_VALUE_TOOLTIP;
-	static String	MSG_WEIGHT;
-	static String	MSG_WEIGHT_TOOLTIP;
-	static String	MSG_EXT_VALUE;
-	static String	MSG_EXT_VALUE_TOOLTIP;
-	static String	MSG_EXT_WEIGHT;
-	static String	MSG_EXT_WEIGHT_TOOLTIP;
-	static String	MSG_CATEGORY;
-	static String	MSG_CATEGORY_TOOLTIP;
-	static String	MSG_REFERENCE;
-	static String	MSG_REFERENCE_TOOLTIP;
+	@Override
+	public String toString() {
+		return EquipmentColumn_LS.toString(this);
+	}
 
-	static {
-		LocalizedMessages.initialize(EquipmentColumn.class);
+	/**
+	 * @param character The {@link GURPSCharacter} this equipment list is associated with, or
+	 *            <code>null</code>.
+	 * @return The header title.
+	 */
+	public String toString(GURPSCharacter character) {
+		return toString();
 	}
 
 	/**
@@ -464,15 +423,6 @@ public enum EquipmentColumn {
 	 * @return Whether this column should be displayed for the specified data file.
 	 */
 	public abstract boolean shouldDisplay(DataFile dataFile);
-
-	/**
-	 * @param character The {@link GURPSCharacter} this equipment list is associated with, or
-	 *            <code>null</code>.
-	 * @return The header title.
-	 */
-	public String toString(GURPSCharacter character) {
-		return toString();
-	}
 
 	/**
 	 * Adds all relevant {@link Column}s to a {@link Outline}.

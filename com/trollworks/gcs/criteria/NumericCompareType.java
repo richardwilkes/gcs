@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,82 +23,50 @@
 
 package com.trollworks.gcs.criteria;
 
-import com.trollworks.ttk.utility.LocalizedMessages;
+import static com.trollworks.gcs.criteria.NumericCompareType_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 
 import java.text.MessageFormat;
 
+@Localized({
+				@LS(key = "IS", msg = "is"),
+				@LS(key = "AT_LEAST", msg = "at least"),
+				@LS(key = "AT_MOST", msg = "at most"),
+				@LS(key = "IS_FORMAT", msg = "{0}\"{1}\""),
+				@LS(key = "AT_LEAST_FORMAT", msg = "{0}at least \"{1}\""),
+				@LS(key = "AT_MOST_FORMAT", msg = "{0}at most \"{1}\""),
+				@LS(key = "IS_DESCRIPTION", msg = "is"),
+				@LS(key = "AT_LEAST_DESCRIPTION", msg = "is at least"),
+				@LS(key = "AT_MOST_DESCRIPTION", msg = "is at most"),
+})
 /** The allowed numeric comparison types. */
 public enum NumericCompareType {
 	/** The comparison for "is". */
-	IS {
-		@Override
-		public String toString() {
-			return MSG_IS;
-		}
-
-		@Override
-		public String getDescription() {
-			return MSG_IS_DESCRIPTION;
-		}
-
-		@Override
-		String getDescriptionFormat() {
-			return MSG_IS_FORMAT;
-		}
-	},
+	IS(IS_DESCRIPTION, IS_FORMAT),
 	/** The comparison for "is at least". */
-	AT_LEAST {
-		@Override
-		public String toString() {
-			return MSG_AT_LEAST;
-		}
-
-		@Override
-		public String getDescription() {
-			return MSG_AT_LEAST_DESCRIPTION;
-		}
-
-		@Override
-		String getDescriptionFormat() {
-			return MSG_AT_LEAST_FORMAT;
-		}
-	},
+	AT_LEAST(AT_LEAST_DESCRIPTION, AT_LEAST_FORMAT),
 	/** The comparison for "is at most". */
-	AT_MOST {
-		@Override
-		public String toString() {
-			return MSG_AT_MOST;
-		}
+	AT_MOST(AT_MOST_DESCRIPTION, AT_MOST_FORMAT);
 
-		@Override
-		public String getDescription() {
-			return MSG_AT_MOST_DESCRIPTION;
-		}
+	private String	mDescription;
+	private String	mDescriptionFormat;
 
-		@Override
-		String getDescriptionFormat() {
-			return MSG_AT_MOST_FORMAT;
-		}
-	};
-
-	static String	MSG_IS;
-	static String	MSG_AT_LEAST;
-	static String	MSG_AT_MOST;
-	static String	MSG_IS_FORMAT;
-	static String	MSG_AT_LEAST_FORMAT;
-	static String	MSG_AT_MOST_FORMAT;
-	static String	MSG_IS_DESCRIPTION;
-	static String	MSG_AT_LEAST_DESCRIPTION;
-	static String	MSG_AT_MOST_DESCRIPTION;
-
-	static {
-		LocalizedMessages.initialize(NumericCompareType.class);
+	private NumericCompareType(String description, String descriptionFormat) {
+		mDescription = description;
+		mDescriptionFormat = descriptionFormat;
 	}
 
 	/** @return A description of this object. */
-	public abstract String getDescription();
+	public String getDescription() {
+		return mDescription;
+	}
 
-	abstract String getDescriptionFormat();
+	@Override
+	public String toString() {
+		return NumericCompareType_LS.toString(this);
+	}
 
 	/**
 	 * @param prefix A prefix to place before the description.
@@ -106,6 +74,6 @@ public enum NumericCompareType {
 	 * @return A formatted description of this object.
 	 */
 	public String format(String prefix, String qualifier) {
-		return MessageFormat.format(getDescriptionFormat(), prefix, qualifier);
+		return MessageFormat.format(mDescriptionFormat, prefix, qualifier);
 	}
 }

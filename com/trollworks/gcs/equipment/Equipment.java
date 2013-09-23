@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.equipment;
+
+import static com.trollworks.gcs.equipment.Equipment_LS.*;
 
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
@@ -35,9 +37,10 @@ import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.collections.Enums;
 import com.trollworks.ttk.units.WeightValue;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.widgets.outline.Row;
 import com.trollworks.ttk.xml.XMLReader;
@@ -51,10 +54,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+@Localized({
+				@LS(key = "DEFAULT_NAME", msg = "Equipment"),
+})
 /** A piece of equipment. */
 public class Equipment extends ListRow {
 	private static final int		CURRENT_VERSION				= 3;
-	private static String			MSG_DEFAULT_NAME;
 	private static final String		NEWLINE						= "\n";											//$NON-NLS-1$
 	private static final String		SPACE						= " ";												//$NON-NLS-1$
 	private static final String		DEFAULT_LEGALITY_CLASS		= "4";												//$NON-NLS-1$
@@ -114,10 +119,6 @@ public class Equipment extends ListRow {
 	private String					mReference;
 	private ArrayList<WeaponStats>	mWeapons;
 
-	static {
-		LocalizedMessages.initialize(Equipment.class);
-	}
-
 	/**
 	 * Creates a new equipment.
 	 * 
@@ -128,7 +129,7 @@ public class Equipment extends ListRow {
 		super(dataFile, isContainer);
 		mState = EquipmentState.EQUIPPED;
 		mQuantity = 1;
-		mDescription = MSG_DEFAULT_NAME;
+		mDescription = DEFAULT_NAME;
 		mTechLevel = EMPTY;
 		mLegalityClass = DEFAULT_LEGALITY_CLASS;
 		mReference = EMPTY;
@@ -203,7 +204,7 @@ public class Equipment extends ListRow {
 
 	@Override
 	public String getLocalizedName() {
-		return MSG_DEFAULT_NAME;
+		return DEFAULT_NAME;
 	}
 
 	@Override
@@ -231,7 +232,7 @@ public class Equipment extends ListRow {
 		super.prepareForLoad(state);
 		mState = EquipmentState.EQUIPPED;
 		mQuantity = 1;
-		mDescription = MSG_DEFAULT_NAME;
+		mDescription = DEFAULT_NAME;
 		mTechLevel = EMPTY;
 		mLegalityClass = DEFAULT_LEGALITY_CLASS;
 		mReference = EMPTY;
