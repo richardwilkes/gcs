@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,10 +23,13 @@
 
 package com.trollworks.gcs.modifier;
 
+import static com.trollworks.gcs.modifier.ModifierColumnID_LS.*;
+
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.widgets.outline.Cell;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.widgets.outline.Outline;
@@ -34,18 +37,24 @@ import com.trollworks.ttk.widgets.outline.OutlineModel;
 
 import javax.swing.SwingConstants;
 
+@Localized({
+				@LS(key = "ENABLED", msg = "Enabled"),
+				@LS(key = "ENABLED_TOOLTIP", msg = "Whether this modifier has been enabled or not"),
+				@LS(key = "ENABLED_COLUMN", msg = "\u221a"),
+				@LS(key = "DESCRIPTION", msg = "Enhancements & Limitations"),
+				@LS(key = "DESCRIPTION_TOOLTIP", msg = "The name and notes describing an enhancement or limitation"),
+				@LS(key = "COST_MODIFIER", msg = "Cost Modifier"),
+				@LS(key = "COST_MODIFIER_TOOLTIP", msg = "The cost modifier for this enhancement or limitation"),
+				@LS(key = "REFERENCE", msg = "Ref"),
+				@LS(key = "REFERENCE_TOOLTIP", msg = "A reference to the book and page this modifier appears\non (e.g. B22 would refer to \"Basic Set\", page 22)"),
+})
 /** Modifier Columns */
 public enum ModifierColumnID {
 	/** The enabled/disabled column. */
 	ENABLED {
 		@Override
-		public String toString() {
-			return MSG_ENABLED;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_ENABLED_TOOLTIP;
+			return ENABLED_TOOLTIP;
 		}
 
 		@Override
@@ -55,19 +64,14 @@ public enum ModifierColumnID {
 
 		@Override
 		public String getDataAsText(Modifier modifier) {
-			return modifier.isEnabled() ? MSG_ENABLED_COLUMN : ""; //$NON-NLS-1$
+			return modifier.isEnabled() ? ENABLED_COLUMN : ""; //$NON-NLS-1$
 		}
 	},
 	/** The advantage name/description. */
 	DESCRIPTION {
 		@Override
-		public String toString() {
-			return MSG_DESCRIPTION;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_DESCRIPTION_TOOLTIP;
+			return DESCRIPTION_TOOLTIP;
 		}
 
 		@Override
@@ -92,13 +96,8 @@ public enum ModifierColumnID {
 	/** The total cost modifier. */
 	COST_MODIFIER_TOTAL {
 		@Override
-		public String toString() {
-			return MSG_COST_MODIFIER;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_COST_MODIFIER_TOOLTIP;
+			return COST_MODIFIER_TOOLTIP;
 		}
 
 		@Override
@@ -115,13 +114,8 @@ public enum ModifierColumnID {
 	/** The page reference. */
 	REFERENCE {
 		@Override
-		public String toString() {
-			return MSG_REFERENCE;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_REFERENCE_TOOLTIP;
+			return REFERENCE_TOOLTIP;
 		}
 
 		@Override
@@ -135,18 +129,9 @@ public enum ModifierColumnID {
 		}
 	};
 
-	static String	MSG_DESCRIPTION;
-	static String	MSG_DESCRIPTION_TOOLTIP;
-	static String	MSG_COST_MODIFIER;
-	static String	MSG_COST_MODIFIER_TOOLTIP;
-	static String	MSG_ENABLED;
-	static String	MSG_ENABLED_TOOLTIP;
-	static String	MSG_ENABLED_COLUMN;
-	static String	MSG_REFERENCE;
-	static String	MSG_REFERENCE_TOOLTIP;
-
-	static {
-		LocalizedMessages.initialize(ModifierColumnID.class);
+	@Override
+	public String toString() {
+		return ModifierColumnID_LS.toString(this);
 	}
 
 	/**

@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,58 +23,41 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.ttk.utility.LocalizedMessages;
+import static com.trollworks.gcs.modifier.Affects_LS.*;
 
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
+
+@Localized({
+				@LS(key = "TOTAL", msg = "to cost"),
+				@LS(key = "TOTAL_SHORT", msg = ""),
+				@LS(key = "BASE_ONLY", msg = "to base cost only"),
+				@LS(key = "BASE_ONLY_SHORT", msg = "(base only)"),
+				@LS(key = "LEVELS_ONLY", msg = "to leveled cost only"),
+				@LS(key = "LEVELS_ONLY_SHORT", msg = "(levels only)"),
+})
 /** Describes how a {@link Modifier} affects the point cost. */
 public enum Affects {
 	/** Affects the total cost. */
-	TOTAL {
-		@Override
-		public String toString() {
-			return MSG_TOTAL;
-		}
-
-		@Override
-		public String getShortTitle() {
-			return MSG_TOTAL_SHORT;
-		}
-	},
+	TOTAL(TOTAL_SHORT),
 	/** Affects only the base cost, not the leveled cost. */
-	BASE_ONLY {
-		@Override
-		public String toString() {
-			return MSG_BASE_ONLY;
-		}
-
-		@Override
-		public String getShortTitle() {
-			return MSG_BASE_ONLY_SHORT;
-		}
-	},
+	BASE_ONLY(BASE_ONLY_SHORT),
 	/** Affects only the leveled cost, not the base cost. */
-	LEVELS_ONLY {
-		@Override
-		public String toString() {
-			return MSG_LEVELS_ONLY;
-		}
+	LEVELS_ONLY(LEVELS_ONLY_SHORT);
 
-		@Override
-		public String getShortTitle() {
-			return MSG_LEVELS_ONLY_SHORT;
-		}
-	};
+	private String	mShortTitle;
 
-	static String	MSG_TOTAL;
-	static String	MSG_TOTAL_SHORT;
-	static String	MSG_BASE_ONLY;
-	static String	MSG_BASE_ONLY_SHORT;
-	static String	MSG_LEVELS_ONLY;
-	static String	MSG_LEVELS_ONLY_SHORT;
+	private Affects(String shortTitle) {
+		mShortTitle = shortTitle;
+	}
 
-	static {
-		LocalizedMessages.initialize(Affects.class);
+	@Override
+	public String toString() {
+		return Affects_LS.toString(this);
 	}
 
 	/** @return The short version of the title. */
-	public abstract String getShortTitle();
+	public String getShortTitle() {
+		return mShortTitle;
+	}
 }

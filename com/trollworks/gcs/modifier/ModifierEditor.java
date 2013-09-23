@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,8 +23,12 @@
 
 package com.trollworks.gcs.modifier;
 
+import static com.trollworks.gcs.modifier.ModifierEditor_LS.*;
+
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.text.NumberFilter;
 import com.trollworks.ttk.text.Numbers;
@@ -53,25 +57,27 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+@Localized({
+				@LS(key = "NAME", msg = "Name"),
+				@LS(key = "NAME_TOOLTIP", msg = "Name of Modifier"),
+				@LS(key = "NOTES", msg = "Notes"),
+				@LS(key = "NOTES_TOOLTIP", msg = "Any notes that you would like to show up in the list along with this modifier"),
+				@LS(key = "NAME_CANNOT_BE_EMPTY", msg = "The name field may not be empty"),
+				@LS(key = "COST", msg = "Cost"),
+				@LS(key = "COST_TOOLTIP", msg = "The base cost modifier"),
+				@LS(key = "LEVELS", msg = "Levels"),
+				@LS(key = "LEVELS_TOOLTIP", msg = "The number of levels this modifier has"),
+				@LS(key = "TOTAL_COST", msg = "Total"),
+				@LS(key = "TOTAL_COST_TOOLTIP", msg = "The cost modifier's total value"),
+				@LS(key = "HAS_LEVELS", msg = "{0} Per Level"),
+				@LS(key = "ENABLED", msg = "Enabled"),
+				@LS(key = "ENABLED_TOOLTIP", msg = "Whether this modifier has been enabled or not"),
+				@LS(key = "REFERENCE", msg = "Ref"),
+				@LS(key = "REFERENCE_TOOLTIP", msg = "A reference to the book and page this modifier appears\non (e.g. B22 would refer to \"Basic Set\", page 22)"),
+})
 /** Editor for {@link Modifier}s. */
 public class ModifierEditor extends RowEditor<Modifier> implements ActionListener, DocumentListener {
-	private static String		MSG_NAME;
-	private static String		MSG_NAME_TOOLTIP;
-	private static String		MSG_NOTES;
-	private static String		MSG_NOTES_TOOLTIP;
-	private static String		MSG_NAME_CANNOT_BE_EMPTY;
-	private static String		MSG_COST;
-	private static String		MSG_COST_TOOLTIP;
-	private static String		MSG_LEVELS;
-	private static String		MSG_LEVELS_TOOLTIP;
-	private static String		MSG_TOTAL_COST;
-	private static String		MSG_TOTAL_COST_TOOLTIP;
-	private static String		MSG_HAS_LEVELS;
-	private static String		MSG_ENABLED;
-	private static String		MSG_ENABLED_TOOLTIP;
-	private static String		MSG_REFERENCE;
-	private static String		MSG_REFERENCE_TOOLTIP;
-	private static final String	EMPTY	= "";				//$NON-NLS-1$
+	private static final String	EMPTY	= "";		//$NON-NLS-1$
 	private JTextField			mNameField;
 	private JCheckBox			mEnabledField;
 	private JTextField			mNotesField;
@@ -108,9 +114,9 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		}
 
 		JPanel wrapper = new JPanel(new ColumnLayout(2));
-		mNameField = createCorrectableField(fields, wrapper, MSG_NAME, modifier.getName(), MSG_NAME_TOOLTIP);
-		mEnabledField = new JCheckBox(MSG_ENABLED, modifier.isEnabled());
-		mEnabledField.setToolTipText(MSG_ENABLED_TOOLTIP);
+		mNameField = createCorrectableField(fields, wrapper, NAME, modifier.getName(), NAME_TOOLTIP);
+		mEnabledField = new JCheckBox(ENABLED, modifier.isEnabled());
+		mEnabledField.setToolTipText(ENABLED_TOOLTIP);
 		mEnabledField.setEnabled(mIsEditable);
 		wrapper.add(mEnabledField);
 		fields.add(wrapper);
@@ -118,8 +124,8 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		createCostModifierFields(fields);
 
 		wrapper = new JPanel(new ColumnLayout(3));
-		mNotesField = createField(fields, wrapper, MSG_NOTES, modifier.getNotes(), MSG_NOTES_TOOLTIP, 0);
-		mReferenceField = createField(wrapper, wrapper, MSG_REFERENCE, mRow.getReference(), MSG_REFERENCE_TOOLTIP, 6);
+		mNotesField = createField(fields, wrapper, NOTES, modifier.getNotes(), NOTES_TOOLTIP, 0);
+		mReferenceField = createField(wrapper, wrapper, REFERENCE, mRow.getReference(), REFERENCE_TOOLTIP, 6);
 		fields.add(wrapper);
 
 		icon.setVerticalAlignment(SwingConstants.TOP);
@@ -260,13 +266,13 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 			mLastLevel = 1;
 		}
 		if (mRow.getCostType() == CostType.MULTIPLIER) {
-			mCostField = createNumberField(parent, wrapper, MSG_COST, mRow.getCostMultiplier(), MSG_COST_TOOLTIP, 5);
+			mCostField = createNumberField(parent, wrapper, COST, mRow.getCostMultiplier(), COST_TOOLTIP, 5);
 		} else {
-			mCostField = createNumberField(parent, wrapper, MSG_COST, true, mRow.getCost(), MSG_COST_TOOLTIP, 5);
+			mCostField = createNumberField(parent, wrapper, COST, true, mRow.getCost(), COST_TOOLTIP, 5);
 		}
 		createCostType(wrapper);
-		mLevelField = createNumberField(wrapper, wrapper, MSG_LEVELS, false, mLastLevel, MSG_LEVELS_TOOLTIP, 3);
-		mCostModifierField = createNumberField(wrapper, wrapper, MSG_TOTAL_COST, true, 0, MSG_TOTAL_COST_TOOLTIP, 9);
+		mLevelField = createNumberField(wrapper, wrapper, LEVELS, false, mLastLevel, LEVELS_TOOLTIP, 3);
+		mCostModifierField = createNumberField(wrapper, wrapper, TOTAL_COST, true, 0, TOTAL_COST_TOOLTIP, 9);
 		mAffects = createComboBox(wrapper, Affects.values(), mRow.getAffects());
 		mCostModifierField.setEnabled(false);
 		if (!mRow.hasLevels()) {
@@ -289,7 +295,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 	private void createCostType(Container parent) {
 		CostType[] types = CostType.values();
 		Object[] values = new Object[types.length + 1];
-		values[0] = MessageFormat.format(MSG_HAS_LEVELS, CostType.PERCENTAGE.toString());
+		values[0] = MessageFormat.format(HAS_LEVELS, CostType.PERCENTAGE.toString());
 		System.arraycopy(types, 0, values, 1, types.length);
 		mCostType = createComboBox(parent, values, mRow.hasLevels() ? values[0] : mRow.getCostType());
 	}
@@ -379,6 +385,6 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 	}
 
 	private void nameChanged() {
-		LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : MSG_NAME_CANNOT_BE_EMPTY);
+		LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : NAME_CANNOT_BE_EMPTY);
 	}
 }

@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,14 +23,17 @@
 
 package com.trollworks.gcs.modifier;
 
+import static com.trollworks.gcs.modifier.Modifier_LS.*;
+
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.collections.Enums;
 import com.trollworks.ttk.notification.Notifier;
 import com.trollworks.ttk.text.Numbers;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
@@ -40,12 +43,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 
+@Localized({
+				@LS(key = "DEFAULT_NAME", msg = "Modifier"),
+				@LS(key = "MODIFIER_TYPE", msg = "Enhancement/Limitation"),
+				@LS(key = "READ_ONLY", msg = "** From container - not modifiable here **"),
+})
 /** Model for trait modifiers */
 public class Modifier extends ListRow implements Comparable<Modifier> {
 	private static final int		CURRENT_VERSION		= 1;
-	private static String			MSG_DEFAULT_NAME;
-	private static String			MSG_MODIFIER_TYPE;
-	private static String			MSG_READ_ONLY;
 	/** The root tag. */
 	public static final String		TAG_MODIFIER		= "modifier";							//$NON-NLS-1$
 	/** The tag for the name. */
@@ -89,10 +94,6 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 	private boolean					mEnabled;
 	private boolean					mReadOnly;
 
-	static {
-		LocalizedMessages.initialize(Modifier.class);
-	}
-
 	/**
 	 * Creates a new {@link Modifier}.
 	 * 
@@ -130,7 +131,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 	 */
 	public Modifier(DataFile file) {
 		super(file, false);
-		mName = MSG_DEFAULT_NAME;
+		mName = DEFAULT_NAME;
 		mReference = ""; //$NON-NLS-1$
 		mCostType = CostType.PERCENTAGE;
 		mCost = 0;
@@ -200,7 +201,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 
 	@Override
 	public String getModifierNotes() {
-		return mReadOnly ? MSG_READ_ONLY : super.getModifierNotes();
+		return mReadOnly ? READ_ONLY : super.getModifierNotes();
 	}
 
 	/** @return An exact clone of this modifier. */
@@ -318,12 +319,12 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 
 	@Override
 	public String getLocalizedName() {
-		return MSG_DEFAULT_NAME;
+		return DEFAULT_NAME;
 	}
 
 	@Override
 	public String getRowType() {
-		return MSG_MODIFIER_TYPE;
+		return MODIFIER_TYPE;
 	}
 
 	@Override
@@ -368,7 +369,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 	@Override
 	protected void prepareForLoad(LoadState state) {
 		super.prepareForLoad(state);
-		mName = MSG_DEFAULT_NAME;
+		mName = DEFAULT_NAME;
 		mCostType = CostType.PERCENTAGE;
 		mCost = 0;
 		mCostMultiplier = 1.0;

@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,37 +23,25 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 
+@Localized({
+				@LS(key = "PERCENTAGE", msg = "%"),
+				@LS(key = "POINTS", msg = "points"),
+				@LS(key = "MULTIPLIER", msg = "x"),
+})
 /** Describes how a {@link Modifier}'s point cost is applied. */
 public enum CostType {
 	/** Adds to the percentage multiplier. */
-	PERCENTAGE {
-		@Override
-		public String toString() {
-			return MSG_PERCENTAGE;
-		}
-	},
+	PERCENTAGE,
 	/** Adds a constant to the base value prior to any multiplier or percentage adjustment. */
-	POINTS {
-		@Override
-		public String toString() {
-			return MSG_POINTS;
-		}
-	},
+	POINTS,
 	/** Multiplies the final cost by a constant. */
-	MULTIPLIER {
-		@Override
-		public String toString() {
-			return MSG_MULTIPLIER;
-		}
-	};
+	MULTIPLIER;
 
-	static String	MSG_PERCENTAGE;
-	static String	MSG_POINTS;
-	static String	MSG_MULTIPLIER;
-
-	static {
-		LocalizedMessages.initialize(CostType.class);
+	@Override
+	public String toString() {
+		return CostType_LS.toString(this);
 	}
 }

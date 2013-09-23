@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,10 +23,13 @@
 
 package com.trollworks.gcs.preferences;
 
+import static com.trollworks.gcs.preferences.PortraitPreferencePanel_LS.*;
+
 import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.character.Profile;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.border.BoxedDropShadowBorder;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.ActionPanel;
 
@@ -42,15 +45,13 @@ import java.text.MessageFormat;
 
 import javax.swing.UIManager;
 
+@Localized({
+				@LS(key = "PORTRAIT", msg = "Portrait"),
+				@LS(key = "PORTRAIT_TOOLTIP", msg = "<html><body>The portrait to use when a new character sheet is created.<br><br>Ideal original portrait size is {0} pixels wide by {1} pixels tall,<br>although the image will be automatically scaled to these<br>dimensions, if necessary.</body></html>"),
+})
 /** The character portrait. */
 public class PortraitPreferencePanel extends ActionPanel {
-	private static String	MSG_PORTRAIT;
-	private static String	MSG_PORTRAIT_TOOLTIP;
 	private BufferedImage	mImage;
-
-	static {
-		LocalizedMessages.initialize(PortraitPreferencePanel.class);
-	}
 
 	/**
 	 * Creates a new character portrait.
@@ -60,10 +61,10 @@ public class PortraitPreferencePanel extends ActionPanel {
 	public PortraitPreferencePanel(BufferedImage image) {
 		super();
 		mImage = image;
-		setBorder(new BoxedDropShadowBorder(UIManager.getFont(GCSFonts.KEY_LABEL), MSG_PORTRAIT));
+		setBorder(new BoxedDropShadowBorder(UIManager.getFont(GCSFonts.KEY_LABEL), PORTRAIT));
 		Insets insets = getInsets();
 		UIUtilities.setOnlySize(this, new Dimension(insets.left + insets.right + Profile.PORTRAIT_WIDTH, insets.top + insets.bottom + Profile.PORTRAIT_HEIGHT));
-		setToolTipText(MessageFormat.format(MSG_PORTRAIT_TOOLTIP, new Integer(Profile.PORTRAIT_WIDTH * 2), new Integer(Profile.PORTRAIT_HEIGHT * 2)));
+		setToolTipText(MessageFormat.format(PORTRAIT_TOOLTIP, new Integer(Profile.PORTRAIT_WIDTH * 2), new Integer(Profile.PORTRAIT_HEIGHT * 2)));
 		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent event) {

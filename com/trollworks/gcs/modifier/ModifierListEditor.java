@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,16 +23,19 @@
 
 package com.trollworks.gcs.modifier;
 
+import static com.trollworks.gcs.modifier.ModifierListEditor_LS.*;
+
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.collections.FilteredIterator;
 import com.trollworks.ttk.collections.FilteredList;
 import com.trollworks.ttk.image.ToolkitImage;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.ActionPanel;
 import com.trollworks.ttk.widgets.IconButton;
 import com.trollworks.ttk.widgets.outline.Outline;
@@ -48,17 +51,15 @@ import java.util.List;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
+@Localized({
+				@LS(key = "MODIFIERS", msg = "Modifiers"),
+})
 /** Editor for {@link ModifierList}s. */
 public class ModifierListEditor extends ActionPanel implements ActionListener {
-	private static String	MSG_MODIFIERS;
-	private DataFile		mOwner;
-	private Outline			mOutline;
-	IconButton				mAddButton;
-	boolean					mModified;
-
-	static {
-		LocalizedMessages.initialize(ModifierListEditor.class);
-	}
+	private DataFile	mOwner;
+	private Outline		mOutline;
+	IconButton			mAddButton;
+	boolean				mModified;
 
 	/**
 	 * @param advantage The {@link Advantage} to edit.
@@ -201,7 +202,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 
 	@Override
 	public String toString() {
-		return MSG_MODIFIERS;
+		return MODIFIERS;
 	}
 
 	class ModifierOutline extends Outline {

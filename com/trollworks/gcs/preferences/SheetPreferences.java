@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,7 +23,11 @@
 
 package com.trollworks.gcs.preferences;
 
+import static com.trollworks.gcs.preferences.SheetPreferences_LS.*;
+
 import com.trollworks.gcs.character.Profile;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.image.Images;
 import com.trollworks.ttk.layout.Alignment;
 import com.trollworks.ttk.layout.FlexColumn;
@@ -63,36 +67,38 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
+@Localized({
+				@LS(key = "SHEET", msg = "Sheet"),
+				@LS(key = "PLAYER", msg = "Player"),
+				@LS(key = "PLAYER_TOOLTIP", msg = "The player name to use when a new character sheet is created"),
+				@LS(key = "CAMPAIGN", msg = "Campaign"),
+				@LS(key = "CAMPAIGN_TOOLTIP", msg = "The campaign to use when a new character sheet is created"),
+				@LS(key = "TECH_LEVEL", msg = "Tech Level"),
+				@LS(key = "TECH_LEVEL_TOOLTIP", msg = "<html><body>TL0: Stone Age<br>TL1: Bronze Age<br>TL2: Iron Age<br>TL3: Medieval<br>TL4: Age of Sail<br>TL5: Industrial Revolution<br>TL6: Mechanized Age<br>TL7: Nuclear Age<br>TL8: Digital Age<br>TL9: Microtech Age<br>TL10: Robotic Age<br>TL11: Age of Exotic Matter<br>TL12: Anything Goes</body></html>"),
+				@LS(key = "INITIAL_POINTS", msg = "Initial Points"),
+				@LS(key = "INITIAL_POINTS_TOOLTIP", msg = "The initial number of character points to start with"),
+				@LS(key = "SELECT_PORTRAIT", msg = "Select A Portrait"),
+				@LS(key = "OPTIONAL_IQ_RULES", msg = "Use optional (house) rule: Will and Perception are not based upon IQ"),
+				@LS(key = "OPTIONAL_MODIFIER_RULES", msg = "Use optional rule \"Multiplicative Modifiers\" from PW102 (note: changes point value)"),
+				@LS(key = "OPTIONAL_DICE_RULES", msg = "Use optional rule \"Modifying Dice + Adds\" from B269"),
+				@LS(key = "PNG_RESOLUTION_POST", msg = "when saving sheets to PNG"),
+				@LS(key = "PNG_RESOLUTION_TOOLTIP", msg = "The resolution, in dots-per-inch, to use when saving sheets as PNG files"),
+				@LS(key = "DPI_FORMAT", msg = "{0} dpi"),
+				@LS(key = "HTML_TEMPLATE_OVERRIDE", msg = "HTML Template Override"),
+				@LS(key = "HTML_TEMPLATE_PICKER", msg = "Choose..."),
+				@LS(key = "HTML_TEMPLATE_OVERRIDE_TOOLTIP", msg = "Specify a file to use as the template when exporting to HTML"),
+				@LS(key = "SELECT_HTML_TEMPLATE", msg = "Select A HTML Template"),
+				@LS(key = "NATIVE_PRINTER", msg = "Use platform native print dialogs (settings cannot be saved)"),
+				@LS(key = "NATIVE_PRINTER_TOOLTIP", msg = "<html><body>Whether or not the native print dialogs should be used.<br>Choosing this option will prevent the program from saving<br>and restoring print settings with the document.</body></html>"),
+				@LS(key = "AUTO_NAME", msg = "Automatically name new characters"),
+				@LS(key = "LENGTH_UNITS_TOOLTIP", msg = "The units to use for display of generated lengths"),
+				@LS(key = "WEIGHT_UNITS_TOOLTIP", msg = "The units to use for display of generated weights"),
+				@LS(key = "USE", msg = "Use"),
+				@LS(key = "AND", msg = "and"),
+				@LS(key = "FOR_UNIT_DISPLAY", msg = "for display of generated units"),
+})
 /** The sheet preferences panel. */
 public class SheetPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {
-	private static String				MSG_SHEET;
-	private static String				MSG_PLAYER;
-	private static String				MSG_PLAYER_TOOLTIP;
-	private static String				MSG_CAMPAIGN;
-	private static String				MSG_CAMPAIGN_TOOLTIP;
-	private static String				MSG_TECH_LEVEL;
-	private static String				MSG_TECH_LEVEL_TOOLTIP;
-	private static String				MSG_INITIAL_POINTS;
-	private static String				MSG_INITIAL_POINTS_TOOLTIP;
-	private static String				MSG_SELECT_PORTRAIT;
-	private static String				MSG_OPTIONAL_IQ_RULES;
-	private static String				MSG_OPTIONAL_MODIFIER_RULES;
-	private static String				MSG_OPTIONAL_DICE_RULES;
-	private static String				MSG_USE;
-	private static String				MSG_AND;
-	private static String				MSG_PNG_RESOLUTION_POST;
-	private static String				MSG_PNG_RESOLUTION_TOOLTIP;
-	private static String				MSG_DPI;
-	private static String				MSG_HTML_TEMPLATE_OVERRIDE;
-	private static String				MSG_HTML_TEMPLATE_PICKER;
-	private static String				MSG_HTML_TEMPLATE_OVERRIDE_TOOLTIP;
-	private static String				MSG_SELECT_HTML_TEMPLATE;
-	private static String				MSG_NATIVE_PRINTER;
-	private static String				MSG_NATIVE_PRINTER_TOOLTIP;
-	private static String				MSG_AUTO_NAME;
-	private static String				MSG_LENGTH_UNITS_TOOLTIP;
-	private static String				MSG_WEIGHT_UNITS_TOOLTIP;
-	private static String				MSG_FOR_UNIT_DISPLAY;
 	private static final String			MODULE								= "Sheet";														//$NON-NLS-1$
 	private static final String			OPTIONAL_DICE_RULES					= "UseOptionDiceRules";										//$NON-NLS-1$
 	/** The optional dice rules preference key. */
@@ -232,7 +238,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	 * @param owner The owning {@link PreferencesWindow}.
 	 */
 	public SheetPreferences(PreferencesWindow owner) {
-		super(MSG_SHEET, owner);
+		super(SHEET, owner);
 		FlexColumn column = new FlexColumn();
 
 		FlexGrid grid = new FlexGrid();
@@ -243,20 +249,20 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		FlexComponent comp = new FlexComponent(mPortrait, Alignment.LEFT_TOP, Alignment.LEFT_TOP);
 		grid.add(comp, rowIndex, 0, 4, 1);
 
-		grid.add(createFlexLabel(MSG_PLAYER, MSG_PLAYER_TOOLTIP), rowIndex, 1);
-		mPlayerName = createTextField(MSG_PLAYER_TOOLTIP, Profile.getDefaultPlayerName());
+		grid.add(createFlexLabel(PLAYER, PLAYER_TOOLTIP), rowIndex, 1);
+		mPlayerName = createTextField(PLAYER_TOOLTIP, Profile.getDefaultPlayerName());
 		grid.add(mPlayerName, rowIndex++, 2);
 
-		grid.add(createFlexLabel(MSG_CAMPAIGN, MSG_CAMPAIGN_TOOLTIP), rowIndex, 1);
-		mCampaign = createTextField(MSG_CAMPAIGN_TOOLTIP, Profile.getDefaultCampaign());
+		grid.add(createFlexLabel(CAMPAIGN, CAMPAIGN_TOOLTIP), rowIndex, 1);
+		mCampaign = createTextField(CAMPAIGN_TOOLTIP, Profile.getDefaultCampaign());
 		grid.add(mCampaign, rowIndex++, 2);
 
-		grid.add(createFlexLabel(MSG_TECH_LEVEL, MSG_TECH_LEVEL_TOOLTIP), rowIndex, 1);
-		mTechLevel = createTextField(MSG_TECH_LEVEL_TOOLTIP, Profile.getDefaultTechLevel());
+		grid.add(createFlexLabel(TECH_LEVEL, TECH_LEVEL_TOOLTIP), rowIndex, 1);
+		mTechLevel = createTextField(TECH_LEVEL_TOOLTIP, Profile.getDefaultTechLevel());
 		grid.add(mTechLevel, rowIndex++, 2);
 
-		grid.add(createFlexLabel(MSG_INITIAL_POINTS, MSG_INITIAL_POINTS_TOOLTIP), rowIndex, 1);
-		mInitialPoints = createTextField(MSG_INITIAL_POINTS_TOOLTIP, Integer.toString(getInitialPoints()));
+		grid.add(createFlexLabel(INITIAL_POINTS, INITIAL_POINTS_TOOLTIP), rowIndex, 1);
+		mInitialPoints = createTextField(INITIAL_POINTS_TOOLTIP, Integer.toString(getInitialPoints()));
 		grid.add(mInitialPoints, rowIndex++, 2);
 
 		grid.add(new FlexSpacer(0, 0, false, true), rowIndex, 1);
@@ -265,45 +271,45 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		addSeparator(column);
 
 		FlexRow row = new FlexRow();
-		row.add(createLabel(MSG_USE, null));
+		row.add(createLabel(USE, null));
 		mLengthUnitsCombo = createLengthUnitsPopup();
 		row.add(mLengthUnitsCombo);
-		row.add(createLabel(MSG_AND, null));
+		row.add(createLabel(AND, null));
 		mWeightUnitsCombo = createWeightUnitsPopup();
 		row.add(mWeightUnitsCombo);
-		row.add(createLabel(MSG_FOR_UNIT_DISPLAY, null));
+		row.add(createLabel(FOR_UNIT_DISPLAY, null));
 		column.add(row);
 
-		mAutoName = createCheckBox(MSG_AUTO_NAME, null, isNewCharacterAutoNamed());
+		mAutoName = createCheckBox(AUTO_NAME, null, isNewCharacterAutoNamed());
 		column.add(mAutoName);
 
-		mUseOptionalIQRules = createCheckBox(MSG_OPTIONAL_IQ_RULES, null, areOptionalIQRulesUsed());
+		mUseOptionalIQRules = createCheckBox(OPTIONAL_IQ_RULES, null, areOptionalIQRulesUsed());
 		column.add(mUseOptionalIQRules);
 
-		mUseOptionalModifierRules = createCheckBox(MSG_OPTIONAL_MODIFIER_RULES, null, areOptionalModifierRulesUsed());
+		mUseOptionalModifierRules = createCheckBox(OPTIONAL_MODIFIER_RULES, null, areOptionalModifierRulesUsed());
 		column.add(mUseOptionalModifierRules);
 
-		mUseOptionalDiceRules = createCheckBox(MSG_OPTIONAL_DICE_RULES, null, areOptionalDiceRulesUsed());
+		mUseOptionalDiceRules = createCheckBox(OPTIONAL_DICE_RULES, null, areOptionalDiceRulesUsed());
 		column.add(mUseOptionalDiceRules);
 
 		row = new FlexRow();
-		mUseHTMLTemplateOverride = createCheckBox(MSG_HTML_TEMPLATE_OVERRIDE, MSG_HTML_TEMPLATE_OVERRIDE_TOOLTIP, isHTMLTemplateOverridden());
+		mUseHTMLTemplateOverride = createCheckBox(HTML_TEMPLATE_OVERRIDE, HTML_TEMPLATE_OVERRIDE_TOOLTIP, isHTMLTemplateOverridden());
 		row.add(mUseHTMLTemplateOverride);
 		mHTMLTemplatePath = createHTMLTemplatePathField();
 		row.add(mHTMLTemplatePath);
-		mHTMLTemplatePicker = createButton(MSG_HTML_TEMPLATE_PICKER, MSG_HTML_TEMPLATE_OVERRIDE_TOOLTIP);
+		mHTMLTemplatePicker = createButton(HTML_TEMPLATE_PICKER, HTML_TEMPLATE_OVERRIDE_TOOLTIP);
 		mHTMLTemplatePicker.setEnabled(isHTMLTemplateOverridden());
 		row.add(mHTMLTemplatePicker);
 		column.add(row);
 
 		row = new FlexRow();
-		row.add(createLabel(MSG_USE, MSG_PNG_RESOLUTION_TOOLTIP));
+		row.add(createLabel(USE, PNG_RESOLUTION_TOOLTIP));
 		mPNGResolutionCombo = createPNGResolutionPopup();
 		row.add(mPNGResolutionCombo);
-		row.add(createLabel(MSG_PNG_RESOLUTION_POST, MSG_PNG_RESOLUTION_TOOLTIP, SwingConstants.LEFT));
+		row.add(createLabel(PNG_RESOLUTION_POST, PNG_RESOLUTION_TOOLTIP, SwingConstants.LEFT));
 		column.add(row);
 
-		mUseNativePrinter = createCheckBox(MSG_NATIVE_PRINTER, MSG_NATIVE_PRINTER_TOOLTIP, PrintManager.useNativeDialogs());
+		mUseNativePrinter = createCheckBox(NATIVE_PRINTER, NATIVE_PRINTER_TOOLTIP, PrintManager.useNativeDialogs());
 		column.add(mUseNativePrinter);
 
 		column.add(new FlexSpacer(0, 0, false, true));
@@ -337,7 +343,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 	private JTextField createHTMLTemplatePathField() {
 		JTextField field = new JTextField(getHTMLTemplate());
-		field.setToolTipText(MSG_HTML_TEMPLATE_OVERRIDE_TOOLTIP);
+		field.setToolTipText(HTML_TEMPLATE_OVERRIDE_TOOLTIP);
 		field.setEnabled(isHTMLTemplateOverridden());
 		field.getDocument().addDocumentListener(this);
 		Dimension size = field.getPreferredSize();
@@ -352,9 +358,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		int selection = 0;
 		int resolution = getPNGResolution();
 		JComboBox<String> combo = new JComboBox<>();
-		setupCombo(combo, MSG_PNG_RESOLUTION_TOOLTIP);
+		setupCombo(combo, PNG_RESOLUTION_TOOLTIP);
 		for (int i = 0; i < DPI.length; i++) {
-			combo.addItem(MessageFormat.format(MSG_DPI, new Integer(DPI[i])));
+			combo.addItem(MessageFormat.format(DPI_FORMAT, new Integer(DPI[i])));
 			if (DPI[i] == resolution) {
 				selection = i;
 			}
@@ -368,7 +374,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 	private JComboBox<String> createLengthUnitsPopup() {
 		JComboBox<String> combo = new JComboBox<>();
-		setupCombo(combo, MSG_LENGTH_UNITS_TOOLTIP);
+		setupCombo(combo, LENGTH_UNITS_TOOLTIP);
 		for (LengthUnits unit : LengthUnits.values()) {
 			combo.addItem(unit.getDescription());
 		}
@@ -381,7 +387,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 	private JComboBox<String> createWeightUnitsPopup() {
 		JComboBox<String> combo = new JComboBox<>();
-		setupCombo(combo, MSG_WEIGHT_UNITS_TOOLTIP);
+		setupCombo(combo, WEIGHT_UNITS_TOOLTIP);
 		for (WeightUnits unit : WeightUnits.values()) {
 			combo.addItem(unit.getDescription());
 		}
@@ -408,7 +414,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	public void actionPerformed(ActionEvent event) {
 		Object source = event.getSource();
 		if (source == mPortrait) {
-			File file = StdFileDialog.choose(this, true, MSG_SELECT_PORTRAIT, null, null, "png", "jpg", "gif", "jpeg"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+			File file = StdFileDialog.choose(this, true, SELECT_PORTRAIT, null, null, "png", "jpg", "gif", "jpeg"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			if (file != null) {
 				setPortrait(Path.getFullPath(file));
 			}
@@ -419,7 +425,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		} else if (source == mWeightUnitsCombo) {
 			Preferences.getInstance().setValue(MODULE, WEIGHT_UNITS, WeightUnits.values()[mWeightUnitsCombo.getSelectedIndex()].name());
 		} else if (source == mHTMLTemplatePicker) {
-			File file = StdFileDialog.choose(this, true, MSG_SELECT_HTML_TEMPLATE, null, null, "html", "htm"); //$NON-NLS-1$ //$NON-NLS-2$
+			File file = StdFileDialog.choose(this, true, SELECT_HTML_TEMPLATE, null, null, "html", "htm"); //$NON-NLS-1$ //$NON-NLS-2$
 			if (file != null) {
 				mHTMLTemplatePath.setText(Path.getFullPath(file));
 			}

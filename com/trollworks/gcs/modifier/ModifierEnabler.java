@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,11 +23,14 @@
 
 package com.trollworks.gcs.modifier;
 
+import static com.trollworks.gcs.modifier.ModifierEnabler_LS.*;
+
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.SelfControlRoll;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.text.TextUtility;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.WindowUtils;
 
@@ -52,22 +55,20 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
+@Localized({
+				@LS(key = "MODIFIER_TITLE", msg = "Enable Modifiers"),
+				@LS(key = "MODIFIER_ONE_REMAINING", msg = "1 advantage remaining to be processed."),
+				@LS(key = "MODIFIER_REMAINING", msg = "{0} advantages remaining to be processed."),
+				@LS(key = "CANCEL_REST", msg = "Cancel Remaining"),
+				@LS(key = "CANCEL", msg = "Cancel"),
+				@LS(key = "APPLY", msg = "Apply"),
+})
 /** Asks the user to enable/disable modifiers. */
 public class ModifierEnabler extends JPanel {
-	private static String		MSG_MODIFIER_TITLE;
-	private static String		MSG_MODIFIER_ONE_REMAINING;
-	private static String		MSG_MODIFIER_REMAINING;
-	private static String		MSG_CANCEL_REST;
-	private static String		MSG_CANCEL;
-	private static String		MSG_APPLY;
 	private Advantage			mAdvantage;
 	private JCheckBox[]			mEnabled;
 	private Modifier[]			mModifiers;
 	private JComboBox<String>	mCRCombo;
-
-	static {
-		LocalizedMessages.initialize(ModifierEnabler.class);
-	}
 
 	/**
 	 * Brings up a modal dialog that allows {@link Modifier}s to be enabled or disabled for the
@@ -93,7 +94,7 @@ public class ModifierEnabler extends JPanel {
 			Advantage advantage = list.get(i);
 			boolean hasMore = i != count - 1;
 			ModifierEnabler panel = new ModifierEnabler(advantage, count - i - 1);
-			switch (WindowUtils.showOptionDialog(comp, panel, MSG_MODIFIER_TITLE, true, hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, new ImageIcon(advantage.getImage(true)), hasMore ? new String[] { MSG_APPLY, MSG_CANCEL, MSG_CANCEL_REST } : new String[] { MSG_APPLY, MSG_CANCEL }, MSG_APPLY)) {
+			switch (WindowUtils.showOptionDialog(comp, panel, MODIFIER_TITLE, true, hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, new ImageIcon(advantage.getImage(true)), hasMore ? new String[] { APPLY, CANCEL, CANCEL_REST } : new String[] { APPLY, CANCEL }, APPLY)) {
 				case JOptionPane.YES_OPTION:
 					panel.applyChanges();
 					modified = true;
@@ -126,9 +127,9 @@ public class ModifierEnabler extends JPanel {
 		if (remaining > 0) {
 			String msg;
 			if (remaining == 1) {
-				msg = MSG_MODIFIER_ONE_REMAINING;
+				msg = MODIFIER_ONE_REMAINING;
 			} else {
-				msg = MessageFormat.format(MSG_MODIFIER_REMAINING, new Integer(remaining));
+				msg = MessageFormat.format(MODIFIER_REMAINING, new Integer(remaining));
 			}
 			top.add(new JLabel(msg, SwingConstants.CENTER));
 		}
