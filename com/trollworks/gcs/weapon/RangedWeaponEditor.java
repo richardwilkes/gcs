@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,36 +23,37 @@
 
 package com.trollworks.gcs.weapon;
 
+import static com.trollworks.gcs.weapon.RangedWeaponEditor_LS.*;
+
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.widgets.EditorField;
 
 import java.awt.Container;
 import java.util.List;
 
+@Localized({
+				@LS(key = "RANGED_WEAPON", msg = "Ranged Weapon"),
+				@LS(key = "ACCURACY", msg = "Accuracy"),
+				@LS(key = "RANGE", msg = "Range"),
+				@LS(key = "RATE_OF_FIRE", msg = "Rate of Fire"),
+				@LS(key = "SHOTS", msg = "Shots"),
+				@LS(key = "BULK", msg = "Bulk"),
+				@LS(key = "RECOIL", msg = "Recoil"),
+})
 /** An editor for ranged weapon statistics. */
 public class RangedWeaponEditor extends WeaponEditor {
-	private static String	MSG_RANGED_WEAPON;
-	private static String	MSG_ACCURACY;
-	private static String	MSG_RANGE;
-	private static String	MSG_RATE_OF_FIRE;
-	private static String	MSG_SHOTS;
-	private static String	MSG_BULK;
-	private static String	MSG_RECOIL;
-	private EditorField		mAccuracy;
-	private EditorField		mRange;
-	private EditorField		mRateOfFire;
-	private EditorField		mShots;
-	private EditorField		mBulk;
-	private EditorField		mRecoil;
-
-	static {
-		LocalizedMessages.initialize(RangedWeaponEditor.class);
-	}
+	private EditorField	mAccuracy;
+	private EditorField	mRange;
+	private EditorField	mRateOfFire;
+	private EditorField	mShots;
+	private EditorField	mBulk;
+	private EditorField	mRecoil;
 
 	/**
 	 * Creates a new ranged weapon editor for the specified row.
@@ -85,12 +86,12 @@ public class RangedWeaponEditor extends WeaponEditor {
 
 	@Override
 	protected void createFields(Container parent) {
-		mAccuracy = createTextField(parent, MSG_ACCURACY, EMPTY);
-		mRange = createTextField(parent, MSG_RANGE, EMPTY);
-		mRateOfFire = createTextField(parent, MSG_RATE_OF_FIRE, EMPTY);
-		mShots = createTextField(parent, MSG_SHOTS, EMPTY);
-		mRecoil = createTextField(parent, MSG_RECOIL, EMPTY);
-		mBulk = createTextField(parent, MSG_BULK, EMPTY);
+		mAccuracy = createTextField(parent, ACCURACY, EMPTY);
+		mRange = createTextField(parent, RANGE, EMPTY);
+		mRateOfFire = createTextField(parent, RATE_OF_FIRE, EMPTY);
+		mShots = createTextField(parent, SHOTS, EMPTY);
+		mRecoil = createTextField(parent, RECOIL, EMPTY);
+		mBulk = createTextField(parent, BULK, EMPTY);
 	}
 
 	@Override
@@ -181,6 +182,6 @@ public class RangedWeaponEditor extends WeaponEditor {
 
 	@Override
 	public String toString() {
-		return MSG_RANGED_WEAPON;
+		return RANGED_WEAPON;
 	}
 }

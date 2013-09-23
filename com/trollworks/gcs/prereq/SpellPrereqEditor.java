@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,30 +23,31 @@
 
 package com.trollworks.gcs.prereq;
 
+import static com.trollworks.gcs.prereq.SpellPrereqEditor_LS.*;
+
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.FlexGrid;
 import com.trollworks.ttk.layout.FlexRow;
 import com.trollworks.ttk.layout.FlexSpacer;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.CommitEnforcer;
 
 import java.awt.event.ActionEvent;
 
 import javax.swing.JComboBox;
 
+@Localized({
+				@LS(key = "WHOSE_SPELL_NAME", msg = "whose name"),
+				@LS(key = "ANY", msg = "of any kind"),
+				@LS(key = "COLLEGE", msg = "whose college name"),
+				@LS(key = "COLLEGE_COUNT", msg = "from different colleges"),
+})
 /** A spell prerequisite editor panel. */
 public class SpellPrereqEditor extends PrereqEditor {
-	private static String			MSG_WHOSE_SPELL_NAME;
-	private static String			MSG_ANY;
-	private static String			MSG_COLLEGE;
-	private static String			MSG_COLLEGE_COUNT;
 	private static final String		CHANGE_TYPE	= "ChangeSpellType";																						//$NON-NLS-1$
 	private static final String		EMPTY		= "";																										//$NON-NLS-1$
 	private static final String[]	TYPES		= { SpellPrereq.TAG_NAME, SpellPrereq.TAG_ANY, SpellPrereq.TAG_COLLEGE, SpellPrereq.TAG_COLLEGE_COUNT };
-
-	static {
-		LocalizedMessages.initialize(SpellPrereqEditor.class);
-	}
 
 	/**
 	 * Creates a new spell prerequisite editor panel.
@@ -87,7 +88,7 @@ public class SpellPrereqEditor extends PrereqEditor {
 	}
 
 	private JComboBox<Object> addChangeTypePopup() {
-		String[] titles = { MSG_WHOSE_SPELL_NAME, MSG_ANY, MSG_COLLEGE, MSG_COLLEGE_COUNT };
+		String[] titles = { WHOSE_SPELL_NAME, ANY, COLLEGE, COLLEGE_COUNT };
 		int selection = 0;
 		String current = ((SpellPrereq) mPrereq).getType();
 		for (int i = 0; i < TYPES.length; i++) {

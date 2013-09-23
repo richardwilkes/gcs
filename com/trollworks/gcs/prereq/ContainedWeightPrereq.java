@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,32 +23,34 @@
 
 package com.trollworks.gcs.prereq;
 
+import static com.trollworks.gcs.prereq.ContainedWeightPrereq_LS.*;
+import static com.trollworks.gcs.prereq.HasPrereq_LS.*;
+
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.criteria.WeightCriteria;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.collections.Enums;
 import com.trollworks.ttk.units.WeightValue;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
 
+@Localized({
+				@LS(key = "CONTAINED_WEIGHT", msg = "{0}{1} a contained weight which {2}\n"),
+})
 /** An equipment contained weight prerequisite. */
 public class ContainedWeightPrereq extends HasPrereq {
-	private static String		MSG_CONTAINED_WEIGHT;
 	/** The XML tag for this class. */
 	public static final String	TAG_ROOT			= "contained_weight_prereq";	//$NON-NLS-1$
 	private static final String	ATTRIBUTE_COMPARE	= "compare";					//$NON-NLS-1$
 	private WeightCriteria		mWeightCompare;
-
-	static {
-		LocalizedMessages.initialize(ContainedWeightPrereq.class);
-	}
 
 	/**
 	 * Creates a new prerequisite.
@@ -141,7 +143,7 @@ public class ContainedWeightPrereq extends HasPrereq {
 			satisfied = !satisfied;
 		}
 		if (!satisfied && builder != null) {
-			builder.append(MessageFormat.format(MSG_CONTAINED_WEIGHT, prefix, has() ? MSG_HAS : MSG_DOES_NOT_HAVE, mWeightCompare.toString()));
+			builder.append(MessageFormat.format(CONTAINED_WEIGHT, prefix, has() ? HAS : DOES_NOT_HAVE, mWeightCompare.toString()));
 		}
 		return satisfied;
 	}

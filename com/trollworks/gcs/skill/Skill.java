@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.skill;
+
+import static com.trollworks.gcs.skill.Skill_LS.*;
 
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
@@ -34,8 +36,9 @@ import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.text.Numbers;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.widgets.outline.Row;
 import com.trollworks.ttk.xml.XMLReader;
@@ -50,13 +53,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+@Localized({
+				@LS(key = "DEFAULT_NAME", msg = "Skill"),
+})
 /** A GURPS Skill. */
 public class Skill extends ListRow {
 	private static final int		CURRENT_VERSION				= 2;
 	/** The extension for Skill lists. */
 	public static final String		OLD_SKILL_EXTENSION			= ".skl";										//$NON-NLS-1$
-	/** The default name. */
-	protected static String			MSG_DEFAULT_NAME;
 	/** The XML tag used for items. */
 	public static final String		TAG_SKILL					= "skill";										//$NON-NLS-1$
 	/** The XML tag used for containers. */
@@ -111,10 +115,6 @@ public class Skill extends ListRow {
 	private String					mReference;
 	private int						mEncumbrancePenaltyMultiplier;
 	private ArrayList<WeaponStats>	mWeapons;
-
-	static {
-		LocalizedMessages.initialize(Skill.class);
-	}
 
 	/**
 	 * Creates a string suitable for displaying the level.
@@ -249,7 +249,7 @@ public class Skill extends ListRow {
 
 	@Override
 	public String getLocalizedName() {
-		return MSG_DEFAULT_NAME;
+		return DEFAULT_NAME;
 	}
 
 	@Override

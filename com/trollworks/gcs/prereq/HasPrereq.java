@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,25 +23,22 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
 
+@Localized({
+				@LS(key = "HAS", msg = "Has"),
+				@LS(key = "DOES_NOT_HAVE", msg = "Does not have"),
+})
 /**
  * An abstract prerequisite class for whether or not the specific item is present.
  */
 public abstract class HasPrereq extends Prereq {
-	/** Provided for sub-classes. */
-	protected static String			MSG_HAS;
-	/** Provided for sub-classes. */
-	protected static String			MSG_DOES_NOT_HAVE;
 	/** The "has" attribute name. */
 	protected static final String	ATTRIBUTE_HAS	= "has";	//$NON-NLS-1$
 	private boolean					mHas;
-
-	static {
-		LocalizedMessages.initialize(HasPrereq.class);
-	}
 
 	/**
 	 * Creates a new prerequisite.

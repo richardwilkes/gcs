@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,14 +23,17 @@
 
 package com.trollworks.gcs.prereq;
 
+import static com.trollworks.gcs.prereq.ListPrereqEditor_LS.*;
+
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.image.ToolkitImage;
 import com.trollworks.ttk.layout.FlexGrid;
 import com.trollworks.ttk.layout.FlexRow;
 import com.trollworks.ttk.layout.FlexSpacer;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 
 import java.awt.event.ActionEvent;
@@ -38,25 +41,23 @@ import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 
+@Localized({
+				@LS(key = "REQUIRES_ALL", msg = "Requires all of:"),
+				@LS(key = "REQUIRES_ANY", msg = "Requires at least one of:"),
+				@LS(key = "ADD_PREREQ_TOOLTIP", msg = "Add a prerequisite to this list"),
+				@LS(key = "ADD_PREREQ_LIST_TOOLTIP", msg = "Add a prerequisite list to this list"),
+				@LS(key = "NO_TL_PREREQ", msg = " "),
+				@LS(key = "TL_IS", msg = "When the Character's TL is"),
+				@LS(key = "TL_IS_AT_LEAST", msg = "When the Character's TL is at least"),
+				@LS(key = "TL_IS_AT_MOST", msg = "When the Character's TL is at most"),
+})
 /** A prerequisite list editor panel. */
 public class ListPrereqEditor extends PrereqEditor {
-	private static String		MSG_REQUIRES_ALL;
-	private static String		MSG_REQUIRES_ANY;
-	private static String		MSG_ADD_PREREQ_TOOLTIP;
-	private static String		MSG_ADD_PREREQ_LIST_TOOLTIP;
-	private static String		MSG_NO_TL_PREREQ;
-	private static String		MSG_TL_IS;
-	private static String		MSG_TL_IS_AT_LEAST;
-	private static String		MSG_TL_IS_AT_MOST;
 	private static Class<?>		LAST_ITEM_TYPE	= AdvantagePrereq.class;
 	private static final String	ANY_ALL			= "AnyAll";				//$NON-NLS-1$
 	private static final String	ADD_PREREQ		= "AddPrereq";				//$NON-NLS-1$
 	private static final String	ADD_PREREQ_LIST	= "AddPrereqList";			//$NON-NLS-1$
 	private static final String	WHEN_TL			= "WhenTL";				//$NON-NLS-1$
-
-	static {
-		LocalizedMessages.initialize(ListPrereqEditor.class);
-	}
 
 	/** @param type The last item type created or switched to. */
 	public static void setLastItemType(Class<?> type) {
@@ -79,30 +80,30 @@ public class ListPrereqEditor extends PrereqEditor {
 			switch (criteria.getType()) {
 				case IS:
 				default:
-					return MSG_TL_IS;
+					return TL_IS;
 				case AT_LEAST:
-					return MSG_TL_IS_AT_LEAST;
+					return TL_IS_AT_LEAST;
 				case AT_MOST:
-					return MSG_TL_IS_AT_MOST;
+					return TL_IS_AT_MOST;
 			}
 		}
-		return MSG_NO_TL_PREREQ;
+		return NO_TL_PREREQ;
 	}
 
 	@Override
 	protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
 		PrereqList prereqList = (PrereqList) mPrereq;
 		IntegerCriteria whenTLCriteria = prereqList.getWhenTLCriteria();
-		left.add(addComboBox(WHEN_TL, new Object[] { MSG_NO_TL_PREREQ, MSG_TL_IS, MSG_TL_IS_AT_LEAST, MSG_TL_IS_AT_MOST }, mapWhenTLToString(whenTLCriteria)));
+		left.add(addComboBox(WHEN_TL, new Object[] { NO_TL_PREREQ, TL_IS, TL_IS_AT_LEAST, TL_IS_AT_MOST }, mapWhenTLToString(whenTLCriteria)));
 		if (PrereqList.isWhenTLEnabled(whenTLCriteria)) {
 			left.add(addNumericCompareField(whenTLCriteria, 0, 99, false));
 		}
-		left.add(addComboBox(ANY_ALL, new Object[] { MSG_REQUIRES_ALL, MSG_REQUIRES_ANY }, prereqList.requiresAll() ? MSG_REQUIRES_ALL : MSG_REQUIRES_ANY));
+		left.add(addComboBox(ANY_ALL, new Object[] { REQUIRES_ALL, REQUIRES_ANY }, prereqList.requiresAll() ? REQUIRES_ALL : REQUIRES_ANY));
 
 		grid.add(new FlexSpacer(0, 0, true, false), 0, 1);
 
-		right.add(addButton(ToolkitImage.getMoreIcon(), ADD_PREREQ_LIST, MSG_ADD_PREREQ_LIST_TOOLTIP));
-		right.add(addButton(ToolkitImage.getAddIcon(), ADD_PREREQ, MSG_ADD_PREREQ_TOOLTIP));
+		right.add(addButton(ToolkitImage.getMoreIcon(), ADD_PREREQ_LIST, ADD_PREREQ_LIST_TOOLTIP));
+		right.add(addButton(ToolkitImage.getAddIcon(), ADD_PREREQ, ADD_PREREQ_TOOLTIP));
 	}
 
 	@Override
@@ -125,17 +126,17 @@ public class ListPrereqEditor extends PrereqEditor {
 			IntegerCriteria whenTLCriteria = prereqList.getWhenTLCriteria();
 			Object value = ((JComboBox<Object>) event.getSource()).getSelectedItem();
 			if (!mapWhenTLToString(whenTLCriteria).equals(value)) {
-				if (MSG_TL_IS.equals(value)) {
+				if (TL_IS.equals(value)) {
 					if (!PrereqList.isWhenTLEnabled(whenTLCriteria)) {
 						PrereqList.setWhenTLEnabled(whenTLCriteria, true);
 					}
 					whenTLCriteria.setType(NumericCompareType.IS);
-				} else if (MSG_TL_IS_AT_LEAST.equals(value)) {
+				} else if (TL_IS_AT_LEAST.equals(value)) {
 					if (!PrereqList.isWhenTLEnabled(whenTLCriteria)) {
 						PrereqList.setWhenTLEnabled(whenTLCriteria, true);
 					}
 					whenTLCriteria.setType(NumericCompareType.AT_LEAST);
-				} else if (MSG_TL_IS_AT_MOST.equals(value)) {
+				} else if (TL_IS_AT_MOST.equals(value)) {
 					if (!PrereqList.isWhenTLEnabled(whenTLCriteria)) {
 						PrereqList.setWhenTLEnabled(whenTLCriteria, true);
 					}

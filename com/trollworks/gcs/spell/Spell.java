@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.spell;
+
+import static com.trollworks.gcs.spell.Spell_LS.*;
 
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
@@ -36,7 +38,8 @@ import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
@@ -49,15 +52,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+@Localized({
+				@LS(key = "DEFAULT_NAME", msg = "Spell"),
+				@LS(key = "DEFAULT_POWER_SOURCE", msg = "Arcane"),
+				@LS(key = "DEFAULT_SPELL_CLASS", msg = "Regular"),
+				@LS(key = "DEFAULT_CASTING_COST", msg = "1"),
+				@LS(key = "DEFAULT_CASTING_TIME", msg = "1 sec"),
+				@LS(key = "DEFAULT_DURATION", msg = "Instant"),
+})
 /** A GURPS Spell. */
 public class Spell extends ListRow {
 	private static final int		CURRENT_VERSION				= 2;
-	private static String			MSG_DEFAULT_NAME;
-	private static String			MSG_DEFAULT_POWER_SOURCE;
-	private static String			MSG_DEFAULT_SPELL_CLASS;
-	private static String			MSG_DEFAULT_CASTING_COST;
-	private static String			MSG_DEFAULT_CASTING_TIME;
-	private static String			MSG_DEFAULT_DURATION;
 	/** The extension for Spell lists. */
 	public static final String		OLD_SPELL_EXTENSION			= ".spl";										//$NON-NLS-1$
 	/** The XML tag used for items. */
@@ -129,10 +134,6 @@ public class Spell extends ListRow {
 	private boolean					mIsVeryHard;
 	private ArrayList<WeaponStats>	mWeapons;
 
-	static {
-		LocalizedMessages.initialize(Spell.class);
-	}
-
 	/**
 	 * Creates a new spell.
 	 * 
@@ -141,15 +142,15 @@ public class Spell extends ListRow {
 	 */
 	public Spell(DataFile dataFile, boolean isContainer) {
 		super(dataFile, isContainer);
-		mName = MSG_DEFAULT_NAME;
+		mName = DEFAULT_NAME;
 		mTechLevel = null;
 		mCollege = EMPTY;
-		mPowerSource = isContainer ? EMPTY : MSG_DEFAULT_POWER_SOURCE;
-		mSpellClass = isContainer ? EMPTY : MSG_DEFAULT_SPELL_CLASS;
-		mCastingCost = isContainer ? EMPTY : MSG_DEFAULT_CASTING_COST;
+		mPowerSource = isContainer ? EMPTY : DEFAULT_POWER_SOURCE;
+		mSpellClass = isContainer ? EMPTY : DEFAULT_SPELL_CLASS;
+		mCastingCost = isContainer ? EMPTY : DEFAULT_CASTING_COST;
 		mMaintenance = EMPTY;
-		mCastingTime = isContainer ? EMPTY : MSG_DEFAULT_CASTING_TIME;
-		mDuration = isContainer ? EMPTY : MSG_DEFAULT_DURATION;
+		mCastingTime = isContainer ? EMPTY : DEFAULT_CASTING_TIME;
+		mDuration = isContainer ? EMPTY : DEFAULT_DURATION;
 		mPoints = 1;
 		mReference = EMPTY;
 		mIsVeryHard = false;
@@ -240,7 +241,7 @@ public class Spell extends ListRow {
 
 	@Override
 	public String getLocalizedName() {
-		return MSG_DEFAULT_NAME;
+		return DEFAULT_NAME;
 	}
 
 	@Override
@@ -267,15 +268,15 @@ public class Spell extends ListRow {
 	protected void prepareForLoad(LoadState state) {
 		boolean isContainer = canHaveChildren();
 		super.prepareForLoad(state);
-		mName = MSG_DEFAULT_NAME;
+		mName = DEFAULT_NAME;
 		mTechLevel = null;
 		mCollege = EMPTY;
-		mPowerSource = isContainer ? EMPTY : MSG_DEFAULT_POWER_SOURCE;
-		mSpellClass = isContainer ? EMPTY : MSG_DEFAULT_SPELL_CLASS;
-		mCastingCost = isContainer ? EMPTY : MSG_DEFAULT_CASTING_COST;
+		mPowerSource = isContainer ? EMPTY : DEFAULT_POWER_SOURCE;
+		mSpellClass = isContainer ? EMPTY : DEFAULT_SPELL_CLASS;
+		mCastingCost = isContainer ? EMPTY : DEFAULT_CASTING_COST;
 		mMaintenance = EMPTY;
-		mCastingTime = isContainer ? EMPTY : MSG_DEFAULT_CASTING_TIME;
-		mDuration = isContainer ? EMPTY : MSG_DEFAULT_DURATION;
+		mCastingTime = isContainer ? EMPTY : DEFAULT_CASTING_TIME;
+		mDuration = isContainer ? EMPTY : DEFAULT_DURATION;
 		mPoints = 1;
 		mReference = EMPTY;
 		mIsVeryHard = false;
@@ -783,22 +784,22 @@ public class Spell extends ListRow {
 
 	/** @return The default casting cost. */
 	public static final String getDefaultCastingCost() {
-		return MSG_DEFAULT_CASTING_COST;
+		return DEFAULT_CASTING_COST;
 	}
 
 	/** @return The default casting time. */
 	public static final String getDefaultCastingTime() {
-		return MSG_DEFAULT_CASTING_TIME;
+		return DEFAULT_CASTING_TIME;
 	}
 
 	/** @return The default duration. */
 	public static final String getDefaultDuration() {
-		return MSG_DEFAULT_DURATION;
+		return DEFAULT_DURATION;
 	}
 
 	/** @return The default spell class. */
 	public static final String getDefaultSpellClass() {
-		return MSG_DEFAULT_SPELL_CLASS;
+		return DEFAULT_SPELL_CLASS;
 	}
 
 	@Override

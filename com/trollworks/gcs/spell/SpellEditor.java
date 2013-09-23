@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.spell;
+
+import static com.trollworks.gcs.spell.SpellEditor_LS.*;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.prereq.PrereqsPanel;
@@ -31,11 +33,12 @@ import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.text.NumberFilter;
 import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.text.TextUtility;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.LinkedLabel;
 import com.trollworks.ttk.widgets.outline.OutlineModel;
@@ -60,45 +63,47 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
+@Localized({
+				@LS(key = "NAME", msg = "Name"),
+				@LS(key = "NAME_TOOLTIP", msg = "The name of the spell, without any notes"),
+				@LS(key = "NAME_CANNOT_BE_EMPTY", msg = "The name field may not be empty"),
+				@LS(key = "TECH_LEVEL", msg = "Tech Level"),
+				@LS(key = "TECH_LEVEL_TOOLTIP", msg = "Whether this spell requires tech level specialization,\nand, if so, at what tech level it was learned"),
+				@LS(key = "TECH_LEVEL_REQUIRED", msg = "Tech Level Required"),
+				@LS(key = "TECH_LEVEL_REQUIRED_TOOLTIP", msg = "Whether this spell requires tech level specialization"),
+				@LS(key = "COLLEGE", msg = "College"),
+				@LS(key = "COLLEGE_TOOLTIP", msg = "The college the spell belongs to"),
+				@LS(key = "POWER_SOURCE", msg = "Power Source"),
+				@LS(key = "POWER_SOURCE_TOOLTIP", msg = "The source of power for the spell"),
+				@LS(key = "CLASS", msg = "Class"),
+				@LS(key = "CLASS_ONLY_TOOLTIP", msg = "The class of spell (Area, Missile, etc.)"),
+				@LS(key = "CLASS_CANNOT_BE_EMPTY", msg = "The class field may not be empty"),
+				@LS(key = "CASTING_COST", msg = "Casting Cost"),
+				@LS(key = "CASTING_COST_TOOLTIP", msg = "The casting cost of the spell"),
+				@LS(key = "CASTING_COST_CANNOT_BE_EMPTY", msg = "The casting cost field may not be empty"),
+				@LS(key = "MAINTENANCE_COST", msg = "Maintenance Cost"),
+				@LS(key = "MAINTENANCE_COST_TOOLTIP", msg = "The cost to maintain a spell after its initial duration"),
+				@LS(key = "CASTING_TIME", msg = "Casting Time"),
+				@LS(key = "CASTING_TIME_TOOLTIP", msg = "The casting time of the spell"),
+				@LS(key = "CASTING_TIME_CANNOT_BE_EMPTY", msg = "The casting time field may not be empty"),
+				@LS(key = "DURATION", msg = "Duration"),
+				@LS(key = "DURATION_TOOLTIP", msg = "The duration of the spell once its cast"),
+				@LS(key = "DURATION_CANNOT_BE_EMPTY", msg = "The duration field may not be empty"),
+				@LS(key = "CATEGORIES", msg = "Categories"),
+				@LS(key = "CATEGORIES_TOOLTIP", msg = "The category or categories the spell belongs to (separate multiple categories with a comma)"),
+				@LS(key = "NOTES", msg = "Notes"),
+				@LS(key = "NOTES_TOOLTIP", msg = "Any notes that you would like to show up in the list along with this spell"),
+				@LS(key = "EDITOR_POINTS", msg = "Points"),
+				@LS(key = "EDITOR_POINTS_TOOLTIP", msg = "The number of points spent on this spell"),
+				@LS(key = "EDITOR_LEVEL", msg = "Level"),
+				@LS(key = "EDITOR_LEVEL_TOOLTIP", msg = "The spell level and relative spell level to roll against"),
+				@LS(key = "DIFFICULTY", msg = "Difficulty"),
+				@LS(key = "DIFFICULTY_TOOLTIP", msg = "The difficulty of the spell"),
+				@LS(key = "EDITOR_REFERENCE", msg = "Page Reference"),
+				@LS(key = "REFERENCE_TOOLTIP", msg = "A reference to the book and page this spell appears\non (e.g. B22 would refer to \"Basic Set\", page 22)"),
+})
 /** The detailed editor for {@link Spell}s. */
 public class SpellEditor extends RowEditor<Spell> implements ActionListener, DocumentListener {
-	private static String		MSG_NAME;
-	private static String		MSG_NAME_TOOLTIP;
-	private static String		MSG_NAME_CANNOT_BE_EMPTY;
-	private static String		MSG_TECH_LEVEL;
-	private static String		MSG_TECH_LEVEL_TOOLTIP;
-	private static String		MSG_TECH_LEVEL_REQUIRED;
-	private static String		MSG_TECH_LEVEL_REQUIRED_TOOLTIP;
-	private static String		MSG_COLLEGE;
-	private static String		MSG_COLLEGE_TOOLTIP;
-	private static String		MSG_POWER_SOURCE;
-	private static String		MSG_POWER_SOURCE_TOOLTIP;
-	private static String		MSG_CLASS;
-	private static String		MSG_CLASS_ONLY_TOOLTIP;
-	private static String		MSG_CLASS_CANNOT_BE_EMPTY;
-	private static String		MSG_CASTING_COST;
-	private static String		MSG_CASTING_COST_TOOLTIP;
-	private static String		MSG_CASTING_COST_CANNOT_BE_EMPTY;
-	private static String		MSG_MAINTENANCE_COST;
-	private static String		MSG_MAINTENANCE_COST_TOOLTIP;
-	private static String		MSG_CASTING_TIME;
-	private static String		MSG_CASTING_TIME_TOOLTIP;
-	private static String		MSG_CASTING_TIME_CANNOT_BE_EMPTY;
-	private static String		MSG_DURATION;
-	private static String		MSG_DURATION_TOOLTIP;
-	private static String		MSG_DURATION_CANNOT_BE_EMPTY;
-	private static String		MSG_CATEGORIES;
-	private static String		MSG_CATEGORIES_TOOLTIP;
-	private static String		MSG_NOTES;
-	private static String		MSG_NOTES_TOOLTIP;
-	private static String		MSG_EDITOR_POINTS;
-	private static String		MSG_EDITOR_POINTS_TOOLTIP;
-	private static String		MSG_EDITOR_LEVEL;
-	private static String		MSG_EDITOR_LEVEL_TOOLTIP;
-	private static String		MSG_DIFFICULTY;
-	private static String		MSG_DIFFICULTY_TOOLTIP;
-	private static String		MSG_EDITOR_REFERENCE;
-	private static String		MSG_REFERENCE_TOOLTIP;
 	private JTextField			mNameField;
 	private JTextField			mCollegeField;
 	private JTextField			mPowerSourceField;
@@ -121,10 +126,6 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 	private MeleeWeaponEditor	mMeleeWeapons;
 	private RangedWeaponEditor	mRangedWeapons;
 
-	static {
-		LocalizedMessages.initialize(SpellEditor.class);
-	}
-
 	/**
 	 * Creates a new {@link Spell} editor.
 	 * 
@@ -145,26 +146,26 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		Dimension size = new Dimension();
 		Container refParent = wrapper3;
 
-		mNameField = createCorrectableField(wrapper1, wrapper1, MSG_NAME, spell.getName(), MSG_NAME_TOOLTIP);
+		mNameField = createCorrectableField(wrapper1, wrapper1, NAME, spell.getName(), NAME_TOOLTIP);
 		fields.add(wrapper1);
 		if (notContainer) {
 			createTechLevelFields(wrapper1);
-			mCollegeField = createField(wrapper2, wrapper2, MSG_COLLEGE, spell.getCollege(), MSG_COLLEGE_TOOLTIP, 0);
-			mPowerSourceField = createField(wrapper2, wrapper2, MSG_POWER_SOURCE, spell.getPowerSource(), MSG_POWER_SOURCE_TOOLTIP, 0);
-			mClassField = createCorrectableField(wrapper2, wrapper2, MSG_CLASS, spell.getSpellClass(), MSG_CLASS_ONLY_TOOLTIP);
-			mCastingCostField = createCorrectableField(wrapper2, wrapper2, MSG_CASTING_COST, spell.getCastingCost(), MSG_CASTING_COST_TOOLTIP);
-			mMaintenanceField = createField(wrapper2, wrapper2, MSG_MAINTENANCE_COST, spell.getMaintenance(), MSG_MAINTENANCE_COST_TOOLTIP, 0);
-			mCastingTimeField = createCorrectableField(wrapper2, wrapper2, MSG_CASTING_TIME, spell.getCastingTime(), MSG_CASTING_TIME_TOOLTIP);
-			mDurationField = createCorrectableField(wrapper2, wrapper2, MSG_DURATION, spell.getDuration(), MSG_DURATION_TOOLTIP);
+			mCollegeField = createField(wrapper2, wrapper2, COLLEGE, spell.getCollege(), COLLEGE_TOOLTIP, 0);
+			mPowerSourceField = createField(wrapper2, wrapper2, POWER_SOURCE, spell.getPowerSource(), POWER_SOURCE_TOOLTIP, 0);
+			mClassField = createCorrectableField(wrapper2, wrapper2, CLASS, spell.getSpellClass(), CLASS_ONLY_TOOLTIP);
+			mCastingCostField = createCorrectableField(wrapper2, wrapper2, CASTING_COST, spell.getCastingCost(), CASTING_COST_TOOLTIP);
+			mMaintenanceField = createField(wrapper2, wrapper2, MAINTENANCE_COST, spell.getMaintenance(), MAINTENANCE_COST_TOOLTIP, 0);
+			mCastingTimeField = createCorrectableField(wrapper2, wrapper2, CASTING_TIME, spell.getCastingTime(), CASTING_TIME_TOOLTIP);
+			mDurationField = createCorrectableField(wrapper2, wrapper2, DURATION, spell.getDuration(), DURATION_TOOLTIP);
 			fields.add(wrapper2);
 
 			ptsPanel = createPointsFields();
 			fields.add(ptsPanel);
 			refParent = ptsPanel;
 		}
-		mNotesField = createField(wrapper3, wrapper3, MSG_NOTES, spell.getNotes(), MSG_NOTES_TOOLTIP, 0);
-		mCategoriesField = createField(wrapper3, wrapper3, MSG_CATEGORIES, spell.getCategoriesAsString(), MSG_CATEGORIES_TOOLTIP, 0);
-		mReferenceField = createField(refParent, noGapWrapper, MSG_EDITOR_REFERENCE, mRow.getReference(), MSG_REFERENCE_TOOLTIP, 6);
+		mNotesField = createField(wrapper3, wrapper3, NOTES, spell.getNotes(), NOTES_TOOLTIP, 0);
+		mCategoriesField = createField(wrapper3, wrapper3, CATEGORIES, spell.getCategoriesAsString(), CATEGORIES_TOOLTIP, 0);
+		mReferenceField = createField(refParent, noGapWrapper, EDITOR_REFERENCE, mRow.getReference(), REFERENCE_TOOLTIP, 6);
 		noGapWrapper.add(new JPanel());
 		refParent.add(noGapWrapper);
 		fields.add(wrapper3);
@@ -255,8 +256,8 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		if (character != null) {
 			JPanel wrapper = new JPanel(new ColumnLayout(2));
 
-			mHasTechLevel = new JCheckBox(MSG_TECH_LEVEL, hasTL);
-			mHasTechLevel.setToolTipText(MSG_TECH_LEVEL_TOOLTIP);
+			mHasTechLevel = new JCheckBox(TECH_LEVEL, hasTL);
+			mHasTechLevel.setToolTipText(TECH_LEVEL_TOOLTIP);
 			mHasTechLevel.setEnabled(enabled);
 			mHasTechLevel.addActionListener(this);
 			wrapper.add(mHasTechLevel);
@@ -264,7 +265,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 			mTechLevel = new JTextField("9999"); //$NON-NLS-1$
 			UIUtilities.setOnlySize(mTechLevel, mTechLevel.getPreferredSize());
 			mTechLevel.setText(mSavedTechLevel);
-			mTechLevel.setToolTipText(MSG_TECH_LEVEL_TOOLTIP);
+			mTechLevel.setToolTipText(TECH_LEVEL_TOOLTIP);
 			mTechLevel.setEnabled(enabled && hasTL);
 			wrapper.add(mTechLevel);
 			parent.add(wrapper);
@@ -274,8 +275,8 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 			}
 		} else {
 			mTechLevel = new JTextField(mSavedTechLevel);
-			mHasTechLevel = new JCheckBox(MSG_TECH_LEVEL_REQUIRED, hasTL);
-			mHasTechLevel.setToolTipText(MSG_TECH_LEVEL_REQUIRED_TOOLTIP);
+			mHasTechLevel = new JCheckBox(TECH_LEVEL_REQUIRED, hasTL);
+			mHasTechLevel.setToolTipText(TECH_LEVEL_REQUIRED_TOOLTIP);
 			mHasTechLevel.setEnabled(enabled);
 			mHasTechLevel.addActionListener(this);
 			parent.add(mHasTechLevel);
@@ -290,20 +291,20 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 
 		mDifficultyCombo = new JComboBox<>(new Object[] { SkillDifficulty.H.name(), SkillDifficulty.VH.name() });
 		mDifficultyCombo.setSelectedIndex(mRow.isVeryHard() ? 1 : 0);
-		mDifficultyCombo.setToolTipText(MSG_DIFFICULTY_TOOLTIP);
+		mDifficultyCombo.setToolTipText(DIFFICULTY_TOOLTIP);
 		UIUtilities.setOnlySize(mDifficultyCombo, mDifficultyCombo.getPreferredSize());
 		mDifficultyCombo.addActionListener(this);
 		mDifficultyCombo.setEnabled(mIsEditable);
-		panel.add(new LinkedLabel(MSG_DIFFICULTY, mDifficultyCombo));
+		panel.add(new LinkedLabel(DIFFICULTY, mDifficultyCombo));
 		panel.add(mDifficultyCombo);
 
 		if (forCharacter || mRow.getTemplate() != null) {
-			mPointsField = createField(panel, panel, MSG_EDITOR_POINTS, Integer.toString(mRow.getPoints()), MSG_EDITOR_POINTS_TOOLTIP, 4);
+			mPointsField = createField(panel, panel, EDITOR_POINTS, Integer.toString(mRow.getPoints()), EDITOR_POINTS_TOOLTIP, 4);
 			new NumberFilter(mPointsField, false, false, false, 4);
 			mPointsField.addActionListener(this);
 
 			if (forCharacter) {
-				mLevelField = createField(panel, panel, MSG_EDITOR_LEVEL, getDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel()), MSG_EDITOR_LEVEL_TOOLTIP, 5);
+				mLevelField = createField(panel, panel, EDITOR_LEVEL, getDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel()), EDITOR_LEVEL_TOOLTIP, 5);
 				mLevelField.setEnabled(false);
 			}
 		}
@@ -426,15 +427,15 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 	public void changedUpdate(DocumentEvent event) {
 		Document doc = event.getDocument();
 		if (doc == mNameField.getDocument()) {
-			LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : MSG_NAME_CANNOT_BE_EMPTY);
+			LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : NAME_CANNOT_BE_EMPTY);
 		} else if (doc == mClassField.getDocument()) {
-			LinkedLabel.setErrorMessage(mClassField, mClassField.getText().trim().length() != 0 ? null : MSG_CLASS_CANNOT_BE_EMPTY);
+			LinkedLabel.setErrorMessage(mClassField, mClassField.getText().trim().length() != 0 ? null : CLASS_CANNOT_BE_EMPTY);
 		} else if (doc == mClassField.getDocument()) {
-			LinkedLabel.setErrorMessage(mCastingCostField, mCastingCostField.getText().trim().length() != 0 ? null : MSG_CASTING_COST_CANNOT_BE_EMPTY);
+			LinkedLabel.setErrorMessage(mCastingCostField, mCastingCostField.getText().trim().length() != 0 ? null : CASTING_COST_CANNOT_BE_EMPTY);
 		} else if (doc == mClassField.getDocument()) {
-			LinkedLabel.setErrorMessage(mCastingTimeField, mCastingTimeField.getText().trim().length() != 0 ? null : MSG_CASTING_TIME_CANNOT_BE_EMPTY);
+			LinkedLabel.setErrorMessage(mCastingTimeField, mCastingTimeField.getText().trim().length() != 0 ? null : CASTING_TIME_CANNOT_BE_EMPTY);
 		} else if (doc == mClassField.getDocument()) {
-			LinkedLabel.setErrorMessage(mDurationField, mDurationField.getText().trim().length() != 0 ? null : MSG_DURATION_CANNOT_BE_EMPTY);
+			LinkedLabel.setErrorMessage(mDurationField, mDurationField.getText().trim().length() != 0 ? null : DURATION_CANNOT_BE_EMPTY);
 		}
 	}
 

@@ -25,7 +25,6 @@ package com.trollworks.gcs.widgets.search;
 
 import com.trollworks.ttk.layout.FlexRow;
 import com.trollworks.ttk.text.Numbers;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 
 import java.awt.Point;
@@ -54,10 +53,6 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 	private JTextField		mFilterField;
 	private SearchDropDown	mFloater;
 	private String			mFilter;
-
-	static {
-		LocalizedMessages.initialize(Search.class);
-	}
 
 	/**
 	 * Creates the search panel.

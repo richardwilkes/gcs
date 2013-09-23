@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,7 +23,10 @@
 
 package com.trollworks.gcs.skill;
 
-import com.trollworks.ttk.utility.LocalizedMessages;
+import static com.trollworks.gcs.skill.Defaults_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.widgets.BandedPanel;
 
 import java.awt.Component;
@@ -32,21 +35,18 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+@Localized({
+				@LS(key = "TITLE", msg = "Defaults"),
+})
 /** Displays and edits {@link SkillDefault} objects. */
 public class Defaults extends BandedPanel implements ActionListener {
-	private static String	MSG_TITLE;
-
-	static {
-		LocalizedMessages.initialize(Defaults.class);
-	}
-
 	/**
 	 * Creates a new skill defaults editor.
 	 * 
 	 * @param defaults The initial defaults to display.
 	 */
 	public Defaults(List<SkillDefault> defaults) {
-		super(MSG_TITLE);
+		super(TITLE);
 		setDefaults(defaults);
 	}
 

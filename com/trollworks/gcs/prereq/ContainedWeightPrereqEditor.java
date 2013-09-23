@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,20 +23,20 @@
 
 package com.trollworks.gcs.prereq;
 
+import static com.trollworks.gcs.prereq.ContainedWeightPrereqEditor_LS.*;
+
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.FlexGrid;
 import com.trollworks.ttk.layout.FlexRow;
 import com.trollworks.ttk.layout.FlexSpacer;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
+@Localized({
+				@LS(key = "WHICH", msg = "which "),
+})
 /** A contained weight prerequisite editor panel. */
 public class ContainedWeightPrereqEditor extends PrereqEditor {
-	private static String	MSG_WHICH;
-
-	static {
-		LocalizedMessages.initialize(ContainedWeightPrereqEditor.class);
-	}
-
 	/**
 	 * Creates a new contained weight prerequisite editor panel.
 	 * 
@@ -59,7 +59,7 @@ public class ContainedWeightPrereqEditor extends PrereqEditor {
 		grid.add(row, 0, 1);
 
 		row = new FlexRow();
-		row.add(addNumericCompareCombo(prereq.getWeightCompare(), MSG_WHICH));
+		row.add(addNumericCompareCombo(prereq.getWeightCompare(), WHICH));
 		row.add(addWeightCompareField(prereq.getWeightCompare()));
 		row.add(new FlexSpacer(0, 0, true, false));
 		grid.add(row, 1, 1);

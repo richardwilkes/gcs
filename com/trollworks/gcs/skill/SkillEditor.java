@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.skill;
+
+import static com.trollworks.gcs.skill.SkillEditor_LS.*;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.feature.FeaturesPanel;
@@ -30,11 +32,12 @@ import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.text.NumberFilter;
 import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.text.TextUtility;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.LinkedLabel;
 import com.trollworks.ttk.widgets.outline.OutlineModel;
@@ -60,36 +63,38 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+@Localized({
+				@LS(key = "NAME", msg = "Name"),
+				@LS(key = "NAME_TOOLTIP", msg = "The base name of the skill, without any notes or specialty information"),
+				@LS(key = "NAME_CANNOT_BE_EMPTY", msg = "The name field may not be empty"),
+				@LS(key = "SPECIALIZATION", msg = "Specialization"),
+				@LS(key = "SPECIALIZATION_TOOLTIP", msg = "The specialization, if any, taken for this skill"),
+				@LS(key = "CATEGORIES", msg = "Categories"),
+				@LS(key = "CATEGORIES_TOOLTIP", msg = "The category or categories the skill belongs to (separate multiple categories with a comma)"),
+				@LS(key = "NOTES", msg = "Notes"),
+				@LS(key = "NOTES_TOOLTIP", msg = "Any notes that you would like to show up in the list along with this skill"),
+				@LS(key = "TECH_LEVEL", msg = "Tech Level"),
+				@LS(key = "TECH_LEVEL_TOOLTIP", msg = "Whether this skill requires tech level specialization,\nand, if so, at what tech level it was learned"),
+				@LS(key = "TECH_LEVEL_REQUIRED", msg = "Tech Level Required"),
+				@LS(key = "TECH_LEVEL_REQUIRED_TOOLTIP", msg = "Whether this skill requires tech level specialization"),
+				@LS(key = "EDITOR_DIFFICULTY", msg = "Difficulty"),
+				@LS(key = "EDITOR_DIFFICULTY_TOOLTIP", msg = "The difficulty of learning this skill"),
+				@LS(key = "EDITOR_DIFFICULTY_POPUP_TOOLTIP", msg = "The relative difficulty of learning this skill"),
+				@LS(key = "EDITOR_LEVEL", msg = "Level"),
+				@LS(key = "EDITOR_LEVEL_TOOLTIP", msg = "The skill level and relative skill level to roll against"),
+				@LS(key = "ATTRIBUTE_POPUP_TOOLTIP", msg = "The attribute this skill is based on"),
+				@LS(key = "EDITOR_POINTS", msg = "Points"),
+				@LS(key = "EDITOR_POINTS_TOOLTIP", msg = "The number of points spent on this skill"),
+				@LS(key = "EDITOR_REFERENCE", msg = "Page Reference"),
+				@LS(key = "REFERENCE_TOOLTIP", msg = "A reference to the book and page this skill appears\non (e.g. B22 would refer to \"Basic Set\", page 22)"),
+				@LS(key = "ENC_PENALTY_MULT", msg = "Encumbrance"),
+				@LS(key = "ENC_PENALTY_MULT_TOOLTIP", msg = "The encumbrance penalty multiplier"),
+				@LS(key = "NO_ENC_PENALTY", msg = "No penalty due to encumbrance"),
+				@LS(key = "ONE_ENC_PENALTY", msg = "Penalty equal to the current encumbrance level"),
+				@LS(key = "ENC_PENALTY_FORMAT", msg = "Penalty equal to {0} times the current encumbrance level"),
+})
 /** The detailed editor for {@link Skill}s. */
 public class SkillEditor extends RowEditor<Skill> implements ActionListener, DocumentListener {
-	private static String		MSG_NAME;
-	private static String		MSG_NAME_TOOLTIP;
-	private static String		MSG_NAME_CANNOT_BE_EMPTY;
-	private static String		MSG_SPECIALIZATION;
-	private static String		MSG_SPECIALIZATION_TOOLTIP;
-	private static String		MSG_CATEGORIES;
-	private static String		MSG_CATEGORIES_TOOLTIP;
-	private static String		MSG_NOTES;
-	private static String		MSG_NOTES_TOOLTIP;
-	private static String		MSG_TECH_LEVEL;
-	private static String		MSG_TECH_LEVEL_TOOLTIP;
-	private static String		MSG_TECH_LEVEL_REQUIRED;
-	private static String		MSG_TECH_LEVEL_REQUIRED_TOOLTIP;
-	private static String		MSG_EDITOR_DIFFICULTY;
-	private static String		MSG_EDITOR_DIFFICULTY_TOOLTIP;
-	private static String		MSG_EDITOR_DIFFICULTY_POPUP_TOOLTIP;
-	private static String		MSG_EDITOR_LEVEL;
-	private static String		MSG_EDITOR_LEVEL_TOOLTIP;
-	private static String		MSG_ATTRIBUTE_POPUP_TOOLTIP;
-	private static String		MSG_EDITOR_POINTS;
-	private static String		MSG_EDITOR_POINTS_TOOLTIP;
-	private static String		MSG_EDITOR_REFERENCE;
-	private static String		MSG_REFERENCE_TOOLTIP;
-	private static String		MSG_ENC_PENALTY_MULT;
-	private static String		MSG_ENC_PENALTY_MULT_TOOLTIP;
-	private static String		MSG_NO_ENC_PENALTY;
-	private static String		MSG_ONE_ENC_PENALTY;
-	private static String		MSG_ENC_PENALTY_FORMAT;
 	private JTextField			mNameField;
 	private JTextField			mSpecializationField;
 	private JTextField			mNotesField;
@@ -110,10 +115,6 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 	private MeleeWeaponEditor	mMeleeWeapons;
 	private RangedWeaponEditor	mRangedWeapons;
 
-	static {
-		LocalizedMessages.initialize(SkillEditor.class);
-	}
-
 	/**
 	 * Creates a new {@link Skill} editor.
 	 * 
@@ -128,22 +129,22 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 		boolean notContainer = !skill.canHaveChildren();
 		Container wrapper;
 
-		mNameField = createCorrectableField(fields, MSG_NAME, skill.getName(), MSG_NAME_TOOLTIP);
+		mNameField = createCorrectableField(fields, NAME, skill.getName(), NAME_TOOLTIP);
 		if (notContainer) {
 			wrapper = new JPanel(new ColumnLayout(2));
-			mSpecializationField = createField(fields, wrapper, MSG_SPECIALIZATION, skill.getSpecialization(), MSG_SPECIALIZATION_TOOLTIP, 0);
+			mSpecializationField = createField(fields, wrapper, SPECIALIZATION, skill.getSpecialization(), SPECIALIZATION_TOOLTIP, 0);
 			createTechLevelFields(wrapper);
 			fields.add(wrapper);
 			mEncPenaltyPopup = createEncumbrancePenaltyMultiplierPopup(fields);
 		}
-		mNotesField = createField(fields, fields, MSG_NOTES, skill.getNotes(), MSG_NOTES_TOOLTIP, 0);
-		mCategoriesField = createField(fields, fields, MSG_CATEGORIES, skill.getCategoriesAsString(), MSG_CATEGORIES_TOOLTIP, 0);
+		mNotesField = createField(fields, fields, NOTES, skill.getNotes(), NOTES_TOOLTIP, 0);
+		mCategoriesField = createField(fields, fields, CATEGORIES, skill.getCategoriesAsString(), CATEGORIES_TOOLTIP, 0);
 		if (notContainer) {
 			wrapper = createDifficultyPopups(fields);
 		} else {
 			wrapper = fields;
 		}
-		mReferenceField = createField(wrapper, wrapper, MSG_EDITOR_REFERENCE, mRow.getReference(), MSG_REFERENCE_TOOLTIP, 6);
+		mReferenceField = createField(wrapper, wrapper, EDITOR_REFERENCE, mRow.getReference(), REFERENCE_TOOLTIP, 6);
 		icon.setVerticalAlignment(SwingConstants.TOP);
 		icon.setAlignmentY(-1f);
 		content.add(icon);
@@ -215,12 +216,12 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
 	@SuppressWarnings("unused")
 	private void createPointsFields(Container parent, boolean forCharacter) {
-		mPointsField = createField(parent, parent, MSG_EDITOR_POINTS, Integer.toString(mRow.getPoints()), MSG_EDITOR_POINTS_TOOLTIP, 4);
+		mPointsField = createField(parent, parent, EDITOR_POINTS, Integer.toString(mRow.getPoints()), EDITOR_POINTS_TOOLTIP, 4);
 		new NumberFilter(mPointsField, false, false, false, 4);
 		mPointsField.addActionListener(this);
 
 		if (forCharacter) {
-			mLevelField = createField(parent, parent, MSG_EDITOR_LEVEL, Skill.getSkillDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel(), mRow.getAttribute(), mRow.canHaveChildren()), MSG_EDITOR_LEVEL_TOOLTIP, 8);
+			mLevelField = createField(parent, parent, EDITOR_LEVEL, Skill.getSkillDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel(), mRow.getAttribute(), mRow.canHaveChildren()), EDITOR_LEVEL_TOOLTIP, 8);
 			mLevelField.setEnabled(false);
 		}
 	}
@@ -240,8 +241,8 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 		if (character != null) {
 			JPanel wrapper = new JPanel(new ColumnLayout(2));
 
-			mHasTechLevel = new JCheckBox(MSG_TECH_LEVEL, hasTL);
-			mHasTechLevel.setToolTipText(MSG_TECH_LEVEL_TOOLTIP);
+			mHasTechLevel = new JCheckBox(TECH_LEVEL, hasTL);
+			mHasTechLevel.setToolTipText(TECH_LEVEL_TOOLTIP);
 			mHasTechLevel.setEnabled(enabled);
 			mHasTechLevel.addActionListener(this);
 			wrapper.add(mHasTechLevel);
@@ -249,7 +250,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 			mTechLevel = new JTextField("9999"); //$NON-NLS-1$
 			UIUtilities.setOnlySize(mTechLevel, mTechLevel.getPreferredSize());
 			mTechLevel.setText(mSavedTechLevel);
-			mTechLevel.setToolTipText(MSG_TECH_LEVEL_TOOLTIP);
+			mTechLevel.setToolTipText(TECH_LEVEL_TOOLTIP);
 			mTechLevel.setEnabled(enabled && hasTL);
 			wrapper.add(mTechLevel);
 			parent.add(wrapper);
@@ -259,8 +260,8 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 			}
 		} else {
 			mTechLevel = new JTextField(mSavedTechLevel);
-			mHasTechLevel = new JCheckBox(MSG_TECH_LEVEL_REQUIRED, hasTL);
-			mHasTechLevel.setToolTipText(MSG_TECH_LEVEL_REQUIRED_TOOLTIP);
+			mHasTechLevel = new JCheckBox(TECH_LEVEL_REQUIRED, hasTL);
+			mHasTechLevel.setToolTipText(TECH_LEVEL_REQUIRED_TOOLTIP);
 			mHasTechLevel.setEnabled(enabled);
 			mHasTechLevel.addActionListener(this);
 			parent.add(mHasTechLevel);
@@ -269,14 +270,14 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
 	private JComboBox<Object> createEncumbrancePenaltyMultiplierPopup(Container parent) {
 		Object[] items = new Object[10];
-		items[0] = MSG_NO_ENC_PENALTY;
-		items[1] = MSG_ONE_ENC_PENALTY;
+		items[0] = NO_ENC_PENALTY;
+		items[1] = ONE_ENC_PENALTY;
 		for (int i = 2; i < 10; i++) {
-			items[i] = MessageFormat.format(MSG_ENC_PENALTY_FORMAT, new Integer(i));
+			items[i] = MessageFormat.format(ENC_PENALTY_FORMAT, new Integer(i));
 		}
-		LinkedLabel label = new LinkedLabel(MSG_ENC_PENALTY_MULT);
+		LinkedLabel label = new LinkedLabel(ENC_PENALTY_MULT);
 		parent.add(label);
-		JComboBox<Object> popup = createComboBox(parent, items, items[mRow.getEncumbrancePenaltyMultiplier()], MSG_ENC_PENALTY_MULT_TOOLTIP);
+		JComboBox<Object> popup = createComboBox(parent, items, items[mRow.getEncumbrancePenaltyMultiplier()], ENC_PENALTY_MULT_TOOLTIP);
 		label.setLink(popup);
 		return popup;
 	}
@@ -284,14 +285,14 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 	private Container createDifficultyPopups(Container parent) {
 		GURPSCharacter character = mRow.getCharacter();
 		boolean forCharacterOrTemplate = character != null || mRow.getTemplate() != null;
-		JLabel label = new JLabel(MSG_EDITOR_DIFFICULTY, SwingConstants.RIGHT);
+		JLabel label = new JLabel(EDITOR_DIFFICULTY, SwingConstants.RIGHT);
 		JPanel wrapper = new JPanel(new ColumnLayout(forCharacterOrTemplate ? character != null ? 10 : 8 : 6));
 
-		label.setToolTipText(MSG_EDITOR_DIFFICULTY_TOOLTIP);
+		label.setToolTipText(EDITOR_DIFFICULTY_TOOLTIP);
 
-		mAttributePopup = createComboBox(wrapper, SkillAttribute.values(), mRow.getAttribute(), MSG_ATTRIBUTE_POPUP_TOOLTIP);
+		mAttributePopup = createComboBox(wrapper, SkillAttribute.values(), mRow.getAttribute(), ATTRIBUTE_POPUP_TOOLTIP);
 		wrapper.add(new JLabel(" /")); //$NON-NLS-1$
-		mDifficultyPopup = createComboBox(wrapper, SkillDifficulty.values(), mRow.getDifficulty(), MSG_EDITOR_DIFFICULTY_POPUP_TOOLTIP);
+		mDifficultyPopup = createComboBox(wrapper, SkillDifficulty.values(), mRow.getDifficulty(), EDITOR_DIFFICULTY_POPUP_TOOLTIP);
 
 		if (forCharacterOrTemplate) {
 			createPointsFields(wrapper, character != null);
@@ -421,6 +422,6 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 	}
 
 	private void nameChanged() {
-		LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : MSG_NAME_CANNOT_BE_EMPTY);
+		LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : NAME_CANNOT_BE_EMPTY);
 	}
 }

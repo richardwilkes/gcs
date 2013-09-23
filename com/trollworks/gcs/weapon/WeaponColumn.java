@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,10 +23,13 @@
 
 package com.trollworks.gcs.weapon;
 
+import static com.trollworks.gcs.weapon.WeaponColumn_LS.*;
+
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.text.Numbers;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Cell;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.widgets.outline.Outline;
@@ -35,6 +38,38 @@ import com.trollworks.ttk.widgets.outline.TextCell;
 
 import javax.swing.SwingConstants;
 
+@Localized({
+				@LS(key = "DESCRIPTION", msg = "Weapons"),
+				@LS(key = "MELEE", msg = "Melee Weapons"),
+				@LS(key = "RANGED", msg = "Ranged Weapons"),
+				@LS(key = "DESCRIPTION_TOOLTIP", msg = "The name/description of the weapon"),
+				@LS(key = "USAGE", msg = "Usage"),
+				@LS(key = "USAGE_TOOLTIP", msg = "The usage type of the weapon (swung, thrust, thrown, fired, etc.)"),
+				@LS(key = "DAMAGE", msg = "Damage"),
+				@LS(key = "DAMAGE_TOOLTIP", msg = "The damage the weapon inflicts"),
+				@LS(key = "REACH", msg = "Reach"),
+				@LS(key = "REACH_TOOLTIP", msg = "The reach of the weapon"),
+				@LS(key = "PARRY", msg = "Parry"),
+				@LS(key = "PARRY_TOOLTIP", msg = "The Parry value with the weapon"),
+				@LS(key = "BLOCK", msg = "Block"),
+				@LS(key = "BLOCK_TOOLTIP", msg = "The Block value with the weapon"),
+				@LS(key = "ACCURACY", msg = "Acc"),
+				@LS(key = "ACCURACY_TOOLTIP", msg = "The accuracy bonus for the weapon"),
+				@LS(key = "RANGE", msg = "Range"),
+				@LS(key = "RANGE_TOOLTIP", msg = "The range of the weapon"),
+				@LS(key = "RATE_OF_FIRE", msg = "RoF"),
+				@LS(key = "RATE_OF_FIRE_TOOLTIP", msg = "The rate of fire of the weapon"),
+				@LS(key = "SHOTS", msg = "Shots"),
+				@LS(key = "SHOTS_TOOLTIP", msg = "The number of shots the weapon can fire before reloading/recharging"),
+				@LS(key = "BULK", msg = "Bulk"),
+				@LS(key = "BULK_TOOLTIP", msg = "The modifier to skill due to the bulk of the weapon"),
+				@LS(key = "RECOIL", msg = "Rcl"),
+				@LS(key = "RECOIL_TOOLTIP", msg = "The recoil modifier for the weapon"),
+				@LS(key = "MIN_ST", msg = "ST"),
+				@LS(key = "MIN_ST_TOOLTIP", msg = "The minimum strength required to use the weapon properly"),
+				@LS(key = "LEVEL", msg = "Lvl"),
+				@LS(key = "LEVEL_TOOLTIP", msg = "The skill level with the weapon"),
+})
 /** Definitions for weapon columns. */
 public enum WeaponColumn {
 	/** The weapon name/description. */
@@ -42,17 +77,17 @@ public enum WeaponColumn {
 		@Override
 		public String toString(Class<? extends WeaponStats> weaponClass) {
 			if (weaponClass == MeleeWeaponStats.class) {
-				return MSG_MELEE;
+				return MELEE;
 			}
 			if (weaponClass == RangedWeaponStats.class) {
-				return MSG_RANGED;
+				return RANGED;
 			}
-			return MSG_DESCRIPTION;
+			return super.toString(weaponClass);
 		}
 
 		@Override
 		public String getToolTip() {
-			return MSG_DESCRIPTION_TOOLTIP;
+			return DESCRIPTION_TOOLTIP;
 		}
 
 		@Override
@@ -81,13 +116,8 @@ public enum WeaponColumn {
 	/** The weapon usage type. */
 	USAGE {
 		@Override
-		public String toString(Class<? extends WeaponStats> weaponClass) {
-			return MSG_USAGE;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_USAGE_TOOLTIP;
+			return USAGE_TOOLTIP;
 		}
 
 		@Override
@@ -98,13 +128,8 @@ public enum WeaponColumn {
 	/** The weapon skill level. */
 	LEVEL {
 		@Override
-		public String toString(Class<? extends WeaponStats> weaponClass) {
-			return MSG_LEVEL;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_LEVEL_TOOLTIP;
+			return LEVEL_TOOLTIP;
 		}
 
 		@Override
@@ -133,13 +158,8 @@ public enum WeaponColumn {
 	/** The weapon accuracy. */
 	ACCURACY {
 		@Override
-		public String toString(Class<? extends WeaponStats> weaponClass) {
-			return MSG_ACCURACY;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_ACCURACY_TOOLTIP;
+			return ACCURACY_TOOLTIP;
 		}
 
 		@Override
@@ -155,13 +175,8 @@ public enum WeaponColumn {
 	/** The weapon parry. */
 	PARRY {
 		@Override
-		public String toString(Class<? extends WeaponStats> weaponClass) {
-			return MSG_PARRY;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_PARRY_TOOLTIP;
+			return PARRY_TOOLTIP;
 		}
 
 		@Override
@@ -177,13 +192,8 @@ public enum WeaponColumn {
 	/** The weapon block. */
 	BLOCK {
 		@Override
-		public String toString(Class<? extends WeaponStats> weaponClass) {
-			return MSG_BLOCK;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_BLOCK_TOOLTIP;
+			return BLOCK_TOOLTIP;
 		}
 
 		@Override
@@ -199,13 +209,8 @@ public enum WeaponColumn {
 	/** The weapon damage. */
 	DAMAGE {
 		@Override
-		public String toString(Class<? extends WeaponStats> weaponClass) {
-			return MSG_DAMAGE;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_DAMAGE_TOOLTIP;
+			return DAMAGE_TOOLTIP;
 		}
 
 		@Override
@@ -216,13 +221,8 @@ public enum WeaponColumn {
 	/** The weapon reach. */
 	REACH {
 		@Override
-		public String toString(Class<? extends WeaponStats> weaponClass) {
-			return MSG_REACH;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_REACH_TOOLTIP;
+			return REACH_TOOLTIP;
 		}
 
 		@Override
@@ -238,13 +238,8 @@ public enum WeaponColumn {
 	/** The weapon range. */
 	RANGE {
 		@Override
-		public String toString(Class<? extends WeaponStats> weaponClass) {
-			return MSG_RANGE;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_RANGE_TOOLTIP;
+			return RANGE_TOOLTIP;
 		}
 
 		@Override
@@ -260,13 +255,8 @@ public enum WeaponColumn {
 	/** The weapon rate of fire. */
 	RATE_OF_FIRE {
 		@Override
-		public String toString(Class<? extends WeaponStats> weaponClass) {
-			return MSG_ROF;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_ROF_TOOLTIP;
+			return RATE_OF_FIRE_TOOLTIP;
 		}
 
 		@Override
@@ -282,13 +272,8 @@ public enum WeaponColumn {
 	/** The weapon shots. */
 	SHOTS {
 		@Override
-		public String toString(Class<? extends WeaponStats> weaponClass) {
-			return MSG_SHOTS;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_SHOTS_TOOLTIP;
+			return SHOTS_TOOLTIP;
 		}
 
 		@Override
@@ -304,13 +289,8 @@ public enum WeaponColumn {
 	/** The weapon bulk. */
 	BULK {
 		@Override
-		public String toString(Class<? extends WeaponStats> weaponClass) {
-			return MSG_BULK;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_BULK_TOOLTIP;
+			return BULK_TOOLTIP;
 		}
 
 		@Override
@@ -326,13 +306,8 @@ public enum WeaponColumn {
 	/** The weapon recoil. */
 	RECOIL {
 		@Override
-		public String toString(Class<? extends WeaponStats> weaponClass) {
-			return MSG_RECOIL;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_RECOIL_TOOLTIP;
+			return RECOIL_TOOLTIP;
 		}
 
 		@Override
@@ -348,13 +323,8 @@ public enum WeaponColumn {
 	/** The weapon minimum strength. */
 	MIN_ST {
 		@Override
-		public String toString(Class<? extends WeaponStats> weaponClass) {
-			return MSG_STRENGTH;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_STRENGTH_TOOLTIP;
+			return MIN_ST_TOOLTIP;
 		}
 
 		@Override
@@ -362,41 +332,6 @@ public enum WeaponColumn {
 			return weapon.getStrength();
 		}
 	};
-
-	static String	MSG_DESCRIPTION;
-	static String	MSG_MELEE;
-	static String	MSG_RANGED;
-	static String	MSG_DESCRIPTION_TOOLTIP;
-	static String	MSG_USAGE;
-	static String	MSG_USAGE_TOOLTIP;
-	static String	MSG_DAMAGE;
-	static String	MSG_DAMAGE_TOOLTIP;
-	static String	MSG_REACH;
-	static String	MSG_REACH_TOOLTIP;
-	static String	MSG_PARRY;
-	static String	MSG_PARRY_TOOLTIP;
-	static String	MSG_BLOCK;
-	static String	MSG_BLOCK_TOOLTIP;
-	static String	MSG_ACCURACY;
-	static String	MSG_ACCURACY_TOOLTIP;
-	static String	MSG_RANGE;
-	static String	MSG_RANGE_TOOLTIP;
-	static String	MSG_ROF;
-	static String	MSG_ROF_TOOLTIP;
-	static String	MSG_SHOTS;
-	static String	MSG_SHOTS_TOOLTIP;
-	static String	MSG_BULK;
-	static String	MSG_BULK_TOOLTIP;
-	static String	MSG_RECOIL;
-	static String	MSG_RECOIL_TOOLTIP;
-	static String	MSG_STRENGTH;
-	static String	MSG_STRENGTH_TOOLTIP;
-	static String	MSG_LEVEL;
-	static String	MSG_LEVEL_TOOLTIP;
-
-	static {
-		LocalizedMessages.initialize(WeaponColumn.class);
-	}
 
 	/**
 	 * @param weapon The {@link WeaponStats} to get the data from.
@@ -441,10 +376,12 @@ public enum WeaponColumn {
 	 * @param weaponClass The weapon class to use.
 	 * @return The title of the column.
 	 */
-	public abstract String toString(Class<? extends WeaponStats> weaponClass);
+	public String toString(Class<? extends WeaponStats> weaponClass) {
+		return WeaponColumn_LS.toString(this);
+	}
 
 	@Override
-	public String toString() {
+	public final String toString() {
 		return toString(WeaponStats.class);
 	}
 

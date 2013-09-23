@@ -14,14 +14,17 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.prereq;
+
+import static com.trollworks.gcs.prereq.HasPrereq_LS.*;
+import static com.trollworks.gcs.prereq.SpellPrereq_LS.*;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
@@ -30,7 +33,8 @@ import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.xml.XMLNodeType;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
@@ -40,14 +44,16 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 
+@Localized({
+				@LS(key = "ONE_SPELL", msg = "spell"),
+				@LS(key = "MULTIPLE_SPELLS", msg = "spells"),
+				@LS(key = "WHOSE_NAME", msg = "{0}{1} {2} {3} whose name {4}\n"),
+				@LS(key = "OF_ANY_KIND", msg = "{0}{1} {2} {3} of any kind\n"),
+				@LS(key = "WHOSE_COLLEGE", msg = "{0}{1} {2} {3} whose college {4}\n"),
+				@LS(key = "COLLEGE_COUNT", msg = "{0}{1} college count which {2}\n"),
+})
 /** A Spell prerequisite. */
 public class SpellPrereq extends HasPrereq {
-	private static String		MSG_ONE_SPELL;
-	private static String		MSG_MULTIPLE_SPELLS;
-	private static String		MSG_WHOSE_NAME;
-	private static String		MSG_OF_ANY_KIND;
-	private static String		MSG_WHOSE_COLLEGE;
-	private static String		MSG_COLLEGE_COUNT;
 	/** The XML tag for this class. */
 	public static final String	TAG_ROOT			= "spell_prereq";	//$NON-NLS-1$
 	/** The tag/type for name comparison. */
@@ -63,10 +69,6 @@ public class SpellPrereq extends HasPrereq {
 	private String				mType;
 	private StringCriteria		mStringCriteria;
 	private IntegerCriteria		mQuantityCriteria;
-
-	static {
-		LocalizedMessages.initialize(SpellPrereq.class);
-	}
 
 	/**
 	 * Creates a new prerequisite.
@@ -257,13 +259,13 @@ public class SpellPrereq extends HasPrereq {
 		}
 		if (!satisfied && builder != null) {
 			if (mType == TAG_NAME) {
-				builder.append(MessageFormat.format(MSG_WHOSE_NAME, prefix, has() ? MSG_HAS : MSG_DOES_NOT_HAVE, mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? MSG_ONE_SPELL : MSG_MULTIPLE_SPELLS, mStringCriteria.toString()));
+				builder.append(MessageFormat.format(WHOSE_NAME, prefix, has() ? HAS : DOES_NOT_HAVE, mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? ONE_SPELL : MULTIPLE_SPELLS, mStringCriteria.toString()));
 			} else if (mType == TAG_ANY) {
-				builder.append(MessageFormat.format(MSG_OF_ANY_KIND, prefix, has() ? MSG_HAS : MSG_DOES_NOT_HAVE, mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? MSG_ONE_SPELL : MSG_MULTIPLE_SPELLS));
+				builder.append(MessageFormat.format(OF_ANY_KIND, prefix, has() ? HAS : DOES_NOT_HAVE, mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? ONE_SPELL : MULTIPLE_SPELLS));
 			} else if (mType == TAG_COLLEGE) {
-				builder.append(MessageFormat.format(MSG_WHOSE_COLLEGE, prefix, has() ? MSG_HAS : MSG_DOES_NOT_HAVE, mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? MSG_ONE_SPELL : MSG_MULTIPLE_SPELLS, mStringCriteria.toString()));
+				builder.append(MessageFormat.format(WHOSE_COLLEGE, prefix, has() ? HAS : DOES_NOT_HAVE, mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? ONE_SPELL : MULTIPLE_SPELLS, mStringCriteria.toString()));
 			} else if (mType == TAG_COLLEGE_COUNT) {
-				builder.append(MessageFormat.format(MSG_COLLEGE_COUNT, prefix, has() ? MSG_HAS : MSG_DOES_NOT_HAVE, mQuantityCriteria.toString()));
+				builder.append(MessageFormat.format(COLLEGE_COUNT, prefix, has() ? HAS : DOES_NOT_HAVE, mQuantityCriteria.toString()));
 			}
 		}
 		return satisfied;

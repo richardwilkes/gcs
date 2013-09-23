@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.template;
+
+import static com.trollworks.gcs.template.Template_LS.*;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageList;
@@ -36,8 +38,9 @@ import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.collections.FilteredIterator;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.OutlineModel;
 import com.trollworks.ttk.widgets.outline.Row;
 import com.trollworks.ttk.widgets.outline.RowIterator;
@@ -54,14 +57,11 @@ import java.util.Iterator;
 import javax.swing.undo.StateEdit;
 import javax.swing.undo.StateEditable;
 
+@Localized({
+				@LS(key = "NOTES_UNDO", msg = "Notes Change"),
+})
 /** A template. */
 public class Template extends DataFile implements StateEditable {
-	private static String		MSG_NOTES_UNDO;
-
-	static {
-		LocalizedMessages.initialize(Template.class);
-	}
-
 	private static final int	CURRENT_VERSION			= 1;
 	private static final String	TAG_ROOT				= "template";						//$NON-NLS-1$
 	private static final String	TAG_NOTES				= "notes";							//$NON-NLS-1$
@@ -445,7 +445,7 @@ public class Template extends DataFile implements StateEditable {
 	 */
 	public void setNotes(String notes) {
 		if (!mNotes.equals(notes)) {
-			StateEdit edit = new StateEdit(this, MSG_NOTES_UNDO);
+			StateEdit edit = new StateEdit(this, NOTES_UNDO);
 			mNotes = notes;
 			edit.end();
 			addEdit(edit);

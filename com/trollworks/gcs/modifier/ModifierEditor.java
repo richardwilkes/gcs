@@ -33,7 +33,6 @@ import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.text.NumberFilter;
 import com.trollworks.ttk.text.Numbers;
 import com.trollworks.ttk.text.TextUtility;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.LinkedLabel;
 
@@ -90,10 +89,6 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 	private JComboBox<Object>	mCostType;
 	private JComboBox<Object>	mAffects;
 	private int					mLastLevel;
-
-	static {
-		LocalizedMessages.initialize(ModifierEditor.class);
-	}
 
 	/**
 	 * Creates a new {@link ModifierEditor}.

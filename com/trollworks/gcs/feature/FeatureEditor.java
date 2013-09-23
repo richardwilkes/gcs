@@ -34,7 +34,6 @@ import com.trollworks.ttk.layout.FlexGrid;
 import com.trollworks.ttk.layout.FlexRow;
 import com.trollworks.ttk.text.DoubleFormatter;
 import com.trollworks.ttk.text.IntegerFormatter;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.CommitEnforcer;
 import com.trollworks.ttk.widgets.EditorField;
@@ -72,10 +71,6 @@ public abstract class FeatureEditor extends EditorPanel {
 	private Feature					mFeature;
 	private JComboBox<Object>		mBaseTypeCombo;
 	private JComboBox<Object>		mLeveledAmountCombo;
-
-	static {
-		LocalizedMessages.initialize(FeatureEditor.class);
-	}
 
 	/**
 	 * Creates a new {@link FeatureEditor}.

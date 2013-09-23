@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,14 +23,17 @@
 
 package com.trollworks.gcs.skill;
 
+import static com.trollworks.gcs.skill.SkillDefaultEditor_LS.*;
+
 import com.trollworks.gcs.common.EditorPanel;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.image.ToolkitImage;
 import com.trollworks.ttk.layout.Alignment;
 import com.trollworks.ttk.layout.FlexGrid;
 import com.trollworks.ttk.layout.FlexRow;
 import com.trollworks.ttk.layout.FlexSpacer;
 import com.trollworks.ttk.text.IntegerFormatter;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.CommitEnforcer;
 import com.trollworks.ttk.widgets.EditorField;
@@ -45,12 +48,14 @@ import javax.swing.SwingConstants;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 
+@Localized({
+				@LS(key = "ADD_DEFAULT", msg = "Add a default"),
+				@LS(key = "REMOVE_DEFAULT", msg = "Remove this default"),
+				@LS(key = "OR", msg = "or"),
+				@LS(key = "SPECIALIZATION_TOOLTIP", msg = "Optional Specialization"),
+})
 /** A skill default editor panel. */
 public class SkillDefaultEditor extends EditorPanel {
-	private static String			MSG_ADD_DEFAULT;
-	private static String			MSG_REMOVE_DEFAULT;
-	private static String			MSG_SPECIALIZATION_TOOLTIP;
-	static String					MSG_OR;
 	private static final String		ADD				= "Add";				//$NON-NLS-1$
 	private static final String		REMOVE			= "Remove";			//$NON-NLS-1$
 	private static SkillDefaultType	LAST_ITEM_TYPE	= SkillDefaultType.DX;
@@ -59,10 +64,6 @@ public class SkillDefaultEditor extends EditorPanel {
 	private EditorField				mSkillNameField;
 	private EditorField				mSpecializationField;
 	private EditorField				mModifierField;
-
-	static {
-		LocalizedMessages.initialize(SkillDefaultEditor.class);
-	}
 
 	/** @param type The last item type created or switched to. */
 	public static void setLastItemType(SkillDefaultType type) {
@@ -121,8 +122,8 @@ public class SkillDefaultEditor extends EditorPanel {
 				mSkillNameField = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, mDefault.getName(), null);
 				add(mSkillNameField);
 				row.add(mSkillNameField);
-				mSpecializationField = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, mDefault.getSpecialization(), MSG_SPECIALIZATION_TOOLTIP);
-				mSpecializationField.setHint(MSG_SPECIALIZATION_TOOLTIP);
+				mSpecializationField = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, mDefault.getSpecialization(), SPECIALIZATION_TOOLTIP);
+				mSpecializationField.setHint(SPECIALIZATION_TOOLTIP);
 				add(mSpecializationField);
 				row.add(mSpecializationField);
 				row.add(mModifierField);
@@ -134,15 +135,15 @@ public class SkillDefaultEditor extends EditorPanel {
 
 			row = new FlexRow();
 			row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
-			row.add(addButton(ToolkitImage.getRemoveIcon(), REMOVE, MSG_REMOVE_DEFAULT));
-			row.add(addButton(ToolkitImage.getAddIcon(), ADD, MSG_ADD_DEFAULT));
+			row.add(addButton(ToolkitImage.getRemoveIcon(), REMOVE, REMOVE_DEFAULT));
+			row.add(addButton(ToolkitImage.getAddIcon(), ADD, ADD_DEFAULT));
 			grid.add(row, 0, 2);
 			grid.apply(this);
 		} else {
 			FlexRow row = new FlexRow();
 			row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
 			row.add(new FlexSpacer(0, 0, true, false));
-			row.add(addButton(ToolkitImage.getAddIcon(), ADD, MSG_ADD_DEFAULT));
+			row.add(addButton(ToolkitImage.getAddIcon(), ADD, ADD_DEFAULT));
 			row.apply(this);
 		}
 

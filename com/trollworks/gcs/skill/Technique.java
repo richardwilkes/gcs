@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,14 +23,18 @@
 
 package com.trollworks.gcs.skill;
 
+import static com.trollworks.gcs.skill.Skill_LS.*;
+import static com.trollworks.gcs.skill.Technique_LS.*;
+
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.text.Numbers;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
 
@@ -39,21 +43,19 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 
+@Localized({
+				@LS(key = "TECHNIQUE_DEFAULT_NAME", msg = "Technique"),
+				@LS(key = "REQUIRES_SKILL", msg = "{0}Requires a skill named {1}\n"),
+				@LS(key = "REQUIRES_POINTS", msg = "{0}Requires at least 1 point in the skill named {1}\n"),
+})
 /** A GURPS Technique. */
 public class Technique extends Skill {
-	private static String		MSG_TECHNIQUE_DEFAULT_NAME;
-	private static String		MSG_REQUIRES_SKILL;
-	private static String		MSG_REQUIRES_POINTS;
 	/** The XML tag used for items. */
 	public static final String	TAG_TECHNIQUE	= "technique";	//$NON-NLS-1$
 	private static final String	ATTRIBUTE_LIMIT	= "limit";		//$NON-NLS-1$
 	private SkillDefault		mDefault;
 	private boolean				mLimited;
 	private int					mLimitModifier;
-
-	static {
-		LocalizedMessages.initialize(Technique.class);
-	}
 
 	/**
 	 * Calculates the technique level.
@@ -129,7 +131,7 @@ public class Technique extends Skill {
 	 */
 	public Technique(DataFile dataFile) {
 		super(dataFile, false);
-		mDefault = new SkillDefault(SkillDefaultType.Skill, MSG_DEFAULT_NAME, null, 0);
+		mDefault = new SkillDefault(SkillDefaultType.Skill, DEFAULT_NAME, null, 0);
 		updateLevel(false);
 	}
 
@@ -180,7 +182,7 @@ public class Technique extends Skill {
 
 	@Override
 	public String getLocalizedName() {
-		return MSG_TECHNIQUE_DEFAULT_NAME;
+		return TECHNIQUE_DEFAULT_NAME;
 	}
 
 	@Override
@@ -196,7 +198,7 @@ public class Technique extends Skill {
 	@Override
 	protected void prepareForLoad(LoadState state) {
 		super.prepareForLoad(state);
-		mDefault = new SkillDefault(SkillDefaultType.Skill, MSG_DEFAULT_NAME, null, 0);
+		mDefault = new SkillDefault(SkillDefaultType.Skill, DEFAULT_NAME, null, 0);
 		mLimited = false;
 		mLimitModifier = 0;
 	}
@@ -250,9 +252,9 @@ public class Technique extends Skill {
 			boolean satisfied = skill != null && skill.getPoints() > 0;
 			if (!satisfied && builder != null) {
 				if (skill != null) {
-					builder.append(MessageFormat.format(MSG_REQUIRES_SKILL, prefix, mDefault.getFullName()));
+					builder.append(MessageFormat.format(REQUIRES_SKILL, prefix, mDefault.getFullName()));
 				} else {
-					builder.append(MessageFormat.format(MSG_REQUIRES_POINTS, prefix, mDefault.getFullName()));
+					builder.append(MessageFormat.format(REQUIRES_POINTS, prefix, mDefault.getFullName()));
 				}
 			}
 			return satisfied;

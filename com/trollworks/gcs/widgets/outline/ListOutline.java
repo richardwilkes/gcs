@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,12 +23,15 @@
 
 package com.trollworks.gcs.widgets.outline;
 
+import static com.trollworks.gcs.widgets.outline.ListOutline_LS.*;
+
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.names.Namer;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.template.Template;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.collections.FilteredList;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Selection;
 import com.trollworks.ttk.widgets.outline.Outline;
 import com.trollworks.ttk.widgets.outline.OutlineModel;
@@ -43,16 +46,14 @@ import java.util.Collection;
 
 import javax.swing.undo.StateEdit;
 
+@Localized({
+				@LS(key = "CLEAR_UNDO", msg = "Remove Rows"),
+})
 /** Base outline class. */
 public class ListOutline extends Outline implements Runnable, ActionListener {
-	private static String	MSG_CLEAR_UNDO;
 	/** The owning data file. */
-	protected DataFile		mDataFile;
-	private String			mRowSetChangedID;
-
-	static {
-		LocalizedMessages.initialize(ListOutline.class);
-	}
+	protected DataFile	mDataFile;
+	private String		mRowSetChangedID;
 
 	/**
 	 * Create a new outline.
@@ -100,7 +101,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 	public void deleteSelection() {
 		if (canDeleteSelection()) {
 			OutlineModel model = getModel();
-			StateEdit edit = new StateEdit(model, MSG_CLEAR_UNDO);
+			StateEdit edit = new StateEdit(model, CLEAR_UNDO);
 			Row[] rows = model.getSelectionAsList(true).toArray(new Row[0]);
 			mDataFile.startNotify();
 			model.removeSelection();

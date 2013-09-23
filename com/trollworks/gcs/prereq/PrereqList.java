@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,12 +23,15 @@
 
 package com.trollworks.gcs.prereq;
 
+import static com.trollworks.gcs.prereq.PrereqList_LS.*;
+
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.text.Numbers;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.xml.XMLNodeType;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
@@ -41,10 +44,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+@Localized({
+				@LS(key = "REQUIRES_ALL", msg = "{0}Requires all of:\n"),
+				@LS(key = "REQUIRES_ANY", msg = "{0}Requires at least one of:\n"),
+})
 /** A prerequisite list. */
 public class PrereqList extends Prereq {
-	private static String		MSG_REQUIRES_ALL;
-	private static String		MSG_REQUIRES_ANY;
 	/** The XML tag used for the prereq list. */
 	public static final String	TAG_ROOT		= "prereq_list";	//$NON-NLS-1$
 	private static final String	TAG_WHEN_TL		= "when_tl";		//$NON-NLS-1$
@@ -52,10 +57,6 @@ public class PrereqList extends Prereq {
 	private boolean				mAll;
 	private IntegerCriteria		mWhenTLCriteria;
 	private ArrayList<Prereq>	mPrereqs;
-
-	static {
-		LocalizedMessages.initialize(PrereqList.class);
-	}
 
 	/**
 	 * Creates a new prerequisite list.
@@ -259,7 +260,7 @@ public class PrereqList extends Prereq {
 
 		boolean satisfied = satisfiedCount == total || !requiresAll && satisfiedCount > 0;
 		if (!satisfied && localBuilder != null && builder != null) {
-			builder.append(MessageFormat.format(requiresAll ? MSG_REQUIRES_ALL : MSG_REQUIRES_ANY, prefix));
+			builder.append(MessageFormat.format(requiresAll ? REQUIRES_ALL : REQUIRES_ANY, prefix));
 			builder.append(localBuilder.toString());
 		}
 		return satisfied;

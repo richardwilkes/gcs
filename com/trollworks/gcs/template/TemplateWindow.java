@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.template;
+
+import static com.trollworks.gcs.template.TemplateWindow_LS.*;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.equipment.Equipment;
@@ -36,11 +38,12 @@ import com.trollworks.gcs.widgets.outline.RowItemRenderer;
 import com.trollworks.gcs.widgets.outline.RowPostProcessor;
 import com.trollworks.gcs.widgets.search.Search;
 import com.trollworks.gcs.widgets.search.SearchTarget;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.FlexRow;
 import com.trollworks.ttk.menu.file.Saveable;
 import com.trollworks.ttk.notification.NotifierTarget;
 import com.trollworks.ttk.preferences.Preferences;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Path;
 import com.trollworks.ttk.widgets.AppWindow;
 import com.trollworks.ttk.widgets.BaseWindow;
@@ -63,20 +66,18 @@ import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
 
+@Localized({
+				@LS(key = "UNTITLED", msg = "Untitled Template"),
+				@LS(key = "ADD_ROWS", msg = "Add Rows"),
+				@LS(key = "SAVE_ERROR", msg = "An error occurred while trying to save the template."),
+})
 /** The template window. */
 public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget, NotifierTarget {
-	private static String		MSG_UNTITLED;
-	private static String		MSG_ADD_ROWS;
-	private static String		MSG_SAVE_ERROR;
 	/** The extension for templates. */
 	public static final String	EXTENSION	= ".gct";	//$NON-NLS-1$
 	private TemplateSheet		mContent;
 	private Template			mTemplate;
 	private Search				mSearch;
-
-	static {
-		LocalizedMessages.initialize(TemplateWindow.class);
-	}
 
 	/** @return The top template sheet window, if any. */
 	public static TemplateWindow getTopTemplate() {
@@ -176,7 +177,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 		String title;
 
 		if (file == null) {
-			title = BaseWindow.getNextUntitledWindowName(TemplateWindow.class, MSG_UNTITLED, this);
+			title = BaseWindow.getNextUntitledWindowName(TemplateWindow.class, UNTITLED, this);
 		} else {
 			title = Path.getLeafName(file.getName(), false);
 		}
@@ -216,35 +217,35 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 			if (row instanceof Advantage) {
 				outline = mContent.getAdvantageOutline();
 				if (!map.containsKey(outline)) {
-					map.put(outline, new StateEdit(outline.getModel(), MSG_ADD_ROWS));
+					map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
 				}
 				row = new Advantage(mTemplate, (Advantage) row, true);
 				addCompleteRow(outline, row, selMap);
 			} else if (row instanceof Technique) {
 				outline = mContent.getSkillOutline();
 				if (!map.containsKey(outline)) {
-					map.put(outline, new StateEdit(outline.getModel(), MSG_ADD_ROWS));
+					map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
 				}
 				row = new Technique(mTemplate, (Technique) row, true);
 				addCompleteRow(outline, row, selMap);
 			} else if (row instanceof Skill) {
 				outline = mContent.getSkillOutline();
 				if (!map.containsKey(outline)) {
-					map.put(outline, new StateEdit(outline.getModel(), MSG_ADD_ROWS));
+					map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
 				}
 				row = new Skill(mTemplate, (Skill) row, true, true);
 				addCompleteRow(outline, row, selMap);
 			} else if (row instanceof Spell) {
 				outline = mContent.getSpellOutline();
 				if (!map.containsKey(outline)) {
-					map.put(outline, new StateEdit(outline.getModel(), MSG_ADD_ROWS));
+					map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
 				}
 				row = new Spell(mTemplate, (Spell) row, true, true);
 				addCompleteRow(outline, row, selMap);
 			} else if (row instanceof Equipment) {
 				outline = mContent.getEquipmentOutline();
 				if (!map.containsKey(outline)) {
-					map.put(outline, new StateEdit(outline.getModel(), MSG_ADD_ROWS));
+					map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
 				}
 				row = new Equipment(mTemplate, (Equipment) row, true);
 				addCompleteRow(outline, row, selMap);
@@ -427,7 +428,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 			adjustWindowTitle();
 			return new File[] { file };
 		}
-		WindowUtils.showError(this, MSG_SAVE_ERROR);
+		WindowUtils.showError(this, SAVE_ERROR);
 		return new File[0];
 	}
 

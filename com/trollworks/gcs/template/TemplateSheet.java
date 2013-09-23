@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.template;
+
+import static com.trollworks.gcs.template.TemplateSheet_LS.*;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageOutline;
@@ -35,10 +37,11 @@ import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.notification.BatchNotifierTarget;
 import com.trollworks.ttk.utility.Debug;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Outline;
 import com.trollworks.ttk.widgets.outline.OutlineHeader;
 import com.trollworks.ttk.widgets.outline.OutlineSyncer;
@@ -64,13 +67,15 @@ import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
+@Localized({
+				@LS(key = "ADVANTAGES", msg = "Advantages, Disadvantages & Quirks"),
+				@LS(key = "SKILLS", msg = "Skills"),
+				@LS(key = "SPELLS", msg = "Spells"),
+				@LS(key = "EQUIPMENT", msg = "Equipment"),
+				@LS(key = "NOTES", msg = "Notes"),
+})
 /** The template sheet. */
 public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTarget, DropTargetListener, ActionListener {
-	private static String				MSG_ADVANTAGES;
-	private static String				MSG_SKILLS;
-	private static String				MSG_SPELLS;
-	private static String				MSG_EQUIPMENT;
-	private static String				MSG_NOTES;
 	private static final EmptyBorder	NORMAL_BORDER	= new EmptyBorder(5, 5, 5, 5);
 	private Template					mTemplate;
 	private boolean						mBatchMode;
@@ -83,10 +88,6 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 	protected boolean					mStartEditingPending;
 	/** Used to determine whether a resize action is pending. */
 	protected boolean					mSizePending;
-
-	static {
-		LocalizedMessages.initialize(TemplateSheet.class);
-	}
 
 	/**
 	 * Creates a new {@link TemplateSheet}.
@@ -106,10 +107,10 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		mSpellOutline = new SpellOutline(mTemplate);
 		mEquipmentOutline = new EquipmentOutline(mTemplate);
 		mNotesPanel = new NotesPanel(template.getNotes(), false);
-		add(new TemplateOutlinePanel(mAdvantageOutline, MSG_ADVANTAGES));
-		add(new TemplateOutlinePanel(mSkillOutline, MSG_SKILLS));
-		add(new TemplateOutlinePanel(mSpellOutline, MSG_SPELLS));
-		add(new TemplateOutlinePanel(mEquipmentOutline, MSG_EQUIPMENT));
+		add(new TemplateOutlinePanel(mAdvantageOutline, ADVANTAGES));
+		add(new TemplateOutlinePanel(mSkillOutline, SKILLS));
+		add(new TemplateOutlinePanel(mSpellOutline, SPELLS));
+		add(new TemplateOutlinePanel(mEquipmentOutline, EQUIPMENT));
 		add(mNotesPanel);
 		mAdvantageOutline.addActionListener(this);
 		mSkillOutline.addActionListener(this);
@@ -131,7 +132,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		if (Outline.CMD_POTENTIAL_CONTENT_SIZE_CHANGE.equals(command)) {
 			adjustSize();
 		} else if (NotesPanel.CMD_EDIT_NOTES.equals(command)) {
-			String notes = TextEditor.edit(MSG_NOTES, mTemplate.getNotes());
+			String notes = TextEditor.edit(NOTES, mTemplate.getNotes());
 
 			if (notes != null) {
 				mTemplate.setNotes(notes);

@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,8 +23,11 @@
 
 package com.trollworks.gcs.skill;
 
+import static com.trollworks.gcs.skill.SkillDefault_LS.*;
+
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.xml.XMLNodeType;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
@@ -33,6 +36,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 
+@Localized({
+				@LS(key = "PARRY", msg = " Parry"),
+				@LS(key = "BLOCK", msg = " Block"),
+})
 /** Describes a skill default. */
 public class SkillDefault {
 	/** The XML tag. */
@@ -46,8 +53,6 @@ public class SkillDefault {
 	/** The tag used for the modifier. */
 	public static final String	TAG_MODIFIER		= "modifier";		//$NON-NLS-1$
 	private static final String	EMPTY				= "";				//$NON-NLS-1$
-	private static String		MSG_PARRY;
-	private static String		MSG_BLOCK;
 	private SkillDefaultType	mType;
 	private String				mName;
 	private String				mSpecialization;
@@ -55,10 +60,6 @@ public class SkillDefault {
 	private int					mLevel;
 	private int					mAdjLevel;
 	private int					mPoints;
-
-	static {
-		LocalizedMessages.initialize(SkillDefault.class);
-	}
 
 	/**
 	 * Creates a new skill default.
@@ -196,9 +197,9 @@ public class SkillDefault {
 				builder.append(')');
 			}
 			if (mType == SkillDefaultType.Parry) {
-				builder.append(MSG_PARRY);
+				builder.append(PARRY);
 			} else if (mType == SkillDefaultType.Block) {
-				builder.append(MSG_BLOCK);
+				builder.append(BLOCK);
 			}
 			return builder.toString();
 		}

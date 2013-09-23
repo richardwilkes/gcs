@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,18 +23,18 @@
 
 package com.trollworks.gcs.prereq;
 
+import static com.trollworks.gcs.prereq.PrereqsPanel_LS.*;
+
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.widgets.BandedPanel;
 
+@Localized({
+				@LS(key = "PREREQUISITES", msg = "Prerequisites"),
+})
 /** Displays and edits {@link Prereq} objects. */
 public class PrereqsPanel extends BandedPanel {
-	private static String	MSG_PREREQUISITES;
-
-	static {
-		LocalizedMessages.initialize(PrereqsPanel.class);
-	}
-
 	/**
 	 * Creates a new prerequisite editor.
 	 * 
@@ -42,7 +42,7 @@ public class PrereqsPanel extends BandedPanel {
 	 * @param prereqs The initial prerequisites to display.
 	 */
 	public PrereqsPanel(ListRow row, PrereqList prereqs) {
-		super(MSG_PREREQUISITES);
+		super(PREREQUISITES);
 		addPrereqs(row, new PrereqList(null, prereqs), 0);
 	}
 

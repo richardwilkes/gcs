@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,23 +23,29 @@
 
 package com.trollworks.gcs.prereq;
 
+import static com.trollworks.gcs.prereq.AttributePrereq_LS.*;
+import static com.trollworks.gcs.prereq.HasPrereq_LS.*;
+
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.collections.Enums;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
 
+@Localized({
+				@LS(key = "DESCRIPTION", msg = "{0}{1} {2} which {3}\\n"),
+				@LS(key = "COMBINED", msg = "{0}+{1}"),
+})
 /** A Attribute prerequisite. */
 public class AttributePrereq extends HasPrereq {
-	private static String						MSG_DESCRIPTION;
-	private static String						MSG_COMBINED;
 	/** The possible {@link BonusAttributeType}s that can be affected. */
 	public static final BonusAttributeType[]	TYPES					= { BonusAttributeType.ST, BonusAttributeType.DX, BonusAttributeType.IQ, BonusAttributeType.HT, BonusAttributeType.WILL, BonusAttributeType.PERCEPTION };
 	/** The XML tag for this class. */
@@ -50,10 +56,6 @@ public class AttributePrereq extends HasPrereq {
 	private BonusAttributeType					mWhich;
 	private BonusAttributeType					mCombinedWith;
 	private IntegerCriteria						mValueCompare;
-
-	static {
-		LocalizedMessages.initialize(AttributePrereq.class);
-	}
 
 	/**
 	 * Creates a new prerequisite.
@@ -191,7 +193,7 @@ public class AttributePrereq extends HasPrereq {
 			satisfied = !satisfied;
 		}
 		if (!satisfied && builder != null) {
-			builder.append(MessageFormat.format(MSG_DESCRIPTION, prefix, has() ? MSG_HAS : MSG_DOES_NOT_HAVE, mCombinedWith == null ? mWhich.getPresentationName() : MessageFormat.format(MSG_COMBINED, mWhich.getPresentationName(), mCombinedWith.getPresentationName()), mValueCompare.toString()));
+			builder.append(MessageFormat.format(DESCRIPTION, prefix, has() ? HAS : DOES_NOT_HAVE, mCombinedWith == null ? mWhich.getPresentationName() : MessageFormat.format(COMBINED, mWhich.getPresentationName(), mCombinedWith.getPresentationName()), mValueCompare.toString()));
 		}
 		return satisfied;
 	}

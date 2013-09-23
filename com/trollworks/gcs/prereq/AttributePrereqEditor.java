@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,29 +23,30 @@
 
 package com.trollworks.gcs.prereq;
 
+import static com.trollworks.gcs.prereq.AttributePrereqEditor_LS.*;
+
 import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.FlexGrid;
 import com.trollworks.ttk.layout.FlexRow;
 import com.trollworks.ttk.layout.FlexSpacer;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 
 import javax.swing.JComboBox;
 
+@Localized({
+				@LS(key = "COMBINED_WITH", msg = "combined with {0}"),
+				@LS(key = "WHICH", msg = "which "),
+})
 /** An attribute prerequisite editor panel. */
 public class AttributePrereqEditor extends PrereqEditor {
-	private static String		MSG_COMBINED_WITH;
-	private static String		MSG_WHICH;
 	private static final String	CHANGE_TYPE			= "ChangeType";		//$NON-NLS-1$
 	private static final String	CHANGE_SECOND_TYPE	= "ChangeSecondType";	//$NON-NLS-1$
 	private static final String	BLANK				= " ";					//$NON-NLS-1$
-
-	static {
-		LocalizedMessages.initialize(AttributePrereqEditor.class);
-	}
 
 	/**
 	 * Creates a new attribute prerequisite editor panel.
@@ -71,7 +72,7 @@ public class AttributePrereqEditor extends PrereqEditor {
 		row = new FlexRow();
 		row.add(addChangeTypePopup());
 		row.add(addChangeSecondTypePopup());
-		row.add(addNumericCompareCombo(prereq.getValueCompare(), MSG_WHICH));
+		row.add(addNumericCompareCombo(prereq.getValueCompare(), WHICH));
 		row.add(addNumericCompareField(prereq.getValueCompare(), 0, 99999, false));
 		row.add(new FlexSpacer(0, 0, true, false));
 		grid.add(row, 1, 1);
@@ -93,7 +94,7 @@ public class AttributePrereqEditor extends PrereqEditor {
 		String selection = BLANK;
 		titles[0] = BLANK;
 		for (int i = 0; i < types.length; i++) {
-			titles[i + 1] = MessageFormat.format(MSG_COMBINED_WITH, types[i].getPresentationName());
+			titles[i + 1] = MessageFormat.format(COMBINED_WITH, types[i].getPresentationName());
 			if (current == types[i]) {
 				selection = titles[i + 1];
 			}

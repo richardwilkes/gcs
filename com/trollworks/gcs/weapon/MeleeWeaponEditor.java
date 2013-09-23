@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,30 +23,31 @@
 
 package com.trollworks.gcs.weapon;
 
+import static com.trollworks.gcs.weapon.MeleeWeaponEditor_LS.*;
+
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.widgets.EditorField;
 
 import java.awt.Container;
 import java.util.List;
 
+@Localized({
+				@LS(key = "MELEE_WEAPON", msg = "Melee Weapon"),
+				@LS(key = "REACH", msg = "Reach"),
+				@LS(key = "PARRY", msg = "Parry Modifier"),
+				@LS(key = "BLOCK", msg = "Block Modifier"),
+})
 /** An editor for melee weapon statistics. */
 public class MeleeWeaponEditor extends WeaponEditor {
-	private static String	MSG_MELEE_WEAPON;
-	private static String	MSG_REACH;
-	private static String	MSG_PARRY;
-	private static String	MSG_BLOCK;
-	private EditorField		mReach;
-	private EditorField		mParry;
-	private EditorField		mBlock;
-
-	static {
-		LocalizedMessages.initialize(MeleeWeaponEditor.class);
-	}
+	private EditorField	mReach;
+	private EditorField	mParry;
+	private EditorField	mBlock;
 
 	/**
 	 * Creates a new melee weapon editor for the specified row.
@@ -79,9 +80,9 @@ public class MeleeWeaponEditor extends WeaponEditor {
 
 	@Override
 	protected void createFields(Container parent) {
-		mParry = createTextField(parent, MSG_PARRY, EMPTY);
-		mReach = createTextField(parent, MSG_REACH, EMPTY);
-		mBlock = createTextField(parent, MSG_BLOCK, EMPTY);
+		mParry = createTextField(parent, PARRY, EMPTY);
+		mReach = createTextField(parent, REACH, EMPTY);
+		mBlock = createTextField(parent, BLOCK, EMPTY);
 	}
 
 	@Override
@@ -142,6 +143,6 @@ public class MeleeWeaponEditor extends WeaponEditor {
 
 	@Override
 	public String toString() {
-		return MSG_MELEE_WEAPON;
+		return MELEE_WEAPON;
 	}
 }

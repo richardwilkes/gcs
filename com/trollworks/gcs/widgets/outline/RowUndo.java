@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,9 +23,12 @@
 
 package com.trollworks.gcs.widgets.outline;
 
+import static com.trollworks.gcs.widgets.outline.RowUndo_LS.*;
+
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.xml.XMLNodeType;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
@@ -41,18 +44,16 @@ import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
+@Localized({
+				@LS(key = "UNDO_FORMAT", msg = "{0} Changes"),
+})
 /** An undo for the entire row, with the exception of its children. */
 public class RowUndo extends AbstractUndoableEdit {
-	private static String	MSG_UNDO_FORMAT;
-	private DataFile		mDataFile;
-	private ListRow			mRow;
-	private String			mName;
-	private byte[]			mBefore;
-	private byte[]			mAfter;
-
-	static {
-		LocalizedMessages.initialize(RowUndo.class);
-	}
+	private DataFile	mDataFile;
+	private ListRow		mRow;
+	private String		mName;
+	private byte[]		mBefore;
+	private byte[]		mAfter;
 
 	/**
 	 * Creates a new {@link RowUndo}.
@@ -63,7 +64,7 @@ public class RowUndo extends AbstractUndoableEdit {
 		super();
 		mRow = row;
 		mDataFile = mRow.getDataFile();
-		mName = MessageFormat.format(MSG_UNDO_FORMAT, mRow.getLocalizedName());
+		mName = MessageFormat.format(UNDO_FORMAT, mRow.getLocalizedName());
 		mBefore = serialize(mRow);
 	}
 

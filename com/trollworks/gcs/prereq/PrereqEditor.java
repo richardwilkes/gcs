@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,12 +23,15 @@
 
 package com.trollworks.gcs.prereq;
 
+import static com.trollworks.gcs.prereq.PrereqEditor_LS.*;
+
 import com.trollworks.gcs.common.EditorPanel;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.image.ToolkitImage;
 import com.trollworks.ttk.layout.FlexGrid;
 import com.trollworks.ttk.layout.FlexRow;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 
 import java.awt.event.ActionEvent;
@@ -36,17 +39,19 @@ import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 
+@Localized({
+				@LS(key = "REMOVE_PREREQ_TOOLTIP", msg = "Remove this prerequisite"),
+				@LS(key = "REMOVE_PREREQ_LIST_TOOLTIP", msg = "Remove this prerequisite list"),
+				@LS(key = "HAS", msg = "has"),
+				@LS(key = "DOES_NOT_HAVE", msg = "doesn't have"),
+				@LS(key = "ADVANTAGE", msg = "advantage"),
+				@LS(key = "ATTRIBUTE", msg = "attribute"),
+				@LS(key = "CONTAINED_WEIGHT", msg = "contained weight"),
+				@LS(key = "SKILL", msg = "skill"),
+				@LS(key = "SPELL", msg = "spell(s)"),
+})
 /** A generic prerequisite editor panel. */
 public abstract class PrereqEditor extends EditorPanel {
-	private static String			MSG_REMOVE_PREREQ_TOOLTIP;
-	private static String			MSG_REMOVE_PREREQ_LIST_TOOLTIP;
-	private static String			MSG_HAS;
-	private static String			MSG_DOES_NOT_HAVE;
-	private static String			MSG_ADVANTAGE;
-	private static String			MSG_ATTRIBUTE;
-	private static String			MSG_CONTAINED_WEIGHT;
-	private static String			MSG_SKILL;
-	private static String			MSG_SPELL;
 	private static final String		REMOVE				= "Remove";																															//$NON-NLS-1$
 	private static final String		CHANGE_BASE_TYPE	= "ChangeBaseType";																													//$NON-NLS-1$
 	private static final String		CHANGE_HAS			= "ChangeHas";																															//$NON-NLS-1$
@@ -57,10 +62,6 @@ public abstract class PrereqEditor extends EditorPanel {
 	protected ListRow				mRow;
 	private int						mDepth;
 	private JComboBox<Object>		mBaseTypeCombo;
-
-	static {
-		LocalizedMessages.initialize(PrereqEditor.class);
-	}
 
 	/**
 	 * Creates a new prerequisite editor panel.
@@ -121,7 +122,7 @@ public abstract class PrereqEditor extends EditorPanel {
 		grid.add(left, 0, 0);
 		rebuildSelf(left, grid, right);
 		if (mDepth > 0) {
-			right.add(addButton(ToolkitImage.getRemoveIcon(), REMOVE, mPrereq instanceof PrereqList ? MSG_REMOVE_PREREQ_LIST_TOOLTIP : MSG_REMOVE_PREREQ_TOOLTIP));
+			right.add(addButton(ToolkitImage.getRemoveIcon(), REMOVE, mPrereq instanceof PrereqList ? REMOVE_PREREQ_LIST_TOOLTIP : REMOVE_PREREQ_TOOLTIP));
 		}
 		grid.add(right, 0, 2);
 		grid.apply(this);
@@ -143,12 +144,12 @@ public abstract class PrereqEditor extends EditorPanel {
 	 * @return The {@link JComboBox} that allows the "has" attribute to be changed.
 	 */
 	protected JComboBox<Object> addHasCombo(boolean has) {
-		return addComboBox(CHANGE_HAS, new Object[] { MSG_HAS, MSG_DOES_NOT_HAVE }, has ? MSG_HAS : MSG_DOES_NOT_HAVE);
+		return addComboBox(CHANGE_HAS, new Object[] { HAS, DOES_NOT_HAVE }, has ? HAS : DOES_NOT_HAVE);
 	}
 
 	/** @return The {@link JComboBox} that allows the base prereq type to be changed. */
 	protected JComboBox<Object> addChangeBaseTypeCombo() {
-		Object[] choices = new Object[] { MSG_ATTRIBUTE, MSG_ADVANTAGE, MSG_SKILL, MSG_SPELL, MSG_CONTAINED_WEIGHT };
+		Object[] choices = new Object[] { ATTRIBUTE, ADVANTAGE, SKILL, SPELL, CONTAINED_WEIGHT };
 		Class<?> type = mPrereq.getClass();
 		Object current = choices[0];
 		for (int i = 0; i < BASE_TYPES.length; i++) {

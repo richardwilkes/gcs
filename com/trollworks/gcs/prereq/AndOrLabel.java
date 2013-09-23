@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,8 +23,11 @@
 
 package com.trollworks.gcs.prereq;
 
+import static com.trollworks.gcs.prereq.AndOrLabel_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.utility.GraphicsUtilities;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.UIUtilities;
 
 import java.awt.Graphics;
@@ -32,15 +35,13 @@ import java.awt.Graphics;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
+@Localized({
+				@LS(key = "AND", msg = "and"),
+				@LS(key = "OR", msg = "or"),
+})
 /** A label that displays the "and" or the "or" message, or nothing if it is the first one. */
 public class AndOrLabel extends JLabel {
-	private static String	MSG_AND;
-	private static String	MSG_OR;
-	private Prereq			mOwner;
-
-	static {
-		LocalizedMessages.initialize(AndOrLabel.class);
-	}
+	private Prereq	mOwner;
 
 	/**
 	 * Creates a new {@link AndOrLabel}.
@@ -48,7 +49,7 @@ public class AndOrLabel extends JLabel {
 	 * @param owner The owning {@link Prereq}.
 	 */
 	public AndOrLabel(Prereq owner) {
-		super(MSG_AND, SwingConstants.RIGHT);
+		super(AND, SwingConstants.RIGHT);
 		mOwner = owner;
 		UIUtilities.setOnlySize(this, getPreferredSize());
 	}
@@ -57,7 +58,7 @@ public class AndOrLabel extends JLabel {
 	protected void paintComponent(Graphics gc) {
 		PrereqList parent = mOwner.getParent();
 		if (parent != null && parent.getChildren().get(0) != mOwner) {
-			setText(parent.requiresAll() ? MSG_AND : MSG_OR);
+			setText(parent.requiresAll() ? AND : OR);
 		} else {
 			setText(""); //$NON-NLS-1$
 		}

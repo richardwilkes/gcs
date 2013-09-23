@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,9 +23,12 @@
 
 package com.trollworks.gcs.widgets.outline;
 
+import static com.trollworks.gcs.widgets.outline.RowEditor_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.layout.RowDistribution;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.ActionPanel;
 import com.trollworks.ttk.widgets.CommitEnforcer;
 import com.trollworks.ttk.widgets.WindowUtils;
@@ -43,27 +46,25 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
+@Localized({
+				@LS(key = "WINDOW_TITLE", msg = "Edit {0}"),
+				@LS(key = "CANCEL_REST", msg = "Cancel Remaining"),
+				@LS(key = "CANCEL", msg = "Cancel"),
+				@LS(key = "APPLY", msg = "Apply"),
+				@LS(key = "ONE_REMAINING", msg = "1 item remaining to be edited."),
+				@LS(key = "REMAINING", msg = "{0} items remaining to be edited."),
+})
 /**
  * The base class for all row editors.
  * 
  * @param <T> The row class being edited.
  */
 public abstract class RowEditor<T extends ListRow> extends ActionPanel {
-	private static String						MSG_WINDOW_TITLE;
-	private static String						MSG_CANCEL_REST;
-	private static String						MSG_CANCEL;
-	private static String						MSG_APPLY;
-	private static String						MSG_ONE_REMAINING;
-	private static String						MSG_REMAINING;
 	private static HashMap<Class<?>, String>	LAST_TAB_MAP	= new HashMap<>();
 	/** Whether the underlying data should be editable. */
 	protected boolean							mIsEditable;
 	/** The row being edited. */
 	protected T									mRow;
-
-	static {
-		LocalizedMessages.initialize(RowEditor.class);
-	}
 
 	/**
 	 * Brings up a modal detailed editor for each row in the list.
@@ -81,12 +82,12 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 			boolean hasMore = i != rows.length - 1;
 			ListRow row = rows[i];
 			RowEditor<? extends ListRow> editor = row.createEditor();
-			String title = MessageFormat.format(MSG_WINDOW_TITLE, row.getRowType());
+			String title = MessageFormat.format(WINDOW_TITLE, row.getRowType());
 			JPanel wrapper = new JPanel(new BorderLayout());
 
 			if (hasMore) {
 				int remaining = rows.length - i - 1;
-				String msg = remaining == 1 ? MSG_ONE_REMAINING : MessageFormat.format(MSG_REMAINING, new Integer(remaining));
+				String msg = remaining == 1 ? ONE_REMAINING : MessageFormat.format(REMAINING, new Integer(remaining));
 				JLabel panel = new JLabel(msg, SwingConstants.CENTER);
 				panel.setBorder(new EmptyBorder(0, 0, 10, 0));
 				wrapper.add(panel, BorderLayout.NORTH);
@@ -94,8 +95,8 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 			wrapper.add(editor, BorderLayout.CENTER);
 
 			int type = hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION;
-			String[] options = hasMore ? new String[] { MSG_APPLY, MSG_CANCEL, MSG_CANCEL_REST } : new String[] { MSG_APPLY, MSG_CANCEL };
-			switch (WindowUtils.showOptionDialog(owner, wrapper, title, true, type, JOptionPane.PLAIN_MESSAGE, null, options, MSG_APPLY)) {
+			String[] options = hasMore ? new String[] { APPLY, CANCEL, CANCEL_REST } : new String[] { APPLY, CANCEL };
+			switch (WindowUtils.showOptionDialog(owner, wrapper, title, true, type, JOptionPane.PLAIN_MESSAGE, null, options, APPLY)) {
 				case JOptionPane.YES_OPTION:
 					RowUndo undo = new RowUndo(row);
 					if (editor.applyChanges()) {

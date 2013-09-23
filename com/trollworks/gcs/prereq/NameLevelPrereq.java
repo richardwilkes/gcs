@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -28,7 +28,8 @@ import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.xml.XMLNodeType;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
@@ -37,22 +38,20 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 
+@Localized({
+				@LS(key = "LEVEL_PART", msg = " and level {0}\n"),
+})
 /**
  * An abstract prerequisite class for comparison of name and level and whether or not the specific
  * item is present.
  */
 public abstract class NameLevelPrereq extends HasPrereq {
 	/** Provided for sub-classes. */
-	protected static String		MSG_LEVEL_PART;
 	private static final String	TAG_NAME	= "name";	//$NON-NLS-1$
 	private static final String	TAG_LEVEL	= "level";	//$NON-NLS-1$
 	private String				mTag;
 	private StringCriteria		mNameCriteria;
 	private IntegerCriteria		mLevelCriteria;
-
-	static {
-		LocalizedMessages.initialize(NameLevelPrereq.class);
-	}
 
 	/**
 	 * Creates a new prerequisite.

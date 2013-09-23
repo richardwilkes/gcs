@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.spell;
+
+import static com.trollworks.gcs.spell.SpellColumn_LS.*;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
@@ -31,8 +33,9 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.text.Numbers;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Cell;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.widgets.outline.Outline;
@@ -40,18 +43,33 @@ import com.trollworks.ttk.widgets.outline.OutlineModel;
 
 import javax.swing.SwingConstants;
 
+@Localized({
+				@LS(key = "DESCRIPTION", msg = "Spells"),
+				@LS(key = "DESCRIPTION_TOOLTIP", msg = "The name, tech level and notes describing the spell"),
+				@LS(key = "CLASS", msg = "Class"),
+				@LS(key = "CLASS_TOOLTIP", msg = "The class and college of the spell"),
+				@LS(key = "MANA_COST", msg = "Mana Cost"),
+				@LS(key = "MANA_COST_TOOLTIP", msg = "The mana cost to cast and maintain the spell"),
+				@LS(key = "TIME", msg = "Time"),
+				@LS(key = "TIME_TOOLTIP", msg = "THe time required to cast the spell and its duration"),
+				@LS(key = "POINTS", msg = "Pts"),
+				@LS(key = "POINTS_TOOLTIP", msg = "The points spent in the spell"),
+				@LS(key = "LEVEL", msg = "SL"),
+				@LS(key = "LEVEL_TOOLTIP", msg = "The spell level"),
+				@LS(key = "RELATIVE_LEVEL", msg = "RSL"),
+				@LS(key = "RELATIVE_LEVEL_TOOLTIP", msg = "The relative spell level"),
+				@LS(key = "CATEGORY", msg = "Category"),
+				@LS(key = "CATEGORY_TOOLTIP", msg = "The category or categories the spell belongs to"),
+				@LS(key = "REFERENCE", msg = "Ref"),
+				@LS(key = "REFERENCE_TOOLTIP", msg = "A reference to the book and page this spell appears\non (e.g. B22 would refer to \"Basic Set\", page 22)"),
+})
 /** Definitions for spell columns. */
 public enum SpellColumn {
 	/** The spell name/description. */
 	DESCRIPTION {
 		@Override
-		public String toString() {
-			return MSG_SPELLS;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_SPELLS_TOOLTIP;
+			return DESCRIPTION_TOOLTIP;
 		}
 
 		@Override
@@ -85,13 +103,8 @@ public enum SpellColumn {
 	/** The spell class/college. */
 	CLASS {
 		@Override
-		public String toString() {
-			return MSG_CLASS;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_CLASS_TOOLTIP;
+			return CLASS_TOOLTIP;
 		}
 
 		@Override
@@ -125,13 +138,8 @@ public enum SpellColumn {
 	/** The casting &amp; maintenance cost. */
 	MANA_COST {
 		@Override
-		public String toString() {
-			return MSG_MANA_COST;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_MANA_COST_TOOLTIP;
+			return MANA_COST_TOOLTIP;
 		}
 
 		@Override
@@ -165,13 +173,8 @@ public enum SpellColumn {
 	/** The casting time &amp; duration. */
 	TIME {
 		@Override
-		public String toString() {
-			return MSG_TIME;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_TIME_TOOLTIP;
+			return TIME_TOOLTIP;
 		}
 
 		@Override
@@ -205,13 +208,8 @@ public enum SpellColumn {
 	/** The spell level. */
 	LEVEL {
 		@Override
-		public String toString() {
-			return MSG_LEVEL;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_LEVEL_TOOLTIP;
+			return LEVEL_TOOLTIP;
 		}
 
 		@Override
@@ -246,13 +244,8 @@ public enum SpellColumn {
 	/** The relative spell level. */
 	RELATIVE_LEVEL {
 		@Override
-		public String toString() {
-			return MSG_RELATIVE_LEVEL;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_RELATIVE_LEVEL_TOOLTIP;
+			return RELATIVE_LEVEL_TOOLTIP;
 		}
 
 		@Override
@@ -298,13 +291,8 @@ public enum SpellColumn {
 	/** The points spent in the spell. */
 	POINTS {
 		@Override
-		public String toString() {
-			return MSG_POINTS;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_POINTS_TOOLTIP;
+			return POINTS_TOOLTIP;
 		}
 
 		@Override
@@ -330,13 +318,8 @@ public enum SpellColumn {
 	/** The category. */
 	CATEGORY {
 		@Override
-		public String toString() {
-			return MSG_CATEGORY;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_CATEGORY_TOOLTIP;
+			return CATEGORY_TOOLTIP;
 		}
 
 		@Override
@@ -362,13 +345,8 @@ public enum SpellColumn {
 	/** The page reference. */
 	REFERENCE {
 		@Override
-		public String toString() {
-			return MSG_REFERENCE;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_REFERENCE_TOOLTIP;
+			return REFERENCE_TOOLTIP;
 		}
 
 		@Override
@@ -392,27 +370,9 @@ public enum SpellColumn {
 		}
 	};
 
-	static String	MSG_SPELLS;
-	static String	MSG_SPELLS_TOOLTIP;
-	static String	MSG_CLASS;
-	static String	MSG_CLASS_TOOLTIP;
-	static String	MSG_MANA_COST;
-	static String	MSG_MANA_COST_TOOLTIP;
-	static String	MSG_TIME;
-	static String	MSG_TIME_TOOLTIP;
-	static String	MSG_POINTS;
-	static String	MSG_POINTS_TOOLTIP;
-	static String	MSG_LEVEL;
-	static String	MSG_LEVEL_TOOLTIP;
-	static String	MSG_RELATIVE_LEVEL;
-	static String	MSG_RELATIVE_LEVEL_TOOLTIP;
-	static String	MSG_CATEGORY;
-	static String	MSG_CATEGORY_TOOLTIP;
-	static String	MSG_REFERENCE;
-	static String	MSG_REFERENCE_TOOLTIP;
-
-	static {
-		LocalizedMessages.initialize(SpellColumn.class);
+	@Override
+	public String toString() {
+		return SpellColumn_LS.toString(this);
 	}
 
 	/**

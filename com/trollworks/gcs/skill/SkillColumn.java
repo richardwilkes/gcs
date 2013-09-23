@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.skill;
+
+import static com.trollworks.gcs.skill.SkillColumn_LS.*;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
@@ -31,8 +33,9 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.text.Numbers;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Cell;
 import com.trollworks.ttk.widgets.outline.Column;
 import com.trollworks.ttk.widgets.outline.Outline;
@@ -40,18 +43,29 @@ import com.trollworks.ttk.widgets.outline.OutlineModel;
 
 import javax.swing.SwingConstants;
 
+@Localized({
+				@LS(key = "DESCRIPTION", msg = "Skills"),
+				@LS(key = "DESCRIPTION_TOOLTIP", msg = "The name, specialty, tech level and notes describing a skill"),
+				@LS(key = "LEVEL", msg = "SL"),
+				@LS(key = "LEVEL_TOOLTIP", msg = "The skill level"),
+				@LS(key = "RELATIVE_LEVEL", msg = "RSL"),
+				@LS(key = "RELATIVE_LEVEL_TOOLTIP", msg = "The relative skill level"),
+				@LS(key = "POINTS", msg = "Pts"),
+				@LS(key = "POINTS_TOOLTIP", msg = "The points spent in the skill"),
+				@LS(key = "DIFFICULTY", msg = "Diff"),
+				@LS(key = "DIFFICULTY_TOOLTIP", msg = "The skill difficulty"),
+				@LS(key = "CATEGORY", msg = "Category"),
+				@LS(key = "CATEGORY_TOOLTIP", msg = "The category or categories the skill belongs to"),
+				@LS(key = "REFERENCE", msg = "Ref"),
+				@LS(key = "REFERENCE_TOOLTIP", msg = "A reference to the book and page this skill appears\non (e.g. B22 would refer to \"Basic Set\", page 22)"),
+})
 /** Definitions for skill columns. */
 public enum SkillColumn {
 	/** The skill name/description. */
 	DESCRIPTION {
 		@Override
-		public String toString() {
-			return MSG_SKILLS;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_SKILLS_TOOLTIP;
+			return DESCRIPTION_TOOLTIP;
 		}
 
 		@Override
@@ -85,13 +99,8 @@ public enum SkillColumn {
 	/** The skill difficulty. */
 	DIFFICULTY {
 		@Override
-		public String toString() {
-			return MSG_DIFFICULTY;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_DIFFICULTY_TOOLTIP;
+			return DIFFICULTY_TOOLTIP;
 		}
 
 		@Override
@@ -117,13 +126,8 @@ public enum SkillColumn {
 	/** The skill level. */
 	LEVEL {
 		@Override
-		public String toString() {
-			return MSG_LEVEL;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_LEVEL_TOOLTIP;
+			return LEVEL_TOOLTIP;
 		}
 
 		@Override
@@ -158,13 +162,8 @@ public enum SkillColumn {
 	/** The relative skill level. */
 	RELATIVE_LEVEL {
 		@Override
-		public String toString() {
-			return MSG_RELATIVE_LEVEL;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_RELATIVE_LEVEL_TOOLTIP;
+			return RELATIVE_LEVEL_TOOLTIP;
 		}
 
 		@Override
@@ -243,13 +242,8 @@ public enum SkillColumn {
 	/** The points spent in the skill. */
 	POINTS {
 		@Override
-		public String toString() {
-			return MSG_POINTS;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_POINTS_TOOLTIP;
+			return POINTS_TOOLTIP;
 		}
 
 		@Override
@@ -278,13 +272,8 @@ public enum SkillColumn {
 	/** The category. */
 	CATEGORY {
 		@Override
-		public String toString() {
-			return MSG_CATEGORY;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_CATEGORY_TOOLTIP;
+			return CATEGORY_TOOLTIP;
 		}
 
 		@Override
@@ -310,13 +299,8 @@ public enum SkillColumn {
 	/** The page reference. */
 	REFERENCE {
 		@Override
-		public String toString() {
-			return MSG_REFERENCE;
-		}
-
-		@Override
 		public String getToolTip() {
-			return MSG_REFERENCE_TOOLTIP;
+			return REFERENCE_TOOLTIP;
 		}
 
 		@Override
@@ -340,23 +324,9 @@ public enum SkillColumn {
 		}
 	};
 
-	static String	MSG_SKILLS;
-	static String	MSG_SKILLS_TOOLTIP;
-	static String	MSG_LEVEL;
-	static String	MSG_LEVEL_TOOLTIP;
-	static String	MSG_RELATIVE_LEVEL;
-	static String	MSG_RELATIVE_LEVEL_TOOLTIP;
-	static String	MSG_POINTS;
-	static String	MSG_POINTS_TOOLTIP;
-	static String	MSG_DIFFICULTY;
-	static String	MSG_DIFFICULTY_TOOLTIP;
-	static String	MSG_CATEGORY;
-	static String	MSG_CATEGORY_TOOLTIP;
-	static String	MSG_REFERENCE;
-	static String	MSG_REFERENCE_TOOLTIP;
-
-	static {
-		LocalizedMessages.initialize(SkillColumn.class);
+	@Override
+	public String toString() {
+		return SkillColumn_LS.toString(this);
 	}
 
 	/**

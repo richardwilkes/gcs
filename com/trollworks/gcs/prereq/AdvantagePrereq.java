@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,13 +23,18 @@
 
 package com.trollworks.gcs.prereq;
 
+import static com.trollworks.gcs.prereq.AdvantagePrereq_LS.*;
+import static com.trollworks.gcs.prereq.HasPrereq_LS.*;
+import static com.trollworks.gcs.prereq.NameLevelPrereq_LS.*;
+
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
 
@@ -38,19 +43,17 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 
+@Localized({
+				@LS(key = "NAME_PART", msg = "{0}{1} an advantage whose name {2}"),
+				@LS(key = "NOTES_PART", msg = ", notes {0},"),
+})
 /** An Advantage prerequisite. */
 public class AdvantagePrereq extends NameLevelPrereq {
-	private static String		MSG_NAME_PART;
-	private static String		MSG_NOTES_PART;
 	/** The XML tag for this class. */
 	public static final String	TAG_ROOT	= "advantage_prereq";	//$NON-NLS-1$
 	private static final String	TAG_NOTES	= "notes";				//$NON-NLS-1$
 	private static final String	EMPTY		= "";					//$NON-NLS-1$
 	private StringCriteria		mNotesCriteria;
-
-	static {
-		LocalizedMessages.initialize(AdvantagePrereq.class);
-	}
 
 	/**
 	 * Creates a new prerequisite.
@@ -150,11 +153,11 @@ public class AdvantagePrereq extends NameLevelPrereq {
 			satisfied = !satisfied;
 		}
 		if (!satisfied && builder != null) {
-			builder.append(MessageFormat.format(MSG_NAME_PART, prefix, has() ? MSG_HAS : MSG_DOES_NOT_HAVE, nameCriteria.toString()));
+			builder.append(MessageFormat.format(NAME_PART, prefix, has() ? HAS : DOES_NOT_HAVE, nameCriteria.toString()));
 			if (mNotesCriteria.getType() != StringCompareType.IS_ANYTHING) {
-				builder.append(MessageFormat.format(MSG_NOTES_PART, mNotesCriteria.toString()));
+				builder.append(MessageFormat.format(NOTES_PART, mNotesCriteria.toString()));
 			}
-			builder.append(MessageFormat.format(MSG_LEVEL_PART, levelCriteria.toString()));
+			builder.append(MessageFormat.format(LEVEL_PART, levelCriteria.toString()));
 		}
 		return satisfied;
 	}

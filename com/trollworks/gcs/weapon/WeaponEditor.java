@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,13 +23,16 @@
 
 package com.trollworks.gcs.weapon;
 
+import static com.trollworks.gcs.weapon.WeaponEditor_LS.*;
+
 import com.trollworks.gcs.skill.Defaults;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.image.ToolkitImage;
 import com.trollworks.ttk.layout.ColumnLayout;
 import com.trollworks.ttk.layout.RowDistribution;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Selection;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.CommitEnforcer;
@@ -58,12 +61,14 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 
+@Localized({
+				@LS(key = "USAGE", msg = "Usage"),
+				@LS(key = "DAMAGE", msg = "Damage"),
+				@LS(key = "MINIMUM_STRENGTH", msg = "Minimum Strength"),
+})
 /** An abstract editor for weapon statistics. */
 public abstract class WeaponEditor extends JPanel implements ActionListener, PropertyChangeListener {
-	private static String					MSG_USAGE;
-	private static String					MSG_DAMAGE;
-	private static String					MSG_MINIMUM_STRENGTH;
-	static final String						EMPTY	= "";			//$NON-NLS-1$
+	static final String						EMPTY	= "";	//$NON-NLS-1$
 	private ListRow							mOwner;
 	private WeaponOutline					mOutline;
 	private IconButton						mAddButton;
@@ -75,10 +80,6 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 	private WeaponStats						mWeapon;
 	private Class<? extends WeaponStats>	mWeaponClass;
 	private boolean							mRespond;
-
-	static {
-		LocalizedMessages.initialize(WeaponEditor.class);
-	}
 
 	/**
 	 * Creates a new {@link WeaponEditor}.
@@ -149,10 +150,10 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 		wrapper.setBorder(new EmptyBorder(5, 5, 5, 5));
 		mEditorPanel = new JPanel(new ColumnLayout(1, RowDistribution.GIVE_EXCESS_TO_LAST));
 		mEditorPanel.add(wrapper);
-		mUsage = createTextField(wrapper, MSG_USAGE, EMPTY);
-		mDamage = createTextField(wrapper, MSG_DAMAGE, EMPTY);
+		mUsage = createTextField(wrapper, USAGE, EMPTY);
+		mDamage = createTextField(wrapper, DAMAGE, EMPTY);
 		createFields(wrapper);
-		mStrength = createTextField(wrapper, MSG_MINIMUM_STRENGTH, EMPTY);
+		mStrength = createTextField(wrapper, MINIMUM_STRENGTH, EMPTY);
 		createDefaults(mEditorPanel);
 		setWeaponState(false);
 		return mEditorPanel;

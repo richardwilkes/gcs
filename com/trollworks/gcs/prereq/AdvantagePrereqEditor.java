@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,22 +23,22 @@
 
 package com.trollworks.gcs.prereq;
 
+import static com.trollworks.gcs.prereq.AdvantagePrereqEditor_LS.*;
+
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.FlexGrid;
 import com.trollworks.ttk.layout.FlexRow;
 import com.trollworks.ttk.layout.FlexSpacer;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
+@Localized({
+				@LS(key = "WHOSE_NAME", msg = "whose name "),
+				@LS(key = "WHOSE_LEVEL", msg = "and whose level "),
+				@LS(key = "WHOSE_NOTES", msg = "and whose notes "),
+})
 /** An advantage prerequisite editor panel. */
 public class AdvantagePrereqEditor extends PrereqEditor {
-	private static String	MSG_WHOSE_NAME;
-	private static String	MSG_WHOSE_LEVEL;
-	private static String	MSG_WHOSE_NOTES;
-
-	static {
-		LocalizedMessages.initialize(AdvantagePrereqEditor.class);
-	}
-
 	/**
 	 * Creates a new advantage prerequisite editor panel.
 	 * 
@@ -61,17 +61,17 @@ public class AdvantagePrereqEditor extends PrereqEditor {
 		grid.add(row, 0, 1);
 
 		row = new FlexRow();
-		row.add(addStringCompareCombo(prereq.getNameCriteria(), MSG_WHOSE_NAME));
+		row.add(addStringCompareCombo(prereq.getNameCriteria(), WHOSE_NAME));
 		row.add(addStringCompareField(prereq.getNameCriteria()));
 		grid.add(row, 1, 1);
 
 		row = new FlexRow();
-		row.add(addStringCompareCombo(prereq.getNotesCriteria(), MSG_WHOSE_NOTES));
+		row.add(addStringCompareCombo(prereq.getNotesCriteria(), WHOSE_NOTES));
 		row.add(addStringCompareField(prereq.getNotesCriteria()));
 		grid.add(row, 2, 1);
 
 		row = new FlexRow();
-		row.add(addNumericCompareCombo(prereq.getLevelCriteria(), MSG_WHOSE_LEVEL));
+		row.add(addNumericCompareCombo(prereq.getLevelCriteria(), WHOSE_LEVEL));
 		row.add(addNumericCompareField(prereq.getLevelCriteria(), 0, 999, false));
 		row.add(new FlexSpacer(0, 0, true, false));
 		grid.add(row, 3, 1);

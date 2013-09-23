@@ -44,7 +44,6 @@ import com.trollworks.ttk.units.LengthUnits;
 import com.trollworks.ttk.units.WeightUnits;
 import com.trollworks.ttk.utility.App;
 import com.trollworks.ttk.utility.Dice;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Path;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.widgets.StdFileDialog;
@@ -147,10 +146,6 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private JCheckBox					mUseOptionalModifierRules;
 	private JCheckBox					mAutoName;
 	private JCheckBox					mUseNativePrinter;
-
-	static {
-		LocalizedMessages.initialize(SheetPreferences.class);
-	}
 
 	/** Initializes the services controlled by these preferences. */
 	public static void initialize() {

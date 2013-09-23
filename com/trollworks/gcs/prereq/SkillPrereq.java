@@ -23,13 +23,18 @@
 
 package com.trollworks.gcs.prereq;
 
+import static com.trollworks.gcs.prereq.HasPrereq_LS.*;
+import static com.trollworks.gcs.prereq.NameLevelPrereq_LS.*;
+import static com.trollworks.gcs.prereq.SkillPrereq_LS.*;
+
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.xml.XMLReader;
 import com.trollworks.ttk.xml.XMLWriter;
 
@@ -38,19 +43,17 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 
+@Localized({
+				@LS(key = "SKILL_NAME_PART", msg = "{0}{1} a skill whose name {2}"),
+				@LS(key = "SPECIALIZATION_PART", msg = ", specialization {0},"),
+				@LS(key = "LEVEL_AND_TL_PART", msg = " level {0} and tech level matches\n"),
+})
 /** A Skill prerequisite. */
 public class SkillPrereq extends NameLevelPrereq {
-	private static String		MSG_SKILL_NAME_PART;
-	private static String		MSG_SPECIALIZATION_PART;
-	private static String		MSG_LEVEL_AND_TL_PART;
 	/** The XML tag for this class. */
 	public static final String	TAG_ROOT			= "skill_prereq";	//$NON-NLS-1$
 	private static final String	TAG_SPECIALIZATION	= "specialization"; //$NON-NLS-1$
 	private StringCriteria		mSpecializationCriteria;
-
-	static {
-		LocalizedMessages.initialize(SkillPrereq.class);
-	}
 
 	/**
 	 * Creates a new prerequisite.
@@ -142,19 +145,19 @@ public class SkillPrereq extends NameLevelPrereq {
 			satisfied = !satisfied;
 		}
 		if (!satisfied && builder != null) {
-			builder.append(MessageFormat.format(MSG_SKILL_NAME_PART, prefix, has() ? MSG_HAS : MSG_DOES_NOT_HAVE, nameCriteria.toString()));
+			builder.append(MessageFormat.format(SKILL_NAME_PART, prefix, has() ? HAS : DOES_NOT_HAVE, nameCriteria.toString()));
 			boolean notAnySpecialization = mSpecializationCriteria.getType() != StringCompareType.IS_ANYTHING;
 
 			if (notAnySpecialization) {
-				builder.append(MessageFormat.format(MSG_SPECIALIZATION_PART, mSpecializationCriteria.toString()));
+				builder.append(MessageFormat.format(SPECIALIZATION_PART, mSpecializationCriteria.toString()));
 			}
 			if (techLevel == null) {
-				builder.append(MessageFormat.format(MSG_LEVEL_PART, levelCriteria.toString()));
+				builder.append(MessageFormat.format(LEVEL_PART, levelCriteria.toString()));
 			} else {
 				if (notAnySpecialization) {
 					builder.append(","); //$NON-NLS-1$
 				}
-				builder.append(MessageFormat.format(MSG_LEVEL_AND_TL_PART, levelCriteria.toString()));
+				builder.append(MessageFormat.format(LEVEL_AND_TL_PART, levelCriteria.toString()));
 			}
 		}
 		return satisfied;

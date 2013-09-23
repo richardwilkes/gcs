@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,11 +23,20 @@
 
 package com.trollworks.gcs.skill;
 
+import static com.trollworks.gcs.skill.SkillDefaultType_LS.*;
+
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 
 import java.util.HashSet;
 
+@Localized({
+				@LS(key = "PERCEPTION", msg = "Perception"),
+				@LS(key = "SKILL_NAMED", msg = "Skill named"),
+				@LS(key = "PARRY_SKILL_NAMED", msg = "Parrying skill named"),
+				@LS(key = "BLOCK_SKILL_NAMED", msg = "Blocking skill named"),
+})
 /** The types of possible skill defaults. */
 public enum SkillDefaultType {
 	/** The type for ST-based defaults. */
@@ -69,7 +78,7 @@ public enum SkillDefaultType {
 	Per {
 		@Override
 		public String toString() {
-			return MSG_PERCEPTION;
+			return PERCEPTION;
 		}
 
 		@Override
@@ -81,7 +90,7 @@ public enum SkillDefaultType {
 	Skill {
 		@Override
 		public String toString() {
-			return MSG_SKILL_NAMED;
+			return SKILL_NAMED;
 		}
 
 		@Override
@@ -119,7 +128,7 @@ public enum SkillDefaultType {
 	Parry {
 		@Override
 		public String toString() {
-			return MSG_PARRY_SKILL_NAMED;
+			return PARRY_SKILL_NAMED;
 		}
 
 		@Override
@@ -157,7 +166,7 @@ public enum SkillDefaultType {
 	Block {
 		@Override
 		public String toString() {
-			return MSG_BLOCK_SKILL_NAMED;
+			return BLOCK_SKILL_NAMED;
 		}
 
 		@Override
@@ -191,15 +200,6 @@ public enum SkillDefaultType {
 			return true;
 		}
 	};
-
-	static String	MSG_PERCEPTION;
-	static String	MSG_SKILL_NAMED;
-	static String	MSG_PARRY_SKILL_NAMED;
-	static String	MSG_BLOCK_SKILL_NAMED;
-
-	static {
-		LocalizedMessages.initialize(SkillDefaultType.class);
-	}
 
 	/**
 	 * @param name The name of a {@link SkillDefaultType}, as returned from {@link #name()} or
