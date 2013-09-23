@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,8 +23,11 @@
 
 package com.trollworks.gcs.menu.edit;
 
+import static com.trollworks.gcs.menu.edit.JumpToSearchCommand_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
@@ -33,21 +36,19 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.JMenuItem;
 
+@Localized({
+				@LS(key = "JUMP_TO_SEARCH", msg = "Jump To Search"),
+})
 /** Provides the "Jump To Search" command. */
 public class JumpToSearchCommand extends Command {
 	/** The action command this command will issue. */
 	public static final String				CMD_JUMP_TO_SEARCH	= "JumpToSearch";				//$NON-NLS-1$
-	private static String					MSG_JUMP_TO_SEARCH;
-
-	static {
-		LocalizedMessages.initialize(JumpToSearchCommand.class);
-	}
 
 	/** The singleton {@link JumpToSearchCommand}. */
 	public static final JumpToSearchCommand	INSTANCE			= new JumpToSearchCommand();
 
 	private JumpToSearchCommand() {
-		super(MSG_JUMP_TO_SEARCH, CMD_JUMP_TO_SEARCH, KeyEvent.VK_J);
+		super(JUMP_TO_SEARCH, CMD_JUMP_TO_SEARCH, KeyEvent.VK_J);
 	}
 
 	@Override

@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,8 +23,11 @@
 
 package com.trollworks.gcs.menu.edit;
 
+import static com.trollworks.gcs.menu.edit.IncrementCommand_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.OutlineProxy;
 
 import java.awt.Component;
@@ -33,21 +36,19 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.JMenuItem;
 
+@Localized({
+				@LS(key = "INCREMENT", msg = "Increment"),
+})
 /** Provides the "Increment" command. */
 public class IncrementCommand extends Command {
 	/** The action command this command will issue. */
 	public static final String				CMD_INCREMENT	= "Increment";				//$NON-NLS-1$
-	private static String					MSG_INCREMENT;
-
-	static {
-		LocalizedMessages.initialize(IncrementCommand.class);
-	}
 
 	/** The singleton {@link IncrementCommand}. */
 	public static final IncrementCommand	INSTANCE		= new IncrementCommand();
 
 	private IncrementCommand() {
-		super(MSG_INCREMENT, CMD_INCREMENT, KeyEvent.VK_EQUALS);
+		super(INCREMENT, CMD_INCREMENT, KeyEvent.VK_EQUALS);
 	}
 
 	@Override
@@ -61,7 +62,7 @@ public class IncrementCommand extends Command {
 			setTitle(inc.getIncrementTitle());
 			setEnabled(inc.canIncrement());
 		} else {
-			setTitle(MSG_INCREMENT);
+			setTitle(INCREMENT);
 			setEnabled(false);
 		}
 	}

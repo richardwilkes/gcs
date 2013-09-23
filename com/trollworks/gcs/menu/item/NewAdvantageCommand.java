@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,14 +23,17 @@
 
 package com.trollworks.gcs.menu.item;
 
+import static com.trollworks.gcs.menu.item.NewAdvantageCommand_LS.*;
+
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.library.LibraryWindow;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.gcs.widgets.outline.ListOutline;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -38,23 +41,20 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.JMenuItem;
 
+@Localized({
+				@LS(key = "ADVANTAGE", msg = "New Advantage"),
+				@LS(key = "ADVANTAGE_CONTAINER", msg = "New Advantage Container"),
+})
 /** Provides the "New Advantage" command. */
 public class NewAdvantageCommand extends Command {
 	/** The action command this command will issue. */
-	public static final String				CMD_NEW_ADVANTAGE			= "NewAdvantage";																												//$NON-NLS-1$
+	public static final String				CMD_NEW_ADVANTAGE			= "NewAdvantage";																											//$NON-NLS-1$
 	/** The action command this command will issue. */
-	public static final String				CMD_NEW_ADVANTAGE_CONTAINER	= "NewAdvantageContainer";																										//$NON-NLS-1$
-	private static String					MSG_ADVANTAGE;
-	private static String					MSG_ADVANTAGE_CONTAINER;
-
-	static {
-		LocalizedMessages.initialize(NewAdvantageCommand.class);
-	}
-
+	public static final String				CMD_NEW_ADVANTAGE_CONTAINER	= "NewAdvantageContainer";																									//$NON-NLS-1$
 	/** The "New Advantage" command. */
-	public static final NewAdvantageCommand	INSTANCE					= new NewAdvantageCommand(false, MSG_ADVANTAGE, CMD_NEW_ADVANTAGE, KeyEvent.VK_D, COMMAND_MODIFIER);
+	public static final NewAdvantageCommand	INSTANCE					= new NewAdvantageCommand(false, ADVANTAGE, CMD_NEW_ADVANTAGE, KeyEvent.VK_D, COMMAND_MODIFIER);
 	/** The "New Advantage Container" command. */
-	public static final NewAdvantageCommand	CONTAINER_INSTANCE			= new NewAdvantageCommand(true, MSG_ADVANTAGE_CONTAINER, CMD_NEW_ADVANTAGE_CONTAINER, KeyEvent.VK_D, SHIFTED_COMMAND_MODIFIER);
+	public static final NewAdvantageCommand	CONTAINER_INSTANCE			= new NewAdvantageCommand(true, ADVANTAGE_CONTAINER, CMD_NEW_ADVANTAGE_CONTAINER, KeyEvent.VK_D, SHIFTED_COMMAND_MODIFIER);
 	private boolean							mContainer;
 
 	private NewAdvantageCommand(boolean container, String title, String cmd, int keyCode, int modifiers) {

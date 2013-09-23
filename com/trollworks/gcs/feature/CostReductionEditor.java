@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,26 +23,27 @@
 
 package com.trollworks.gcs.feature;
 
+import static com.trollworks.gcs.feature.CostReductionEditor_LS.*;
+
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.FlexGrid;
 import com.trollworks.ttk.layout.FlexRow;
 import com.trollworks.ttk.layout.FlexSpacer;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 
 import javax.swing.JComboBox;
 
+@Localized({
+				@LS(key = "BY", msg = "by {0}%"),
+})
 /** An cost reduction editor. */
 public class CostReductionEditor extends FeatureEditor {
-	private static String		MSG_BY;
 	private static final String	CHANGE_ATTRIBUTE	= "ChangeAttribute";	//$NON-NLS-1$
 	private static final String	CHANGE_PERCENTAGE	= "ChangePercentage";	//$NON-NLS-1$
-
-	static {
-		LocalizedMessages.initialize(CostReductionEditor.class);
-	}
 
 	/**
 	 * Create a new cost reduction editor.
@@ -66,7 +67,7 @@ public class CostReductionEditor extends FeatureEditor {
 		row.add(addComboBox(CHANGE_ATTRIBUTE, names, feature.getAttribute().name()));
 		String[] percents = new String[16];
 		for (int i = 0; i < 16; i++) {
-			percents[i] = MessageFormat.format(MSG_BY, new Integer((i + 1) * 5));
+			percents[i] = MessageFormat.format(BY, new Integer((i + 1) * 5));
 		}
 		row.add(addComboBox(CHANGE_PERCENTAGE, percents, percents[Math.min(80, Math.max(0, feature.getPercentage())) / 5 - 1]));
 		row.add(new FlexSpacer(0, 0, true, false));

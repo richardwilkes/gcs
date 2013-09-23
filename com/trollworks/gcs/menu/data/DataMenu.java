@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,12 +23,15 @@
 
 package com.trollworks.gcs.menu.data;
 
+import static com.trollworks.gcs.menu.data.DataMenu_LS.*;
+
 import com.trollworks.gcs.common.ListCollectionThread;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.image.ToolkitImage;
 import com.trollworks.ttk.menu.DynamicMenuEnabler;
 import com.trollworks.ttk.menu.StdMenuBar;
 import com.trollworks.ttk.menu.file.OpenDataFileCommand;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Path;
 import com.trollworks.ttk.widgets.AppWindow;
 
@@ -42,18 +45,16 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
+@Localized({
+				@LS(key = "DATA", msg = "Data"),
+})
 /** The standard "Data" menu. */
 public class DataMenu extends JMenu {
-	private static String		MSG_DATA;
 	private static final String	MENU_KEY_SUFFIX_REGEX	= ".*__[A-Za-z0-9]";	//$NON-NLS-1$
-
-	static {
-		LocalizedMessages.initialize(DataMenu.class);
-	}
 
 	/** Creates a new {@link DataMenu}. */
 	public DataMenu() {
-		super(MSG_DATA);
+		super(DATA);
 		addToMenu(ListCollectionThread.get().getLists(), this);
 		DynamicMenuEnabler.add(this);
 	}

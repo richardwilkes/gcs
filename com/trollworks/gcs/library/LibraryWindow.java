@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.library;
+
+import static com.trollworks.gcs.library.LibraryWindow_LS.*;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageOutline;
@@ -37,13 +39,14 @@ import com.trollworks.gcs.spell.SpellOutline;
 import com.trollworks.gcs.widgets.GCSWindow;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.image.ToolkitImage;
 import com.trollworks.ttk.layout.FlexColumn;
 import com.trollworks.ttk.layout.FlexRow;
 import com.trollworks.ttk.menu.file.Saveable;
 import com.trollworks.ttk.notification.BatchNotifierTarget;
 import com.trollworks.ttk.preferences.Preferences;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Path;
 import com.trollworks.ttk.utility.UIUtilities;
 import com.trollworks.ttk.utility.WindowSizeEnforcer;
@@ -75,23 +78,25 @@ import javax.swing.JToolBar;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+@Localized({
+				@LS(key = "TITLE", msg = "Library"),
+				@LS(key = "TOGGLE_EDIT_MODE_TOOLTIP", msg = "Switches between allowing editing and not"),
+				@LS(key = "TOGGLE_ROWS_OPEN_TOOLTIP", msg = "Opens/closes all hierarchical rows"),
+				@LS(key = "SIZE_COLUMNS_TO_FIT_TOOLTIP", msg = "Sets the width of each column to exactly fit its contents"),
+				@LS(key = "SAVE_ERROR", msg = "An error occurred while trying to save the library."),
+				@LS(key = "ADVANTAGES", msg = "Advantages"),
+				@LS(key = "SKILLS", msg = "Skills"),
+				@LS(key = "SPELLS", msg = "Spells"),
+				@LS(key = "EQUIPMENT", msg = "Equipment"),
+				@LS(key = "CHOOSE_CATEGORY", msg = "Any Category"),
+				@LS(key = "SEARCH_FIELD_TOOLTIP", msg = "Enter text here to narrow the list to only those rows containing matching items"),
+})
 /** The library window. */
 public class LibraryWindow extends GCSWindow implements Saveable, ActionListener, BatchNotifierTarget, RowFilter, DocumentListener, JumpToSearchTarget {
-	private static String		MSG_TITLE;
-	private static String		MSG_TOGGLE_EDIT_MODE_TOOLTIP;
-	private static String		MSG_TOGGLE_ROWS_OPEN_TOOLTIP;
-	private static String		MSG_SIZE_COLUMNS_TO_FIT_TOOLTIP;
-	private static String		MSG_SAVE_ERROR;
-	private static String		MSG_CHOOSE_CATEGORY;
-	private static String		MSG_SEARCH_FIELD_TOOLTIP;
 	private static final String	ADVANTAGES_CONFIG	= "AdvantagesConfig";	//$NON-NLS-1$
 	private static final String	SKILLS_CONFIG		= "SkillsConfig";		//$NON-NLS-1$
 	private static final String	SPELLS_CONFIG		= "SpellsConfig";		//$NON-NLS-1$
 	private static final String	EQUIPMENT_CONFIG	= "EquipmentConfig";	//$NON-NLS-1$
-	static String				MSG_ADVANTAGES;
-	static String				MSG_SKILLS;
-	static String				MSG_SPELLS;
-	static String				MSG_EQUIPMENT;
 	private LibraryFile			mFile;
 	private JTextField			mFilterField;
 	private IconButton			mToggleLockButton;
@@ -107,10 +112,6 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	private ListOutline			mSkillsOutline;
 	private ListOutline			mSpellsOutline;
 	private ListOutline			mEquipmentOutline;
-
-	static {
-		LocalizedMessages.initialize(LibraryWindow.class);
-	}
 
 	/**
 	 * Looks for an existing {@link LibraryWindow} for the specified {@link LibraryFile}.
@@ -176,7 +177,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	 * @param file The {@link LibraryFile} to display.
 	 */
 	public LibraryWindow(LibraryFile file) {
-		super(MSG_TITLE, GCSImages.getLibraryIcon(true), GCSImages.getLibraryIcon(false));
+		super(TITLE, GCSImages.getLibraryIcon(true), GCSImages.getLibraryIcon(false));
 		mFile = file;
 		mLocked = mFile.getFile() != null;
 
@@ -248,7 +249,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 		if (mFile.wasImported()) {
 			title = mFile.getSuggestedFileNameFromImport();
 		} else if (file == null) {
-			title = BaseWindow.getNextUntitledWindowName(getClass(), MSG_TITLE, this);
+			title = BaseWindow.getNextUntitledWindowName(getClass(), TITLE, this);
 		} else {
 			title = Path.getLeafName(file.getName(), false);
 		}
@@ -266,9 +267,9 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 		mFile.addDataModifiedListener(marker);
 		toolbar.add(marker);
 		firstRow.add(marker);
-		mToggleLockButton = createToolBarButton(toolbar, firstRow, mLocked ? ToolkitImage.getLockedIcon() : ToolkitImage.getUnlockedIcon(), MSG_TOGGLE_EDIT_MODE_TOOLTIP);
-		mToggleRowsButton = createToolBarButton(toolbar, firstRow, ToolkitImage.getToggleOpenIcon(), MSG_TOGGLE_ROWS_OPEN_TOOLTIP);
-		mSizeColumnsButton = createToolBarButton(toolbar, firstRow, ToolkitImage.getSizeToFitIcon(), MSG_SIZE_COLUMNS_TO_FIT_TOOLTIP);
+		mToggleLockButton = createToolBarButton(toolbar, firstRow, mLocked ? ToolkitImage.getLockedIcon() : ToolkitImage.getUnlockedIcon(), TOGGLE_EDIT_MODE_TOOLTIP);
+		mToggleRowsButton = createToolBarButton(toolbar, firstRow, ToolkitImage.getToggleOpenIcon(), TOGGLE_ROWS_OPEN_TOOLTIP);
+		mSizeColumnsButton = createToolBarButton(toolbar, firstRow, ToolkitImage.getSizeToFitIcon(), SIZE_COLUMNS_TO_FIT_TOOLTIP);
 		createTypeCombo(toolbar, firstRow);
 		createCategoryCombo(toolbar, firstRow);
 
@@ -276,7 +277,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 		column.add(secondRow);
 		mFilterField = new JTextField(20);
 		mFilterField.getDocument().addDocumentListener(this);
-		mFilterField.setToolTipText(MSG_SEARCH_FIELD_TOOLTIP);
+		mFilterField.setToolTipText(SEARCH_FIELD_TOOLTIP);
 		mFilterField.putClientProperty("JTextField.variant", "search"); //$NON-NLS-1$ //$NON-NLS-2$
 		toolbar.add(mFilterField);
 		secondRow.add(mFilterField);
@@ -308,7 +309,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 
 	private void adjustCategoryCombo() {
 		mCategoryCombo.removeAllItems();
-		mCategoryCombo.addItem(MSG_CHOOSE_CATEGORY);
+		mCategoryCombo.addItem(CHOOSE_CATEGORY);
 		for (String category : mFile.getCategoriesFor(getListFile())) {
 			mCategoryCombo.addItem(category);
 		}
@@ -321,21 +322,21 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	}
 
 	private void createTypeCombo(JToolBar toolbar, FlexRow row) {
-		mTypeCombo = new JComboBox<>(new Object[] { MSG_ADVANTAGES, MSG_SKILLS, MSG_SPELLS, MSG_EQUIPMENT });
+		mTypeCombo = new JComboBox<>(new Object[] { ADVANTAGES, SKILLS, SPELLS, EQUIPMENT });
 		mTypeCombo.setRenderer(new DefaultListCellRenderer() {
 			@Override
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				if (value == MSG_ADVANTAGES) {
+				if (value == ADVANTAGES) {
 					setIcon(new ImageIcon(GCSImages.getAdvantageIcon(false, true)));
 				}
-				if (value == MSG_SKILLS) {
+				if (value == SKILLS) {
 					setIcon(new ImageIcon(GCSImages.getSkillIcon(false, true)));
 				}
-				if (value == MSG_SPELLS) {
+				if (value == SPELLS) {
 					setIcon(new ImageIcon(GCSImages.getSpellIcon(false, true)));
 				}
-				if (value == MSG_EQUIPMENT) {
+				if (value == EQUIPMENT) {
 					setIcon(new ImageIcon(GCSImages.getEquipmentIcon(false, true)));
 				}
 				return comp;
@@ -344,11 +345,11 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 		UIUtilities.setOnlySize(mTypeCombo, mTypeCombo.getPreferredSize());
 		if (mAdvantagesOutline.getModel().getRowCount() == 0) {
 			if (mSkillsOutline.getModel().getRowCount() > 0) {
-				mTypeCombo.setSelectedItem(MSG_SKILLS);
+				mTypeCombo.setSelectedItem(SKILLS);
 			} else if (mSpellsOutline.getModel().getRowCount() > 0) {
-				mTypeCombo.setSelectedItem(MSG_SPELLS);
+				mTypeCombo.setSelectedItem(SPELLS);
 			} else if (mEquipmentOutline.getModel().getRowCount() > 0) {
-				mTypeCombo.setSelectedItem(MSG_EQUIPMENT);
+				mTypeCombo.setSelectedItem(EQUIPMENT);
 			}
 		}
 		mTypeCombo.addActionListener(this);
@@ -395,7 +396,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 			adjustWindowTitle();
 			return new File[] { file };
 		}
-		WindowUtils.showError(this, MSG_SAVE_ERROR);
+		WindowUtils.showError(this, SAVE_ERROR);
 		return new File[0];
 	}
 
@@ -442,13 +443,13 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 
 	private ListOutline getOutlineFromTypeCombo() {
 		Object item = mTypeCombo.getSelectedItem();
-		if (item == MSG_ADVANTAGES) {
+		if (item == ADVANTAGES) {
 			return mAdvantagesOutline;
-		} else if (item == MSG_SKILLS) {
+		} else if (item == SKILLS) {
 			return mSkillsOutline;
-		} else if (item == MSG_SPELLS) {
+		} else if (item == SPELLS) {
 			return mSpellsOutline;
-		} else if (item == MSG_EQUIPMENT) {
+		} else if (item == EQUIPMENT) {
 			return mEquipmentOutline;
 		}
 		return mAdvantagesOutline;
@@ -456,13 +457,13 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 
 	private ListFile getListFile() {
 		Object item = mTypeCombo.getSelectedItem();
-		if (item == MSG_ADVANTAGES) {
+		if (item == ADVANTAGES) {
 			return mFile.getAdvantageList();
-		} else if (item == MSG_SKILLS) {
+		} else if (item == SKILLS) {
 			return mFile.getSkillList();
-		} else if (item == MSG_SPELLS) {
+		} else if (item == SPELLS) {
 			return mFile.getSpellList();
-		} else if (item == MSG_EQUIPMENT) {
+		} else if (item == EQUIPMENT) {
 			return mFile.getEquipmentList();
 		}
 		return mFile.getAdvantageList();
@@ -539,25 +540,25 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 
 	/** Switch to the unfiltered Advantages view. */
 	public void switchToAdvantages() {
-		mTypeCombo.setSelectedItem(MSG_ADVANTAGES);
+		mTypeCombo.setSelectedItem(ADVANTAGES);
 		mFilterField.setText(""); //$NON-NLS-1$
 	}
 
 	/** Switch to the unfiltered Skills view. */
 	public void switchToSkills() {
-		mTypeCombo.setSelectedItem(MSG_SKILLS);
+		mTypeCombo.setSelectedItem(SKILLS);
 		mFilterField.setText(""); //$NON-NLS-1$
 	}
 
 	/** Switch to the unfiltered Spells view. */
 	public void switchToSpells() {
-		mTypeCombo.setSelectedItem(MSG_SPELLS);
+		mTypeCombo.setSelectedItem(SPELLS);
 		mFilterField.setText(""); //$NON-NLS-1$
 	}
 
 	/** Switch to the unfiltered Equipment view. */
 	public void switchToEquipment() {
-		mTypeCombo.setSelectedItem(MSG_EQUIPMENT);
+		mTypeCombo.setSelectedItem(EQUIPMENT);
 		mFilterField.setText(""); //$NON-NLS-1$
 	}
 

@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,13 +23,16 @@
 
 package com.trollworks.gcs.menu.item;
 
+import static com.trollworks.gcs.menu.item.ApplyTemplateCommand_LS.*;
+
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateWindow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
 import com.trollworks.ttk.undo.MultipleUndo;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Row;
 
 import java.awt.Window;
@@ -39,22 +42,19 @@ import java.util.ArrayList;
 
 import javax.swing.JMenuItem;
 
+@Localized({
+				@LS(key = "APPLY_TEMPLATE_TO_SHEET", msg = "Apply Template To Character Sheet"),
+				@LS(key = "UNDO", msg = "Apply Template"),
+})
 /** Provides the "Apply Template To Sheet" command. */
 public class ApplyTemplateCommand extends Command {
 	/** The action command this command will issue. */
 	public static final String					CMD_APPLY_TEMPLATE	= "ApplyTemplate";				//$NON-NLS-1$
-	private static String						MSG_APPLY_TEMPLATE_TO_SHEET;
-	private static String						MSG_UNDO;
-
-	static {
-		LocalizedMessages.initialize(ApplyTemplateCommand.class);
-	}
-
 	/** The singleton {@link ApplyTemplateCommand}. */
 	public static final ApplyTemplateCommand	INSTANCE			= new ApplyTemplateCommand();
 
 	private ApplyTemplateCommand() {
-		super(MSG_APPLY_TEMPLATE_TO_SHEET, CMD_APPLY_TEMPLATE, KeyEvent.VK_A, SHIFTED_COMMAND_MODIFIER);
+		super(APPLY_TEMPLATE_TO_SHEET, CMD_APPLY_TEMPLATE, KeyEvent.VK_A, SHIFTED_COMMAND_MODIFIER);
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public class ApplyTemplateCommand extends Command {
 		Window window = getActiveWindow();
 		if (window instanceof TemplateWindow) {
 			Template template = ((TemplateWindow) window).getTemplate();
-			MultipleUndo edit = new MultipleUndo(MSG_UNDO);
+			MultipleUndo edit = new MultipleUndo(UNDO);
 			ArrayList<Row> rows = new ArrayList<>();
 			String notes = template.getNotes().trim();
 			SheetWindow sheet = SheetWindow.getTopSheet();

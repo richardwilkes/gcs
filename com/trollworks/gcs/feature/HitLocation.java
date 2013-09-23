@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,125 +23,63 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 
 import java.util.ArrayList;
 
+@Localized({
+				@LS(key = "SKULL", msg = "to the skull"),
+				@LS(key = "EYES", msg = "to the eyes"),
+				@LS(key = "FACE", msg = "to the face"),
+				@LS(key = "NECK", msg = "to the neck"),
+				@LS(key = "TORSO", msg = "to the torso"),
+				@LS(key = "VITALS", msg = "to the vitals"),
+				@LS(key = "GROIN", msg = "to the groin"),
+				@LS(key = "ARMS", msg = "to the arms"),
+				@LS(key = "HANDS", msg = "to the hands"),
+				@LS(key = "LEGS", msg = "to the legs"),
+				@LS(key = "FEET", msg = "to the feet"),
+				@LS(key = "FULL_BODY", msg = "to the full body"),
+				@LS(key = "FULL_BODY_EXCEPT_EYES", msg = "to the full body except the eyes"),
+})
 /** Hit locations. */
 public enum HitLocation {
 	/** The skull hit location. */
-	SKULL {
-		@Override
-		public String toString() {
-			return MSG_SKULL;
-		}
-	},
+	SKULL,
 	/** The eyes hit location. */
-	EYES {
-		@Override
-		public String toString() {
-			return MSG_EYES;
-		}
-	},
+	EYES,
 	/** The face hit location. */
-	FACE {
-		@Override
-		public String toString() {
-			return MSG_FACE;
-		}
-	},
+	FACE,
 	/** The neck hit location. */
-	NECK {
-		@Override
-		public String toString() {
-			return MSG_NECK;
-		}
-	},
+	NECK,
 	/** The torso hit location. */
-	TORSO {
-		@Override
-		public String toString() {
-			return MSG_TORSO;
-		}
-	},
+	TORSO,
 	/** The vitals hit location. */
 	VITALS {
-		@Override
-		public String toString() {
-			return MSG_VITALS;
-		}
-
 		@Override
 		public boolean isChoosable() {
 			return false;
 		}
 	},
 	/** The groin hit location. */
-	GROIN {
-		@Override
-		public String toString() {
-			return MSG_GROIN;
-		}
-	},
+	GROIN,
 	/** The arm hit location. */
-	ARMS {
-		@Override
-		public String toString() {
-			return MSG_ARMS;
-		}
-	},
+	ARMS,
 	/** The hand hit location. */
-	HANDS {
-		@Override
-		public String toString() {
-			return MSG_HANDS;
-		}
-	},
+	HANDS,
 	/** The leg hit location. */
-	LEGS {
-		@Override
-		public String toString() {
-			return MSG_LEGS;
-		}
-	},
+	LEGS,
 	/** The foot hit location. */
-	FEET {
-		@Override
-		public String toString() {
-			return MSG_FEET;
-		}
-	},
+	FEET,
 	/** The full body hit location. */
-	FULL_BODY {
-		@Override
-		public String toString() {
-			return MSG_FULL_BODY;
-		}
-	},
+	FULL_BODY,
 	/** The full body except eyes hit location. */
-	FULL_BODY_EXCEPT_EYES {
-		@Override
-		public String toString() {
-			return MSG_FULL_BODY_EXCEPT_EYES;
-		}
-	};
+	FULL_BODY_EXCEPT_EYES;
 
-	static String	MSG_SKULL;
-	static String	MSG_EYES;
-	static String	MSG_FACE;
-	static String	MSG_NECK;
-	static String	MSG_TORSO;
-	static String	MSG_FULL_BODY;
-	static String	MSG_FULL_BODY_EXCEPT_EYES;
-	static String	MSG_VITALS;
-	static String	MSG_GROIN;
-	static String	MSG_ARMS;
-	static String	MSG_HANDS;
-	static String	MSG_LEGS;
-	static String	MSG_FEET;
-
-	static {
-		LocalizedMessages.initialize(HitLocation.class);
+	@Override
+	public String toString() {
+		return HitLocation_LS.toString(this);
 	}
 
 	/** @return The hit locations that can be chosen as an armor protection spot. */

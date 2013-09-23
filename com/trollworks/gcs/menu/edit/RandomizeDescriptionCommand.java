@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,11 +23,14 @@
 
 package com.trollworks.gcs.menu.edit;
 
+import static com.trollworks.gcs.menu.edit.RandomizeDescriptionCommand_LS.*;
+
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.DescriptionRandomizer;
 import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.WindowUtils;
 
 import java.awt.Window;
@@ -37,24 +40,22 @@ import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
+@Localized({
+				@LS(key = "RANDOMIZE_DESCRIPTION", msg = "Randomize Description\u2026"),
+				@LS(key = "RANDOMIZER", msg = "Description Randomizer"),
+				@LS(key = "APPLY", msg = "Apply"),
+				@LS(key = "CANCEL", msg = "Cancel"),
+})
 /** Provides the "Randomize Description" command. */
 public class RandomizeDescriptionCommand extends Command {
 	/** The action command this command will issue. */
 	public static final String						CMD_RANDOMIZE_DESCRIPTION	= "RandomizeDescription";				//$NON-NLS-1$
-	private static String							MSG_RANDOMIZE_DESCRIPTION;
-	private static String							MSG_RANDOMIZER;
-	private static String							MSG_APPLY;
-	private static String							MSG_CANCEL;
-
-	static {
-		LocalizedMessages.initialize(RandomizeDescriptionCommand.class);
-	}
 
 	/** The singleton {@link RandomizeDescriptionCommand}. */
 	public static final RandomizeDescriptionCommand	INSTANCE					= new RandomizeDescriptionCommand();
 
 	private RandomizeDescriptionCommand() {
-		super(MSG_RANDOMIZE_DESCRIPTION, CMD_RANDOMIZE_DESCRIPTION);
+		super(RANDOMIZE_DESCRIPTION, CMD_RANDOMIZE_DESCRIPTION);
 	}
 
 	@Override
@@ -66,7 +67,7 @@ public class RandomizeDescriptionCommand extends Command {
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		DescriptionRandomizer panel = new DescriptionRandomizer(((SheetWindow) getActiveWindow()).getCharacter());
-		if (WindowUtils.showOptionDialog(null, panel, MSG_RANDOMIZER, true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, new ImageIcon(GCSImages.getCharacterSheetIcon(true)), new String[] { MSG_APPLY, MSG_CANCEL }, MSG_APPLY) == JOptionPane.OK_OPTION) {
+		if (WindowUtils.showOptionDialog(null, panel, RANDOMIZER, true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, new ImageIcon(GCSImages.getCharacterSheetIcon(true)), new String[] { APPLY, CANCEL }, APPLY) == JOptionPane.OK_OPTION) {
 			panel.applyChanges();
 		}
 	}

@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,6 +23,10 @@
 
 package com.trollworks.gcs.menu.file;
 
+import static com.trollworks.gcs.menu.file.FileMenu_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
 import com.trollworks.ttk.menu.DynamicMenuEnabler;
 import com.trollworks.ttk.menu.DynamicMenuItem;
@@ -35,21 +39,17 @@ import com.trollworks.ttk.menu.file.QuitCommand;
 import com.trollworks.ttk.menu.file.RecentFilesMenu;
 import com.trollworks.ttk.menu.file.SaveAsCommand;
 import com.trollworks.ttk.menu.file.SaveCommand;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Platform;
 
 import java.util.HashSet;
 
 import javax.swing.JMenu;
 
+@Localized({
+				@LS(key = "FILE", msg = "File"),
+})
 /** The standard "File" menu. */
 public class FileMenu extends JMenu {
-	private static String	MSG_FILE;
-
-	static {
-		LocalizedMessages.initialize(FileMenu.class);
-	}
-
 	/**
 	 * @return The set of {@link Command}s that this menu provides that can have their accelerators
 	 *         modified.
@@ -76,7 +76,7 @@ public class FileMenu extends JMenu {
 
 	/** Creates a new {@link FileMenu}. */
 	public FileMenu() {
-		super(MSG_FILE);
+		super(FILE);
 		add(new DynamicMenuItem(NewCharacterSheetCommand.INSTANCE));
 		add(new DynamicMenuItem(NewCharacterTemplateCommand.INSTANCE));
 		add(new DynamicMenuItem(NewLibraryCommand.INSTANCE));

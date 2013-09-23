@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,31 +23,32 @@
 
 package com.trollworks.gcs.menu.edit;
 
+import static com.trollworks.gcs.menu.edit.AddNaturalKickCommand_LS.*;
+
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JMenuItem;
 
+@Localized({
+				@LS(key = "ADD_NATURAL_KICK", msg = "Include Kick In Weapons"),
+})
 /** Provides the "Add Natural Kick" command. */
 public class AddNaturalKickCommand extends Command {
 	/** The action command this command will issue. */
 	public static final String					CMD_ADD_NATURAL_KICK	= "AddNaturalKick";			//$NON-NLS-1$
-	private static String						MSG_ADD_NATURAL_KICK;
-
-	static {
-		LocalizedMessages.initialize(AddNaturalKickCommand.class);
-	}
 
 	/** The singleton {@link AddNaturalKickCommand}. */
 	public static final AddNaturalKickCommand	INSTANCE				= new AddNaturalKickCommand();
 
 	private AddNaturalKickCommand() {
-		super(MSG_ADD_NATURAL_KICK, CMD_ADD_NATURAL_KICK);
+		super(ADD_NATURAL_KICK, CMD_ADD_NATURAL_KICK);
 	}
 
 	@Override

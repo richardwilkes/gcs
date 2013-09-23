@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.library;
+
+import static com.trollworks.gcs.library.LibraryFile_LS.*;
 
 import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.app.GCSImages;
@@ -32,7 +34,8 @@ import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.utility.Path;
 import com.trollworks.ttk.widgets.DataModifiedListener;
 import com.trollworks.ttk.widgets.WindowUtils;
@@ -48,9 +51,11 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.TreeSet;
 
+@Localized({
+				@LS(key = "WARNING", msg = "The file \"{0}\" was imported into a data library.\nThe original file has not been modified."),
+})
 /** Holds the contents of a library file. */
 public class LibraryFile extends DataFile implements DataModifiedListener {
-	static String				MSG_WARNING;
 	/** The current version. */
 	public static final int		CURRENT_VERSION	= 1;
 	/** The XML tag for library files. */
@@ -63,10 +68,6 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 	private EquipmentList		mEquipment;
 	private boolean				mImported;
 	private String				mSuggestedName;
-
-	static {
-		LocalizedMessages.initialize(LibraryFile.class);
-	}
 
 	/** Creates a new, empty, {@link LibraryFile}. */
 	public LibraryFile() {
@@ -90,7 +91,7 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 			EventQueue.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					WindowUtils.showWarning(null, MessageFormat.format(MSG_WARNING, file.getName()));
+					WindowUtils.showWarning(null, MessageFormat.format(WARNING, file.getName()));
 				}
 			});
 		}

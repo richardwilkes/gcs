@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,9 +23,12 @@
 
 package com.trollworks.gcs.menu.item;
 
+import static com.trollworks.gcs.menu.item.OpenEditorCommand_LS.*;
+
 import com.trollworks.gcs.widgets.outline.ListOutline;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.Outline;
 
 import java.awt.Component;
@@ -34,21 +37,19 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.JMenuItem;
 
+@Localized({
+				@LS(key = "OPEN_EDITOR", msg = "Open Detail Editor"),
+})
 /** Provides the "Open Detail Editor" command. */
 public class OpenEditorCommand extends Command {
 	/** The action command this command will issue. */
 	public static final String				CMD_OPEN_EDITOR	= "OpeNEditor";			//$NON-NLS-1$
-	private static String					MSG_OPEN_EDITOR;
-
-	static {
-		LocalizedMessages.initialize(OpenEditorCommand.class);
-	}
 
 	/** The singleton {@link OpenEditorCommand}. */
 	public static final OpenEditorCommand	INSTANCE		= new OpenEditorCommand();
 
 	private OpenEditorCommand() {
-		super(MSG_OPEN_EDITOR, CMD_OPEN_EDITOR, KeyEvent.VK_I);
+		super(OPEN_EDITOR, CMD_OPEN_EDITOR, KeyEvent.VK_I);
 	}
 
 	@Override

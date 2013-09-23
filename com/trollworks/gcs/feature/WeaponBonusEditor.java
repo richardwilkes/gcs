@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,26 +23,26 @@
 
 package com.trollworks.gcs.feature;
 
+import static com.trollworks.gcs.feature.WeaponBonusEditor_LS.*;
+
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.FlexGrid;
 import com.trollworks.ttk.layout.FlexRow;
 import com.trollworks.ttk.layout.FlexSpacer;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.Insets;
 
+@Localized({
+				@LS(key = "WEAPON_SKILL", msg = "to weapons whose required skill name "),
+				@LS(key = "RELATIVE_SKILL_LEVEL", msg = "and relative skill level "),
+				@LS(key = "SPECIALIZATION", msg = "and specialization "),
+})
 /** A weapon bonus editor. */
 public class WeaponBonusEditor extends FeatureEditor {
-	private static String	MSG_WEAPON_SKILL;
-	private static String	MSG_RELATIVE_SKILL_LEVEL;
-	private static String	MSG_SPECIALIZATION;
-
-	static {
-		LocalizedMessages.initialize(WeaponBonusEditor.class);
-	}
-
 	/**
 	 * Create a new skill bonus editor.
 	 * 
@@ -68,21 +68,21 @@ public class WeaponBonusEditor extends FeatureEditor {
 		row = new FlexRow();
 		row.setInsets(new Insets(0, 20, 0, 0));
 		StringCriteria criteria = bonus.getNameCriteria();
-		row.add(addStringCompareCombo(criteria, MSG_WEAPON_SKILL));
+		row.add(addStringCompareCombo(criteria, WEAPON_SKILL));
 		row.add(addStringCompareField(criteria));
 		grid.add(row, 1, 0);
 
 		row = new FlexRow();
 		row.setInsets(new Insets(0, 20, 0, 0));
 		criteria = bonus.getSpecializationCriteria();
-		row.add(addStringCompareCombo(criteria, MSG_SPECIALIZATION));
+		row.add(addStringCompareCombo(criteria, SPECIALIZATION));
 		row.add(addStringCompareField(criteria));
 		grid.add(row, 2, 0);
 
 		row = new FlexRow();
 		row.setInsets(new Insets(0, 20, 0, 0));
 		IntegerCriteria levelCriteria = bonus.getLevelCriteria();
-		row.add(addNumericCompareCombo(levelCriteria, MSG_RELATIVE_SKILL_LEVEL));
+		row.add(addNumericCompareCombo(levelCriteria, RELATIVE_SKILL_LEVEL));
 		row.add(addNumericCompareField(levelCriteria, -999, 999, true));
 		row.add(new FlexSpacer(0, 0, true, false));
 		grid.add(row, 3, 0);

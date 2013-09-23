@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,31 +23,32 @@
 
 package com.trollworks.gcs.menu.file;
 
+import static com.trollworks.gcs.menu.file.NewCharacterSheetCommand_LS.*;
+
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 import javax.swing.JMenuItem;
 
+@Localized({
+				@LS(key = "NEW_CHARACTER_SHEET", msg = "New Character Sheet"),
+})
 /** Provides the "New Character Sheet" command. */
 public class NewCharacterSheetCommand extends Command {
 	/** The action command this command will issue. */
 	public static final String						CMD_NEW_CHARACTER_SHEET	= "NewCharacterSheet";				//$NON-NLS-1$
-	private static String							MSG_NEW_CHARACTER_SHEET;
-
-	static {
-		LocalizedMessages.initialize(NewCharacterSheetCommand.class);
-	}
 
 	/** The singleton {@link NewCharacterSheetCommand}. */
 	public static final NewCharacterSheetCommand	INSTANCE				= new NewCharacterSheetCommand();
 
 	private NewCharacterSheetCommand() {
-		super(MSG_NEW_CHARACTER_SHEET, CMD_NEW_CHARACTER_SHEET, KeyEvent.VK_N);
+		super(NEW_CHARACTER_SHEET, CMD_NEW_CHARACTER_SHEET, KeyEvent.VK_N);
 	}
 
 	@Override

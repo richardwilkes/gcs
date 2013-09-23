@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,23 +23,23 @@
 
 package com.trollworks.gcs.menu.item;
 
+import static com.trollworks.gcs.menu.item.ItemMenu_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
 import com.trollworks.ttk.menu.DynamicMenuEnabler;
 import com.trollworks.ttk.menu.DynamicMenuItem;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.util.HashSet;
 
 import javax.swing.JMenu;
 
+@Localized({
+				@LS(key = "ITEM", msg = "Item"),
+})
 /** The "Item" menu. */
 public class ItemMenu extends JMenu {
-	private static String	MSG_ITEM;
-
-	static {
-		LocalizedMessages.initialize(ItemMenu.class);
-	}
-
 	/**
 	 * @return The set of {@link Command}s that this menu provides that can have their accelerators
 	 *         modified.
@@ -54,7 +54,7 @@ public class ItemMenu extends JMenu {
 		cmds.add(NewAdvantageCommand.CONTAINER_INSTANCE);
 		cmds.add(NewSkillCommand.INSTANCE);
 		cmds.add(NewSkillCommand.CONTAINER_INSTANCE);
-		cmds.add(NewSkillCommand.TECHNIQUE);
+		cmds.add(NewSkillCommand.TECHNIQUE_INSTANCE);
 		cmds.add(NewSpellCommand.INSTANCE);
 		cmds.add(NewSpellCommand.CONTAINER_INSTANCE);
 		cmds.add(NewEquipmentCommand.CARRIED_INSTANCE);
@@ -64,7 +64,7 @@ public class ItemMenu extends JMenu {
 
 	/** Creates a new {@link ItemMenu}. */
 	public ItemMenu() {
-		super(MSG_ITEM);
+		super(ITEM);
 		add(new DynamicMenuItem(OpenEditorCommand.INSTANCE));
 		add(new DynamicMenuItem(CopyToSheetCommand.INSTANCE));
 		add(new DynamicMenuItem(CopyToTemplateCommand.INSTANCE));
@@ -75,7 +75,7 @@ public class ItemMenu extends JMenu {
 		addSeparator();
 		add(new DynamicMenuItem(NewSkillCommand.INSTANCE));
 		add(new DynamicMenuItem(NewSkillCommand.CONTAINER_INSTANCE));
-		add(new DynamicMenuItem(NewSkillCommand.TECHNIQUE));
+		add(new DynamicMenuItem(NewSkillCommand.TECHNIQUE_INSTANCE));
 		addSeparator();
 		add(new DynamicMenuItem(NewSpellCommand.INSTANCE));
 		add(new DynamicMenuItem(NewSpellCommand.CONTAINER_INSTANCE));

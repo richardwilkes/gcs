@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,14 +23,17 @@
 
 package com.trollworks.gcs.menu.item;
 
+import static com.trollworks.gcs.menu.item.NewSpellCommand_LS.*;
+
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.library.LibraryWindow;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.gcs.widgets.outline.ListOutline;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -38,23 +41,21 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.JMenuItem;
 
+@Localized({
+				@LS(key = "SPELL", msg = "New Spell"),
+				@LS(key = "SPELL_CONTAINER", msg = "New Spell Container"),
+})
 /** Provides the "New Spell" command. */
 public class NewSpellCommand extends Command {
 	/** The action command this command will issue. */
-	public static final String			CMD_SPELL			= "NewSpell";																									//$NON-NLS-1$
+	public static final String			CMD_SPELL			= "NewSpell";																								//$NON-NLS-1$
 	/** The action command this command will issue. */
-	public static final String			CMD_SPELL_CONTAINER	= "NewSpellContainer";																							//$NON-NLS-1$
-	private static String				MSG_SPELL;
-	private static String				MSG_SPELL_CONTAINER;
-
-	static {
-		LocalizedMessages.initialize(NewSpellCommand.class);
-	}
+	public static final String			CMD_SPELL_CONTAINER	= "NewSpellContainer";																						//$NON-NLS-1$
 
 	/** The "New Spell" command. */
-	public static final NewSpellCommand	INSTANCE			= new NewSpellCommand(false, MSG_SPELL, CMD_SPELL, KeyEvent.VK_B, COMMAND_MODIFIER);
+	public static final NewSpellCommand	INSTANCE			= new NewSpellCommand(false, SPELL, CMD_SPELL, KeyEvent.VK_B, COMMAND_MODIFIER);
 	/** The "New Spell Container" command. */
-	public static final NewSpellCommand	CONTAINER_INSTANCE	= new NewSpellCommand(true, MSG_SPELL_CONTAINER, CMD_SPELL_CONTAINER, KeyEvent.VK_B, SHIFTED_COMMAND_MODIFIER);
+	public static final NewSpellCommand	CONTAINER_INSTANCE	= new NewSpellCommand(true, SPELL_CONTAINER, CMD_SPELL_CONTAINER, KeyEvent.VK_B, SHIFTED_COMMAND_MODIFIER);
 	private boolean						mContainer;
 
 	private NewSpellCommand(boolean container, String title, String cmd, int keyCode, int modifiers) {

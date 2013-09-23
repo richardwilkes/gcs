@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,174 +23,82 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 
+@Localized({
+				@LS(key = "ST", msg = "to ST"),
+				@LS(key = "DX", msg = "to DX"),
+				@LS(key = "IQ", msg = "to IQ"),
+				@LS(key = "HT", msg = "to HT"),
+				@LS(key = "WILL", msg = "to will"),
+				@LS(key = "FRIGHT_CHECK", msg = "to fright checks"),
+				@LS(key = "PERCEPTION", msg = "to perception"),
+				@LS(key = "VISION", msg = "to vision"),
+				@LS(key = "HEARING", msg = "to hearing"),
+				@LS(key = "TASTE_SMELL", msg = "to taste & smell"),
+				@LS(key = "TOUCH", msg = "to touch"),
+				@LS(key = "DODGE", msg = "to dodge"),
+				@LS(key = "PARRY", msg = "to parry"),
+				@LS(key = "BLOCK", msg = "to block"),
+				@LS(key = "SPEED", msg = "to basic speed"),
+				@LS(key = "MOVE", msg = "to basic move"),
+				@LS(key = "FP", msg = "to FP"),
+				@LS(key = "HP", msg = "to HP"),
+				@LS(key = "SM", msg = "to size modifier"),
+})
 /** The attribute affected by a {@link AttributeBonus}. */
 public enum BonusAttributeType {
 	/** The ST attribute. */
-	ST {
-		@Override
-		public String toString() {
-			return MSG_ST;
-		}
-	},
+	ST,
 	/** The DX attribute. */
-	DX {
-		@Override
-		public String toString() {
-			return MSG_DX;
-		}
-	},
+	DX,
 	/** The IQ attribute. */
-	IQ {
-		@Override
-		public String toString() {
-			return MSG_IQ;
-		}
-	},
+	IQ,
 	/** The HT attribute. */
-	HT {
-		@Override
-		public String toString() {
-			return MSG_HT;
-		}
-	},
+	HT,
 	/** The Will attribute. */
-	WILL {
-		@Override
-		public String toString() {
-			return MSG_WILL;
-		}
-	},
+	WILL,
 	/** The Fright Check attribute. */
-	FRIGHT_CHECK {
-		@Override
-		public String toString() {
-			return MSG_FRIGHT_CHECK;
-		}
-	},
+	FRIGHT_CHECK,
 	/** The Perception attribute. */
-	PERCEPTION {
-		@Override
-		public String toString() {
-			return MSG_PERCEPTION;
-		}
-	},
+	PERCEPTION,
 	/** The Vision attribute. */
-	VISION {
-		@Override
-		public String toString() {
-			return MSG_VISION;
-		}
-	},
+	VISION,
 	/** The Hearing attribute. */
-	HEARING {
-		@Override
-		public String toString() {
-			return MSG_HEARING;
-		}
-	},
+	HEARING,
 	/** The TasteSmell attribute. */
-	TASTE_SMELL {
-		@Override
-		public String toString() {
-			return MSG_TASTE_SMELL;
-		}
-	},
+	TASTE_SMELL,
 	/** The Touch attribute. */
-	TOUCH {
-		@Override
-		public String toString() {
-			return MSG_TOUCH;
-		}
-	},
+	TOUCH,
 	/** The Dodge attribute. */
-	DODGE {
-		@Override
-		public String toString() {
-			return MSG_DODGE;
-		}
-	},
+	DODGE,
 	/** The Dodge attribute. */
-	PARRY {
-		@Override
-		public String toString() {
-			return MSG_PARRY;
-		}
-	},
+	PARRY,
 	/** The Dodge attribute. */
-	BLOCK {
-		@Override
-		public String toString() {
-			return MSG_BLOCK;
-		}
-	},
+	BLOCK,
 	/** The Speed attribute. */
 	SPEED {
-		@Override
-		public String toString() {
-			return MSG_SPEED;
-		}
-
 		@Override
 		public boolean isIntegerOnly() {
 			return false;
 		}
 	},
 	/** The Move attribute. */
-	MOVE {
-		@Override
-		public String toString() {
-			return MSG_MOVE;
-		}
-	},
+	MOVE,
 	/** The FP attribute. */
-	FP {
-		@Override
-		public String toString() {
-			return MSG_FP;
-		}
-	},
+	FP,
 	/** The HP attribute. */
-	HP {
-		@Override
-		public String toString() {
-			return MSG_HP;
-		}
-	},
+	HP,
 	/** The size modifier attribute. */
-	SM {
-		@Override
-		public String toString() {
-			return MSG_SM;
-		}
-	};
+	SM;
 
-	static String	MSG_ST;
-	static String	MSG_DX;
-	static String	MSG_IQ;
-	static String	MSG_HT;
-	static String	MSG_WILL;
-	static String	MSG_FRIGHT_CHECK;
-	static String	MSG_PERCEPTION;
-	static String	MSG_VISION;
-	static String	MSG_HEARING;
-	static String	MSG_TASTE_SMELL;
-	static String	MSG_TOUCH;
-	static String	MSG_DODGE;
-	static String	MSG_PARRY;
-	static String	MSG_BLOCK;
-	static String	MSG_SPEED;
-	static String	MSG_MOVE;
-	static String	MSG_FP;
-	static String	MSG_HP;
-	static String	MSG_SM;
+	@Override
+	public String toString() {
+		return BonusAttributeType_LS.toString(this);
+	}
 
 	private String	mTag;
-
-	static {
-		LocalizedMessages.initialize(BonusAttributeType.class);
-	}
 
 	private BonusAttributeType() {
 		mTag = name();

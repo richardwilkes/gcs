@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.menu.item;
+
+import static com.trollworks.gcs.menu.item.NewEquipmentCommand_LS.*;
 
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.SheetWindow;
@@ -30,8 +32,9 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.library.LibraryWindow;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.gcs.widgets.outline.ListOutline;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -39,23 +42,20 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.JMenuItem;
 
+@Localized({
+				@LS(key = "EQUIPMENT", msg = "New Equipment"),
+				@LS(key = "EQUIPMENT_CONTAINER", msg = "New Equipment Container"),
+})
 /** Provides the "New Equipment" command. */
 public class NewEquipmentCommand extends Command {
 	/** The action command this command will issue. */
-	public static final String				CMD_NEW_EQUIPMENT			= "NewEquipment";																												//$NON-NLS-1$
+	public static final String				CMD_NEW_EQUIPMENT			= "NewEquipment";																											//$NON-NLS-1$
 	/** The action command this command will issue. */
-	public static final String				CMD_NEW_EQUIPMENT_CONTAINER	= "NewEquipmentContainer";																										//$NON-NLS-1$
-	private static String					MSG_EQUIPMENT;
-	private static String					MSG_EQUIPMENT_CONTAINER;
-
-	static {
-		LocalizedMessages.initialize(NewEquipmentCommand.class);
-	}
-
+	public static final String				CMD_NEW_EQUIPMENT_CONTAINER	= "NewEquipmentContainer";																									//$NON-NLS-1$
 	/** The "New Carried Equipment" command. */
-	public static final NewEquipmentCommand	CARRIED_INSTANCE			= new NewEquipmentCommand(false, MSG_EQUIPMENT, CMD_NEW_EQUIPMENT, KeyEvent.VK_E, COMMAND_MODIFIER);
+	public static final NewEquipmentCommand	CARRIED_INSTANCE			= new NewEquipmentCommand(false, EQUIPMENT, CMD_NEW_EQUIPMENT, KeyEvent.VK_E, COMMAND_MODIFIER);
 	/** The "New Carried Equipment Container" command. */
-	public static final NewEquipmentCommand	CARRIED_CONTAINER_INSTANCE	= new NewEquipmentCommand(true, MSG_EQUIPMENT_CONTAINER, CMD_NEW_EQUIPMENT_CONTAINER, KeyEvent.VK_E, SHIFTED_COMMAND_MODIFIER);
+	public static final NewEquipmentCommand	CARRIED_CONTAINER_INSTANCE	= new NewEquipmentCommand(true, EQUIPMENT_CONTAINER, CMD_NEW_EQUIPMENT_CONTAINER, KeyEvent.VK_E, SHIFTED_COMMAND_MODIFIER);
 	private boolean							mContainer;
 
 	private NewEquipmentCommand(boolean container, String title, String cmd, int keyCode, int modifiers) {

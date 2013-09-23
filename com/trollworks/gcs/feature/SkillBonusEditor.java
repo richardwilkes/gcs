@@ -23,24 +23,24 @@
 
 package com.trollworks.gcs.feature;
 
+import static com.trollworks.gcs.feature.SkillBonusEditor_LS.*;
+
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.FlexGrid;
 import com.trollworks.ttk.layout.FlexRow;
 import com.trollworks.ttk.layout.FlexSpacer;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.Insets;
 
+@Localized({
+				@LS(key = "SKILL_NAME", msg = "to skills whose name "),
+				@LS(key = "SPECIALIZATION", msg = "and specialization "),
+})
 /** A skill bonus editor. */
 public class SkillBonusEditor extends FeatureEditor {
-	private static String	MSG_SKILL_NAME;
-	private static String	MSG_SPECIALIZATION;
-
-	static {
-		LocalizedMessages.initialize(SkillBonusEditor.class);
-	}
-
 	/**
 	 * Create a new skill bonus editor.
 	 * 
@@ -66,14 +66,14 @@ public class SkillBonusEditor extends FeatureEditor {
 		row = new FlexRow();
 		row.setInsets(new Insets(0, 20, 0, 0));
 		StringCriteria criteria = bonus.getNameCriteria();
-		row.add(addStringCompareCombo(criteria, MSG_SKILL_NAME));
+		row.add(addStringCompareCombo(criteria, SKILL_NAME));
 		row.add(addStringCompareField(criteria));
 		grid.add(row, 1, 0);
 
 		row = new FlexRow();
 		row.setInsets(new Insets(0, 20, 0, 0));
 		criteria = bonus.getSpecializationCriteria();
-		row.add(addStringCompareCombo(criteria, MSG_SPECIALIZATION));
+		row.add(addStringCompareCombo(criteria, SPECIALIZATION));
 		row.add(addStringCompareField(criteria));
 		grid.add(row, 2, 0);
 	}

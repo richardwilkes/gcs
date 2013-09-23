@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,21 +23,21 @@
 
 package com.trollworks.gcs.feature;
 
+import static com.trollworks.gcs.feature.FeaturesPanel_LS.*;
+
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.widgets.BandedPanel;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Localized({
+				@LS(key = "FEATURES", msg = "Features"),
+})
 /** Displays and edits {@link Feature} objects. */
 public class FeaturesPanel extends BandedPanel {
-	private static String	MSG_FEATURES;
-
-	static {
-		LocalizedMessages.initialize(FeaturesPanel.class);
-	}
-
 	/**
 	 * Creates a new feature editor.
 	 * 
@@ -45,7 +45,7 @@ public class FeaturesPanel extends BandedPanel {
 	 * @param features The initial features to display.
 	 */
 	public FeaturesPanel(ListRow row, List<Feature> features) {
-		super(MSG_FEATURES);
+		super(FEATURES);
 		for (Feature feature : features) {
 			add(FeatureEditor.create(row, feature.cloneFeature()));
 		}

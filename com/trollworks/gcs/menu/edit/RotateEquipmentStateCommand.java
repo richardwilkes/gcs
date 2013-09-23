@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,15 +23,18 @@
 
 package com.trollworks.gcs.menu.edit;
 
+import static com.trollworks.gcs.menu.edit.RotateEquipmentStateCommand_LS.*;
+
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentOutline;
 import com.trollworks.gcs.equipment.EquipmentState;
 import com.trollworks.gcs.widgets.outline.MultipleRowUndo;
 import com.trollworks.gcs.widgets.outline.RowUndo;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.collections.FilteredIterator;
 import com.trollworks.ttk.menu.Command;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.OutlineProxy;
 
 import java.awt.Component;
@@ -41,21 +44,19 @@ import java.util.ArrayList;
 
 import javax.swing.JMenuItem;
 
+@Localized({
+				@LS(key = "TITLE", msg = "Rotate Equipment State"),
+})
 /** Provides the "Rotate Equipment State" command. */
 public class RotateEquipmentStateCommand extends Command {
 	/** The action command this command will issue. */
 	public static final String						CMD_ROTATE_EQUIPMENT_STATE	= "RotateEquipmentState";				//$NON-NLS-1$
-	private static String							MSG_TITLE;
-
-	static {
-		LocalizedMessages.initialize(RotateEquipmentStateCommand.class);
-	}
 
 	/** The singleton {@link RotateEquipmentStateCommand}. */
 	public static final RotateEquipmentStateCommand	INSTANCE					= new RotateEquipmentStateCommand();
 
 	private RotateEquipmentStateCommand() {
-		super(MSG_TITLE, CMD_ROTATE_EQUIPMENT_STATE, KeyEvent.VK_QUOTE);
+		super(TITLE, CMD_ROTATE_EQUIPMENT_STATE, KeyEvent.VK_QUOTE);
 	}
 
 	@Override

@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,31 +23,32 @@
 
 package com.trollworks.gcs.menu.edit;
 
+import static com.trollworks.gcs.menu.edit.AddNaturalPunchCommand_LS.*;
+
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JMenuItem;
 
+@Localized({
+				@LS(key = "ADD_NATURAL_PUNCH", msg = "Include Punch In Weapons"),
+})
 /** Provides the "Add Natural Punch" command. */
 public class AddNaturalPunchCommand extends Command {
 	/** The action command this command will issue. */
 	public static final String					CMD_ADD_NATURAL_PUNCH	= "AddNaturalPunch";			//$NON-NLS-1$
-	private static String						MSG_ADD_NATURAL_PUNCH;
-
-	static {
-		LocalizedMessages.initialize(AddNaturalPunchCommand.class);
-	}
 
 	/** The singleton {@link AddNaturalPunchCommand}. */
 	public static final AddNaturalPunchCommand	INSTANCE				= new AddNaturalPunchCommand();
 
 	private AddNaturalPunchCommand() {
-		super(MSG_ADD_NATURAL_PUNCH, CMD_ADD_NATURAL_PUNCH);
+		super(ADD_NATURAL_PUNCH, CMD_ADD_NATURAL_PUNCH);
 	}
 
 	@Override

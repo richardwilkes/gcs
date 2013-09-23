@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,8 +23,12 @@
 
 package com.trollworks.gcs.feature;
 
+import static com.trollworks.gcs.feature.FeatureEditor_LS.*;
+
 import com.trollworks.gcs.common.EditorPanel;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.image.ToolkitImage;
 import com.trollworks.ttk.layout.FlexGrid;
 import com.trollworks.ttk.layout.FlexRow;
@@ -44,18 +48,20 @@ import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.SwingConstants;
 import javax.swing.text.DefaultFormatterFactory;
 
+@Localized({
+				@LS(key = "ADD_FEATURE_TOOLTIP", msg = "Add a feature"),
+				@LS(key = "REMOVE_FEATURE_TOOLTIP", msg = "Remove this feature"),
+				@LS(key = "ATTRIBUTE_BONUS", msg = "Gives an attribute bonus of"),
+				@LS(key = "COST_REDUCTION", msg = "Reduces the attribute cost of"),
+				@LS(key = "DR_BONUS", msg = "Gives a DR bonus of"),
+				@LS(key = "SKILL_BONUS", msg = "Gives a skill level bonus of"),
+				@LS(key = "SPELL_BONUS", msg = "Gives a spell level bonus of"),
+				@LS(key = "WEAPON_BONUS", msg = "Gives a weapon damage bonus of"),
+				@LS(key = "PER_LEVEL", msg = "per level"),
+				@LS(key = "PER_DIE", msg = "per die"),
+})
 /** A generic feature editor panel. */
 public abstract class FeatureEditor extends EditorPanel {
-	private static String			MSG_ADD_FEATURE_TOOLTIP;
-	private static String			MSG_REMOVE_FEATURE_TOOLTIP;
-	private static String			MSG_ATTRIBUTE_BONUS;
-	private static String			MSG_COST_REDUCTION;
-	private static String			MSG_DR_BONUS;
-	private static String			MSG_SKILL_BONUS;
-	private static String			MSG_SPELL_BONUS;
-	private static String			MSG_WEAPON_BONUS;
-	private static String			MSG_PER_LEVEL;
-	private static String			MSG_PER_DIE;
 	private static final String		ADD					= "Add";																																//$NON-NLS-1$
 	private static final String		REMOVE				= "Remove";																															//$NON-NLS-1$
 	private static final String		CHANGE_BASE_TYPE	= "ChangeBaseType";																													//$NON-NLS-1$
@@ -120,9 +126,9 @@ public abstract class FeatureEditor extends EditorPanel {
 		FlexRow right = new FlexRow();
 		rebuildSelf(grid, right);
 		if (mFeature != null) {
-			right.add(addButton(ToolkitImage.getRemoveIcon(), REMOVE, MSG_REMOVE_FEATURE_TOOLTIP));
+			right.add(addButton(ToolkitImage.getRemoveIcon(), REMOVE, REMOVE_FEATURE_TOOLTIP));
 		}
-		right.add(addButton(ToolkitImage.getAddIcon(), ADD, MSG_ADD_FEATURE_TOOLTIP));
+		right.add(addButton(ToolkitImage.getAddIcon(), ADD, ADD_FEATURE_TOOLTIP));
 		grid.add(right, 0, 1);
 		grid.apply(this);
 		revalidate();
@@ -139,7 +145,7 @@ public abstract class FeatureEditor extends EditorPanel {
 
 	/** @return The {@link JComboBox} that allows the base feature type to be changed. */
 	protected JComboBox<Object> addChangeBaseTypeCombo() {
-		Object[] choices = new Object[] { MSG_ATTRIBUTE_BONUS, MSG_DR_BONUS, MSG_SKILL_BONUS, MSG_SPELL_BONUS, MSG_WEAPON_BONUS, MSG_COST_REDUCTION };
+		Object[] choices = new Object[] { ATTRIBUTE_BONUS, DR_BONUS, SKILL_BONUS, SPELL_BONUS, WEAPON_BONUS, COST_REDUCTION };
 		Class<?> type = mFeature.getClass();
 		Object current = choices[0];
 		for (int i = 0; i < BASE_TYPES.length; i++) {
@@ -184,7 +190,7 @@ public abstract class FeatureEditor extends EditorPanel {
 	 * @return The {@link JComboBox} that allows a {@link LeveledAmount} to be changed.
 	 */
 	protected JComboBox<Object> addLeveledAmountCombo(LeveledAmount amt, boolean usePerDie) {
-		String per = usePerDie ? MSG_PER_DIE : MSG_PER_LEVEL;
+		String per = usePerDie ? PER_DIE : PER_LEVEL;
 		mLeveledAmountCombo = addComboBox(LeveledAmount.ATTRIBUTE_PER_LEVEL, new Object[] { BLANK, per }, amt.isPerLevel() ? per : BLANK);
 		mLeveledAmountCombo.putClientProperty(LeveledAmount.class, amt);
 		return mLeveledAmountCombo;

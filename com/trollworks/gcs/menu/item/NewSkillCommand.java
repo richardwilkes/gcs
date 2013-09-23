@@ -14,14 +14,16 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
 package com.trollworks.gcs.menu.item;
+
+import static com.trollworks.gcs.menu.item.NewSkillCommand_LS.*;
 
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.common.DataFile;
@@ -30,8 +32,9 @@ import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.gcs.widgets.outline.ListOutline;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -39,28 +42,26 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.JMenuItem;
 
+@Localized({
+				@LS(key = "SKILL", msg = "New Skill"),
+				@LS(key = "SKILL_CONTAINER", msg = "New Skill Container"),
+				@LS(key = "TECHNIQUE", msg = "New Technique"),
+})
 /** Provides the "New Skill" command. */
 public class NewSkillCommand extends Command {
 	/** The action command this command will issue. */
-	public static final String			CMD_NEW_SKILL			= "NewSkill";																												//$NON-NLS-1$
+	public static final String			CMD_NEW_SKILL			= "NewSkill";																											//$NON-NLS-1$
 	/** The action command this command will issue. */
-	public static final String			CMD_NEW_SKILL_CONTAINER	= "NewSkillContainer";																										//$NON-NLS-1$
+	public static final String			CMD_NEW_SKILL_CONTAINER	= "NewSkillContainer";																									//$NON-NLS-1$
 	/** The action command this command will issue. */
-	public static final String			CMD_NEW_TECHNIQUE		= "NewTechnique";																											//$NON-NLS-1$
-	private static String				MSG_SKILL;
-	private static String				MSG_SKILL_CONTAINER;
-	private static String				MSG_TECHNIQUE;
-
-	static {
-		LocalizedMessages.initialize(NewSkillCommand.class);
-	}
+	public static final String			CMD_NEW_TECHNIQUE		= "NewTechnique";																										//$NON-NLS-1$
 
 	/** The "New Skill" command. */
-	public static final NewSkillCommand	INSTANCE				= new NewSkillCommand(false, false, MSG_SKILL, CMD_NEW_SKILL, KeyEvent.VK_K, COMMAND_MODIFIER);
+	public static final NewSkillCommand	INSTANCE				= new NewSkillCommand(false, false, SKILL, CMD_NEW_SKILL, KeyEvent.VK_K, COMMAND_MODIFIER);
 	/** The "New Skill Container" command. */
-	public static final NewSkillCommand	CONTAINER_INSTANCE		= new NewSkillCommand(true, false, MSG_SKILL_CONTAINER, CMD_NEW_SKILL_CONTAINER, KeyEvent.VK_K, SHIFTED_COMMAND_MODIFIER);
+	public static final NewSkillCommand	CONTAINER_INSTANCE		= new NewSkillCommand(true, false, SKILL_CONTAINER, CMD_NEW_SKILL_CONTAINER, KeyEvent.VK_K, SHIFTED_COMMAND_MODIFIER);
 	/** The "New Technique" command. */
-	public static final NewSkillCommand	TECHNIQUE				= new NewSkillCommand(false, true, MSG_TECHNIQUE, CMD_NEW_TECHNIQUE, KeyEvent.VK_T, COMMAND_MODIFIER);
+	public static final NewSkillCommand	TECHNIQUE_INSTANCE		= new NewSkillCommand(false, true, TECHNIQUE, CMD_NEW_TECHNIQUE, KeyEvent.VK_T, COMMAND_MODIFIER);
 	private boolean						mContainer;
 	private boolean						mTechnique;
 

@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,11 +23,14 @@
 
 package com.trollworks.gcs.menu.edit;
 
+import static com.trollworks.gcs.menu.edit.DuplicateCommand_LS.*;
+
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.OutlineModel;
 import com.trollworks.ttk.widgets.outline.OutlineProxy;
 import com.trollworks.ttk.widgets.outline.Row;
@@ -39,22 +42,20 @@ import java.util.ArrayList;
 
 import javax.swing.JMenuItem;
 
+@Localized({
+				@LS(key = "DUPLICATE", msg = "Duplicate"),
+				@LS(key = "DUPLICATE_UNDO", msg = "Duplicate Rows"),
+})
 /** Provides the "Duplicate" command. */
 public class DuplicateCommand extends Command {
 	/** The action command this command will issue. */
 	public static final String				CMD_DUPLICATE	= "Duplicate";				//$NON-NLS-1$
-	private static String					MSG_DUPLICATE;
-	private static String					MSG_DUPLICATE_UNDO;
-
-	static {
-		LocalizedMessages.initialize(DuplicateCommand.class);
-	}
 
 	/** The singleton {@link DuplicateCommand}. */
 	public static final DuplicateCommand	INSTANCE		= new DuplicateCommand();
 
 	private DuplicateCommand() {
-		super(MSG_DUPLICATE, CMD_DUPLICATE, KeyEvent.VK_U);
+		super(DUPLICATE, CMD_DUPLICATE, KeyEvent.VK_U);
 	}
 
 	@Override
@@ -92,7 +93,7 @@ public class DuplicateCommand extends Command {
 					topRows.add(row);
 				}
 			}
-			outline.addRow(topRows.toArray(new ListRow[0]), MSG_DUPLICATE_UNDO, true);
+			outline.addRow(topRows.toArray(new ListRow[0]), DUPLICATE_UNDO, true);
 			dataFile.endNotify();
 			model.select(topRows, false);
 			outline.scrollSelectionIntoView();

@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,31 +23,32 @@
 
 package com.trollworks.gcs.menu.edit;
 
+import static com.trollworks.gcs.menu.edit.AddNaturalKickWithBootsCommand_LS.*;
+
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
-import com.trollworks.ttk.utility.LocalizedMessages;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JMenuItem;
 
+@Localized({
+				@LS(key = "ADD_NATURAL_KICK_WITH_BOOTS", msg = "Include Kick w/Boots In Weapons"),
+})
 /** Provides the "Add Natural Kick w/Boots" command. */
 public class AddNaturalKickWithBootsCommand extends Command {
 	/** The action command this command will issue. */
 	public static final String							CMD_ADD_NATURAL_KICK_WITH_BOOTS	= "AddNaturalKickWithBoots";			//$NON-NLS-1$
-	private static String								MSG_ADD_NATURAL_KICK_WITH_BOOTS;
-
-	static {
-		LocalizedMessages.initialize(AddNaturalKickWithBootsCommand.class);
-	}
 
 	/** The singleton {@link AddNaturalKickWithBootsCommand}. */
 	public static final AddNaturalKickWithBootsCommand	INSTANCE						= new AddNaturalKickWithBootsCommand();
 
 	private AddNaturalKickWithBootsCommand() {
-		super(MSG_ADD_NATURAL_KICK_WITH_BOOTS, CMD_ADD_NATURAL_KICK_WITH_BOOTS);
+		super(ADD_NATURAL_KICK_WITH_BOOTS, CMD_ADD_NATURAL_KICK_WITH_BOOTS);
 	}
 
 	@Override

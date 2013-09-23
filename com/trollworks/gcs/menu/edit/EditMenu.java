@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,6 +23,10 @@
 
 package com.trollworks.gcs.menu.edit;
 
+import static com.trollworks.gcs.menu.edit.EditMenu_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
 import com.trollworks.ttk.menu.DynamicCheckBoxMenuItem;
 import com.trollworks.ttk.menu.DynamicMenuEnabler;
@@ -35,21 +39,17 @@ import com.trollworks.ttk.menu.edit.PreferencesCommand;
 import com.trollworks.ttk.menu.edit.RedoCommand;
 import com.trollworks.ttk.menu.edit.SelectAllCommand;
 import com.trollworks.ttk.menu.edit.UndoCommand;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.utility.Platform;
 
 import java.util.HashSet;
 
 import javax.swing.JMenu;
 
+@Localized({
+				@LS(key = "EDIT", msg = "Edit"),
+})
 /** The standard "Edit" menu. */
 public class EditMenu extends JMenu {
-	private static String	MSG_EDIT;
-
-	static {
-		LocalizedMessages.initialize(EditMenu.class);
-	}
-
 	/**
 	 * @return The set of {@link Command}s that this menu provides that can have their accelerators
 	 *         modified.
@@ -82,7 +82,7 @@ public class EditMenu extends JMenu {
 
 	/** Creates a new {@link EditMenu}. */
 	public EditMenu() {
-		super(MSG_EDIT);
+		super(EDIT);
 		add(new DynamicMenuItem(UndoCommand.INSTANCE));
 		add(new DynamicMenuItem(RedoCommand.INSTANCE));
 		addSeparator();

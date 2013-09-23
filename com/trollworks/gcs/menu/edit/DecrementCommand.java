@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,8 +23,11 @@
 
 package com.trollworks.gcs.menu.edit;
 
+import static com.trollworks.gcs.menu.edit.DecrementCommand_LS.*;
+
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.OutlineProxy;
 
 import java.awt.Component;
@@ -33,21 +36,19 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.JMenuItem;
 
+@Localized({
+				@LS(key = "DECREMENT", msg = "Decrement"),
+})
 /** Provides the "Decrement" command. */
 public class DecrementCommand extends Command {
 	/** The action command this command will issue. */
 	public static final String				CMD_DECREMENT	= "Decrement";				//$NON-NLS-1$
-	private static String					MSG_DECREMENT;
-
-	static {
-		LocalizedMessages.initialize(DecrementCommand.class);
-	}
 
 	/** The singleton {@link DecrementCommand}. */
 	public static final DecrementCommand	INSTANCE		= new DecrementCommand();
 
 	private DecrementCommand() {
-		super(MSG_DECREMENT, CMD_DECREMENT, KeyEvent.VK_MINUS);
+		super(DECREMENT, CMD_DECREMENT, KeyEvent.VK_MINUS);
 	}
 
 	@Override
@@ -61,7 +62,7 @@ public class DecrementCommand extends Command {
 			setTitle(inc.getDecrementTitle());
 			setEnabled(inc.canDecrement());
 		} else {
-			setTitle(MSG_DECREMENT);
+			setTitle(DECREMENT);
 			setEnabled(false);
 		}
 	}

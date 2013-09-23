@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,10 +23,13 @@
 
 package com.trollworks.gcs.menu.item;
 
+import static com.trollworks.gcs.menu.item.CopyToSheetCommand_LS.*;
+
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.library.LibraryWindow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.menu.Command;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.outline.OutlineModel;
 
 import java.awt.Window;
@@ -35,21 +38,19 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.JMenuItem;
 
+@Localized({
+				@LS(key = "COPY_TO_SHEET", msg = "Copy To Character Sheet"),
+})
 /** Provides the "Copy To Character Sheet" command. */
 public class CopyToSheetCommand extends Command {
 	/** The action command this command will issue. */
 	public static final String				CMD_COPY_TO_SHEET	= "CopyToSheet";			//$NON-NLS-1$
-	private static String					MSG_COPY_TO_SHEET;
-
-	static {
-		LocalizedMessages.initialize(CopyToSheetCommand.class);
-	}
 
 	/** The singleton {@link CopyToSheetCommand}. */
 	public static final CopyToSheetCommand	INSTANCE			= new CopyToSheetCommand();
 
 	private CopyToSheetCommand() {
-		super(MSG_COPY_TO_SHEET, CMD_COPY_TO_SHEET, KeyEvent.VK_C, SHIFTED_COMMAND_MODIFIER);
+		super(COPY_TO_SHEET, CMD_COPY_TO_SHEET, KeyEvent.VK_C, SHIFTED_COMMAND_MODIFIER);
 	}
 
 	@Override

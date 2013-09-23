@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,37 +23,25 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.ttk.utility.LocalizedMessages;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 
+@Localized({
+				@LS(key = "NONE", msg = " "),
+				@LS(key = "STRIKING_ONLY", msg = "for striking only"),
+				@LS(key = "LIFTING_ONLY", msg = "for lifting only"),
+})
 /** The limitations applicable to a {@link AttributeBonus}. */
 public enum AttributeBonusLimitation {
 	/** No limitation. */
-	NONE {
-		@Override
-		public String toString() {
-			return MSG_NONE;
-		}
-	},
+	NONE,
 	/** Striking only. */
-	STRIKING_ONLY {
-		@Override
-		public String toString() {
-			return MSG_STRIKING_ONLY;
-		}
-	},
+	STRIKING_ONLY,
 	/** Lifting only */
-	LIFTING_ONLY {
-		@Override
-		public String toString() {
-			return MSG_LIFTING_ONLY;
-		}
-	};
+	LIFTING_ONLY;
 
-	static String	MSG_NONE;
-	static String	MSG_STRIKING_ONLY;
-	static String	MSG_LIFTING_ONLY;
-
-	static {
-		LocalizedMessages.initialize(AttributeBonusLimitation.class);
+	@Override
+	public String toString() {
+		return AttributeBonusLimitation_LS.toString(this);
 	}
 }

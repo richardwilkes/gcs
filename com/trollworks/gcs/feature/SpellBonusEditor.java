@@ -14,8 +14,8 @@
  * The Original Code is GURPS Character Sheet.
  *
  * The Initial Developer of the Original Code is Richard A. Wilkes.
- * Portions created by the Initial Developer are Copyright (C) 1998-2002,
- * 2005-2013 the Initial Developer. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1998-2013 the
+ * Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  *
@@ -23,12 +23,15 @@
 
 package com.trollworks.gcs.feature;
 
+import static com.trollworks.gcs.feature.SpellBonusEditor_LS.*;
+
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.ttk.annotation.LS;
+import com.trollworks.ttk.annotation.Localized;
 import com.trollworks.ttk.layout.FlexGrid;
 import com.trollworks.ttk.layout.FlexRow;
 import com.trollworks.ttk.layout.FlexSpacer;
-import com.trollworks.ttk.utility.LocalizedMessages;
 import com.trollworks.ttk.widgets.CommitEnforcer;
 
 import java.awt.Insets;
@@ -36,17 +39,15 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.JComboBox;
 
+@Localized({
+				@LS(key = "ALL_COLLEGES", msg = "to all colleges"),
+				@LS(key = "ONE_COLLEGE", msg = "to the college whose name"),
+				@LS(key = "SPELL_NAME", msg = "to the spell whose name"),
+				@LS(key = "POWER_SOURCE_NAME", msg = "to the power source whose name"),
+})
 /** A spell bonus editor. */
 public class SpellBonusEditor extends FeatureEditor {
-	private static String		MSG_ALL_COLLEGES;
-	private static String		MSG_ONE_COLLEGE;
-	private static String		MSG_POWER_SOURCE_NAME;
-	private static String		MSG_SPELL_NAME;
 	private static final String	COLLEGE_TYPE	= "CollegeType";	//$NON-NLS-1$
-
-	static {
-		LocalizedMessages.initialize(SpellBonusEditor.class);
-	}
 
 	/**
 	 * Create a new spell bonus editor.
@@ -73,7 +74,7 @@ public class SpellBonusEditor extends FeatureEditor {
 		row = new FlexRow();
 		row.setInsets(new Insets(0, 20, 0, 0));
 
-		row.add(addComboBox(COLLEGE_TYPE, new Object[] { MSG_ALL_COLLEGES, MSG_ONE_COLLEGE, MSG_SPELL_NAME, MSG_POWER_SOURCE_NAME }, getMatchText(bonus.allColleges(), bonus.getMatchType())));
+		row.add(addComboBox(COLLEGE_TYPE, new Object[] { ALL_COLLEGES, ONE_COLLEGE, SPELL_NAME, POWER_SOURCE_NAME }, getMatchText(bonus.allColleges(), bonus.getMatchType())));
 		if (!bonus.allColleges()) {
 			StringCriteria criteria = bonus.getNameCriteria();
 			row.add(addStringCompareCombo(criteria, "")); //$NON-NLS-1$
@@ -86,15 +87,15 @@ public class SpellBonusEditor extends FeatureEditor {
 
 	private static String getMatchText(boolean allColleges, String matchType) {
 		if (allColleges) {
-			return MSG_ALL_COLLEGES;
+			return ALL_COLLEGES;
 		}
 		if (SpellBonus.TAG_COLLEGE_NAME.equals(matchType)) {
-			return MSG_ONE_COLLEGE;
+			return ONE_COLLEGE;
 		}
 		if (SpellBonus.TAG_POWER_SOURCE_NAME.equals(matchType)) {
-			return MSG_POWER_SOURCE_NAME;
+			return POWER_SOURCE_NAME;
 		}
-		return MSG_SPELL_NAME;
+		return SPELL_NAME;
 	}
 
 	@Override
