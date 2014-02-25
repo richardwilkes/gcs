@@ -98,37 +98,37 @@ import javax.swing.text.Document;
 })
 /** The sheet preferences panel. */
 public class SheetPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {
-	private static final String			MODULE								= "Sheet";														//$NON-NLS-1$
-	private static final String			OPTIONAL_DICE_RULES					= "UseOptionDiceRules";										//$NON-NLS-1$
+	private static final String			MODULE								= "Sheet";															//$NON-NLS-1$
+	private static final String			OPTIONAL_DICE_RULES_KEY				= "UseOptionDiceRules";											//$NON-NLS-1$
 	/** The optional dice rules preference key. */
-	public static final String			OPTIONAL_DICE_RULES_PREF_KEY		= Preferences.getModuleKey(MODULE, OPTIONAL_DICE_RULES);
+	public static final String			OPTIONAL_DICE_RULES_PREF_KEY		= Preferences.getModuleKey(MODULE, OPTIONAL_DICE_RULES_KEY);
 	private static final boolean		DEFAULT_OPTIONAL_DICE_RULES			= false;
-	private static final String			OPTIONAL_IQ_RULES					= "UseOptionIQRules";											//$NON-NLS-1$
+	private static final String			OPTIONAL_IQ_RULES_KEY				= "UseOptionIQRules";												//$NON-NLS-1$
 	/** The optional IQ rules preference key. */
-	public static final String			OPTIONAL_IQ_RULES_PREF_KEY			= Preferences.getModuleKey(MODULE, OPTIONAL_IQ_RULES);
+	public static final String			OPTIONAL_IQ_RULES_PREF_KEY			= Preferences.getModuleKey(MODULE, OPTIONAL_IQ_RULES_KEY);
 	private static final boolean		DEFAULT_OPTIONAL_IQ_RULES			= false;
-	private static final String			OPTIONAL_MODIFIER_RULES				= "UseOptionModifierRules";									//$NON-NLS-1$
+	private static final String			OPTIONAL_MODIFIER_RULES_KEY			= "UseOptionModifierRules";										//$NON-NLS-1$
 	/** The optional modifier rules preference key. */
-	public static final String			OPTIONAL_MODIFIER_RULES_PREF_KEY	= Preferences.getModuleKey(MODULE, OPTIONAL_MODIFIER_RULES);
+	public static final String			OPTIONAL_MODIFIER_RULES_PREF_KEY	= Preferences.getModuleKey(MODULE, OPTIONAL_MODIFIER_RULES_KEY);
 	private static final boolean		DEFAULT_OPTIONAL_MODIFIER_RULES		= false;
-	private static final String			AUTO_NAME							= "AutoNameNewCharacters";										//$NON-NLS-1$
+	private static final String			AUTO_NAME_KEY						= "AutoNameNewCharacters";											//$NON-NLS-1$
 	/** The auto-naming preference key. */
-	public static final String			AUTO_NAME_PREF_KEY					= Preferences.getModuleKey(MODULE, AUTO_NAME);
+	public static final String			AUTO_NAME_PREF_KEY					= Preferences.getModuleKey(MODULE, AUTO_NAME_KEY);
 	private static final boolean		DEFAULT_AUTO_NAME					= true;
-	private static final String			LENGTH_UNITS						= "LengthUnits";												//$NON-NLS-1$
+	private static final String			LENGTH_UNITS_KEY					= "LengthUnits";													//$NON-NLS-1$
 	/** The default length units preference key. */
-	public static final String			LENGTH_UNITS_PREF_KEY				= Preferences.getModuleKey(MODULE, LENGTH_UNITS);
+	public static final String			LENGTH_UNITS_PREF_KEY				= Preferences.getModuleKey(MODULE, LENGTH_UNITS_KEY);
 	private static final LengthUnits	DEFAULT_LENGTH_UNITS				= LengthUnits.FEET_AND_INCHES;
-	private static final String			WEIGHT_UNITS						= "WeightUnits";												//$NON-NLS-1$
+	private static final String			WEIGHT_UNITS_KEY					= "WeightUnits";													//$NON-NLS-1$
 	/** The default weight units preference key. */
-	public static final String			WEIGHT_UNITS_PREF_KEY				= Preferences.getModuleKey(MODULE, WEIGHT_UNITS);
+	public static final String			WEIGHT_UNITS_PREF_KEY				= Preferences.getModuleKey(MODULE, WEIGHT_UNITS_KEY);
 	private static final WeightUnits	DEFAULT_WEIGHT_UNITS				= WeightUnits.POUNDS;
 	private static final int			DEFAULT_PNG_RESOLUTION				= 200;
-	private static final String			PNG_RESOLUTION						= "PNGResolution";												//$NON-NLS-1$
+	private static final String			PNG_RESOLUTION_KEY					= "PNGResolution";													//$NON-NLS-1$
 	private static final int[]			DPI									= { 72, 96, 144, 150, 200, 300 };
-	private static final String			USE_HTML_TEMPLATE_OVERRIDE			= "UseHTMLTemplateOverride";									//$NON-NLS-1$
-	private static final String			HTML_TEMPLATE_OVERRIDE				= "HTMLTemplateOverride";										//$NON-NLS-1$
-	private static final String			INITIAL_POINTS_KEY					= "InitialPoints";												//$NON-NLS-1$
+	private static final String			USE_HTML_TEMPLATE_OVERRIDE_KEY		= "UseHTMLTemplateOverride";										//$NON-NLS-1$
+	private static final String			HTML_TEMPLATE_OVERRIDE_KEY			= "HTMLTemplateOverride";											//$NON-NLS-1$
+	private static final String			INITIAL_POINTS_KEY					= "InitialPoints";													//$NON-NLS-1$
 	private static final int			DEFAULT_INITIAL_POINTS				= 100;
 	private JTextField					mPlayerName;
 	private JTextField					mCampaign;
@@ -155,7 +155,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	/** @return The default length units to use. */
 	public static LengthUnits getLengthUnits() {
 		try {
-			return LengthUnits.valueOf(Preferences.getInstance().getStringValue(MODULE, LENGTH_UNITS, DEFAULT_LENGTH_UNITS.name()));
+			return LengthUnits.valueOf(Preferences.getInstance().getStringValue(MODULE, LENGTH_UNITS_KEY, DEFAULT_LENGTH_UNITS.name()));
 		} catch (Exception exception) {
 			return DEFAULT_LENGTH_UNITS;
 		}
@@ -164,7 +164,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	/** @return The default weight units to use. */
 	public static WeightUnits getWeightUnits() {
 		try {
-			return WeightUnits.valueOf(Preferences.getInstance().getStringValue(MODULE, WEIGHT_UNITS, DEFAULT_WEIGHT_UNITS.name()));
+			return WeightUnits.valueOf(Preferences.getInstance().getStringValue(MODULE, WEIGHT_UNITS_KEY, DEFAULT_WEIGHT_UNITS.name()));
 		} catch (Exception exception) {
 			return DEFAULT_WEIGHT_UNITS;
 		}
@@ -180,32 +180,32 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 	/** @return Whether the optional dice rules from B269 are in use. */
 	public static boolean areOptionalDiceRulesUsed() {
-		return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_DICE_RULES, DEFAULT_OPTIONAL_DICE_RULES);
+		return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_DICE_RULES_KEY, DEFAULT_OPTIONAL_DICE_RULES);
 	}
 
 	/** @return Whether the optional IQ rules (Will &amp; Perception are not based on IQ) are in use. */
 	public static boolean areOptionalIQRulesUsed() {
-		return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_IQ_RULES, DEFAULT_OPTIONAL_IQ_RULES);
+		return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_IQ_RULES_KEY, DEFAULT_OPTIONAL_IQ_RULES);
 	}
 
 	/** @return Whether the optional modifier rules from PW102 are in use. */
 	public static boolean areOptionalModifierRulesUsed() {
-		return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_MODIFIER_RULES, DEFAULT_OPTIONAL_MODIFIER_RULES);
+		return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_MODIFIER_RULES_KEY, DEFAULT_OPTIONAL_MODIFIER_RULES);
 	}
 
 	/** @return Whether a new character should be automatically named. */
 	public static boolean isNewCharacterAutoNamed() {
-		return Preferences.getInstance().getBooleanValue(MODULE, AUTO_NAME, DEFAULT_AUTO_NAME);
+		return Preferences.getInstance().getBooleanValue(MODULE, AUTO_NAME_KEY, DEFAULT_AUTO_NAME);
 	}
 
 	/** @return The resolution to use when saving the sheet as a PNG. */
 	public static int getPNGResolution() {
-		return Preferences.getInstance().getIntValue(MODULE, PNG_RESOLUTION, DEFAULT_PNG_RESOLUTION);
+		return Preferences.getInstance().getIntValue(MODULE, PNG_RESOLUTION_KEY, DEFAULT_PNG_RESOLUTION);
 	}
 
 	/** @return Whether the default HTML template has been overridden. */
 	public static boolean isHTMLTemplateOverridden() {
-		return Preferences.getInstance().getBooleanValue(MODULE, USE_HTML_TEMPLATE_OVERRIDE);
+		return Preferences.getInstance().getBooleanValue(MODULE, USE_HTML_TEMPLATE_OVERRIDE_KEY);
 	}
 
 	/** @return The HTML template to use when exporting to HTML. */
@@ -214,7 +214,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	}
 
 	private static String getHTMLTemplateOverride() {
-		return Preferences.getInstance().getStringValue(MODULE, HTML_TEMPLATE_OVERRIDE);
+		return Preferences.getInstance().getStringValue(MODULE, HTML_TEMPLATE_OVERRIDE_KEY);
 	}
 
 	/** @return The default HTML template to use when exporting to HTML. */
@@ -414,11 +414,11 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 				setPortrait(Path.getFullPath(file));
 			}
 		} else if (source == mPNGResolutionCombo) {
-			Preferences.getInstance().setValue(MODULE, PNG_RESOLUTION, DPI[mPNGResolutionCombo.getSelectedIndex()]);
+			Preferences.getInstance().setValue(MODULE, PNG_RESOLUTION_KEY, DPI[mPNGResolutionCombo.getSelectedIndex()]);
 		} else if (source == mLengthUnitsCombo) {
-			Preferences.getInstance().setValue(MODULE, LENGTH_UNITS, LengthUnits.values()[mLengthUnitsCombo.getSelectedIndex()].name());
+			Preferences.getInstance().setValue(MODULE, LENGTH_UNITS_KEY, LengthUnits.values()[mLengthUnitsCombo.getSelectedIndex()].name());
 		} else if (source == mWeightUnitsCombo) {
-			Preferences.getInstance().setValue(MODULE, WEIGHT_UNITS, WeightUnits.values()[mWeightUnitsCombo.getSelectedIndex()].name());
+			Preferences.getInstance().setValue(MODULE, WEIGHT_UNITS_KEY, WeightUnits.values()[mWeightUnitsCombo.getSelectedIndex()].name());
 		} else if (source == mHTMLTemplatePicker) {
 			File file = StdFileDialog.choose(this, true, SELECT_HTML_TEMPLATE, null, null, "html", "htm"); //$NON-NLS-1$ //$NON-NLS-2$
 			if (file != null) {
@@ -477,7 +477,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		} else if (mInitialPoints.getDocument() == document) {
 			Preferences.getInstance().setValue(MODULE, INITIAL_POINTS_KEY, Numbers.getLocalizedInteger(mInitialPoints.getText(), 0));
 		} else if (mHTMLTemplatePath.getDocument() == document) {
-			Preferences.getInstance().setValue(MODULE, HTML_TEMPLATE_OVERRIDE, mHTMLTemplatePath.getText());
+			Preferences.getInstance().setValue(MODULE, HTML_TEMPLATE_OVERRIDE_KEY, mHTMLTemplatePath.getText());
 		}
 		adjustResetButton();
 	}
@@ -497,20 +497,20 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		Object source = event.getSource();
 		if (source == mUseHTMLTemplateOverride) {
 			boolean checked = mUseHTMLTemplateOverride.isSelected();
-			Preferences.getInstance().setValue(MODULE, USE_HTML_TEMPLATE_OVERRIDE, checked);
+			Preferences.getInstance().setValue(MODULE, USE_HTML_TEMPLATE_OVERRIDE_KEY, checked);
 			mHTMLTemplatePath.setEnabled(checked);
 			mHTMLTemplatePicker.setEnabled(checked);
 			mHTMLTemplatePath.setText(getHTMLTemplate());
 		} else if (source == mUseOptionalDiceRules) {
 			boolean checked = mUseOptionalDiceRules.isSelected();
 			adjustOptionalDiceRulesProperty(checked);
-			Preferences.getInstance().setValue(MODULE, OPTIONAL_DICE_RULES, checked);
+			Preferences.getInstance().setValue(MODULE, OPTIONAL_DICE_RULES_KEY, checked);
 		} else if (source == mUseOptionalIQRules) {
-			Preferences.getInstance().setValue(MODULE, OPTIONAL_IQ_RULES, mUseOptionalIQRules.isSelected());
+			Preferences.getInstance().setValue(MODULE, OPTIONAL_IQ_RULES_KEY, mUseOptionalIQRules.isSelected());
 		} else if (source == mUseOptionalModifierRules) {
-			Preferences.getInstance().setValue(MODULE, OPTIONAL_MODIFIER_RULES, mUseOptionalModifierRules.isSelected());
+			Preferences.getInstance().setValue(MODULE, OPTIONAL_MODIFIER_RULES_KEY, mUseOptionalModifierRules.isSelected());
 		} else if (source == mAutoName) {
-			Preferences.getInstance().setValue(MODULE, AUTO_NAME, mAutoName.isSelected());
+			Preferences.getInstance().setValue(MODULE, AUTO_NAME_KEY, mAutoName.isSelected());
 		} else if (source == mUseNativePrinter) {
 			PrintManager.useNativeDialogs(mUseNativePrinter.isSelected());
 		}
