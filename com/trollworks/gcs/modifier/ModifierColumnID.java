@@ -43,7 +43,7 @@ import javax.swing.SwingConstants;
 				@LS(key = "ENABLED_COLUMN", msg = "\u221a"),
 				@LS(key = "DESCRIPTION", msg = "Enhancements & Limitations"),
 				@LS(key = "DESCRIPTION_TOOLTIP", msg = "The name and notes describing an enhancement or limitation"),
-				@LS(key = "COST_MODIFIER", msg = "Cost Modifier"),
+				@LS(key = "COST_MODIFIER_TOTAL", msg = "Cost Modifier"),
 				@LS(key = "COST_MODIFIER_TOOLTIP", msg = "The cost modifier for this enhancement or limitation"),
 				@LS(key = "REFERENCE", msg = "Ref"),
 				@LS(key = "REFERENCE_TOOLTIP", msg = "A reference to the book and page this modifier appears\non (e.g. B22 would refer to \"Basic Set\", page 22)"),
