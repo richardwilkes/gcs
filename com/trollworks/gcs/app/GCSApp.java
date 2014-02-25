@@ -112,10 +112,6 @@ public class GCSApp extends App {
 	@Override
 	public void finalStartup() {
 		super.finalStartup();
-		// RAW: With any luck, this will fix the issue that cropped up in Java 7 on the Mac where
-		// the menu bar disappears after a dialog comes up. Unfortunately, this bug
-		// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=8022667 shows that it won't work until
-		// at least Java 7u60. (sigh)
 		setDefaultMenuBar(new StdMenuBar());
 	}
 }
