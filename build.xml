@@ -84,6 +84,7 @@
 			<compilerarg value="${AnnotationsJar}"/>
 			<compilerarg value="-s"/>
 			<compilerarg value="${AnnotationsBuildDir}"/>
+			<compilerarg value="-implicit:class"/>
 		</javac>
 
 		<!-- Create the GCS jar file and copy over the various library jar files. -->
