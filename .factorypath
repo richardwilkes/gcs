@@ -1,3 +1,3 @@
 <factorypath>
-    <factorypathentry kind="WKSPJAR" id="/ttk/libraries/annotations.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/com.trollworks.toolkit/libraries/com.trollworks.toolkit.annotation.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>

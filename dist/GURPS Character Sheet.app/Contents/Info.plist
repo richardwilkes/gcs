@@ -25,15 +25,15 @@
 	<key>CFBundleVersion</key>
 		<string>APP_VERSION</string>
 	<key>NSHumanReadableCopyright</key>
-		<string>Copyright ©COPYRIGHT_YEARS by COPYRIGHT_OWNER. All rights reserved.</string>
+		<string>Copyright © COPYRIGHT_YEARS by COPYRIGHT_OWNER. All rights reserved.</string>
 	<key>LSApplicationCategoryType</key>
 		<string>public.app-category.role-playing-games</string>
 	<key>JVMMainClassName</key>
-		<string>com.trollworks.ttk.Launcher</string>
+		<string>com.trollworks.gcs.app.GCS</string>
 	<key>JVMOptions</key>
 		<array>
 			<string>-Xmx256m</string>
-			<!-- <string>-splash:$APP_ROOT/Contents/Resources/splash.gif</string> -->
+			<string>-splash:$APP_ROOT/Contents/Resources/splash.gif</string>
 			<string>-Xdock:name=APP_NAME</string>
 		</array>
 	<key>JVMArguments</key>

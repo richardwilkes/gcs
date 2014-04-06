@@ -39,5 +39,5 @@ case "$name" in
 esac
 
 GCS_HOME="$(cd "$(dirname "$name")"; pwd)"
-GCS_JAR="$GCS_HOME/GURPS Character Sheet.app/Contents/Java/GCS.jar"
+GCS_JAR="$GCS_HOME/GURPS Character Sheet.app/Contents/Java/com.trollworks.gcs.jar"
 java -Xmx256M -jar "$GCS_JAR" "$@"

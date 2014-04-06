@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/ttk/com/trollworks/ttk/Launcher.java"/>
+<listEntry value="/gcs/src/com/trollworks/gcs/app/GCS.java"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
@@ -14,7 +14,7 @@
 <listEntry value="org.eclipse.debug.ui.launchGroup.run"/>
 </listAttribute>
 <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
-<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.trollworks.ttk.Launcher"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.trollworks.gcs.app.GCS"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="gcs"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx256m -Xdock:name=GURPS\ Character\ Sheet"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx256m -Xdock:name=GURPS\ Character\ Sheet -splash:src/com/trollworks/gcs/app/images/Splash.gif"/>
 </launchConfiguration>

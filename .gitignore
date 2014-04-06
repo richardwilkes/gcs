@@ -2,3 +2,4 @@
 /gcs_build
 /GCS-*.zip
 /.apt_generated
+/ant_build

@@ -1,45 +1,63 @@
 <?xml version="1.0"?>
-<project name="gcs" default="dist">
-	<property name="BuildDir" value="gcs_build"/>
-	<property name="JavaBuildDir" value="${BuildDir}/java"/>
-	<property name="AnnotationsBuildDir" value="${BuildDir}/annotations"/>
-	<property name="AnnotationsJar" value="../ttk/libraries/annotations.jar"/>
+<project name="gcs" default="gcs">
+	<property name="src" value="src"/>
+	<property name="build_root" value="ant_build"/>
+	<property name="package" value="com.trollworks.gcs"/>
+	<property name="package_dir" value="com/trollworks/gcs"/>
+	<property name="gcs_build" value="${build_root}/gcs"/>
+	<property name="dist_build" value="${build_root}/dist"/>
+	<property name="annotations_src" value="${build_root}/annotations"/>
+	<property name="min_jdk" value="1.8"/>
+	<property name="app_name" value="GURPS Character Sheet"/>
+	<property name="copyright_owner" value="Richard A. Wilkes"/>
+	<property name="primary_version" value="4.0.0"/>
+	<tstamp>
+		<format property="version" pattern="${primary_version}.yyyyMMddHHmmss"/>
+	</tstamp>
+	<tstamp>
+		<format property="year" pattern="yyyy"/>
+	</tstamp>
 
 	<target name="clean" description="Clean up after a build">
-		<delete dir="${BuildDir}"/>
+		<delete dir="${build_root}"/>
 		<delete>
 			<fileset dir="." includes="GCS-*.zip"/>
 		</delete>
 	</target>
 
-	<target name="dist" description="Build GCS" depends="clean">
-		<mkdir dir="${JavaBuildDir}"/>
-		<mkdir dir="${AnnotationsBuildDir}"/>
+	<target name="gcs" description="Build GCS" depends="clean">
+		<mkdir dir="${gcs_build}"/>
+		<mkdir dir="${dist_build}"/>
+		<mkdir dir="${annotations_src}"/>
 
+		<!-- Compile the code. -->
+		<javac srcdir="${src}" destdir="${gcs_build}" includes="${package_dir}/**"
+			debug="no" optimize="yes" target="${min_jdk}" source="${min_jdk}" deprecation="true"
+			includeantruntime="no">
+			<classpath>
+				<pathelement location="../com.trollworks.toolkit/libraries/com.trollworks.toolkit.jar"/>
+				<pathelement location="../com.trollworks.toolkit/libraries/trove.jar"/>
+				<pathelement location="libraries/iText.jar"/>
+				<pathelement location="../apple_stubs/apple_stubs.jar"/>
+			</classpath>
+			<compilerarg value="-Xlint:all"/>
+			<compilerarg value="-Xlint:-serial"/>
+			<compilerarg value="-processorpath"/>
+			<compilerarg value="../com.trollworks.toolkit/libraries/com.trollworks.toolkit.annotation.jar"/>
+			<compilerarg value="-s"/>
+			<compilerarg value="${annotations_src}"/>
+			<compilerarg value="-implicit:class"/>
+		</javac>
+		
 		<!-- Copy the resources over. -->
-		<copy todir="${JavaBuildDir}">
-			<fileset dir="." includes="com/**/*.txt,com/**/*.properties,com/**/*.png,com/**/*.gif"/>
+		<copy todir="${gcs_build}">
+			<fileset dir="${src}" includes="**/*.properties,**/*.txt,**/*.png,**/*.gif"/>
 		</copy>
 
-		<!-- Update the version and copyright values. -->
-		<tstamp>
-			<format property="VERSION_YEAR" pattern="yyyy"/>
-		</tstamp>
-		<tstamp>
-			<format property="VERSION" pattern="yyyy.MM.dd.HHmm"/>
-		</tstamp>
-		<replaceregexp file="${JavaBuildDir}/com/trollworks/LaunchConfig.properties"
-					match='(APP_VERSION.+=)(.*)'
-					replace='\1 ${VERSION}'/>
-		<replaceregexp file="${JavaBuildDir}/com/trollworks/LaunchConfig.properties"
-					match='(APP_COPYRIGHT_YEARS.+=)(.*)'
-					replace='\1 1998-${VERSION_YEAR}'/>
-
 		<!-- Load the remaining property values. -->
-		<property file="${JavaBuildDir}/com/trollworks/LaunchConfig.properties"/>
-		<property name="DistDirName" value="GCS-${APP_VERSION}"/>
-		<property name="DistBuildDir" value="${BuildDir}/${DistDirName}"/>
-		<property name="AppBundle" value="${DistBuildDir}/${APP_NAME}.app/Contents"/>
+		<property name="DistDirName" value="GCS-${primary_version}"/>
+		<property name="DistBuildDir" value="${dist_build}/${DistDirName}"/>
+		<property name="AppBundle" value="${DistBuildDir}/${app_name}.app/Contents"/>
 		<property name="AppDir" value="${AppBundle}/MacOS"/>
 		<property name="ResourceDir" value="${AppBundle}/Resources"/>
 		<property name="JavaDir" value="${AppBundle}/Java"/>
@@ -50,7 +68,7 @@
 		<copy todir="${DistBuildDir}">
 			<fileset dir="dist"/>
 		</copy>
-		<copy file="com/trollworks/gcs/app/images/Splash.gif" tofile="${ResourceDir}/splash.gif"/>
+		<copy file="${gcs_build}/com/trollworks/gcs/app/images/Splash.gif" tofile="${ResourceDir}/splash.gif"/>
 		<chmod perm="755" file="${AppDir}/JavaAppLauncher"/>
 		<chmod perm="755" file="${DistBuildDir}/gcs"/>
 		<mkdir dir="${DistBuildDir}/data"/>
@@ -58,51 +76,42 @@
 			<fileset dir="data"/>
 		</copy>
 		<replace file="${AppBundle}/Info.plist">
-			<replacefilter token="APP_NAME" value="${APP_NAME}"/>
-			<replacefilter token="APP_VERSION" value="${APP_VERSION}"/>
-			<replacefilter token="COPYRIGHT_YEARS" value="${APP_COPYRIGHT_YEARS}"/>
-			<replacefilter token="COPYRIGHT_OWNER" value="${APP_COPYRIGHT_OWNER}"/>
+			<replacefilter token="APP_NAME" value="${app_name}"/>
+			<replacefilter token="APP_VERSION" value="${primary_version}"/>
+			<replacefilter token="COPYRIGHT_YEARS" value="1998-${year}"/>
+			<replacefilter token="COPYRIGHT_OWNER" value="${copyright_owner}"/>
 		</replace>
 
-		<!-- Compile the code. -->
-		<javac srcdir="."
-					destdir="${JavaBuildDir}"
-					includes="com/trollworks/gcs/**/*.java"
-					debug="no"
-					optimize="yes"
-					target="1.7"
-					source="1.7"
-					deprecation="true"
-					includeantruntime="no">
-			<classpath>
-				<pathelement location="../ttk/TrollworksToolkit.jar"/>
-				<pathelement location="../ttk/libraries/Trove.jar"/>
-				<pathelement location="libraries/iText.jar"/>
-			</classpath>
-			<!-- <compilerarg value="-Xlint:unchecked"/> -->
-			<compilerarg value="-processorpath"/>
-			<compilerarg value="${AnnotationsJar}"/>
-			<compilerarg value="-s"/>
-			<compilerarg value="${AnnotationsBuildDir}"/>
-			<compilerarg value="-implicit:class"/>
-		</javac>
+		<!-- Create the jar file. -->
+		<jar destfile="${JavaDir}/${package}.jar" basedir="${gcs_build}" duplicate="fail">
+			<manifest>
+				<attribute name="Class-Path" value="com.trollworks.toolkit.jar trove.jar iText.jar apple_stubs.jar"/>
+				<attribute name="Main-Class" value="com.trollworks.gcs.app.GCS"/>
+				<attribute name="SplashScreen-Image" value="com/trollworks/gcs/app/images/Splash.gif"/>
+				<attribute name="bundle-name" value="${app_name}"/>
+				<attribute name="bundle-version" value="${version}"/>
+				<attribute name="bundle-license" value="Mozilla Public License 2.0"/>
+				<attribute name="bundle-copyright-owner" value="${copyright_owner}"/>
+				<attribute name="bundle-copyright-years" value="1998-${year}"/>
+			</manifest>
+		</jar>
 
-		<!-- Create the GCS jar file and copy over the various library jar files. -->
-		<jar destfile="${JavaDir}/GCS.jar" basedir="${JavaBuildDir}" manifest="gcs.mf" duplicate="fail"/>
-		<copy file="../ttk/TrollworksToolkit.jar" todir="${JavaDir}"/>
-		<copy file="../ttk/libraries/Trove.jar" todir="${JavaDir}"/>
+		<!-- Copy the support jars over. -->
+		<copy file="../com.trollworks.toolkit/libraries/com.trollworks.toolkit.jar" todir="${JavaDir}"/>
+		<copy file="../com.trollworks.toolkit/libraries/trove.jar" todir="${JavaDir}"/>
 		<copy file="libraries/iText.jar" todir="${JavaDir}"/>
+		<copy file="../apple_stubs/apple_stubs.jar" todir="${JavaDir}"/>
 
 		<!-- Create the zip file -->
 		<zip destfile="${ZipFile}">
-			<zipfileset dir="${BuildDir}" filemode="755">
+			<zipfileset dir="${dist_build}" filemode="755">
 				<include name="${DistDirName}/gcs"/>
-				<include name="${DistDirName}/${APP_NAME}.app/Contents/MacOS/JavaAppLauncher"/>
+				<include name="${DistDirName}/${app_name}.app/Contents/MacOS/JavaAppLauncher"/>
 			</zipfileset>
-			<zipfileset dir="${BuildDir}">
+			<zipfileset dir="${dist_build}">
 				<include name="${DistDirName}/**"/>
 				<exclude name="${DistDirName}/gcs"/>
-				<exclude name="${DistDirName}/${APP_NAME}.app/Contents/MacOS/JavaAppLauncher"/>
+				<exclude name="${DistDirName}/${app_name}.app/Contents/MacOS/JavaAppLauncher"/>
 			</zipfileset>
 		</zip>
 	</target>

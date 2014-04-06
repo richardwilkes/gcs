@@ -22,4 +22,4 @@ REM Contributor(s):
 REM
 REM ***** END LICENSE BLOCK *****
 
-start javaw -Xmx256M -jar "%~p0GURPS Character Sheet.app\Contents\Java\GCS.jar" %*
+start javaw -Xmx256M -jar "%~p0GURPS Character Sheet.app\Contents\Java\com.trollworks.gcs.jar" %*
