@@ -1,16 +1,24 @@
 <?xml version="1.0"?>
 <project name="gcs" default="gcs">
+	<property name="app" value="gcs"/>
 	<property name="src" value="src"/>
+	<property name="lib" value="libraries"/>
+	<property name="toolkit_lib" value="../toolkit/libraries"/>
+	<property name="apple_stubs" value="../apple_stubs/apple_stubs.jar"/>
 	<property name="build_root" value="ant_build"/>
-	<property name="package" value="com.trollworks.gcs"/>
-	<property name="package_dir" value="com/trollworks/gcs"/>
-	<property name="gcs_build" value="${build_root}/gcs"/>
+	<property name="gcs_build" value="${build_root}/${app}"/>
 	<property name="dist_build" value="${build_root}/dist"/>
 	<property name="annotations_src" value="${build_root}/annotations"/>
 	<property name="min_jdk" value="1.8"/>
 	<property name="app_name" value="GURPS Character Sheet"/>
 	<property name="copyright_owner" value="Richard A. Wilkes"/>
 	<property name="primary_version" value="4.0.0"/>
+	<property name="dist_name" value="GCS-${primary_version}"/>
+	<property name="dist_root" value="${dist_build}/${dist_name}"/>
+	<property name="build_app_bundle" value="${dist_root}/${app_name}.app/Contents"/>
+	<property name="java_bundle_dir" value="${build_app_bundle}/Java"/>
+	<property name="app_launcher" value="${dist_name}/${app_name}.app/Contents/MacOS/JavaAppLauncher"/>
+	<property name="splash_path" value="com/trollworks/gcs/app/images/Splash.gif"/>
 	<tstamp>
 		<format property="version" pattern="${primary_version}.yyyyMMddHHmmss"/>
 	</tstamp>
@@ -31,19 +39,19 @@
 		<mkdir dir="${annotations_src}"/>
 
 		<!-- Compile the code. -->
-		<javac srcdir="${src}" destdir="${gcs_build}" includes="${package_dir}/**"
-			debug="no" optimize="yes" target="${min_jdk}" source="${min_jdk}" deprecation="true"
+		<javac srcdir="${src}" destdir="${gcs_build}" debug="no" optimize="yes"
+			target="${min_jdk}" source="${min_jdk}" deprecation="true"
 			includeantruntime="no">
 			<classpath>
-				<pathelement location="../com.trollworks.toolkit/libraries/com.trollworks.toolkit.jar"/>
-				<pathelement location="../com.trollworks.toolkit/libraries/trove.jar"/>
-				<pathelement location="libraries/iText.jar"/>
-				<pathelement location="../apple_stubs/apple_stubs.jar"/>
+				<pathelement location="${toolkit_lib}/toolkit.jar"/>
+				<pathelement location="${toolkit_lib}/trove.jar"/>
+				<pathelement location="${lib}/iText.jar"/>
+				<pathelement location="${apple_stubs}"/>
 			</classpath>
 			<compilerarg value="-Xlint:all"/>
 			<compilerarg value="-Xlint:-serial"/>
 			<compilerarg value="-processorpath"/>
-			<compilerarg value="../com.trollworks.toolkit/libraries/com.trollworks.toolkit.annotation.jar"/>
+			<compilerarg value="${toolkit_lib}/toolkit_annotation_processors.jar"/>
 			<compilerarg value="-s"/>
 			<compilerarg value="${annotations_src}"/>
 			<compilerarg value="-implicit:class"/>
@@ -54,28 +62,19 @@
 			<fileset dir="${src}" includes="**/*.properties,**/*.txt,**/*.png,**/*.gif"/>
 		</copy>
 
-		<!-- Load the remaining property values. -->
-		<property name="DistDirName" value="GCS-${primary_version}"/>
-		<property name="DistBuildDir" value="${dist_build}/${DistDirName}"/>
-		<property name="AppBundle" value="${DistBuildDir}/${app_name}.app/Contents"/>
-		<property name="AppDir" value="${AppBundle}/MacOS"/>
-		<property name="ResourceDir" value="${AppBundle}/Resources"/>
-		<property name="JavaDir" value="${AppBundle}/Java"/>
-		<property name="ZipFile" value="${DistDirName}.zip"/>
-
 		<!-- Copy the initial dist files over. -->
-		<mkdir dir="${DistBuildDir}"/>
-		<copy todir="${DistBuildDir}">
+		<mkdir dir="${dist_root}"/>
+		<copy todir="${dist_root}">
 			<fileset dir="dist"/>
 		</copy>
-		<copy file="${gcs_build}/com/trollworks/gcs/app/images/Splash.gif" tofile="${ResourceDir}/splash.gif"/>
-		<chmod perm="755" file="${AppDir}/JavaAppLauncher"/>
-		<chmod perm="755" file="${DistBuildDir}/gcs"/>
-		<mkdir dir="${DistBuildDir}/data"/>
-		<copy todir="${DistBuildDir}/data">
+		<copy file="${gcs_build}/${splash_path}" tofile="${build_app_bundle}/Resources/splash.gif"/>
+		<chmod perm="755" file="${build_app_bundle}/MacOS/JavaAppLauncher"/>
+		<chmod perm="755" file="${dist_root}/${app}"/>
+		<mkdir dir="${dist_root}/data"/>
+		<copy todir="${dist_root}/data">
 			<fileset dir="data"/>
 		</copy>
-		<replace file="${AppBundle}/Info.plist">
+		<replace file="${build_app_bundle}/Info.plist">
 			<replacefilter token="APP_NAME" value="${app_name}"/>
 			<replacefilter token="APP_VERSION" value="${primary_version}"/>
 			<replacefilter token="COPYRIGHT_YEARS" value="1998-${year}"/>
@@ -83,11 +82,11 @@
 		</replace>
 
 		<!-- Create the jar file. -->
-		<jar destfile="${JavaDir}/${package}.jar" basedir="${gcs_build}" duplicate="fail">
+		<jar destfile="${java_bundle_dir}/${app}.jar" basedir="${gcs_build}" duplicate="fail">
 			<manifest>
-				<attribute name="Class-Path" value="com.trollworks.toolkit.jar trove.jar iText.jar apple_stubs.jar"/>
+				<attribute name="Class-Path" value="toolkit.jar trove.jar iText.jar apple_stubs.jar"/>
 				<attribute name="Main-Class" value="com.trollworks.gcs.app.GCS"/>
-				<attribute name="SplashScreen-Image" value="com/trollworks/gcs/app/images/Splash.gif"/>
+				<attribute name="SplashScreen-Image" value="${splash_path}"/>
 				<attribute name="bundle-name" value="${app_name}"/>
 				<attribute name="bundle-version" value="${version}"/>
 				<attribute name="bundle-license" value="Mozilla Public License 2.0"/>
@@ -97,21 +96,21 @@
 		</jar>
 
 		<!-- Copy the support jars over. -->
-		<copy file="../com.trollworks.toolkit/libraries/com.trollworks.toolkit.jar" todir="${JavaDir}"/>
-		<copy file="../com.trollworks.toolkit/libraries/trove.jar" todir="${JavaDir}"/>
-		<copy file="libraries/iText.jar" todir="${JavaDir}"/>
-		<copy file="../apple_stubs/apple_stubs.jar" todir="${JavaDir}"/>
+		<copy file="${toolkit_lib}/toolkit.jar" todir="${java_bundle_dir}"/>
+		<copy file="${toolkit_lib}/trove.jar" todir="${java_bundle_dir}"/>
+		<copy file="${lib}/iText.jar" todir="${java_bundle_dir}"/>
+		<copy file="${apple_stubs}" todir="${java_bundle_dir}"/>
 
 		<!-- Create the zip file -->
-		<zip destfile="${ZipFile}">
+		<zip destfile="${dist_name}.zip">
 			<zipfileset dir="${dist_build}" filemode="755">
-				<include name="${DistDirName}/gcs"/>
-				<include name="${DistDirName}/${app_name}.app/Contents/MacOS/JavaAppLauncher"/>
+				<include name="${dist_name}/${app}"/>
+				<include name="${app_launcher}"/>
 			</zipfileset>
 			<zipfileset dir="${dist_build}">
-				<include name="${DistDirName}/**"/>
-				<exclude name="${DistDirName}/gcs"/>
-				<exclude name="${DistDirName}/${app_name}.app/Contents/MacOS/JavaAppLauncher"/>
+				<include name="${dist_name}/**"/>
+				<exclude name="${dist_name}/${app}"/>
+				<exclude name="${app_launcher}"/>
 			</zipfileset>
 		</zip>
 	</target>
