@@ -24,7 +24,6 @@ import com.trollworks.gcs.widgets.outline.RowPostProcessor;
 import com.trollworks.gcs.widgets.search.Search;
 import com.trollworks.gcs.widgets.search.SearchTarget;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.ui.Path;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.menu.file.Saveable;
 import com.trollworks.toolkit.ui.print.PrintManager;
@@ -37,6 +36,7 @@ import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.Path;
 
 import java.awt.Color;
 import java.awt.EventQueue;

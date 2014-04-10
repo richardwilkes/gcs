@@ -13,8 +13,8 @@ package com.trollworks.gcs.template;
 
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-
-
+import com.trollworks.toolkit.utility.Path;
+import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.preferences.SheetPreferences;
@@ -28,10 +28,8 @@ import com.trollworks.gcs.widgets.outline.RowItemRenderer;
 import com.trollworks.gcs.widgets.outline.RowPostProcessor;
 import com.trollworks.gcs.widgets.search.Search;
 import com.trollworks.gcs.widgets.search.SearchTarget;
-import com.trollworks.toolkit.ui.Path;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.menu.file.Saveable;
-import com.trollworks.toolkit.ui.preferences.Preferences;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.ui.widget.BaseWindow;
 import com.trollworks.toolkit.ui.widget.ModifiedMarker;

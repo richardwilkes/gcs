@@ -13,11 +13,10 @@ package com.trollworks.gcs.preferences;
 
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-
-
+import com.trollworks.toolkit.utility.Path;
+import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.toolkit.ui.App;
-import com.trollworks.toolkit.ui.Path;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.Images;
 import com.trollworks.toolkit.ui.layout.Alignment;
@@ -27,7 +26,6 @@ import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.preferences.PreferencePanel;
-import com.trollworks.toolkit.ui.preferences.Preferences;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.StdFileDialog;

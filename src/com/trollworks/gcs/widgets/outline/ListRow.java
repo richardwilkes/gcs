@@ -28,9 +28,9 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.ui.VersionException;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Row;
+import com.trollworks.toolkit.utility.VersionException;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;

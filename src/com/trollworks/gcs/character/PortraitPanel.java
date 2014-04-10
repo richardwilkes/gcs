@@ -15,13 +15,13 @@ import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.widgets.GCSWindow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
-import com.trollworks.toolkit.ui.Path;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.border.BoxedDropShadowBorder;
 import com.trollworks.toolkit.ui.image.Images;
 import com.trollworks.toolkit.ui.widget.StdFileDialog;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.Path;
 import com.trollworks.toolkit.utility.notification.NotifierTarget;
 
 import java.awt.Container;

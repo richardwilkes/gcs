@@ -29,7 +29,6 @@ import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.UpdateChecker;
-import com.trollworks.toolkit.ui.WindowsRegistry;
 import com.trollworks.toolkit.ui.menu.StdMenuBar;
 import com.trollworks.toolkit.ui.menu.window.WindowMenu;
 import com.trollworks.toolkit.ui.preferences.FontPreferences;
@@ -37,6 +36,7 @@ import com.trollworks.toolkit.ui.preferences.MenuKeyPreferences;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.WindowsRegistry;
 import com.trollworks.toolkit.utility.cmdline.CmdLine;
 
 import java.io.File;

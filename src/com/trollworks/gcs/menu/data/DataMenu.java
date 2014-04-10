@@ -13,10 +13,8 @@ package com.trollworks.gcs.menu.data;
 
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-
-
+import com.trollworks.toolkit.utility.Path;
 import com.trollworks.gcs.common.ListCollectionThread;
-import com.trollworks.toolkit.ui.Path;
 import com.trollworks.toolkit.ui.image.ToolkitImage;
 import com.trollworks.toolkit.ui.menu.DynamicMenuEnabler;
 import com.trollworks.toolkit.ui.menu.StdMenuBar;

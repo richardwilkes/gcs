@@ -19,8 +19,8 @@ import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.toolkit.ui.App;
-import com.trollworks.toolkit.ui.Path;
 import com.trollworks.toolkit.utility.Debug;
+import com.trollworks.toolkit.utility.Path;
 
 import java.awt.EventQueue;
 import java.io.File;

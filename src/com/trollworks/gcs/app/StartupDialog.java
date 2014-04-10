@@ -16,7 +16,6 @@ import com.trollworks.gcs.menu.file.NewCharacterSheetCommand;
 import com.trollworks.gcs.menu.file.NewCharacterTemplateCommand;
 import com.trollworks.gcs.menu.file.NewLibraryCommand;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.ui.Path;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.WindowSizeEnforcer;
 import com.trollworks.toolkit.ui.layout.PrecisionLayout;
@@ -25,6 +24,7 @@ import com.trollworks.toolkit.ui.menu.file.OpenCommand;
 import com.trollworks.toolkit.ui.menu.file.RecentFilesMenu;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.Path;
 
 import java.awt.Component;
 import java.awt.Container;
