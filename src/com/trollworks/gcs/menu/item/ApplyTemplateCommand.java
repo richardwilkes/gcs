@@ -13,14 +13,12 @@ package com.trollworks.gcs.menu.item;
 
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-
-
+import com.trollworks.toolkit.utility.undo.MultipleUndo;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.toolkit.ui.menu.Command;
-import com.trollworks.toolkit.ui.undo.MultipleUndo;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 
 import java.awt.Window;

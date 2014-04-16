@@ -48,7 +48,6 @@ import com.trollworks.toolkit.ui.image.Images;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.print.PrintManager;
-import com.trollworks.toolkit.ui.undo.StdUndoManager;
 import com.trollworks.toolkit.ui.widget.Wrapper;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
@@ -65,6 +64,7 @@ import com.trollworks.toolkit.utility.Path;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.notification.BatchNotifierTarget;
 import com.trollworks.toolkit.utility.text.Numbers;
+import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
 import java.awt.Color;
 import java.awt.Component;

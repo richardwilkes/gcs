@@ -15,7 +15,6 @@ import com.trollworks.toolkit.io.SafeFileUpdater;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.ui.undo.StdUndoManager;
 import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.utility.Debug;
 import com.trollworks.toolkit.utility.Path;
@@ -23,6 +22,7 @@ import com.trollworks.toolkit.utility.UniqueID;
 import com.trollworks.toolkit.utility.VersionException;
 import com.trollworks.toolkit.utility.notification.Notifier;
 import com.trollworks.toolkit.utility.notification.NotifierTarget;
+import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;

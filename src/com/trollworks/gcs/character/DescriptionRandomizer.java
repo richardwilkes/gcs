@@ -13,9 +13,9 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
-import com.trollworks.toolkit.ui.undo.MultipleUndo;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.Numbers;
+import com.trollworks.toolkit.utility.undo.MultipleUndo;
 import com.trollworks.toolkit.utility.units.LengthValue;
 import com.trollworks.toolkit.utility.units.WeightValue;
 
