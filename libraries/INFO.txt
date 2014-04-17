@@ -2,8 +2,8 @@ This directory contains additional third-party libraries that GCS makes use of:
 
 iText
   Description: A PDF library.
-  Files: iText.jar
-         iText-src.jar
+  Files: iText-2.1.7.jar
+         iText-2.1.7-src.jar
   Version: 2.1.7
   License Used: LGPL 2.1
   Obtained from: http://www.lowagie.com/iText

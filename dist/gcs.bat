@@ -1,25 +1,12 @@
 @echo off
-REM ***** BEGIN LICENSE BLOCK *****
-REM Version: MPL 1.1
-REM
-REM The contents of this file are subject to the Mozilla Public License Version
-REM 1.1 (the "License"); you may not use this file except in compliance with
-REM the License. You may obtain a copy of the License at
-REM http://www.mozilla.org/MPL/
-REM
-REM Software distributed under the License is distributed on an "AS IS" basis,
-REM WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-REM for the specific language governing rights and limitations under the
-REM License.
-REM
-REM The Original Code is GURPS Character Sheet.
-REM
-REM The Initial Developer of the Original Code is Richard A. Wilkes.
-REM Portions created by the Initial Developer are Copyright (C) 1998-2013 the
-REM Initial Developer. All Rights Reserved.
-REM
-REM Contributor(s):
-REM
-REM ***** END LICENSE BLOCK *****
 
-start javaw -Xmx256M -jar "%~p0GURPS Character Sheet.app\Contents\Java\com.trollworks.gcs.jar" %*
+REM Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
+REM
+REM This Source Code Form is subject to the terms of the Mozilla Public License,
+REM version 2.0. If a copy of the MPL was not distributed with this file, You
+REM can obtain one at http://mozilla.org/MPL/2.0/.
+REM
+REM This Source Code Form is "Incompatible With Secondary Licenses", as defined
+REM by the Mozilla Public License, version 2.0.
+
+start javaw -Xmx256M -jar "%~p0GURPS Character Sheet.app\Contents\Java\gcs-APP_VERSION.jar" %*

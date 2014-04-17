@@ -3,10 +3,15 @@
 	<property name="app" value="gcs"/>
 	<property name="src" value="src"/>
 	<property name="lib" value="libraries"/>
+	<property name="toolkit" value="toolkit-4.0.0.jar"/>
 	<property name="toolkit_lib" value="../toolkit/libraries"/>
+	<property name="toolkit_path" value="${toolkit_lib}/${toolkit}"/>
 	<property name="apple_stubs" value="apple_stubs.jar"/>
 	<property name="apple_stubs_path" value="../apple_stubs/${apple_stubs}"/>
 	<property name="trove" value="trove-3.0.3.jar"/>
+	<property name="trove_path" value="${toolkit_lib}/trove-3.0.3.jar"/>
+	<property name="iText" value="iText-2.1.7.jar"/>
+	<property name="iText_path" value="${lib}/${iText}"/>
 	<property name="build_root" value="ant_build"/>
 	<property name="gcs_build" value="${build_root}/${app}"/>
 	<property name="dist_build" value="${build_root}/dist"/>
@@ -45,9 +50,9 @@
 			target="${min_jdk}" source="${min_jdk}" deprecation="true"
 			includeantruntime="no">
 			<classpath>
-				<pathelement location="${toolkit_lib}/toolkit.jar"/>
-				<pathelement location="${toolkit_lib}/${trove}"/>
-				<pathelement location="${lib}/iText.jar"/>
+				<pathelement location="${toolkit_path}"/>
+				<pathelement location="${trove_path}"/>
+				<pathelement location="${iText_path}"/>
 				<pathelement location="${apple_stubs_path}"/>
 			</classpath>
 			<compilerarg value="-Xlint:all"/>
@@ -82,11 +87,17 @@
 			<replacefilter token="COPYRIGHT_YEARS" value="1998-${year}"/>
 			<replacefilter token="COPYRIGHT_OWNER" value="${copyright_owner}"/>
 		</replace>
+		<replace file="${dist_root}/gcs">
+			<replacefilter token="APP_VERSION" value="${primary_version}"/>
+		</replace>
+		<replace file="${dist_root}/gcs.bat">
+			<replacefilter token="APP_VERSION" value="${primary_version}"/>
+		</replace>
 
 		<!-- Create the jar file. -->
-		<jar destfile="${java_bundle_dir}/${app}.jar" basedir="${gcs_build}" duplicate="fail">
+		<jar destfile="${java_bundle_dir}/${app}-${primary_version}.jar" basedir="${gcs_build}" duplicate="fail">
 			<manifest>
-				<attribute name="Class-Path" value="toolkit.jar ${trove} iText.jar ${apple_stubs}"/>
+				<attribute name="Class-Path" value="${toolkit} ${trove} ${iText} ${apple_stubs}"/>
 				<attribute name="Main-Class" value="com.trollworks.gcs.app.GCS"/>
 				<attribute name="SplashScreen-Image" value="${splash_path}"/>
 				<attribute name="bundle-name" value="${app_name}"/>
@@ -98,9 +109,9 @@
 		</jar>
 
 		<!-- Copy the support jars over. -->
-		<copy file="${toolkit_lib}/toolkit.jar" todir="${java_bundle_dir}"/>
-		<copy file="${toolkit_lib}/${trove}" todir="${java_bundle_dir}"/>
-		<copy file="${lib}/iText.jar" todir="${java_bundle_dir}"/>
+		<copy file="${toolkit_path}" todir="${java_bundle_dir}"/>
+		<copy file="${trove_path}" todir="${java_bundle_dir}"/>
+		<copy file="${iText_path}" todir="${java_bundle_dir}"/>
 		<copy file="${apple_stubs_path}" todir="${java_bundle_dir}"/>
 
 		<!-- Create the zip file -->
