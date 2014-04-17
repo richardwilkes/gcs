@@ -4,7 +4,9 @@
 	<property name="src" value="src"/>
 	<property name="lib" value="libraries"/>
 	<property name="toolkit_lib" value="../toolkit/libraries"/>
-	<property name="apple_stubs" value="../apple_stubs/apple_stubs.jar"/>
+	<property name="apple_stubs" value="apple_stubs.jar"/>
+	<property name="apple_stubs_path" value="../apple_stubs/${apple_stubs}"/>
+	<property name="trove" value="trove-3.0.3.jar"/>
 	<property name="build_root" value="ant_build"/>
 	<property name="gcs_build" value="${build_root}/${app}"/>
 	<property name="dist_build" value="${build_root}/dist"/>
@@ -44,9 +46,9 @@
 			includeantruntime="no">
 			<classpath>
 				<pathelement location="${toolkit_lib}/toolkit.jar"/>
-				<pathelement location="${toolkit_lib}/trove.jar"/>
+				<pathelement location="${toolkit_lib}/${trove}"/>
 				<pathelement location="${lib}/iText.jar"/>
-				<pathelement location="${apple_stubs}"/>
+				<pathelement location="${apple_stubs_path}"/>
 			</classpath>
 			<compilerarg value="-Xlint:all"/>
 			<compilerarg value="-Xlint:-serial"/>
@@ -84,7 +86,7 @@
 		<!-- Create the jar file. -->
 		<jar destfile="${java_bundle_dir}/${app}.jar" basedir="${gcs_build}" duplicate="fail">
 			<manifest>
-				<attribute name="Class-Path" value="toolkit.jar trove.jar iText.jar apple_stubs.jar"/>
+				<attribute name="Class-Path" value="toolkit.jar ${trove} iText.jar ${apple_stubs}"/>
 				<attribute name="Main-Class" value="com.trollworks.gcs.app.GCS"/>
 				<attribute name="SplashScreen-Image" value="${splash_path}"/>
 				<attribute name="bundle-name" value="${app_name}"/>
@@ -97,9 +99,9 @@
 
 		<!-- Copy the support jars over. -->
 		<copy file="${toolkit_lib}/toolkit.jar" todir="${java_bundle_dir}"/>
-		<copy file="${toolkit_lib}/trove.jar" todir="${java_bundle_dir}"/>
+		<copy file="${toolkit_lib}/${trove}" todir="${java_bundle_dir}"/>
 		<copy file="${lib}/iText.jar" todir="${java_bundle_dir}"/>
-		<copy file="${apple_stubs}" todir="${java_bundle_dir}"/>
+		<copy file="${apple_stubs_path}" todir="${java_bundle_dir}"/>
 
 		<!-- Create the zip file -->
 		<zip destfile="${dist_name}.zip">
