@@ -19,6 +19,6 @@ import com.trollworks.toolkit.utility.Launcher;
  */
 public class GCS {
 	public static void main(String[] args) {
-		Launcher.launch("1.8", "com.trollworks.gcs.app.GCS", args); //$NON-NLS-1$ //$NON-NLS-2$
+		Launcher.launch("1.8", "com.trollworks.gcs.app.GCSMain", args); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 }
