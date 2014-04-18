@@ -26,6 +26,7 @@
 	<property name="java_bundle_dir" value="${build_app_bundle}/Java"/>
 	<property name="app_launcher" value="${dist_name}/${app_name}.app/Contents/MacOS/JavaAppLauncher"/>
 	<property name="splash_path" value="com/trollworks/gcs/app/images/Splash.gif"/>
+	<property name="launcher_stub_src" value="com/trollworks/gcs/app/GCS.java"/>
 	<tstamp>
 		<format property="version" pattern="${primary_version}.yyyyMMddHHmmss"/>
 	</tstamp>
@@ -48,7 +49,7 @@
 		<!-- Compile the code. -->
 		<javac srcdir="${src}" destdir="${gcs_build}" debug="no" optimize="yes"
 			target="${min_jdk}" source="${min_jdk}" deprecation="true"
-			includeantruntime="no">
+			excludes="${launcher_stub_src}" includeantruntime="no">
 			<classpath>
 				<pathelement location="${toolkit_path}"/>
 				<pathelement location="${trove_path}"/>
@@ -63,7 +64,18 @@
 			<compilerarg value="${annotations_src}"/>
 			<compilerarg value="-implicit:class"/>
 		</javac>
-		
+
+		<!-- Compile the launcher code to be compatible with Java 1.1. -->
+		<javac srcdir="${src}" destdir="${gcs_build}"
+			includes="${launcher_stub_src}" debug="no" optimize="yes"
+			target="1.1" source="1.1" deprecation="true" includeantruntime="no">
+			<classpath>
+				<pathelement location="${toolkit_path}"/>
+			</classpath>
+			<compilerarg value="-Xlint:all"/>
+			<compilerarg value="-Xlint:-options"/>
+		</javac>
+
 		<!-- Copy the resources over. -->
 		<copy todir="${gcs_build}">
 			<fileset dir="${src}" includes="**/*.properties,**/*.txt,**/*.png,**/*.gif"/>
