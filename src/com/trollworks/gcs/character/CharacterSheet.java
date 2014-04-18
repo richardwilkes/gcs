@@ -1064,7 +1064,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		Profile description = mCharacter.getDescription();
 
 		if (key.equals("PORTRAIT")) { //$NON-NLS-1$
-			String fileName = PathUtils.getLeafName(base.getName(), false) + SheetWindow.PNG_EXTENSION;
+			String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base.getName(), false), SheetWindow.PNG_EXTENSION);
 			Images.writePNG(new File(base.getParentFile(), fileName), description.getPortrait(true), 150);
 			writeXMLData(out, fileName);
 		} else if (key.equals("NAME")) { //$NON-NLS-1$
@@ -1832,7 +1832,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 					window.setPrinting(false);
 				}
 				g2d.dispose();
-				pngFile = new File(file, name + (pageNum > 1 ? " " + pageNum : "") + SheetWindow.PNG_EXTENSION); //$NON-NLS-1$ //$NON-NLS-2$
+				pngFile = new File(file, PathUtils.enforceExtension(name + (pageNum > 1 ? " " + pageNum : ""), SheetWindow.PNG_EXTENSION)); //$NON-NLS-1$ //$NON-NLS-2$
 				if (!Images.writePNG(pngFile, buffer, dpi)) {
 					throw new IOException();
 				}

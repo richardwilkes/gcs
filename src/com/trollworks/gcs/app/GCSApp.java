@@ -75,13 +75,13 @@ public class GCSApp extends App {
 	@Override
 	public void configureApplication(CmdLine cmdLine) {
 		HashMap<String, String> map = new HashMap<>();
-		map.put(SheetWindow.SHEET_EXTENSION.substring(1), SHEET_DESCRIPTION);
-		map.put(LibraryFile.EXTENSION.substring(1), LIBRARY_DESCRIPTION);
-		map.put(TemplateWindow.EXTENSION.substring(1), TEMPLATE_DESCRIPTION);
-		map.put(Advantage.OLD_ADVANTAGE_EXTENSION.substring(1), TRAITS_DESCRIPTION);
-		map.put(Equipment.OLD_EQUIPMENT_EXTENSION.substring(1), EQUIPMENT_DESCRIPTION);
-		map.put(Skill.OLD_SKILL_EXTENSION.substring(1), SKILLS_DESCRIPTION);
-		map.put(Spell.OLD_SPELL_EXTENSION.substring(1), SPELLS_DESCRIPTION);
+		map.put(SheetWindow.SHEET_EXTENSION, SHEET_DESCRIPTION);
+		map.put(LibraryFile.EXTENSION, LIBRARY_DESCRIPTION);
+		map.put(TemplateWindow.EXTENSION, TEMPLATE_DESCRIPTION);
+		map.put(Advantage.OLD_ADVANTAGE_EXTENSION, TRAITS_DESCRIPTION);
+		map.put(Equipment.OLD_EQUIPMENT_EXTENSION, EQUIPMENT_DESCRIPTION);
+		map.put(Skill.OLD_SKILL_EXTENSION, SKILLS_DESCRIPTION);
+		map.put(Spell.OLD_SPELL_EXTENSION, SPELLS_DESCRIPTION);
 		WindowsRegistry.register("GCS", map, new File(APP_HOME_DIR, "gcs.bat"), new File(APP_HOME_DIR, "GURPS Character Sheet.app/Contents/Resources")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 		UpdateChecker.check("gcs", "http://gurpscharactersheet.com/current.txt", "http://gurpscharactersheet.com"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$

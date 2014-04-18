@@ -11,10 +11,6 @@
 
 package com.trollworks.gcs.spell;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
@@ -28,9 +24,11 @@ import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.widget.outline.Column;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -43,17 +41,17 @@ import java.util.List;
 /** A GURPS Spell. */
 public class Spell extends ListRow {
 	@Localize("Spell")
-	private static String DEFAULT_NAME;
+	private static String			DEFAULT_NAME;
 	@Localize("Arcane")
-	private static String DEFAULT_POWER_SOURCE;
+	private static String			DEFAULT_POWER_SOURCE;
 	@Localize("Regular")
-	private static String DEFAULT_SPELL_CLASS;
+	private static String			DEFAULT_SPELL_CLASS;
 	@Localize("1")
-	private static String DEFAULT_CASTING_COST;
+	private static String			DEFAULT_CASTING_COST;
 	@Localize("1 sec")
-	private static String DEFAULT_CASTING_TIME;
+	private static String			DEFAULT_CASTING_TIME;
 	@Localize("Instant")
-	private static String DEFAULT_DURATION;
+	private static String			DEFAULT_DURATION;
 
 	static {
 		Localization.initialize();
@@ -61,7 +59,7 @@ public class Spell extends ListRow {
 
 	private static final int		CURRENT_VERSION				= 2;
 	/** The extension for Spell lists. */
-	public static final String		OLD_SPELL_EXTENSION			= ".spl";										//$NON-NLS-1$
+	public static final String		OLD_SPELL_EXTENSION			= "spl";										//$NON-NLS-1$
 	/** The XML tag used for items. */
 	public static final String		TAG_SPELL					= "spell";										//$NON-NLS-1$
 	/** The XML tag used for containers. */
@@ -133,7 +131,7 @@ public class Spell extends ListRow {
 
 	/**
 	 * Creates a new spell.
-	 * 
+	 *
 	 * @param dataFile The data file to associate it with.
 	 * @param isContainer Whether or not this row allows children.
 	 */
@@ -157,7 +155,7 @@ public class Spell extends ListRow {
 
 	/**
 	 * Creates a clone of an existing spell and associates it with the specified data file.
-	 * 
+	 *
 	 * @param dataFile The data file to associate it with.
 	 * @param spell The spell to clone.
 	 * @param deep Whether or not to clone the children, grandchildren, etc.
@@ -206,7 +204,7 @@ public class Spell extends ListRow {
 
 	/**
 	 * Loads a spell and associates it with the specified data file.
-	 * 
+	 *
 	 * @param dataFile The data file to associate it with.
 	 * @param reader The XML reader to load from.
 	 * @param state The {@link LoadState} to use.
@@ -430,7 +428,7 @@ public class Spell extends ListRow {
 
 	/**
 	 * Call to force an update of the level and relative level for this spell.
-	 * 
+	 *
 	 * @param notify Whether or not a notification should be issued on a change.
 	 */
 	public void updateLevel(boolean notify) {
@@ -448,7 +446,7 @@ public class Spell extends ListRow {
 
 	/**
 	 * Calculates the spell level.
-	 * 
+	 *
 	 * @param character The character the spell will be attached to.
 	 * @param points The number of points spent in the spell.
 	 * @param isVeryHard Whether the spell is "Very Hard" or not.

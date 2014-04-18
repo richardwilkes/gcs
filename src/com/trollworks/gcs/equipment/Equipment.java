@@ -55,7 +55,7 @@ public class Equipment extends ListRow {
 	private static final String		DEFAULT_LEGALITY_CLASS		= "4";												//$NON-NLS-1$
 	private static final String		EMPTY						= "";												//$NON-NLS-1$
 	/** The extension for Equipment lists. */
-	public static final String		OLD_EQUIPMENT_EXTENSION		= ".eqp";											//$NON-NLS-1$
+	public static final String		OLD_EQUIPMENT_EXTENSION		= "eqp";											//$NON-NLS-1$
 	/** The XML tag used for items. */
 	public static final String		TAG_EQUIPMENT				= "equipment";										//$NON-NLS-1$
 	/** The XML tag used for containers. */

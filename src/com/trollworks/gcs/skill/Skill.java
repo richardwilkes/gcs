@@ -50,7 +50,7 @@ public class Skill extends ListRow {
 
 	private static final int		CURRENT_VERSION				= 2;
 	/** The extension for Skill lists. */
-	public static final String		OLD_SKILL_EXTENSION			= ".skl";										//$NON-NLS-1$
+	public static final String		OLD_SKILL_EXTENSION			= "skl";										//$NON-NLS-1$
 	/** The XML tag used for items. */
 	public static final String		TAG_SKILL					= "skill";										//$NON-NLS-1$
 	/** The XML tag used for containers. */

@@ -192,7 +192,7 @@ public class GCSMain {
 
 							System.out.print(CREATING_HTML);
 							System.out.flush();
-							output = new File(file.getParentFile(), PathUtils.getLeafName(file.getName(), false) + SheetWindow.HTML_EXTENSION);
+							output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), SheetWindow.HTML_EXTENSION));
 							timing.reset();
 							success = sheet.saveAsHTML(output, htmlTemplate, builder);
 							System.out.println(timing);
@@ -205,7 +205,7 @@ public class GCSMain {
 						if (pdf) {
 							System.out.print(CREATING_PDF);
 							System.out.flush();
-							output = new File(file.getParentFile(), PathUtils.getLeafName(file.getName(), false) + SheetWindow.PDF_EXTENSION);
+							output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), SheetWindow.PDF_EXTENSION));
 							timing.reset();
 							success = sheet.saveAsPDF(output);
 							System.out.println(timing);
@@ -219,7 +219,7 @@ public class GCSMain {
 
 							System.out.print(CREATING_PNG);
 							System.out.flush();
-							output = new File(file.getParentFile(), PathUtils.getLeafName(file.getName(), false) + SheetWindow.PNG_EXTENSION);
+							output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), SheetWindow.PNG_EXTENSION));
 							timing.reset();
 							success = sheet.saveAsPNG(output, result);
 							System.out.println(timing);

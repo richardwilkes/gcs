@@ -74,13 +74,13 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 	}
 
 	/** The extension for character sheets. */
-	public static final String	SHEET_EXTENSION	= ".gcs";	//$NON-NLS-1$
+	public static final String	SHEET_EXTENSION	= "gcs";	//$NON-NLS-1$
 	/** The PNG extension. */
-	public static final String	PNG_EXTENSION	= ".png";	//$NON-NLS-1$
+	public static final String	PNG_EXTENSION	= "png";	//$NON-NLS-1$
 	/** The PDF extension. */
-	public static final String	PDF_EXTENSION	= ".pdf";	//$NON-NLS-1$
+	public static final String	PDF_EXTENSION	= "pdf";	//$NON-NLS-1$
 	/** The HTML extension. */
-	public static final String	HTML_EXTENSION	= ".html";	//$NON-NLS-1$
+	public static final String	HTML_EXTENSION	= "html";	//$NON-NLS-1$
 	private CharacterSheet		mSheet;
 	private GURPSCharacter		mCharacter;
 	private Search				mSearch;

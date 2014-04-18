@@ -11,10 +11,6 @@
 
 package com.trollworks.gcs.template;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.PathUtils;
-import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.preferences.SheetPreferences;
@@ -28,6 +24,7 @@ import com.trollworks.gcs.widgets.outline.RowItemRenderer;
 import com.trollworks.gcs.widgets.outline.RowPostProcessor;
 import com.trollworks.gcs.widgets.search.Search;
 import com.trollworks.gcs.widgets.search.SearchTarget;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.menu.file.Saveable;
 import com.trollworks.toolkit.ui.widget.AppWindow;
@@ -38,6 +35,9 @@ import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
+import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.PathUtils;
+import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.notification.NotifierTarget;
 
 import java.awt.EventQueue;
@@ -55,18 +55,18 @@ import javax.swing.undo.StateEdit;
 /** The template window. */
 public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget, NotifierTarget {
 	@Localize("Untitled Template")
-	private static String UNTITLED;
+	private static String		UNTITLED;
 	@Localize("Add Rows")
-	private static String ADD_ROWS;
+	private static String		ADD_ROWS;
 	@Localize("An error occurred while trying to save the template.")
-	private static String SAVE_ERROR;
+	private static String		SAVE_ERROR;
 
 	static {
 		Localization.initialize();
 	}
 
 	/** The extension for templates. */
-	public static final String	EXTENSION	= ".gct";	//$NON-NLS-1$
+	public static final String	EXTENSION	= "gct";	//$NON-NLS-1$
 	private TemplateSheet		mContent;
 	private Template			mTemplate;
 	private Search				mSearch;
@@ -85,7 +85,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 
 	/**
 	 * Looks for an existing template window for the specified template.
-	 * 
+	 *
 	 * @param template The template to look for.
 	 * @return The template window for the specified template, if any.
 	 */
@@ -101,7 +101,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 
 	/**
 	 * Looks for an existing template window for the specified file.
-	 * 
+	 *
 	 * @param file The template file to look for.
 	 * @return The template window for the specified file, if any.
 	 */
@@ -122,7 +122,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 
 	/**
 	 * Displays a template window for the specified template.
-	 * 
+	 *
 	 * @param template The template to display.
 	 * @return The displayed template.
 	 */
@@ -138,7 +138,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 
 	/**
 	 * Creates a new {@link TemplateWindow}.
-	 * 
+	 *
 	 * @param file The file to display.
 	 */
 	public TemplateWindow(File file) throws IOException {
@@ -147,7 +147,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 
 	/**
 	 * Creates a template window.
-	 * 
+	 *
 	 * @param template The template to display.
 	 */
 	public TemplateWindow(Template template) {
@@ -196,7 +196,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 
 	/**
 	 * Adds rows to the display.
-	 * 
+	 *
 	 * @param rows The rows to add.
 	 */
 	public void addRows(List<Row> rows) {
