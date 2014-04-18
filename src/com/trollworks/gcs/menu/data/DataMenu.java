@@ -13,7 +13,7 @@ package com.trollworks.gcs.menu.data;
 
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.Path;
+import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.gcs.common.ListCollectionThread;
 import com.trollworks.toolkit.ui.image.ToolkitImage;
 import com.trollworks.toolkit.ui.menu.DynamicMenuEnabler;
@@ -74,7 +74,7 @@ public class DataMenu extends JMenu {
 			} else {
 				KeyStroke keyStroke = null;
 				File file = (File) entry;
-				String name = Path.getLeafName(file.getName(), false);
+				String name = PathUtils.getLeafName(file.getName(), false);
 				if (name.matches(MENU_KEY_SUFFIX_REGEX)) {
 					keyStroke = KeyStroke.getKeyStroke(Character.toUpperCase(name.charAt(name.length() - 1)), keyMask);
 					name = name.substring(0, name.length() - 3);

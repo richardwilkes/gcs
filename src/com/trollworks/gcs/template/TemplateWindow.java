@@ -13,7 +13,7 @@ package com.trollworks.gcs.template;
 
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.Path;
+import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.equipment.Equipment;
@@ -106,13 +106,13 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 	 * @return The template window for the specified file, if any.
 	 */
 	public static TemplateWindow findTemplateWindow(File file) {
-		String fullPath = Path.getFullPath(file);
+		String fullPath = PathUtils.getFullPath(file);
 
 		for (TemplateWindow window : BaseWindow.getWindows(TemplateWindow.class)) {
 			File wFile = window.getTemplate().getFile();
 
 			if (wFile != null) {
-				if (Path.getFullPath(wFile).equals(fullPath)) {
+				if (PathUtils.getFullPath(wFile).equals(fullPath)) {
 					return window;
 				}
 			}
@@ -171,7 +171,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 		if (file == null) {
 			title = BaseWindow.getNextUntitledWindowName(TemplateWindow.class, UNTITLED, this);
 		} else {
-			title = Path.getLeafName(file.getName(), false);
+			title = PathUtils.getLeafName(file.getName(), false);
 		}
 		setTitle(title);
 		getRootPane().putClientProperty("Window.documentFile", file); //$NON-NLS-1$
@@ -405,7 +405,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 
 	@Override
 	public String getPreferredSavePath() {
-		return Path.getFullPath(Path.getParent(Path.getFullPath(getBackingFile())), getTitle());
+		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getBackingFile())), getTitle());
 	}
 
 	@Override

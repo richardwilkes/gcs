@@ -28,7 +28,7 @@ import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.Path;
+import com.trollworks.toolkit.utility.PathUtils;
 
 import java.awt.EventQueue;
 import java.awt.image.BufferedImage;
@@ -76,7 +76,7 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 		super(file, new LoadState());
 		initialize();
 		if (mImported) {
-			mSuggestedName = Path.getLeafName(file.getName(), false);
+			mSuggestedName = PathUtils.getLeafName(file.getName(), false);
 			setFile(null);
 			EventQueue.invokeLater(new Runnable() {
 				@Override

@@ -17,7 +17,7 @@ import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.utility.Debug;
-import com.trollworks.toolkit.utility.Path;
+import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.UniqueID;
 import com.trollworks.toolkit.utility.VersionException;
 import com.trollworks.toolkit.utility.notification.Notifier;
@@ -221,7 +221,7 @@ public abstract class DataFile {
 	/** @param file The file associated with this data file. */
 	public void setFile(File file) {
 		if (file != null) {
-			file = Path.getFile(Path.getFullPath(file));
+			file = PathUtils.getFile(PathUtils.getFullPath(file));
 		}
 		mFile = file;
 	}

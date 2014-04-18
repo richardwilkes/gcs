@@ -21,7 +21,7 @@ import com.trollworks.toolkit.ui.image.Images;
 import com.trollworks.toolkit.ui.widget.StdFileDialog;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.Path;
+import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.notification.NotifierTarget;
 
 import java.awt.Container;
@@ -86,7 +86,7 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 			try {
 				mCharacter.getDescription().setPortrait(Images.loadImage(file));
 			} catch (Exception exception) {
-				WindowUtils.showError(this, MessageFormat.format(BAD_IMAGE, Path.getFullPath(file)));
+				WindowUtils.showError(this, MessageFormat.format(BAD_IMAGE, PathUtils.getFullPath(file)));
 			}
 		}
 	}

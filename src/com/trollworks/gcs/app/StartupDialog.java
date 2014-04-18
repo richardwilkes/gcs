@@ -24,7 +24,7 @@ import com.trollworks.toolkit.ui.menu.file.OpenCommand;
 import com.trollworks.toolkit.ui.menu.file.RecentFilesMenu;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.Path;
+import com.trollworks.toolkit.utility.PathUtils;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -117,7 +117,7 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 			@Override
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				setText(DataMenu.filterTitle(Path.getLeafName(((File) value).getName(), false)));
+				setText(DataMenu.filterTitle(PathUtils.getLeafName(((File) value).getName(), false)));
 				setIcon(new ImageIcon(FileType.getIconForFile((File) value)));
 				return this;
 			}

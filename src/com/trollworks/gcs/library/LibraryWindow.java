@@ -41,7 +41,7 @@ import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowFilter;
 import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.Path;
+import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.notification.BatchNotifierTarget;
 
@@ -135,11 +135,11 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	 * @return The {@link LibraryWindow} for the specified file, if any.
 	 */
 	public static LibraryWindow findLibraryWindow(File file) {
-		String fullPath = Path.getFullPath(file);
+		String fullPath = PathUtils.getFullPath(file);
 		for (LibraryWindow window : BaseWindow.getWindows(LibraryWindow.class)) {
 			File wFile = window.getLibraryFile().getFile();
 			if (wFile != null) {
-				if (Path.getFullPath(wFile).equals(fullPath)) {
+				if (PathUtils.getFullPath(wFile).equals(fullPath)) {
 					return window;
 				}
 			}
@@ -251,7 +251,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 		} else if (file == null) {
 			title = BaseWindow.getNextUntitledWindowName(getClass(), TITLE, this);
 		} else {
-			title = Path.getLeafName(file.getName(), false);
+			title = PathUtils.getLeafName(file.getName(), false);
 		}
 		setTitle(title);
 		getRootPane().putClientProperty("Window.documentFile", file); //$NON-NLS-1$
@@ -386,7 +386,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 
 	@Override
 	public String getPreferredSavePath() {
-		return Path.getFullPath(Path.getParent(Path.getFullPath(getBackingFile())), getTitle());
+		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getBackingFile())), getTitle());
 	}
 
 	@Override

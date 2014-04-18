@@ -36,7 +36,7 @@ import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.Path;
+import com.trollworks.toolkit.utility.PathUtils;
 
 import java.awt.Color;
 import java.awt.EventQueue;
@@ -116,13 +116,13 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 	 * @return The character sheet window for the specified file, if any.
 	 */
 	public static SheetWindow findSheetWindow(File file) {
-		String fullPath = Path.getFullPath(file);
+		String fullPath = PathUtils.getFullPath(file);
 
 		for (SheetWindow window : BaseWindow.getWindows(SheetWindow.class)) {
 			File wFile = window.getCharacter().getFile();
 
 			if (wFile != null) {
-				if (Path.getFullPath(wFile).equals(fullPath)) {
+				if (PathUtils.getFullPath(wFile).equals(fullPath)) {
 					return window;
 				}
 			}
@@ -192,7 +192,7 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 		if (file == null) {
 			title = BaseWindow.getNextUntitledWindowName(SheetWindow.class, UNTITLED_SHEET, this);
 		} else {
-			title = Path.getLeafName(file.getName(), false);
+			title = PathUtils.getLeafName(file.getName(), false);
 		}
 		setTitle(title);
 		getRootPane().putClientProperty("Window.documentFile", file); //$NON-NLS-1$
@@ -462,7 +462,7 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 		if (path.length() == 0) {
 			path = getTitle();
 		}
-		return Path.getFullPath(Path.getParent(Path.getFullPath(getBackingFile())), path);
+		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getBackingFile())), path);
 	}
 
 	@Override
@@ -473,7 +473,7 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 	@Override
 	public File[] saveTo(File file) {
 		ArrayList<File> result = new ArrayList<>();
-		String extension = Path.getExtension(file.getName());
+		String extension = PathUtils.getExtension(file.getName());
 
 		if (HTML_EXTENSION.equals(extension)) {
 			if (mSheet.saveAsHTML(file, null, null)) {

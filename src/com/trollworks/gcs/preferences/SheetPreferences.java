@@ -13,7 +13,7 @@ package com.trollworks.gcs.preferences;
 
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.Path;
+import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.toolkit.ui.App;
@@ -236,7 +236,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 	/** @return The default HTML template to use when exporting to HTML. */
 	public static String getDefaultHTMLTemplate() {
-		return Path.getFullPath(new File(new File(App.APP_HOME_DIR, "data"), "template.html")); //$NON-NLS-1$ //$NON-NLS-2$
+		return PathUtils.getFullPath(new File(new File(App.APP_HOME_DIR, "data"), "template.html")); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/** @return The initial points to start a new character with. */
@@ -428,7 +428,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		if (source == mPortrait) {
 			File file = StdFileDialog.choose(this, true, SELECT_PORTRAIT, null, null, "png", "jpg", "gif", "jpeg"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			if (file != null) {
-				setPortrait(Path.getFullPath(file));
+				setPortrait(PathUtils.getFullPath(file));
 			}
 		} else if (source == mPNGResolutionCombo) {
 			Preferences.getInstance().setValue(MODULE, PNG_RESOLUTION_KEY, DPI[mPNGResolutionCombo.getSelectedIndex()]);
@@ -439,7 +439,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		} else if (source == mHTMLTemplatePicker) {
 			File file = StdFileDialog.choose(this, true, SELECT_HTML_TEMPLATE, null, null, "html", "htm"); //$NON-NLS-1$ //$NON-NLS-2$
 			if (file != null) {
-				mHTMLTemplatePath.setText(Path.getFullPath(file));
+				mHTMLTemplatePath.setText(PathUtils.getFullPath(file));
 			}
 		}
 		adjustResetButton();

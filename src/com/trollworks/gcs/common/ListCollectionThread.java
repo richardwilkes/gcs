@@ -20,7 +20,7 @@ import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.utility.Debug;
-import com.trollworks.toolkit.utility.Path;
+import com.trollworks.toolkit.utility.PathUtils;
 
 import java.awt.EventQueue;
 import java.io.File;
@@ -100,7 +100,7 @@ public class ListCollectionThread extends Thread {
 							}
 						}
 					} else {
-						String ext = Path.getExtension(element.getName());
+						String ext = PathUtils.getExtension(element.getName());
 						if (LibraryFile.EXTENSION.equalsIgnoreCase(ext) || Advantage.OLD_ADVANTAGE_EXTENSION.equalsIgnoreCase(ext) || Equipment.OLD_EQUIPMENT_EXTENSION.equalsIgnoreCase(ext) || Skill.OLD_SKILL_EXTENSION.equalsIgnoreCase(ext) || Spell.OLD_SPELL_EXTENSION.equalsIgnoreCase(ext) || TemplateWindow.EXTENSION.equalsIgnoreCase(ext)) {
 							list.add(element);
 						}

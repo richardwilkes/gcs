@@ -60,7 +60,7 @@ import com.trollworks.toolkit.ui.widget.outline.RowSelection;
 import com.trollworks.toolkit.utility.BundleInfo;
 import com.trollworks.toolkit.utility.Debug;
 import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.Path;
+import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.notification.BatchNotifierTarget;
 import com.trollworks.toolkit.utility.text.Numbers;
@@ -1025,7 +1025,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				}
 			}
 			if (templateUsed != null) {
-				templateUsed.append(Path.getFullPath(template));
+				templateUsed.append(PathUtils.getFullPath(template));
 			}
 			try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(template)));
 							BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
@@ -1064,7 +1064,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		Profile description = mCharacter.getDescription();
 
 		if (key.equals("PORTRAIT")) { //$NON-NLS-1$
-			String fileName = Path.getLeafName(base.getName(), false) + SheetWindow.PNG_EXTENSION;
+			String fileName = PathUtils.getLeafName(base.getName(), false) + SheetWindow.PNG_EXTENSION;
 			Images.writePNG(new File(base.getParentFile(), fileName), description.getPortrait(true), 150);
 			writeXMLData(out, fileName);
 		} else if (key.equals("NAME")) { //$NON-NLS-1$
@@ -1806,7 +1806,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			int height = (int) (paper.getHeight() / 72.0 * dpi);
 			BufferedImage buffer = gc.createCompatibleImage(width, height, Transparency.OPAQUE);
 			int pageNum = 0;
-			String name = Path.getLeafName(file.getName(), false);
+			String name = PathUtils.getLeafName(file.getName(), false);
 
 			g2d.dispose();
 			file = file.getParentFile();

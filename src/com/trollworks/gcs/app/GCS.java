@@ -31,7 +31,7 @@ import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.utility.BundleInfo;
 import com.trollworks.toolkit.utility.LaunchProxy;
 import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.Path;
+import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.Timing;
 import com.trollworks.toolkit.utility.cmdline.CmdLine;
@@ -160,7 +160,7 @@ public class GCS {
 			}
 			GraphicsUtilities.setHeadlessPrintMode(true);
 			for (File file : cmdLine.getArgumentsAsFiles()) {
-				if (SheetWindow.SHEET_EXTENSION.equals(Path.getExtension(file.getName())) && file.canRead()) {
+				if (SheetWindow.SHEET_EXTENSION.equals(PathUtils.getExtension(file.getName())) && file.canRead()) {
 					System.out.print(MessageFormat.format(LOADING, file));
 					System.out.flush();
 					timing.reset();
@@ -192,7 +192,7 @@ public class GCS {
 
 							System.out.print(CREATING_HTML);
 							System.out.flush();
-							output = new File(file.getParentFile(), Path.getLeafName(file.getName(), false) + SheetWindow.HTML_EXTENSION);
+							output = new File(file.getParentFile(), PathUtils.getLeafName(file.getName(), false) + SheetWindow.HTML_EXTENSION);
 							timing.reset();
 							success = sheet.saveAsHTML(output, htmlTemplate, builder);
 							System.out.println(timing);
@@ -205,7 +205,7 @@ public class GCS {
 						if (pdf) {
 							System.out.print(CREATING_PDF);
 							System.out.flush();
-							output = new File(file.getParentFile(), Path.getLeafName(file.getName(), false) + SheetWindow.PDF_EXTENSION);
+							output = new File(file.getParentFile(), PathUtils.getLeafName(file.getName(), false) + SheetWindow.PDF_EXTENSION);
 							timing.reset();
 							success = sheet.saveAsPDF(output);
 							System.out.println(timing);
@@ -219,7 +219,7 @@ public class GCS {
 
 							System.out.print(CREATING_PNG);
 							System.out.flush();
-							output = new File(file.getParentFile(), Path.getLeafName(file.getName(), false) + SheetWindow.PNG_EXTENSION);
+							output = new File(file.getParentFile(), PathUtils.getLeafName(file.getName(), false) + SheetWindow.PNG_EXTENSION);
 							timing.reset();
 							success = sheet.saveAsPNG(output, result);
 							System.out.println(timing);
