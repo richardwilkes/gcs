@@ -11,8 +11,10 @@
 
 package com.trollworks.gcs.widgets.search;
 
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.FlexRow;
+import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.awt.Point;
@@ -34,7 +36,9 @@ import javax.swing.event.DocumentListener;
 
 /** A standard search control. */
 public class Search extends JPanel implements DocumentListener, KeyListener, FocusListener {
+	@Localize("The number of matches found")
 	private static String	MSG_HIT_TOOLTIP;
+	@Localize("Enter text here and press RETURN to select all matching items")
 	private static String	MSG_SEARCH_FIELD_TOOLTIP;
 	private SearchTarget	mTarget;
 	private JLabel			mHits;
@@ -42,9 +46,13 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 	private SearchDropDown	mFloater;
 	private String			mFilter;
 
+	static {
+		Localization.initialize();
+	}
+
 	/**
 	 * Creates the search panel.
-	 * 
+	 *
 	 * @param target The search target.
 	 */
 	public Search(SearchTarget target) {
@@ -87,7 +95,7 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 
 	/**
 	 * Adjust the hits count.
-	 * 
+	 *
 	 * @return The current hits.
 	 */
 	public List<Object> adjustHits() {
