@@ -101,7 +101,9 @@ public class GCSMain {
 	 */
 	public static void main(String[] args) {
 		App.setup(GCSMain.class);
-		CmdLine cmdLine = new CmdLine(args, HTML_OPTION, HTML_TEMPLATE_OPTION, PDF_OPTION, PNG_OPTION, SIZE_OPTION, MARGIN_OPTION);
+		CmdLine cmdLine = new CmdLine();
+		cmdLine.addOptions(HTML_OPTION, HTML_TEMPLATE_OPTION, PDF_OPTION, PNG_OPTION, SIZE_OPTION, MARGIN_OPTION);
+		cmdLine.processArguments(args);
 		if (cmdLine.isOptionUsed(HTML_OPTION) || cmdLine.isOptionUsed(PDF_OPTION) || cmdLine.isOptionUsed(PNG_OPTION)) {
 			System.setProperty("java.awt.headless", Boolean.TRUE.toString()); //$NON-NLS-1$
 			initialize();
