@@ -11,12 +11,8 @@
 
 package com.trollworks.gcs.common;
 
-import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.data.DataMenu;
-import com.trollworks.gcs.skill.Skill;
-import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.utility.Debug;
@@ -101,7 +97,7 @@ public class ListCollectionThread extends Thread {
 						}
 					} else {
 						String ext = PathUtils.getExtension(element.getName());
-						if (LibraryFile.EXTENSION.equalsIgnoreCase(ext) || Advantage.OLD_ADVANTAGE_EXTENSION.equalsIgnoreCase(ext) || Equipment.OLD_EQUIPMENT_EXTENSION.equalsIgnoreCase(ext) || Skill.OLD_SKILL_EXTENSION.equalsIgnoreCase(ext) || Spell.OLD_SPELL_EXTENSION.equalsIgnoreCase(ext) || TemplateWindow.EXTENSION.equalsIgnoreCase(ext)) {
+						if (LibraryFile.EXTENSION.equalsIgnoreCase(ext) || TemplateWindow.EXTENSION.equalsIgnoreCase(ext)) {
 							list.add(element);
 						}
 					}

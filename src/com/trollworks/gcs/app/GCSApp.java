@@ -11,10 +11,8 @@
 
 package com.trollworks.gcs.app;
 
-import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.common.ListCollectionThread;
-import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.data.DataMenu;
 import com.trollworks.gcs.menu.edit.EditMenu;
@@ -23,8 +21,6 @@ import com.trollworks.gcs.menu.file.NewCharacterSheetCommand;
 import com.trollworks.gcs.menu.help.HelpMenu;
 import com.trollworks.gcs.menu.item.ItemMenu;
 import com.trollworks.gcs.preferences.SheetPreferences;
-import com.trollworks.gcs.skill.Skill;
-import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.App;
@@ -50,14 +46,6 @@ public class GCSApp extends App {
 	private static String		LIBRARY_DESCRIPTION;
 	@Localize("GCS Character Template")
 	private static String		TEMPLATE_DESCRIPTION;
-	@Localize("GCS Traits")
-	private static String		TRAITS_DESCRIPTION;
-	@Localize("GCS Equipment")
-	private static String		EQUIPMENT_DESCRIPTION;
-	@Localize("GCS Skills")
-	private static String		SKILLS_DESCRIPTION;
-	@Localize("GCS Spells")
-	private static String		SPELLS_DESCRIPTION;
 
 	static {
 		Localization.initialize();
@@ -78,10 +66,6 @@ public class GCSApp extends App {
 		map.put(SheetWindow.SHEET_EXTENSION, SHEET_DESCRIPTION);
 		map.put(LibraryFile.EXTENSION, LIBRARY_DESCRIPTION);
 		map.put(TemplateWindow.EXTENSION, TEMPLATE_DESCRIPTION);
-		map.put(Advantage.OLD_ADVANTAGE_EXTENSION, TRAITS_DESCRIPTION);
-		map.put(Equipment.OLD_EQUIPMENT_EXTENSION, EQUIPMENT_DESCRIPTION);
-		map.put(Skill.OLD_SKILL_EXTENSION, SKILLS_DESCRIPTION);
-		map.put(Spell.OLD_SPELL_EXTENSION, SPELLS_DESCRIPTION);
 		WindowsRegistry.register("GCS", map, new File(APP_HOME_DIR, "gcs.bat"), new File(APP_HOME_DIR, "GURPS Character Sheet.app/Contents/Resources")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 		UpdateChecker.check("gcs", "http://gurpscharactersheet.com/current.txt", "http://gurpscharactersheet.com"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$

@@ -51,8 +51,6 @@ public class Advantage extends ListRow {
 	}
 
 	private static final int			CURRENT_VERSION				= 2;
-	/** The extension for the old Advantage lists. */
-	public static final String			OLD_ADVANTAGE_EXTENSION		= "adq";											//$NON-NLS-1$
 	/** The XML tag used for items. */
 	public static final String			TAG_ADVANTAGE				= "advantage";										//$NON-NLS-1$
 	/** The XML tag used for containers. */

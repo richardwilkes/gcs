@@ -11,16 +11,12 @@
 
 package com.trollworks.gcs.app;
 
-import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.PrerequisitesThread;
 import com.trollworks.gcs.character.SheetWindow;
-import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.library.LibraryWindow;
-import com.trollworks.gcs.skill.Skill;
-import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.App;
@@ -138,10 +134,6 @@ public class GCSMain {
 		FileType.register(SheetWindow.SHEET_EXTENSION, GCSImages.getCharacterSheetIcon(false), SheetWindow.class, true);
 		FileType.register(LibraryFile.EXTENSION, GCSImages.getLibraryIcon(false), LibraryWindow.class, true);
 		FileType.register(TemplateWindow.EXTENSION, GCSImages.getTemplateIcon(false), TemplateWindow.class, true);
-		FileType.register(Advantage.OLD_ADVANTAGE_EXTENSION, GCSImages.getAdvantageIcon(false, false), LibraryWindow.class, true);
-		FileType.register(Equipment.OLD_EQUIPMENT_EXTENSION, GCSImages.getEquipmentIcon(false, false), LibraryWindow.class, true);
-		FileType.register(Skill.OLD_SKILL_EXTENSION, GCSImages.getSkillIcon(false, false), LibraryWindow.class, true);
-		FileType.register(Spell.OLD_SPELL_EXTENSION, GCSImages.getSpellIcon(false, false), LibraryWindow.class, true);
 	}
 
 	private static int convert(CmdLine cmdLine) {
