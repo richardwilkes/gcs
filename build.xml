@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="gcs" default="gcs">
+<project name="gcs" default="bundle">
 	<property name="app" value="gcs"/>
 	<property name="src" value="src"/>
 	<property name="lib" value="libraries"/>
@@ -23,10 +23,12 @@
 	<property name="dist_name" value="GCS-${primary_version}"/>
 	<property name="dist_root" value="${dist_build}/${dist_name}"/>
 	<property name="build_app_bundle" value="${dist_root}/${app_name}.app/Contents"/>
+	<property name="bundle_res" value="${build_app_bundle}/Resources"/>
 	<property name="java_bundle_dir" value="${build_app_bundle}/Java"/>
-	<property name="app_launcher" value="${dist_name}/${app_name}.app/Contents/MacOS/JavaAppLauncher"/>
 	<property name="splash_path" value="com/trollworks/gcs/app/images/Splash.gif"/>
 	<property name="launcher_stub_src" value="com/trollworks/gcs/app/GCS.java"/>
+	<property name="icons" value="graphics/icons"/>
+
 	<tstamp>
 		<format property="version" pattern="${primary_version}.yyyyMMddHHmmss"/>
 	</tstamp>
@@ -38,12 +40,12 @@
 		<delete dir="${build_root}"/>
 		<delete>
 			<fileset dir="." includes="GCS-*.zip"/>
+			<fileset dir="${lib}" includes="${app}-*.jar"/>
 		</delete>
 	</target>
 
-	<target name="gcs" description="Build GCS" depends="clean">
+	<target name="build" description="Build GCS" depends="clean">
 		<mkdir dir="${gcs_build}"/>
-		<mkdir dir="${dist_build}"/>
 		<mkdir dir="${annotations_src}"/>
 
 		<!-- Compile the code. -->
@@ -78,36 +80,11 @@
 
 		<!-- Copy the resources over. -->
 		<copy todir="${gcs_build}">
-			<fileset dir="${src}" includes="**/*.properties,**/*.txt,**/*.png,**/*.gif"/>
+			<fileset dir="${src}" includes="**/*.txt,**/*.png,**/*.gif"/>
 		</copy>
-
-		<!-- Copy the initial dist files over. -->
-		<mkdir dir="${dist_root}"/>
-		<copy todir="${dist_root}">
-			<fileset dir="dist"/>
-		</copy>
-		<copy file="${gcs_build}/${splash_path}" tofile="${build_app_bundle}/Resources/splash.gif"/>
-		<chmod perm="755" file="${build_app_bundle}/MacOS/JavaAppLauncher"/>
-		<chmod perm="755" file="${dist_root}/${app}"/>
-		<mkdir dir="${dist_root}/data"/>
-		<copy todir="${dist_root}/data">
-			<fileset dir="data"/>
-		</copy>
-		<replace file="${build_app_bundle}/Info.plist">
-			<replacefilter token="APP_NAME" value="${app_name}"/>
-			<replacefilter token="APP_VERSION" value="${primary_version}"/>
-			<replacefilter token="COPYRIGHT_YEARS" value="1998-${year}"/>
-			<replacefilter token="COPYRIGHT_OWNER" value="${copyright_owner}"/>
-		</replace>
-		<replace file="${dist_root}/gcs">
-			<replacefilter token="APP_VERSION" value="${primary_version}"/>
-		</replace>
-		<replace file="${dist_root}/gcs.bat">
-			<replacefilter token="APP_VERSION" value="${primary_version}"/>
-		</replace>
 
 		<!-- Create the jar file. -->
-		<jar destfile="${java_bundle_dir}/${app}-${primary_version}.jar" basedir="${gcs_build}" duplicate="fail">
+		<jar destfile="${lib}/${app}-${primary_version}.jar" basedir="${gcs_build}" duplicate="fail">
 			<manifest>
 				<attribute name="Class-Path" value="${toolkit} ${trove} ${iText} ${apple_stubs}"/>
 				<attribute name="Main-Class" value="com.trollworks.gcs.app.GCS"/>
@@ -119,23 +96,112 @@
 				<attribute name="bundle-copyright-years" value="1998-${year}"/>
 			</manifest>
 		</jar>
+	</target>
 
-		<!-- Copy the support jars over. -->
-		<copy file="${toolkit_path}" todir="${java_bundle_dir}"/>
-		<copy file="${trove_path}" todir="${java_bundle_dir}"/>
-		<copy file="${iText_path}" todir="${java_bundle_dir}"/>
-		<copy file="${apple_stubs_path}" todir="${java_bundle_dir}"/>
+	<target name="icons" description="Packs the various iconsets into icns files">
+		<delete dir="${icons}/app.icns"/>
+		<exec executable="/usr/bin/iconutil" dir="${icons}">
+			<arg value="--convert"/>
+			<arg value="icns"/>
+			<arg value="app.iconset"/>
+		</exec>
 
+		<delete dir="${icons}/gcs.icns"/>
+		<exec executable="/usr/bin/iconutil" dir="${icons}">
+			<arg value="--convert"/>
+			<arg value="icns"/>
+			<arg value="gcs.iconset"/>
+		</exec>
+
+		<delete dir="${icons}/gcs.icns"/>
+		<exec executable="/usr/bin/iconutil" dir="${icons}">
+			<arg value="--convert"/>
+			<arg value="icns"/>
+			<arg value="gct.iconset"/>
+		</exec>
+
+			<delete dir="${icons}/glb.icns"/>
+			<exec executable="/usr/bin/iconutil" dir="${icons}">
+				<arg value="--convert"/>
+				<arg value="icns"/>
+				<arg value="glb.iconset"/>
+			</exec>
+	</target>
+
+	<target name="bundle" description="Bundle GCS up for distribution" depends="build">
+		<taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask" classpath="../toolkit/libraries/appbundler-1.0ea.jar"/>
+
+		<!-- Bundle it up. -->
+		<mkdir dir="${dist_root}"/>
+		<bundleapp outputdirectory="${dist_root}"
+					name="${app_name}"
+					executablename="${app}"
+					displayname="${app_name}"
+					identifier="com.trollworks.gcs"
+					mainclassname="com.trollworks.gcs.app.GCS"
+					icon="${icons}/app.icns"
+					shortversion="${primary_version}"
+					version="${primary_version}"
+					signature="RWGS"
+					copyright="Copyright ©1998-${year} by ${copyright_owner}. All rights reserved."
+					applicationCategory="public.app-category.role-playing-games">
+			<classpath file="${lib}/${app}-${primary_version}.jar" />
+			<classpath file="${toolkit_path}"/>
+			<classpath file="${trove_path}"/>
+			<classpath file="${iText_path}"/>
+			<classpath file="${apple_stubs_path}"/>
+			<option value="-Xmx256m"/>
+			<option value="-Xdock:name=${app_name}"/>
+			<option value="-splash:$APP_ROOT/Contents/Resources/splash.gif"/>
+			<runtime dir="${java.home}/.."/>
+			<arch name="x86_64"/>
+			<arch name="i386"/>
+			<bundledocument extensions="gcs" icon="gcs.icns" name="GCS Character Sheet" role="editor"/>
+			<bundledocument extensions="gct" icon="gct.icns" name="GCS Character Template" role="editor"/>
+			<bundledocument extensions="glb" icon="glb.icns" name="GCS Library" role="editor"/>
+		</bundleapp>
+
+		<!-- Copy the icons for the documents, since the appbundler fails to do that. -->
+		<copy file="${icons}/gcs.icns" todir="${bundle_res}"/>
+		<copy file="${icons}/gct.icns" todir="${bundle_res}"/>
+		<copy file="${icons}/glb.icns" todir="${bundle_res}"/>
+
+		<!-- Copy the license. -->
+		<copy file="license.html" todir="${dist_root}"/>
+
+		<!-- Copy the splash image. -->
+		<copy file="${gcs_build}/${splash_path}" tofile="${bundle_res}/splash.gif"/>
+
+		<!-- Copy the samples. -->
+		<mkdir dir="${dist_root}/samples"/>
+		<copy todir="${dist_root}/samples">
+			<fileset dir="samples"/>
+		</copy>
+
+		<!-- Copy the scripts, then adjust them to have the correct version and permissions. -->
+		<copy todir="${dist_root}">
+			<fileset dir="scripts"/>
+		</copy>
+		<replace dir="${dist_root}" includes="${app},${app}.bat">
+			<replacefilter token="APP_VERSION" value="${primary_version}"/>
+		</replace>
+		<chmod perm="755" file="${dist_root}/${app}"/>
+
+		<!-- Copy the database. -->
+		<mkdir dir="${dist_root}/data"/>
+		<copy todir="${dist_root}/data">
+			<fileset dir="data"/>
+		</copy>
+		
 		<!-- Create the zip file -->
-		<zip destfile="${dist_name}.zip">
-			<zipfileset dir="${dist_build}" filemode="755">
-				<include name="${dist_name}/${app}"/>
-				<include name="${app_launcher}"/>
+		<zip destfile="${app}-${primary_version}.zip">
+			<zipfileset dir="${dist_root}" filemode="755">
+				<include name="${app}"/>
+				<include name="${app_name}.app/Contents/MacOS/${app}"/>
 			</zipfileset>
-			<zipfileset dir="${dist_build}">
-				<include name="${dist_name}/**"/>
-				<exclude name="${dist_name}/${app}"/>
-				<exclude name="${app_launcher}"/>
+			<zipfileset dir="${dist_root}">
+				<exclude name="${app}"/>
+				<exclude name="${app_name}.app/Contents/MacOS/${app}"/>
 			</zipfileset>
 		</zip>
 	</target>
