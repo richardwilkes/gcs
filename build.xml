@@ -1,6 +1,25 @@
 <?xml version="1.0"?>
-<project name="gcs" default="bundle">
+<project name="gcs" default="mac_bundle" xmlns:if="ant:if" xmlns:unless="ant:unless">
+	<condition property="platform.mac">
+		<os family="mac"/>
+	</condition>
+	<condition property="platform.win">
+		<os family="windows"/>
+	</condition>
+	<condition property="platform.linux">
+		<and>
+			<os family="unix"/>
+			<not>
+				<os family="mac"/>
+			</not>
+		</and>
+	</condition>
+	<property if:set="platform.mac" name="platform" value="mac"/>
+	<property if:set="platform.win" name="platform" value="windows"/>
+	<property if:set="platform.linux" name="platform" value="linux"/>
+
 	<property name="app" value="gcs"/>
+	<property name="app.signature" value="RWGS"/>
 	<property name="src" value="src"/>
 	<property name="lib" value="libraries"/>
 	<property name="toolkit" value="toolkit-4.0.0.jar"/>
@@ -39,12 +58,12 @@
 	<target name="clean" description="Clean up after a build">
 		<delete dir="${build_root}"/>
 		<delete>
-			<fileset dir="." includes="GCS-*.zip"/>
+			<fileset dir="." includes="gcs-*.zip"/>
 			<fileset dir="${lib}" includes="${app}-*.jar"/>
 		</delete>
 	</target>
 
-	<target name="build" description="Build GCS" depends="clean">
+	<target name="build_jar" description="Build GCS" depends="clean">
 		<mkdir dir="${gcs_build}"/>
 		<mkdir dir="${annotations_src}"/>
 
@@ -98,7 +117,7 @@
 		</jar>
 	</target>
 
-	<target name="icons" description="Packs the various iconsets into icns files">
+	<target name="build_icons" description="Packs the various iconsets into icns files">
 		<delete dir="${icons}/app.icns"/>
 		<exec executable="/usr/bin/iconutil" dir="${icons}">
 			<arg value="--convert"/>
@@ -120,89 +139,96 @@
 			<arg value="gct.iconset"/>
 		</exec>
 
-			<delete dir="${icons}/glb.icns"/>
-			<exec executable="/usr/bin/iconutil" dir="${icons}">
-				<arg value="--convert"/>
-				<arg value="icns"/>
-				<arg value="glb.iconset"/>
-			</exec>
+		<delete dir="${icons}/glb.icns"/>
+		<exec executable="/usr/bin/iconutil" dir="${icons}">
+			<arg value="--convert"/>
+			<arg value="icns"/>
+			<arg value="glb.iconset"/>
+		</exec>
 	</target>
 
-	<target name="bundle" description="Bundle GCS up for distribution" depends="build">
-		<taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask" classpath="../toolkit/libraries/appbundler-1.0ea.jar"/>
+	<target name="mac_bundle" depends="build_jar">
+		<property name="mac.root" value="${dist_build}/mac/${app}-${primary_version}"/>
+		<property name="mac.bundle" value="${mac.root}/${app_name}.app"/>
+		<property name="mac.bundle.contents" value="${mac.bundle}/Contents"/>
+		<property name="mac.app.dir" value="${mac.bundle.contents}/MacOS"/>
+		<property name="mac.res.dir" value="${mac.bundle.contents}/Resources"/>
+		<property name="mac.support" value="${mac.app.dir}/support"/>
+		<property name="mac.jre" value="${mac.support}/jre"/>
+		<property name="mac.jars" value="${mac.support}/jars"/>
+		<property name="samples.dir" value="${mac.root}/samples"/>
+		<property name="data.dir" value="${mac.root}/data"/>
 
-		<!-- Bundle it up. -->
-		<mkdir dir="${dist_root}"/>
-		<bundleapp outputdirectory="${dist_root}"
-					name="${app_name}"
-					executablename="${app}"
-					displayname="${app_name}"
-					identifier="com.trollworks.gcs"
-					mainclassname="com.trollworks.gcs.app.GCS"
-					icon="${icons}/app.icns"
-					shortversion="${primary_version}"
-					version="${primary_version}"
-					signature="RWGS"
-					copyright="Copyright ©1998-${year} by ${copyright_owner}. All rights reserved."
-					applicationCategory="public.app-category.role-playing-games">
-			<classpath file="${lib}/${app}-${primary_version}.jar" />
-			<classpath file="${toolkit_path}"/>
-			<classpath file="${trove_path}"/>
-			<classpath file="${iText_path}"/>
-			<classpath file="${apple_stubs_path}"/>
-			<option value="-Xmx256m"/>
-			<option value="-Xdock:name=${app_name}"/>
-			<option value="-splash:$APP_ROOT/Contents/Resources/splash.gif"/>
-			<runtime dir="${java.home}/.."/>
-			<arch name="x86_64"/>
-			<arch name="i386"/>
-			<bundledocument extensions="gcs" icon="gcs.icns" name="GCS Character Sheet" role="editor"/>
-			<bundledocument extensions="gct" icon="gct.icns" name="GCS Character Template" role="editor"/>
-			<bundledocument extensions="glb" icon="glb.icns" name="GCS Library" role="editor"/>
-		</bundleapp>
+		<!-- Copy the launcher. -->
+		<mkdir dir="${mac.app.dir}"/>
+		<copy file="launcher/mac/${app}" todir="${mac.app.dir}"/>
+		<chmod file="${mac.app.dir}/${app}" perm="+x"/>
 
-		<!-- Copy the icons for the documents, since the appbundler fails to do that. -->
-		<copy file="${icons}/gcs.icns" todir="${bundle_res}"/>
-		<copy file="${icons}/gct.icns" todir="${bundle_res}"/>
-		<copy file="${icons}/glb.icns" todir="${bundle_res}"/>
+		<!-- Copy the icons. -->
+		<mkdir dir="${mac.res.dir}"/>
+		<copy file="${icons}/app.icns" todir="${mac.res.dir}"/>
+		<copy file="${icons}/gcs.icns" todir="${mac.res.dir}"/>
+		<copy file="${icons}/gct.icns" todir="${mac.res.dir}"/>
+		<copy file="${icons}/glb.icns" todir="${mac.res.dir}"/>
+
+		<!-- Copy the JRE. -->
+		<ant dir="../toolkit/launcher" target="jre" inheritall="false">
+			<property name="jre.dst.dir" location="${mac.jre}"/>
+		</ant>
+
+		<!-- Copy the jars. -->
+		<mkdir dir="${mac.jars}"/>
+		<copy file="${lib}/${app}-${primary_version}.jar" todir="${mac.jars}"/>
+		<copy file="${toolkit_path}" todir="${mac.jars}"/>
+		<copy file="${trove_path}" todir="${mac.jars}"/>
+		<copy file="${iText_path}" todir="${mac.jars}"/>
+		<copy file="${apple_stubs_path}" todir="${mac.jars}"/>
+
+		<!-- Copy the Info.plist. -->
+		<copy file="launcher/mac/Info.plist" todir="${mac.bundle.contents}">
+			<filterset>
+				<filter token="APP_EXE" value="${app}"/>
+				<filter token="APP_NAME" value="${app_name}"/>
+				<filter token="APP_VERSION" value="${primary_version}"/>
+				<filter token="APP_SIGNATURE" value="${app.signature}"/>
+				<filter token="COPYRIGHT_YEAR" value="${year}"/>
+				<filter token="COPYRIGHT_OWNER" value="${copyright_owner}"/>
+			</filterset>
+		</copy>
+		<echo message="APPL${app.signature}" file="${mac.bundle.contents}/PkgInfo"/>
 
 		<!-- Copy the license. -->
-		<copy file="license.html" todir="${dist_root}"/>
-
-		<!-- Copy the splash image. -->
-		<copy file="${gcs_build}/${splash_path}" tofile="${bundle_res}/splash.gif"/>
+		<copy file="license.html" todir="${mac.root}"/>
 
 		<!-- Copy the samples. -->
-		<mkdir dir="${dist_root}/samples"/>
-		<copy todir="${dist_root}/samples">
+		<mkdir dir="${samples.dir}"/>
+		<copy todir="${samples.dir}">
 			<fileset dir="samples"/>
 		</copy>
 
-		<!-- Copy the scripts, then adjust them to have the correct version and permissions. -->
-		<copy todir="${dist_root}">
-			<fileset dir="scripts"/>
-		</copy>
-		<replace dir="${dist_root}" includes="${app},${app}.bat">
-			<replacefilter token="APP_VERSION" value="${primary_version}"/>
-		</replace>
-		<chmod perm="755" file="${dist_root}/${app}"/>
-
 		<!-- Copy the database. -->
-		<mkdir dir="${dist_root}/data"/>
-		<copy todir="${dist_root}/data">
+		<mkdir dir="${data.dir}"/>
+		<copy todir="${data.dir}">
 			<fileset dir="data"/>
 		</copy>
-		
+
 		<!-- Create the zip file -->
-		<zip destfile="${app}-${primary_version}.zip">
-			<zipfileset dir="${dist_root}" filemode="755">
-				<include name="${app}"/>
-				<include name="${app_name}.app/Contents/MacOS/${app}"/>
-			</zipfileset>
-			<zipfileset dir="${dist_root}">
-				<exclude name="${app}"/>
-				<exclude name="${app_name}.app/Contents/MacOS/${app}"/>
-			</zipfileset>
-		</zip>
+		<exec executable="/usr/bin/zip" dir="${mac.root}/..">
+			<arg value="-r"/>
+			<arg value="-y"/>
+			<arg value="-9"/>
+			<arg file="${app}-${primary_version}-${platform}.zip"/>
+			<arg value="${app}-${primary_version}"/>
+		</exec>
+	</target>
+
+	<target name="build_launcher_exe">
+		<ant dir="../toolkit/launcher" target="launcher" inheritall="false">
+			<property name="app.dir" location="launcher/${platform}"/>
+			<property name="app.name" value="${app_name}"/>
+			<property name="app.exe" value="${app}"/>
+			<property if:set="platform.linux" name="app.categories" value="Game;Roleplaying;Utility"/>
+			<property if:set="platform.linux" name="app.keywords" value="Roleplaying"/>
+		</ant>
 	</target>
 </project>
