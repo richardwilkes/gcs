@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="gcs" default="mac_bundle" xmlns:if="ant:if" xmlns:unless="ant:unless">
+<project name="gcs" default="bundle" xmlns:if="ant:if" xmlns:unless="ant:unless">
 	<condition property="platform.mac">
 		<os family="mac"/>
 	</condition>
@@ -33,14 +33,14 @@
 	<property name="iText_path" value="${lib}/${iText}"/>
 	<property name="build_root" value="ant_build"/>
 	<property name="gcs_build" value="${build_root}/${app}"/>
-	<property name="dist_build" value="${build_root}/dist"/>
+	<property name="dist.build" value="${build_root}/dist"/>
 	<property name="annotations_src" value="${build_root}/annotations"/>
 	<property name="min_jdk" value="1.8"/>
 	<property name="app_name" value="GURPS Character Sheet"/>
 	<property name="copyright_owner" value="Richard A. Wilkes"/>
 	<property name="primary_version" value="4.0.0"/>
 	<property name="dist_name" value="GCS-${primary_version}"/>
-	<property name="dist_root" value="${dist_build}/${dist_name}"/>
+	<property name="dist_root" value="${dist.build}/${dist_name}"/>
 	<property name="build_app_bundle" value="${dist_root}/${app_name}.app/Contents"/>
 	<property name="bundle_res" value="${build_app_bundle}/Resources"/>
 	<property name="java_bundle_dir" value="${build_app_bundle}/Java"/>
@@ -147,45 +147,48 @@
 		</exec>
 	</target>
 
-	<target name="mac_bundle" depends="build_jar">
-		<property name="mac.root" value="${dist_build}/mac/${app}-${primary_version}"/>
-		<property name="mac.bundle" value="${mac.root}/${app_name}.app"/>
-		<property name="mac.bundle.contents" value="${mac.bundle}/Contents"/>
-		<property name="mac.app.dir" value="${mac.bundle.contents}/MacOS"/>
-		<property name="mac.res.dir" value="${mac.bundle.contents}/Resources"/>
-		<property name="mac.support" value="${mac.app.dir}/support"/>
-		<property name="mac.jre" value="${mac.support}/jre"/>
-		<property name="mac.jars" value="${mac.support}/jars"/>
-		<property name="samples.dir" value="${mac.root}/samples"/>
-		<property name="data.dir" value="${mac.root}/data"/>
+	<target name="bundle" depends="build_jar">
+		<property name="dist.name" value="${app}-${primary_version}-${platform}"/>
+		<property name="dist.root" value="${dist.build}/${dist.name}"/>
+		<property if:set="platform.mac" name="mac.bundle" value="${dist.root}/${app_name}.app/Contents"/>
+		<property if:set="platform.mac" name="app.dir" value="${mac.bundle}/MacOS"/>
+		<property unless:set="platform.mac" name="app.dir" value="dist.root"/>
+		<property name="support" value="${app.dir}/support"/>
+		<property if:set="platform.mac" name="app.icons" value="${mac.bundle}/Resources"/>
+		<property unless:set="platform.mac" name="app.icons" value="${support}"/>
+		<property name="app.jre" value="${support}/jre"/>
+		<property name="app.jars" value="${support}/jars"/>
+		<property name="samples" value="${dist.root}/samples"/>
+		<property name="data" value="${dist.root}/data"/>
 
 		<!-- Copy the launcher. -->
-		<mkdir dir="${mac.app.dir}"/>
-		<copy file="launcher/mac/${app}" todir="${mac.app.dir}"/>
-		<chmod file="${mac.app.dir}/${app}" perm="+x"/>
+		<mkdir dir="${app.dir}"/>
+		<copy file="launcher/${platform}/${app}" todir="${app.dir}"/>
+		<chmod file="${app.dir}/${app}" perm="+x"/>
 
 		<!-- Copy the icons. -->
-		<mkdir dir="${mac.res.dir}"/>
-		<copy file="${icons}/app.icns" todir="${mac.res.dir}"/>
-		<copy file="${icons}/gcs.icns" todir="${mac.res.dir}"/>
-		<copy file="${icons}/gct.icns" todir="${mac.res.dir}"/>
-		<copy file="${icons}/glb.icns" todir="${mac.res.dir}"/>
+		<mkdir dir="${app.icons}"/>
+		<copy if:set="platform.mac" file="${icons}/app.icns" todir="${app.icons}"/>
+		<copy if:set="platform.mac" file="${icons}/gcs.icns" todir="${app.icons}"/>
+		<copy if:set="platform.mac" file="${icons}/gct.icns" todir="${app.icons}"/>
+		<copy if:set="platform.mac" file="${icons}/glb.icns" todir="${app.icons}"/>
+		<copy if:set="platform.linux" file="${icons}/app.iconset/icon_128x128.png" todir="${app.icons}/${app}.png"/>
 
 		<!-- Copy the JRE. -->
 		<ant dir="../toolkit/launcher" target="jre" inheritall="false">
-			<property name="jre.dst.dir" location="${mac.jre}"/>
+			<property name="jre.dst.dir" location="${app.jre}"/>
 		</ant>
 
 		<!-- Copy the jars. -->
-		<mkdir dir="${mac.jars}"/>
-		<copy file="${lib}/${app}-${primary_version}.jar" todir="${mac.jars}"/>
-		<copy file="${toolkit_path}" todir="${mac.jars}"/>
-		<copy file="${trove_path}" todir="${mac.jars}"/>
-		<copy file="${iText_path}" todir="${mac.jars}"/>
-		<copy file="${apple_stubs_path}" todir="${mac.jars}"/>
+		<mkdir dir="${app.jars}"/>
+		<copy file="${lib}/${app}-${primary_version}.jar" todir="${app.jars}"/>
+		<copy file="${toolkit_path}" todir="${app.jars}"/>
+		<copy file="${trove_path}" todir="${app.jars}"/>
+		<copy file="${iText_path}" todir="${app.jars}"/>
+		<copy file="${apple_stubs_path}" todir="${app.jars}"/>
 
-		<!-- Copy the Info.plist. -->
-		<copy file="launcher/mac/Info.plist" todir="${mac.bundle.contents}">
+		<!-- Copy the Mac bundle information. -->
+		<copy if:set="platform.mac" file="launcher/${platform}/Info.plist" todir="${mac.bundle}">
 			<filterset>
 				<filter token="APP_EXE" value="${app}"/>
 				<filter token="APP_NAME" value="${app_name}"/>
@@ -195,30 +198,30 @@
 				<filter token="COPYRIGHT_OWNER" value="${copyright_owner}"/>
 			</filterset>
 		</copy>
-		<echo message="APPL${app.signature}" file="${mac.bundle.contents}/PkgInfo"/>
+		<echo if:set="platform.mac" message="APPL${app.signature}" file="${mac.bundle}/PkgInfo"/>
 
 		<!-- Copy the license. -->
-		<copy file="license.html" todir="${mac.root}"/>
+		<copy file="license.html" todir="${dist.root}"/>
 
 		<!-- Copy the samples. -->
-		<mkdir dir="${samples.dir}"/>
-		<copy todir="${samples.dir}">
+		<mkdir dir="${samples}"/>
+		<copy todir="${samples}">
 			<fileset dir="samples"/>
 		</copy>
 
 		<!-- Copy the database. -->
-		<mkdir dir="${data.dir}"/>
-		<copy todir="${data.dir}">
+		<mkdir dir="${data}"/>
+		<copy todir="${data}">
 			<fileset dir="data"/>
 		</copy>
 
 		<!-- Create the zip file -->
-		<exec executable="/usr/bin/zip" dir="${mac.root}/..">
+		<exec executable="/usr/bin/zip" dir="${dist.build}">
 			<arg value="-r"/>
 			<arg value="-y"/>
 			<arg value="-9"/>
-			<arg file="${app}-${primary_version}-${platform}.zip"/>
-			<arg value="${app}-${primary_version}"/>
+			<arg file="${dist.name}.zip"/>
+			<arg value="${dist.name}"/>
 		</exec>
 	</target>
 
