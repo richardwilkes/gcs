@@ -152,7 +152,7 @@
 		<property name="dist.root" value="${dist.build}/${dist.name}"/>
 		<property if:set="platform.mac" name="mac.bundle" value="${dist.root}/${app_name}.app/Contents"/>
 		<property if:set="platform.mac" name="app.dir" value="${mac.bundle}/MacOS"/>
-		<property unless:set="platform.mac" name="app.dir" value="dist.root"/>
+		<property unless:set="platform.mac" name="app.dir" value="${dist.root}"/>
 		<property name="support" value="${app.dir}/support"/>
 		<property if:set="platform.mac" name="app.icons" value="${mac.bundle}/Resources"/>
 		<property unless:set="platform.mac" name="app.icons" value="${support}"/>
@@ -172,7 +172,7 @@
 		<copy if:set="platform.mac" file="${icons}/gcs.icns" todir="${app.icons}"/>
 		<copy if:set="platform.mac" file="${icons}/gct.icns" todir="${app.icons}"/>
 		<copy if:set="platform.mac" file="${icons}/glb.icns" todir="${app.icons}"/>
-		<copy if:set="platform.linux" file="${icons}/app.iconset/icon_128x128.png" todir="${app.icons}/${app}.png"/>
+		<copy if:set="platform.linux" file="${icons}/app.iconset/icon_128x128.png" tofile="${app.icons}/${app}.png"/>
 
 		<!-- Copy the JRE. -->
 		<ant dir="../toolkit/launcher" target="jre" inheritall="false">
