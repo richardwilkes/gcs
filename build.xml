@@ -225,7 +225,7 @@
 		</exec>
 	</target>
 
-	<target name="build_launcher_exe">
+	<target name="build_launcher_exe" description="Build the native launcher">
 		<ant dir="../toolkit/launcher" target="launcher" inheritall="false">
 			<property name="app.dir" location="launcher/${platform}"/>
 			<property name="app.name" value="${app_name}"/>
