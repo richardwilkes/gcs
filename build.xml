@@ -3,7 +3,7 @@
 	<condition property="platform.mac">
 		<os family="mac"/>
 	</condition>
-	<condition property="platform.win">
+	<condition property="platform.windows">
 		<os family="windows"/>
 	</condition>
 	<condition property="platform.linux">
@@ -15,11 +15,13 @@
 		</and>
 	</condition>
 	<property if:set="platform.mac" name="platform" value="mac"/>
-	<property if:set="platform.win" name="platform" value="windows"/>
+	<property if:set="platform.windows" name="platform" value="windows"/>
 	<property if:set="platform.linux" name="platform" value="linux"/>
 
 	<property name="app" value="gcs"/>
-	<property name="app.signature" value="RWGS"/>
+	<property if:set="platform.windows" name="app.exe" value="${app}.exe"/>
+	<property unless:set="platform.windows" name="app.exe" value="${app}"/>
+	<property if:set="platform.mac" name="app.signature" value="RWGS"/>
 	<property name="src" value="src"/>
 	<property name="lib" value="libraries"/>
 	<property name="toolkit" value="toolkit-4.0.0.jar"/>
@@ -163,8 +165,8 @@
 
 		<!-- Copy the launcher. -->
 		<mkdir dir="${app.dir}"/>
-		<copy file="launcher/${platform}/${app}" todir="${app.dir}"/>
-		<chmod file="${app.dir}/${app}" perm="+x"/>
+		<copy file="launcher/${platform}/${app.exe}" todir="${app.dir}"/>
+		<chmod file="${app.dir}/${app.exe}" perm="+x"/>
 
 		<!-- Copy the icons. -->
 		<mkdir dir="${app.icons}"/>
@@ -174,10 +176,8 @@
 		<copy if:set="platform.mac" file="${icons}/glb.icns" todir="${app.icons}"/>
 		<copy if:set="platform.linux" file="${icons}/app.iconset/icon_128x128.png" tofile="${app.icons}/${app}.png"/>
 
-		<!-- Copy the JRE. -->
-		<ant dir="../toolkit/launcher" target="jre" inheritall="false">
-			<property name="jre.dst.dir" location="${app.jre}"/>
-		</ant>
+		<!-- Extract the JRE. -->
+		<unzip dest="${support}" src="launcher/${platform}/jre.zip"/>
 
 		<!-- Copy the jars. -->
 		<mkdir dir="${app.jars}"/>
@@ -190,7 +190,7 @@
 		<!-- Copy the Mac bundle information. -->
 		<copy if:set="platform.mac" file="launcher/${platform}/Info.plist" todir="${mac.bundle}">
 			<filterset>
-				<filter token="APP_EXE" value="${app}"/>
+				<filter token="APP_EXE" value="${app.exe}"/>
 				<filter token="APP_NAME" value="${app_name}"/>
 				<filter token="APP_VERSION" value="${primary_version}"/>
 				<filter token="APP_SIGNATURE" value="${app.signature}"/>
@@ -215,21 +215,23 @@
 			<fileset dir="data"/>
 		</copy>
 
-		<!-- Create the zip file -->
-		<exec executable="/usr/bin/zip" dir="${dist.build}">
+		<!-- Create the zip file. Using native implementation to preserve execution bits on unix-like OS's. -->
+		<exec unless:set="platform.windows" executable="/usr/bin/zip" dir="${dist.build}">
 			<arg value="-r"/>
 			<arg value="-y"/>
 			<arg value="-9"/>
 			<arg file="${dist.name}.zip"/>
 			<arg value="${dist.name}"/>
 		</exec>
+		<zip if:set="platform.windows" destfile="${dist.name}.zip" basedir="${dist.build}" level="9"
+			includes="${dist.name}/**"/>
 	</target>
 
 	<target name="build_launcher_exe" description="Build the native launcher">
 		<ant dir="../toolkit/launcher" target="launcher" inheritall="false">
 			<property name="app.dir" location="launcher/${platform}"/>
 			<property name="app.name" value="${app_name}"/>
-			<property name="app.exe" value="${app}"/>
+			<property name="app.exe" value="${app.exe}"/>
 			<property if:set="platform.linux" name="app.categories" value="Game;Roleplaying;Utility"/>
 			<property if:set="platform.linux" name="app.keywords" value="Roleplaying"/>
 		</ant>
