@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-<project name="gcs" default="bundle" xmlns:if="ant:if" xmlns:unless="ant:unless">
-	<condition property="platform.mac">
+<project name="gcs" default="build_jar" xmlns:if="ant:if" xmlns:unless="ant:unless">
+	<condition property="platform.mac" else="false">
 		<os family="mac"/>
 	</condition>
-	<condition property="platform.windows">
+	<condition property="platform.windows" else="false">
 		<os family="windows"/>
 	</condition>
-	<condition property="platform.linux">
+	<condition property="platform.linux" else="false">
 		<and>
 			<os family="unix"/>
 			<not>
@@ -14,14 +14,14 @@
 			</not>
 		</and>
 	</condition>
-	<property if:set="platform.mac" name="platform" value="mac"/>
-	<property if:set="platform.windows" name="platform" value="windows"/>
-	<property if:set="platform.linux" name="platform" value="linux"/>
+	<property if:true="${platform.mac}" name="platform" value="mac"/>
+	<property if:true="${platform.windows}" name="platform" value="windows"/>
+	<property if:true="${platform.linux}" name="platform" value="linux"/>
 
 	<property name="app" value="gcs"/>
-	<property if:set="platform.windows" name="app.exe" value="${app}.exe"/>
-	<property unless:set="platform.windows" name="app.exe" value="${app}"/>
-	<property if:set="platform.mac" name="app.signature" value="RWGS"/>
+	<property if:true="${platform.windows}" name="app.exe" value="${app}.exe"/>
+	<property unless:true="${platform.windows}" name="app.exe" value="${app}"/>
+	<property if:true="${platform.mac}" name="app.signature" value="RWGS"/>
 	<property name="src" value="src"/>
 	<property name="lib" value="libraries"/>
 	<property name="toolkit" value="toolkit-4.0.0.jar"/>
@@ -57,15 +57,14 @@
 		<format property="year" pattern="yyyy"/>
 	</tstamp>
 
-	<target name="clean" description="Clean up after a build">
+	<target name="clean" description="Clean up after a GCS jar build">
 		<delete dir="${build_root}"/>
 		<delete>
-			<fileset dir="." includes="gcs-*.zip"/>
 			<fileset dir="${lib}" includes="${app}-*.jar"/>
 		</delete>
 	</target>
 
-	<target name="build_jar" description="Build GCS" depends="clean">
+	<target name="build_jar" description="Build the GCS jar" depends="clean">
 		<mkdir dir="${gcs_build}"/>
 		<mkdir dir="${annotations_src}"/>
 
@@ -149,15 +148,22 @@
 		</exec>
 	</target>
 
-	<target name="bundle" depends="build_jar">
+	<target name="clean_bundle" description="Cleans up after a bundle build">
+		<delete dir="${build_root}"/>
+		<delete>
+			<fileset dir="." includes="gcs-*-${platform}.zip"/>
+		</delete>
+	</target>
+	
+	<target name="bundle" description="Create a distribution bundle" depends="clean_bundle">
 		<property name="dist.name" value="${app}-${primary_version}-${platform}"/>
 		<property name="dist.root" value="${dist.build}/${dist.name}"/>
-		<property if:set="platform.mac" name="mac.bundle" value="${dist.root}/${app_name}.app/Contents"/>
-		<property if:set="platform.mac" name="app.dir" value="${mac.bundle}/MacOS"/>
-		<property unless:set="platform.mac" name="app.dir" value="${dist.root}"/>
+		<property if:true="${platform.mac}" name="mac.bundle" value="${dist.root}/${app_name}.app/Contents"/>
+		<property if:true="${platform.mac}" name="app.dir" value="${mac.bundle}/MacOS"/>
+		<property unless:true="${platform.mac}" name="app.dir" value="${dist.root}"/>
 		<property name="support" value="${app.dir}/support"/>
-		<property if:set="platform.mac" name="app.icons" value="${mac.bundle}/Resources"/>
-		<property unless:set="platform.mac" name="app.icons" value="${support}"/>
+		<property if:true="${platform.mac}" name="app.icons" value="${mac.bundle}/Resources"/>
+		<property unless:true="${platform.mac}" name="app.icons" value="${support}"/>
 		<property name="app.jre" value="${support}/jre"/>
 		<property name="app.jars" value="${support}/jars"/>
 		<property name="samples" value="${dist.root}/samples"/>
@@ -170,14 +176,17 @@
 
 		<!-- Copy the icons. -->
 		<mkdir dir="${app.icons}"/>
-		<copy if:set="platform.mac" file="${icons}/app.icns" todir="${app.icons}"/>
-		<copy if:set="platform.mac" file="${icons}/gcs.icns" todir="${app.icons}"/>
-		<copy if:set="platform.mac" file="${icons}/gct.icns" todir="${app.icons}"/>
-		<copy if:set="platform.mac" file="${icons}/glb.icns" todir="${app.icons}"/>
-		<copy if:set="platform.linux" file="${icons}/app.iconset/icon_128x128.png" tofile="${app.icons}/${app}.png"/>
+		<copy if:true="${platform.mac}" file="${icons}/app.icns" todir="${app.icons}"/>
+		<copy if:true="${platform.mac}" file="${icons}/gcs.icns" todir="${app.icons}"/>
+		<copy if:true="${platform.mac}" file="${icons}/gct.icns" todir="${app.icons}"/>
+		<copy if:true="${platform.mac}" file="${icons}/glb.icns" todir="${app.icons}"/>
+		<copy if:true="${platform.linux}" file="${icons}/app.iconset/icon_128x128.png" tofile="${app.icons}/${app}.png"/>
 
 		<!-- Extract the JRE. -->
 		<ant dir="../toolkit" target="jre" inheritall="no">
+			<property name="platform.mac" value="${platform.mac}"/>
+			<property name="platform.windows" value="${platform.windows}"/>
+			<property name="platform.linux" value="${platform.linux}"/>
 			<property name="support" location="${support}"/>
 		</ant>
 
@@ -190,7 +199,7 @@
 		<copy file="${apple_stubs_path}" todir="${app.jars}"/>
 
 		<!-- Copy the Mac bundle information. -->
-		<copy if:set="platform.mac" file="launcher/${platform}/Info.plist" todir="${mac.bundle}">
+		<copy if:true="${platform.mac}" file="launcher/${platform}/Info.plist" todir="${mac.bundle}">
 			<filterset>
 				<filter token="APP_EXE" value="${app.exe}"/>
 				<filter token="APP_NAME" value="${app_name}"/>
@@ -200,7 +209,7 @@
 				<filter token="COPYRIGHT_OWNER" value="${copyright_owner}"/>
 			</filterset>
 		</copy>
-		<echo if:set="platform.mac" message="APPL${app.signature}" file="${mac.bundle}/PkgInfo"/>
+		<echo if:true="${platform.mac}" message="APPL${app.signature}" file="${mac.bundle}/PkgInfo"/>
 
 		<!-- Copy the license. -->
 		<copy file="license.html" todir="${dist.root}"/>
@@ -218,24 +227,45 @@
 		</copy>
 
 		<!-- Create the zip file. Using native implementation to preserve execution bits on unix-like OS's. -->
-		<exec unless:set="platform.windows" executable="/usr/bin/zip" dir="${dist.build}">
+		<exec unless:true="${platform.windows}" executable="/usr/bin/zip" dir="${dist.build}">
 			<arg value="-r"/>
 			<arg value="-y"/>
 			<arg value="-9"/>
 			<arg file="${dist.name}.zip"/>
 			<arg value="${dist.name}"/>
 		</exec>
-		<zip if:set="platform.windows" destfile="${dist.name}.zip" basedir="${dist.build}" level="9"
+		<zip if:true="${platform.windows}" destfile="${dist.name}.zip" basedir="${dist.build}" level="9"
 			includes="${dist.name}/**"/>
 	</target>
 
 	<target name="build_launcher_exe" description="Build the native launcher">
 		<ant dir="../toolkit" target="launcher" inheritall="false">
+			<property name="platform.mac" value="${platform.mac}"/>
+			<property name="platform.windows" value="${platform.windows}"/>
+			<property name="platform.linux" value="${platform.linux}"/>
 			<property name="app.dir" location="launcher/${platform}"/>
 			<property name="app.name" value="${app_name}"/>
 			<property name="app.exe" value="${app.exe}"/>
-			<property if:set="platform.linux" name="app.categories" value="Game;Roleplaying;Utility"/>
-			<property if:set="platform.linux" name="app.keywords" value="Roleplaying"/>
+			<property if:true="${platform.linux}" name="app.categories" value="Game;Roleplaying;Utility"/>
+			<property if:true="${platform.linux}" name="app.keywords" value="Roleplaying"/>
 		</ant>
+	</target>
+	
+	<target name="bundle_all" description="Create distribution bundles for all platforms">
+		<antcall target="bundle" inheritall="no">
+			<param name="platform.mac" value="true"/>
+			<param name="platform.windows" value="false"/>
+			<param name="platform.linux" value="false"/>
+		</antcall>
+		<antcall target="bundle" inheritall="no">
+			<param name="platform.mac" value="false"/>
+			<param name="platform.windows" value="false"/>
+			<param name="platform.linux" value="true"/>
+		</antcall>
+		<antcall target="bundle" inheritall="no">
+			<param name="platform.mac" value="false"/>
+			<param name="platform.windows" value="true"/>
+			<param name="platform.linux" value="false"/>
+		</antcall>
 	</target>
 </project>
