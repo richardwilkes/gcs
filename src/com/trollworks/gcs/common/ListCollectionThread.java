@@ -14,20 +14,30 @@ package com.trollworks.gcs.common;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.data.DataMenu;
 import com.trollworks.gcs.template.TemplateWindow;
+import com.trollworks.toolkit.collections.Stack;
+import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.ui.App;
-import com.trollworks.toolkit.utility.Debug;
 import com.trollworks.toolkit.utility.PathUtils;
 
 import java.awt.EventQueue;
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitOption;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
 
 /** A thread that periodically updates the set of available list files. */
-public class ListCollectionThread extends Thread {
+public class ListCollectionThread extends Thread implements FileVisitor<Path> {
 	private static final ListCollectionThread	INSTANCE;
-	private File								mListDir;
-	private ArrayList<Object>					mLists;
+	private Path								mListDir;
+	private List<Object>						mLists;
+	private List<Object>						mCurrent;
+	private Stack<List<Object>>					mStack;
 	private boolean								mRunning;
 
 	static {
@@ -44,17 +54,17 @@ public class ListCollectionThread extends Thread {
 		super("List Collection"); //$NON-NLS-1$
 		setPriority(NORM_PRIORITY);
 		setDaemon(true);
-		mListDir = new File(App.APP_HOME_DIR, "data").getAbsoluteFile(); //$NON-NLS-1$
+		mListDir = App.getHomePath().resolve("data"); //$NON-NLS-1$
 	}
 
 	/** @return The current list of lists. */
-	public ArrayList<Object> getLists() {
+	public List<Object> getLists() {
 		try {
 			while (mLists == null) {
 				sleep(100);
 			}
 		} catch (InterruptedException outerIEx) {
-			// Someone is tring to terminate us... let them.
+			// Someone is trying to terminate us... let them.
 		}
 		return mLists == null ? new ArrayList<>() : mLists;
 	}
@@ -67,7 +77,7 @@ public class ListCollectionThread extends Thread {
 			mRunning = true;
 			try {
 				while (true) {
-					ArrayList<Object> lists = collectLists(mListDir, 0);
+					List<Object> lists = collectLists();
 					if (!lists.equals(mLists)) {
 						mLists = lists;
 						EventQueue.invokeLater(this);
@@ -80,35 +90,63 @@ public class ListCollectionThread extends Thread {
 		}
 	}
 
-	private static ArrayList<Object> collectLists(File dir, int depth) {
-		ArrayList<Object> list = new ArrayList<>();
+	@SuppressWarnings("unchecked")
+	private List<Object> collectLists() {
+		mCurrent = new ArrayList<>();
+		mStack = new Stack<>();
 		try {
-			File[] files = dir.listFiles();
-			if (files != null) {
-				Arrays.sort(files);
-				list.add(dir.getName());
-				for (File element : files) {
-					if (element.isDirectory()) {
-						if (depth < 5) {
-							ArrayList<Object> subList = collectLists(element, depth + 1);
-							if (!subList.isEmpty()) {
-								list.add(subList);
-							}
-						}
-					} else {
-						String ext = PathUtils.getExtension(element.getName());
-						if (LibraryFile.EXTENSION.equalsIgnoreCase(ext) || TemplateWindow.EXTENSION.equalsIgnoreCase(ext)) {
-							list.add(element);
-						}
-					}
-				}
-				if (list.size() == 1) {
-					list.clear();
-				}
-			}
+			Files.walkFileTree(mListDir, EnumSet.of(FileVisitOption.FOLLOW_LINKS), 5, this);
 		} catch (Exception exception) {
-			assert false : Debug.toString(exception);
+			Log.error(exception);
 		}
-		return list;
+		List<Object> result = mCurrent;
+		mCurrent = null;
+		mStack = null;
+		return result.isEmpty() ? new ArrayList<>() : (List<Object>) result.get(0);
+	}
+
+	private static boolean shouldSkip(Path path) {
+		return path.getFileName().toString().startsWith("."); //$NON-NLS-1$
+	}
+
+	@Override
+	public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+		if (shouldSkip(dir)) {
+			return FileVisitResult.SKIP_SUBTREE;
+		}
+		mStack.push(mCurrent);
+		mCurrent = new ArrayList<>();
+		mCurrent.add(dir.getFileName().toString());
+		return FileVisitResult.CONTINUE;
+	}
+
+	@Override
+	public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+		if (!shouldSkip(file)) {
+			String ext = PathUtils.getExtension(file.getFileName());
+			if (LibraryFile.EXTENSION.equalsIgnoreCase(ext) || TemplateWindow.EXTENSION.equalsIgnoreCase(ext)) {
+				mCurrent.add(file);
+			}
+		}
+		return FileVisitResult.CONTINUE;
+	}
+
+	@Override
+	public FileVisitResult visitFileFailed(Path file, IOException exception) throws IOException {
+		Log.error(exception);
+		return FileVisitResult.CONTINUE;
+	}
+
+	@Override
+	public FileVisitResult postVisitDirectory(Path dir, IOException exception) throws IOException {
+		if (exception != null) {
+			Log.error(exception);
+		}
+		List<Object> restoring = mStack.pop();
+		if (mCurrent.size() > 1) {
+			restoring.add(mCurrent);
+		}
+		mCurrent = restoring;
+		return FileVisitResult.CONTINUE;
 	}
 }
