@@ -119,6 +119,7 @@
 	</target>
 
 	<target name="build_icons" description="Packs the various iconsets into icns files">
+		<!-- Used http://convertico.org/Multi_Image_to_one_icon/ to create the .ico files. -->
 		<delete dir="${icons}/app.icns"/>
 		<exec executable="/usr/bin/iconutil" dir="${icons}">
 			<arg value="--convert"/>
@@ -181,6 +182,10 @@
 		<copy if:true="${platform.mac}" file="${icons}/gct.icns" todir="${app.icons}"/>
 		<copy if:true="${platform.mac}" file="${icons}/glb.icns" todir="${app.icons}"/>
 		<copy if:true="${platform.linux}" file="${icons}/app.iconset/icon_128x128.png" tofile="${app.icons}/${app}.png"/>
+		<copy if:true="${platform.windows}" file="${icons}/app.ico" todir="${app.icons}"/>
+		<copy if:true="${platform.windows}" file="${icons}/gcs.ico" todir="${app.icons}"/>
+		<copy if:true="${platform.windows}" file="${icons}/gct.ico" todir="${app.icons}"/>
+		<copy if:true="${platform.windows}" file="${icons}/glb.ico" todir="${app.icons}"/>
 
 		<!-- Extract the JRE. -->
 		<ant dir="../toolkit" target="jre" inheritall="no">
