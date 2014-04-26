@@ -251,7 +251,7 @@
 			<property name="app.dir" location="launcher/${platform}"/>
 			<property name="app.name" value="${app_name}"/>
 			<property name="app.exe" value="${app.exe}"/>
-			<property if:true="${platform.windows}" name="app.ico" location="${icons}/app.ico"/>
+			<property if:true="${platform.windows}" name="app.icon.dir" location="${icons}"/>
 			<property if:true="${platform.linux}" name="app.categories" value="Game;Roleplaying;Utility"/>
 			<property if:true="${platform.linux}" name="app.keywords" value="Roleplaying"/>
 		</ant>
