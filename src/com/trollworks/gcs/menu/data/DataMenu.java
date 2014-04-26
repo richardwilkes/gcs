@@ -11,20 +11,20 @@
 
 package com.trollworks.gcs.menu.data;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.gcs.common.ListCollectionThread;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.image.ToolkitImage;
 import com.trollworks.toolkit.ui.menu.DynamicMenuEnabler;
 import com.trollworks.toolkit.ui.menu.StdMenuBar;
 import com.trollworks.toolkit.ui.menu.file.OpenDataFileCommand;
 import com.trollworks.toolkit.ui.widget.AppWindow;
+import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.PathUtils;
 
 import java.awt.Toolkit;
 import java.awt.event.InputEvent;
-import java.io.File;
-import java.util.ArrayList;
+import java.nio.file.Path;
+import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
@@ -34,7 +34,7 @@ import javax.swing.KeyStroke;
 /** The standard "Data" menu. */
 public class DataMenu extends JMenu {
 	@Localize("Data")
-	private static String DATA;
+	private static String		DATA;
 
 	static {
 		Localization.initialize();
@@ -60,26 +60,26 @@ public class DataMenu extends JMenu {
 		}
 	}
 
-	private void addToMenu(ArrayList<?> list, JMenu menu) {
+	private void addToMenu(List<?> list, JMenu menu) {
 		int keyMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.ALT_MASK;
 		int count = list.size();
 		for (int i = 1; i < count; i++) {
 			Object entry = list.get(i);
-			if (entry instanceof ArrayList<?>) {
-				ArrayList<?> subList = (ArrayList<?>) entry;
+			if (entry instanceof List<?>) {
+				List<?> subList = (List<?>) entry;
 				JMenu subMenu = new JMenu((String) subList.get(0));
 				subMenu.setIcon(new ImageIcon(ToolkitImage.getFolderIcon()));
 				addToMenu(subList, subMenu);
 				menu.add(subMenu);
 			} else {
 				KeyStroke keyStroke = null;
-				File file = (File) entry;
-				String name = PathUtils.getLeafName(file.getName(), false);
+				Path file = (Path) entry;
+				String name = PathUtils.getLeafName(file.getFileName(), false);
 				if (name.matches(MENU_KEY_SUFFIX_REGEX)) {
 					keyStroke = KeyStroke.getKeyStroke(Character.toUpperCase(name.charAt(name.length() - 1)), keyMask);
 					name = name.substring(0, name.length() - 3);
 				}
-				JMenuItem item = new JMenuItem(new OpenDataFileCommand(name, file));
+				JMenuItem item = new JMenuItem(new OpenDataFileCommand(name, file.toFile()));
 				if (keyStroke != null) {
 					item.setAccelerator(keyStroke);
 				}

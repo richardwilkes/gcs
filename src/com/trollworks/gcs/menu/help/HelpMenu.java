@@ -12,17 +12,13 @@
 package com.trollworks.gcs.menu.help;
 
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.menu.DynamicMenuEnabler;
 import com.trollworks.toolkit.ui.menu.help.AboutCommand;
 import com.trollworks.toolkit.ui.menu.help.OpenURICommand;
 import com.trollworks.toolkit.ui.menu.help.UpdateCommand;
+import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.Platform;
-
-import java.io.File;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -30,19 +26,19 @@ import javax.swing.JMenuItem;
 /** The standard "Help" menu. */
 public class HelpMenu extends JMenu {
 	@Localize("Help")
-	private static String HELP;
+	private static String	HELP;
 	@Localize("Release Notes")
-	private static String RELEASE_NOTES;
+	private static String	RELEASE_NOTES;
 	@Localize("Bug Reports")
-	private static String BUGS;
+	private static String	BUGS;
 	@Localize("Feature Requests")
-	private static String FEATURES;
+	private static String	FEATURES;
 	@Localize("License")
-	private static String LICENSE;
+	private static String	LICENSE;
 	@Localize("Web Site")
-	private static String WEB_SITE;
+	private static String	WEB_SITE;
 	@Localize("Mailing Lists")
-	private static String MAILING_LISTS;
+	private static String	MAILING_LISTS;
 
 	static {
 		Localization.initialize();
@@ -58,7 +54,7 @@ public class HelpMenu extends JMenu {
 		add(new JMenuItem(UpdateCommand.INSTANCE));
 		addSeparator();
 		add(new JMenuItem(new OpenURICommand(RELEASE_NOTES, "http://gurpscharactersheet.com/Release_Notes"))); //$NON-NLS-1$
-		add(new JMenuItem(new OpenURICommand(LICENSE, new File(App.APP_HOME_DIR, "License.html").toURI()))); //$NON-NLS-1$
+		add(new JMenuItem(new OpenURICommand(LICENSE, App.getHomePath().resolve("license.html").toUri()))); //$NON-NLS-1$
 		addSeparator();
 		add(new JMenuItem(new OpenURICommand(WEB_SITE, "http://gurpscharactersheet.com"))); //$NON-NLS-1$
 		add(new JMenuItem(new OpenURICommand(MAILING_LISTS, "http://sourceforge.net/mail/?group_id=185516"))); //$NON-NLS-1$

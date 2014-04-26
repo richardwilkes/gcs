@@ -35,7 +35,7 @@ import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.WindowsRegistry;
 import com.trollworks.toolkit.utility.cmdline.CmdLine;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.HashMap;
 
 /** The main application user interface. */
@@ -66,7 +66,8 @@ public class GCSApp extends App {
 		map.put(SheetWindow.SHEET_EXTENSION, SHEET_DESCRIPTION);
 		map.put(LibraryFile.EXTENSION, LIBRARY_DESCRIPTION);
 		map.put(TemplateWindow.EXTENSION, TEMPLATE_DESCRIPTION);
-		WindowsRegistry.register("GCS", map, new File(APP_HOME_DIR, "gcs.bat"), new File(APP_HOME_DIR, "GURPS Character Sheet.app/Contents/Resources")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		Path home = App.getHomePath();
+		WindowsRegistry.register("GCS", map, home.resolve("gcs"), home.resolve("support")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 		UpdateChecker.check("gcs", "http://gurpscharactersheet.com/current.txt", "http://gurpscharactersheet.com"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 

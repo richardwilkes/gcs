@@ -11,11 +11,8 @@
 
 package com.trollworks.gcs.preferences;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.PathUtils;
-import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.gcs.character.Profile;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.Images;
@@ -30,6 +27,9 @@ import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.StdFileDialog;
 import com.trollworks.toolkit.utility.Dice;
+import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.PathUtils;
+import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.units.LengthUnits;
 import com.trollworks.toolkit.utility.units.WeightUnits;
@@ -55,61 +55,61 @@ import javax.swing.text.Document;
 /** The sheet preferences panel. */
 public class SheetPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {
 	@Localize("Sheet")
-	private static String SHEET;
+	private static String				SHEET;
 	@Localize("Player")
-	private static String PLAYER;
+	private static String				PLAYER;
 	@Localize("The player name to use when a new character sheet is created")
-	private static String PLAYER_TOOLTIP;
+	private static String				PLAYER_TOOLTIP;
 	@Localize("Campaign")
-	private static String CAMPAIGN;
+	private static String				CAMPAIGN;
 	@Localize("The campaign to use when a new character sheet is created")
-	private static String CAMPAIGN_TOOLTIP;
+	private static String				CAMPAIGN_TOOLTIP;
 	@Localize("Tech Level")
-	private static String TECH_LEVEL;
+	private static String				TECH_LEVEL;
 	@Localize("<html><body>TL0: Stone Age<br>TL1: Bronze Age<br>TL2: Iron Age<br>TL3: Medieval<br>TL4: Age of Sail<br>TL5: Industrial Revolution<br>TL6: Mechanized Age<br>TL7: Nuclear Age<br>TL8: Digital Age<br>TL9: Microtech Age<br>TL10: Robotic Age<br>TL11: Age of Exotic Matter<br>TL12: Anything Goes</body></html>")
-	private static String TECH_LEVEL_TOOLTIP;
+	private static String				TECH_LEVEL_TOOLTIP;
 	@Localize("Initial Points")
-	private static String INITIAL_POINTS;
+	private static String				INITIAL_POINTS;
 	@Localize("The initial number of character points to start with")
-	private static String INITIAL_POINTS_TOOLTIP;
+	private static String				INITIAL_POINTS_TOOLTIP;
 	@Localize("Select A Portrait")
-	private static String SELECT_PORTRAIT;
+	private static String				SELECT_PORTRAIT;
 	@Localize("Use optional (house) rule: Will and Perception are not based upon IQ")
-	private static String OPTIONAL_IQ_RULES;
+	private static String				OPTIONAL_IQ_RULES;
 	@Localize("Use optional rule \"Multiplicative Modifiers\" from PW102 (note: changes point value)")
-	private static String OPTIONAL_MODIFIER_RULES;
+	private static String				OPTIONAL_MODIFIER_RULES;
 	@Localize("Use optional rule \"Modifying Dice + Adds\" from B269")
-	private static String OPTIONAL_DICE_RULES;
+	private static String				OPTIONAL_DICE_RULES;
 	@Localize("when saving sheets to PNG")
-	private static String PNG_RESOLUTION_POST;
+	private static String				PNG_RESOLUTION_POST;
 	@Localize("The resolution, in dots-per-inch, to use when saving sheets as PNG files")
-	private static String PNG_RESOLUTION_TOOLTIP;
+	private static String				PNG_RESOLUTION_TOOLTIP;
 	@Localize("{0} dpi")
-	private static String DPI_FORMAT;
+	private static String				DPI_FORMAT;
 	@Localize("HTML Template Override")
-	private static String HTML_TEMPLATE_OVERRIDE;
+	private static String				HTML_TEMPLATE_OVERRIDE;
 	@Localize("Choose...")
-	private static String HTML_TEMPLATE_PICKER;
+	private static String				HTML_TEMPLATE_PICKER;
 	@Localize("Specify a file to use as the template when exporting to HTML")
-	private static String HTML_TEMPLATE_OVERRIDE_TOOLTIP;
+	private static String				HTML_TEMPLATE_OVERRIDE_TOOLTIP;
 	@Localize("Select A HTML Template")
-	private static String SELECT_HTML_TEMPLATE;
+	private static String				SELECT_HTML_TEMPLATE;
 	@Localize("Use platform native print dialogs (settings cannot be saved)")
-	private static String NATIVE_PRINTER;
+	private static String				NATIVE_PRINTER;
 	@Localize("<html><body>Whether or not the native print dialogs should be used.<br>Choosing this option will prevent the program from saving<br>and restoring print settings with the document.</body></html>")
-	private static String NATIVE_PRINTER_TOOLTIP;
+	private static String				NATIVE_PRINTER_TOOLTIP;
 	@Localize("Automatically name new characters")
-	private static String AUTO_NAME;
+	private static String				AUTO_NAME;
 	@Localize("The units to use for display of generated lengths")
-	private static String LENGTH_UNITS_TOOLTIP;
+	private static String				LENGTH_UNITS_TOOLTIP;
 	@Localize("The units to use for display of generated weights")
-	private static String WEIGHT_UNITS_TOOLTIP;
+	private static String				WEIGHT_UNITS_TOOLTIP;
 	@Localize("Use")
-	private static String USE;
+	private static String				USE;
 	@Localize("and")
-	private static String AND;
+	private static String				AND;
 	@Localize("for display of generated units")
-	private static String FOR_UNIT_DISPLAY;
+	private static String				FOR_UNIT_DISPLAY;
 
 	static {
 		Localization.initialize();
@@ -236,7 +236,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 	/** @return The default HTML template to use when exporting to HTML. */
 	public static String getDefaultHTMLTemplate() {
-		return PathUtils.getFullPath(new File(new File(App.APP_HOME_DIR, "data"), "template.html")); //$NON-NLS-1$ //$NON-NLS-2$
+		return App.getHomePath().resolve("data").resolve("template.html").toString(); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/** @return The initial points to start a new character with. */
