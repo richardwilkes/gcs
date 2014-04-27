@@ -32,6 +32,7 @@ import com.trollworks.toolkit.ui.preferences.MenuKeyPreferences;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.Platform;
 import com.trollworks.toolkit.utility.WindowsRegistry;
 import com.trollworks.toolkit.utility.cmdline.CmdLine;
 
@@ -62,12 +63,14 @@ public class GCSApp extends App {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void configureApplication(CmdLine cmdLine) {
-		HashMap<String, String> map = new HashMap<>();
-		map.put(SheetWindow.SHEET_EXTENSION, SHEET_DESCRIPTION);
-		map.put(LibraryFile.EXTENSION, LIBRARY_DESCRIPTION);
-		map.put(TemplateWindow.EXTENSION, TEMPLATE_DESCRIPTION);
-		Path home = App.getHomePath();
-		WindowsRegistry.register("GCS", map, home.resolve("gcs"), home.resolve("support")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		if (Platform.isWindows()) {
+			HashMap<String, String> map = new HashMap<>();
+			map.put(SheetWindow.SHEET_EXTENSION, SHEET_DESCRIPTION);
+			map.put(LibraryFile.EXTENSION, LIBRARY_DESCRIPTION);
+			map.put(TemplateWindow.EXTENSION, TEMPLATE_DESCRIPTION);
+			Path home = App.getHomePath();
+			WindowsRegistry.register("GCS", map, home.resolve("gcs"), home.resolve("support")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		}
 
 		UpdateChecker.check("gcs", "http://gurpscharactersheet.com/current.txt", "http://gurpscharactersheet.com"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
