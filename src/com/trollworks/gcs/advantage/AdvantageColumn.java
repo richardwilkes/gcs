@@ -22,6 +22,7 @@ import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.image.Images;
+import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.ui.widget.outline.Cell;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.ImageCell;
@@ -118,7 +119,7 @@ public enum AdvantageColumn {
 	},
 	/** The type. */
 	TYPE {
-		private HashMap<Integer, BufferedImage>	mMap;
+		private HashMap<Integer, ToolkitIcon>	mMap;
 
 		@Override
 		public String toString() {
@@ -145,7 +146,7 @@ public enum AdvantageColumn {
 			if (!advantage.canHaveChildren()) {
 				int type = advantage.getType();
 				Integer typeObj;
-				BufferedImage img;
+				ToolkitIcon img;
 
 				if (type == 0) {
 					return null;
@@ -156,7 +157,7 @@ public enum AdvantageColumn {
 				typeObj = new Integer(advantage.getType());
 				img = mMap.get(typeObj);
 				if (img == null) {
-					ArrayList<BufferedImage> list = new ArrayList<>();
+					ArrayList<ToolkitIcon> list = new ArrayList<>();
 
 					if ((type & Advantage.TYPE_MASK_MENTAL) != 0) {
 						list.add(GCSImages.getMentalTypeIcon());
@@ -196,9 +197,8 @@ public enum AdvantageColumn {
 									height = tmp;
 								}
 							}
-							img = Images.create(width, height);
-							g2d = (Graphics2D) img.getGraphics();
-							g2d.setClip(0, 0, width, height);
+							img = Images.createTransparent(width, height);
+							g2d = img.getGraphics();
 							for (BufferedImage one : list) {
 								g2d.drawImage(one, x, (height - one.getHeight()) / 2, null);
 								x += one.getWidth();

@@ -12,8 +12,7 @@
 package com.trollworks.gcs.app;
 
 import com.trollworks.toolkit.ui.image.Images;
-
-import java.awt.image.BufferedImage;
+import com.trollworks.toolkit.ui.image.ToolkitIcon;
 
 /** Provides standardized image access. */
 public class GCSImages {
@@ -27,67 +26,67 @@ public class GCSImages {
 	}
 
 	/** @return The exotic type icon. */
-	public static final BufferedImage getExoticTypeIcon() {
+	public static final ToolkitIcon getExoticTypeIcon() {
 		return Images.get("ExoticType"); //$NON-NLS-1$
 	}
 
 	/** @return The selected exotic type icon. */
-	public static final BufferedImage getExoticTypeSelectedIcon() {
+	public static final ToolkitIcon getExoticTypeSelectedIcon() {
 		return Images.get("ExoticTypeSelected"); //$NON-NLS-1$
 	}
 
 	/** @return The mental type icon. */
-	public static final BufferedImage getMentalTypeIcon() {
+	public static final ToolkitIcon getMentalTypeIcon() {
 		return Images.get("MentalType"); //$NON-NLS-1$
 	}
 
 	/** @return The selected mental type icon. */
-	public static final BufferedImage getMentalTypeSelectedIcon() {
+	public static final ToolkitIcon getMentalTypeSelectedIcon() {
 		return Images.get("MentalTypeSelected"); //$NON-NLS-1$
 	}
 
 	/** @return The physical type icon. */
-	public static final BufferedImage getPhysicalTypeIcon() {
+	public static final ToolkitIcon getPhysicalTypeIcon() {
 		return Images.get("PhysicalType"); //$NON-NLS-1$
 	}
 
 	/** @return The selected physical type icon. */
-	public static final BufferedImage getPhysicalTypeSelectedIcon() {
+	public static final ToolkitIcon getPhysicalTypeSelectedIcon() {
 		return Images.get("PhysicalTypeSelected"); //$NON-NLS-1$
 	}
 
 	/** @return The social type icon. */
-	public static final BufferedImage getSocialTypeIcon() {
+	public static final ToolkitIcon getSocialTypeIcon() {
 		return Images.get("SocialType"); //$NON-NLS-1$
 	}
 
 	/** @return The selected social type icon. */
-	public static final BufferedImage getSocialTypeSelectedIcon() {
+	public static final ToolkitIcon getSocialTypeSelectedIcon() {
 		return Images.get("SocialTypeSelected"); //$NON-NLS-1$
 	}
 
 	/** @return The supernatural type icon. */
-	public static final BufferedImage getSupernaturalTypeIcon() {
+	public static final ToolkitIcon getSupernaturalTypeIcon() {
 		return Images.get("SupernaturalType"); //$NON-NLS-1$
 	}
 
 	/** @return The selected supernatural type icon. */
-	public static final BufferedImage getSupernaturalTypeSelectedIcon() {
+	public static final ToolkitIcon getSupernaturalTypeSelectedIcon() {
 		return Images.get("SupernaturalTypeSelected"); //$NON-NLS-1$
 	}
 
 	/** @return The default portrait. */
-	public static final BufferedImage getDefaultPortrait() {
+	public static final ToolkitIcon getDefaultPortrait() {
 		return Images.get("DefaultPortrait"); //$NON-NLS-1$
 	}
 
 	/** @return The default window icon. */
-	public static final BufferedImage getDefaultWindowIcon() {
+	public static final ToolkitIcon getDefaultWindowIcon() {
 		return Images.get("DefaultWindowIcon"); //$NON-NLS-1$
 	}
 
 	/** @return The splash image. */
-	public static final BufferedImage getSplash() {
+	public static final ToolkitIcon getSplash() {
 		return Images.get("Splash"); //$NON-NLS-1$
 	}
 
@@ -95,7 +94,7 @@ public class GCSImages {
 	 * @param large The large (32x32) or the small (16x16) version.
 	 * @return The character sheet icon.
 	 */
-	public static final BufferedImage getCharacterSheetIcon(boolean large) {
+	public static final ToolkitIcon getCharacterSheetIcon(boolean large) {
 		return Images.get("CharacterSheet" + (large ? LARGE : SMALL)); //$NON-NLS-1$
 	}
 
@@ -103,7 +102,7 @@ public class GCSImages {
 	 * @param large The large (32x32) or the small (16x16) version.
 	 * @return The template icon.
 	 */
-	public static final BufferedImage getTemplateIcon(boolean large) {
+	public static final ToolkitIcon getTemplateIcon(boolean large) {
 		return Images.get("Template" + (large ? LARGE : SMALL)); //$NON-NLS-1$
 	}
 
@@ -112,7 +111,7 @@ public class GCSImages {
 	 * @param single The single or file version.
 	 * @return The advantage icon.
 	 */
-	public static final BufferedImage getAdvantageIcon(boolean large, boolean single) {
+	public static final ToolkitIcon getAdvantageIcon(boolean large, boolean single) {
 		return Images.get("Advantage" + (large ? LARGE : SMALL) + (single ? SINGLE : FILE)); //$NON-NLS-1$
 	}
 
@@ -121,7 +120,7 @@ public class GCSImages {
 	 * @param single The single or file version.
 	 * @return The skill icon.
 	 */
-	public static final BufferedImage getSkillIcon(boolean large, boolean single) {
+	public static final ToolkitIcon getSkillIcon(boolean large, boolean single) {
 		return Images.get("Skill" + (large ? LARGE : SMALL) + (single ? SINGLE : FILE)); //$NON-NLS-1$
 	}
 
@@ -130,7 +129,7 @@ public class GCSImages {
 	 * @param single The single or file version.
 	 * @return The spell icon.
 	 */
-	public static final BufferedImage getSpellIcon(boolean large, boolean single) {
+	public static final ToolkitIcon getSpellIcon(boolean large, boolean single) {
 		return Images.get("Spell" + (large ? LARGE : SMALL) + (single ? SINGLE : FILE)); //$NON-NLS-1$
 	}
 
@@ -139,7 +138,7 @@ public class GCSImages {
 	 * @param single The single or file version.
 	 * @return The equipment icon.
 	 */
-	public static final BufferedImage getEquipmentIcon(boolean large, boolean single) {
+	public static final ToolkitIcon getEquipmentIcon(boolean large, boolean single) {
 		return Images.get("Equipment" + (large ? LARGE : SMALL) + (single ? SINGLE : FILE)); //$NON-NLS-1$
 	}
 
@@ -147,7 +146,7 @@ public class GCSImages {
 	 * @param large The large (32x32) or the small (16x16) version.
 	 * @return The library icon.
 	 */
-	public static final BufferedImage getLibraryIcon(boolean large) {
+	public static final ToolkitIcon getLibraryIcon(boolean large) {
 		return Images.get("Library" + (large ? LARGE : SMALL)); //$NON-NLS-1$
 	}
 }

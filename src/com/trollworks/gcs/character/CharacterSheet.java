@@ -45,6 +45,7 @@ import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.Selection;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.Images;
+import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.print.PrintManager;
@@ -75,7 +76,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
@@ -88,7 +88,6 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
 import java.awt.print.Printable;
@@ -1796,42 +1795,39 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	public boolean saveAsPNG(File file, ArrayList<File> createdFiles) {
 		HashSet<Row> changed = expandAllContainers();
 		try {
-			Graphics2D g2d = GraphicsUtilities.getGraphics();
-			GraphicsConfiguration gc = g2d.getDeviceConfiguration();
 			int dpi = SheetPreferences.getPNGResolution();
 			PrintManager settings = mCharacter.getPageSettings();
 			PageFormat format = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
 			Paper paper = format.getPaper();
 			int width = (int) (paper.getWidth() / 72.0 * dpi);
 			int height = (int) (paper.getHeight() / 72.0 * dpi);
-			BufferedImage buffer = gc.createCompatibleImage(width, height, Transparency.OPAQUE);
+			ToolkitIcon buffer = Images.create(width, height, Transparency.OPAQUE);
 			int pageNum = 0;
 			String name = PathUtils.getLeafName(file.getName(), false);
 
-			g2d.dispose();
 			file = file.getParentFile();
 
 			while (true) {
 				File pngFile;
 
-				g2d = (Graphics2D) buffer.getGraphics();
-				if (print(g2d, format, pageNum) == NO_SUCH_PAGE) {
-					g2d.dispose();
+				Graphics2D gc = buffer.getGraphics();
+				if (print(gc, format, pageNum) == NO_SUCH_PAGE) {
+					gc.dispose();
 					break;
 				}
-				g2d.setClip(0, 0, width, height);
-				g2d.setBackground(Color.WHITE);
-				g2d.clearRect(0, 0, width, height);
-				g2d.scale(dpi / 72.0, dpi / 72.0);
+				gc.setClip(0, 0, width, height);
+				gc.setBackground(Color.WHITE);
+				gc.clearRect(0, 0, width, height);
+				gc.scale(dpi / 72.0, dpi / 72.0);
 				GCSWindow window = (GCSWindow) getTopLevelAncestor();
 				if (window != null) {
 					window.setPrinting(true);
 				}
-				print(g2d, format, pageNum++);
+				print(gc, format, pageNum++);
 				if (window != null) {
 					window.setPrinting(false);
 				}
-				g2d.dispose();
+				gc.dispose();
 				pngFile = new File(file, PathUtils.enforceExtension(name + (pageNum > 1 ? " " + pageNum : ""), SheetWindow.PNG_EXTENSION)); //$NON-NLS-1$ //$NON-NLS-2$
 				if (!Images.writePNG(pngFile, buffer, dpi)) {
 					throw new IOException();
