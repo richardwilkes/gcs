@@ -88,7 +88,7 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 	public StartupDialog() {
 		super(JOptionPane.getRootFrame(), TITLE, true);
 		Container content = getContentPane();
-		content.setLayout(new PrecisionLayout("margins:10 columns:2")); //$NON-NLS-1$
+		content.setLayout(new PrecisionLayout().setMargins(10).setColumns(2));
 		content.add(createCreatePanel(), "vGrab:yes vAlign:fill hAlign:fill"); //$NON-NLS-1$
 		content.add(createRecentFilesPanel(), "vGrab:yes hGrab:yes vAlign:fill hAlign:fill"); //$NON-NLS-1$
 		setResizable(true);
@@ -110,7 +110,7 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 	}
 
 	private JPanel createRecentFilesPanel() {
-		JPanel panel = new JPanel(new PrecisionLayout("columns:2 equalColumns:yes")); //$NON-NLS-1$
+		JPanel panel = new JPanel(new PrecisionLayout().setColumns(2).setEqualColumns(true));
 		panel.setBorder(new TitledBorder(RECENT_FILES));
 		mRecentFilesList = new JList<>(RecentFilesMenu.getRecents().toArray(new File[0]));
 		mRecentFilesList.setCellRenderer(new DefaultListCellRenderer() {
