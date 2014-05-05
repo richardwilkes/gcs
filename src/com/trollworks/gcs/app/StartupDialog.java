@@ -19,6 +19,7 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.WindowSizeEnforcer;
 import com.trollworks.toolkit.ui.layout.PrecisionLayout;
+import com.trollworks.toolkit.ui.layout.PrecisionLayoutData;
 import com.trollworks.toolkit.ui.menu.file.FileType;
 import com.trollworks.toolkit.ui.menu.file.OpenCommand;
 import com.trollworks.toolkit.ui.menu.file.RecentFilesMenu;
@@ -89,8 +90,8 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 		super(JOptionPane.getRootFrame(), TITLE, true);
 		Container content = getContentPane();
 		content.setLayout(new PrecisionLayout().setMargins(10).setColumns(2));
-		content.add(createCreatePanel(), "vGrab:yes vAlign:fill hAlign:fill"); //$NON-NLS-1$
-		content.add(createRecentFilesPanel(), "vGrab:yes hGrab:yes vAlign:fill hAlign:fill"); //$NON-NLS-1$
+		content.add(createCreatePanel(), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
+		content.add(createRecentFilesPanel(), new PrecisionLayoutData().setGrabSpace(true).setFillAlignment());
 		setResizable(true);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		WindowSizeEnforcer.monitor(this);
@@ -127,17 +128,17 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 		mRecentFilesList.addKeyListener(this);
 		JScrollPane scrollPane = new JScrollPane(mRecentFilesList);
 		scrollPane.setMinimumSize(new Dimension(150, 75));
-		panel.add(scrollPane, "hSpan:2 vGrab:yes hGrab:yes vAlign:fill hAlign:fill"); //$NON-NLS-1$
+		panel.add(scrollPane, new PrecisionLayoutData().setHorizontalSpan(2).setGrabSpace(true).setFillAlignment());
 		mChooseOtherButton = new JButton(CHOOSE_OTHER);
 		mChooseOtherButton.addActionListener(this);
-		panel.add(mChooseOtherButton, "hAlign:middle"); //$NON-NLS-1$
+		panel.add(mChooseOtherButton, new PrecisionLayoutData().setMiddleHorizontalAlignment());
 		mOpenButton = new JButton(OPEN);
 		mOpenButton.setEnabled(false);
 		mOpenButton.addActionListener(this);
 		mOpenButton.setDefaultCapable(true);
 		getRootPane().setDefaultButton(mOpenButton);
 		mRecentFilesList.addListSelectionListener(this);
-		panel.add(mOpenButton, "hAlign:middle"); //$NON-NLS-1$
+		panel.add(mOpenButton, new PrecisionLayoutData().setMiddleHorizontalAlignment());
 		UIUtilities.adjustToSameSize(mChooseOtherButton, mOpenButton);
 		return panel;
 	}
