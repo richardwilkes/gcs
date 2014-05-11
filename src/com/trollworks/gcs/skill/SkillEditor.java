@@ -11,10 +11,6 @@
 
 package com.trollworks.gcs.skill;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.prereq.PrereqsPanel;
@@ -22,10 +18,12 @@ import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
+import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.NumberFilter;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.text.TextUtility;
@@ -39,7 +37,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -54,61 +51,61 @@ import javax.swing.event.DocumentListener;
 /** The detailed editor for {@link Skill}s. */
 public class SkillEditor extends RowEditor<Skill> implements ActionListener, DocumentListener {
 	@Localize("Name")
-	private static String NAME;
+	private static String		NAME;
 	@Localize("The base name of the skill, without any notes or specialty information")
-	private static String NAME_TOOLTIP;
+	private static String		NAME_TOOLTIP;
 	@Localize("The name field may not be empty")
-	private static String NAME_CANNOT_BE_EMPTY;
+	private static String		NAME_CANNOT_BE_EMPTY;
 	@Localize("Specialization")
-	private static String SPECIALIZATION;
+	private static String		SPECIALIZATION;
 	@Localize("The specialization, if any, taken for this skill")
-	private static String SPECIALIZATION_TOOLTIP;
+	private static String		SPECIALIZATION_TOOLTIP;
 	@Localize("Categories")
-	private static String CATEGORIES;
+	private static String		CATEGORIES;
 	@Localize("The category or categories the skill belongs to (separate multiple categories with a comma)")
-	private static String CATEGORIES_TOOLTIP;
+	private static String		CATEGORIES_TOOLTIP;
 	@Localize("Notes")
-	private static String NOTES;
+	private static String		NOTES;
 	@Localize("Any notes that you would like to show up in the list along with this skill")
-	private static String NOTES_TOOLTIP;
+	private static String		NOTES_TOOLTIP;
 	@Localize("Tech Level")
-	private static String TECH_LEVEL;
+	private static String		TECH_LEVEL;
 	@Localize("Whether this skill requires tech level specialization,\nand, if so, at what tech level it was learned")
-	private static String TECH_LEVEL_TOOLTIP;
+	private static String		TECH_LEVEL_TOOLTIP;
 	@Localize("Tech Level Required")
-	private static String TECH_LEVEL_REQUIRED;
+	private static String		TECH_LEVEL_REQUIRED;
 	@Localize("Whether this skill requires tech level specialization")
-	private static String TECH_LEVEL_REQUIRED_TOOLTIP;
+	private static String		TECH_LEVEL_REQUIRED_TOOLTIP;
 	@Localize("Difficulty")
-	private static String EDITOR_DIFFICULTY;
+	private static String		EDITOR_DIFFICULTY;
 	@Localize("The difficulty of learning this skill")
-	private static String EDITOR_DIFFICULTY_TOOLTIP;
+	private static String		EDITOR_DIFFICULTY_TOOLTIP;
 	@Localize("The relative difficulty of learning this skill")
-	private static String EDITOR_DIFFICULTY_POPUP_TOOLTIP;
+	private static String		EDITOR_DIFFICULTY_POPUP_TOOLTIP;
 	@Localize("Level")
-	private static String EDITOR_LEVEL;
+	private static String		EDITOR_LEVEL;
 	@Localize("The skill level and relative skill level to roll against")
-	private static String EDITOR_LEVEL_TOOLTIP;
+	private static String		EDITOR_LEVEL_TOOLTIP;
 	@Localize("The attribute this skill is based on")
-	private static String ATTRIBUTE_POPUP_TOOLTIP;
+	private static String		ATTRIBUTE_POPUP_TOOLTIP;
 	@Localize("Points")
-	private static String EDITOR_POINTS;
+	private static String		EDITOR_POINTS;
 	@Localize("The number of points spent on this skill")
-	private static String EDITOR_POINTS_TOOLTIP;
+	private static String		EDITOR_POINTS_TOOLTIP;
 	@Localize("Page Reference")
-	private static String EDITOR_REFERENCE;
+	private static String		EDITOR_REFERENCE;
 	@Localize("A reference to the book and page this skill appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
-	private static String REFERENCE_TOOLTIP;
+	private static String		REFERENCE_TOOLTIP;
 	@Localize("Encumbrance")
-	private static String ENC_PENALTY_MULT;
+	private static String		ENC_PENALTY_MULT;
 	@Localize("The encumbrance penalty multiplier")
-	private static String ENC_PENALTY_MULT_TOOLTIP;
+	private static String		ENC_PENALTY_MULT_TOOLTIP;
 	@Localize("No penalty due to encumbrance")
-	private static String NO_ENC_PENALTY;
+	private static String		NO_ENC_PENALTY;
 	@Localize("Penalty equal to the current encumbrance level")
-	private static String ONE_ENC_PENALTY;
+	private static String		ONE_ENC_PENALTY;
 	@Localize("Penalty equal to {0} times the current encumbrance level")
-	private static String ENC_PENALTY_FORMAT;
+	private static String		ENC_PENALTY_FORMAT;
 
 	static {
 		Localization.initialize();
@@ -136,7 +133,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
 	/**
 	 * Creates a new {@link Skill} editor.
-	 * 
+	 *
 	 * @param skill The {@link Skill} to edit.
 	 */
 	public SkillEditor(Skill skill) {
@@ -144,7 +141,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
 		JPanel content = new JPanel(new ColumnLayout(2));
 		JPanel fields = new JPanel(new ColumnLayout(2));
-		JLabel icon = new JLabel(new ImageIcon(skill.getImage(true)));
+		JLabel icon = new JLabel(skill.getIcon(true));
 		boolean notContainer = !skill.canHaveChildren();
 		Container wrapper;
 

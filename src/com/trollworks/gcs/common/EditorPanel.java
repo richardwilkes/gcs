@@ -21,6 +21,7 @@ import com.trollworks.gcs.criteria.WeightCriteria;
 import com.trollworks.gcs.widgets.IconButton;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
+import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.ui.widget.ActionPanel;
 import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.utility.Localization;
@@ -31,7 +32,6 @@ import com.trollworks.toolkit.utility.units.WeightValue;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -76,7 +76,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 	 * @param tooltip The tooltip to use.
 	 * @return The button that was added.
 	 */
-	protected IconButton addButton(BufferedImage icon, String command, String tooltip) {
+	protected IconButton addButton(ToolkitIcon icon, String command, String tooltip) {
 		IconButton button = new IconButton(icon, tooltip);
 		button.setActionCommand(command);
 		button.addActionListener(this);

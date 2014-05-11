@@ -29,6 +29,7 @@ import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.WindowSizeEnforcer;
+import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.ui.image.ToolkitImage;
 import com.trollworks.toolkit.ui.layout.FlexColumn;
 import com.trollworks.toolkit.ui.layout.FlexRow;
@@ -50,12 +51,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
@@ -177,7 +176,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	 * @param file The {@link LibraryFile} to display.
 	 */
 	public LibraryWindow(LibraryFile file) {
-		super(TITLE, GCSImages.getLibraryIcon(true), GCSImages.getLibraryIcon(false));
+		super(TITLE, GCSImages.getLibraryIcons());
 		mFile = file;
 		mLocked = mFile.getFile() != null;
 
@@ -283,8 +282,8 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 		secondRow.add(mFilterField);
 	}
 
-	private IconButton createToolBarButton(JToolBar toolbar, FlexRow row, BufferedImage image, String tooltip) {
-		IconButton button = new IconButton(image, tooltip);
+	private IconButton createToolBarButton(JToolBar toolbar, FlexRow row, ToolkitIcon icon, String tooltip) {
+		IconButton button = new IconButton(icon, tooltip);
 		button.addActionListener(this);
 		toolbar.add(button);
 		row.add(button);
@@ -328,16 +327,16 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				if (value == ADVANTAGES) {
-					setIcon(new ImageIcon(GCSImages.getAdvantageIcon(false, true)));
+					setIcon(GCSImages.getAdvantageIcon(false, true));
 				}
 				if (value == SKILLS) {
-					setIcon(new ImageIcon(GCSImages.getSkillIcon(false, true)));
+					setIcon(GCSImages.getSkillIcon(false, true));
 				}
 				if (value == SPELLS) {
-					setIcon(new ImageIcon(GCSImages.getSpellIcon(false, true)));
+					setIcon(GCSImages.getSpellIcon(false, true));
 				}
 				if (value == EQUIPMENT) {
-					setIcon(new ImageIcon(GCSImages.getEquipmentIcon(false, true)));
+					setIcon(GCSImages.getEquipmentIcon(false, true));
 				}
 				return comp;
 			}
@@ -409,7 +408,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 			mFile.getSkillList().getModel().setLocked(mLocked);
 			mFile.getSpellList().getModel().setLocked(mLocked);
 			mFile.getEquipmentList().getModel().setLocked(mLocked);
-			mToggleLockButton.setIcon(new ImageIcon(mLocked ? ToolkitImage.getLockedIcon() : ToolkitImage.getUnlockedIcon()));
+			mToggleLockButton.setIcon(mLocked ? ToolkitImage.getLockedIcon() : ToolkitImage.getUnlockedIcon());
 		} else if (src == mToggleRowsButton) {
 			mOutline.getModel().toggleRowOpenState();
 		} else if (src == mSizeColumnsButton) {

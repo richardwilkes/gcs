@@ -161,7 +161,7 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 	 * @param character The character to display.
 	 */
 	public SheetWindow(GURPSCharacter character) {
-		super(null, character.getFileIcon(true), character.getFileIcon(false));
+		super(null, character.getFileIcons());
 		mCharacter = character;
 		mSheet = new CharacterSheet(mCharacter);
 		adjustWindowTitle();

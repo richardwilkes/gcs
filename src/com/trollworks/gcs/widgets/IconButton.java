@@ -12,12 +12,11 @@
 package com.trollworks.gcs.widgets;
 
 import com.trollworks.toolkit.ui.UIUtilities;
+import com.trollworks.toolkit.ui.image.ToolkitIcon;
 
 import java.awt.Dimension;
-import java.awt.image.BufferedImage;
 
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
 /** A button with an icon. */
@@ -38,20 +37,20 @@ public class IconButton extends JButton {
 	/**
 	 * Creates a new {@link IconButton}.
 	 *
-	 * @param image The image to use for the icon.
+	 * @param icon The image to use for the icon.
 	 */
-	public IconButton(BufferedImage image) {
-		this(image, null);
+	public IconButton(ToolkitIcon icon) {
+		this(icon, null);
 	}
 
 	/**
 	 * Creates a new {@link IconButton}.
 	 *
-	 * @param image The image to use for the icon.
+	 * @param icon The image to use for the icon.
 	 * @param tooltip The tooltip to use.
 	 */
-	public IconButton(BufferedImage image, String tooltip) {
-		super(new ImageIcon(image));
+	public IconButton(ToolkitIcon icon, String tooltip) {
+		super(icon);
 		setToolTipText(tooltip);
 		initialize();
 	}

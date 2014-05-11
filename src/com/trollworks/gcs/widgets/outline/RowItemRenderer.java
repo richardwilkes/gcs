@@ -14,7 +14,6 @@ package com.trollworks.gcs.widgets.outline;
 import java.awt.Component;
 
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.ImageIcon;
 import javax.swing.JList;
 
 /** An item renderer for rows. */
@@ -23,7 +22,7 @@ public class RowItemRenderer extends DefaultListCellRenderer {
 	public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 		Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 		if (value instanceof ListRow) {
-			setIcon(new ImageIcon(((ListRow) value).getImage(false)));
+			setIcon(((ListRow) value).getIcon(false));
 		}
 		return comp;
 	}

@@ -11,22 +11,20 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.Enums;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.ui.widget.outline.Column;
+import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.notification.Notifier;
 import com.trollworks.toolkit.utility.text.Numbers;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,11 +32,11 @@ import java.util.HashSet;
 /** Model for trait modifiers */
 public class Modifier extends ListRow implements Comparable<Modifier> {
 	@Localize("Modifier")
-	private static String DEFAULT_NAME;
+	private static String			DEFAULT_NAME;
 	@Localize("Enhancement/Limitation")
-	private static String MODIFIER_TYPE;
+	private static String			MODIFIER_TYPE;
 	@Localize("** From container - not modifiable here **")
-	private static String READ_ONLY;
+	private static String			READ_ONLY;
 
 	static {
 		Localization.initialize();
@@ -90,7 +88,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 
 	/**
 	 * Creates a new {@link Modifier}.
-	 * 
+	 *
 	 * @param file The {@link DataFile} to use.
 	 * @param other Another {@link Modifier} to clone.
 	 */
@@ -108,7 +106,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 
 	/**
 	 * Creates a new {@link Modifier}.
-	 * 
+	 *
 	 * @param file The {@link DataFile} to use.
 	 * @param reader The {@link XMLReader} to use.
 	 * @param state The {@link LoadState} to use.
@@ -120,7 +118,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 
 	/**
 	 * Creates a new {@link Modifier}.
-	 * 
+	 *
 	 * @param file The {@link DataFile} to use.
 	 */
 	public Modifier(DataFile file) {
@@ -302,7 +300,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 	}
 
 	@Override
-	public BufferedImage getImage(boolean large) {
+	public ToolkitIcon getIcon(boolean large) {
 		return null;
 	}
 

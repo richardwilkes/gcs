@@ -57,7 +57,7 @@ public class GCSApp extends App {
 
 	private GCSApp() {
 		super();
-		AppWindow.setDefaultWindowIcon(GCSImages.getDefaultWindowIcon());
+		AppWindow.setDefaultWindowIcons(GCSImages.getAppIcons());
 	}
 
 	@SuppressWarnings("unchecked")

@@ -131,9 +131,9 @@ public class GCSMain {
 		GCSFonts.register();
 		Fonts.loadFromPreferences();
 		App.setAboutPanel(AboutPanel.class);
-		FileType.register(SheetWindow.SHEET_EXTENSION, GCSImages.getCharacterSheetIcon(false), SheetWindow.class, true);
-		FileType.register(LibraryFile.EXTENSION, GCSImages.getLibraryIcon(false), LibraryWindow.class, true);
-		FileType.register(TemplateWindow.EXTENSION, GCSImages.getTemplateIcon(false), TemplateWindow.class, true);
+		FileType.register(SheetWindow.SHEET_EXTENSION, GCSImages.getCharacterSheetIcons(), SheetWindow.class, true);
+		FileType.register(LibraryFile.EXTENSION, GCSImages.getLibraryIcons(), LibraryWindow.class, true);
+		FileType.register(TemplateWindow.EXTENSION, GCSImages.getTemplateIcons(), TemplateWindow.class, true);
 	}
 
 	private static int convert(CmdLine cmdLine) {

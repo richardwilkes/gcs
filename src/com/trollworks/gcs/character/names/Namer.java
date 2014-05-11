@@ -34,7 +34,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -93,7 +92,7 @@ public class Namer extends JPanel {
 			int type = hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION;
 			String[] options = hasMore ? new String[] { APPLY, CANCEL, CANCEL_REST } : new String[] { APPLY, CANCEL };
 			Namer panel = new Namer(row, setList.get(i), count - i - 1);
-			switch (WindowUtils.showOptionDialog(owner, panel, MessageFormat.format(NAME_TITLE, row.getLocalizedName()), true, type, JOptionPane.PLAIN_MESSAGE, new ImageIcon(row.getImage(true)), options, APPLY)) {
+			switch (WindowUtils.showOptionDialog(owner, panel, MessageFormat.format(NAME_TITLE, row.getLocalizedName()), true, type, JOptionPane.PLAIN_MESSAGE, row.getIcon(true), options, APPLY)) {
 				case JOptionPane.YES_OPTION:
 					panel.applyChanges();
 					modified = true;

@@ -11,15 +11,13 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.SelfControlRoll;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
+import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.TextUtility;
 
 import java.awt.BorderLayout;
@@ -31,7 +29,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -46,17 +43,17 @@ import javax.swing.border.LineBorder;
 /** Asks the user to enable/disable modifiers. */
 public class ModifierEnabler extends JPanel {
 	@Localize("Enable Modifiers")
-	private static String MODIFIER_TITLE;
+	private static String		MODIFIER_TITLE;
 	@Localize("1 advantage remaining to be processed.")
-	private static String MODIFIER_ONE_REMAINING;
+	private static String		MODIFIER_ONE_REMAINING;
 	@Localize("{0} advantages remaining to be processed.")
-	private static String MODIFIER_REMAINING;
+	private static String		MODIFIER_REMAINING;
 	@Localize("Cancel Remaining")
-	private static String CANCEL_REST;
+	private static String		CANCEL_REST;
 	@Localize("Cancel")
-	private static String CANCEL;
+	private static String		CANCEL;
 	@Localize("Apply")
-	private static String APPLY;
+	private static String		APPLY;
 
 	static {
 		Localization.initialize();
@@ -70,7 +67,7 @@ public class ModifierEnabler extends JPanel {
 	/**
 	 * Brings up a modal dialog that allows {@link Modifier}s to be enabled or disabled for the
 	 * specified {@link Advantage}s.
-	 * 
+	 *
 	 * @param comp The component to open the dialog over.
 	 * @param advantages The {@link Advantage}s to process.
 	 * @return Whether anything was modified.
@@ -91,7 +88,7 @@ public class ModifierEnabler extends JPanel {
 			Advantage advantage = list.get(i);
 			boolean hasMore = i != count - 1;
 			ModifierEnabler panel = new ModifierEnabler(advantage, count - i - 1);
-			switch (WindowUtils.showOptionDialog(comp, panel, MODIFIER_TITLE, true, hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, new ImageIcon(advantage.getImage(true)), hasMore ? new String[] { APPLY, CANCEL, CANCEL_REST } : new String[] { APPLY, CANCEL }, APPLY)) {
+			switch (WindowUtils.showOptionDialog(comp, panel, MODIFIER_TITLE, true, hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, advantage.getIcon(true), hasMore ? new String[] { APPLY, CANCEL, CANCEL_REST } : new String[] { APPLY, CANCEL }, APPLY)) {
 				case JOptionPane.YES_OPTION:
 					panel.applyChanges();
 					modified = true;

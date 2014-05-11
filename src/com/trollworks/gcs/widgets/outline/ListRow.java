@@ -28,11 +28,11 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.VersionException;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,7 +62,7 @@ public abstract class ListRow extends Row {
 
 	/**
 	 * Extracts any "nameable" portions of the buffer and puts their keys into the provided set.
-	 * 
+	 *
 	 * @param set The set to add the nameable keys to.
 	 * @param buffer The text to check for nameable portions.
 	 */
@@ -79,7 +79,7 @@ public abstract class ListRow extends Row {
 
 	/**
 	 * Names any "nameable" portions of the data and returns the resulting string.
-	 * 
+	 *
 	 * @param map The map of nameable keys to names.
 	 * @param data The data to change.
 	 * @return The revised string.
@@ -117,7 +117,7 @@ public abstract class ListRow extends Row {
 
 	/**
 	 * Creates a new data row.
-	 * 
+	 *
 	 * @param dataFile The data file to associate it with.
 	 * @param isContainer Whether or not this row allows children.
 	 */
@@ -136,7 +136,7 @@ public abstract class ListRow extends Row {
 
 	/**
 	 * Creates a clone of an existing data row and associates it with the specified data file.
-	 * 
+	 *
 	 * @param dataFile The data file to associate it with.
 	 * @param rowToClone The data row to clone.
 	 */
@@ -240,7 +240,7 @@ public abstract class ListRow extends Row {
 
 	/**
 	 * Loads this row's contents.
-	 * 
+	 *
 	 * @param reader The XML reader to load from.
 	 * @param state The {@link LoadState} to use.
 	 */
@@ -295,7 +295,7 @@ public abstract class ListRow extends Row {
 
 	/**
 	 * Called to prepare the row for loading.
-	 * 
+	 *
 	 * @param state The {@link LoadState} to use.
 	 */
 	protected void prepareForLoad(LoadState state) {
@@ -308,7 +308,7 @@ public abstract class ListRow extends Row {
 
 	/**
 	 * Loads this row's custom attributes from the specified element.
-	 * 
+	 *
 	 * @param reader The XML reader to load from.
 	 * @param state The {@link LoadState} to use.
 	 */
@@ -320,7 +320,7 @@ public abstract class ListRow extends Row {
 
 	/**
 	 * Loads this row's custom data from the specified element.
-	 * 
+	 *
 	 * @param reader The XML reader to load from.
 	 * @param state The {@link LoadState} to use.
 	 */
@@ -331,7 +331,7 @@ public abstract class ListRow extends Row {
 
 	/**
 	 * Called when loading of this row is complete. Does nothing by default.
-	 * 
+	 *
 	 * @param state The {@link LoadState} to use.
 	 */
 	protected void finishedLoading(LoadState state) {
@@ -340,7 +340,7 @@ public abstract class ListRow extends Row {
 
 	/**
 	 * Saves the row.
-	 * 
+	 *
 	 * @param out The XML writer to use.
 	 * @param forUndo Whether this is being called to save undo state.
 	 */
@@ -387,7 +387,7 @@ public abstract class ListRow extends Row {
 
 	/**
 	 * Saves the row.
-	 * 
+	 *
 	 * @param out The XML writer to use.
 	 * @param forUndo Whether this is being called to save undo state.
 	 */
@@ -395,7 +395,7 @@ public abstract class ListRow extends Row {
 
 	/**
 	 * Saves extra attributes of the row, if any.
-	 * 
+	 *
 	 * @param out The XML writer to use.
 	 * @param forUndo Whether this is being called to save undo state.
 	 */
@@ -415,7 +415,7 @@ public abstract class ListRow extends Row {
 
 	/**
 	 * Sends a notification to all interested consumers.
-	 * 
+	 *
 	 * @param type The notification type.
 	 * @param data Extra data specific to this notification.
 	 */
@@ -427,7 +427,7 @@ public abstract class ListRow extends Row {
 
 	/**
 	 * Sends a notification to all interested consumers.
-	 * 
+	 *
 	 * @param type The notification type.
 	 */
 	public final void notifySingle(String type) {
@@ -607,7 +607,7 @@ public abstract class ListRow extends Row {
 	 * @param large Whether to return the small (16x16) or large (32x32) image.
 	 * @return An image representative of this row.
 	 */
-	public abstract BufferedImage getImage(boolean large);
+	public abstract ToolkitIcon getIcon(boolean large);
 
 	/** @param set The nameable keys. */
 	public void fillWithNameableKeys(HashSet<String> set) {

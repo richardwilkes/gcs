@@ -15,10 +15,10 @@ import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
+import com.trollworks.toolkit.ui.image.IconSet;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 /** Data Object to hold several {@link Modifier} */
@@ -34,7 +34,7 @@ public class ModifierList extends ListFile {
 
 	/**
 	 * Creates a new {@link ModifierList}.
-	 * 
+	 *
 	 * @param modifiers The {@link ModifierList} to clone.
 	 */
 	public ModifierList(ModifierList modifiers) {
@@ -62,7 +62,7 @@ public class ModifierList extends ListFile {
 	}
 
 	@Override
-	public BufferedImage getFileIcon(boolean large) {
+	public IconSet getFileIcons() {
 		return null;
 	}
 

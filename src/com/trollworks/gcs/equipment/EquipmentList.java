@@ -11,14 +11,13 @@
 
 package com.trollworks.gcs.equipment;
 
-import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
+import com.trollworks.toolkit.ui.image.IconSet;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 /** A list of equipment. */
@@ -39,8 +38,8 @@ public class EquipmentList extends ListFile {
 	}
 
 	@Override
-	public BufferedImage getFileIcon(boolean large) {
-		return GCSImages.getEquipmentIcon(large, false);
+	public IconSet getFileIcons() {
+		return null;
 	}
 
 	@Override

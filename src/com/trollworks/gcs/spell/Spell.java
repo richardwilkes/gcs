@@ -27,10 +27,10 @@ import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.utility.Localization;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -712,7 +712,7 @@ public class Spell extends ListRow {
 	}
 
 	@Override
-	public BufferedImage getImage(boolean large) {
+	public ToolkitIcon getIcon(boolean large) {
 		return GCSImages.getSpellIcon(large, true);
 	}
 

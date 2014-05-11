@@ -36,7 +36,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.ArrayList;
 
-import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -132,7 +131,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
 		JPanel content = new JPanel(new ColumnLayout(2));
 		JPanel fields = new JPanel(new ColumnLayout(2));
-		JLabel icon = new JLabel(new ImageIcon(equipment.getImage(true)));
+		JLabel icon = new JLabel(equipment.getIcon(true));
 		JPanel wrapper = new JPanel(new ColumnLayout(2));
 
 		mDescriptionField = createCorrectableField(fields, NAME, equipment.getDescription(), NAME_TOOLTIP);

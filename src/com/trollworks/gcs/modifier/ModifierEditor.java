@@ -11,15 +11,14 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
+import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
+import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.NumberFilter;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.text.TextUtility;
@@ -29,10 +28,8 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.text.MessageFormat;
 
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -47,43 +44,43 @@ import javax.swing.event.DocumentListener;
 /** Editor for {@link Modifier}s. */
 public class ModifierEditor extends RowEditor<Modifier> implements ActionListener, DocumentListener {
 	@Localize("Name")
-	private static String NAME;
+	private static String		NAME;
 	@Localize("Name of Modifier")
-	private static String NAME_TOOLTIP;
+	private static String		NAME_TOOLTIP;
 	@Localize("Notes")
-	private static String NOTES;
+	private static String		NOTES;
 	@Localize("Any notes that you would like to show up in the list along with this modifier")
-	private static String NOTES_TOOLTIP;
+	private static String		NOTES_TOOLTIP;
 	@Localize("The name field may not be empty")
-	private static String NAME_CANNOT_BE_EMPTY;
+	private static String		NAME_CANNOT_BE_EMPTY;
 	@Localize("Cost")
-	private static String COST;
+	private static String		COST;
 	@Localize("The base cost modifier")
-	private static String COST_TOOLTIP;
+	private static String		COST_TOOLTIP;
 	@Localize("Levels")
-	private static String LEVELS;
+	private static String		LEVELS;
 	@Localize("The number of levels this modifier has")
-	private static String LEVELS_TOOLTIP;
+	private static String		LEVELS_TOOLTIP;
 	@Localize("Total")
-	private static String TOTAL_COST;
+	private static String		TOTAL_COST;
 	@Localize("The cost modifier's total value")
-	private static String TOTAL_COST_TOOLTIP;
+	private static String		TOTAL_COST_TOOLTIP;
 	@Localize("{0} Per Level")
-	private static String HAS_LEVELS;
+	private static String		HAS_LEVELS;
 	@Localize("Enabled")
-	private static String ENABLED;
+	private static String		ENABLED;
 	@Localize("Whether this modifier has been enabled or not")
-	private static String ENABLED_TOOLTIP;
+	private static String		ENABLED_TOOLTIP;
 	@Localize("Ref")
-	private static String REFERENCE;
+	private static String		REFERENCE;
 	@Localize("A reference to the book and page this modifier appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
-	private static String REFERENCE_TOOLTIP;
+	private static String		REFERENCE_TOOLTIP;
 
 	static {
 		Localization.initialize();
 	}
 
-	private static final String	EMPTY	= "";		//$NON-NLS-1$
+	private static final String	EMPTY	= "";			//$NON-NLS-1$
 	private JTextField			mNameField;
 	private JCheckBox			mEnabledField;
 	private JTextField			mNotesField;
@@ -99,7 +96,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 
 	/**
 	 * Creates a new {@link ModifierEditor}.
-	 * 
+	 *
 	 * @param modifier The {@link Modifier} to edit.
 	 */
 	public ModifierEditor(Modifier modifier) {
@@ -108,9 +105,9 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		JPanel content = new JPanel(new ColumnLayout(2));
 		JPanel fields = new JPanel(new ColumnLayout(2));
 		JLabel icon;
-		BufferedImage image = modifier.getImage(true);
+		ToolkitIcon image = modifier.getIcon(true);
 		if (image != null) {
-			icon = new JLabel(new ImageIcon(image));
+			icon = new JLabel(image);
 		} else {
 			icon = new JLabel();
 		}

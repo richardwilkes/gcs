@@ -11,10 +11,6 @@
 
 package com.trollworks.gcs.skill;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.prereq.PrereqsPanel;
@@ -22,10 +18,12 @@ import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.CommitEnforcer;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
+import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.NumberFilter;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.text.TextUtility;
@@ -37,7 +35,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -53,53 +50,53 @@ import javax.swing.text.Document;
 /** The detailed editor for {@link Technique}s. */
 public class TechniqueEditor extends RowEditor<Technique> implements ActionListener, DocumentListener {
 	@Localize("Name")
-	private static String NAME;
+	private static String		NAME;
 	@Localize("Notes")
-	private static String NOTES;
+	private static String		NOTES;
 	@Localize("Page Reference")
-	private static String EDITOR_REFERENCE;
+	private static String		EDITOR_REFERENCE;
 	@Localize("Points")
-	private static String EDITOR_POINTS;
+	private static String		EDITOR_POINTS;
 	@Localize("Level")
-	private static String EDITOR_LEVEL;
+	private static String		EDITOR_LEVEL;
 	@Localize("The skill level and relative skill level to roll against")
-	private static String EDITOR_LEVEL_TOOLTIP;
+	private static String		EDITOR_LEVEL_TOOLTIP;
 	@Localize("Difficulty")
-	private static String EDITOR_DIFFICULTY;
+	private static String		EDITOR_DIFFICULTY;
 	@Localize("The base name of the technique, without any notes or specialty information")
-	private static String TECHNIQUE_NAME_TOOLTIP;
+	private static String		TECHNIQUE_NAME_TOOLTIP;
 	@Localize("The name field may not be empty")
-	private static String TECHNIQUE_NAME_CANNOT_BE_EMPTY;
+	private static String		TECHNIQUE_NAME_CANNOT_BE_EMPTY;
 	@Localize("Any notes that you would like to show up in the list along with this technique")
-	private static String TECHNIQUE_NOTES_TOOLTIP;
+	private static String		TECHNIQUE_NOTES_TOOLTIP;
 	@Localize("The difficulty of learning this technique")
-	private static String TECHNIQUE_DIFFICULTY_TOOLTIP;
+	private static String		TECHNIQUE_DIFFICULTY_TOOLTIP;
 	@Localize("The relative difficulty of learning this technique")
-	private static String TECHNIQUE_DIFFICULTY_POPUP_TOOLTIP;
+	private static String		TECHNIQUE_DIFFICULTY_POPUP_TOOLTIP;
 	@Localize("The number of points spent on this technique")
-	private static String TECHNIQUE_POINTS_TOOLTIP;
+	private static String		TECHNIQUE_POINTS_TOOLTIP;
 	@Localize("A reference to the book and page this technique appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
-	private static String TECHNIQUE_REFERENCE_TOOLTIP;
+	private static String		TECHNIQUE_REFERENCE_TOOLTIP;
 	@Localize("Defaults To")
-	private static String DEFAULTS_TO;
+	private static String		DEFAULTS_TO;
 	@Localize("The name of the skill this technique defaults from")
-	private static String DEFAULTS_TO_TOOLTIP;
+	private static String		DEFAULTS_TO_TOOLTIP;
 	@Localize("The default name field may not be empty")
-	private static String DEFAULT_NAME_CANNOT_BE_EMPTY;
+	private static String		DEFAULT_NAME_CANNOT_BE_EMPTY;
 	@Localize("The specialization of the skill, if any, this technique defaults from")
-	private static String DEFAULT_SPECIALIZATION_TOOLTIP;
+	private static String		DEFAULT_SPECIALIZATION_TOOLTIP;
 	@Localize("The amount to adjust the default skill level by")
-	private static String DEFAULT_MODIFIER_TOOLTIP;
+	private static String		DEFAULT_MODIFIER_TOOLTIP;
 	@Localize("Cannot exceed default skill level by more than")
-	private static String LIMIT;
+	private static String		LIMIT;
 	@Localize("Whether to limit the maximum level that can be achieved or not")
-	private static String LIMIT_TOOLTIP;
+	private static String		LIMIT_TOOLTIP;
 	@Localize("The maximum amount above the default skill level that this technique can be raised")
-	private static String LIMIT_AMOUNT_TOOLTIP;
+	private static String		LIMIT_AMOUNT_TOOLTIP;
 	@Localize("Categories")
-	private static String CATEGORIES;
+	private static String		CATEGORIES;
 	@Localize("The category or categories the technique belongs to (separate multiple categories with a comma)")
-	private static String CATEGORIES_TOOLTIP;
+	private static String		CATEGORIES_TOOLTIP;
 
 	static {
 		Localization.initialize();
@@ -129,7 +126,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 
 	/**
 	 * Creates a new {@link Technique} editor.
-	 * 
+	 *
 	 * @param technique The {@link Technique} to edit.
 	 */
 	public TechniqueEditor(Technique technique) {
@@ -137,7 +134,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 
 		JPanel content = new JPanel(new ColumnLayout(2));
 		JPanel fields = new JPanel(new ColumnLayout(2));
-		JLabel icon = new JLabel(new ImageIcon(technique.getImage(true)));
+		JLabel icon = new JLabel(technique.getIcon(true));
 		Container wrapper;
 
 		mNameField = createCorrectableField(fields, fields, NAME, technique.getName(), TECHNIQUE_NAME_TOOLTIP);

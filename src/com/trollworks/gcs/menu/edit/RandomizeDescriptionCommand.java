@@ -11,33 +11,30 @@
 
 package com.trollworks.gcs.menu.edit;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.DescriptionRandomizer;
 import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 
-import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
 /** Provides the "Randomize Description" command. */
 public class RandomizeDescriptionCommand extends Command {
 	@Localize("Randomize Description\u2026")
-	private static String RANDOMIZE_DESCRIPTION;
+	private static String							RANDOMIZE_DESCRIPTION;
 	@Localize("Description Randomizer")
-	private static String RANDOMIZER;
+	private static String							RANDOMIZER;
 	@Localize("Apply")
-	private static String APPLY;
+	private static String							APPLY;
 	@Localize("Cancel")
-	private static String CANCEL;
+	private static String							CANCEL;
 
 	static {
 		Localization.initialize();
@@ -62,7 +59,7 @@ public class RandomizeDescriptionCommand extends Command {
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		DescriptionRandomizer panel = new DescriptionRandomizer(((SheetWindow) getActiveWindow()).getCharacter());
-		if (WindowUtils.showOptionDialog(null, panel, RANDOMIZER, true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, new ImageIcon(GCSImages.getCharacterSheetIcon(true)), new String[] { APPLY, CANCEL }, APPLY) == JOptionPane.OK_OPTION) {
+		if (WindowUtils.showOptionDialog(null, panel, RANDOMIZER, true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, GCSImages.getCharacterSheetIcons().getIcon(32), new String[] { APPLY, CANCEL }, APPLY) == JOptionPane.OK_OPTION) {
 			panel.applyChanges();
 		}
 	}

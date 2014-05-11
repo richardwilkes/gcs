@@ -18,6 +18,7 @@ import com.trollworks.gcs.menu.file.NewLibraryCommand;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.WindowSizeEnforcer;
+import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.ui.layout.PrecisionLayout;
 import com.trollworks.toolkit.ui.layout.PrecisionLayoutData;
 import com.trollworks.toolkit.ui.menu.file.FileType;
@@ -39,11 +40,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
-import java.awt.image.BufferedImage;
 import java.io.File;
 
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JList;
@@ -103,9 +102,9 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 	private JPanel createCreatePanel() {
 		JPanel panel = new JPanel(new PrecisionLayout());
 		panel.setBorder(new TitledBorder(CREATE));
-		mSheetButton = createButton(panel, NEW_CHARACTER_SHEET, GCSImages.getCharacterSheetIcon(true));
-		mLibraryButton = createButton(panel, NEW_LIBRARY, GCSImages.getLibraryIcon(true));
-		mTemplateButton = createButton(panel, NEW_TEMPLATE, GCSImages.getTemplateIcon(true));
+		mSheetButton = createButton(panel, NEW_CHARACTER_SHEET, GCSImages.getCharacterSheetIcons().getIcon(32));
+		mLibraryButton = createButton(panel, NEW_LIBRARY, GCSImages.getLibraryIcons().getIcon(32));
+		mTemplateButton = createButton(panel, NEW_TEMPLATE, GCSImages.getTemplateIcons().getIcon(32));
 		UIUtilities.adjustToSameSize(panel.getComponents());
 		return panel;
 	}
@@ -119,7 +118,7 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				setText(DataMenu.filterTitle(PathUtils.getLeafName(((File) value).getName(), false)));
-				setIcon(new ImageIcon(FileType.getIconForFile((File) value)));
+				setIcon(FileType.getIconsForFile((File) value).getIcon(16));
 				return this;
 			}
 		});
@@ -143,8 +142,8 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 		return panel;
 	}
 
-	private JButton createButton(Container panel, String title, BufferedImage image) {
-		JButton button = new JButton(title, new ImageIcon(image));
+	private JButton createButton(Container panel, String title, ToolkitIcon icon) {
+		JButton button = new JButton(title, icon);
 		button.setHorizontalTextPosition(SwingConstants.CENTER);
 		button.setVerticalTextPosition(SwingConstants.BOTTOM);
 		button.setHorizontalAlignment(SwingConstants.CENTER);

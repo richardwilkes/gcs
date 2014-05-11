@@ -11,10 +11,6 @@
 
 package com.trollworks.gcs.spell;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.skill.SkillDifficulty;
@@ -23,10 +19,12 @@ import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
+import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.NumberFilter;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.text.TextUtility;
@@ -38,7 +36,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -54,79 +51,79 @@ import javax.swing.text.Document;
 /** The detailed editor for {@link Spell}s. */
 public class SpellEditor extends RowEditor<Spell> implements ActionListener, DocumentListener {
 	@Localize("Name")
-	private static String NAME;
+	private static String		NAME;
 	@Localize("The name of the spell, without any notes")
-	private static String NAME_TOOLTIP;
+	private static String		NAME_TOOLTIP;
 	@Localize("The name field may not be empty")
-	private static String NAME_CANNOT_BE_EMPTY;
+	private static String		NAME_CANNOT_BE_EMPTY;
 	@Localize("Tech Level")
-	private static String TECH_LEVEL;
+	private static String		TECH_LEVEL;
 	@Localize("Whether this spell requires tech level specialization,\nand, if so, at what tech level it was learned")
-	private static String TECH_LEVEL_TOOLTIP;
+	private static String		TECH_LEVEL_TOOLTIP;
 	@Localize("Tech Level Required")
-	private static String TECH_LEVEL_REQUIRED;
+	private static String		TECH_LEVEL_REQUIRED;
 	@Localize("Whether this spell requires tech level specialization")
-	private static String TECH_LEVEL_REQUIRED_TOOLTIP;
+	private static String		TECH_LEVEL_REQUIRED_TOOLTIP;
 	@Localize("College")
-	private static String COLLEGE;
+	private static String		COLLEGE;
 	@Localize("The college the spell belongs to")
-	private static String COLLEGE_TOOLTIP;
+	private static String		COLLEGE_TOOLTIP;
 	@Localize("Power Source")
-	private static String POWER_SOURCE;
+	private static String		POWER_SOURCE;
 	@Localize("The source of power for the spell")
-	private static String POWER_SOURCE_TOOLTIP;
+	private static String		POWER_SOURCE_TOOLTIP;
 	@Localize("Class")
-	private static String CLASS;
+	private static String		CLASS;
 	@Localize("The class of spell (Area, Missile, etc.)")
-	private static String CLASS_ONLY_TOOLTIP;
+	private static String		CLASS_ONLY_TOOLTIP;
 	@Localize("The class field may not be empty")
-	private static String CLASS_CANNOT_BE_EMPTY;
+	private static String		CLASS_CANNOT_BE_EMPTY;
 	@Localize("Casting Cost")
-	private static String CASTING_COST;
+	private static String		CASTING_COST;
 	@Localize("The casting cost of the spell")
-	private static String CASTING_COST_TOOLTIP;
+	private static String		CASTING_COST_TOOLTIP;
 	@Localize("The casting cost field may not be empty")
-	private static String CASTING_COST_CANNOT_BE_EMPTY;
+	private static String		CASTING_COST_CANNOT_BE_EMPTY;
 	@Localize("Maintenance Cost")
-	private static String MAINTENANCE_COST;
+	private static String		MAINTENANCE_COST;
 	@Localize("The cost to maintain a spell after its initial duration")
-	private static String MAINTENANCE_COST_TOOLTIP;
+	private static String		MAINTENANCE_COST_TOOLTIP;
 	@Localize("Casting Time")
-	private static String CASTING_TIME;
+	private static String		CASTING_TIME;
 	@Localize("The casting time of the spell")
-	private static String CASTING_TIME_TOOLTIP;
+	private static String		CASTING_TIME_TOOLTIP;
 	@Localize("The casting time field may not be empty")
-	private static String CASTING_TIME_CANNOT_BE_EMPTY;
+	private static String		CASTING_TIME_CANNOT_BE_EMPTY;
 	@Localize("Duration")
-	private static String DURATION;
+	private static String		DURATION;
 	@Localize("The duration of the spell once its cast")
-	private static String DURATION_TOOLTIP;
+	private static String		DURATION_TOOLTIP;
 	@Localize("The duration field may not be empty")
-	private static String DURATION_CANNOT_BE_EMPTY;
+	private static String		DURATION_CANNOT_BE_EMPTY;
 	@Localize("Categories")
-	private static String CATEGORIES;
+	private static String		CATEGORIES;
 	@Localize("The category or categories the spell belongs to (separate multiple categories with a comma)")
-	private static String CATEGORIES_TOOLTIP;
+	private static String		CATEGORIES_TOOLTIP;
 	@Localize("Notes")
-	private static String NOTES;
+	private static String		NOTES;
 	@Localize("Any notes that you would like to show up in the list along with this spell")
-	private static String NOTES_TOOLTIP;
+	private static String		NOTES_TOOLTIP;
 	@Localize("Points")
-	private static String EDITOR_POINTS;
+	private static String		EDITOR_POINTS;
 	@Localize("The number of points spent on this spell")
-	private static String EDITOR_POINTS_TOOLTIP;
+	private static String		EDITOR_POINTS_TOOLTIP;
 	@Localize("Level")
-	private static String EDITOR_LEVEL;
+	private static String		EDITOR_LEVEL;
 	@Localize("The spell level and relative spell level to roll against")
-	private static String EDITOR_LEVEL_TOOLTIP;
+	private static String		EDITOR_LEVEL_TOOLTIP;
 	@Localize("Difficulty")
-	private static String DIFFICULTY;
+	private static String		DIFFICULTY;
 	@Localize("The difficulty of the spell")
-	private static String DIFFICULTY_TOOLTIP;
+	private static String		DIFFICULTY_TOOLTIP;
 	@Localize("Page Reference")
-	private static String EDITOR_REFERENCE;
+	private static String		EDITOR_REFERENCE;
 	@Localize("A reference to the book and page this spell appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
-	private static String REFERENCE_TOOLTIP;
+	private static String		REFERENCE_TOOLTIP;
 
 	static {
 		Localization.initialize();
@@ -156,7 +153,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 
 	/**
 	 * Creates a new {@link Spell} editor.
-	 * 
+	 *
 	 * @param spell The {@link Spell} to edit.
 	 */
 	public SpellEditor(Spell spell) {
@@ -170,7 +167,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		Container wrapper3 = new JPanel(new ColumnLayout(2));
 		Container noGapWrapper = new JPanel(new ColumnLayout(2, 0, 0));
 		Container ptsPanel = null;
-		JLabel icon = new JLabel(new ImageIcon(spell.getImage(true)));
+		JLabel icon = new JLabel(spell.getIcon(true));
 		Dimension size = new Dimension();
 		Container refParent = wrapper3;
 

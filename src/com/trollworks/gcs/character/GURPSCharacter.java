@@ -40,6 +40,7 @@ import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.ui.image.IconSet;
 import com.trollworks.toolkit.ui.print.PageOrientation;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
@@ -52,7 +53,6 @@ import com.trollworks.toolkit.utility.units.LengthUnits;
 import com.trollworks.toolkit.utility.units.WeightUnits;
 import com.trollworks.toolkit.utility.units.WeightValue;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -390,8 +390,8 @@ public class GURPSCharacter extends DataFile {
 	}
 
 	@Override
-	public BufferedImage getFileIcon(boolean large) {
-		return GCSImages.getCharacterSheetIcon(large);
+	public IconSet getFileIcons() {
+		return GCSImages.getCharacterSheetIcons();
 	}
 
 	@Override

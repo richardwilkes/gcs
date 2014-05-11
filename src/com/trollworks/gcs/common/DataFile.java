@@ -15,6 +15,7 @@ import com.trollworks.toolkit.io.SafeFileUpdater;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.ui.image.IconSet;
 import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.utility.Debug;
 import com.trollworks.toolkit.utility.PathUtils;
@@ -24,7 +25,6 @@ import com.trollworks.toolkit.utility.notification.Notifier;
 import com.trollworks.toolkit.utility.notification.NotifierTarget;
 import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
-import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -72,7 +72,7 @@ public abstract class DataFile {
 		setFile(file);
 		mNotifier = new Notifier();
 		try (FileReader fileReader = new FileReader(file);
-						XMLReader reader = new XMLReader(fileReader)) {
+			XMLReader reader = new XMLReader(fileReader)) {
 			XMLNodeType type = reader.next();
 			boolean found = false;
 
@@ -200,11 +200,8 @@ public abstract class DataFile {
 		return getXMLTagName().equals(name);
 	}
 
-	/**
-	 * @param large The large (32x32) or the small (16x16) version.
-	 * @return The file icon.
-	 */
-	public abstract BufferedImage getFileIcon(boolean large);
+	/** @return The icons representing this file, at various resolutions. */
+	public abstract IconSet getFileIcons();
 
 	/**
 	 * Sub-classes must call this method prior to returning from their constructors.

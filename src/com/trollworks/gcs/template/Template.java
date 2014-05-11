@@ -11,10 +11,6 @@
 
 package com.trollworks.gcs.template;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.app.GCSImages;
@@ -28,15 +24,17 @@ import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.ui.image.IconSet;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
+import com.trollworks.toolkit.utility.Localization;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Hashtable;
@@ -48,7 +46,7 @@ import javax.swing.undo.StateEditable;
 /** A template. */
 public class Template extends DataFile implements StateEditable {
 	@Localize("Notes Change")
-	private static String NOTES_UNDO;
+	private static String		NOTES_UNDO;
 
 	static {
 		Localization.initialize();
@@ -101,7 +99,7 @@ public class Template extends DataFile implements StateEditable {
 
 	/**
 	 * Creates a new character from the specified file.
-	 * 
+	 *
 	 * @param file The file to load the data from.
 	 * @throws IOException if the data cannot be read or the file doesn't contain a valid character
 	 *             sheet.
@@ -120,8 +118,8 @@ public class Template extends DataFile implements StateEditable {
 	}
 
 	@Override
-	public BufferedImage getFileIcon(boolean large) {
-		return GCSImages.getTemplateIcon(large);
+	public IconSet getFileIcons() {
+		return GCSImages.getTemplateIcons();
 	}
 
 	@Override
@@ -432,7 +430,7 @@ public class Template extends DataFile implements StateEditable {
 
 	/**
 	 * Sets the notes.
-	 * 
+	 *
 	 * @param notes The new notes.
 	 */
 	public void setNotes(String notes) {

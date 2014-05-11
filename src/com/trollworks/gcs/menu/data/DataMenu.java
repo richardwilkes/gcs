@@ -26,7 +26,6 @@ import java.awt.event.InputEvent;
 import java.nio.file.Path;
 import java.util.List;
 
-import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
@@ -68,7 +67,7 @@ public class DataMenu extends JMenu {
 			if (entry instanceof List<?>) {
 				List<?> subList = (List<?>) entry;
 				JMenu subMenu = new JMenu((String) subList.get(0));
-				subMenu.setIcon(new ImageIcon(ToolkitImage.getFolderIcon()));
+				subMenu.setIcon(ToolkitImage.getFolderIcons().getIcon(16));
 				addToMenu(subList, subMenu);
 				menu.add(subMenu);
 			} else {

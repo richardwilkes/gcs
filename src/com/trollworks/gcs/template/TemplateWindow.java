@@ -151,7 +151,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 	 * @param template The template to display.
 	 */
 	public TemplateWindow(Template template) {
-		super(null, template.getFileIcon(true), template.getFileIcon(false));
+		super(null, template.getFileIcons());
 		mTemplate = template;
 		mContent = new TemplateSheet(mTemplate);
 		adjustWindowTitle();

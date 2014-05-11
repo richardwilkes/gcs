@@ -12,36 +12,34 @@
 package com.trollworks.gcs.widgets;
 
 import com.trollworks.gcs.menu.data.DataMenu;
+import com.trollworks.toolkit.ui.image.IconSet;
 import com.trollworks.toolkit.ui.menu.file.SignificantFrame;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 
 import java.awt.GraphicsConfiguration;
-import java.awt.image.BufferedImage;
 
 /** Provides a base OS-level window. */
 public class GCSWindow extends AppWindow implements SignificantFrame {
 	/**
 	 * Creates a new {@link AppWindow}.
-	 * 
+	 *
 	 * @param title The window title. May be <code>null</code>.
-	 * @param largeIcon The 32x32 window icon. OK to pass in a 16x16 icon here.
-	 * @param smallIcon The 16x16 window icon.
+	 * @param iconset The window {@link IconSet}.
 	 */
-	public GCSWindow(String title, BufferedImage largeIcon, BufferedImage smallIcon) {
-		super(title, largeIcon, smallIcon);
+	public GCSWindow(String title, IconSet iconset) {
+		super(title, iconset);
 	}
 
 	/**
 	 * Creates a new {@link AppWindow}.
-	 * 
+	 *
 	 * @param title The title of the window.
-	 * @param largeIcon The 32x32 window icon. OK to pass in a 16x16 icon here.
-	 * @param smallIcon The 16x16 window icon.
+	 * @param iconset The window {@link IconSet}.
 	 * @param gc The graphics configuration to use.
 	 * @param undecorated Whether to create an undecorated window, without menus.
 	 */
-	public GCSWindow(String title, BufferedImage largeIcon, BufferedImage smallIcon, GraphicsConfiguration gc, boolean undecorated) {
-		super(title, largeIcon, smallIcon, gc, undecorated);
+	public GCSWindow(String title, IconSet iconset, GraphicsConfiguration gc, boolean undecorated) {
+		super(title, iconset, gc, undecorated);
 	}
 
 	@Override

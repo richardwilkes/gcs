@@ -24,6 +24,7 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.ui.image.IconSet;
 import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.ui.widget.outline.Row;
@@ -31,7 +32,6 @@ import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 
 import java.awt.EventQueue;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -109,8 +109,8 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 	}
 
 	@Override
-	public BufferedImage getFileIcon(boolean large) {
-		return GCSImages.getLibraryIcon(large);
+	public IconSet getFileIcons() {
+		return GCSImages.getLibraryIcons();
 	}
 
 	@Override

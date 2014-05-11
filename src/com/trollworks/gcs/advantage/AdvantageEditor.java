@@ -22,6 +22,7 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
+import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.ui.layout.Alignment;
 import com.trollworks.toolkit.ui.layout.FlexComponent;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
@@ -38,12 +39,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -161,7 +160,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
 		FlexGrid outerGrid = new FlexGrid();
 
-		JLabel icon = new JLabel(new ImageIcon(advantage.getImage(true)));
+		JLabel icon = new JLabel(advantage.getIcon(true));
 		UIUtilities.setOnlySize(icon, icon.getPreferredSize());
 		add(icon);
 		outerGrid.add(new FlexComponent(icon, Alignment.LEFT_TOP, Alignment.LEFT_TOP), 0, 0);
@@ -339,8 +338,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		return button;
 	}
 
-	private LinkedLabel createTypeLabel(BufferedImage icon, final JCheckBox linkTo) {
-		LinkedLabel label = new LinkedLabel(new ImageIcon(icon), linkTo);
+	private LinkedLabel createTypeLabel(ToolkitIcon icon, final JCheckBox linkTo) {
+		LinkedLabel label = new LinkedLabel(icon, linkTo);
 		label.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent event) {
