@@ -31,6 +31,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
@@ -92,8 +93,9 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 	}
 
 	@Override
-	protected void paintComponent(Graphics gc) {
-		super.paintComponent(GraphicsUtilities.prepare(gc));
+	protected void paintComponent(Graphics g) {
+		Graphics2D gc = GraphicsUtilities.prepare(g);
+		super.paintComponent(gc);
 
 		Container top = getTopLevelAncestor();
 		boolean isPrinting = top instanceof GCSWindow && ((GCSWindow) top).isPrinting();
@@ -105,14 +107,16 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 			AffineTransform transform = null;
 
 			if (isPrinting) {
-				transform = ((Graphics2D) gc).getTransform();
-				((Graphics2D) gc).scale(0.5, 0.5);
+				transform = gc.getTransform();
+				gc.scale(0.5, 0.5);
 				bounds.x *= 2;
 				bounds.y *= 2;
 			}
+			RenderingHints saved = GraphicsUtilities.setMaximumQualityForGraphics(gc);
 			gc.drawImage(portrait, bounds.x, bounds.y, null);
+			gc.setRenderingHints(saved);
 			if (isPrinting) {
-				((Graphics2D) gc).setTransform(transform);
+				gc.setTransform(transform);
 			}
 		}
 	}
