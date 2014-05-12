@@ -9,29 +9,32 @@
  * by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.menu.data;
+package com.trollworks.gcs.menu;
 
 import com.trollworks.gcs.common.ListCollectionThread;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.image.ToolkitImage;
+import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.menu.DynamicMenuEnabler;
+import com.trollworks.toolkit.ui.menu.MenuProvider;
 import com.trollworks.toolkit.ui.menu.StdMenuBar;
 import com.trollworks.toolkit.ui.menu.file.OpenDataFileCommand;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 
-import java.awt.Toolkit;
 import java.awt.event.InputEvent;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
 /** The standard "Data" menu. */
-public class DataMenu extends JMenu {
+public class DataMenuProvider implements MenuProvider {
 	@Localize("Data")
 	private static String		DATA;
 
@@ -39,28 +42,22 @@ public class DataMenu extends JMenu {
 		Localization.initialize();
 	}
 
+	public static final String	NAME					= "Data";				//$NON-NLS-1$
 	private static final String	MENU_KEY_SUFFIX_REGEX	= ".*__[A-Za-z0-9]";	//$NON-NLS-1$
-
-	/** Creates a new {@link DataMenu}. */
-	public DataMenu() {
-		super(DATA);
-		addToMenu(ListCollectionThread.get().getLists(), this);
-		DynamicMenuEnabler.add(this);
-	}
 
 	/** Updates the available menu items. */
 	public static void update() {
 		for (AppWindow window : AppWindow.getAllWindows()) {
-			DataMenu menu = (DataMenu) StdMenuBar.findMenu(window.getJMenuBar(), DataMenu.class);
+			JMenu menu = StdMenuBar.findMenuByName(window.getJMenuBar(), NAME);
 			if (menu != null) {
 				menu.removeAll();
-				menu.addToMenu(ListCollectionThread.get().getLists(), menu);
+				addToMenu(ListCollectionThread.get().getLists(), menu);
 			}
 		}
 	}
 
-	private void addToMenu(List<?> list, JMenu menu) {
-		int keyMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.ALT_MASK;
+	private static void addToMenu(List<?> list, JMenu menu) {
+		int keyMask = menu.getToolkit().getMenuShortcutKeyMask() | InputEvent.ALT_MASK;
 		int count = list.size();
 		for (int i = 1; i < count; i++) {
 			Object entry = list.get(i);
@@ -96,5 +93,19 @@ public class DataMenu extends JMenu {
 			return title.substring(0, title.length() - 3);
 		}
 		return title;
+	}
+
+	@Override
+	public Set<Command> getModifiableCommands() {
+		return Collections.emptySet();
+	}
+
+	@Override
+	public JMenu createMenu() {
+		JMenu menu = new JMenu(DATA);
+		menu.setName(NAME);
+		addToMenu(ListCollectionThread.get().getLists(), menu);
+		DynamicMenuEnabler.add(menu);
+		return menu;
 	}
 }

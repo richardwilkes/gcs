@@ -12,13 +12,11 @@
 package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.menu.DynamicCheckBoxMenuItem;
 import com.trollworks.toolkit.ui.menu.DynamicMenuEnabler;
 import com.trollworks.toolkit.ui.menu.DynamicMenuItem;
+import com.trollworks.toolkit.ui.menu.MenuProvider;
 import com.trollworks.toolkit.ui.menu.edit.CopyCommand;
 import com.trollworks.toolkit.ui.menu.edit.CutCommand;
 import com.trollworks.toolkit.ui.menu.edit.DeleteCommand;
@@ -27,27 +25,28 @@ import com.trollworks.toolkit.ui.menu.edit.PreferencesCommand;
 import com.trollworks.toolkit.ui.menu.edit.RedoCommand;
 import com.trollworks.toolkit.ui.menu.edit.SelectAllCommand;
 import com.trollworks.toolkit.ui.menu.edit.UndoCommand;
+import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.Platform;
 
 import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JMenu;
 
-/** The standard "Edit" menu. */
-public class EditMenu extends JMenu {
+/** Provides the standard "Edit" menu. */
+public class EditMenuProvider implements MenuProvider {
 	@Localize("Edit")
-	private static String EDIT;
+	private static String		EDIT;
 
 	static {
 		Localization.initialize();
 	}
 
-	/**
-	 * @return The set of {@link Command}s that this menu provides that can have their accelerators
-	 *         modified.
-	 */
-	public static HashSet<Command> getCommands() {
-		HashSet<Command> cmds = new HashSet<>();
+	public static final String	NAME	= "Edit";	//$NON-NLS-1$
+
+	@Override
+	public Set<Command> getModifiableCommands() {
+		Set<Command> cmds = new HashSet<>();
 		cmds.add(UndoCommand.INSTANCE);
 		cmds.add(RedoCommand.INSTANCE);
 		cmds.add(CutCommand.INSTANCE);
@@ -72,36 +71,38 @@ public class EditMenu extends JMenu {
 		return cmds;
 	}
 
-	/** Creates a new {@link EditMenu}. */
-	public EditMenu() {
-		super(EDIT);
-		add(new DynamicMenuItem(UndoCommand.INSTANCE));
-		add(new DynamicMenuItem(RedoCommand.INSTANCE));
-		addSeparator();
-		add(new DynamicMenuItem(CutCommand.INSTANCE));
-		add(new DynamicMenuItem(CopyCommand.INSTANCE));
-		add(new DynamicMenuItem(PasteCommand.INSTANCE));
-		add(new DynamicMenuItem(DuplicateCommand.INSTANCE));
-		add(new DynamicMenuItem(DeleteCommand.INSTANCE));
-		add(new DynamicMenuItem(SelectAllCommand.INSTANCE));
-		addSeparator();
-		add(new DynamicMenuItem(IncrementCommand.INSTANCE));
-		add(new DynamicMenuItem(DecrementCommand.INSTANCE));
-		add(new DynamicMenuItem(RotateEquipmentStateCommand.INSTANCE));
-		addSeparator();
-		add(new DynamicMenuItem(JumpToSearchCommand.INSTANCE));
-		addSeparator();
-		add(new DynamicMenuItem(RandomizeDescriptionCommand.INSTANCE));
-		add(new DynamicMenuItem(RandomizeNameCommand.FEMALE_INSTANCE));
-		add(new DynamicMenuItem(RandomizeNameCommand.MALE_INSTANCE));
-		addSeparator();
-		add(new DynamicCheckBoxMenuItem(AddNaturalPunchCommand.INSTANCE));
-		add(new DynamicCheckBoxMenuItem(AddNaturalKickCommand.INSTANCE));
-		add(new DynamicCheckBoxMenuItem(AddNaturalKickWithBootsCommand.INSTANCE));
+	@Override
+	public JMenu createMenu() {
+		JMenu menu = new JMenu(EDIT);
+		menu.setName(NAME);
+		menu.add(new DynamicMenuItem(UndoCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(RedoCommand.INSTANCE));
+		menu.addSeparator();
+		menu.add(new DynamicMenuItem(CutCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(CopyCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(PasteCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(DuplicateCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(DeleteCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(SelectAllCommand.INSTANCE));
+		menu.addSeparator();
+		menu.add(new DynamicMenuItem(IncrementCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(DecrementCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(RotateEquipmentStateCommand.INSTANCE));
+		menu.addSeparator();
+		menu.add(new DynamicMenuItem(JumpToSearchCommand.INSTANCE));
+		menu.addSeparator();
+		menu.add(new DynamicMenuItem(RandomizeDescriptionCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(RandomizeNameCommand.FEMALE_INSTANCE));
+		menu.add(new DynamicMenuItem(RandomizeNameCommand.MALE_INSTANCE));
+		menu.addSeparator();
+		menu.add(new DynamicCheckBoxMenuItem(AddNaturalPunchCommand.INSTANCE));
+		menu.add(new DynamicCheckBoxMenuItem(AddNaturalKickCommand.INSTANCE));
+		menu.add(new DynamicCheckBoxMenuItem(AddNaturalKickWithBootsCommand.INSTANCE));
 		if (!Platform.isMacintosh()) {
-			addSeparator();
-			add(new DynamicMenuItem(PreferencesCommand.INSTANCE));
+			menu.addSeparator();
+			menu.add(new DynamicMenuItem(PreferencesCommand.INSTANCE));
 		}
-		DynamicMenuEnabler.add(this);
+		DynamicMenuEnabler.add(menu);
+		return menu;
 	}
 }

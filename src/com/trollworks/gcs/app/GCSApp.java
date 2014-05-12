@@ -14,19 +14,19 @@ package com.trollworks.gcs.app;
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.common.ListCollectionThread;
 import com.trollworks.gcs.library.LibraryFile;
-import com.trollworks.gcs.menu.data.DataMenu;
-import com.trollworks.gcs.menu.edit.EditMenu;
-import com.trollworks.gcs.menu.file.FileMenu;
+import com.trollworks.gcs.menu.DataMenuProvider;
+import com.trollworks.gcs.menu.HelpMenuProvider;
+import com.trollworks.gcs.menu.edit.EditMenuProvider;
+import com.trollworks.gcs.menu.file.FileMenuProvider;
 import com.trollworks.gcs.menu.file.NewCharacterSheetCommand;
-import com.trollworks.gcs.menu.help.HelpMenu;
-import com.trollworks.gcs.menu.item.ItemMenu;
+import com.trollworks.gcs.menu.item.ItemMenuProvider;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.UpdateChecker;
 import com.trollworks.toolkit.ui.menu.StdMenuBar;
-import com.trollworks.toolkit.ui.menu.window.WindowMenu;
+import com.trollworks.toolkit.ui.menu.window.WindowMenuProvider;
 import com.trollworks.toolkit.ui.preferences.FontPreferences;
 import com.trollworks.toolkit.ui.preferences.MenuKeyPreferences;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
@@ -60,7 +60,6 @@ public class GCSApp extends App {
 		AppWindow.setDefaultWindowIcons(GCSImages.getAppIcons());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void configureApplication(CmdLine cmdLine) {
 		if (Platform.isWindows()) {
@@ -76,7 +75,7 @@ public class GCSApp extends App {
 
 		ListCollectionThread.get();
 
-		StdMenuBar.configure(FileMenu.class, EditMenu.class, DataMenu.class, ItemMenu.class, WindowMenu.class, HelpMenu.class);
+		StdMenuBar.configure(new FileMenuProvider(), new EditMenuProvider(), new DataMenuProvider(), new ItemMenuProvider(), new WindowMenuProvider(), new HelpMenuProvider());
 		SheetPreferences.initialize();
 		PreferencesWindow.addCategory(SheetPreferences.class);
 		PreferencesWindow.addCategory(FontPreferences.class);

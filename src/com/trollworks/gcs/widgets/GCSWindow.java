@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.widgets;
 
-import com.trollworks.gcs.menu.data.DataMenu;
+import com.trollworks.gcs.menu.DataMenuProvider;
 import com.trollworks.toolkit.ui.image.IconSet;
 import com.trollworks.toolkit.ui.menu.file.SignificantFrame;
 import com.trollworks.toolkit.ui.widget.AppWindow;
@@ -44,6 +44,6 @@ public class GCSWindow extends AppWindow implements SignificantFrame {
 
 	@Override
 	public void setTitle(String title) {
-		super.setTitle(DataMenu.filterTitle(title));
+		super.setTitle(DataMenuProvider.filterTitle(title));
 	}
 }

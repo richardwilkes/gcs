@@ -12,7 +12,7 @@
 package com.trollworks.gcs.common;
 
 import com.trollworks.gcs.library.LibraryFile;
-import com.trollworks.gcs.menu.data.DataMenu;
+import com.trollworks.gcs.menu.DataMenuProvider;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.toolkit.collections.Stack;
 import com.trollworks.toolkit.io.Log;
@@ -72,7 +72,7 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path> {
 	@Override
 	public void run() {
 		if (mRunning) {
-			DataMenu.update();
+			DataMenuProvider.update();
 		} else {
 			mRunning = true;
 			try {

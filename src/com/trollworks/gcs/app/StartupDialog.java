@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.app;
 
-import com.trollworks.gcs.menu.data.DataMenu;
+import com.trollworks.gcs.menu.DataMenuProvider;
 import com.trollworks.gcs.menu.file.NewCharacterSheetCommand;
 import com.trollworks.gcs.menu.file.NewCharacterTemplateCommand;
 import com.trollworks.gcs.menu.file.NewLibraryCommand;
@@ -117,7 +117,7 @@ public class StartupDialog extends JDialog implements WindowFocusListener, Actio
 			@Override
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				setText(DataMenu.filterTitle(PathUtils.getLeafName(((File) value).getName(), false)));
+				setText(DataMenuProvider.filterTitle(PathUtils.getLeafName(((File) value).getName(), false)));
 				setIcon(FileType.getIconsForFile((File) value).getIcon(16));
 				return this;
 			}
