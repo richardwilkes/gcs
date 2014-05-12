@@ -46,7 +46,6 @@
 	<property name="build_app_bundle" value="${dist_root}/${app_name}.app/Contents"/>
 	<property name="bundle_res" value="${build_app_bundle}/Resources"/>
 	<property name="java_bundle_dir" value="${build_app_bundle}/Java"/>
-	<property name="splash_path" value="com/trollworks/gcs/app/images/Splash.gif"/>
 	<property name="launcher_stub_src" value="com/trollworks/gcs/app/GCS.java"/>
 	<property name="icons" value="graphics/icons"/>
 
@@ -108,7 +107,6 @@
 			<manifest>
 				<attribute name="Class-Path" value="${toolkit} ${trove} ${iText} ${apple_stubs}"/>
 				<attribute name="Main-Class" value="com.trollworks.gcs.app.GCS"/>
-				<attribute name="SplashScreen-Image" value="${splash_path}"/>
 				<attribute name="bundle-name" value="${app_name}"/>
 				<attribute name="bundle-version" value="${version}"/>
 				<attribute name="bundle-license" value="Mozilla Public License 2.0"/>

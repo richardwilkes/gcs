@@ -82,9 +82,9 @@ public class GCSImages {
 		return Images.get("DefaultPortrait");
 	}
 
-	/** @return The splash image. */
-	public static final ToolkitIcon getSplash() {
-		return Images.get("Splash");
+	/** @return The 'about' image. */
+	public static final ToolkitIcon getAbout() {
+		return Images.get("About");
 	}
 
 	/** @return The application icons. */

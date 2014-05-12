@@ -115,7 +115,6 @@ public class GCSMain {
 		} else {
 			LaunchProxy.configure(cmdLine.getArgumentsAsFiles().toArray(new File[0]));
 			if (GraphicsUtilities.areGraphicsSafeToUse()) {
-				SplashScreenUpdater.update();
 				initialize();
 				GCSApp.INSTANCE.startup(cmdLine);
 			} else {
