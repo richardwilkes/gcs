@@ -13,10 +13,10 @@ package com.trollworks.gcs.prereq;
 
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
-import com.trollworks.toolkit.ui.widget.CommitEnforcer;
 import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.event.ActionEvent;
@@ -101,7 +101,7 @@ public class SpellPrereqEditor extends PrereqEditor {
 		if (CHANGE_TYPE.equals(command)) {
 			String type = TYPES[((JComboBox<?>) event.getSource()).getSelectedIndex()];
 			if (!prereq.getType().equals(type)) {
-				CommitEnforcer.forceFocusToAccept();
+				UIUtilities.forceFocusToAccept();
 				prereq.setType(type);
 				rebuild();
 			}

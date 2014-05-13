@@ -19,7 +19,6 @@ import com.trollworks.toolkit.ui.layout.Alignment;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
-import com.trollworks.toolkit.ui.widget.CommitEnforcer;
 import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
@@ -193,7 +192,7 @@ public class SkillDefaultEditor extends EditorPanel {
 			SkillDefaultType current = mDefault.getType();
 			SkillDefaultType value = (SkillDefaultType) ((JComboBox<?>) src).getSelectedItem();
 			if (!current.equals(value)) {
-				CommitEnforcer.forceFocusToAccept();
+				UIUtilities.forceFocusToAccept();
 				mDefault.setType(value);
 				rebuild();
 				notifyActionListeners();

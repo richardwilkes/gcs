@@ -13,12 +13,10 @@ package com.trollworks.gcs.widgets.outline;
 
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-
-
+import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.widget.ActionPanel;
-import com.trollworks.toolkit.ui.widget.CommitEnforcer;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 
 import java.awt.BorderLayout;
@@ -147,7 +145,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 	 * @return Whether anything was modified.
 	 */
 	public final boolean applyChanges() {
-		CommitEnforcer.forceFocusToAccept();
+		UIUtilities.forceFocusToAccept();
 		boolean modified = applyChangesSelf();
 		if (modified) {
 			mRow.getDataFile().setModified(true);

@@ -20,7 +20,6 @@ import com.trollworks.toolkit.ui.layout.FlexComponent;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.layout.LayoutSize;
-import com.trollworks.toolkit.ui.widget.CommitEnforcer;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.TextUtility;
@@ -164,7 +163,7 @@ public class Namer extends JPanel {
 	}
 
 	private void applyChanges() {
-		CommitEnforcer.forceFocusToAccept();
+		UIUtilities.forceFocusToAccept();
 		HashMap<String, String> map = new HashMap<>();
 		for (JTextField field : mFields) {
 			map.put(field.getName(), field.getText());

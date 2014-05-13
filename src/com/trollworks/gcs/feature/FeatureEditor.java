@@ -13,15 +13,12 @@ package com.trollworks.gcs.feature;
 
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.common.EditorPanel;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.ToolkitImage;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
-import com.trollworks.toolkit.ui.widget.CommitEnforcer;
 import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.utility.text.DoubleFormatter;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
@@ -207,7 +204,7 @@ public abstract class FeatureEditor extends EditorPanel {
 		} else if (CHANGE_BASE_TYPE.equals(command)) {
 			LAST_ITEM_TYPE = BASE_TYPES[mBaseTypeCombo.getSelectedIndex()];
 			if (!mFeature.getClass().equals(LAST_ITEM_TYPE)) {
-				CommitEnforcer.forceFocusToAccept();
+				UIUtilities.forceFocusToAccept();
 				try {
 					parent.add(create(mRow, (Feature) LAST_ITEM_TYPE.newInstance()), UIUtilities.getIndexOf(parent, this));
 				} catch (Exception exception) {
