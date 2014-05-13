@@ -77,9 +77,9 @@ public class GCSApp extends App {
 
 		StdMenuBar.configure(new FileMenuProvider(), new EditMenuProvider(), new DataMenuProvider(), new ItemMenuProvider(), new WindowMenuProvider(), new HelpMenuProvider());
 		SheetPreferences.initialize();
-		PreferencesWindow.addCategory(SheetPreferences.class);
-		PreferencesWindow.addCategory(FontPreferences.class);
-		PreferencesWindow.addCategory(MenuKeyPreferences.class);
+		PreferencesWindow.addCategory(SheetPreferences::new);
+		PreferencesWindow.addCategory(FontPreferences::new);
+		PreferencesWindow.addCategory(MenuKeyPreferences::new);
 	}
 
 	@Override
