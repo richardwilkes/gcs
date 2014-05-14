@@ -53,7 +53,7 @@ public class SkillsDockable extends LibraryDockable {
 
 	@Override
 	protected ListOutline createOutline() {
-		LibraryFile file = getLibraryFile();
+		LibraryFile file = getDataFile();
 		SkillList list = file.getSkillList();
 		list.addTarget(this, Skill.ID_CATEGORY);
 		return new SkillOutline(file, list.getModel());
@@ -61,6 +61,6 @@ public class SkillsDockable extends LibraryDockable {
 
 	@Override
 	public ListFile getList() {
-		return getLibraryFile().getSkillList();
+		return getDataFile().getSkillList();
 	}
 }

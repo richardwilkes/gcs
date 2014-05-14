@@ -53,7 +53,7 @@ public class SpellsDockable extends LibraryDockable {
 
 	@Override
 	protected ListOutline createOutline() {
-		LibraryFile file = getLibraryFile();
+		LibraryFile file = getDataFile();
 		SpellList list = file.getSpellList();
 		list.addTarget(this, Spell.ID_CATEGORY);
 		return new SpellOutline(file, list.getModel());
@@ -61,6 +61,6 @@ public class SpellsDockable extends LibraryDockable {
 
 	@Override
 	public ListFile getList() {
-		return getLibraryFile().getSpellList();
+		return getDataFile().getSpellList();
 	}
 }

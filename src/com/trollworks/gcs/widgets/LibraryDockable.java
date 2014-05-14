@@ -12,6 +12,7 @@
 package com.trollworks.gcs.widgets;
 
 import com.trollworks.gcs.advantage.Advantage;
+import com.trollworks.gcs.app.CommonDockable;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
@@ -19,17 +20,13 @@ import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.image.ToolkitImage;
-import com.trollworks.toolkit.ui.menu.file.Saveable;
-import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.ui.widget.Toolbar;
-import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowFilter;
 import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.notification.BatchNotifierTarget;
 
 import java.awt.BorderLayout;
@@ -37,7 +34,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.KeyboardFocusManager;
-import java.io.File;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
@@ -49,7 +45,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** A list from a library. */
-public abstract class LibraryDockable implements Dockable, RowFilter, DocumentListener, Saveable, BatchNotifierTarget, JumpToSearchTarget {
+public abstract class LibraryDockable extends CommonDockable implements RowFilter, DocumentListener, BatchNotifierTarget, JumpToSearchTarget {
 	@Localize("Enter text here to narrow the list to only those rows containing matching items")
 	private static String		SEARCH_FIELD_TOOLTIP;
 	@Localize("Any Category")
@@ -60,14 +56,11 @@ public abstract class LibraryDockable implements Dockable, RowFilter, DocumentLi
 	private static String		TOGGLE_ROWS_OPEN_TOOLTIP;
 	@Localize("Sets the width of each column to exactly fit its contents")
 	private static String		SIZE_COLUMNS_TO_FIT_TOOLTIP;
-	@Localize("An error occurred while trying to save the library.")
-	private static String		SAVE_ERROR;
 
 	static {
 		Localization.initialize();
 	}
 
-	private LibraryFile			mFile;
 	private JPanel				mContent;
 	private Toolbar				mToolbar;
 	private JTextField			mFilterField;
@@ -78,17 +71,12 @@ public abstract class LibraryDockable implements Dockable, RowFilter, DocumentLi
 
 	/** Creates a new {@link LibraryDockable}. */
 	public LibraryDockable(LibraryFile file) {
-		mFile = file;
-	}
-
-	/** @return The {@link LibraryFile}. */
-	public LibraryFile getLibraryFile() {
-		return mFile;
+		super(file);
 	}
 
 	@Override
-	public File getBackingFile() {
-		return mFile.getFile();
+	public LibraryFile getDataFile() {
+		return (LibraryFile) super.getDataFile();
 	}
 
 	/** @return The {@link Toolbar}. */
@@ -104,11 +92,6 @@ public abstract class LibraryDockable implements Dockable, RowFilter, DocumentLi
 	/** @return The {@link ListOutline}. */
 	public ListOutline getOutline() {
 		return mOutline;
-	}
-
-	@Override
-	public final String getTitleTooltip() {
-		return createTooltip(getTitle(), getBackingFile());
 	}
 
 	/**
@@ -129,6 +112,7 @@ public abstract class LibraryDockable implements Dockable, RowFilter, DocumentLi
 			OutlineModel outlineModel = mOutline.getModel();
 			outlineModel.applySortConfig(outlineModel.getSortConfig());
 			outlineModel.setRowFilter(this);
+			outlineModel.setLocked(true); // RAW: This should be determined, not just set
 			mContent = new JPanel(new BorderLayout());
 			mToolbar = new Toolbar();
 			createFilterField();
@@ -189,7 +173,7 @@ public abstract class LibraryDockable implements Dockable, RowFilter, DocumentLi
 	private void adjustCategoryCombo() {
 		mCategoryCombo.removeAllItems();
 		mCategoryCombo.addItem(CHOOSE_CATEGORY);
-		for (String category : mFile.getCategoriesFor(getList())) {
+		for (String category : getDataFile().getCategoriesFor(getList())) {
 			mCategoryCombo.addItem(category);
 		}
 		mCategoryCombo.setPreferredSize(null);
@@ -239,57 +223,9 @@ public abstract class LibraryDockable implements Dockable, RowFilter, DocumentLi
 		mOutline.reapplyRowFilter();
 	}
 
-	/**
-	 * Creates a HTML formatted tooltip with a title and a file path.
-	 *
-	 * @param title The title to use.
-	 * @param file The path to the file the data came from.
-	 * @return The HTML formatted tooltip text.
-	 */
-	public static String createTooltip(String title, File file) {
-		StringBuilder buffer = new StringBuilder();
-		buffer.append("<html><body><b>"); //$NON-NLS-1$
-		buffer.append(title);
-		buffer.append("</b><br><font size='-2'>"); //$NON-NLS-1$
-		buffer.append(file.getAbsolutePath());
-		buffer.append("</font></body></html>"); //$NON-NLS-1$
-		return buffer.toString();
-	}
-
-	@Override
-	public boolean isModified() {
-		return getLibraryFile().isModified();
-	}
-
-	@Override
-	public void addDataModifiedListener(DataModifiedListener listener) {
-		getLibraryFile().addDataModifiedListener(listener);
-	}
-
-	@Override
-	public void removeDataModifiedListener(DataModifiedListener listener) {
-		getLibraryFile().removeDataModifiedListener(listener);
-	}
-
 	@Override
 	public String[] getAllowedExtensions() {
 		return new String[] { LibraryFile.EXTENSION };
-	}
-
-	@Override
-	public String getPreferredSavePath() {
-		return PathUtils.getFullPath(getBackingFile());
-	}
-
-	@Override
-	public File[] saveTo(File file) {
-		if (mFile.save(file)) {
-			mFile.setFile(file);
-			getDockContainer().updateTitle(this);
-			return new File[] { file };
-		}
-		WindowUtils.showError(mContent, SAVE_ERROR);
-		return new File[0];
 	}
 
 	@Override

@@ -21,6 +21,7 @@ import com.trollworks.gcs.skill.SkillsDockable;
 import com.trollworks.gcs.spell.SpellsDockable;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.App;
+import com.trollworks.toolkit.ui.menu.edit.Undoable;
 import com.trollworks.toolkit.ui.menu.file.SignificantFrame;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.ui.widget.Toolbar;
@@ -29,6 +30,7 @@ import com.trollworks.toolkit.ui.widget.dock.DockContainer;
 import com.trollworks.toolkit.ui.widget.dock.DockLocation;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -79,6 +81,19 @@ public class MainWindow extends AppWindow implements SignificantFrame, JumpToSea
 			character = new GURPSCharacter();
 		}
 		mDock.dock(new SheetDockable(character), advantagesDockable, DockLocation.EAST);
+		restoreBounds();
+	}
+
+	@Override
+	public StdUndoManager getUndoManager() {
+		DockContainer dc = mDock.getFocusedDockContainer();
+		if (dc != null) {
+			Dockable dockable = dc.getCurrentDockable();
+			if (dockable instanceof Undoable) {
+				return ((Undoable) dockable).getUndoManager();
+			}
+		}
+		return super.getUndoManager();
 	}
 
 	@Override

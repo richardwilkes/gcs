@@ -11,16 +11,10 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.app.CommonDockable;
 import com.trollworks.gcs.app.GCSImages;
-import com.trollworks.gcs.widgets.LibraryDockable;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.ui.UIUtilities;
-import com.trollworks.toolkit.ui.menu.file.SaveCommand;
-import com.trollworks.toolkit.ui.menu.file.Saveable;
-import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
-import com.trollworks.toolkit.ui.widget.dock.DockCloseable;
-import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 
@@ -29,23 +23,16 @@ import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.Icon;
-import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 
 /** A list of advantages and disadvantages from a library. */
-public class SheetDockable implements Dockable, DockCloseable, Saveable {
-	@Localize("Save")
-	private static String		SAVE;
-	@Localize("Save changes to \"%s\"?")
-	private static String		SAVE_CHANGES;
+public class SheetDockable extends CommonDockable {
 	@Localize("An error occurred while trying to save the sheet as a PNG.")
 	private static String		SAVE_AS_PNG_ERROR;
 	@Localize("An error occurred while trying to save the sheet as a PDF.")
 	private static String		SAVE_AS_PDF_ERROR;
 	@Localize("An error occurred while trying to save the sheet as HTML.")
 	private static String		SAVE_AS_HTML_ERROR;
-	@Localize("An error occurred while trying to save the sheet.")
-	private static String		SAVE_ERROR;
 
 	static {
 		Localization.initialize();
@@ -59,14 +46,18 @@ public class SheetDockable implements Dockable, DockCloseable, Saveable {
 	public static final String	PDF_EXTENSION	= "pdf";	//$NON-NLS-1$
 	/** The HTML extension. */
 	public static final String	HTML_EXTENSION	= "html";	//$NON-NLS-1$
-	private GURPSCharacter		mCharacter;
 	private JScrollPane			mScroller;
 	private CharacterSheet		mSheet;
 	private PrerequisitesThread	mPrereqThread;
 
 	/** Creates a new {@link SheetDockable}. */
 	public SheetDockable(GURPSCharacter character) {
-		mCharacter = character;
+		super(character);
+	}
+
+	@Override
+	public GURPSCharacter getDataFile() {
+		return (GURPSCharacter) super.getDataFile();
 	}
 
 	@Override
@@ -82,18 +73,14 @@ public class SheetDockable implements Dockable, DockCloseable, Saveable {
 
 	@Override
 	public String getTitle() {
-		return PathUtils.getLeafName(mCharacter.getFile().getName(), false);
-	}
-
-	@Override
-	public String getTitleTooltip() {
-		return LibraryDockable.createTooltip(getTitle(), mCharacter.getFile());
+		return PathUtils.getLeafName(getBackingFile().getName(), false);
 	}
 
 	@Override
 	public JScrollPane getContent() {
 		if (mScroller == null) {
-			mSheet = new CharacterSheet(mCharacter);
+			GURPSCharacter dataFile = getDataFile();
+			mSheet = new CharacterSheet(dataFile);
 			mScroller = new JScrollPane(mSheet);
 			mScroller.setBorder(null);
 			mScroller.getViewport().setBackground(Color.LIGHT_GRAY);
@@ -101,38 +88,10 @@ public class SheetDockable implements Dockable, DockCloseable, Saveable {
 			mScroller.getViewport().addChangeListener(mSheet);
 			mPrereqThread = new PrerequisitesThread(mSheet);
 			mPrereqThread.start();
-			PrerequisitesThread.waitForProcessingToFinish(mCharacter);
-			mCharacter.setModified(false);
+			PrerequisitesThread.waitForProcessingToFinish(dataFile);
+			dataFile.setModified(false);
 		}
 		return mScroller;
-	}
-
-	@Override
-	public boolean attemptClose() {
-		UIUtilities.forceFocusToAccept();
-		if (mCharacter.isModified()) {
-			switch (JOptionPane.showConfirmDialog(mScroller, String.format(SAVE_CHANGES, getTitle()), SAVE, JOptionPane.YES_NO_CANCEL_OPTION)) {
-				case JOptionPane.CANCEL_OPTION:
-				case JOptionPane.CLOSED_OPTION:
-					return false;
-				case JOptionPane.YES_OPTION:
-					SaveCommand.save(this);
-					return !mCharacter.isModified();
-				default:
-					return true;
-			}
-		}
-		return true;
-	}
-
-	@Override
-	public File getBackingFile() {
-		return mCharacter.getFile();
-	}
-
-	@Override
-	public boolean isModified() {
-		return mCharacter.isModified();
 	}
 
 	@Override
@@ -142,7 +101,7 @@ public class SheetDockable implements Dockable, DockCloseable, Saveable {
 
 	@Override
 	public String getPreferredSavePath() {
-		String name = mCharacter.getDescription().getName();
+		String name = getDataFile().getDescription().getName();
 		if (name.length() == 0) {
 			name = getTitle();
 		}
@@ -170,24 +129,8 @@ public class SheetDockable implements Dockable, DockCloseable, Saveable {
 				WindowUtils.showError(mScroller, SAVE_AS_PDF_ERROR);
 			}
 		} else {
-			if (mCharacter.save(file)) {
-				result.add(file);
-				mCharacter.setFile(file);
-				getDockContainer().updateTitle(this);
-			} else {
-				WindowUtils.showError(mScroller, SAVE_ERROR);
-			}
+			return super.saveTo(file);
 		}
 		return result.toArray(new File[result.size()]);
-	}
-
-	@Override
-	public void addDataModifiedListener(DataModifiedListener listener) {
-		mCharacter.addDataModifiedListener(listener);
-	}
-
-	@Override
-	public void removeDataModifiedListener(DataModifiedListener listener) {
-		mCharacter.removeDataModifiedListener(listener);
 	}
 }
