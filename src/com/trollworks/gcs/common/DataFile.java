@@ -16,6 +16,7 @@ import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.IconSet;
+import com.trollworks.toolkit.ui.menu.edit.Undoable;
 import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.utility.Debug;
 import com.trollworks.toolkit.utility.PathUtils;
@@ -35,7 +36,7 @@ import java.util.ArrayList;
 import javax.swing.undo.UndoableEdit;
 
 /** A common super class for all data file-based model objects. */
-public abstract class DataFile {
+public abstract class DataFile implements Undoable {
 	/** The 'unique ID' attribute. */
 	public static final String				ATTRIBUTE_UNIQUE_ID		= "unique_id";			//$NON-NLS-1$
 	private File							mFile;
@@ -352,6 +353,7 @@ public abstract class DataFile {
 	}
 
 	/** @return The {@link StdUndoManager} to use. May be <code>null</code>. */
+	@Override
 	public final StdUndoManager getUndoManager() {
 		return mUndoManager;
 	}
