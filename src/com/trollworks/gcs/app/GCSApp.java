@@ -87,8 +87,11 @@ public class GCSApp extends App {
 		if (finalChance) {
 			NewCharacterSheetCommand.newSheet();
 		} else {
-			StartupDialog sd = new StartupDialog();
-			sd.setVisible(true);
+			MainWindow window = new MainWindow();
+			window.pack();
+			window.setVisible(true);
+			//			StartupDialog sd = new StartupDialog();
+			//			sd.setVisible(true);
 		}
 	}
 
