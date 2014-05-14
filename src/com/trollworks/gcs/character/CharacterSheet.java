@@ -227,7 +227,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		}
 
 		Container window = getTopLevelAncestor();
-		if (window != null) {
+		if (window instanceof SheetWindow) {
 			((SheetWindow) window).jumpToSearchField();
 		}
 
@@ -1027,7 +1027,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				templateUsed.append(PathUtils.getFullPath(template));
 			}
 			try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(template)));
-							BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
+				BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
 				while (in.read(buffer) != -1) {
 					char ch = buffer[0];
 					if (lookForKeyMarker) {
