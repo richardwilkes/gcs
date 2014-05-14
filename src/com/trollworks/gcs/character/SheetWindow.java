@@ -42,6 +42,7 @@ import com.trollworks.toolkit.utility.PathUtils;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Graphics;
+import java.awt.KeyboardFocusManager;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.io.File;
@@ -342,6 +343,11 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 	@Override
 	public ListCellRenderer<Object> getSearchRenderer() {
 		return new RowItemRenderer();
+	}
+
+	@Override
+	public boolean isJumpToSearchAvailable() {
+		return mSearch.isEnabled() && mSearch != KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
 	}
 
 	@Override

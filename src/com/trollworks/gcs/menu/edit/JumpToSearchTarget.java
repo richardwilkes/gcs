@@ -13,6 +13,12 @@ package com.trollworks.gcs.menu.edit;
 
 /** Objects which contain a search field should implement this method. */
 public interface JumpToSearchTarget {
+	/**
+	 * @return <code>true</code> if issuing the {@link #jumpToSearchField()} command will do
+	 *         anything.
+	 */
+	boolean isJumpToSearchAvailable();
+
 	/** Cause the search field to become focused. */
 	void jumpToSearchField();
 }

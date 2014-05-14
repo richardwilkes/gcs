@@ -16,6 +16,7 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.equipment.EquipmentDockable;
 import com.trollworks.gcs.library.LibraryFile;
+import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.skill.SkillsDockable;
 import com.trollworks.gcs.spell.SpellsDockable;
 import com.trollworks.toolkit.annotation.Localize;
@@ -26,6 +27,7 @@ import com.trollworks.toolkit.ui.widget.Toolbar;
 import com.trollworks.toolkit.ui.widget.dock.Dock;
 import com.trollworks.toolkit.ui.widget.dock.DockContainer;
 import com.trollworks.toolkit.ui.widget.dock.DockLocation;
+import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.BorderLayout;
@@ -34,7 +36,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /** The main GCS window. */
-public class MainWindow extends AppWindow implements SignificantFrame {
+public class MainWindow extends AppWindow implements SignificantFrame, JumpToSearchTarget {
 	@Localize("Workspace")
 	private static String	TITLE;
 
@@ -77,5 +79,28 @@ public class MainWindow extends AppWindow implements SignificantFrame {
 			character = new GURPSCharacter();
 		}
 		mDock.dock(new SheetDockable(character), advantagesDockable, DockLocation.EAST);
+	}
+
+	@Override
+	public boolean isJumpToSearchAvailable() {
+		DockContainer dc = mDock.getFocusedDockContainer();
+		if (dc != null) {
+			Dockable dockable = dc.getCurrentDockable();
+			if (dockable instanceof JumpToSearchTarget) {
+				return ((JumpToSearchTarget) dockable).isJumpToSearchAvailable();
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public void jumpToSearchField() {
+		DockContainer dc = mDock.getFocusedDockContainer();
+		if (dc != null) {
+			Dockable dockable = dc.getCurrentDockable();
+			if (dockable instanceof JumpToSearchTarget) {
+				((JumpToSearchTarget) dockable).jumpToSearchField();
+			}
+		}
 	}
 }

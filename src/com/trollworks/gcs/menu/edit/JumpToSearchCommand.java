@@ -12,10 +12,8 @@
 package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.toolkit.ui.menu.Command;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
@@ -27,20 +25,17 @@ import javax.swing.JMenuItem;
 /** Provides the "Jump To Search" command. */
 public class JumpToSearchCommand extends Command {
 	@Localize("Jump To Search")
-	private static String JUMP_TO_SEARCH;
+	private static String					JUMP_TO_SEARCH;
 
 	static {
 		Localization.initialize();
 	}
 
-	/** The action command this command will issue. */
-	public static final String				CMD_JUMP_TO_SEARCH	= "JumpToSearch";				//$NON-NLS-1$
-
 	/** The singleton {@link JumpToSearchCommand}. */
-	public static final JumpToSearchCommand	INSTANCE			= new JumpToSearchCommand();
+	public static final JumpToSearchCommand	INSTANCE	= new JumpToSearchCommand();
 
 	private JumpToSearchCommand() {
-		super(JUMP_TO_SEARCH, CMD_JUMP_TO_SEARCH, KeyEvent.VK_J);
+		super(JUMP_TO_SEARCH, null, KeyEvent.VK_J);
 	}
 
 	@Override
@@ -50,7 +45,7 @@ public class JumpToSearchCommand extends Command {
 		if (!(focus instanceof JumpToSearchTarget)) {
 			focus = mgr.getActiveWindow();
 		}
-		setEnabled(focus instanceof JumpToSearchTarget);
+		setEnabled(focus instanceof JumpToSearchTarget && ((JumpToSearchTarget) focus).isJumpToSearchAvailable());
 	}
 
 	@Override

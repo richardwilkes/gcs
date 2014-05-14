@@ -50,6 +50,7 @@ import com.trollworks.toolkit.utility.notification.BatchNotifierTarget;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -467,6 +468,11 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 			return mFile.getEquipmentList();
 		}
 		return mFile.getAdvantageList();
+	}
+
+	@Override
+	public boolean isJumpToSearchAvailable() {
+		return mFilterField.isEnabled() && mFilterField != KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
 	}
 
 	@Override

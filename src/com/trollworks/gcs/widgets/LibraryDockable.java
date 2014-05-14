@@ -11,8 +11,10 @@
 
 package com.trollworks.gcs.widgets;
 
+import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
+import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
@@ -28,11 +30,13 @@ import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowFilter;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
+import com.trollworks.toolkit.utility.notification.BatchNotifierTarget;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.KeyboardFocusManager;
 import java.io.File;
 
 import javax.swing.DefaultListCellRenderer;
@@ -45,7 +49,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** A list from a library. */
-public abstract class LibraryDockable implements Dockable, RowFilter, DocumentListener, Saveable {
+public abstract class LibraryDockable implements Dockable, RowFilter, DocumentListener, Saveable, BatchNotifierTarget, JumpToSearchTarget {
 	@Localize("Enter text here to narrow the list to only those rows containing matching items")
 	private static String		SEARCH_FIELD_TOOLTIP;
 	@Localize("Any Category")
@@ -286,5 +290,39 @@ public abstract class LibraryDockable implements Dockable, RowFilter, DocumentLi
 		}
 		WindowUtils.showError(mContent, SAVE_ERROR);
 		return new File[0];
+	}
+
+	@Override
+	public int getNotificationPriority() {
+		return 0;
+	}
+
+	@Override
+	public void enterBatchMode() {
+		// Not needed.
+	}
+
+	@Override
+	public void leaveBatchMode() {
+		// Not needed.
+	}
+
+	@Override
+	public void handleNotification(Object producer, String name, Object data) {
+		if (Advantage.ID_TYPE.equals(name)) {
+			getOutline().repaint();
+		} else {
+			adjustCategoryCombo();
+		}
+	}
+
+	@Override
+	public boolean isJumpToSearchAvailable() {
+		return mFilterField.isEnabled() && mFilterField != KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
+	}
+
+	@Override
+	public void jumpToSearchField() {
+		mFilterField.requestFocusInWindow();
 	}
 }

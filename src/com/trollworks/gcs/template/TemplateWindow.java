@@ -42,6 +42,7 @@ import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.notification.NotifierTarget;
 
 import java.awt.EventQueue;
+import java.awt.KeyboardFocusManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -315,6 +316,11 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 	@Override
 	public ListCellRenderer<Object> getSearchRenderer() {
 		return new RowItemRenderer();
+	}
+
+	@Override
+	public boolean isJumpToSearchAvailable() {
+		return mSearch.isEnabled() && mSearch != KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
 	}
 
 	@Override

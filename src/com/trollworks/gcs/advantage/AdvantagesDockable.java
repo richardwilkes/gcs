@@ -54,7 +54,10 @@ public class AdvantagesDockable extends LibraryDockable {
 	@Override
 	protected ListOutline createOutline() {
 		LibraryFile file = getLibraryFile();
-		return new AdvantageOutline(file, file.getAdvantageList().getModel());
+		AdvantageList list = file.getAdvantageList();
+		list.addTarget(this, Advantage.ID_TYPE);
+		list.addTarget(this, Advantage.ID_CATEGORY);
+		return new AdvantageOutline(file, list.getModel());
 	}
 
 	@Override

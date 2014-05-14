@@ -54,7 +54,9 @@ public class SpellsDockable extends LibraryDockable {
 	@Override
 	protected ListOutline createOutline() {
 		LibraryFile file = getLibraryFile();
-		return new SpellOutline(file, file.getSpellList().getModel());
+		SpellList list = file.getSpellList();
+		list.addTarget(this, Spell.ID_CATEGORY);
+		return new SpellOutline(file, list.getModel());
 	}
 
 	@Override
