@@ -17,13 +17,17 @@ import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.image.ToolkitImage;
+import com.trollworks.toolkit.ui.menu.file.Saveable;
+import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.ui.widget.Toolbar;
+import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowFilter;
 import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.PathUtils;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -41,7 +45,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** A list from a library. */
-public abstract class LibraryDockable implements Dockable, RowFilter, DocumentListener {
+public abstract class LibraryDockable implements Dockable, RowFilter, DocumentListener, Saveable {
 	@Localize("Enter text here to narrow the list to only those rows containing matching items")
 	private static String		SEARCH_FIELD_TOOLTIP;
 	@Localize("Any Category")
@@ -52,6 +56,8 @@ public abstract class LibraryDockable implements Dockable, RowFilter, DocumentLi
 	private static String		TOGGLE_ROWS_OPEN_TOOLTIP;
 	@Localize("Sets the width of each column to exactly fit its contents")
 	private static String		SIZE_COLUMNS_TO_FIT_TOOLTIP;
+	@Localize("An error occurred while trying to save the library.")
+	private static String		SAVE_ERROR;
 
 	static {
 		Localization.initialize();
@@ -72,8 +78,13 @@ public abstract class LibraryDockable implements Dockable, RowFilter, DocumentLi
 	}
 
 	/** @return The {@link LibraryFile}. */
-	public LibraryFile getFile() {
+	public LibraryFile getLibraryFile() {
 		return mFile;
+	}
+
+	@Override
+	public File getBackingFile() {
+		return mFile.getFile();
 	}
 
 	/** @return The {@link Toolbar}. */
@@ -93,7 +104,7 @@ public abstract class LibraryDockable implements Dockable, RowFilter, DocumentLi
 
 	@Override
 	public final String getTitleTooltip() {
-		return createTooltip(getTitle(), getFile().getFile());
+		return createTooltip(getTitle(), getBackingFile());
 	}
 
 	/**
@@ -128,6 +139,7 @@ public abstract class LibraryDockable implements Dockable, RowFilter, DocumentLi
 			mToolbar.add(new IconButton(ToolkitImage.getSizeToFitIcon(), SIZE_COLUMNS_TO_FIT_TOOLTIP, () -> mOutline.sizeColumnsToFit()));
 			mContent.add(mToolbar, BorderLayout.NORTH);
 			mScroller = new JScrollPane(mOutline);
+			mScroller.setBorder(null);
 			mScroller.setColumnHeaderView(mOutline.getHeaderPanel());
 			mContent.add(mScroller, BorderLayout.CENTER);
 		}
@@ -238,5 +250,41 @@ public abstract class LibraryDockable implements Dockable, RowFilter, DocumentLi
 		buffer.append(file.getAbsolutePath());
 		buffer.append("</font></body></html>"); //$NON-NLS-1$
 		return buffer.toString();
+	}
+
+	@Override
+	public boolean isModified() {
+		return getLibraryFile().isModified();
+	}
+
+	@Override
+	public void addDataModifiedListener(DataModifiedListener listener) {
+		getLibraryFile().addDataModifiedListener(listener);
+	}
+
+	@Override
+	public void removeDataModifiedListener(DataModifiedListener listener) {
+		getLibraryFile().removeDataModifiedListener(listener);
+	}
+
+	@Override
+	public String[] getAllowedExtensions() {
+		return new String[] { LibraryFile.EXTENSION };
+	}
+
+	@Override
+	public String getPreferredSavePath() {
+		return PathUtils.getFullPath(getBackingFile());
+	}
+
+	@Override
+	public File[] saveTo(File file) {
+		if (mFile.save(file)) {
+			mFile.setFile(file);
+			getDockContainer().updateTitle(this);
+			return new File[] { file };
+		}
+		WindowUtils.showError(mContent, SAVE_ERROR);
+		return new File[0];
 	}
 }

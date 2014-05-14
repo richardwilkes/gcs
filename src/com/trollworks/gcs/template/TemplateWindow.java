@@ -29,6 +29,7 @@ import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.menu.file.Saveable;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.ui.widget.BaseWindow;
+import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.ui.widget.ModifiedMarker;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
@@ -447,5 +448,15 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 	@Override
 	public int getNotificationPriority() {
 		return 0;
+	}
+
+	@Override
+	public void addDataModifiedListener(DataModifiedListener listener) {
+		mTemplate.addDataModifiedListener(listener);
+	}
+
+	@Override
+	public void removeDataModifiedListener(DataModifiedListener listener) {
+		mTemplate.removeDataModifiedListener(listener);
 	}
 }

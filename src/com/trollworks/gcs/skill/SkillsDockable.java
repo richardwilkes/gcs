@@ -53,12 +53,12 @@ public class SkillsDockable extends LibraryDockable {
 
 	@Override
 	protected ListOutline createOutline() {
-		LibraryFile file = getFile();
+		LibraryFile file = getLibraryFile();
 		return new SkillOutline(file, file.getSkillList().getModel());
 	}
 
 	@Override
 	public ListFile getList() {
-		return getFile().getSkillList();
+		return getLibraryFile().getSkillList();
 	}
 }

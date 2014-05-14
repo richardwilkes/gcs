@@ -53,12 +53,12 @@ public class EquipmentDockable extends LibraryDockable {
 
 	@Override
 	protected ListOutline createOutline() {
-		LibraryFile file = getFile();
+		LibraryFile file = getLibraryFile();
 		return new EquipmentOutline(file, file.getEquipmentList().getModel());
 	}
 
 	@Override
 	public ListFile getList() {
-		return getFile().getEquipmentList();
+		return getLibraryFile().getEquipmentList();
 	}
 }

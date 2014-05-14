@@ -17,6 +17,7 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.menu.file.SaveCommand;
 import com.trollworks.toolkit.ui.menu.file.Saveable;
+import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.ui.widget.dock.DockCloseable;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
@@ -94,6 +95,7 @@ public class SheetDockable implements Dockable, DockCloseable, Saveable {
 		if (mScroller == null) {
 			mSheet = new CharacterSheet(mCharacter);
 			mScroller = new JScrollPane(mSheet);
+			mScroller.setBorder(null);
 			mScroller.getViewport().setBackground(Color.LIGHT_GRAY);
 			mSheet.rebuild();
 			mScroller.getViewport().addChangeListener(mSheet);
@@ -140,11 +142,11 @@ public class SheetDockable implements Dockable, DockCloseable, Saveable {
 
 	@Override
 	public String getPreferredSavePath() {
-		String path = mCharacter.getDescription().getName();
-		if (path.length() == 0) {
-			path = getTitle();
+		String name = mCharacter.getDescription().getName();
+		if (name.length() == 0) {
+			name = getTitle();
 		}
-		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getBackingFile())), path);
+		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getBackingFile())), name);
 	}
 
 	@Override
@@ -177,5 +179,15 @@ public class SheetDockable implements Dockable, DockCloseable, Saveable {
 			}
 		}
 		return result.toArray(new File[result.size()]);
+	}
+
+	@Override
+	public void addDataModifiedListener(DataModifiedListener listener) {
+		mCharacter.addDataModifiedListener(listener);
+	}
+
+	@Override
+	public void removeDataModifiedListener(DataModifiedListener listener) {
+		mCharacter.removeDataModifiedListener(listener);
 	}
 }

@@ -35,6 +35,7 @@ import com.trollworks.toolkit.ui.layout.FlexColumn;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.menu.file.Saveable;
 import com.trollworks.toolkit.ui.widget.BaseWindow;
+import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.ui.widget.ModifiedMarker;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.ui.widget.outline.OutlineHeader;
@@ -564,5 +565,15 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	@Override
 	public int getNotificationPriority() {
 		return 0;
+	}
+
+	@Override
+	public void addDataModifiedListener(DataModifiedListener listener) {
+		mFile.addDataModifiedListener(listener);
+	}
+
+	@Override
+	public void removeDataModifiedListener(DataModifiedListener listener) {
+		mFile.removeDataModifiedListener(listener);
 	}
 }

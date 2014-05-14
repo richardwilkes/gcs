@@ -29,6 +29,7 @@ import com.trollworks.toolkit.ui.menu.file.Saveable;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.ui.widget.BaseWindow;
+import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.ui.widget.ModifiedMarker;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
@@ -501,5 +502,15 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 			}
 		}
 		return result.toArray(new File[result.size()]);
+	}
+
+	@Override
+	public void addDataModifiedListener(DataModifiedListener listener) {
+		mCharacter.addDataModifiedListener(listener);
+	}
+
+	@Override
+	public void removeDataModifiedListener(DataModifiedListener listener) {
+		mCharacter.removeDataModifiedListener(listener);
 	}
 }
