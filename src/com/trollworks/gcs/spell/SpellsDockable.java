@@ -11,48 +11,25 @@
 
 package com.trollworks.gcs.spell;
 
-import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryDockable;
-import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.widgets.outline.ListOutline;
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
 
 /** A list of spells from a library. */
 public class SpellsDockable extends LibraryDockable {
-	@Localize("Spells")
-	private static String	TITLE;
-
-	static {
-		Localization.initialize();
-	}
-
 	/** Creates a new {@link SpellsDockable}. */
-	public SpellsDockable(LibraryFile file) {
-		super(file);
+	public SpellsDockable(SpellList list) {
+		super(list);
 	}
 
 	@Override
-	public String getDescriptor() {
-		// RAW: Implement
-		return null;
-	}
-
-	@Override
-	public String getTitle() {
-		return TITLE;
+	public SpellList getDataFile() {
+		return (SpellList) super.getDataFile();
 	}
 
 	@Override
 	protected ListOutline createOutline() {
-		LibraryFile file = getDataFile();
-		SpellList list = file.getSpellList();
+		SpellList list = getDataFile();
 		list.addTarget(this, Spell.ID_CATEGORY);
-		return new SpellOutline(file, list.getModel());
-	}
-
-	@Override
-	public ListFile getList() {
-		return getDataFile().getSpellList();
+		return new SpellOutline(list, list.getModel());
 	}
 }

@@ -338,7 +338,6 @@ public class GURPSCharacter extends DataFile {
 	public GURPSCharacter() {
 		super();
 		characterInitialize(true);
-		initialize();
 		calculateAll();
 	}
 
@@ -350,8 +349,8 @@ public class GURPSCharacter extends DataFile {
 	 *             sheet.
 	 */
 	public GURPSCharacter(File file) throws IOException {
-		super(file);
-		initialize();
+		super();
+		load(file);
 	}
 
 	private void characterInitialize(boolean full) {

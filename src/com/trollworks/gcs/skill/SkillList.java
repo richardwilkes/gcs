@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.skill;
 
+import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
@@ -24,8 +25,10 @@ import java.io.IOException;
 public class SkillList extends ListFile {
 	/** The current version. */
 	public static final int		CURRENT_VERSION	= 1;
-	/** The XML tag for Skill lists. */
+	/** The XML tag for {@link SkillList}s. */
 	public static final String	TAG_ROOT		= "skill_list"; //$NON-NLS-1$
+	/** The extension for {@link SkillList}s. */
+	public static final String	EXTENSION		= "skl";		//$NON-NLS-1$
 
 	@Override
 	public int getXMLTagVersion() {
@@ -39,7 +42,8 @@ public class SkillList extends ListFile {
 
 	@Override
 	public IconSet getFileIcons() {
-		return null;
+		// RAW: Need real icons
+		return GCSImages.getLibraryIcons();
 	}
 
 	@Override

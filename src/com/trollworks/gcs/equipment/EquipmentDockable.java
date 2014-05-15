@@ -11,48 +11,25 @@
 
 package com.trollworks.gcs.equipment;
 
-import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryDockable;
-import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.widgets.outline.ListOutline;
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
 
 /** A list of equipment from a library. */
 public class EquipmentDockable extends LibraryDockable {
-	@Localize("Equipment")
-	private static String	TITLE;
-
-	static {
-		Localization.initialize();
-	}
-
 	/** Creates a new {@link EquipmentDockable}. */
-	public EquipmentDockable(LibraryFile file) {
-		super(file);
+	public EquipmentDockable(EquipmentList list) {
+		super(list);
 	}
 
 	@Override
-	public String getDescriptor() {
-		// RAW: Implement
-		return null;
-	}
-
-	@Override
-	public String getTitle() {
-		return TITLE;
+	public EquipmentList getDataFile() {
+		return (EquipmentList) super.getDataFile();
 	}
 
 	@Override
 	protected ListOutline createOutline() {
-		LibraryFile file = getDataFile();
-		EquipmentList list = file.getEquipmentList();
+		EquipmentList list = getDataFile();
 		list.addTarget(this, Equipment.ID_CATEGORY);
-		return new EquipmentOutline(file, list.getModel());
-	}
-
-	@Override
-	public ListFile getList() {
-		return getDataFile().getEquipmentList();
+		return new EquipmentOutline(list, list.getModel());
 	}
 }

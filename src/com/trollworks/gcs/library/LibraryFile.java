@@ -14,12 +14,10 @@ package com.trollworks.gcs.library;
 import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.common.DataFile;
-import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.spell.SpellList;
-import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
@@ -27,7 +25,6 @@ import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.IconSet;
 import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
-import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 
@@ -35,7 +32,6 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.TreeSet;
 
 /** Holds the contents of a library file. */
 public class LibraryFile extends DataFile implements DataModifiedListener {
@@ -63,7 +59,6 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 	public LibraryFile() {
 		super();
 		setup();
-		initialize();
 	}
 
 	/**
@@ -73,8 +68,8 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 	 * @throws IOException if the data cannot be read or the file doesn't contain valid information.
 	 */
 	public LibraryFile(final File file) throws IOException {
-		super(file, new LoadState());
-		initialize();
+		this();
+		load(file);
 		if (mImported) {
 			mSuggestedName = PathUtils.getLeafName(file.getName(), false);
 			setFile(null);
@@ -191,29 +186,6 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 	/** @return The {@link EquipmentList}. */
 	public EquipmentList getEquipmentList() {
 		return mEquipment;
-	}
-
-	/**
-	 * @param file The {@link ListFile} to process.
-	 * @return The set of categories for the specified {@link ListFile}.
-	 */
-	public TreeSet<String> getCategoriesFor(ListFile file) {
-		TreeSet<String> set = new TreeSet<>();
-		for (Row row : file.getTopLevelRows()) {
-			processRowForCategories(row, set);
-		}
-		return set;
-	}
-
-	private void processRowForCategories(Row row, TreeSet<String> set) {
-		if (row instanceof ListRow) {
-			set.addAll(((ListRow) row).getCategories());
-		}
-		if (row.hasChildren()) {
-			for (Row child : row.getChildren()) {
-				processRowForCategories(child, set);
-			}
-		}
 	}
 
 	@Override

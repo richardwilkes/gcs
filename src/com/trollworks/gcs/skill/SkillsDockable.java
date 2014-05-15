@@ -11,48 +11,25 @@
 
 package com.trollworks.gcs.skill;
 
-import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryDockable;
-import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.widgets.outline.ListOutline;
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
 
 /** A list of skills from a library. */
 public class SkillsDockable extends LibraryDockable {
-	@Localize("Skills")
-	private static String	TITLE;
-
-	static {
-		Localization.initialize();
-	}
-
 	/** Creates a new {@link SkillsDockable}. */
-	public SkillsDockable(LibraryFile file) {
-		super(file);
+	public SkillsDockable(SkillList list) {
+		super(list);
 	}
 
 	@Override
-	public String getDescriptor() {
-		// RAW: Implement
-		return null;
-	}
-
-	@Override
-	public String getTitle() {
-		return TITLE;
+	public SkillList getDataFile() {
+		return (SkillList) super.getDataFile();
 	}
 
 	@Override
 	protected ListOutline createOutline() {
-		LibraryFile file = getDataFile();
-		SkillList list = file.getSkillList();
+		SkillList list = getDataFile();
 		list.addTarget(this, Skill.ID_CATEGORY);
-		return new SkillOutline(file, list.getModel());
-	}
-
-	@Override
-	public ListFile getList() {
-		return getDataFile().getSkillList();
+		return new SkillOutline(list, list.getModel());
 	}
 }

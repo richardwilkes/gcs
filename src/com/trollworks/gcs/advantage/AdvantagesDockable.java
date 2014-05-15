@@ -11,49 +11,26 @@
 
 package com.trollworks.gcs.advantage;
 
-import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryDockable;
-import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.widgets.outline.ListOutline;
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
 
 /** A list of advantages and disadvantages from a library. */
 public class AdvantagesDockable extends LibraryDockable {
-	@Localize("Advantages")
-	private static String	TITLE;
-
-	static {
-		Localization.initialize();
-	}
-
 	/** Creates a new {@link AdvantagesDockable}. */
-	public AdvantagesDockable(LibraryFile file) {
-		super(file);
+	public AdvantagesDockable(AdvantageList list) {
+		super(list);
 	}
 
 	@Override
-	public String getDescriptor() {
-		// RAW: Implement
-		return null;
-	}
-
-	@Override
-	public String getTitle() {
-		return TITLE;
+	public AdvantageList getDataFile() {
+		return (AdvantageList) super.getDataFile();
 	}
 
 	@Override
 	protected ListOutline createOutline() {
-		LibraryFile file = getDataFile();
-		AdvantageList list = file.getAdvantageList();
+		AdvantageList list = getDataFile();
 		list.addTarget(this, Advantage.ID_TYPE);
 		list.addTarget(this, Advantage.ID_CATEGORY);
-		return new AdvantageOutline(file, list.getModel());
-	}
-
-	@Override
-	public ListFile getList() {
-		return getDataFile().getAdvantageList();
+		return new AdvantageOutline(list, list.getModel());
 	}
 }

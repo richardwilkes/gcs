@@ -69,13 +69,18 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 	private ListOutline			mOutline;
 
 	/** Creates a new {@link LibraryDockable}. */
-	public LibraryDockable(LibraryFile file) {
+	public LibraryDockable(ListFile file) {
 		super(file);
 	}
 
 	@Override
-	public LibraryFile getDataFile() {
-		return (LibraryFile) super.getDataFile();
+	public ListFile getDataFile() {
+		return (ListFile) super.getDataFile();
+	}
+
+	@Override
+	public String getDescriptor() {
+		return getDataFile().getFile().getAbsolutePath();
 	}
 
 	/** @return The {@link Toolbar}. */
@@ -99,9 +104,6 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 	 * @return The newly created {@link ListOutline}.
 	 */
 	protected abstract ListOutline createOutline();
-
-	/** @return The {@link ListFile} this {@link Dockable} is operating on. */
-	public abstract ListFile getList();
 
 	@Override
 	public JPanel getContent() {
@@ -172,7 +174,7 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 	private void adjustCategoryCombo() {
 		mCategoryCombo.removeAllItems();
 		mCategoryCombo.addItem(CHOOSE_CATEGORY);
-		for (String category : getDataFile().getCategoriesFor(getList())) {
+		for (String category : getDataFile().getCategories()) {
 			mCategoryCombo.addItem(category);
 		}
 		mCategoryCombo.setPreferredSize(null);

@@ -46,57 +46,40 @@ public abstract class DataFile implements Undoable {
 	private StdUndoManager					mUndoManager;
 	private ArrayList<DataModifiedListener>	mDataModifiedListeners	= new ArrayList<>();
 
-	/** Creates a new data file object. */
+	/** Creates a new {@link DataFile}. */
 	protected DataFile() {
 		mUniqueID = new UniqueID();
 		mNotifier = new Notifier();
 	}
 
-	/**
-	 * Creates a new data file object from the specified file.
-	 *
-	 * @param file The file to load the data from.
-	 * @throws IOException if the data cannot be read or the file doesn't contain valid information.
-	 */
-	protected DataFile(File file) throws IOException {
-		this(file, new LoadState());
-	}
-
-	/**
-	 * Creates a new data file object from the specified file.
-	 *
-	 * @param file The file to load the data from.
-	 * @param state The {@link LoadState} to use.
-	 * @throws IOException if the data cannot be read or the file doesn't contain valid information.
-	 */
-	protected DataFile(File file, LoadState state) throws IOException {
+	/** @param file The file to load. */
+	public void load(File file) throws IOException {
 		setFile(file);
-		mNotifier = new Notifier();
-		try (FileReader fileReader = new FileReader(file);
-			XMLReader reader = new XMLReader(fileReader)) {
-			XMLNodeType type = reader.next();
-			boolean found = false;
-
-			while (type != XMLNodeType.END_DOCUMENT) {
-				if (type == XMLNodeType.START_TAG) {
-					String name = reader.getName();
-					if (matchesRootTag(name)) {
-						if (!found) {
-							found = true;
-							load(reader, state);
+		try (FileReader fileReader = new FileReader(file)) {
+			try (XMLReader reader = new XMLReader(fileReader)) {
+				XMLNodeType type = reader.next();
+				boolean found = false;
+				while (type != XMLNodeType.END_DOCUMENT) {
+					if (type == XMLNodeType.START_TAG) {
+						String name = reader.getName();
+						if (matchesRootTag(name)) {
+							if (!found) {
+								found = true;
+								load(reader, new LoadState());
+							} else {
+								throw new IOException();
+							}
 						} else {
-							throw new IOException();
+							reader.skipTag(name);
 						}
+						type = reader.getType();
 					} else {
-						reader.skipTag(name);
+						type = reader.next();
 					}
-					type = reader.getType();
-				} else {
-					type = reader.next();
 				}
 			}
 		}
-		setModified(false);
+		mModified = false;
 	}
 
 	/**
@@ -203,13 +186,6 @@ public abstract class DataFile implements Undoable {
 
 	/** @return The icons representing this file, at various resolutions. */
 	public abstract IconSet getFileIcons();
-
-	/**
-	 * Sub-classes must call this method prior to returning from their constructors.
-	 */
-	protected void initialize() {
-		setModified(false);
-	}
 
 	/** @return The file associated with this data file. */
 	public File getFile() {

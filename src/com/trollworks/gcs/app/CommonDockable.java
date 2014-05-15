@@ -120,6 +120,11 @@ public abstract class CommonDockable implements Dockable, DockCloseable, Saveabl
 	}
 
 	@Override
+	public String getTitle() {
+		return PathUtils.getLeafName(getBackingFile().getName(), false);
+	}
+
+	@Override
 	public Icon getTitleIcon() {
 		return getDataFile().getFileIcons().getIcon(16);
 	}

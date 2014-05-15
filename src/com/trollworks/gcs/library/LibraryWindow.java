@@ -311,7 +311,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	private void adjustCategoryCombo() {
 		mCategoryCombo.removeAllItems();
 		mCategoryCombo.addItem(CHOOSE_CATEGORY);
-		for (String category : mFile.getCategoriesFor(getListFile())) {
+		for (String category : getListFile().getCategories()) {
 			mCategoryCombo.addItem(category);
 		}
 		mCategoryCombo.setPreferredSize(null);

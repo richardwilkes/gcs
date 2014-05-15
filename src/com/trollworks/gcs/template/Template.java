@@ -90,11 +90,11 @@ public class Template extends DataFile implements StateEditable {
 	/** Creates a new character with only default values set. */
 	public Template() {
 		super();
-		characterInitialize();
-		initialize();
-		calculateAdvantagePoints();
-		calculateSkillPoints();
-		calculateSpellPoints();
+		mAdvantages = new OutlineModel();
+		mSkills = new OutlineModel();
+		mSpells = new OutlineModel();
+		mEquipment = new OutlineModel();
+		mNotes = ""; //$NON-NLS-1$
 	}
 
 	/**
@@ -105,16 +105,8 @@ public class Template extends DataFile implements StateEditable {
 	 *             sheet.
 	 */
 	public Template(File file) throws IOException {
-		super(file);
-		initialize();
-	}
-
-	private void characterInitialize() {
-		mAdvantages = new OutlineModel();
-		mSkills = new OutlineModel();
-		mSpells = new OutlineModel();
-		mEquipment = new OutlineModel();
-		mNotes = ""; //$NON-NLS-1$
+		this();
+		load(file);
 	}
 
 	@Override
@@ -125,7 +117,6 @@ public class Template extends DataFile implements StateEditable {
 	@Override
 	protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
 		String marker = reader.getMarker();
-		characterInitialize();
 		do {
 			if (reader.next() == XMLNodeType.START_TAG) {
 				String name = reader.getName();

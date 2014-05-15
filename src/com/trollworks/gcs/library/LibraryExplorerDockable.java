@@ -11,12 +11,19 @@
 
 package com.trollworks.gcs.library;
 
+import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.advantage.AdvantagesDockable;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.common.ListCollectionListener;
 import com.trollworks.gcs.common.ListCollectionThread;
+import com.trollworks.gcs.equipment.EquipmentDockable;
+import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
+import com.trollworks.gcs.skill.SkillList;
+import com.trollworks.gcs.skill.SkillsDockable;
+import com.trollworks.gcs.spell.SpellList;
+import com.trollworks.gcs.spell.SpellsDockable;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.toolkit.annotation.Localize;
@@ -284,6 +291,18 @@ public class LibraryExplorerDockable implements Dockable, DocumentListener, Jump
 		// If it wasn't, load it and put it into the dock
 		try {
 			switch (PathUtils.getExtension(path)) {
+				case AdvantageList.EXTENSION:
+					openAdvantageList(path);
+					break;
+				case EquipmentList.EXTENSION:
+					openEquipmentList(path);
+					break;
+				case SkillList.EXTENSION:
+					openSkillList(path);
+					break;
+				case SpellList.EXTENSION:
+					openSpellList(path);
+					break;
 				case LibraryFile.EXTENSION:
 					openLibrary(path);
 					break;
@@ -301,10 +320,31 @@ public class LibraryExplorerDockable implements Dockable, DocumentListener, Jump
 		}
 	}
 
-	// RAW: Fix! AdvantagesDockable is being used as a stand-in for a library dockable
+	private void openAdvantageList(Path path) throws IOException {
+		AdvantageList list = new AdvantageList();
+		list.load(path.toFile());
+		dockLibrary(new AdvantagesDockable(list));
+	}
 
-	public void openLibrary(Path path) throws IOException {
-		AdvantagesDockable library = new AdvantagesDockable(new LibraryFile(path.toFile()));
+	private void openEquipmentList(Path path) throws IOException {
+		EquipmentList list = new EquipmentList();
+		list.load(path.toFile());
+		dockLibrary(new EquipmentDockable(list));
+	}
+
+	private void openSkillList(Path path) throws IOException {
+		SkillList list = new SkillList();
+		list.load(path.toFile());
+		dockLibrary(new SkillsDockable(list));
+	}
+
+	private void openSpellList(Path path) throws IOException {
+		SpellList list = new SpellList();
+		list.load(path.toFile());
+		dockLibrary(new SpellsDockable(list));
+	}
+
+	private void dockLibrary(LibraryDockable library) {
 		// Order of docking:
 		// 1. Stack with another library
 		// 2. Dock to the right of a sheet or template
@@ -312,7 +352,7 @@ public class LibraryExplorerDockable implements Dockable, DocumentListener, Jump
 		Dockable other = null;
 		Dock dock = getDockContainer().getDock();
 		for (Dockable dockable : dock.getDockables()) {
-			if (dockable instanceof AdvantagesDockable) {
+			if (dockable instanceof LibraryDockable) {
 				dockable.getDockContainer().stack(library);
 				return;
 			}
@@ -326,7 +366,14 @@ public class LibraryExplorerDockable implements Dockable, DocumentListener, Jump
 		dock.dock(library, other, DockLocation.EAST);
 	}
 
-	public void openCharacterSheet(Path path) throws IOException {
+	private void openLibrary(Path path) throws IOException {
+		// RAW: Needs to handle the other library types, too
+		AdvantageList list = new AdvantageList();
+		list.load(path.toFile());
+		dockLibrary(new AdvantagesDockable(list));
+	}
+
+	private void openCharacterSheet(Path path) throws IOException {
 		SheetDockable sheet = new SheetDockable(new GURPSCharacter(path.toFile()));
 		// Order of docking:
 		// 1. Stack with another sheet
@@ -343,7 +390,7 @@ public class LibraryExplorerDockable implements Dockable, DocumentListener, Jump
 			}
 			if (template == null && dockable instanceof TemplateDockable) {
 				template = dockable;
-			} else if (library == null && dockable instanceof AdvantagesDockable) {
+			} else if (library == null && dockable instanceof LibraryDockable) {
 				library = dockable;
 			}
 		}
@@ -356,7 +403,7 @@ public class LibraryExplorerDockable implements Dockable, DocumentListener, Jump
 		}
 	}
 
-	public void openTemplate(Path path) throws IOException {
+	private void openTemplate(Path path) throws IOException {
 		TemplateDockable template = new TemplateDockable(new Template(path.toFile()));
 		// Order of docking:
 		// 1. Stack with another template
@@ -373,7 +420,7 @@ public class LibraryExplorerDockable implements Dockable, DocumentListener, Jump
 			}
 			if (sheet == null && dockable instanceof SheetDockable) {
 				sheet = dockable;
-			} else if (library == null && dockable instanceof AdvantagesDockable) {
+			} else if (library == null && dockable instanceof LibraryDockable) {
 				library = dockable;
 			}
 		}

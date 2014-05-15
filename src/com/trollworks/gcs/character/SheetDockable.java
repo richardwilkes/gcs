@@ -65,11 +65,6 @@ public class SheetDockable extends CommonDockable {
 	}
 
 	@Override
-	public String getTitle() {
-		return PathUtils.getLeafName(getBackingFile().getName(), false);
-	}
-
-	@Override
 	public JScrollPane getContent() {
 		if (mScroller == null) {
 			GURPSCharacter dataFile = getDataFile();
