@@ -11,15 +11,12 @@
 
 package com.trollworks.gcs.equipment;
 
-import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.library.LibraryDockable;
 import com.trollworks.gcs.library.LibraryFile;
-import com.trollworks.gcs.widgets.LibraryDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-
-import javax.swing.Icon;
 
 /** A list of equipment from a library. */
 public class EquipmentDockable extends LibraryDockable {
@@ -39,11 +36,6 @@ public class EquipmentDockable extends LibraryDockable {
 	public String getDescriptor() {
 		// RAW: Implement
 		return null;
-	}
-
-	@Override
-	public Icon getTitleIcon() {
-		return GCSImages.getEquipmentIcon(false, false);
 	}
 
 	@Override

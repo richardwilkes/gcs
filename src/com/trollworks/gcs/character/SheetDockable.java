@@ -12,7 +12,6 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.app.CommonDockable;
-import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
@@ -22,7 +21,6 @@ import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 
-import javax.swing.Icon;
 import javax.swing.JScrollPane;
 
 /** A list of advantages and disadvantages from a library. */
@@ -67,11 +65,6 @@ public class SheetDockable extends CommonDockable {
 	}
 
 	@Override
-	public Icon getTitleIcon() {
-		return GCSImages.getCharacterSheetIcons().getIcon(16);
-	}
-
-	@Override
 	public String getTitle() {
 		return PathUtils.getLeafName(getBackingFile().getName(), false);
 	}
@@ -89,6 +82,7 @@ public class SheetDockable extends CommonDockable {
 			mPrereqThread = new PrerequisitesThread(mSheet);
 			mPrereqThread.start();
 			PrerequisitesThread.waitForProcessingToFinish(dataFile);
+			getUndoManager().discardAllEdits();
 			dataFile.setModified(false);
 		}
 		return mScroller;

@@ -9,12 +9,11 @@
  * by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.widgets;
+package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.app.CommonDockable;
 import com.trollworks.gcs.common.ListFile;
-import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;

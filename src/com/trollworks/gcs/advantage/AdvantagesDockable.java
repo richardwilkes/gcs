@@ -11,15 +11,12 @@
 
 package com.trollworks.gcs.advantage;
 
-import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.library.LibraryDockable;
 import com.trollworks.gcs.library.LibraryFile;
-import com.trollworks.gcs.widgets.LibraryDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-
-import javax.swing.Icon;
 
 /** A list of advantages and disadvantages from a library. */
 public class AdvantagesDockable extends LibraryDockable {
@@ -39,11 +36,6 @@ public class AdvantagesDockable extends LibraryDockable {
 	public String getDescriptor() {
 		// RAW: Implement
 		return null;
-	}
-
-	@Override
-	public Icon getTitleIcon() {
-		return GCSImages.getAdvantageIcon(false, false);
 	}
 
 	@Override

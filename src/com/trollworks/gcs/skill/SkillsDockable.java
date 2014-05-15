@@ -11,15 +11,12 @@
 
 package com.trollworks.gcs.skill;
 
-import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.library.LibraryDockable;
 import com.trollworks.gcs.library.LibraryFile;
-import com.trollworks.gcs.widgets.LibraryDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-
-import javax.swing.Icon;
 
 /** A list of skills from a library. */
 public class SkillsDockable extends LibraryDockable {
@@ -39,11 +36,6 @@ public class SkillsDockable extends LibraryDockable {
 	public String getDescriptor() {
 		// RAW: Implement
 		return null;
-	}
-
-	@Override
-	public Icon getTitleIcon() {
-		return GCSImages.getSkillIcon(false, false);
 	}
 
 	@Override

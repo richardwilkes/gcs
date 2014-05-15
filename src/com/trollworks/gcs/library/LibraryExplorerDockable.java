@@ -11,14 +11,25 @@
 
 package com.trollworks.gcs.library;
 
+import com.trollworks.gcs.advantage.AdvantagesDockable;
+import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.common.ListCollectionListener;
 import com.trollworks.gcs.common.ListCollectionThread;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
+import com.trollworks.gcs.template.Template;
+import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.ui.image.ToolkitImage;
+import com.trollworks.toolkit.ui.menu.edit.Openable;
+import com.trollworks.toolkit.ui.menu.file.FileProxy;
 import com.trollworks.toolkit.ui.widget.IconButton;
+import com.trollworks.toolkit.ui.widget.StdFileDialog;
 import com.trollworks.toolkit.ui.widget.Toolbar;
+import com.trollworks.toolkit.ui.widget.dock.Dock;
+import com.trollworks.toolkit.ui.widget.dock.DockLocation;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.ui.widget.tree.FieldAccessor;
 import com.trollworks.toolkit.ui.widget.tree.IconAccessor;
@@ -29,11 +40,15 @@ import com.trollworks.toolkit.ui.widget.tree.TreeRoot;
 import com.trollworks.toolkit.ui.widget.tree.TreeRow;
 import com.trollworks.toolkit.ui.widget.tree.TreeRowViewIterator;
 import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.notification.Notifier;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -47,7 +62,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** A list of available library files. */
-public class LibraryExplorerDockable implements Dockable, DocumentListener, JumpToSearchTarget, ListCollectionListener, FieldAccessor, IconAccessor {
+public class LibraryExplorerDockable implements Dockable, DocumentListener, JumpToSearchTarget, ListCollectionListener, FieldAccessor, IconAccessor, Openable {
 	@Localize("Library Explorer")
 	private static String	TITLE;
 	@Localize("Enter text here to narrow the list to only those rows containing matching items")
@@ -93,7 +108,18 @@ public class LibraryExplorerDockable implements Dockable, DocumentListener, Jump
 			TreeRoot root = new TreeRoot(mNotifier);
 			fillTree(listCollectionThread.getLists(), root);
 			mTreePanel = new TreePanel(root);
+			mTreePanel.setShowHeader(false);
 			mTreePanel.addColumn(new TextTreeColumn(TITLE, this, this));
+			mTreePanel.setAllowColumnDrag(false);
+			mTreePanel.setAllowColumnResize(false);
+			mTreePanel.setAllowColumnContextMenu(false);
+			mTreePanel.setAllowRowDropFromExternal(false);
+			mTreePanel.setAllowedRowDragTypes(0); // Turns off row dragging
+			mTreePanel.setShowRowDivider(false);
+			mTreePanel.setShowColumnDivider(false);
+			mTreePanel.setUseBanding(false);
+			mTreePanel.setUserSortable(false);
+			mTreePanel.setOpenableProxy(this);
 			mContent = new JPanel(new BorderLayout());
 			mToolbar = new Toolbar();
 			createFilterField();
@@ -219,5 +245,144 @@ public class LibraryExplorerDockable implements Dockable, DocumentListener, Jump
 	@Override
 	public void jumpToSearchField() {
 		mFilterField.requestFocusInWindow();
+	}
+
+	@Override
+	public boolean canOpenSelection() {
+		return true;
+	}
+
+	@Override
+	public void openSelection() {
+		for (TreeRow row : mTreePanel.getSelectedRows()) {
+			if (row instanceof TreeContainerRow) {
+				TreeContainerRow container = (TreeContainerRow) row;
+				mTreePanel.setOpen(!mTreePanel.isOpen(container), container);
+			} else {
+				open(((LibraryFileRow) row).getPath());
+			}
+		}
+	}
+
+	public void open(Path path) {
+		// See if it is already open
+		for (Dockable dockable : getDockContainer().getDock().getDockables()) {
+			if (dockable instanceof FileProxy) {
+				File file = ((FileProxy) dockable).getBackingFile();
+				if (file != null) {
+					try {
+						if (Files.isSameFile(path, file.toPath())) {
+							dockable.getDockContainer().setCurrentDockable(dockable);
+							return;
+						}
+					} catch (IOException ioe) {
+						Log.error(ioe);
+					}
+				}
+			}
+		}
+		// If it wasn't, load it and put it into the dock
+		try {
+			switch (PathUtils.getExtension(path)) {
+				case LibraryFile.EXTENSION:
+					openLibrary(path);
+					break;
+				case SheetDockable.SHEET_EXTENSION:
+					openCharacterSheet(path);
+					break;
+				case TemplateDockable.EXTENSION:
+					openTemplate(path);
+					break;
+				default:
+					break;
+			}
+		} catch (Throwable throwable) {
+			StdFileDialog.showCannotOpenMsg(getContent(), PathUtils.getLeafName(path, true), throwable);
+		}
+	}
+
+	// RAW: Fix! AdvantagesDockable is being used as a stand-in for a library dockable
+
+	public void openLibrary(Path path) throws IOException {
+		AdvantagesDockable library = new AdvantagesDockable(new LibraryFile(path.toFile()));
+		// Order of docking:
+		// 1. Stack with another library
+		// 2. Dock to the right of a sheet or template
+		// 3. Dock to the right of the library explorer
+		Dockable other = null;
+		Dock dock = getDockContainer().getDock();
+		for (Dockable dockable : dock.getDockables()) {
+			if (dockable instanceof AdvantagesDockable) {
+				dockable.getDockContainer().stack(library);
+				return;
+			}
+			if (other == null && (dockable instanceof SheetDockable || dockable instanceof TemplateDockable)) {
+				other = dockable;
+			}
+		}
+		if (other == null) {
+			other = this;
+		}
+		dock.dock(library, other, DockLocation.EAST);
+	}
+
+	public void openCharacterSheet(Path path) throws IOException {
+		SheetDockable sheet = new SheetDockable(new GURPSCharacter(path.toFile()));
+		// Order of docking:
+		// 1. Stack with another sheet
+		// 2. Stack with a template
+		// 3. Dock to the left of a library
+		// 4. Dock to the right of the library explorer
+		Dockable template = null;
+		Dockable library = null;
+		Dock dock = getDockContainer().getDock();
+		for (Dockable dockable : dock.getDockables()) {
+			if (dockable instanceof SheetDockable) {
+				dockable.getDockContainer().stack(sheet);
+				return;
+			}
+			if (template == null && dockable instanceof TemplateDockable) {
+				template = dockable;
+			} else if (library == null && dockable instanceof AdvantagesDockable) {
+				library = dockable;
+			}
+		}
+		if (template != null) {
+			template.getDockContainer().stack(sheet);
+		} else if (library != null) {
+			dock.dock(sheet, library, DockLocation.WEST);
+		} else {
+			dock.dock(sheet, this, DockLocation.EAST);
+		}
+	}
+
+	public void openTemplate(Path path) throws IOException {
+		TemplateDockable template = new TemplateDockable(new Template(path.toFile()));
+		// Order of docking:
+		// 1. Stack with another template
+		// 2. Stack with a sheet
+		// 3. Dock to the left of a library
+		// 4. Dock to the right of the library explorer
+		Dockable sheet = null;
+		Dockable library = null;
+		Dock dock = getDockContainer().getDock();
+		for (Dockable dockable : dock.getDockables()) {
+			if (dockable instanceof TemplateDockable) {
+				dockable.getDockContainer().stack(template);
+				return;
+			}
+			if (sheet == null && dockable instanceof SheetDockable) {
+				sheet = dockable;
+			} else if (library == null && dockable instanceof AdvantagesDockable) {
+				library = dockable;
+			}
+		}
+		if (sheet != null) {
+			sheet.getDockContainer().stack(template);
+		} else if (library != null) {
+			dock.dock(template, library, DockLocation.WEST);
+		} else {
+			dock.dock(template, this, DockLocation.EAST);
+		}
 	}
 }

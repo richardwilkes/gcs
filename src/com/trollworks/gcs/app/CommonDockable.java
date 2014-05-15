@@ -27,6 +27,7 @@ import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
 import java.io.File;
 
+import javax.swing.Icon;
 import javax.swing.JOptionPane;
 
 /** Provides a common base for library and sheet files. */
@@ -116,6 +117,11 @@ public abstract class CommonDockable implements Dockable, DockCloseable, Saveabl
 			}
 		}
 		return true;
+	}
+
+	@Override
+	public Icon getTitleIcon() {
+		return getDataFile().getFileIcons().getIcon(16);
 	}
 
 	@Override
