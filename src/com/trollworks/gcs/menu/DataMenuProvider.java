@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.menu;
 
+import com.trollworks.gcs.common.ListCollectionListener;
 import com.trollworks.gcs.common.ListCollectionThread;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.image.ToolkitImage;
@@ -34,7 +35,7 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
 /** The standard "Data" menu. */
-public class DataMenuProvider implements MenuProvider {
+public class DataMenuProvider implements MenuProvider, ListCollectionListener {
 	@Localize("Data")
 	private static String		DATA;
 
@@ -43,10 +44,37 @@ public class DataMenuProvider implements MenuProvider {
 	}
 
 	public static final String	NAME					= "Data";				//$NON-NLS-1$
-	private static final String	MENU_KEY_SUFFIX_REGEX	= ".*__[A-Za-z0-9]";	//$NON-NLS-1$
+	public static final String	MENU_KEY_SUFFIX_REGEX	= ".*__[A-Za-z0-9]";	//$NON-NLS-1$
 
-	/** Updates the available menu items. */
-	public static void update() {
+	/**
+	 * @param title The title to filter for menu key suffixes.
+	 * @return The filtered title.
+	 */
+	public static String filterTitle(String title) {
+		if (title.matches(MENU_KEY_SUFFIX_REGEX)) {
+			return title.substring(0, title.length() - 3);
+		}
+		return title;
+	}
+
+	@Override
+	public Set<Command> getModifiableCommands() {
+		return Collections.emptySet();
+	}
+
+	@Override
+	public JMenu createMenu() {
+		JMenu menu = new JMenu(DATA);
+		menu.setName(NAME);
+		ListCollectionThread listCollectionThread = ListCollectionThread.get();
+		addToMenu(listCollectionThread.getLists(), menu);
+		DynamicMenuEnabler.add(menu);
+		listCollectionThread.addListener(this);
+		return menu;
+	}
+
+	@Override
+	public void dataFileListUpdated(List<Object> lists) {
 		for (AppWindow window : AppWindow.getAllWindows()) {
 			JMenu menu = StdMenuBar.findMenuByName(window.getJMenuBar(), NAME);
 			if (menu != null) {
@@ -82,30 +110,5 @@ public class DataMenuProvider implements MenuProvider {
 				menu.add(item);
 			}
 		}
-	}
-
-	/**
-	 * @param title The title to filter for menu key suffixes.
-	 * @return The filtered title.
-	 */
-	public static String filterTitle(String title) {
-		if (title.matches(MENU_KEY_SUFFIX_REGEX)) {
-			return title.substring(0, title.length() - 3);
-		}
-		return title;
-	}
-
-	@Override
-	public Set<Command> getModifiableCommands() {
-		return Collections.emptySet();
-	}
-
-	@Override
-	public JMenu createMenu() {
-		JMenu menu = new JMenu(DATA);
-		menu.setName(NAME);
-		addToMenu(ListCollectionThread.get().getLists(), menu);
-		DynamicMenuEnabler.add(menu);
-		return menu;
 	}
 }

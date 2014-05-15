@@ -12,7 +12,6 @@
 package com.trollworks.gcs.common;
 
 import com.trollworks.gcs.library.LibraryFile;
-import com.trollworks.gcs.menu.DataMenuProvider;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.toolkit.collections.Stack;
 import com.trollworks.toolkit.io.Log;
@@ -38,7 +37,7 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path> {
 	private List<Object>						mLists;
 	private List<Object>						mCurrent;
 	private Stack<List<Object>>					mStack;
-	private boolean								mRunning;
+	private List<ListCollectionListener>		mListeners;
 
 	static {
 		INSTANCE = new ListCollectionThread();
@@ -55,6 +54,32 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path> {
 		setPriority(NORM_PRIORITY);
 		setDaemon(true);
 		mListDir = App.getHomePath().resolve("data"); //$NON-NLS-1$
+		mListeners = new ArrayList<>();
+	}
+
+	/** @param listener The {@link ListCollectionListener} to add. */
+	public synchronized void addListener(ListCollectionListener listener) {
+		mListeners.add(listener);
+	}
+
+	/** @param listener The {@link ListCollectionListener} to remove. */
+	public synchronized void removeListener(ListCollectionListener listener) {
+		mListeners.remove(listener);
+	}
+
+	protected void notifyListeners() {
+		ListCollectionListener[] listeners;
+		synchronized (this) {
+			listeners = mListeners.toArray(new ListCollectionListener[mListeners.size()]);
+		}
+		List<Object> lists = getLists();
+		for (ListCollectionListener listener : listeners) {
+			try {
+				listener.dataFileListUpdated(lists);
+			} catch (Throwable throwable) {
+				Log.error(throwable);
+			}
+		}
 	}
 
 	/** @return The current list of lists. */
@@ -71,22 +96,17 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path> {
 
 	@Override
 	public void run() {
-		if (mRunning) {
-			DataMenuProvider.update();
-		} else {
-			mRunning = true;
-			try {
-				while (true) {
-					List<Object> lists = collectLists();
-					if (!lists.equals(mLists)) {
-						mLists = lists;
-						EventQueue.invokeLater(this);
-					}
-					sleep(5000);
+		try {
+			while (true) {
+				List<Object> lists = collectLists();
+				if (!lists.equals(mLists)) {
+					mLists = lists;
+					EventQueue.invokeLater(() -> notifyListeners());
 				}
-			} catch (InterruptedException outerIEx) {
-				// Someone is trying to terminate us... let them.
+				sleep(5000);
 			}
+		} catch (InterruptedException outerIEx) {
+			// Someone is trying to terminate us... let them.
 		}
 	}
 
