@@ -11,17 +11,9 @@
 
 package com.trollworks.gcs.app;
 
-import com.trollworks.gcs.advantage.AdvantagesDockable;
-import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.character.SheetDockable;
-import com.trollworks.gcs.equipment.EquipmentDockable;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
-import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
-import com.trollworks.gcs.skill.SkillsDockable;
-import com.trollworks.gcs.spell.SpellsDockable;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.menu.edit.Undoable;
 import com.trollworks.toolkit.ui.menu.file.SignificantFrame;
 import com.trollworks.toolkit.ui.widget.AppWindow;
@@ -35,8 +27,6 @@ import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.io.IOException;
-import java.nio.file.Path;
 
 /** The main GCS window. */
 public class MainWindow extends AppWindow implements SignificantFrame, JumpToSearchTarget {
@@ -62,30 +52,6 @@ public class MainWindow extends AppWindow implements SignificantFrame, JumpToSea
 		LibraryExplorerDockable libraryExplorer = new LibraryExplorerDockable();
 		mDock.dock(libraryExplorer, DockLocation.WEST);
 		mDock.getLayout().findLayout(libraryExplorer.getDockContainer()).setDividerPosition(200);
-
-		Path path = App.getHomePath().resolve("data").resolve("Library__L.glb"); //$NON-NLS-1$ //$NON-NLS-2$
-		LibraryFile library;
-		try {
-			library = new LibraryFile(path.toFile());
-		} catch (IOException exception) {
-			library = new LibraryFile();
-		}
-		AdvantagesDockable advantagesDockable = new AdvantagesDockable(library);
-		mDock.dock(advantagesDockable, libraryExplorer, DockLocation.EAST);
-		DockContainer dc = advantagesDockable.getDockContainer();
-		dc.stack(new SkillsDockable(library));
-		dc.stack(new SpellsDockable(library));
-		dc.stack(new EquipmentDockable(library));
-		dc.setCurrentDockable(advantagesDockable);
-
-		path = App.getHomePath().resolve("samples").resolve("Dai Blackthorn.gcs"); //$NON-NLS-1$ //$NON-NLS-2$
-		GURPSCharacter character;
-		try {
-			character = new GURPSCharacter(path.toFile());
-		} catch (IOException exception) {
-			character = new GURPSCharacter();
-		}
-		mDock.dock(new SheetDockable(character), advantagesDockable, DockLocation.EAST);
 
 		//restoreBounds();
 	}

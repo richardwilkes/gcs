@@ -11,11 +11,10 @@
 
 package com.trollworks.gcs.common;
 
-import com.trollworks.gcs.library.LibraryFile;
-import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.toolkit.collections.Stack;
 import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.ui.App;
+import com.trollworks.toolkit.ui.menu.file.FileType;
 import com.trollworks.toolkit.utility.PathUtils;
 
 import java.awt.EventQueue;
@@ -53,7 +52,7 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path> {
 		super("List Collection"); //$NON-NLS-1$
 		setPriority(NORM_PRIORITY);
 		setDaemon(true);
-		mListDir = App.getHomePath().resolve("data"); //$NON-NLS-1$
+		mListDir = App.getHomePath().resolve("Library"); //$NON-NLS-1$
 		mListeners = new ArrayList<>();
 	}
 
@@ -143,9 +142,12 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path> {
 	@Override
 	public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 		if (!shouldSkip(file)) {
-			String ext = PathUtils.getExtension(file.getFileName());
-			if (LibraryFile.EXTENSION.equalsIgnoreCase(ext) || TemplateWindow.EXTENSION.equalsIgnoreCase(ext)) {
-				mCurrent.add(file);
+			String ext = "." + PathUtils.getExtension(file.getFileName()); //$NON-NLS-1$
+			for (String one : FileType.getOpenableExtensions()) {
+				if (one.equalsIgnoreCase(ext)) {
+					mCurrent.add(file);
+					break;
+				}
 			}
 		}
 		return FileVisitResult.CONTINUE;
