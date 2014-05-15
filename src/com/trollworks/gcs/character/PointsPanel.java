@@ -77,13 +77,13 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
 	public PointsPanel(GURPSCharacter character) {
 		super(new ColumnLayout(2, 2, 0, RowDistribution.DISTRIBUTE_HEIGHT), getTitle(character));
 		mCharacter = character;
+		createLabelAndDisabledField(this, character, GURPSCharacter.ID_RACE_POINTS, RACE_POINTS, RACE_POINTS_TOOLTIP, SwingConstants.RIGHT);
 		createLabelAndDisabledField(this, character, GURPSCharacter.ID_ATTRIBUTE_POINTS, ATTRIBUTE_POINTS, ATTRIBUTE_POINTS_TOOLTIP, SwingConstants.RIGHT);
 		createLabelAndDisabledField(this, character, GURPSCharacter.ID_ADVANTAGE_POINTS, ADVANTAGE_POINTS, ADVANTAGE_POINTS_TOOLTIP, SwingConstants.RIGHT);
 		createLabelAndDisabledField(this, character, GURPSCharacter.ID_DISADVANTAGE_POINTS, DISADVANTAGE_POINTS, DISADVANTAGE_POINTS_TOOLTIP, SwingConstants.RIGHT);
 		createLabelAndDisabledField(this, character, GURPSCharacter.ID_QUIRK_POINTS, QUIRK_POINTS, QUIRK_POINTS_TOOLTIP, SwingConstants.RIGHT);
 		createLabelAndDisabledField(this, character, GURPSCharacter.ID_SKILL_POINTS, SKILL_POINTS, SKILL_POINTS_TOOLTIP, SwingConstants.RIGHT);
 		createLabelAndDisabledField(this, character, GURPSCharacter.ID_SPELL_POINTS, SPELL_POINTS, SPELL_POINTS_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_RACE_POINTS, RACE_POINTS, RACE_POINTS_TOOLTIP, SwingConstants.RIGHT);
 		createDivider();
 		createLabelAndField(this, character, GURPSCharacter.ID_EARNED_POINTS, EARNED_POINTS, EARNED_POINTS_TOOLTIP, SwingConstants.RIGHT);
 		mCharacter.addTarget(this, GURPSCharacter.ID_TOTAL_POINTS);
