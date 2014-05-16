@@ -1,0 +1,6848 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<equipment_list unique_id="hv8sn9or:-jbsfd5ek2ezw" version="1">
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Assault Carbine, 5.56mm</description>
+		<legality_class>4</legality_class>
+		<value>950</value>
+		<weight>7.3 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>4d+2 pi</damage>
+			<strength>9&#8224;</strength>
+			<accuracy>4</accuracy>
+			<range>750/2,900</range>
+			<rate_of_fire>15</rate_of_fire>
+			<shots>30+1(3)</shots>
+			<bulk>-4</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Assault Carbine, 5.56mm: magazine</description>
+		<legality_class>4</legality_class>
+		<value>34</value>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Assault Carbine, 5.56mm: reload</description>
+		<legality_class>4</legality_class>
+		<value>15</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Assault Rifle, 5.56mm</description>
+		<legality_class>4</legality_class>
+		<value>850</value>
+		<weight>8.9 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>5d pi</damage>
+			<strength>8&#8224;</strength>
+			<accuracy>5</accuracy>
+			<range>800/3,500</range>
+			<rate_of_fire>13</rate_of_fire>
+			<shots>30+1(3)</shots>
+			<bulk>-5</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Assault Rifle, 5.56mm: magazine</description>
+		<legality_class>4</legality_class>
+		<value>34</value>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Assault Rifle, 5.56mm: reload</description>
+		<legality_class>4</legality_class>
+		<value>15</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Attach&#233; Case</description>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:29</reference>
+		<categories>
+			<category>Luggage</category>
+		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at_most">20 lb</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Audio Recorder, Digital</description>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>0.25 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>Holdout +1. Runs for 12hrs.</notes>
+		<categories>
+			<category>Surveillance</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Auto Backup Pistol, .40</description>
+		<legality_class>4</legality_class>
+		<value>720</value>
+		<weight>1.9 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>2d+1 pi+</damage>
+			<strength>8</strength>
+			<accuracy>1</accuracy>
+			<range>140/1,600</range>
+			<rate_of_fire>3</rate_of_fire>
+			<shots>6+1(3)</shots>
+			<bulk>-1</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Auto Backup Pistol, .40: magazine</description>
+		<legality_class>4</legality_class>
+		<value>37</value>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Auto Backup Pistol, .40: reload</description>
+		<legality_class>4</legality_class>
+		<value>2</value>
+		<weight>0.4 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Auto Pistol, .40</description>
+		<legality_class>4</legality_class>
+		<value>770</value>
+		<weight>2.3 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>2d+2 pi+</damage>
+			<strength>9</strength>
+			<accuracy>2</accuracy>
+			<range>160/1,800</range>
+			<rate_of_fire>3</rate_of_fire>
+			<shots>13+1(3)</shots>
+			<bulk>-2</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Auto Pistol, .40: magazine</description>
+		<legality_class>4</legality_class>
+		<value>32</value>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Auto Pistol, .40: reload</description>
+		<legality_class>4</legality_class>
+		<value>4</value>
+		<weight>0.6 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Auto Pistol, .45</description>
+		<legality_class>4</legality_class>
+		<value>770</value>
+		<weight>2.4 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>2d pi+</damage>
+			<strength>10</strength>
+			<accuracy>2</accuracy>
+			<range>175/1,700</range>
+			<rate_of_fire>3</rate_of_fire>
+			<shots>13+1(3)</shots>
+			<bulk>-2</bulk>
+			<recoil>3</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Auto Pistol, .45: magazine</description>
+		<legality_class>4</legality_class>
+		<value>32</value>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Auto Pistol, .45: reload</description>
+		<legality_class>4</legality_class>
+		<value>7</value>
+		<weight>0.8 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Auto Pistol, .50AE</description>
+		<legality_class>4</legality_class>
+		<value>1250</value>
+		<weight>4.6 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>4d pi+</damage>
+			<strength>12</strength>
+			<accuracy>2</accuracy>
+			<range>220/2,500</range>
+			<rate_of_fire>3</rate_of_fire>
+			<shots>7+1(3)</shots>
+			<bulk>-4</bulk>
+			<recoil>4</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Auto Pistol, .50AE: magazine</description>
+		<legality_class>4</legality_class>
+		<value>45</value>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Auto Pistol, .50AE: reload</description>
+		<legality_class>4</legality_class>
+		<value>8</value>
+		<weight>0.6 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Auto Pistol, 9mm</description>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>1.9 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>2d+2 pi</damage>
+			<strength>8</strength>
+			<accuracy>2</accuracy>
+			<range>160/1,800</range>
+			<rate_of_fire>3</rate_of_fire>
+			<shots>17+1(3)</shots>
+			<bulk>-2</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Auto Pistol, 9mm: magazine</description>
+		<legality_class>4</legality_class>
+		<value>32</value>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Auto Pistol, 9mm: reload</description>
+		<legality_class>4</legality_class>
+		<value>5</value>
+		<weight>0.6 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Auto Shotgun, 12G</description>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<weight>7.3 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>1d+1 pi</damage>
+			<strength>10&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>40/800</range>
+			<rate_of_fire>3x9</rate_of_fire>
+			<shots>7+1(2i)</shots>
+			<bulk>-5</bulk>
+			<recoil>1/4</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Auto Shotgun, 12G: reload</description>
+		<legality_class>4</legality_class>
+		<value>4</value>
+		<weight>0.8 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Backpack, Small</description>
+		<legality_class>4</legality_class>
+		<value>120</value>
+		<weight>1.5 lb</weight>
+		<reference>ACT1:29</reference>
+		<categories>
+			<category>Luggage</category>
+		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at_most">50 lb</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Baton</description>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<weight>1 lb</weight>
+		<reference>ACT3:21</reference>
+		<melee_weapon>
+			<damage>sw cr</damage>
+			<strength>6</strength>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr cr</damage>
+			<strength>6</strength>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -2.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Bayonet</description>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>1 lb</weight>
+		<reference>ACT3:21</reference>
+		<melee_weapon>
+			<damage>thr+3 imp</damage>
+			<strength>9&#8224;</strength>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Spear</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Polearm</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Staff</name>
+				<modifier>-2</modifier>
+			</default>
+		</melee_weapon>
+		<notes>-1 to host gun's Bulk. Holdout -2.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Binoculars, Civilian</description>
+		<legality_class>4</legality_class>
+		<value>150</value>
+		<weight>3 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>Telescopic Vision 3.</notes>
+		<categories>
+			<category>Optics</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Binoculars, Military</description>
+		<legality_class>4</legality_class>
+		<value>800</value>
+		<weight>3.5 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>Glint-free coating. Telescopic Vision 3.</notes>
+		<categories>
+			<category>Optics</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Binoculars, Night-Vision</description>
+		<legality_class>4</legality_class>
+		<value>6000</value>
+		<weight>3 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>Night Vision 9. Telescopic Vision 4. Colorblindness. No Depth Perception. No Peripheral Vision. Run for 20hrs.</notes>
+		<categories>
+			<category>Optics</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Binoculars, Thermal-Imaging</description>
+		<legality_class>4</legality_class>
+		<value>7000</value>
+		<weight>3 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>Infravision. Telescopic Vision 3. Colorblindness. No Depth Perception. No Peripheral Vision. Run for 4hrs.</notes>
+		<categories>
+			<category>Optics</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Blasting Caps</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>0.25 lb</weight>
+		<reference>ACT1:26</reference>
+		<notes>Pack of six.</notes>
+		<categories>
+			<category>Demolition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Blowpipe</description>
+		<legality_class>4</legality_class>
+		<value>30</value>
+		<weight>1 lb</weight>
+		<melee_weapon>
+			<damage>Special</damage>
+			<strength>2&#8224;</strength>
+			<reach>1</reach>
+			<parry>no</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Blowpipe</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-6</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Targets face at -3. Blinds for 1d seconds. Holdout -6.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Bo</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>4 lb</weight>
+		<reference>ACT3:21</reference>
+		<melee_weapon>
+			<damage>sw+2 cr</damage>
+			<strength>7&#8224;</strength>
+			<reach>1,2</reach>
+			<parry>+2</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Staff</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Polearm</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Spear</name>
+				<modifier>-2</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr+2 cr</damage>
+			<strength>7&#8224;</strength>
+			<reach>1,2</reach>
+			<parry>+2</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Staff</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Polearm</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Spear</name>
+				<modifier>-2</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -6.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Bolt Cutters, Heavy</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>30 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>12d(2) cut</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Bolt Cutters, Light</description>
+		<legality_class>4</legality_class>
+		<value>30</value>
+		<weight>15 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>8d(2) cut</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Boots, Reinforced</description>
+		<legality_class>4</legality_class>
+		<value>75</value>
+		<weight>3 lb</weight>
+		<reference>ACT1:31</reference>
+		<melee_weapon>
+			<damage>thr+1</damage>
+			<strength>0</strength>
+			<usage>Kick</usage>
+			<reach>C</reach>
+			<parry>No</parry>
+			<block>No</block>
+			<default>
+				<type>DX</type>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Brawling</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Karate</name>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<notes>DR+1 vs. attacks from underfoot.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Brass Knuckles</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>0.25 lb</weight>
+		<reference>ACT3:20</reference>
+		<melee_weapon>
+			<damage>thr cr</damage>
+			<reach>C</reach>
+			<parry>0</parry>
+			<block>no</block>
+		</melee_weapon>
+		<notes>Holdout -1.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Brass Knuckles</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>0.25 lb</weight>
+		<reference>ACT1:33</reference>
+		<melee_weapon>
+			<damage>thr cr</damage>
+			<reach>C</reach>
+			<parry>0</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Brawling</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -1.</notes>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Bug Detector</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:29</reference>
+		<categories>
+			<category>Security</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Business Cards</description>
+		<legality_class>4</legality_class>
+		<value>1</value>
+		<reference>ACT1:29</reference>
+		<notes>Pack of 100.</notes>
+		<categories>
+			<category>Personal Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Butterfly Sword</description>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>2 lb</weight>
+		<reference>ACT3:21</reference>
+		<melee_weapon>
+			<damage>sw cut</damage>
+			<strength>8</strength>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr-2 imp</damage>
+			<strength>8</strength>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -3.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Camcorder, Digital, Full-Sized</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>Night Vision 3. Telescopic Vision 2. Runs for 1hr.</notes>
+		<categories>
+			<category>Surveillance</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Camcorder, Digital, Miniature</description>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>Holdout +2. Runs for 1hr.</notes>
+		<categories>
+			<category>Surveillance</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Camera, Digital, Full-Sized</description>
+		<legality_class>4</legality_class>
+		<value>75</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>Photography +0. Runs for 10hrs.</notes>
+		<categories>
+			<category>Surveillance</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Camera, Digital, Full-Sized (Fine)</description>
+		<legality_class>4</legality_class>
+		<value>2000</value>
+		<weight>9 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>With telephoto lens. Telescopic Vision 5. Runs for 10hrs.</notes>
+		<categories>
+			<category>Surveillance</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Cane</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>2.5 lb</weight>
+		<reference>ACT3:21</reference>
+		<melee_weapon>
+			<damage>sw+1 cr</damage>
+			<strength>10</strength>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Rapier</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Sword</name>
+				<modifier>-4</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr+1 cr</damage>
+			<strength>10</strength>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Rapier</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Sword</name>
+				<modifier>-4</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -4.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Cellular Monitoring System</description>
+		<legality_class>4</legality_class>
+		<value>20000</value>
+		<weight>7 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>Up to 4 cell phones at once.</notes>
+		<categories>
+			<category>Surveillance</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Chainsaw</description>
+		<legality_class>4</legality_class>
+		<value>300</value>
+		<weight>13 lb</weight>
+		<reference>ACT1:30</reference>
+		<melee_weapon>
+			<damage>sw+1d cut</damage>
+			<strength>11&#8225;</strength>
+			<usage>Swing</usage>
+			<reach>1</reach>
+			<parry>0U</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Axe/Mace</name>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Chemical Detector, Portable</description>
+		<legality_class>4</legality_class>
+		<value>60000</value>
+		<weight>6 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>1' range. Runs for 12 hours.</notes>
+		<categories>
+			<category>Security</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Cigarette Lighter</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<reference>ACT1:26</reference>
+		<categories>
+			<category>Demolition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Circle Cutter</description>
+		<legality_class>4</legality_class>
+		<value>140</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:26</reference>
+		<notes>Forced Entry-6 to silently remove a perfect circle of glass.</notes>
+		<categories>
+			<category>Burglary</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Climbing Kit</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>26 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>Incl. 100 yards of 3/8" rope.</notes>
+		<categories>
+			<category>Infiltration</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Clothing, Formal</description>
+		<legality_class>4</legality_class>
+		<value>240</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:31</reference>
+		<categories>
+			<category>Armor</category>
+		</categories>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Clothing, High-Fashion</description>
+		<legality_class>4</legality_class>
+		<value>3000</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:31</reference>
+		<categories>
+			<category>Armor</category>
+		</categories>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Clothing, Ordinary</description>
+		<legality_class>4</legality_class>
+		<value>120</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:31</reference>
+		<categories>
+			<category>Armor</category>
+		</categories>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Coat, Long</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>5 lb</weight>
+		<reference>ACT1:31</reference>
+		<notes>Holdout +4.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Coat, Long Leather</description>
+		<legality_class>4</legality_class>
+		<value>250</value>
+		<weight>10 lb</weight>
+		<reference>ACT1:31</reference>
+		<notes>Flexible. Holdout +4.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>arms</location>
+			<amount>1</amount>
+		</dr_bonus>
+		<dr_bonus>
+			<location>legs</location>
+			<amount>1</amount>
+		</dr_bonus>
+		<dr_bonus>
+			<location>torso</location>
+			<amount>1</amount>
+		</dr_bonus>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Collar, Reinforced</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:31</reference>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>neck</location>
+			<amount>2</amount>
+		</dr_bonus>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Combat Knife</description>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:33</reference>
+		<melee_weapon>
+			<damage>sw-2 cut</damage>
+			<strength>6</strength>
+			<usage>swing</usage>
+			<reach>C,1</reach>
+			<parry>-1</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr imp</damage>
+			<strength>6</strength>
+			<usage>thrust</usage>
+			<reach>C</reach>
+			<parry>-1</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -2.</notes>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Commando Knife</description>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>1 lb</weight>
+		<reference>ACT3:21</reference>
+		<melee_weapon>
+			<damage>sw-2 cut</damage>
+			<strength>6</strength>
+			<usage>Knife</usage>
+			<reach>C,1</reach>
+			<parry>-1</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr imp</damage>
+			<strength>6</strength>
+			<usage>Knife</usage>
+			<reach>C</reach>
+			<parry>-1</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>sw-2 cut</damage>
+			<strength>6</strength>
+			<usage>Main-Gauche</usage>
+			<reach>C,1</reach>
+			<parry>0F</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Rapier</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr imp</damage>
+			<strength>6</strength>
+			<usage>Main-Gauche</usage>
+			<reach>C</reach>
+			<parry>0F</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Rapier</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -2.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Compact Pump Shotgun, 12G</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>6.7 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>1d+1 pi</damage>
+			<strength>12&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>40/800</range>
+			<rate_of_fire>2x9</rate_of_fire>
+			<shots>4+1(2i)</shots>
+			<bulk>-3</bulk>
+			<recoil>1/6</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Compact Pump Shotgun, 12G: reload</description>
+		<legality_class>4</legality_class>
+		<value>2</value>
+		<weight>0.4 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Compact SMG, 9mm</description>
+		<legality_class>4</legality_class>
+		<value>1200</value>
+		<weight>3.8 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>2d+2 pi</damage>
+			<strength>8&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>160/1,800</range>
+			<rate_of_fire>15</rate_of_fire>
+			<shots>30+1(3)</shots>
+			<bulk>-2</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Compact SMG, 9mm: magazine</description>
+		<legality_class>4</legality_class>
+		<value>34</value>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Compact SMG, 9mm: reload</description>
+		<legality_class>4</legality_class>
+		<value>9</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Compass</description>
+		<legality_class>4</legality_class>
+		<value>25</value>
+		<reference>ACT1:29</reference>
+		<notes>Navigation +1.</notes>
+		<categories>
+			<category>Personal Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Computer Monitoring System</description>
+		<legality_class>4</legality_class>
+		<value>5000</value>
+		<weight>6 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>Requires a Complexity 3 computer. Range 100yds (in city).</notes>
+		<categories>
+			<category>Surveillance</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Counterfeiting/Forgery Kit</description>
+		<legality_class>4</legality_class>
+		<value>12000</value>
+		<weight>100 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>Basic equipment. Requires computer.</notes>
+		<categories>
+			<category>Trickery</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Crowbar, 3'</description>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<weight>3 lb</weight>
+		<reference>ACT1:30</reference>
+		<melee_weapon>
+			<damage>sw+2 cr</damage>
+			<strength>10</strength>
+			<usage>Swung</usage>
+			<reach>1</reach>
+			<parry>0U</parry>
+			<block>No</block>
+			<default>
+				<type>DX</type>
+				<modifier>-6</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Axe/Mace</name>
+				<modifier>-1</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Flail</name>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Axe/Mace</name>
+				<modifier>-4</modifier>
+			</default>
+		</melee_weapon>
+		<ranged_weapon>
+			<damage>sw+2 cr</damage>
+			<strength>10</strength>
+			<usage>Thrown</usage>
+			<accuracy>1</accuracy>
+			<range>x1/x1.5</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>T(1)</shots>
+			<bulk>-3</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Thrown Weapon</name>
+				<specialization>Axe/Mace</specialization>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Cup, Athletic</description>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<reference>ACT1:31</reference>
+		<notes>Front protection only. DR+1 vs. crushing attacks.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>groin</location>
+			<amount>1</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Cutting Torches, Full-Sized</description>
+		<legality_class>4</legality_class>
+		<value>75</value>
+		<weight>7 lb</weight>
+		<reference>ACT1:30</reference>
+		<ranged_weapon>
+			<damage>sw+2 cr</damage>
+			<strength>10</strength>
+			<usage>Thrown</usage>
+			<accuracy>1</accuracy>
+			<range>x1/x1.5</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>T(1)</shots>
+			<bulk>-3</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Thrown Weapon</name>
+				<specialization>Axe/Mace</specialization>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<notes>1d+3(2) burn per second. 30 seconds per bottle.</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Cutting Torches, Full-Sized: gas bottle</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>5 lb</weight>
+		<reference>ACT1:30</reference>
+		<ranged_weapon>
+			<damage>sw+2 cr</damage>
+			<strength>10</strength>
+			<usage>Thrown</usage>
+			<accuracy>1</accuracy>
+			<range>x1/x1.5</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>T(1)</shots>
+			<bulk>-3</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Thrown Weapon</name>
+				<specialization>Axe/Mace</specialization>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Cutting Torches, Pocket</description>
+		<legality_class>4</legality_class>
+		<value>25</value>
+		<reference>ACT1:30</reference>
+		<ranged_weapon>
+			<damage>sw+2 cr</damage>
+			<strength>10</strength>
+			<usage>Thrown</usage>
+			<accuracy>1</accuracy>
+			<range>x1/x1.5</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>T(1)</shots>
+			<bulk>-3</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Thrown Weapon</name>
+				<specialization>Axe/Mace</specialization>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<notes>1d-2 burn per second. 20 minutes per bottle.</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Cutting Torches, Pocket: gas bottle</description>
+		<legality_class>4</legality_class>
+		<value>1</value>
+		<reference>ACT1:30</reference>
+		<ranged_weapon>
+			<damage>sw+2 cr</damage>
+			<strength>10</strength>
+			<usage>Thrown</usage>
+			<accuracy>1</accuracy>
+			<range>x1/x1.5</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>T(1)</shots>
+			<bulk>-3</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Thrown Weapon</name>
+				<specialization>Axe/Mace</specialization>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Desktop Computer</description>
+		<legality_class>4</legality_class>
+		<value>1500</value>
+		<weight>17 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>Complexity 3.</notes>
+		<categories>
+			<category>Computers</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Disguise Kit</description>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>10 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>Basic equipment.</notes>
+		<categories>
+			<category>Trickery</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Dive Torpedo</description>
+		<legality_class>4</legality_class>
+		<value>5500</value>
+		<weight>380 lb</weight>
+		<reference>ACT1:34</reference>
+		<categories>
+			<category>Vehicles</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Drag Bag</description>
+		<legality_class>4</legality_class>
+		<value>250</value>
+		<weight>4 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>Holds one sniper rifle.</notes>
+		<categories>
+			<category>Luggage</category>
+		</categories>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Drill, Cordless</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:27</reference>
+		<notes>1d+2(2) pi++ per second, or five seconds while stealthy.</notes>
+		<categories>
+			<category>Burglary</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Duct Tape</description>
+		<legality_class>4</legality_class>
+		<value>1</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:30</reference>
+		<ranged_weapon>
+			<damage>sw+2 cr</damage>
+			<strength>10</strength>
+			<usage>Thrown</usage>
+			<accuracy>1</accuracy>
+			<range>x1/x1.5</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>T(1)</shots>
+			<bulk>-3</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Thrown Weapon</name>
+				<specialization>Axe/Mace</specialization>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<notes>60 yard roll. ST-3 or Escape roll to break free.</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Dynamite</description>
+		<legality_class>4</legality_class>
+		<value>5</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:26</reference>
+		<notes>One stick. 9d+1 cr ex damage.</notes>
+		<categories>
+			<category>Demolition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Earmuffs</description>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:27</reference>
+		<notes>Gives Protected Hearing.</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Entrenching Tool</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>3 lb</weight>
+		<reference>ACT3:20</reference>
+		<melee_weapon>
+			<damage>sw+2 cut</damage>
+			<strength>11</strength>
+			<reach>1</reach>
+			<parry>0U</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Axe/Mace</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Flail</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Axe/Mace</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -4.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Escrima Stick</description>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<weight>1 lb</weight>
+		<reference>ACT3:21</reference>
+		<melee_weapon>
+			<damage>sw cr</damage>
+			<strength>6</strength>
+			<usage>Shortsword</usage>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr cr</damage>
+			<strength>6</strength>
+			<usage>Shortsword</usage>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>sw cr</damage>
+			<strength>6</strength>
+			<usage>Smallsword</usage>
+			<reach>1</reach>
+			<parry>0F</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Rapier</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-4</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr cr</damage>
+			<strength>6</strength>
+			<usage>Smallsword</usage>
+			<reach>1</reach>
+			<parry>0F</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Rapier</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-4</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -2.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Evidence Collection Kit</description>
+		<legality_class>4</legality_class>
+		<value>150</value>
+		<weight>10 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>Basic equipment.</notes>
+		<categories>
+			<category>Security</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Expandable Baton</description>
+		<legality_class>4</legality_class>
+		<value>60</value>
+		<weight>2 lb</weight>
+		<reference>ACT3:21</reference>
+		<melee_weapon>
+			<damage>sw cr</damage>
+			<strength>6</strength>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr cr</damage>
+			<strength>6</strength>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -1.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Expandable Baton</description>
+		<legality_class>4</legality_class>
+		<value>60</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:33</reference>
+		<melee_weapon>
+			<damage>sw cr</damage>
+			<strength>6</strength>
+			<usage>swing</usage>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr cr</damage>
+			<strength>6</strength>
+			<usage>thrust</usage>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -1.</notes>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Exploder</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>0.75 lb</weight>
+		<reference>ACT1:26</reference>
+		<notes>Detonates up to 50 blasting caps.</notes>
+		<categories>
+			<category>Demolition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Extrudable Explosive</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>0.3 lb</weight>
+		<reference>ACT1:26</reference>
+		<notes>7d cr ex damage; always deals 42 points to a door.</notes>
+		<categories>
+			<category>Demolition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Files, Diamond</description>
+		<legality_class>4</legality_class>
+		<value>35</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:27</reference>
+		<notes>Can quietly cut a hasp in (DR + HP)/2 minutes.</notes>
+		<categories>
+			<category>Burglary</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Fire Axe</description>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>8 lb</weight>
+		<reference>ACT1:30</reference>
+		<melee_weapon>
+			<damage>sw+3 cut</damage>
+			<strength>12&#8225;</strength>
+			<usage>Swung</usage>
+			<reach>1,2*</reach>
+			<parry>0U</parry>
+			<block>No</block>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Axe/Mace</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Axe/Mace</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Polearm</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Flail</name>
+				<modifier>-4</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Forced Entry +1.</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Flare, Hand</description>
+		<legality_class>4</legality_class>
+		<value>5</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>Illuminates 5-yard radius for 30 minutes; starts fires.</notes>
+		<categories>
+			<category>Light</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Flare, Signal</description>
+		<legality_class>4</legality_class>
+		<value>15</value>
+		<weight>0.1 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>70 yard range.</notes>
+		<categories>
+			<category>Light</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Flashlight, Heavy</description>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>10yd. beam for 50 hours.</notes>
+		<categories>
+			<category>Light</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Flashlight, Mini</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>0.25 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>5yd beam for 10hrs.</notes>
+		<categories>
+			<category>Light</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Flex Cuffs</description>
+		<legality_class>4</legality_class>
+		<value>5</value>
+		<weight>0.25 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>Pack of ten. DR1. HP2. -1 to Escape.</notes>
+		<categories>
+			<category>Security</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Gas Mask</description>
+		<legality_class>4</legality_class>
+		<value>250</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:27</reference>
+		<notes>Gives Filter Lungs, Immunity to Eye/Nose Irritants, No Sense of Smell/Taste, and No Peripheral Vision.</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+		<dr_bonus>
+			<location>eyes</location>
+			<amount>2</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Gasoline</description>
+		<legality_class>4</legality_class>
+		<value>3</value>
+		<weight>6 lb</weight>
+		<reference>ACT1:26</reference>
+		<notes>One gallon.</notes>
+		<categories>
+			<category>Demolition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Geiger Counter</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>Runs for 10 hours.</notes>
+		<categories>
+			<category>Science</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Gloves, Sap</description>
+		<legality_class>4</legality_class>
+		<value>60</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:31</reference>
+		<melee_weapon>
+			<damage>thr+1</damage>
+			<strength>0</strength>
+			<usage>Punch</usage>
+			<reach>C</reach>
+			<parry>0</parry>
+			<block>0</block>
+			<default>
+				<type>DX</type>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Brawling</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Boxing</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Karate</name>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Gives Bad Grip 1. Flexible.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>hands</location>
+			<amount>2</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Gloves, Shooting</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:31</reference>
+		<notes>Flexible.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>hands</location>
+			<amount>1</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Glow Stick</description>
+		<legality_class>4</legality_class>
+		<value>2</value>
+		<weight>0.1 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>Illuminates 2yd radius for 12hrs.</notes>
+		<categories>
+			<category>Light</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Go-Bar</description>
+		<legality_class>4</legality_class>
+		<value>175</value>
+		<weight>17 lb</weight>
+		<reference>ACT1:30</reference>
+		<melee_weapon>
+			<damage>sw+4 cr</damage>
+			<strength>13&#8225;</strength>
+			<usage>Swung</usage>
+			<reach>1,2*</reach>
+			<parry>0U</parry>
+			<block>No</block>
+			<default>
+				<type>DX</type>
+				<modifier>-7</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Axe/Mace</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Axe/Mace</name>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Polearm</name>
+				<modifier>-6</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Flail</name>
+				<modifier>-6</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Forced Entry +1.</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Goggles, Tactical</description>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<reference>ACT1:27</reference>
+		<notes>Gives Nictitating Membrane 5.</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+		<dr_bonus>
+			<location>eyes</location>
+			<amount>5</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>GPS Receiver</description>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>0.25 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>Navigation +3.</notes>
+		<categories>
+			<category>Personal Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Grapnel</description>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>3 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>Supports 600lbs. Range STx2 yards.</notes>
+		<categories>
+			<category>Infiltration</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Grenade Launcher, 40mm</description>
+		<legality_class>4</legality_class>
+		<value>1550</value>
+		<weight>6.3 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>6d+2 [2d] cr ex</damage>
+			<strength>8&#8224;</strength>
+			<accuracy>1</accuracy>
+			<range>30/440</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(3)</shots>
+			<bulk>-4</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Grenade Launcher, 40mm: reload</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Hacksaw</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>sw-2(2) cut per second to bars, chains, and cables.</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Hand Ram</description>
+		<legality_class>4</legality_class>
+		<value>150</value>
+		<weight>35 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>sw+3d+1 cr per three seconds.</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Handcuffs.</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>DR4. HP6. -5 to Escape.</notes>
+		<categories>
+			<category>Security</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Hang-Glider</description>
+		<legality_class>4</legality_class>
+		<value>4000</value>
+		<weight>260 lb</weight>
+		<reference>ACT1:34</reference>
+		<categories>
+			<category>Vehicles</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Hat, Leather</description>
+		<legality_class>4</legality_class>
+		<value>60</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:31</reference>
+		<notes>Flexible.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>skull</location>
+			<amount>1</amount>
+		</dr_bonus>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Headset, Concealable</description>
+		<legality_class>4</legality_class>
+		<value>300</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:28</reference>
+		<categories>
+			<category>Communicators</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Headset, Tactical</description>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>Gives Protected Hearing.</notes>
+		<categories>
+			<category>Communicators</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Heavy Bike</description>
+		<legality_class>4</legality_class>
+		<value>15000</value>
+		<weight>2600 lb</weight>
+		<reference>ACT1:34</reference>
+		<categories>
+			<category>Vehicles</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Helmet, Ballistic</description>
+		<legality_class>4</legality_class>
+		<value>250</value>
+		<weight>3 lb</weight>
+		<reference>ACT1:31</reference>
+		<notes>Not concealable as clothing: common reaction -2.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>skull</location>
+			<amount>12</amount>
+		</dr_bonus>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Helmet, Ballistic: Visor</description>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>1.4 lb</weight>
+		<reference>ACT1:31</reference>
+		<notes>Gives Protected Vision.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>eyes</location>
+			<amount>10</amount>
+		</dr_bonus>
+		<dr_bonus>
+			<location>face</location>
+			<amount>10</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Helmet, Motorcycle</description>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>3 lb</weight>
+		<reference>ACT1:31</reference>
+		<notes>DR+3 vs. crushing attacks.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>skull</location>
+			<amount>3</amount>
+		</dr_bonus>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Helmet, Motorcycle: Visor</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:31</reference>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>eyes</location>
+			<amount>1</amount>
+		</dr_bonus>
+		<dr_bonus>
+			<location>face</location>
+			<amount>1</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>HMMWV</description>
+		<legality_class>4</legality_class>
+		<value>70000</value>
+		<weight>8200 lb</weight>
+		<reference>ACT1:34</reference>
+		<categories>
+			<category>Vehicles</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Holster, Belt</description>
+		<legality_class>4</legality_class>
+		<value>25</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>For pistols.</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Holster, Shoulder</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>For pistols. Enables Holdout, but gives -1 to Fast-Draw.</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Holster, Sleeve</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>-2 to Holdout.</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Holster, Undercover</description>
+		<legality_class>4</legality_class>
+		<value>125</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>+1 to Holdout. -1 to Fast-Draw.</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Hydraulic Door Opener</description>
+		<legality_class>4</legality_class>
+		<value>1500</value>
+		<weight>9 lb</weight>
+		<reference>ACT1:27</reference>
+		<notes>3 seconds per use. Inflicts 10d cr damage to door.</notes>
+		<categories>
+			<category>Burglary</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Industrial Cleanser</description>
+		<legality_class>4</legality_class>
+		<value>5</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>Enough to clean up one killing.</notes>
+		<categories>
+			<category>Trickery</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Inflatable Boat</description>
+		<legality_class>4</legality_class>
+		<value>2000</value>
+		<weight>1200 lb</weight>
+		<reference>ACT1:34</reference>
+		<categories>
+			<category>Vehicles</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Jacket, Leather</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>4 lb</weight>
+		<reference>ACT1:31</reference>
+		<notes>Flexible.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>arms</location>
+			<amount>1</amount>
+		</dr_bonus>
+		<dr_bonus>
+			<location>torso</location>
+			<amount>1</amount>
+		</dr_bonus>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Jammer</description>
+		<legality_class>4</legality_class>
+		<value>5000</value>
+		<weight>25 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>2-mile range.</notes>
+		<categories>
+			<category>Trickery</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Jo</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>2 lb</weight>
+		<reference>ACT3:21</reference>
+		<melee_weapon>
+			<damage>sw cr</damage>
+			<strength>9</strength>
+			<usage>Broadsword</usage>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Rapier</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Sword</name>
+				<modifier>-4</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr cr</damage>
+			<strength>9</strength>
+			<usage>Broadsword</usage>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Rapier</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Sword</name>
+				<modifier>-4</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>sw+2 cr</damage>
+			<strength>7&#8224;</strength>
+			<usage>Staff</usage>
+			<reach>1,2</reach>
+			<parry>+2</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Staff</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Polearm</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Spear</name>
+				<modifier>-2</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr+2 cr</damage>
+			<strength>7&#8224;</strength>
+			<usage>Staff</usage>
+			<reach>1,2</reach>
+			<parry>+2</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Staff</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Polearm</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Spear</name>
+				<modifier>-2</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -3.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Kama</description>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>2 lb</weight>
+		<reference>ACT3:20</reference>
+		<melee_weapon>
+			<damage>sw cut</damage>
+			<strength>8</strength>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Axe/Mace</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Flail</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Axe/Mace</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>sw imp</damage>
+			<strength>8</strength>
+			<reach>1</reach>
+			<parry>0U</parry>
+			<block>no</block>
+		</melee_weapon>
+		<notes>When swung, may get stuck (see Picks, p.B405). Holdout -3.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Katana</description>
+		<legality_class>4</legality_class>
+		<value>550</value>
+		<weight>3.75 lb</weight>
+		<reference>ACT3:21</reference>
+		<melee_weapon>
+			<damage>sw+1 cut</damage>
+			<strength>10</strength>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Rapier</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Sword</name>
+				<modifier>-4</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr+1 imp</damage>
+			<strength>10</strength>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Rapier</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Sword</name>
+				<modifier>-4</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Empty sheath is a baton. Holdout -5.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Kukri</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>1.5 lb</weight>
+		<reference>ACT3:21</reference>
+		<melee_weapon>
+			<damage>sw-1 cut</damage>
+			<strength>7</strength>
+			<reach>C,1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr-1 imp</damage>
+			<strength>7</strength>
+			<reach>C</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -3.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Kukri</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>1.5 lb</weight>
+		<reference>ACT1:33</reference>
+		<melee_weapon>
+			<damage>sw-1 cut</damage>
+			<strength>7</strength>
+			<usage>swing</usage>
+			<reach>C,1</reach>
+			<parry>-1</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr-1 imp</damage>
+			<strength>7</strength>
+			<usage>thrust</usage>
+			<reach>C</reach>
+			<parry>-1</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -3.</notes>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Kusari</description>
+		<legality_class>4</legality_class>
+		<value>70</value>
+		<weight>5 lb</weight>
+		<reference>ACT3:21</reference>
+		<melee_weapon>
+			<damage>sw+2 cr</damage>
+			<strength>11</strength>
+			<reach>1-4*</reach>
+			<parry>-2U</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Kusari</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-6</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Flail</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Whip</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Parryable at -4. Special entanglement rules p. B406. Holdout -5.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Lab, Field (@Scientific Skill@)</description>
+		<legality_class>4</legality_class>
+		<value>15000</value>
+		<weight>200 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>+1 to skill.</notes>
+		<categories>
+			<category>Science</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Lab, Mobile (@Scientific Skill@)</description>
+		<legality_class>4</legality_class>
+		<value>75000</value>
+		<weight>2000 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>+2 to skill.</notes>
+		<categories>
+			<category>Science</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Lab, Suitcase (@Scientific Skill@)</description>
+		<legality_class>4</legality_class>
+		<value>3000</value>
+		<weight>20 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>Basic equipment.</notes>
+		<categories>
+			<category>Science</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ladder, Portable</description>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>5 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>30' tall, but contracts to backpack size. Does not require Climbing roll.</notes>
+		<categories>
+			<category>Infiltration</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Lantern, Electric</description>
+		<legality_class>4</legality_class>
+		<value>30</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>Illuminates 5yd radius for 20hrs.</notes>
+		<categories>
+			<category>Light</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Laser Comm</description>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<weight>0.75 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>1-mile range. Runs for 4 hours.</notes>
+		<categories>
+			<category>Communicators</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Leggings, Ballistic</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>8 lb</weight>
+		<reference>ACT1:31</reference>
+		<notes>Flexible. Front protection only. DR+7 vs. piercing and cutting attacks. Not concealable as clothing: common reaction -2.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>legs</location>
+			<amount>5</amount>
+		</dr_bonus>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Light Helicopter</description>
+		<legality_class>4</legality_class>
+		<value>500000</value>
+		<weight>4800 lb</weight>
+		<reference>ACT1:34</reference>
+		<categories>
+			<category>Vehicles</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Load-Bearing Vest</description>
+		<legality_class>4</legality_class>
+		<value>30</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:28</reference>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at_most">20 lb</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Load-Bearing Vest</description>
+		<legality_class>4</legality_class>
+		<value>150</value>
+		<weight>5 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>With built-in flotation device</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at_most">20 lb</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Lockpicks</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>0.1 lb</weight>
+		<reference>ACT1:27</reference>
+		<notes>Basic equipment for lockpicking.</notes>
+		<categories>
+			<category>Burglary</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Lockpicks, Electronic</description>
+		<legality_class>4</legality_class>
+		<value>1500</value>
+		<weight>3 lb</weight>
+		<reference>ACT1:27</reference>
+		<notes>Basic equipment for Electronics Operation (Security) to defeat security systems.</notes>
+		<categories>
+			<category>Burglary</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Luxury Car</description>
+		<legality_class>4</legality_class>
+		<value>30000</value>
+		<weight>4200 lb</weight>
+		<reference>ACT1:34</reference>
+		<categories>
+			<category>Vehicles</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Metal Detector Wand</description>
+		<legality_class>4</legality_class>
+		<value>250</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>+1 to find metal items. Runs for 10 hours.</notes>
+		<categories>
+			<category>Security</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Mike, Laser</description>
+		<legality_class>4</legality_class>
+		<value>5000</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>Range 900yds.</notes>
+		<categories>
+			<category>Surveillance</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Mike, Shotgun</description>
+		<legality_class>4</legality_class>
+		<value>800</value>
+		<weight>3 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>Parabolic Hearing 3. Runs for 10hrs.</notes>
+		<categories>
+			<category>Surveillance</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Multi-Tool</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>Most repairs -5.</notes>
+		<categories>
+			<category>Personal Accessories</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>NBC Suit</description>
+		<legality_class>4</legality_class>
+		<value>150</value>
+		<weight>3.5 lb</weight>
+		<reference>ACT1:31</reference>
+		<notes>Flexible. Full-body DR+1 vs. burning and corrosion damage. Not concealable as clothing: common reaction -2.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ninja-To</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>2 lb</weight>
+		<reference>ACT3:21</reference>
+		<melee_weapon>
+			<damage>sw cut</damage>
+			<strength>8</strength>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr+1 imp</damage>
+			<strength>8</strength>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -2.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Notebook Computer</description>
+		<legality_class>4</legality_class>
+		<value>2100</value>
+		<weight>2.5 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>Complexity 3. Runs for 5 hours.</notes>
+		<categories>
+			<category>Computers</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Nunchaku</description>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<weight>20 lb</weight>
+		<reference>ACT3:21</reference>
+		<melee_weapon>
+			<damage>sw+1 cr</damage>
+			<strength>7</strength>
+			<reach>1</reach>
+			<parry>0U</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Flail</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-6</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Axe/Mace</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Flail</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Parryable at only -2. Holdout -2.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Pants, Leather</description>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>4 lb</weight>
+		<reference>ACT1:31</reference>
+		<notes>Flexible.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>legs</location>
+			<amount>1</amount>
+		</dr_bonus>
+		<dr_bonus>
+			<location>groin</location>
+			<amount>1</amount>
+		</dr_bonus>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Parachute, Mini</description>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<weight>8 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>Opens after 40 yards. Supports 150 lbs. Wearer descends at 5 yards/second.</notes>
+		<categories>
+			<category>Infiltration</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Parachute, Ram-Air</description>
+		<legality_class>4</legality_class>
+		<value>3500</value>
+		<weight>25 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>Opens after 80 yards. Supports 400 lbs. Capable of maneuvering.</notes>
+		<categories>
+			<category>Infiltration</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>PDA</description>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>0.1 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>-2 to long tasks. Complexity 1. Runs for 5 hours.</notes>
+		<categories>
+			<category>Computers</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Pepper Spray</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>0.1 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>Special</damage>
+			<strength>3</strength>
+			<range>2</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>20</shots>
+			<bulk>-1</bulk>
+			<default>
+				<type>Skill</type>
+				<name>Liquid Projector</name>
+				<specialization>Sprayer</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Liquid Projector</name>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Phone, Cell</description>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>Runs for 6 hours.</notes>
+		<categories>
+			<category>Communicators</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Phone, Cell (Fine)</description>
+		<legality_class>4</legality_class>
+		<value>2000</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>Runs for 6 hours. Up to 19 built-in gadgets.</notes>
+		<categories>
+			<category>Communicators</category>
+		</categories>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Phone, Cell (Good)</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>Runs for 6 hours. Up to 4 built-in gadgets.</notes>
+		<categories>
+			<category>Communicators</category>
+		</categories>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Phone, Satellite</description>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>Runs for 4 hours.</notes>
+		<categories>
+			<category>Communicators</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Plastique</description>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>1.25 lb</weight>
+		<reference>ACT1:26</reference>
+		<notes>5dx3 cr ex damage. Detect by smell: -8.</notes>
+		<categories>
+			<category>Demolition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Police Baton</description>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:33</reference>
+		<melee_weapon>
+			<damage>sw cr</damage>
+			<strength>6</strength>
+			<usage>swing</usage>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr cr</damage>
+			<strength>6</strength>
+			<usage>thrust</usage>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -2.</notes>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Pump Shotgun, 12G</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>8.3 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>1d+1 pi</damage>
+			<strength>10&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>40/800</range>
+			<rate_of_fire>2x9</rate_of_fire>
+			<shots>7+1(2i)</shots>
+			<bulk>-5</bulk>
+			<recoil>1/5</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Pump Shotgun, 12G: reload</description>
+		<legality_class>4</legality_class>
+		<value>4</value>
+		<weight>0.8 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Push Knife</description>
+		<legality_class>4</legality_class>
+		<value>30</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:33</reference>
+		<melee_weapon>
+			<damage>thr imp</damage>
+			<strength>5</strength>
+			<usage>thrust</usage>
+			<reach>C</reach>
+			<parry>-1</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -1.</notes>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Radio, Backpack</description>
+		<legality_class>4</legality_class>
+		<value>2000</value>
+		<weight>8 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>35-mile range. Runs for 30 hours.</notes>
+		<categories>
+			<category>Communicators</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Radio, Compact</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>0.25 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>2-mile range. Runs for 10 hours.</notes>
+		<categories>
+			<category>Communicators</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Radio, Handset</description>
+		<legality_class>4</legality_class>
+		<value>250</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>5-mile range. Runs for 10 hours.</notes>
+		<categories>
+			<category>Communicators</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Rappelling Kit</description>
+		<legality_class>4</legality_class>
+		<value>150</value>
+		<weight>3 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>For descents only. Incl. 33 yards of 1/4" rope.</notes>
+		<categories>
+			<category>Infiltration</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Remote</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:26</reference>
+		<notes>Can detonate a blasting cap at 5 miles.</notes>
+		<categories>
+			<category>Demolition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Revolver, .38</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>2d pi</damage>
+			<strength>9</strength>
+			<accuracy>2</accuracy>
+			<range>110/1,200</range>
+			<rate_of_fire>3</rate_of_fire>
+			<shots>6(6)</shots>
+			<bulk>-2</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Revolver, .38: magazine</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Revolver, .38: reload</description>
+		<legality_class>4</legality_class>
+		<value>2</value>
+		<weight>0.3 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Revolver, .44M</description>
+		<legality_class>4</legality_class>
+		<value>770</value>
+		<weight>3.1 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>3d+2 pi+</damage>
+			<strength>11</strength>
+			<accuracy>2</accuracy>
+			<range>210/2,300</range>
+			<rate_of_fire>3</rate_of_fire>
+			<shots>6(6)</shots>
+			<bulk>-3</bulk>
+			<recoil>4</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Revolver, .44M: magazine</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Revolver, .44M: reload</description>
+		<legality_class>4</legality_class>
+		<value>4</value>
+		<weight>0.4 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Revolver, .357M</description>
+		<legality_class>4</legality_class>
+		<value>850</value>
+		<weight>2.9 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>3d pi</damage>
+			<strength>10</strength>
+			<accuracy>2</accuracy>
+			<range>190/2,100</range>
+			<rate_of_fire>3</rate_of_fire>
+			<shots>6(6)</shots>
+			<bulk>-2</bulk>
+			<recoil>3</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Revolver, .357M: magazine</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Revolver, .357M: reload</description>
+		<legality_class>4</legality_class>
+		<value>3</value>
+		<weight>0.3 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Rope, 1/4"</description>
+		<legality_class>4</legality_class>
+		<value>30</value>
+		<weight>0.6 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>10 yards. Supports 500lbs.</notes>
+		<categories>
+			<category>Infiltration</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Rope, 3/8"</description>
+		<legality_class>4</legality_class>
+		<value>25</value>
+		<weight>1.6 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>10 yards. Supports 650lbs.</notes>
+		<categories>
+			<category>Infiltration</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sai</description>
+		<legality_class>4</legality_class>
+		<value>60</value>
+		<weight>1.5 lb</weight>
+		<reference>ACT3:21</reference>
+		<melee_weapon>
+			<damage>sw cr</damage>
+			<strength>7</strength>
+			<usage>Jitte/Sai</usage>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr imp</damage>
+			<strength>7</strength>
+			<usage>Jitte/Sai</usage>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword-3</name>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>sw cr</damage>
+			<strength>7</strength>
+			<usage>Main-Gauche</usage>
+			<reach>1</reach>
+			<parry>0F</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Rapier</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr imp</damage>
+			<strength>7</strength>
+			<usage>Main-Gauche</usage>
+			<reach>1</reach>
+			<parry>0F</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Rapier</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>When using Jitte/Sai skill, +2 to disarm. Holdout -3.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Scanner Pen</description>
+		<legality_class>4</legality_class>
+		<value>150</value>
+		<weight>0.1 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>Scans a page in 4 seconds. Stores 100 pages in memory.</notes>
+		<categories>
+			<category>Surveillance</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Scope, Thermal Imaging</description>
+		<legality_class>4</legality_class>
+		<value>10000</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>Gives +2 Acc, Infravision. Runs for 2 hours.</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Scopes</description>
+		<legality_class>4</legality_class>
+		<value>150</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>$150 per +1 Acc, maximum +5.</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Scuba Gear</description>
+		<legality_class>4</legality_class>
+		<value>1500</value>
+		<weight>45 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>90 minute air supply.</notes>
+		<categories>
+			<category>Infiltration</category>
+		</categories>
+		<dr_bonus>
+			<location>full_body</location>
+			<amount>1</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Scuba Gear</description>
+		<legality_class>4</legality_class>
+		<value>2500</value>
+		<weight>46 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>90 minute air supply. Incl. ultrasonic communicator with 3,000-yard range, runs for 4 hours.</notes>
+		<categories>
+			<category>Infiltration</category>
+		</categories>
+		<dr_bonus>
+			<location>full_body</location>
+			<amount>1</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Search Endoscope</description>
+		<legality_class>4</legality_class>
+		<value>1500</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:27</reference>
+		<notes>+2 to lockpicking.</notes>
+		<categories>
+			<category>Burglary</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Shoes</description>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:31</reference>
+		<notes>Flexible.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>feet</location>
+			<amount>1</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Shoes, Climbing</description>
+		<legality_class>4</legality_class>
+		<value>80</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:31</reference>
+		<notes>Flexible.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>feet</location>
+			<amount>1</amount>
+		</dr_bonus>
+		<skill_bonus>
+			<name compare="is">Climbing</name>
+			<specialization compare="is anything"></specialization>
+			<amount>1</amount>
+		</skill_bonus>
+		<skill_bonus>
+			<name compare="is">Stealth</name>
+			<specialization compare="is anything"></specialization>
+			<amount>1</amount>
+		</skill_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Shovel, Folding</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>3 lb</weight>
+		<reference>ACT1:30</reference>
+		<melee_weapon>
+			<damage>sw+2 cut</damage>
+			<strength>11</strength>
+			<usage>Swung</usage>
+			<reach>1</reach>
+			<parry>0U</parry>
+			<block>No</block>
+			<default>
+				<type>DX</type>
+				<modifier>-7</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Axe/Mace</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Flail</name>
+				<modifier>-6</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Axe/Mace</name>
+				<modifier>-5</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -4.</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Shuriken</description>
+		<legality_class>4</legality_class>
+		<value>3</value>
+		<weight>0.1 lb</weight>
+		<reference>ACT3:20</reference>
+		<melee_weapon>
+			<damage>thr-2 cut</damage>
+			<reach>C</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Brawling</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Karate</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sight, Night</description>
+		<legality_class>4</legality_class>
+		<value>1500</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>Adds Night Vision 7 to another scope or sight. Removes -1 from darkness penalties.  Gives -1 Bulk.</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sight, Reflex</description>
+		<legality_class>4</legality_class>
+		<value>550</value>
+		<weight>0.25 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>+1 to Guns out to 300 yards. Removes up to -3 in darkness penalties. Not cumulative with targeting laser.</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Silencers</description>
+		<legality_class>4</legality_class>
+		<value>250</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>$250 per -1 to Hearing, maximum -4. Gives -1 Bulk. Not for Rifle.</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Silencers, Rifle</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>5 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>$400 per -1 to Hearing, maximum -4. Gives -2 Bulk. Not for Rifle.</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sledgehammer</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>15 lb</weight>
+		<reference>ACT1:30</reference>
+		<melee_weapon>
+			<damage>sw+4 cr</damage>
+			<strength>13&#8225;</strength>
+			<usage>Swung</usage>
+			<reach>1,2*</reach>
+			<parry>0U</parry>
+			<block>No</block>
+			<default>
+				<type>DX</type>
+				<modifier>-7</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Axe/Mace</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Axe/Mace</name>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Polearm</name>
+				<modifier>-6</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Flail</name>
+				<modifier>-6</modifier>
+			</default>
+		</melee_weapon>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sleeves, Ballistic</description>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>5 lb</weight>
+		<reference>ACT1:31</reference>
+		<notes>Flexible. DR+4 vs. piercing and cutting damage. Not concealable as clothing: common reaction -2.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>arms</location>
+			<amount>2</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>SMG, .45</description>
+		<legality_class>4</legality_class>
+		<value>900</value>
+		<weight>6.5 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>2d+1 pi+</damage>
+			<strength>8&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>160/1,700</range>
+			<rate_of_fire>10</rate_of_fire>
+			<shots>25+1(3)</shots>
+			<bulk>-4</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>SMG, .45: magazine</description>
+		<legality_class>4</legality_class>
+		<value>36</value>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>SMG, .45: reload</description>
+		<legality_class>4</legality_class>
+		<value>13</value>
+		<weight>1.6 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>SMG, 9mm</description>
+		<legality_class>4</legality_class>
+		<value>1500</value>
+		<weight>6 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>3d-1 pi</damage>
+			<strength>8&#8224;</strength>
+			<accuracy>4</accuracy>
+			<range>170/1,900</range>
+			<rate_of_fire>13</rate_of_fire>
+			<shots>30+1(3)</shots>
+			<bulk>-4</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>SMG, 9mm: magazine</description>
+		<legality_class>4</legality_class>
+		<value>29</value>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>SMG, 9mm: reload</description>
+		<legality_class>4</legality_class>
+		<value>9</value>
+		<weight>1.2 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sniper Rifle, .50</description>
+		<legality_class>4</legality_class>
+		<value>7775</value>
+		<weight>35 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>6dx2 pi+</damage>
+			<strength>13B&#8224;</strength>
+			<accuracy>6+3</accuracy>
+			<range>1,700/6,500</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>10+1(3)</shots>
+			<bulk>-7</bulk>
+			<recoil>3</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sniper Rifle, .50: magazine</description>
+		<legality_class>4</legality_class>
+		<value>38</value>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sniper Rifle, .50: reload</description>
+		<legality_class>4</legality_class>
+		<value>38</value>
+		<weight>4.4 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sniper Rifle, 7.62mm</description>
+		<legality_class>4</legality_class>
+		<value>2350</value>
+		<weight>15 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>7d pi</damage>
+			<strength>11B&#8224;</strength>
+			<accuracy>5+3</accuracy>
+			<range>1,000/4,200</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>10+1(3)</shots>
+			<bulk>-6</bulk>
+			<recoil>3</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sniper Rifle, 7.62mm: magazine</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sniper Rifle, 7.62mm: reload</description>
+		<legality_class>4</legality_class>
+		<value>9</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Snub Revolver, .38</description>
+		<legality_class>4</legality_class>
+		<value>350</value>
+		<weight>1.2 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>2d-1 pi</damage>
+			<strength>9</strength>
+			<accuracy>1</accuracy>
+			<range>90/1,000</range>
+			<rate_of_fire>3</rate_of_fire>
+			<shots>5(6)</shots>
+			<bulk>-1</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Snub Revolver, .38: magazine</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Snub Revolver, .38: reload</description>
+		<legality_class>4</legality_class>
+		<value>2</value>
+		<weight>0.27 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Space Pen</description>
+		<legality_class>4</legality_class>
+		<value>25</value>
+		<reference>ACT1:29</reference>
+		<categories>
+			<category>Personal Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Speedboat</description>
+		<legality_class>4</legality_class>
+		<value>18000</value>
+		<weight>4000 lb</weight>
+		<reference>ACT1:34</reference>
+		<categories>
+			<category>Vehicles</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Spike Strip</description>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>One yard, single-use. Punctures tires for -4 to handling and 1/2 top speed.</notes>
+		<categories>
+			<category>Security</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sports Bike</description>
+		<legality_class>4</legality_class>
+		<value>18000</value>
+		<weight>2000 lb</weight>
+		<reference>ACT1:34</reference>
+		<categories>
+			<category>Vehicles</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sports Car</description>
+		<legality_class>4</legality_class>
+		<value>85000</value>
+		<weight>3600 lb</weight>
+		<reference>ACT1:34</reference>
+		<categories>
+			<category>Vehicles</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Spotting Scope</description>
+		<legality_class>4</legality_class>
+		<value>300</value>
+		<weight>10 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>Glint-free coating. Telescopic Vision 5.</notes>
+		<categories>
+			<category>Optics</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Stethoscope, Electronic</description>
+		<legality_class>4</legality_class>
+		<value>300</value>
+		<weight>0.4 lb</weight>
+		<reference>ACT1:27</reference>
+		<notes>Basic equipment for Lockpicking when cracking safes.</notes>
+		<categories>
+			<category>Burglary</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Stun Gun</description>
+		<legality_class>4</legality_class>
+		<value>25</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:33</reference>
+		<melee_weapon>
+			<damage>HT-3(0.5) aff</damage>
+			<strength>2</strength>
+			<reach>C</reach>
+			<parry>No</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Brawling</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout -1.</notes>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Suction Cups</description>
+		<legality_class>4</legality_class>
+		<value>240</value>
+		<weight>9 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>Allows a climber of up to 200lbs. to ignore -3 Climbing penalty for smooth surfaces.</notes>
+		<categories>
+			<category>Infiltration</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sunglasses</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<reference>ACT1:29</reference>
+		<notes>Protected Vision vs. ordinary light.</notes>
+		<categories>
+			<category>Personal Accessories</category>
+		</categories>
+		<dr_bonus>
+			<location>eyes</location>
+			<amount>1</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sunglasses, Ballistic</description>
+		<legality_class>4</legality_class>
+		<value>35</value>
+		<reference>ACT1:29</reference>
+		<notes>Protected Vision vs. ordinary light.</notes>
+		<categories>
+			<category>Personal Accessories</category>
+		</categories>
+		<dr_bonus>
+			<location>eyes</location>
+			<amount>4</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Surveillance Endoscope</description>
+		<legality_class>4</legality_class>
+		<value>4500</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>Spot at Vision-5.</notes>
+		<categories>
+			<category>Surveillance</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>SUV</description>
+		<legality_class>4</legality_class>
+		<value>45000</value>
+		<weight>8000 lb</weight>
+		<reference>ACT1:34</reference>
+		<categories>
+			<category>Vehicles</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Switchblade</description>
+		<legality_class>4</legality_class>
+		<value>30</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:33</reference>
+		<melee_weapon>
+			<damage>sw-3 cut</damage>
+			<strength>5</strength>
+			<usage>swing</usage>
+			<reach>C,1</reach>
+			<parry>No</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr-1 imp</damage>
+			<strength>5</strength>
+			<usage>thrust</usage>
+			<reach>C</reach>
+			<parry>No</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout 0.</notes>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sword Cane</description>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>2.5 lb</weight>
+		<reference>ACT3:21</reference>
+		<melee_weapon>
+			<damage>thr+1 imp</damage>
+			<strength>6</strength>
+			<reach>1</reach>
+			<parry>0F</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Rapier</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-4</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Disguised. Empty sheath is a baton. Holdout -4.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Tactical Folding Knife</description>
+		<legality_class>4</legality_class>
+		<value>30</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:33</reference>
+		<melee_weapon>
+			<damage>sw-3 cut</damage>
+			<strength>5</strength>
+			<usage>swing</usage>
+			<reach>C,1</reach>
+			<parry>-1</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr-1 imp</damage>
+			<strength>5</strength>
+			<usage>thrust</usage>
+			<reach>C</reach>
+			<parry>-1</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Main-Gauche</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout 0.</notes>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Tactical Lights, Large</description>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>100-yard beam for 2 hours. Not for pistol.</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Tactical Lights, Small</description>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>0.25 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>25-yard beam for 2 hours.</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Targeting Lasers</description>
+		<legality_class>4</legality_class>
+		<value>150</value>
+		<weight>0.25 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>+1 to Guns out to 150 yards.</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Targeting Lasers, Long Arm</description>
+		<legality_class>4</legality_class>
+		<value>750</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:28</reference>
+		<notes>+1 to Guns out to 750 yards.</notes>
+		<categories>
+			<category>Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Taser</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>1.1 lb</weight>
+		<reference>ACT1:32</reference>
+		<ranged_weapon>
+			<damage>1d-3 pi-</damage>
+			<strength>7</strength>
+			<accuracy>0</accuracy>
+			<range>7</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>2(6)</shots>
+			<bulk>-2</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<modifier>-4</modifier>
+			</default>
+		</ranged_weapon>
+		<ranged_weapon>
+			<damage>HT-5(0.5) aff</damage>
+			<usage>follow-up</usage>
+		</ranged_weapon>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Taser: reload</description>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>0.25 lb</weight>
+		<reference>ACT1:32</reference>
+		<categories>
+			<category>Ammunition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Thermite</description>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:26</reference>
+		<notes>One application. Burns for 25 seconds.</notes>
+		<categories>
+			<category>Demolition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Thru-Wall Radar</description>
+		<legality_class>4</legality_class>
+		<value>30000</value>
+		<weight>10 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>Sees 20yds beyond a 1' wall, but only 1yd beyond concrete. Runs for 3hrs.</notes>
+		<categories>
+			<category>Surveillance</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Timer</description>
+		<legality_class>4</legality_class>
+		<value>25</value>
+		<weight>0.5 lb</weight>
+		<reference>ACT1:26</reference>
+		<notes>Detonates blasting caps at specified time.</notes>
+		<categories>
+			<category>Demolition</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Tonfa</description>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>1.5 lb</weight>
+		<reference>ACT1:33</reference>
+		<melee_weapon>
+			<damage>thr cr</damage>
+			<strength>-</strength>
+			<usage>Brawl</usage>
+			<reach>C</reach>
+			<parry>0</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Brawling</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr cr</damage>
+			<strength>7</strength>
+			<usage>Lunge</usage>
+			<reach>C,1</reach>
+			<parry>0</parry>
+			<block>No</block>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>sw cr</damage>
+			<strength>7</strength>
+			<usage>Swing</usage>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>No</block>
+		</melee_weapon>
+		<notes>Holdout -3.</notes>
+		<categories>
+			<category>Weapons</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Tool Kit, Mini (@Skill@)</description>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>4 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>Skill -2. Not for Electronics Repair.</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Tool Kit, Mini (Electronics Repair)</description>
+		<legality_class>4</legality_class>
+		<value>30000</value>
+		<weight>500 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>Skill +2.</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Tool Kit, Mini (Electronics Repair)</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>Skill -2.</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Tool Kit, Shop (@Skill@)</description>
+		<legality_class>4</legality_class>
+		<value>15000</value>
+		<weight>2000 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>Skill +2. Not for Electronics Repair.</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Truth Serum</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<reference>ACT1:29</reference>
+		<notes>After 30 seconds, subject rolls HT-1; failure means -2 to will and self-control rolls for (20 - HT)/2 minutes.</notes>
+		<categories>
+			<category>Security</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>TV Set, Mini</description>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:30</reference>
+		<notes>Runs for 4hrs.</notes>
+		<categories>
+			<category>Surveillance</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Van</description>
+		<legality_class>4</legality_class>
+		<value>25000</value>
+		<weight>6000 lb</weight>
+		<reference>ACT1:34</reference>
+		<categories>
+			<category>Vehicles</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Vest, Advanced</description>
+		<legality_class>4</legality_class>
+		<value>4600</value>
+		<weight>17 lb</weight>
+		<reference>ACT1:31</reference>
+		<notes>Flexible. DR-30 vs. crushing attacks. Not concealable as clothing: common reaction -2.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>torso</location>
+			<amount>35</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Vest, Assault</description>
+		<legality_class>4</legality_class>
+		<value>900</value>
+		<weight>8 lb</weight>
+		<reference>ACT1:31</reference>
+		<notes>Flexible. DR+7 vs. piercing and cutting damage. Not concealable as clothing: common reaction -2.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>torso</location>
+			<amount>5</amount>
+		</dr_bonus>
+		<dr_bonus>
+			<location>groin</location>
+			<amount>5</amount>
+		</dr_bonus>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Vest, Assault: Trauma Plates</description>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>8 lb</weight>
+		<reference>ACT1:31</reference>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>torso</location>
+			<amount>23</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Vest, Concealable</description>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<weight>2 lb</weight>
+		<reference>ACT1:31</reference>
+		<notes>Flexible. DR+7 vs. piercing and cutting damage.</notes>
+		<categories>
+			<category>Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>torso</location>
+			<amount>5</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Video Recorder, Digital</description>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>10 lb</weight>
+		<reference>ACT1:30</reference>
+		<categories>
+			<category>Surveillance</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Voice Modulator</description>
+		<legality_class>4</legality_class>
+		<value>350</value>
+		<weight>1 lb</weight>
+		<reference>ACT1:28</reference>
+		<categories>
+			<category>Trickery</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Wakizashi</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>2 lb</weight>
+		<reference>ACT3:21</reference>
+		<melee_weapon>
+			<damage>sw cut</damage>
+			<strength>8</strength>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr+1 imp</damage>
+			<strength>8</strength>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Empty sheath is a baton. Holdout -3.</notes>
+		<categories>
+			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Whistle</description>
+		<legality_class>4</legality_class>
+		<value>5</value>
+		<reference>ACT1:30</reference>
+		<categories>
+			<category>Personal Accessories</category>
+		</categories>
+		<dr_bonus>
+			<location>eyes</location>
+			<amount>4</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Winch</description>
+		<legality_class>4</legality_class>
+		<value>8000</value>
+		<weight>7 lb</weight>
+		<reference>ACT1:29</reference>
+		<notes>Raises a 300lb. load 200 yards at 3 yards/second.</notes>
+		<categories>
+			<category>Infiltration</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Wire Rat Kit</description>
+		<legality_class>4</legality_class>
+		<value>10000</value>
+		<weight>40 lb</weight>
+		<reference>ACT1:30</reference>
+		<categories>
+			<category>Surveillance</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Wristwatch</description>
+		<legality_class>4</legality_class>
+		<value>25</value>
+		<reference>ACT1:30</reference>
+		<categories>
+			<category>Personal Accessories</category>
+		</categories>
+		<dr_bonus>
+			<location>eyes</location>
+			<amount>4</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Wristwatch (Fine)</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<reference>ACT1:30</reference>
+		<notes>Up to 19 built-in gadgets.</notes>
+		<categories>
+			<category>Personal Accessories</category>
+		</categories>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Wristwatch (Good)</description>
+		<legality_class>4</legality_class>
+		<value>125</value>
+		<reference>ACT1:30</reference>
+		<notes>Up to 4 built-in gadgets.</notes>
+		<categories>
+			<category>Personal Accessories</category>
+		</categories>
+	</equipment_container>
+</equipment_list>

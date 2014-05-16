@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<skill_list unique_id="hv8v0uy3:-11wsdsjv0q102" version="1">
+	<technique version="2" limit="0">
+		<name>Biting Grapple</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>Dgn78</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<modifier>-3</modifier>
+		</default>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Brawling</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Biting Grapple</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>Dgn78</reference>
+		<default>
+			<type>DX</type>
+			<modifier>-3</modifier>
+		</default>
+	</technique>
+	<technique version="2" limit="2">
+		<name>Death from Above</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>Dgn78</reference>
+		<default>
+			<type>Skill</type>
+			<name>Flight</name>
+			<modifier>-2</modifier>
+		</default>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Flight</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Flight</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Tail Strike</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>Dgn78</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<modifier>-4</modifier>
+		</default>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Brawling</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<advantage_prereq has="yes">
+				<name compare="starts with">Striker</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Tail Strike</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>Dgn78</reference>
+		<default>
+			<type>DX</type>
+			<modifier>-4</modifier>
+		</default>
+		<prereq_list all="yes">
+			<advantage_prereq has="yes">
+				<name compare="starts with">Striker</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Tail Sweep</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>Dgn78</reference>
+		<default>
+			<type>Skill</type>
+			<name>Tail Strike</name>
+			<modifier>-2</modifier>
+		</default>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Tail Strike</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<advantage_prereq has="yes">
+				<name compare="starts with">Striker</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Wing Bash</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>Dgn78</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<modifier>-3</modifier>
+		</default>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Brawling</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Flight</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="-1">
+		<name>Wing Bash</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>Dgn78</reference>
+		<default>
+			<type>DX</type>
+			<modifier>-4</modifier>
+		</default>
+		<prereq_list all="yes">
+			<advantage_prereq has="yes">
+				<name compare="is">Flight</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+		</prereq_list>
+	</technique>
+</skill_list>

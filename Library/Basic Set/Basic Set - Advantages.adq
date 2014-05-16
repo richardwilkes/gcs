@@ -658,247 +658,6 @@
 		</categories>
 	</advantage>
 	<advantage version="2">
-		<name>Anti-Talent (@Large@)</name>
-		<type>Mental</type>
-		<levels>1</levels>
-		<points_per_level>-15</points_per_level>
-		<modifier version="1">
-			<name>Reaction Penalty</name>
-			<cost type="percentage">0</cost>
-			<affects>total</affects>
-			<notes>@Reaction Penalty@</notes>
-		</modifier>
-		<modifier version="1">
-			<name>Additional Drawback</name>
-			<cost type="percentage">0</cost>
-			<affects>total</affects>
-			<notes>@Additional Drawback@</notes>
-		</modifier>
-		<categories>
-			<category>Disadvantage</category>
-			<category>Talent</category>
-		</categories>
-		<skill_bonus>
-			<name compare="is">@skill01@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill02@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill03@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill04@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill05@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill06@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill07@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill08@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill09@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill10@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill11@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill12@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill13@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill14@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill15@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill16@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill17@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-	</advantage>
-	<advantage version="2">
-		<name>Anti-Talent (@Medium@)</name>
-		<type>Mental</type>
-		<levels>1</levels>
-		<points_per_level>-10</points_per_level>
-		<modifier version="1">
-			<name>Reaction Penalty</name>
-			<cost type="percentage">0</cost>
-			<affects>total</affects>
-			<notes>@Reaction Penalty@</notes>
-		</modifier>
-		<modifier version="1">
-			<name>Additional Drawback</name>
-			<cost type="percentage">0</cost>
-			<affects>total</affects>
-			<notes>@Additional Drawback@</notes>
-		</modifier>
-		<categories>
-			<category>Disadvantage</category>
-			<category>Talent</category>
-		</categories>
-		<skill_bonus>
-			<name compare="is">@skill01@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill02@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill03@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill04@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill05@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill06@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill07@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill08@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill09@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill10@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill11@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill12@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-	</advantage>
-	<advantage version="2">
-		<name>Anti-Talent (@Small@)</name>
-		<type>Mental</type>
-		<levels>1</levels>
-		<points_per_level>-5</points_per_level>
-		<modifier version="1">
-			<name>Reaction Penalty</name>
-			<cost type="percentage">0</cost>
-			<affects>total</affects>
-			<notes>@Reaction Penalty@</notes>
-		</modifier>
-		<modifier version="1">
-			<name>Additional Drawback</name>
-			<cost type="percentage">0</cost>
-			<affects>total</affects>
-			<notes>@Additional Drawback@</notes>
-		</modifier>
-		<categories>
-			<category>Disadvantage</category>
-			<category>Talent</category>
-		</categories>
-		<skill_bonus>
-			<name compare="is">@skill1@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill2@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill3@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill4@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill5@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">@skill6@</name>
-			<specialization compare="is anything"></specialization>
-			<amount per_level="yes">-1</amount>
-		</skill_bonus>
-	</advantage>
-	<advantage version="2">
 		<name>Appearance</name>
 		<type>Physical</type>
 		<modifier version="1" enabled="no">
@@ -11981,133 +11740,6 @@
 			<category>Disadvantage</category>
 		</categories>
 	</advantage>
-	<advantage_container version="2" open="yes">
-		<name>Power</name>
-		<modifier version="1" enabled="no">
-			<name>Power Modifier</name>
-			<cost type="percentage">-10</cost>
-			<affects>total</affects>
-			<reference>PW26</reference>
-			<notes>Biological</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Power Modifier</name>
-			<cost type="percentage">-10</cost>
-			<affects>total</affects>
-			<reference>PW26</reference>
-			<notes>Chi</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Power Modifier</name>
-			<cost type="percentage">50</cost>
-			<affects>total</affects>
-			<reference>PW26</reference>
-			<notes>Cosmic</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Power Modifier</name>
-			<cost type="percentage">-10</cost>
-			<affects>total</affects>
-			<reference>PW26</reference>
-			<notes>Divine</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Power modifier</name>
-			<cost type="percentage">-10</cost>
-			<affects>total</affects>
-			<reference>PW27</reference>
-			<notes>Elemental</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Power Modifier</name>
-			<cost type="percentage">-10</cost>
-			<affects>total</affects>
-			<reference>PW27</reference>
-			<notes>Magical</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Power Modifier</name>
-			<cost type="percentage">-20</cost>
-			<affects>total</affects>
-			<reference>PW27</reference>
-			<notes>Moral</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Power Modifier</name>
-			<cost type="percentage">-20</cost>
-			<affects>total</affects>
-			<reference>PW28</reference>
-			<notes>Nature</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Power Modifier</name>
-			<cost type="percentage">-10</cost>
-			<affects>total</affects>
-			<reference>PW28</reference>
-			<notes>Psionic</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Power Modifier</name>
-			<cost type="percentage">-25</cost>
-			<affects>total</affects>
-			<reference>PW28</reference>
-			<notes>Spirit</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Power Modifier</name>
-			<cost type="percentage">-10</cost>
-			<affects>total</affects>
-			<reference>PW29</reference>
-			<notes>Super</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Power Modifier</name>
-			<cost type="percentage">-30</cost>
-			<affects>total</affects>
-			<reference>Sup34</reference>
-			<notes>Electronic</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Power Modifier</name>
-			<cost type="percentage">-10</cost>
-			<affects>total</affects>
-			<reference>Sup34</reference>
-			<notes>Mechanical</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Power Modifier</name>
-			<cost type="percentage">-10</cost>
-			<affects>total</affects>
-			<reference>Sup34</reference>
-			<notes>Mutant</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Power Modifier</name>
-			<cost type="percentage">-15</cost>
-			<affects>total</affects>
-			<reference>Sup34</reference>
-			<notes>Nanotech</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Power Modifier</name>
-			<cost type="percentage">-10</cost>
-			<affects>total</affects>
-			<reference>Sup34</reference>
-			<notes>Savant</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Power Modifier</name>
-			<cost type="percentage">-10</cost>
-			<affects>total</affects>
-			<reference>Sup34</reference>
-			<notes>Superscience</notes>
-		</modifier>
-		<notes>To be tooled to a new power</notes>
-		<categories>
-			<category>Advantage</category>
-			<category>Power</category>
-		</categories>
-	</advantage_container>
 	<advantage version="2">
 		<name>Power Investiture</name>
 		<type>Mental, Supernatural</type>
@@ -12116,16 +11748,6 @@
 		<reference>B77</reference>
 		<categories>
 			<category>Advantage</category>
-		</categories>
-	</advantage>
-	<advantage version="2">
-		<name>Power Talent</name>
-		<type>Mental</type>
-		<levels>1</levels>
-		<points_per_level>5</points_per_level>
-		<categories>
-			<category>Advantage</category>
-			<category>Power</category>
 		</categories>
 	</advantage>
 	<advantage version="2">
@@ -12706,57 +12328,6 @@
 		<name>Reputation</name>
 		<type>Social</type>
 		<levels>1</levels>
-		<points_per_level>5</points_per_level>
-		<modifier version="1" enabled="no">
-			<name>People Affected</name>
-			<cost type="multiplier">1</cost>
-			<reference>B27</reference>
-			<notes>Almost everyone</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>People Affected</name>
-			<cost type="multiplier">0.67</cost>
-			<reference>B27</reference>
-			<notes>Almost everyone except @large class of people@</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>People Affected</name>
-			<cost type="multiplier">0.5</cost>
-			<reference>B27</reference>
-			<notes>@Large class of people@</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>People Affected</name>
-			<cost type="multiplier">0.33</cost>
-			<reference>B27</reference>
-			<notes>@Small class of people@</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Recognized all the time</name>
-			<cost type="multiplier">1</cost>
-			<reference>B28</reference>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Recognized sometimes</name>
-			<cost type="multiplier">0.5</cost>
-			<reference>B28</reference>
-			<notes>10-</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Recognized occasionally</name>
-			<cost type="multiplier">0.33</cost>
-			<reference>B28</reference>
-			<notes>7-</notes>
-		</modifier>
-		<reference>B26</reference>
-		<categories>
-			<category>Advantage</category>
-		</categories>
-	</advantage>
-	<advantage version="2">
-		<name>Reputation</name>
-		<type>Social</type>
-		<levels>1</levels>
 		<points_per_level>-5</points_per_level>
 		<modifier version="1" enabled="no">
 			<name>People Affected</name>
@@ -12802,6 +12373,57 @@
 		<reference>B26</reference>
 		<categories>
 			<category>Disadvantage</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Reputation</name>
+		<type>Social</type>
+		<levels>1</levels>
+		<points_per_level>5</points_per_level>
+		<modifier version="1" enabled="no">
+			<name>People Affected</name>
+			<cost type="multiplier">1</cost>
+			<reference>B27</reference>
+			<notes>Almost everyone</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>People Affected</name>
+			<cost type="multiplier">0.67</cost>
+			<reference>B27</reference>
+			<notes>Almost everyone except @large class of people@</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>People Affected</name>
+			<cost type="multiplier">0.5</cost>
+			<reference>B27</reference>
+			<notes>@Large class of people@</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>People Affected</name>
+			<cost type="multiplier">0.33</cost>
+			<reference>B27</reference>
+			<notes>@Small class of people@</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Recognized all the time</name>
+			<cost type="multiplier">1</cost>
+			<reference>B28</reference>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Recognized sometimes</name>
+			<cost type="multiplier">0.5</cost>
+			<reference>B28</reference>
+			<notes>10-</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Recognized occasionally</name>
+			<cost type="multiplier">0.33</cost>
+			<reference>B28</reference>
+			<notes>7-</notes>
+		</modifier>
+		<reference>B26</reference>
+		<categories>
+			<category>Advantage</category>
 		</categories>
 	</advantage>
 	<advantage version="2">
@@ -15041,6 +14663,7 @@
 			<cost type="points">0</cost>
 			<affects>levels_only</affects>
 		</modifier>
+		<reference>B89</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>
@@ -15153,6 +14776,7 @@
 			<cost type="points">0</cost>
 			<affects>levels_only</affects>
 		</modifier>
+		<reference>B89</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>
@@ -15240,6 +14864,7 @@
 			<cost type="points">0</cost>
 			<affects>levels_only</affects>
 		</modifier>
+		<reference>B89</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>

@@ -1,0 +1,2404 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<skill_list unique_id="hv8usyyb:-1axef4qwmkcbq" version="1">
+	<technique version="2" limit="0">
+		<name>Acrobatic Stand</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA65</reference>
+		<default>
+			<type>Skill</type>
+			<name>Acrobatics</name>
+			<modifier>-6</modifier>
+		</default>
+		<categories>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Acrobatics</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Aggressive Parry</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA65</reference>
+		<default>
+			<type>Parry</type>
+			<name>Boxing</name>
+			<modifier>-1</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Aggressive Parry</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA65</reference>
+		<default>
+			<type>Parry</type>
+			<name>Brawling</name>
+			<modifier>-1</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Aggressive Parry</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA65</reference>
+		<default>
+			<type>Parry</type>
+			<name>Karate</name>
+			<modifier>-1</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="4">
+		<name>Arm Lock</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA65</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Grappling or Melee Weapon Skill@</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">@Grappling or Melee Weapon Skill@</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Armed Grapple</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA67</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Cloak or Melee Weapon Skill@</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">@Cloak or Melee Weapon Skill@</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Attack from Above</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA67</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Unarmed or Melee Weapon Skill@</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">@Unarmed or Melee Weapon Skill@</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Back Strike</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA67</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Melee Weapon Skill@</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">@Melee Weapon Skill@</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="3">
+		<name>Backbreaker</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA82</reference>
+		<default>
+			<type>ST</type>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="3">
+		<name>Backbreaker</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA82</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Bind Weapon</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA67</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Jitte/Sai or Fencing Weapon Skill@</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">@Jitte/Sai or Fencing Weapon Skill@</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="4">
+		<name>Binding</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA82</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="4">
+		<name>Binding</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA82</reference>
+		<default>
+			<type>Skill</type>
+			<name>Knot-Tying</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="5">
+		<name>Breakfall</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA68</reference>
+		<default>
+			<type>Skill</type>
+			<name>Acrobatics</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Acrobatics</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="5">
+		<name>Breakfall</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA68</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Judo</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="5">
+		<name>Breakfall</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA68</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Wrestling</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Cavalry Training</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA69</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Melee Weapon Skill@</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Animal</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Riding</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Choke Hold</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA69</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Melee Weapon Skill@</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">@Melee Weapon Skill@</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="-2">
+		<name>Close Combat</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA69</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Reach 1 Weapon Skill@</name>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">@Reach 1 Weapon Skill@</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="-4">
+		<name>Close Combat</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA69</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Reach 2 Weapon Skill@</name>
+			<modifier>-8</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">@Reach 2 Weapon Skill@</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="-6">
+		<name>Close Combat</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA69</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Reach 3 Weapon Skill@</name>
+			<modifier>-12</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">@Reach 3 Weapon Skill@</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="4">
+		<name>Combat Riding</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA69</reference>
+		<default>
+			<type>Skill</type>
+			<name>Riding</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Riding</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Counterattack</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA70</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Unarmed or Melee Weapon Skill@</name>
+			<modifier>-5</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">@Unarmed or Melee Weapon Skill@</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Crack</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA70</reference>
+		<default>
+			<type>Skill</type>
+			<name>Whip</name>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Whip</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Drop Kick</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA70</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<modifier>-1</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Brawling</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Drop Kick</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA70</reference>
+		<default>
+			<type>Skill</type>
+			<name>Sumo Wrestling</name>
+			<modifier>-1</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Sumo Wrestling</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Drop Kick</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA70</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Wrestling</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="-1">
+		<name>Ear Clap</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA70</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Unarmed Striking Skill@</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">@Unarmed Striking Skill@</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Elbow Drop</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA70</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Brawling</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Elbow Drop</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA70</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<modifier>-5</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Wrestling</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Entangle</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA71</reference>
+		<default>
+			<type>Skill</type>
+			<name>Kusari</name>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Kusari</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Entangle</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA71</reference>
+		<default>
+			<type>Skill</type>
+			<name>Whip</name>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Whip</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="5">
+		<name>Evade</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA71</reference>
+		<default>
+			<type>Skill</type>
+			<name>Acrobatics</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Acrobatics</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="5">
+		<name>Evade</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA71</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Judo</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Exotic Hand Strike</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA71</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-1</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Karate</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Eye-Gouging</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA71</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<modifier>-5</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Brawling</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Eye-Gouging</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA71</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<modifier>-5</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Judo</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Eye-Gouging</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA71</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<modifier>-5</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Wrestling</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="-4">
+		<name>Eye-Pluck</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA72</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<modifier>-10</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="-4">
+		<name>Eye-Pluck</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA72</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-10</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="-4">
+		<name>Eye-Poke</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA72</reference>
+		<default>
+			<type>Skill</type>
+			<name>Boxing</name>
+			<modifier>-9</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Boxing</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="-4">
+		<name>Eye-Poke</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA72</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<modifier>-9</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Brawling</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="-4">
+		<name>Eye-Poke</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA72</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-9</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Karate</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Eye-Rake</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA72</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<modifier>-5</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Brawling</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Eye-Rake</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA72</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-5</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Karate</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Fighting While Seated</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA83</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Unarrmed or Weapon Skill@</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Flying Jump Kick</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA83</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-7</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Flying Lunge</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA83</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Thrusting Weapon Skill@</name>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Flying Lunge</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA83</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2">
+		<name>Grand Disarm</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA84</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Fencing Weapon Skill@</name>
+			<modifier>-9</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2">
+		<name>Grand Disarm</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA84</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Non-Fencing Melee Combat Skill@</name>
+			<modifier>-11</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Hammer Fist</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA73</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-1</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Karate</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Hand Catch</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA84</reference>
+		<default>
+			<type>Parry</type>
+			<name>Judo</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Hand Catch</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA84</reference>
+		<default>
+			<type>Parry</type>
+			<name>Sumo Wrestling</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Hand Catch</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA84</reference>
+		<default>
+			<type>Parry</type>
+			<name>Wrestling</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Handcuffing</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA73</reference>
+		<default>
+			<type>Skill</type>
+			<name>Binding</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Handcuffing</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA73</reference>
+		<default>
+			<type>DX</type>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Handcuffing</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA73</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<modifier>-1</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Handcuffing</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA73</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Hands-Free Riding</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA73</reference>
+		<default>
+			<type>Skill</type>
+			<name>Riding</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Animal</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Head Butt</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<melee_weapon>
+			<damage>thr-1</damage>
+			<usage>Head Butt</usage>
+			<reach>C</reach>
+			<parry>no</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Head Butt</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Karate</name>
+				<modifier>-1</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Brawling</name>
+				<modifier>-1</modifier>
+			</default>
+		</melee_weapon>
+		<reference>MA74</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<modifier>-1</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Head Butt</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<melee_weapon>
+			<damage>thr-1</damage>
+			<usage>Head Butt</usage>
+			<reach>C</reach>
+			<parry>no</parry>
+			<block>no</block>
+			<default>
+				<type>Skill</type>
+				<name>Head Butt</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Karate</name>
+				<modifier>-1</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Brawling</name>
+				<modifier>-1</modifier>
+			</default>
+		</melee_weapon>
+		<reference>MA74</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-1</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Head Lock</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA74</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">riding</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Head Lock</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA74</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">riding</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Hook</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA74</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Melee Weapon Skill@</name>
+			<modifier>-5</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">riding</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<skill version="2">
+		<name>Hypnotic Hands</name>
+		<difficulty>IQ/H</difficulty>
+		<points>1</points>
+		<reference>MA61</reference>
+		<categories>
+			<category>Martial Arts</category>
+		</categories>
+		<prereq_list all="yes">
+			<advantage_prereq has="yes">
+				<name compare="is">Trained by a Master</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+			<skill_prereq has="yes">
+				<name compare="is">Hypnotism</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at_least">14</level>
+			</skill_prereq>
+		</prereq_list>
+	</skill>
+	<technique version="2" limit="0">
+		<name>Initial Carving</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA85</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Fencing Weapon Skill@</name>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Jam</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA74</reference>
+		<default>
+			<type>Parry</type>
+			<name>Brawling</name>
+			<modifier>-1</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Jam</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA74</reference>
+		<default>
+			<type>Parry</type>
+			<name>Karate</name>
+			<modifier>-1</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Judo Throw</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA75</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Knee Drop</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA76</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Knee Drop</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA76</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="4">
+		<name>Leg Grapple</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA76</reference>
+		<default>
+			<type>DX</type>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="4">
+		<name>Leg Grapple</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA76</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="4">
+		<name>Leg Grapple</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA76</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="4">
+		<name>Leg Lock</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA76</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="4">
+		<name>Leg Lock</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA76</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Leg Throw</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA79</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="-5">
+		<name>Lethal Eye-Poke</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA72</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-11</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="-5">
+		<name>Lethal Eye-Poke</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA72</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-11</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Karate</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Lethal Kick</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA85</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Lethal Strike</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA85</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<skill version="2">
+		<name>Lizard Climb</name>
+		<difficulty>DX/H</difficulty>
+		<points>1</points>
+		<reference>MA61</reference>
+		<categories>
+			<category>Martial Arts</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Climbing</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at_least">14</level>
+			</skill_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Trained by a Master</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+			<skill_prereq has="yes">
+				<name compare="is">Acrobatics</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at_least">14</level>
+			</skill_prereq>
+		</prereq_list>
+	</skill>
+	<technique version="2" limit="0">
+		<name>Low Fighting</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA77</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Combat Skill@</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="4">
+		<name>Lower-Body Arm Lock</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA79</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="4">
+		<name>Lower-Body Arm Lock</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA78</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="4">
+		<name>Lower-Body Leg Lock</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA79</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="4">
+		<name>Lower-Body Leg Lock</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA78</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Piledriver</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA85</reference>
+		<default>
+			<type>ST</type>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Piledriver</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA85</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<modifier>-5</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Pole-Vault Kick</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA87</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Jumping</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<skill version="2">
+		<name>Preconitive Parry</name>
+		<difficulty>IQ/H</difficulty>
+		<points>1</points>
+		<reference>MA62</reference>
+		<categories>
+			<category>Martial Arts</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">@melee combat skill@</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at_least">18</level>
+			</skill_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">Precognition</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">Danger Sense</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">Weapon Master</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">Trained by a Master</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</skill>
+	<technique version="2" limit="0">
+		<name>Pressure-Point Strike</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA87</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Combat Skill@</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+		<prereq_list all="no">
+			<skill_prereq has="yes">
+				<name compare="is">Pressure Secrets</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<skill_prereq has="yes">
+				<name compare="is">Pressure Points</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Push Kick</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA77</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Push Kick</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA77</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Quick Mount</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA77</reference>
+		<default>
+			<type>Skill</type>
+			<name>Acrobatics</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Animal</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Quick Mount</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA77</reference>
+		<default>
+			<type>Skill</type>
+			<name>Jumping</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Animal</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Quick Mount</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA77</reference>
+		<default>
+			<type>Skill</type>
+			<name>Riding</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Animal</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Return Strike</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA78</reference>
+		<default>
+			<type>Skill</type>
+			<name>Flail</name>
+			<modifier>-5</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Return Strike</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA78</reference>
+		<default>
+			<type>Skill</type>
+			<name>Kusari</name>
+			<modifier>-5</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Reverse Grip</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA78</reference>
+		<default>
+			<type>Skill</type>
+			<name>@One-Handed Weapon Skill@</name>
+			<modifier>-6</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Reverse Grip</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA78</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Two-Handed Weapon Skill@</name>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Reverse Grip</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA78</reference>
+		<default>
+			<type>Skill</type>
+			<name>Tonfa</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Roll with Blow</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA87</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Unarmed Combat Skill@</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Roll with Blow</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA87</reference>
+		<default>
+			<type>Skill</type>
+			<name>Acrobatics</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Sacrifice Throw</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA78</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Scissors Hold</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA79</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<skill version="2">
+		<name>Sensitivity</name>
+		<difficulty>Per/VH</difficulty>
+		<points>1</points>
+		<reference>MA62</reference>
+		<categories>
+			<category>Martial Arts</category>
+		</categories>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">Weapon Master</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">Trained by a Master</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</skill>
+	<technique version="2" limit="0">
+		<name>Snap Weapon</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA87</reference>
+		<default>
+			<type>Skill</type>
+			<name>Jitte/Sai</name>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Snap Weapon</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA87</reference>
+		<default>
+			<type>ST</type>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Spinning Kick</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA79</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Spinning Punch</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA79</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Spinning Strike</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA79</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Melee Weapon Skill@</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Springing Attack</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA87</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Combat Skill@</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Stamp Kick</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA80</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Stamp Kick</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA80</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-3</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="4">
+		<name>Staying Seated</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA81</reference>
+		<default>
+			<type>Skill</type>
+			<name>Riding</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Animal</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Timed Defense</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA89</reference>
+		<default>
+			<type>Parry</type>
+			<name>@Combat Skill@</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Timed Defense</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA89</reference>
+		<default>
+			<type>Block</type>
+			<name>Shield</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Triangle Choke</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA79</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Triangle Choke</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA79</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<modifier>-5</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Two-Handed Punch</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA81</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Uppercut</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA81</reference>
+		<default>
+			<type>Skill</type>
+			<name>Boxing</name>
+			<modifier>-1</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Uppercut</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA81</reference>
+		<default>
+			<type>Skill</type>
+			<name>Brawling</name>
+			<modifier>-1</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Uppercut</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA81</reference>
+		<default>
+			<type>Skill</type>
+			<name>Karate</name>
+			<modifier>-1</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="3">
+		<name>Wrench @Limb@</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA82</reference>
+		<default>
+			<type>ST</type>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="3">
+		<name>Wrench Spine</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA82</reference>
+		<default>
+			<type>ST</type>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="3">
+		<name>Wrench Spine</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>MA82</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="4">
+		<name>Wrist Lock</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MA65</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Grappling or Melee Weapon Skill@</name>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">@Grappling or Melee Weapon Skill@</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+</skill_list>

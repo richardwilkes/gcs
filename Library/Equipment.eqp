@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<equipment_list unique_id="hv8vbcwn:dw99bhmfzevv" version="1">
+	<equipment_container version="3" open="yes">
+		<description>Belt</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>5</value>
+		<weight>0.1 lb</weight>
+		<categories>
+			<category>Clothing</category>
+		</categories>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Bolt Case</description>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<weight>1 lb</weight>
+		<notes>Holds 20 bolts</notes>
+		<categories>
+			<category>Accessories</category>
+		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at_most">1.21 lb</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Bronze Half Penny (Common)</description>
+		<legality_class>4</legality_class>
+		<value>0.5</value>
+		<weight>0.008 lb</weight>
+		<categories>
+			<category>Money: Westerosii</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Copper Groat (Common)</description>
+		<legality_class>4</legality_class>
+		<value>4</value>
+		<weight>0.0625 lb</weight>
+		<categories>
+			<category>Money: Westerosii</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Copper Penny</description>
+		<legality_class>4</legality_class>
+		<value>1</value>
+		<weight>0.008 lb</weight>
+		<categories>
+			<category>Money: Alternative Medieval Coins</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Copper Penny (Common)</description>
+		<legality_class>4</legality_class>
+		<value>1</value>
+		<weight>0.016 lb</weight>
+		<categories>
+			<category>Money: Westerosii</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Copper Slug</description>
+		<legality_class>4</legality_class>
+		<value>4</value>
+		<weight>0.032 lb</weight>
+		<categories>
+			<category>Money: Alternative Medieval Coins</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Copper Star (Uncommon)</description>
+		<legality_class>4</legality_class>
+		<value>8</value>
+		<weight>0.125 lb</weight>
+		<categories>
+			<category>Money: Westerosii</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Gold Crown</description>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>0.004 lb</weight>
+		<categories>
+			<category>Money: Alternative Medieval Coins</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Gold Dragon (Very rare)</description>
+		<legality_class>4</legality_class>
+		<value>11760</value>
+		<weight>1.1 lb</weight>
+		<categories>
+			<category>Money: Westerosii</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Half Groat</description>
+		<legality_class>4</legality_class>
+		<value>2</value>
+		<weight>0.032 lb</weight>
+		<categories>
+			<category>Money: Westerosii</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Leather Belt</description>
+		<tech_level>2</tech_level>
+		<legality_class>-</legality_class>
+		<value>5</value>
+		<weight>0.25 lb</weight>
+		<categories>
+			<category>Clothing</category>
+		</categories>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Leather Shoes</description>
+		<tech_level>2</tech_level>
+		<legality_class>-</legality_class>
+		<value>25</value>
+		<weight>1 lb</weight>
+		<categories>
+			<category>Clothing</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Linen Breeches</description>
+		<tech_level>2</tech_level>
+		<legality_class>-</legality_class>
+		<value>15</value>
+		<weight>1 lb</weight>
+		<categories>
+			<category>Clothing</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Quiver</description>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<weight>1 lb</weight>
+		<notes>Holds 20 arrows</notes>
+		<categories>
+			<category>Accessories</category>
+		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at_most">2 lb</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Scabbard, Knife</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>3</value>
+		<weight>0.3 lb</weight>
+		<categories>
+			<category>Accessories</category>
+		</categories>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Scabbard, Sword</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>5</value>
+		<weight>0.5 lb</weight>
+		<categories>
+			<category>Accessories</category>
+		</categories>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Silver Eagle</description>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<weight>0.004 lb</weight>
+		<categories>
+			<category>Money: Alternative Medieval Coins</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Silver Moon (Rare)</description>
+		<legality_class>4</legality_class>
+		<value>392</value>
+		<weight>0.44 lb</weight>
+		<categories>
+			<category>Money: Westerosii</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Silver Stag</description>
+		<legality_class>4</legality_class>
+		<value>56</value>
+		<weight>0.0625 lb</weight>
+		<categories>
+			<category>Money: Westerosii</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sleeved Shirt</description>
+		<tech_level>2</tech_level>
+		<legality_class>-</legality_class>
+		<value>20</value>
+		<weight>0.5 lb</weight>
+		<categories>
+			<category>Clothing</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>U.S. $1 Bill</description>
+		<legality_class>4</legality_class>
+		<value>1</value>
+		<weight>0.002 lb</weight>
+		<categories>
+			<category>Money: U.S. Currency</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>U.S. $5 Bill</description>
+		<legality_class>4</legality_class>
+		<value>5</value>
+		<weight>0.002 lb</weight>
+		<categories>
+			<category>Money: U.S. Currency</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>U.S. $10 Bill</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>0.002 lb</weight>
+		<categories>
+			<category>Money: U.S. Currency</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>U.S. $20 Bill</description>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<weight>0.002 lb</weight>
+		<categories>
+			<category>Money: U.S. Currency</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>U.S. $50 Bill</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>0.002 lb</weight>
+		<categories>
+			<category>Money: U.S. Currency</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>U.S. $100 Bill</description>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>0.002 lb</weight>
+		<categories>
+			<category>Money: U.S. Currency</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>U.S. Dime</description>
+		<legality_class>4</legality_class>
+		<value>0.1</value>
+		<weight>0.005 lb</weight>
+		<categories>
+			<category>Money: U.S. Currency</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>U.S. Golden Dollar</description>
+		<legality_class>4</legality_class>
+		<value>1</value>
+		<weight>0.018 lb</weight>
+		<categories>
+			<category>Money: U.S. Currency</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>U.S. Half Dollar</description>
+		<legality_class>4</legality_class>
+		<value>0.5</value>
+		<weight>0.025 lb</weight>
+		<categories>
+			<category>Money: U.S. Currency</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>U.S. Nickel</description>
+		<legality_class>4</legality_class>
+		<value>0.05</value>
+		<weight>0.011 lb</weight>
+		<categories>
+			<category>Money: U.S. Currency</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>U.S. Penny</description>
+		<legality_class>4</legality_class>
+		<value>0.01</value>
+		<weight>0.005 lb</weight>
+		<categories>
+			<category>Money: U.S. Currency</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>U.S. Quarter</description>
+		<legality_class>4</legality_class>
+		<value>0.25</value>
+		<weight>0.013 lb</weight>
+		<categories>
+			<category>Money: U.S. Currency</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>U.S. Susan B. Anthony Dollar</description>
+		<legality_class>4</legality_class>
+		<value>1</value>
+		<weight>0.018 lb</weight>
+		<categories>
+			<category>Money: U.S. Currency</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Water, 1 gallon</description>
+		<legality_class>4</legality_class>
+		<value>0</value>
+		<weight>8 lb</weight>
+		<categories>
+			<category>Provisions</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Water, 1 pint</description>
+		<legality_class>4</legality_class>
+		<value>0</value>
+		<weight>1 lb</weight>
+		<categories>
+			<category>Provisions</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Water, 1 quart</description>
+		<legality_class>4</legality_class>
+		<value>0</value>
+		<weight>2 lb</weight>
+		<categories>
+			<category>Provisions</category>
+		</categories>
+	</equipment>
+</equipment_list>

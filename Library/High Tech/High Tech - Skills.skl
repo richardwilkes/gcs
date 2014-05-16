@@ -1,0 +1,743 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<skill_list unique_id="hv8scv6u:-176mi7fby84d8" version="1">
+	<technique version="2" limit="4">
+		<name>Close-Quarters Battle</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<default>
+			<type>Skill</type>
+			<name>Guns</name>
+			<specialization>@Speciality@</specialization>
+			<modifier>0</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Ranged Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Double-Loading</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>HT251</reference>
+		<default>
+			<type>Skill</type>
+			<name>Fast-Draw</name>
+			<specialization>Ammo</specialization>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Ranged Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Fanning</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>HT251</reference>
+		<default>
+			<type>Skill</type>
+			<name>Guns</name>
+			<specialization>Pistol</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Ranged Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Fast-Firing</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>HT251</reference>
+		<default>
+			<type>Skill</type>
+			<name>Guns</name>
+			<specialization>@Speciality@</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Ranged Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<skill version="2">
+		<name>Gun Sport</name>
+		<specialization>Grenade Launcher</specialization>
+		<tech_level/>
+		<difficulty>DX/E</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Combat/Weapon</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Guns</name>
+			<specialization>Grenade Launcher</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Gun Sport</name>
+		<specialization>Gyroc</specialization>
+		<tech_level/>
+		<difficulty>DX/E</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Combat/Weapon</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Guns</name>
+			<specialization>Gyroc</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Gun Sport</name>
+		<specialization>Light Anti-Armor Weapon</specialization>
+		<tech_level/>
+		<difficulty>DX/E</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Combat/Weapon</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Guns</name>
+			<specialization>Light Anti-Armor Weapon</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Gun Sport</name>
+		<specialization>Light Machine Gun</specialization>
+		<tech_level/>
+		<difficulty>DX/E</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Combat/Weapon</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Guns</name>
+			<specialization>Light Machine Gun</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Gun Sport</name>
+		<specialization>Musket</specialization>
+		<tech_level/>
+		<difficulty>DX/E</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Combat/Weapon</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Guns</name>
+			<specialization>Musket</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Gun Sport</name>
+		<specialization>Pistol</specialization>
+		<tech_level/>
+		<difficulty>DX/E</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Combat/Weapon</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Guns</name>
+			<specialization>Pistol</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Gun Sport</name>
+		<specialization>Rifle</specialization>
+		<tech_level/>
+		<difficulty>DX/E</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Combat/Weapon</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Guns</name>
+			<specialization>Rifle</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Gun Sport</name>
+		<specialization>Shotgun</specialization>
+		<tech_level/>
+		<difficulty>DX/E</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Combat/Weapon</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Guns</name>
+			<specialization>Shotgun</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Gun Sport</name>
+		<specialization>Submachine Gun</specialization>
+		<tech_level/>
+		<difficulty>DX/E</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Combat/Weapon</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Guns</name>
+			<specialization>Submachine Gun</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<technique version="2" limit="0">
+		<name>Immediate Action</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>HT251</reference>
+		<default>
+			<type>Skill</type>
+			<name>Armoury</name>
+			<specialization>Heavy Weapons</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Military</category>
+			<category>Repair/Maintainance</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Immediate Action</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>HT251</reference>
+		<default>
+			<type>Skill</type>
+			<name>Armoury</name>
+			<specialization>Small Arms</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Military</category>
+			<category>Repair/Maintainance</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Immediate Action</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>HT251</reference>
+		<default>
+			<type>Skill</type>
+			<name>Gunner</name>
+			<specialization>@Speciality@</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Military</category>
+			<category>Repair/Maintainance</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Immediate Action</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>HT251</reference>
+		<default>
+			<type>Skill</type>
+			<name>Guns</name>
+			<specialization>@Speciality@</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Military</category>
+			<category>Repair/Maintainance</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Instant Arsenal Disarm</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>HT251</reference>
+		<default>
+			<type>Skill</type>
+			<name>Armoury</name>
+			<specialization>Small Arms</specialization>
+			<modifier>-5</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Mounted Shooting</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>HT251, MA77</reference>
+		<default>
+			<type>Skill</type>
+			<name>@Ranged Weapon Skill@</name>
+			<modifier>-4</modifier>
+		</default>
+		<categories>
+			<category>Animal</category>
+			<category>Combat/Weapon</category>
+			<category>Ranged Combat</category>
+			<category>Technique</category>
+			<category>Vehicle</category>
+		</categories>
+		<prereq_list all="no">
+			<skill_prereq has="yes">
+				<name compare="is">Teamster</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<skill_prereq has="yes">
+				<name compare="is">Driving</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<skill_prereq has="yes">
+				<name compare="is">Bicycling</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<skill_prereq has="yes">
+				<name compare="is">riding</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Precision Aiming</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>HT251</reference>
+		<default>
+			<type>Skill</type>
+			<name>Guns</name>
+			<specialization>@Speciality@</specialization>
+			<modifier>-6</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Observation</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Quick-Shot</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>HT252</reference>
+		<default>
+			<type>Skill</type>
+			<name>Guns</name>
+			<specialization>@Speciality@</specialization>
+			<modifier>-6</modifier>
+		</default>
+		<categories>
+			<category>Cinematic Techniques</category>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Guns</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Thumbing</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>HT252</reference>
+		<default>
+			<type>Skill</type>
+			<name>Guns</name>
+			<specialization>Pistol</specialization>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Ranged Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2" limit="0">
+		<name>Two-Handed Thumbing</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>HT252</reference>
+		<default>
+			<type>Skill</type>
+			<name>Guns</name>
+			<specialization>Pistol</specialization>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Ranged Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<skill version="2">
+		<name>Zen Marksmanship</name>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Esoteric</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">meditation</name>
+				<specialization compare="is"></specialization>
+			</skill_prereq>
+			<skill_prereq has="yes">
+				<name compare="is">Guns</name>
+				<specialization compare="is"></specialization>
+				<level compare="at_least">18</level>
+			</skill_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="starts with">Gunslinger</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">trained by a master</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Zen Marksmanship</name>
+		<specialization>Grenade Launcher</specialization>
+		<tech_level/>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Esoteric</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Meditation</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<skill_prereq has="yes">
+				<name compare="is">Guns</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at_least">18</level>
+			</skill_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">Trained by a Master</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">Gunslinger</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Zen Marksmanship</name>
+		<specialization>Gyroc</specialization>
+		<tech_level/>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Esoteric</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Meditation</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<skill_prereq has="yes">
+				<name compare="is">Guns</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at_least">18</level>
+			</skill_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">Trained by a Master</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">Gunslinger</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Zen Marksmanship</name>
+		<specialization>Light Anti-Armor Weapon</specialization>
+		<tech_level/>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Esoteric</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Meditation</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<skill_prereq has="yes">
+				<name compare="is">Guns</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at_least">18</level>
+			</skill_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">Trained by a Master</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">Gunslinger</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Zen Marksmanship</name>
+		<specialization>Light Machine Gun</specialization>
+		<tech_level/>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Esoteric</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Meditation</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<skill_prereq has="yes">
+				<name compare="is">Guns</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at_least">18</level>
+			</skill_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">Trained by a Master</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">Gunslinger</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Zen Marksmanship</name>
+		<specialization>Musket</specialization>
+		<tech_level/>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Esoteric</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Meditation</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<skill_prereq has="yes">
+				<name compare="is">Guns</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at_least">18</level>
+			</skill_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">Trained by a Master</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">Gunslinger</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Zen Marksmanship</name>
+		<specialization>Pistol</specialization>
+		<tech_level/>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Esoteric</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Meditation</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<skill_prereq has="yes">
+				<name compare="is">Guns</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at_least">18</level>
+			</skill_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">Trained by a Master</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">Gunslinger</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Zen Marksmanship</name>
+		<specialization>Rifle</specialization>
+		<tech_level/>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Esoteric</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Meditation</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<skill_prereq has="yes">
+				<name compare="is">Guns</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at_least">18</level>
+			</skill_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">Trained by a Master</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">Gunslinger</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Zen Marksmanship</name>
+		<specialization>Shotgun</specialization>
+		<tech_level/>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Esoteric</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Meditation</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<skill_prereq has="yes">
+				<name compare="is">Guns</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at_least">18</level>
+			</skill_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">Trained by a Master</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">Gunslinger</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Zen Marksmanship</name>
+		<specialization>Submachine Gun</specialization>
+		<tech_level/>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>HT250</reference>
+		<categories>
+			<category>Esoteric</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Meditation</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<skill_prereq has="yes">
+				<name compare="is">Guns</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at_least">18</level>
+			</skill_prereq>
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">Trained by a Master</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">Gunslinger</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</prereq_list>
+	</skill>
+</skill_list>

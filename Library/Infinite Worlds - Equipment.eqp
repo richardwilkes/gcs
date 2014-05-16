@@ -1,0 +1,1122 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<equipment_list unique_id="hv8v70l7:1sln60b6nubus" version="1">
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Armor Cuirass</description>
+		<tech_level>9</tech_level>
+		<legality_class>2</legality_class>
+		<value>1200</value>
+		<weight>20 lb</weight>
+		<reference>IW26</reference>
+		<categories>
+			<category>Body Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>torso</location>
+			<amount>50</amount>
+		</dr_bonus>
+		<dr_bonus>
+			<location>groin</location>
+			<amount>50</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Armored Uniform</description>
+		<tech_level>9</tech_level>
+		<legality_class>2</legality_class>
+		<value>240</value>
+		<weight>1.6 lb</weight>
+		<reference>IW26</reference>
+		<notes>One third against non piercing and cutting</notes>
+		<categories>
+			<category>Body Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>torso</location>
+			<amount>3</amount>
+		</dr_bonus>
+		<dr_bonus>
+			<location>arms</location>
+			<amount>3</amount>
+		</dr_bonus>
+		<dr_bonus>
+			<location>groin</location>
+			<amount>3</amount>
+		</dr_bonus>
+		<dr_bonus>
+			<location>legs</location>
+			<amount>3</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Assault Boots</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>53</value>
+		<weight>0.89 lb</weight>
+		<reference>IW26</reference>
+		<categories>
+			<category>Footwear</category>
+		</categories>
+		<dr_bonus>
+			<location>feet</location>
+			<amount>12</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ballistic Vest</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>630</value>
+		<weight>4.2 lb</weight>
+		<reference>IW26</reference>
+		<notes>One third against non piercing and cutting</notes>
+		<categories>
+			<category>Body Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>torso</location>
+			<amount>20</amount>
+		</dr_bonus>
+		<dr_bonus>
+			<location>groin</location>
+			<amount>20</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Combat Helmet</description>
+		<tech_level>9</tech_level>
+		<legality_class>1</legality_class>
+		<value>120</value>
+		<weight>4 lb</weight>
+		<reference>IW26</reference>
+		<categories>
+			<category>Headgear</category>
+		</categories>
+		<dr_bonus>
+			<location>skull</location>
+			<amount>20</amount>
+		</dr_bonus>
+		<dr_bonus>
+			<location>neck</location>
+			<amount>20</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Combat Helmet Visor</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>72</value>
+		<weight>0.24 lb</weight>
+		<reference>IW26</reference>
+		<categories>
+			<category>Headgear</category>
+		</categories>
+		<dr_bonus>
+			<location>eyes</location>
+			<amount>5</amount>
+		</dr_bonus>
+		<dr_bonus>
+			<location>face</location>
+			<amount>5</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Mesh Cloth Suit</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>375</value>
+		<weight>2.5 lb</weight>
+		<reference>IW26</reference>
+		<notes>One third against non piercing and cutting</notes>
+		<categories>
+			<category>Body Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>full_body</location>
+			<amount>4</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>5mm Airdart clip</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>18</value>
+		<weight>1.1 lb</weight>
+		<reference>IW200</reference>
+		<categories>
+			<category>Ammunition</category>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>6.8mm ICW clip</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>0.5 lb</weight>
+		<reference>IW200</reference>
+		<categories>
+			<category>Ammunition</category>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>10mm ISP clip</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>45</value>
+		<weight>0.71 lb</weight>
+		<reference>IW200</reference>
+		<categories>
+			<category>Ammunition</category>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>20mm CF/4 clip</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>0.78 lb</weight>
+		<reference>IW200</reference>
+		<categories>
+			<category>Ammunition</category>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>C cell</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>0.1 lb</weight>
+		<reference>IW200</reference>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>CF/3 Pandar</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>260</value>
+		<weight>0.36 lb</weight>
+		<reference>IW200</reference>
+		<ranged_weapon>
+			<damage>2HT-4 (2) aff</damage>
+			<strength>2</strength>
+			<accuracy>2</accuracy>
+			<range>200/600</range>
+			<rate_of_fire>3</rate_of_fire>
+			<shots>104(3)</shots>
+			<bulk>-1</bulk>
+			<recoil>1</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Beam Weapons</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Beam Weapons</name>
+				<specialization>Rifle</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Beam Weapons</name>
+				<specialization>Projector</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>CF/4 Porpetine</description>
+		<tech_level>9</tech_level>
+		<legality_class>1</legality_class>
+		<value>4200</value>
+		<weight>22 lb</weight>
+		<reference>IW200</reference>
+		<ranged_weapon>
+			<damage>7d+2 pi++</damage>
+			<strength>4&#8224;</strength>
+			<usage>Slug</usage>
+			<accuracy>2</accuracy>
+			<range>260/780</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>9+1(3)</shots>
+			<bulk>-6</bulk>
+			<recoil>5</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<ranged_weapon>
+			<damage>1d-1 imp</damage>
+			<strength>4&#8224;</strength>
+			<usage>Beehive</usage>
+			<accuracy>2</accuracy>
+			<range>260/780</range>
+			<rate_of_fire>x100</rate_of_fire>
+			<shots>9+1(3)</shots>
+			<bulk>-6</bulk>
+			<recoil>1</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<ranged_weapon>
+			<damage>9d(10)</damage>
+			<strength>4&#8224;</strength>
+			<usage>HEDP</usage>
+			<accuracy>2</accuracy>
+			<range>260/780</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>9+1(3)</shots>
+			<bulk>-6</bulk>
+			<recoil>5</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<ranged_weapon>
+			<damage>1d+1[1d]</damage>
+			<strength>4&#8224;</strength>
+			<usage>HEDP</usage>
+			<accuracy>2</accuracy>
+			<range>260/780</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>9+1(3)</shots>
+			<bulk>-6</bulk>
+			<recoil>5</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<ranged_weapon>
+			<damage>2d(0.5) cr dkb</damage>
+			<strength>4&#8224;</strength>
+			<usage>Baton</usage>
+			<accuracy>2</accuracy>
+			<range>52/156</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>9+1(3)</shots>
+			<bulk>-6</bulk>
+			<recoil>5</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<ranged_weapon>
+			<damage>7d+2(0.5)</damage>
+			<strength>4&#8224;</strength>
+			<usage>HE</usage>
+			<accuracy>2</accuracy>
+			<range>260/780</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>9+1(3)</shots>
+			<bulk>-6</bulk>
+			<recoil>5</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<ranged_weapon>
+			<damage>1d+1[1d]</damage>
+			<strength>4&#8224;</strength>
+			<usage>HE</usage>
+			<accuracy>2</accuracy>
+			<range>260/780</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>9+1(3)</shots>
+			<bulk>-6</bulk>
+			<recoil>5</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>D cell</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>1 lb</weight>
+		<reference>IW200</reference>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Electrozap Pistol</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>12000</value>
+		<weight>3.6 lb</weight>
+		<reference>IW200</reference>
+		<ranged_weapon>
+			<damage>1d-1 burn surr</damage>
+			<strength>6</strength>
+			<accuracy>4</accuracy>
+			<range>80/240</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>87(3)</shots>
+			<bulk>-3</bulk>
+			<recoil>1</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Beam Weapons</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Beam Weapons</name>
+				<specialization>Rifle</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Beam Weapons</name>
+				<specialization>Projector</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<ranged_weapon>
+			<damage>HT-6(2) aff</damage>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>ICW grenade clip</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>1.6 lb</weight>
+		<reference>IW200</reference>
+		<categories>
+			<category>Ammunition</category>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>ICW, 6.8mm</description>
+		<tech_level>9</tech_level>
+		<legality_class>1</legality_class>
+		<value>430</value>
+		<weight>4.8 lb</weight>
+		<reference>IW200</reference>
+		<ranged_weapon>
+			<damage>6d pi</damage>
+			<accuracy>5</accuracy>
+			<range>570/3700</range>
+			<rate_of_fire>15</rate_of_fire>
+			<shots>30+1 (3)</shots>
+			<bulk>-3</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>ISP, 10mm</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>1200</value>
+		<weight>3.4 lb</weight>
+		<reference>IW200</reference>
+		<ranged_weapon>
+			<damage>4d+1 pi+</damage>
+			<accuracy>3</accuracy>
+			<range>280/3200</range>
+			<rate_of_fire>10</rate_of_fire>
+			<shots>15+1(3)</shots>
+			<bulk>-2</bulk>
+			<recoil>3</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Needle Pistol, 5mm</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>2.1 lb</weight>
+		<reference>IW200</reference>
+		<ranged_weapon>
+			<damage>1d-1 pi</damage>
+			<strength>5</strength>
+			<accuracy>1</accuracy>
+			<range>100/390</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>25+1(3)</shots>
+			<bulk>-3</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<ranged_weapon>
+			<damage>HT-2 aff</damage>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+</equipment_list>
