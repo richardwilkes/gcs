@@ -236,7 +236,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 	/** @return The default HTML template to use when exporting to HTML. */
 	public static String getDefaultHTMLTemplate() {
-		return App.getHomePath().resolve("data").resolve("template.html").toString(); //$NON-NLS-1$ //$NON-NLS-2$
+		return App.getHomePath().resolve("Library").resolve("Output Templates").resolve("template.html").toString(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 
 	/** @return The initial points to start a new character with. */
