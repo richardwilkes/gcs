@@ -14,6 +14,7 @@ package com.trollworks.gcs.template;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.app.CommonDockable;
 import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.toolkit.ui.menu.file.PrintProxy;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.notification.NotifierTarget;
@@ -40,6 +41,11 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget {
 	}
 
 	@Override
+	public PrintProxy getPrintProxy() {
+		return null;
+	}
+
+	@Override
 	public String getDescriptor() {
 		// RAW: Implement
 		return null;
@@ -47,7 +53,7 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget {
 
 	@Override
 	public String getTitle() {
-		return PathUtils.getLeafName(getBackingFile().getName(), false);
+		return PathUtils.getLeafName(getCurrentBackingFile().getName(), false);
 	}
 
 	@Override

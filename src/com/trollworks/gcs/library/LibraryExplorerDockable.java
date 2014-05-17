@@ -275,7 +275,7 @@ public class LibraryExplorerDockable implements Dockable, DocumentListener, Jump
 		// See if it is already open
 		for (Dockable dockable : getDockContainer().getDock().getDockables()) {
 			if (dockable instanceof FileProxy) {
-				File file = ((FileProxy) dockable).getBackingFile();
+				File file = ((FileProxy) dockable).getCurrentBackingFile();
 				if (file != null) {
 					try {
 						if (Files.isSameFile(path, file.toPath())) {

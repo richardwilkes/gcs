@@ -25,8 +25,8 @@ import com.trollworks.gcs.widgets.search.Search;
 import com.trollworks.gcs.widgets.search.SearchTarget;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.FlexRow;
+import com.trollworks.toolkit.ui.menu.file.PrintProxy;
 import com.trollworks.toolkit.ui.menu.file.Saveable;
-import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.ui.widget.BaseWindow;
 import com.trollworks.toolkit.ui.widget.DataModifiedListener;
@@ -41,10 +41,7 @@ import com.trollworks.toolkit.utility.PathUtils;
 
 import java.awt.Color;
 import java.awt.EventQueue;
-import java.awt.Graphics;
 import java.awt.KeyboardFocusManager;
-import java.awt.print.PageFormat;
-import java.awt.print.Printable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,7 +54,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
 
 /** The character sheet window. */
-public class SheetWindow extends GCSWindow implements Saveable, Printable, SearchTarget {
+public class SheetWindow extends GCSWindow implements Saveable, SearchTarget {
 	@Localize("An error occurred while trying to save the sheet as a PNG.")
 	private static String		SAVE_AS_PNG_ERROR;
 	@Localize("An error occurred while trying to save the sheet as a PDF.")
@@ -217,13 +214,8 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 	}
 
 	@Override
-	public void adjustToPageSetupChanges() {
-		mSheet.rebuild();
-	}
-
-	@Override
-	public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) {
-		return mSheet.print(graphics, pageFormat, pageIndex);
+	public PrintProxy getPrintProxy() {
+		return mSheet;
 	}
 
 	@Override
@@ -433,11 +425,6 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 		}
 	}
 
-	@Override
-	protected PrintManager createPageSettings() {
-		return mCharacter.getPageSettings();
-	}
-
 	/** @return The embedded sheet. */
 	public CharacterSheet getSheet() {
 		return mSheet;
@@ -474,12 +461,18 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 		if (path.length() == 0) {
 			path = getTitle();
 		}
-		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getBackingFile())), path);
+		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getCurrentBackingFile())), path);
 	}
 
 	@Override
-	public File getBackingFile() {
+	public File getCurrentBackingFile() {
 		return mCharacter.getFile();
+	}
+
+	@Override
+	public void toFrontAndFocus() {
+		toFront();
+		mSheet.requestFocusInWindow();
 	}
 
 	@Override

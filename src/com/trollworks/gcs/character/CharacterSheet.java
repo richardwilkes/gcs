@@ -35,7 +35,6 @@ import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponDisplayRow;
 import com.trollworks.gcs.weapon.WeaponStats;
-import com.trollworks.gcs.widgets.GCSWindow;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.FilteredIterator;
@@ -48,8 +47,11 @@ import com.trollworks.toolkit.ui.image.Images;
 import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
+import com.trollworks.toolkit.ui.menu.file.PrintProxy;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.Wrapper;
+import com.trollworks.toolkit.ui.widget.dock.Dock;
+import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineHeader;
@@ -74,6 +76,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
@@ -90,7 +93,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
-import java.awt.print.Printable;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -115,7 +117,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /** The character sheet. */
-public class CharacterSheet extends JPanel implements ChangeListener, Scrollable, BatchNotifierTarget, PageOwner, Printable, ActionListener, Runnable, DropTargetListener {
+public class CharacterSheet extends JPanel implements ChangeListener, Scrollable, BatchNotifierTarget, PageOwner, PrintProxy, ActionListener, Runnable, DropTargetListener {
 	@Localize("Page {0} of {1}")
 	private static String		PAGE_NUMBER;
 	@Localize("Visit us at gurpscharactersheet.com")
@@ -165,6 +167,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private Outline				mRangedWeaponOutline;
 	private boolean				mRebuildPending;
 	private HashSet<Outline>	mRootsToSync;
+	private PrintManager		mPrintManager;
+	private boolean				mIsPrinting;
 	private boolean				mSyncWeapons;
 	private boolean				mDisposed;
 
@@ -983,14 +987,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 						pdfDoc.newPage();
 					}
 					g2d.setClip(0, 0, (int) width, (int) height);
-					GCSWindow window = (GCSWindow) getTopLevelAncestor();
-					if (window != null) {
-						window.setPrinting(true);
-					}
+					setPrinting(true);
 					print(g2d, format, pageNum++);
-					if (window != null) {
-						window.setPrinting(false);
-					}
+					setPrinting(false);
 					g2d.dispose();
 					cb.addTemplate(template, 0, 0);
 				}
@@ -1819,14 +1818,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				gc.setBackground(Color.WHITE);
 				gc.clearRect(0, 0, width, height);
 				gc.scale(dpi / 72.0, dpi / 72.0);
-				GCSWindow window = (GCSWindow) getTopLevelAncestor();
-				if (window != null) {
-					window.setPrinting(true);
-				}
+				setPrinting(true);
 				print(gc, format, pageNum++);
-				if (window != null) {
-					window.setPrinting(false);
-				}
+				setPrinting(false);
 				gc.dispose();
 				pngFile = new File(file, PathUtils.enforceExtension(name + (pageNum > 1 ? " " + pageNum : ""), SheetWindow.PNG_EXTENSION)); //$NON-NLS-1$ //$NON-NLS-2$
 				if (!Images.writePNG(pngFile, buffer, dpi)) {
@@ -1845,5 +1839,45 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	@Override
 	public int getNotificationPriority() {
 		return 0;
+	}
+
+	@Override
+	public PrintManager getPrintManager() {
+		if (mPrintManager == null) {
+			try {
+				mPrintManager = mCharacter.getPageSettings();
+			} catch (Exception exception) {
+				// Ignore
+			}
+		}
+		return mPrintManager;
+	}
+
+	@Override
+	public String getPrintJobTitle() {
+		Dockable dockable = Dock.getParentDockable(this);
+		if (dockable != null) {
+			return dockable.getTitle();
+		}
+		Frame frame = UIUtilities.getAncestorOfType(this, Frame.class);
+		if (frame != null) {
+			return frame.getTitle();
+		}
+		return mCharacter.getDescription().getName();
+	}
+
+	@Override
+	public void adjustToPageSetupChanges() {
+		rebuild();
+	}
+
+	@Override
+	public boolean isPrinting() {
+		return mIsPrinting;
+	}
+
+	@Override
+	public void setPrinting(boolean printing) {
+		mIsPrinting = printing;
 	}
 }

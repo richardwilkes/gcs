@@ -13,6 +13,7 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.app.CommonDockable;
 import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.ui.menu.file.PrintProxy;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
@@ -59,6 +60,11 @@ public class SheetDockable extends CommonDockable {
 	}
 
 	@Override
+	public PrintProxy getPrintProxy() {
+		return mSheet;
+	}
+
+	@Override
 	public String getDescriptor() {
 		// RAW: Implement
 		return null;
@@ -94,7 +100,7 @@ public class SheetDockable extends CommonDockable {
 		if (name.length() == 0) {
 			name = getTitle();
 		}
-		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getBackingFile())), name);
+		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getCurrentBackingFile())), name);
 	}
 
 	@Override

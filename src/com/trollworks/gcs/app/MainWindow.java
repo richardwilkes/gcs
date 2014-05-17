@@ -16,6 +16,8 @@ import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.edit.Undoable;
 import com.trollworks.toolkit.ui.menu.file.CloseableProxy;
+import com.trollworks.toolkit.ui.menu.file.FileProxy;
+import com.trollworks.toolkit.ui.menu.file.PrintProxy;
 import com.trollworks.toolkit.ui.menu.file.Saveable;
 import com.trollworks.toolkit.ui.menu.file.SaveableProvider;
 import com.trollworks.toolkit.ui.menu.file.SignificantFrame;
@@ -57,6 +59,18 @@ public class MainWindow extends AppWindow implements SignificantFrame, JumpToSea
 		mDock.getLayout().findLayout(libraryExplorer.getDockContainer()).setDividerPosition(200);
 
 		//restoreBounds();
+	}
+
+	@Override
+	public PrintProxy getPrintProxy() {
+		DockContainer dc = mDock.getFocusedDockContainer();
+		if (dc != null) {
+			Dockable dockable = dc.getCurrentDockable();
+			if (dockable instanceof FileProxy) {
+				return ((FileProxy) dockable).getPrintProxy();
+			}
+		}
+		return super.getPrintProxy();
 	}
 
 	@Override

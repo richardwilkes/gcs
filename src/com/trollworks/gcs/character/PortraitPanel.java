@@ -12,19 +12,18 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.app.GCSFonts;
-import com.trollworks.gcs.widgets.GCSWindow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.border.BoxedDropShadowBorder;
 import com.trollworks.toolkit.ui.image.Images;
+import com.trollworks.toolkit.ui.print.PrintUtilities;
 import com.trollworks.toolkit.ui.widget.StdFileDialog;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.notification.NotifierTarget;
 
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -97,8 +96,7 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 		Graphics2D gc = GraphicsUtilities.prepare(g);
 		super.paintComponent(gc);
 
-		Container top = getTopLevelAncestor();
-		boolean isPrinting = top instanceof GCSWindow && ((GCSWindow) top).isPrinting();
+		boolean isPrinting = PrintUtilities.isPrinting(this);
 		Image portrait = mCharacter.getDescription().getPortrait(isPrinting);
 
 		if (portrait != null) {

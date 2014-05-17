@@ -19,6 +19,7 @@ import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.image.ToolkitImage;
+import com.trollworks.toolkit.ui.menu.file.PrintProxy;
 import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.ui.widget.Toolbar;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
@@ -76,6 +77,12 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 	@Override
 	public ListFile getDataFile() {
 		return (ListFile) super.getDataFile();
+	}
+
+	@Override
+	public PrintProxy getPrintProxy() {
+		// Don't want to allow printing of the library files
+		return null;
 	}
 
 	@Override

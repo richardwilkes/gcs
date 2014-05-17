@@ -386,13 +386,19 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	}
 
 	@Override
-	public File getBackingFile() {
+	public File getCurrentBackingFile() {
 		return mFile.getFile();
 	}
 
 	@Override
+	public void toFrontAndFocus() {
+		toFront();
+		mOutline.requestFocusInWindow();
+	}
+
+	@Override
 	public String getPreferredSavePath() {
-		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getBackingFile())), getTitle());
+		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getCurrentBackingFile())), getTitle());
 	}
 
 	@Override

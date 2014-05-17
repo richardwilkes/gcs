@@ -417,12 +417,18 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 
 	@Override
 	public String getPreferredSavePath() {
-		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getBackingFile())), getTitle());
+		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getCurrentBackingFile())), getTitle());
 	}
 
 	@Override
-	public File getBackingFile() {
+	public File getCurrentBackingFile() {
 		return mTemplate.getFile();
+	}
+
+	@Override
+	public void toFrontAndFocus() {
+		toFront();
+		mContent.requestFocusInWindow();
 	}
 
 	@Override

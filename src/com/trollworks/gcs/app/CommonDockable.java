@@ -13,6 +13,7 @@ package com.trollworks.gcs.app;
 
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.menu.edit.Undoable;
 import com.trollworks.toolkit.ui.menu.file.CloseableProxy;
 import com.trollworks.toolkit.ui.menu.file.SaveCommand;
@@ -24,6 +25,7 @@ import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
+import java.awt.Window;
 import java.io.File;
 
 import javax.swing.Icon;
@@ -55,8 +57,17 @@ public abstract class CommonDockable implements Dockable, CloseableProxy, Saveab
 	}
 
 	@Override
-	public File getBackingFile() {
+	public File getCurrentBackingFile() {
 		return mDataFile.getFile();
+	}
+
+	@Override
+	public void toFrontAndFocus() {
+		Window window = UIUtilities.getAncestorOfType(getContent(), Window.class);
+		if (window != null) {
+			window.toFront();
+		}
+		getDockContainer().acquireFocus();
 	}
 
 	@Override
@@ -86,7 +97,7 @@ public abstract class CommonDockable implements Dockable, CloseableProxy, Saveab
 
 	@Override
 	public String getPreferredSavePath() {
-		return PathUtils.getFullPath(getBackingFile());
+		return PathUtils.getFullPath(getCurrentBackingFile());
 	}
 
 	@Override
@@ -114,7 +125,7 @@ public abstract class CommonDockable implements Dockable, CloseableProxy, Saveab
 
 	@Override
 	public String getTitle() {
-		return PathUtils.getLeafName(getBackingFile().getName(), false);
+		return PathUtils.getLeafName(getCurrentBackingFile().getName(), false);
 	}
 
 	@Override
@@ -128,7 +139,7 @@ public abstract class CommonDockable implements Dockable, CloseableProxy, Saveab
 		buffer.append("<html><body><b>"); //$NON-NLS-1$
 		buffer.append(getTitle());
 		buffer.append("</b><br><font size='-2'>"); //$NON-NLS-1$
-		buffer.append(getBackingFile().getAbsolutePath());
+		buffer.append(getCurrentBackingFile().getAbsolutePath());
 		buffer.append("</font></body></html>"); //$NON-NLS-1$
 		return buffer.toString();
 	}
