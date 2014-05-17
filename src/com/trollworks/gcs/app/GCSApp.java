@@ -18,7 +18,6 @@ import com.trollworks.gcs.menu.DataMenuProvider;
 import com.trollworks.gcs.menu.HelpMenuProvider;
 import com.trollworks.gcs.menu.edit.EditMenuProvider;
 import com.trollworks.gcs.menu.file.FileMenuProvider;
-import com.trollworks.gcs.menu.file.NewCharacterSheetCommand;
 import com.trollworks.gcs.menu.item.ItemMenuProvider;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.template.Template;
@@ -84,15 +83,9 @@ public class GCSApp extends App {
 
 	@Override
 	public void noWindowsAreOpenAtStartup(boolean finalChance) {
-		if (finalChance) {
-			NewCharacterSheetCommand.newSheet();
-		} else {
-			MainWindow window = new MainWindow();
-			window.pack();
-			window.setVisible(true);
-			//			StartupDialog sd = new StartupDialog();
-			//			sd.setVisible(true);
-		}
+		MainWindow window = new MainWindow();
+		window.pack();
+		window.setVisible(true);
 	}
 
 	@Override

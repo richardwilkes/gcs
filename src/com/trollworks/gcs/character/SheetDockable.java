@@ -28,6 +28,8 @@ import javax.swing.JScrollPane;
 
 /** A list of advantages and disadvantages from a library. */
 public class SheetDockable extends CommonDockable {
+	@Localize("Untitled Sheet")
+	private static String		UNTITLED;
 	@Localize("An error occurred while trying to save the sheet as a PNG.")
 	private static String		SAVE_AS_PNG_ERROR;
 	@Localize("An error occurred while trying to save the sheet as a PDF.")
@@ -71,6 +73,11 @@ public class SheetDockable extends CommonDockable {
 	}
 
 	@Override
+	protected String getUntitledBaseName() {
+		return UNTITLED;
+	}
+
+	@Override
 	public PrintProxy getPrintProxy() {
 		return mSheet;
 	}
@@ -92,7 +99,7 @@ public class SheetDockable extends CommonDockable {
 		if (name.length() == 0) {
 			name = getTitle();
 		}
-		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getCurrentBackingFile())), name);
+		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getBackingFile())), name);
 	}
 
 	@Override

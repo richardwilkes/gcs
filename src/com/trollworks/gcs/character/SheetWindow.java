@@ -454,11 +454,11 @@ public class SheetWindow extends GCSWindow implements Saveable, SearchTarget {
 		if (path.length() == 0) {
 			path = getTitle();
 		}
-		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getCurrentBackingFile())), path);
+		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getBackingFile())), path);
 	}
 
 	@Override
-	public File getCurrentBackingFile() {
+	public File getBackingFile() {
 		return mCharacter.getFile();
 	}
 

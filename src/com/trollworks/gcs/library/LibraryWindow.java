@@ -387,7 +387,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	}
 
 	@Override
-	public File getCurrentBackingFile() {
+	public File getBackingFile() {
 		return mFile.getFile();
 	}
 
@@ -404,7 +404,7 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 
 	@Override
 	public String getPreferredSavePath() {
-		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getCurrentBackingFile())), getTitle());
+		return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getBackingFile())), getTitle());
 	}
 
 	@Override

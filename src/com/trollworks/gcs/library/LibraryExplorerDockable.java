@@ -13,6 +13,7 @@ package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.advantage.AdvantagesDockable;
+import com.trollworks.gcs.app.MainWindow;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.common.ListCollectionListener;
@@ -84,6 +85,16 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 	private JTextField		mFilterField;
 	private TreePanel		mTreePanel;
 	private Notifier		mNotifier;
+
+	public static LibraryExplorerDockable get() {
+		for (Dockable dockable : MainWindow.get().getDock().getDockables()) {
+			if (dockable instanceof LibraryExplorerDockable) {
+				return (LibraryExplorerDockable) dockable;
+			}
+		}
+		// Shouldn't be possible
+		return null;
+	}
 
 	public LibraryExplorerDockable() {
 		super(new BorderLayout());
@@ -270,7 +281,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 		for (Dockable dockable : getDockContainer().getDock().getDockables()) {
 			if (dockable instanceof FileProxy) {
 				FileProxy proxy = (FileProxy) dockable;
-				File file = proxy.getCurrentBackingFile();
+				File file = proxy.getBackingFile();
 				if (file != null) {
 					try {
 						if (Files.isSameFile(path, file.toPath())) {
@@ -297,9 +308,9 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 				case LibraryFile.EXTENSION:
 					return openLibrary(path);
 				case GURPSCharacter.EXTENSION:
-					return openCharacterSheet(path);
+					return dockSheet(new SheetDockable(new GURPSCharacter(path.toFile())));
 				case Template.EXTENSION:
-					return openTemplate(path);
+					return dockTemplate(new TemplateDockable(new Template(path.toFile())));
 				default:
 					return null;
 			}
@@ -333,7 +344,18 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 		return dockLibrary(new SpellsDockable(list));
 	}
 
-	private FileProxy dockLibrary(LibraryDockable library) {
+	private FileProxy openLibrary(Path path) throws IOException {
+		// RAW: Needs to import these as separate files
+		AdvantageList list = new AdvantageList();
+		list.load(path.toFile());
+		return dockLibrary(new AdvantagesDockable(list));
+	}
+
+	/**
+	 * @param library The {@link LibraryDockable} to dock.
+	 * @return The {@link LibraryDockable} that was passed in.
+	 */
+	public LibraryDockable dockLibrary(LibraryDockable library) {
 		// Order of docking:
 		// 1. Stack with another library
 		// 2. Dock to the right of a sheet or template
@@ -356,15 +378,11 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 		return library;
 	}
 
-	private FileProxy openLibrary(Path path) throws IOException {
-		// RAW: Needs to import these as separate files
-		AdvantageList list = new AdvantageList();
-		list.load(path.toFile());
-		return dockLibrary(new AdvantagesDockable(list));
-	}
-
-	private FileProxy openCharacterSheet(Path path) throws IOException {
-		SheetDockable sheet = new SheetDockable(new GURPSCharacter(path.toFile()));
+	/**
+	 * @param sheet The {@link SheetDockable} to dock.
+	 * @return The {@link SheetDockable} that was passed in.
+	 */
+	public SheetDockable dockSheet(SheetDockable sheet) {
 		// Order of docking:
 		// 1. Stack with another sheet
 		// 2. Stack with a template
@@ -394,8 +412,11 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 		return sheet;
 	}
 
-	private FileProxy openTemplate(Path path) throws IOException {
-		TemplateDockable template = new TemplateDockable(new Template(path.toFile()));
+	/**
+	 * @param template The {@link TemplateDockable} to dock.
+	 * @return The {@link TemplateDockable} that was passed in.
+	 */
+	public TemplateDockable dockTemplate(TemplateDockable template) {
 		// Order of docking:
 		// 1. Stack with another template
 		// 2. Stack with a sheet

@@ -13,9 +13,18 @@ package com.trollworks.gcs.skill;
 
 import com.trollworks.gcs.library.LibraryDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
+import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.utility.Localization;
 
 /** A list of skills from a library. */
 public class SkillsDockable extends LibraryDockable {
+	@Localize("Untitled Skills")
+	private static String	UNTITLED;
+
+	static {
+		Localization.initialize();
+	}
+
 	/** Creates a new {@link SkillsDockable}. */
 	public SkillsDockable(SkillList list) {
 		super(list);
@@ -24,6 +33,11 @@ public class SkillsDockable extends LibraryDockable {
 	@Override
 	public SkillList getDataFile() {
 		return (SkillList) super.getDataFile();
+	}
+
+	@Override
+	protected String getUntitledBaseName() {
+		return UNTITLED;
 	}
 
 	@Override

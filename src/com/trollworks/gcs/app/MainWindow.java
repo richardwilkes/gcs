@@ -17,6 +17,7 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.edit.Undoable;
 import com.trollworks.toolkit.ui.menu.file.SignificantFrame;
 import com.trollworks.toolkit.ui.widget.AppWindow;
+import com.trollworks.toolkit.ui.widget.BaseWindow;
 import com.trollworks.toolkit.ui.widget.Toolbar;
 import com.trollworks.toolkit.ui.widget.dock.Dock;
 import com.trollworks.toolkit.ui.widget.dock.DockContainer;
@@ -27,6 +28,9 @@ import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.KeyboardFocusManager;
+import java.awt.Window;
+import java.util.ArrayList;
 
 /** The main GCS window. */
 public class MainWindow extends AppWindow implements SignificantFrame, JumpToSearchTarget {
@@ -39,6 +43,23 @@ public class MainWindow extends AppWindow implements SignificantFrame, JumpToSea
 
 	private Toolbar			mToolbar;
 	private Dock			mDock;
+
+	/** @return The {@link MainWindow}. */
+	public static MainWindow get() {
+		Window window = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
+		if (window == null || !(window instanceof MainWindow)) {
+			ArrayList<MainWindow> windows = BaseWindow.getWindows(MainWindow.class);
+			if (!windows.isEmpty()) {
+				window = windows.get(0);
+			}
+		}
+		if (window == null) {
+			window = new MainWindow();
+			window.pack();
+			window.setVisible(true);
+		}
+		return (MainWindow) window;
+	}
 
 	/** Creates a new {@link MainWindow}. */
 	public MainWindow() {

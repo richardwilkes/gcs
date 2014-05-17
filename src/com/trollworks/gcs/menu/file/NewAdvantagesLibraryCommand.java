@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.menu.file;
 
+import com.trollworks.gcs.advantage.AdvantageList;
+import com.trollworks.gcs.advantage.AdvantagesDockable;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
-import com.trollworks.gcs.template.Template;
-import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.utility.Localization;
@@ -21,23 +21,23 @@ import com.trollworks.toolkit.utility.Localization;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-/** Provides the "New Character Template" command. */
-public class NewCharacterTemplateCommand extends Command {
-	@Localize("New Character Template")
-	private static String							NEW_CHARACTER_TEMPLATE;
+/** Provides the "New Advantages Library" command. */
+public class NewAdvantagesLibraryCommand extends Command {
+	@Localize("New Advantages Library")
+	private static String							TITLE;
 
 	static {
 		Localization.initialize();
 	}
 
 	/** The action command this command will issue. */
-	public static final String						CMD_NEW_CHARACTER_TEMPLATE	= "NewCharacterTemplate";				//$NON-NLS-1$
+	public static final String						CMD_NEW_LIBRARY	= "NewAdvantagesLibrary";				//$NON-NLS-1$
 
-	/** The singletone {@link NewCharacterTemplateCommand}. */
-	public static final NewCharacterTemplateCommand	INSTANCE					= new NewCharacterTemplateCommand();
+	/** The singleton {@link NewAdvantagesLibraryCommand}. */
+	public static final NewAdvantagesLibraryCommand	INSTANCE		= new NewAdvantagesLibraryCommand();
 
-	private NewCharacterTemplateCommand() {
-		super(NEW_CHARACTER_TEMPLATE, CMD_NEW_CHARACTER_TEMPLATE, KeyEvent.VK_N, SHIFTED_COMMAND_MODIFIER);
+	private NewAdvantagesLibraryCommand() {
+		super(TITLE, CMD_NEW_LIBRARY, KeyEvent.VK_L);
 	}
 
 	@Override
@@ -47,16 +47,16 @@ public class NewCharacterTemplateCommand extends Command {
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
-		newTemplate();
+		newAdvantagesLibrary();
 	}
 
-	/** @return The newly created a new {@link TemplateDockable}. */
-	public static TemplateDockable newTemplate() {
+	/** @return The newly created a new {@link AdvantagesDockable}. */
+	public static AdvantagesDockable newAdvantagesLibrary() {
 		LibraryExplorerDockable library = LibraryExplorerDockable.get();
 		if (library != null) {
-			TemplateDockable template = new TemplateDockable(new Template());
-			library.dockTemplate(template);
-			return template;
+			AdvantagesDockable dockable = new AdvantagesDockable(new AdvantageList());
+			library.dockLibrary(dockable);
+			return dockable;
 		}
 		return null;
 	}

@@ -41,6 +41,7 @@ public abstract class CommonDockable extends Dockable implements CloseHandler, S
 	}
 
 	private DataFile		mDataFile;
+	private String			mUntitledName;
 
 	/**
 	 * Creates a new {@link CommonDockable}.
@@ -59,7 +60,7 @@ public abstract class CommonDockable extends Dockable implements CloseHandler, S
 	}
 
 	@Override
-	public File getCurrentBackingFile() {
+	public File getBackingFile() {
 		return mDataFile.getFile();
 	}
 
@@ -99,7 +100,7 @@ public abstract class CommonDockable extends Dockable implements CloseHandler, S
 
 	@Override
 	public String getPreferredSavePath() {
-		return PathUtils.getFullPath(getCurrentBackingFile());
+		return PathUtils.getFullPath(getBackingFile());
 	}
 
 	@Override
@@ -129,8 +130,20 @@ public abstract class CommonDockable extends Dockable implements CloseHandler, S
 
 	@Override
 	public String getTitle() {
-		return PathUtils.getLeafName(getCurrentBackingFile().getName(), false);
+		File file = getBackingFile();
+		String title;
+		if (file == null) {
+			if (mUntitledName == null) {
+				mUntitledName = getDockContainer().getDock().getNextUntitledDockableName(getUntitledBaseName(), this);
+			}
+			title = mUntitledName;
+		} else {
+			title = PathUtils.getLeafName(file.getName(), false);
+		}
+		return title;
 	}
+
+	protected abstract String getUntitledBaseName();
 
 	@Override
 	public Icon getTitleIcon() {
@@ -142,9 +155,14 @@ public abstract class CommonDockable extends Dockable implements CloseHandler, S
 		StringBuilder buffer = new StringBuilder();
 		buffer.append("<html><body><b>"); //$NON-NLS-1$
 		buffer.append(getTitle());
-		buffer.append("</b><br><font size='-2'>"); //$NON-NLS-1$
-		buffer.append(getCurrentBackingFile().getAbsolutePath());
-		buffer.append("</font></body></html>"); //$NON-NLS-1$
+		buffer.append("</b>"); //$NON-NLS-1$
+		File file = getBackingFile();
+		if (file != null) {
+			buffer.append("<br><font size='-2'>"); //$NON-NLS-1$
+			buffer.append(file.getAbsolutePath());
+			buffer.append("</font>"); //$NON-NLS-1$
+		}
+		buffer.append("</body></html>"); //$NON-NLS-1$
 		return buffer.toString();
 	}
 }

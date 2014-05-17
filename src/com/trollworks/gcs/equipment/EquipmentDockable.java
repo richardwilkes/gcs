@@ -13,9 +13,18 @@ package com.trollworks.gcs.equipment;
 
 import com.trollworks.gcs.library.LibraryDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
+import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.utility.Localization;
 
 /** A list of equipment from a library. */
 public class EquipmentDockable extends LibraryDockable {
+	@Localize("Untitled Equipment")
+	private static String	UNTITLED;
+
+	static {
+		Localization.initialize();
+	}
+
 	/** Creates a new {@link EquipmentDockable}. */
 	public EquipmentDockable(EquipmentList list) {
 		super(list);
@@ -24,6 +33,11 @@ public class EquipmentDockable extends LibraryDockable {
 	@Override
 	public EquipmentList getDataFile() {
 		return (EquipmentList) super.getDataFile();
+	}
+
+	@Override
+	protected String getUntitledBaseName() {
+		return UNTITLED;
 	}
 
 	@Override

@@ -12,8 +12,8 @@
 package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.library.LibraryExplorerDockable;
-import com.trollworks.gcs.template.Template;
-import com.trollworks.gcs.template.TemplateDockable;
+import com.trollworks.gcs.skill.SkillList;
+import com.trollworks.gcs.skill.SkillsDockable;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.utility.Localization;
@@ -21,23 +21,23 @@ import com.trollworks.toolkit.utility.Localization;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-/** Provides the "New Character Template" command. */
-public class NewCharacterTemplateCommand extends Command {
-	@Localize("New Character Template")
-	private static String							NEW_CHARACTER_TEMPLATE;
+/** Provides the "New Skills Library" command. */
+public class NewSkillsLibraryCommand extends Command {
+	@Localize("New Skills Library")
+	private static String						TITLE;
 
 	static {
 		Localization.initialize();
 	}
 
 	/** The action command this command will issue. */
-	public static final String						CMD_NEW_CHARACTER_TEMPLATE	= "NewCharacterTemplate";				//$NON-NLS-1$
+	public static final String					CMD_NEW_LIBRARY	= "NewSkillsLibrary";				//$NON-NLS-1$
 
-	/** The singletone {@link NewCharacterTemplateCommand}. */
-	public static final NewCharacterTemplateCommand	INSTANCE					= new NewCharacterTemplateCommand();
+	/** The singleton {@link NewSkillsLibraryCommand}. */
+	public static final NewSkillsLibraryCommand	INSTANCE		= new NewSkillsLibraryCommand();
 
-	private NewCharacterTemplateCommand() {
-		super(NEW_CHARACTER_TEMPLATE, CMD_NEW_CHARACTER_TEMPLATE, KeyEvent.VK_N, SHIFTED_COMMAND_MODIFIER);
+	private NewSkillsLibraryCommand() {
+		super(TITLE, CMD_NEW_LIBRARY, KeyEvent.VK_L);
 	}
 
 	@Override
@@ -47,16 +47,16 @@ public class NewCharacterTemplateCommand extends Command {
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
-		newTemplate();
+		newSkillsLibrary();
 	}
 
-	/** @return The newly created a new {@link TemplateDockable}. */
-	public static TemplateDockable newTemplate() {
+	/** @return The newly created a new {@link SkillsDockable}. */
+	public static SkillsDockable newSkillsLibrary() {
 		LibraryExplorerDockable library = LibraryExplorerDockable.get();
 		if (library != null) {
-			TemplateDockable template = new TemplateDockable(new Template());
-			library.dockTemplate(template);
-			return template;
+			SkillsDockable dockable = new SkillsDockable(new SkillList());
+			library.dockLibrary(dockable);
+			return dockable;
 		}
 		return null;
 	}

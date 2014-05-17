@@ -14,8 +14,9 @@ package com.trollworks.gcs.template;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.app.CommonDockable;
 import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.file.PrintProxy;
-import com.trollworks.toolkit.utility.PathUtils;
+import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.notification.NotifierTarget;
 
@@ -26,6 +27,13 @@ import javax.swing.JScrollPane;
 
 /** A list of advantages and disadvantages from a library. */
 public class TemplateDockable extends CommonDockable implements NotifierTarget {
+	@Localize("Untitled Template")
+	private static String	UNTITLED;
+
+	static {
+		Localization.initialize();
+	}
+
 	private TemplateSheet	mTemplate;
 
 	/** Creates a new {@link TemplateDockable}. */
@@ -64,8 +72,8 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget {
 	}
 
 	@Override
-	public String getTitle() {
-		return PathUtils.getLeafName(getCurrentBackingFile().getName(), false);
+	protected String getUntitledBaseName() {
+		return UNTITLED;
 	}
 
 	@Override

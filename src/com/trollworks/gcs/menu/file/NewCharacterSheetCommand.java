@@ -12,7 +12,9 @@
 package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.utility.Localization;
@@ -21,7 +23,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Character Sheet" command. */
-// RAW: Implement as dockables... need to support having a null backing file first
 public class NewCharacterSheetCommand extends Command {
 	@Localize("New Character Sheet")
 	private static String							NEW_CHARACTER_SHEET;
@@ -51,7 +52,13 @@ public class NewCharacterSheetCommand extends Command {
 	}
 
 	/** @return The newly created a new {@link SheetWindow}. */
-	public static SheetWindow newSheet() {
-		return SheetWindow.displaySheetWindow(new GURPSCharacter());
+	public static SheetDockable newSheet() {
+		LibraryExplorerDockable library = LibraryExplorerDockable.get();
+		if (library != null) {
+			SheetDockable sheet = new SheetDockable(new GURPSCharacter());
+			library.dockSheet(sheet);
+			return sheet;
+		}
+		return null;
 	}
 }

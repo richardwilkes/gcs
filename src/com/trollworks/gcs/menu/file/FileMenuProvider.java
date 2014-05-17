@@ -49,7 +49,10 @@ public class FileMenuProvider implements MenuProvider {
 		Set<Command> cmds = new HashSet<>();
 		cmds.add(NewCharacterSheetCommand.INSTANCE);
 		cmds.add(NewCharacterTemplateCommand.INSTANCE);
-		cmds.add(NewLibraryCommand.INSTANCE);
+		cmds.add(NewAdvantagesLibraryCommand.INSTANCE);
+		cmds.add(NewEquipmentLibraryCommand.INSTANCE);
+		cmds.add(NewSkillsLibraryCommand.INSTANCE);
+		cmds.add(NewSpellsLibraryCommand.INSTANCE);
 		cmds.add(OpenCommand.INSTANCE);
 		cmds.add(CloseCommand.INSTANCE);
 		cmds.add(SaveCommand.INSTANCE);
@@ -71,7 +74,10 @@ public class FileMenuProvider implements MenuProvider {
 		menu.setName(NAME);
 		menu.add(new DynamicMenuItem(NewCharacterSheetCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(NewCharacterTemplateCommand.INSTANCE));
-		menu.add(new DynamicMenuItem(NewLibraryCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(NewAdvantagesLibraryCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(NewEquipmentLibraryCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(NewSkillsLibraryCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(NewSpellsLibraryCommand.INSTANCE));
 		menu.addSeparator();
 		menu.add(new DynamicMenuItem(OpenCommand.INSTANCE));
 		menu.add(new RecentFilesMenu());

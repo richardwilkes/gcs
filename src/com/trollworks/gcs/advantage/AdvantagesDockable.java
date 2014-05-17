@@ -13,9 +13,18 @@ package com.trollworks.gcs.advantage;
 
 import com.trollworks.gcs.library.LibraryDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
+import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.utility.Localization;
 
 /** A list of advantages and disadvantages from a library. */
 public class AdvantagesDockable extends LibraryDockable {
+	@Localize("Untitled Advantages")
+	private static String	UNTITLED;
+
+	static {
+		Localization.initialize();
+	}
+
 	/** Creates a new {@link AdvantagesDockable}. */
 	public AdvantagesDockable(AdvantageList list) {
 		super(list);
@@ -24,6 +33,11 @@ public class AdvantagesDockable extends LibraryDockable {
 	@Override
 	public AdvantageList getDataFile() {
 		return (AdvantageList) super.getDataFile();
+	}
+
+	@Override
+	protected String getUntitledBaseName() {
+		return UNTITLED;
 	}
 
 	@Override

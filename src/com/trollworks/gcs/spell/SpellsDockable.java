@@ -13,9 +13,18 @@ package com.trollworks.gcs.spell;
 
 import com.trollworks.gcs.library.LibraryDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
+import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.utility.Localization;
 
 /** A list of spells from a library. */
 public class SpellsDockable extends LibraryDockable {
+	@Localize("Untitled Spells")
+	private static String	UNTITLED;
+
+	static {
+		Localization.initialize();
+	}
+
 	/** Creates a new {@link SpellsDockable}. */
 	public SpellsDockable(SpellList list) {
 		super(list);
@@ -24,6 +33,11 @@ public class SpellsDockable extends LibraryDockable {
 	@Override
 	public SpellList getDataFile() {
 		return (SpellList) super.getDataFile();
+	}
+
+	@Override
+	protected String getUntitledBaseName() {
+		return UNTITLED;
 	}
 
 	@Override
