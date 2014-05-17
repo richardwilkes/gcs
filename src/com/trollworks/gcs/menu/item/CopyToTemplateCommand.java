@@ -11,21 +11,22 @@
 
 package com.trollworks.gcs.menu.item;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.gcs.library.LibraryWindow;
 import com.trollworks.gcs.template.TemplateWindow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "Copy To Template" command. */
+//RAW: Implement for dockables
 public class CopyToTemplateCommand extends Command {
 	@Localize("Copy To Template")
-	private static String COPY_TO_TEMPLATE;
+	private static String						COPY_TO_TEMPLATE;
 
 	static {
 		Localization.initialize();

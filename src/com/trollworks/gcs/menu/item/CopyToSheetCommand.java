@@ -11,21 +11,22 @@
 
 package com.trollworks.gcs.menu.item;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.library.LibraryWindow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "Copy To Character Sheet" command. */
+// RAW: Implement for dockables
 public class CopyToSheetCommand extends Command {
 	@Localize("Copy To Character Sheet")
-	private static String COPY_TO_SHEET;
+	private static String					COPY_TO_SHEET;
 
 	static {
 		Localization.initialize();

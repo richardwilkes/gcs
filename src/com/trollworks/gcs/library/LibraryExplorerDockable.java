@@ -265,16 +265,17 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 		}
 	}
 
-	public void open(Path path) {
+	public FileProxy open(Path path) {
 		// See if it is already open
 		for (Dockable dockable : getDockContainer().getDock().getDockables()) {
 			if (dockable instanceof FileProxy) {
-				File file = ((FileProxy) dockable).getCurrentBackingFile();
+				FileProxy proxy = (FileProxy) dockable;
+				File file = proxy.getCurrentBackingFile();
 				if (file != null) {
 					try {
 						if (Files.isSameFile(path, file.toPath())) {
 							dockable.getDockContainer().setCurrentDockable(dockable);
-							return;
+							return proxy;
 						}
 					} catch (IOException ioe) {
 						Log.error(ioe);
@@ -286,59 +287,53 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 		try {
 			switch (PathUtils.getExtension(path)) {
 				case AdvantageList.EXTENSION:
-					openAdvantageList(path);
-					break;
+					return openAdvantageList(path);
 				case EquipmentList.EXTENSION:
-					openEquipmentList(path);
-					break;
+					return openEquipmentList(path);
 				case SkillList.EXTENSION:
-					openSkillList(path);
-					break;
+					return openSkillList(path);
 				case SpellList.EXTENSION:
-					openSpellList(path);
-					break;
+					return openSpellList(path);
 				case LibraryFile.EXTENSION:
-					openLibrary(path);
-					break;
+					return openLibrary(path);
 				case GURPSCharacter.EXTENSION:
-					openCharacterSheet(path);
-					break;
+					return openCharacterSheet(path);
 				case Template.EXTENSION:
-					openTemplate(path);
-					break;
+					return openTemplate(path);
 				default:
-					break;
+					return null;
 			}
 		} catch (Throwable throwable) {
 			StdFileDialog.showCannotOpenMsg(this, PathUtils.getLeafName(path, true), throwable);
+			return null;
 		}
 	}
 
-	private void openAdvantageList(Path path) throws IOException {
+	private FileProxy openAdvantageList(Path path) throws IOException {
 		AdvantageList list = new AdvantageList();
 		list.load(path.toFile());
-		dockLibrary(new AdvantagesDockable(list));
+		return dockLibrary(new AdvantagesDockable(list));
 	}
 
-	private void openEquipmentList(Path path) throws IOException {
+	private FileProxy openEquipmentList(Path path) throws IOException {
 		EquipmentList list = new EquipmentList();
 		list.load(path.toFile());
-		dockLibrary(new EquipmentDockable(list));
+		return dockLibrary(new EquipmentDockable(list));
 	}
 
-	private void openSkillList(Path path) throws IOException {
+	private FileProxy openSkillList(Path path) throws IOException {
 		SkillList list = new SkillList();
 		list.load(path.toFile());
-		dockLibrary(new SkillsDockable(list));
+		return dockLibrary(new SkillsDockable(list));
 	}
 
-	private void openSpellList(Path path) throws IOException {
+	private FileProxy openSpellList(Path path) throws IOException {
 		SpellList list = new SpellList();
 		list.load(path.toFile());
-		dockLibrary(new SpellsDockable(list));
+		return dockLibrary(new SpellsDockable(list));
 	}
 
-	private void dockLibrary(LibraryDockable library) {
+	private FileProxy dockLibrary(LibraryDockable library) {
 		// Order of docking:
 		// 1. Stack with another library
 		// 2. Dock to the right of a sheet or template
@@ -348,7 +343,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 		for (Dockable dockable : dock.getDockables()) {
 			if (dockable instanceof LibraryDockable) {
 				dockable.getDockContainer().stack(library);
-				return;
+				return library;
 			}
 			if (other == null && (dockable instanceof SheetDockable || dockable instanceof TemplateDockable)) {
 				other = dockable;
@@ -358,16 +353,17 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 			other = this;
 		}
 		dock.dock(library, other, DockLocation.EAST);
+		return library;
 	}
 
-	private void openLibrary(Path path) throws IOException {
-		// RAW: Needs to handle the other library types, too
+	private FileProxy openLibrary(Path path) throws IOException {
+		// RAW: Needs to import these as separate files
 		AdvantageList list = new AdvantageList();
 		list.load(path.toFile());
-		dockLibrary(new AdvantagesDockable(list));
+		return dockLibrary(new AdvantagesDockable(list));
 	}
 
-	private void openCharacterSheet(Path path) throws IOException {
+	private FileProxy openCharacterSheet(Path path) throws IOException {
 		SheetDockable sheet = new SheetDockable(new GURPSCharacter(path.toFile()));
 		// Order of docking:
 		// 1. Stack with another sheet
@@ -380,7 +376,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 		for (Dockable dockable : dock.getDockables()) {
 			if (dockable instanceof SheetDockable) {
 				dockable.getDockContainer().stack(sheet);
-				return;
+				return sheet;
 			}
 			if (template == null && dockable instanceof TemplateDockable) {
 				template = dockable;
@@ -395,9 +391,10 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 		} else {
 			dock.dock(sheet, this, DockLocation.EAST);
 		}
+		return sheet;
 	}
 
-	private void openTemplate(Path path) throws IOException {
+	private FileProxy openTemplate(Path path) throws IOException {
 		TemplateDockable template = new TemplateDockable(new Template(path.toFile()));
 		// Order of docking:
 		// 1. Stack with another template
@@ -410,7 +407,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 		for (Dockable dockable : dock.getDockables()) {
 			if (dockable instanceof TemplateDockable) {
 				dockable.getDockContainer().stack(template);
-				return;
+				return template;
 			}
 			if (sheet == null && dockable instanceof SheetDockable) {
 				sheet = dockable;
@@ -425,5 +422,6 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 		} else {
 			dock.dock(template, this, DockLocation.EAST);
 		}
+		return template;
 	}
 }

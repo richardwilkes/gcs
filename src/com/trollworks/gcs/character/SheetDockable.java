@@ -65,6 +65,11 @@ public class SheetDockable extends CommonDockable {
 		return (GURPSCharacter) super.getDataFile();
 	}
 
+	/** @return The {@link CharacterSheet}. */
+	public CharacterSheet getSheet() {
+		return mSheet;
+	}
+
 	@Override
 	public PrintProxy getPrintProxy() {
 		return mSheet;

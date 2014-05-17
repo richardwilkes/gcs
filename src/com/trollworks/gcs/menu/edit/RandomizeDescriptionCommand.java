@@ -12,14 +12,13 @@
 package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.gcs.app.GCSImages;
+import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.DescriptionRandomizer;
-import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
 
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JOptionPane;
@@ -51,15 +50,17 @@ public class RandomizeDescriptionCommand extends Command {
 
 	@Override
 	public void adjust() {
-		Window window = getActiveWindow();
-		setEnabled(window instanceof SheetWindow);
+		setEnabled(getTarget(CharacterSheet.class) != null);
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
-		DescriptionRandomizer panel = new DescriptionRandomizer(((SheetWindow) getActiveWindow()).getCharacter());
-		if (WindowUtils.showOptionDialog(null, panel, RANDOMIZER, true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, GCSImages.getCharacterSheetIcons().getIcon(32), new String[] { APPLY, CANCEL }, APPLY) == JOptionPane.OK_OPTION) {
-			panel.applyChanges();
+		CharacterSheet target = getTarget(CharacterSheet.class);
+		if (target != null) {
+			DescriptionRandomizer panel = new DescriptionRandomizer(target.getCharacter());
+			if (WindowUtils.showOptionDialog(null, panel, RANDOMIZER, true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, GCSImages.getCharacterSheetIcons().getIcon(32), new String[] { APPLY, CANCEL }, APPLY) == JOptionPane.OK_OPTION) {
+				panel.applyChanges();
+			}
 		}
 	}
 }

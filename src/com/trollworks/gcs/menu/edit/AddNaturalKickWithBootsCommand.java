@@ -11,13 +11,12 @@
 
 package com.trollworks.gcs.menu.edit;
 
+import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.utility.Localization;
 
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 
 /** Provides the "Add Natural Kick w/Boots" command. */
@@ -41,10 +40,10 @@ public class AddNaturalKickWithBootsCommand extends Command {
 
 	@Override
 	public void adjust() {
-		Window window = getActiveWindow();
-		if (window instanceof SheetWindow) {
+		CharacterSheet sheet = getTarget(CharacterSheet.class);
+		if (sheet != null) {
 			setEnabled(true);
-			setMarked(((SheetWindow) window).getCharacter().includeKickBoots());
+			setMarked(sheet.getCharacter().includeKickBoots());
 		} else {
 			setEnabled(false);
 			setMarked(false);
@@ -53,7 +52,10 @@ public class AddNaturalKickWithBootsCommand extends Command {
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
-		GURPSCharacter character = ((SheetWindow) getActiveWindow()).getCharacter();
-		character.setIncludeKickBoots(!character.includeKickBoots());
+		CharacterSheet sheet = getTarget(CharacterSheet.class);
+		if (sheet != null) {
+			GURPSCharacter character = sheet.getCharacter();
+			character.setIncludeKickBoots(!character.includeKickBoots());
+		}
 	}
 }

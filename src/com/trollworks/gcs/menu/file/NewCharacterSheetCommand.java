@@ -11,19 +11,20 @@
 
 package com.trollworks.gcs.menu.file;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Character Sheet" command. */
+// RAW: Implement as dockables... need to support having a null backing file first
 public class NewCharacterSheetCommand extends Command {
 	@Localize("New Character Sheet")
-	private static String NEW_CHARACTER_SHEET;
+	private static String							NEW_CHARACTER_SHEET;
 
 	static {
 		Localization.initialize();

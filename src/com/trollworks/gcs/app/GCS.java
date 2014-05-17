@@ -15,14 +15,11 @@ import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.PrerequisitesThread;
-import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.library.LibraryFile;
-import com.trollworks.gcs.library.LibraryWindow;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.template.Template;
-import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.Fonts;
@@ -136,13 +133,14 @@ public class GCS {
 		GCSFonts.register();
 		Fonts.loadFromPreferences();
 		App.setAboutPanel(AboutPanel.class);
-		FileType.register(GURPSCharacter.EXTENSION, GCSImages.getCharacterSheetIcons(), SheetWindow::new, true);
-		FileType.register(AdvantageList.EXTENSION, GCSImages.getLibraryIcons(), LibraryWindow::new, true);
-		FileType.register(EquipmentList.EXTENSION, GCSImages.getLibraryIcons(), LibraryWindow::new, true);
-		FileType.register(SkillList.EXTENSION, GCSImages.getLibraryIcons(), LibraryWindow::new, true);
-		FileType.register(SpellList.EXTENSION, GCSImages.getLibraryIcons(), LibraryWindow::new, true);
-		FileType.register(LibraryFile.EXTENSION, GCSImages.getLibraryIcons(), LibraryWindow::new, true);
-		FileType.register(Template.EXTENSION, GCSImages.getTemplateIcons(), TemplateWindow::new, true);
+		GCSFileProxyCreator fileProxyCreator = new GCSFileProxyCreator();
+		FileType.register(GURPSCharacter.EXTENSION, GCSImages.getCharacterSheetIcons(), fileProxyCreator, true);
+		FileType.register(AdvantageList.EXTENSION, GCSImages.getLibraryIcons(), fileProxyCreator, true);
+		FileType.register(EquipmentList.EXTENSION, GCSImages.getLibraryIcons(), fileProxyCreator, true);
+		FileType.register(SkillList.EXTENSION, GCSImages.getLibraryIcons(), fileProxyCreator, true);
+		FileType.register(SpellList.EXTENSION, GCSImages.getLibraryIcons(), fileProxyCreator, true);
+		FileType.register(LibraryFile.EXTENSION, GCSImages.getLibraryIcons(), fileProxyCreator, true);
+		FileType.register(Template.EXTENSION, GCSImages.getTemplateIcons(), fileProxyCreator, true);
 	}
 
 	private static int convert(CmdLine cmdLine) {

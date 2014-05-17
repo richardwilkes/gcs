@@ -11,15 +11,15 @@
 
 package com.trollworks.gcs.menu.item;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.undo.MultipleUndo;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateWindow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.Row;
+import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.undo.MultipleUndo;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -27,11 +27,12 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 /** Provides the "Apply Template To Sheet" command. */
+// RAW: Implement for dockables
 public class ApplyTemplateCommand extends Command {
 	@Localize("Apply Template To Character Sheet")
-	private static String APPLY_TEMPLATE_TO_SHEET;
+	private static String						APPLY_TEMPLATE_TO_SHEET;
 	@Localize("Apply Template")
-	private static String UNDO;
+	private static String						UNDO;
 
 	static {
 		Localization.initialize();

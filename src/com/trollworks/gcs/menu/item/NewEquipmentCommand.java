@@ -11,27 +11,25 @@
 
 package com.trollworks.gcs.menu.item;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.gcs.character.CharacterSheet;
-import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.library.LibraryWindow;
-import com.trollworks.gcs.template.TemplateWindow;
+import com.trollworks.gcs.equipment.EquipmentDockable;
+import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
+import com.trollworks.toolkit.utility.Localization;
 
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Equipment" command. */
 public class NewEquipmentCommand extends Command {
 	@Localize("New Equipment")
-	private static String EQUIPMENT;
+	private static String					EQUIPMENT;
 	@Localize("New Equipment Container")
-	private static String EQUIPMENT_CONTAINER;
+	private static String					EQUIPMENT_CONTAINER;
 
 	static {
 		Localization.initialize();
@@ -54,11 +52,16 @@ public class NewEquipmentCommand extends Command {
 
 	@Override
 	public void adjust() {
-		Window window = getActiveWindow();
-		if (window instanceof LibraryWindow) {
-			setEnabled(!((LibraryWindow) window).getOutline().getModel().isLocked());
+		EquipmentDockable equipment = getTarget(EquipmentDockable.class);
+		if (equipment != null) {
+			setEnabled(!equipment.getOutline().getModel().isLocked());
 		} else {
-			setEnabled(window instanceof SheetWindow || window instanceof TemplateWindow);
+			SheetDockable sheet = getTarget(SheetDockable.class);
+			if (sheet != null) {
+				setEnabled(true);
+			} else {
+				setEnabled(getTarget(TemplateDockable.class) != null);
+			}
 		}
 	}
 
@@ -66,26 +69,28 @@ public class NewEquipmentCommand extends Command {
 	public void actionPerformed(ActionEvent event) {
 		ListOutline outline;
 		DataFile dataFile;
-
-		Window window = getActiveWindow();
-		if (window instanceof LibraryWindow) {
-			LibraryWindow libraryWindow = (LibraryWindow) window;
-			libraryWindow.switchToEquipment();
-			dataFile = libraryWindow.getLibraryFile();
-			outline = libraryWindow.getOutline();
-		} else if (window instanceof SheetWindow) {
-			SheetWindow sheetWindow = (SheetWindow) window;
-			CharacterSheet sheet = sheetWindow.getSheet();
-			outline = sheet.getEquipmentOutline();
-			dataFile = sheetWindow.getCharacter();
-		} else if (window instanceof TemplateWindow) {
-			TemplateWindow templateWindow = (TemplateWindow) window;
-			outline = templateWindow.getSheet().getEquipmentOutline();
-			dataFile = templateWindow.getTemplate();
+		EquipmentDockable eqpDockable = getTarget(EquipmentDockable.class);
+		if (eqpDockable != null) {
+			dataFile = eqpDockable.getDataFile();
+			outline = eqpDockable.getOutline();
+			if (outline.getModel().isLocked()) {
+				return;
+			}
 		} else {
-			return;
+			SheetDockable sheet = getTarget(SheetDockable.class);
+			if (sheet != null) {
+				dataFile = sheet.getDataFile();
+				outline = sheet.getSheet().getEquipmentOutline();
+			} else {
+				TemplateDockable template = getTarget(TemplateDockable.class);
+				if (template != null) {
+					dataFile = template.getDataFile();
+					outline = template.getTemplate().getEquipmentOutline();
+				} else {
+					return;
+				}
+			}
 		}
-
 		Equipment equipment = new Equipment(dataFile, mContainer);
 		outline.addRow(equipment, getTitle(), false);
 		outline.getModel().select(equipment, false);

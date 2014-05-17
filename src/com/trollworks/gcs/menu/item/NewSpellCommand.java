@@ -11,26 +11,25 @@
 
 package com.trollworks.gcs.menu.item;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.common.DataFile;
-import com.trollworks.gcs.library.LibraryWindow;
 import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.template.TemplateWindow;
+import com.trollworks.gcs.spell.SpellsDockable;
+import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
+import com.trollworks.toolkit.utility.Localization;
 
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Spell" command. */
 public class NewSpellCommand extends Command {
 	@Localize("New Spell")
-	private static String SPELL;
+	private static String				SPELL;
 	@Localize("New Spell Container")
-	private static String SPELL_CONTAINER;
+	private static String				SPELL_CONTAINER;
 
 	static {
 		Localization.initialize();
@@ -54,11 +53,16 @@ public class NewSpellCommand extends Command {
 
 	@Override
 	public void adjust() {
-		Window window = getActiveWindow();
-		if (window instanceof LibraryWindow) {
-			setEnabled(!((LibraryWindow) window).getOutline().getModel().isLocked());
+		SpellsDockable spells = getTarget(SpellsDockable.class);
+		if (spells != null) {
+			setEnabled(!spells.getOutline().getModel().isLocked());
 		} else {
-			setEnabled(window instanceof SheetWindow || window instanceof TemplateWindow);
+			SheetDockable sheet = getTarget(SheetDockable.class);
+			if (sheet != null) {
+				setEnabled(true);
+			} else {
+				setEnabled(getTarget(TemplateDockable.class) != null);
+			}
 		}
 	}
 
@@ -66,25 +70,28 @@ public class NewSpellCommand extends Command {
 	public void actionPerformed(ActionEvent event) {
 		ListOutline outline;
 		DataFile dataFile;
-
-		Window window = getActiveWindow();
-		if (window instanceof LibraryWindow) {
-			LibraryWindow libraryWindow = (LibraryWindow) window;
-			libraryWindow.switchToSpells();
-			dataFile = libraryWindow.getLibraryFile();
-			outline = libraryWindow.getOutline();
-		} else if (window instanceof SheetWindow) {
-			SheetWindow sheetWindow = (SheetWindow) window;
-			outline = sheetWindow.getSheet().getSpellOutline();
-			dataFile = sheetWindow.getCharacter();
-		} else if (window instanceof TemplateWindow) {
-			TemplateWindow templateWindow = (TemplateWindow) window;
-			outline = templateWindow.getSheet().getSpellOutline();
-			dataFile = templateWindow.getTemplate();
+		SpellsDockable spells = getTarget(SpellsDockable.class);
+		if (spells != null) {
+			dataFile = spells.getDataFile();
+			outline = spells.getOutline();
+			if (outline.getModel().isLocked()) {
+				return;
+			}
 		} else {
-			return;
+			SheetDockable sheet = getTarget(SheetDockable.class);
+			if (sheet != null) {
+				dataFile = sheet.getDataFile();
+				outline = sheet.getSheet().getSpellOutline();
+			} else {
+				TemplateDockable template = getTarget(TemplateDockable.class);
+				if (template != null) {
+					dataFile = template.getDataFile();
+					outline = template.getTemplate().getSpellOutline();
+				} else {
+					return;
+				}
+			}
 		}
-
 		Spell spell = new Spell(dataFile, mContainer);
 		outline.addRow(spell, getTitle(), false);
 		outline.getModel().select(spell, false);

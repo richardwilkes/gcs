@@ -11,29 +11,28 @@
 
 package com.trollworks.gcs.menu.item;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.common.DataFile;
-import com.trollworks.gcs.library.LibraryWindow;
 import com.trollworks.gcs.skill.Skill;
+import com.trollworks.gcs.skill.SkillsDockable;
 import com.trollworks.gcs.skill.Technique;
-import com.trollworks.gcs.template.TemplateWindow;
+import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
+import com.trollworks.toolkit.utility.Localization;
 
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Skill" command. */
 public class NewSkillCommand extends Command {
 	@Localize("New Skill")
-	private static String SKILL;
+	private static String				SKILL;
 	@Localize("New Skill Container")
-	private static String SKILL_CONTAINER;
+	private static String				SKILL_CONTAINER;
 	@Localize("New Technique")
-	private static String TECHNIQUE;
+	private static String				TECHNIQUE;
 
 	static {
 		Localization.initialize();
@@ -63,11 +62,16 @@ public class NewSkillCommand extends Command {
 
 	@Override
 	public void adjust() {
-		Window window = getActiveWindow();
-		if (window instanceof LibraryWindow) {
-			setEnabled(!((LibraryWindow) window).getOutline().getModel().isLocked());
+		SkillsDockable skills = getTarget(SkillsDockable.class);
+		if (skills != null) {
+			setEnabled(!skills.getOutline().getModel().isLocked());
 		} else {
-			setEnabled(window instanceof SheetWindow || window instanceof TemplateWindow);
+			SheetDockable sheet = getTarget(SheetDockable.class);
+			if (sheet != null) {
+				setEnabled(true);
+			} else {
+				setEnabled(getTarget(TemplateDockable.class) != null);
+			}
 		}
 	}
 
@@ -75,25 +79,28 @@ public class NewSkillCommand extends Command {
 	public void actionPerformed(ActionEvent event) {
 		ListOutline outline;
 		DataFile dataFile;
-
-		Window window = getActiveWindow();
-		if (window instanceof LibraryWindow) {
-			LibraryWindow libraryWindow = (LibraryWindow) window;
-			libraryWindow.switchToSkills();
-			dataFile = libraryWindow.getLibraryFile();
-			outline = libraryWindow.getOutline();
-		} else if (window instanceof SheetWindow) {
-			SheetWindow sheetWindow = (SheetWindow) window;
-			outline = sheetWindow.getSheet().getSkillOutline();
-			dataFile = sheetWindow.getCharacter();
-		} else if (window instanceof TemplateWindow) {
-			TemplateWindow templateWindow = (TemplateWindow) window;
-			outline = templateWindow.getSheet().getSkillOutline();
-			dataFile = templateWindow.getTemplate();
+		SkillsDockable skills = getTarget(SkillsDockable.class);
+		if (skills != null) {
+			dataFile = skills.getDataFile();
+			outline = skills.getOutline();
+			if (outline.getModel().isLocked()) {
+				return;
+			}
 		} else {
-			return;
+			SheetDockable sheet = getTarget(SheetDockable.class);
+			if (sheet != null) {
+				dataFile = sheet.getDataFile();
+				outline = sheet.getSheet().getSkillOutline();
+			} else {
+				TemplateDockable template = getTarget(TemplateDockable.class);
+				if (template != null) {
+					dataFile = template.getDataFile();
+					outline = template.getTemplate().getSkillOutline();
+				} else {
+					return;
+				}
+			}
 		}
-
 		Skill skill = mTechnique ? new Technique(dataFile) : new Skill(dataFile, mContainer);
 		outline.addRow(skill, getTitle(), false);
 		outline.getModel().select(skill, false);

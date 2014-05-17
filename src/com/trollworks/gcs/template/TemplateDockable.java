@@ -47,6 +47,11 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget {
 		return (Template) super.getDataFile();
 	}
 
+	/** @return The {@link TemplateSheet}. */
+	public TemplateSheet getTemplate() {
+		return mTemplate;
+	}
+
 	@Override
 	public PrintProxy getPrintProxy() {
 		return null;

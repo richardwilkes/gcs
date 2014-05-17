@@ -11,15 +11,15 @@
 
 package com.trollworks.gcs.menu.edit;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
 import com.trollworks.toolkit.ui.widget.outline.Row;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -27,11 +27,12 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 /** Provides the "Duplicate" command. */
+// RAW: This should be reimplemented in terms of the Duplicatable interface
 public class DuplicateCommand extends Command {
 	@Localize("Duplicate")
-	private static String DUPLICATE;
+	private static String					DUPLICATE;
 	@Localize("Duplicate Rows")
-	private static String DUPLICATE_UNDO;
+	private static String					DUPLICATE_UNDO;
 
 	static {
 		Localization.initialize();

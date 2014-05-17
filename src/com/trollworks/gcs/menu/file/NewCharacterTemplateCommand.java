@@ -11,19 +11,20 @@
 
 package com.trollworks.gcs.menu.file;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateWindow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Character Template" command. */
+//RAW: Implement as dockables... need to support having a null backing file first
 public class NewCharacterTemplateCommand extends Command {
 	@Localize("New Character Template")
-	private static String NEW_CHARACTER_TEMPLATE;
+	private static String							NEW_CHARACTER_TEMPLATE;
 
 	static {
 		Localization.initialize();

@@ -26,6 +26,7 @@ import com.trollworks.gcs.widgets.search.Search;
 import com.trollworks.gcs.widgets.search.SearchTarget;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.FlexRow;
+import com.trollworks.toolkit.ui.menu.file.PrintProxy;
 import com.trollworks.toolkit.ui.menu.file.Saveable;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.ui.widget.BaseWindow;
@@ -421,6 +422,11 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 	@Override
 	public File getCurrentBackingFile() {
 		return mTemplate.getFile();
+	}
+
+	@Override
+	public PrintProxy getPrintProxy() {
+		return null;
 	}
 
 	@Override

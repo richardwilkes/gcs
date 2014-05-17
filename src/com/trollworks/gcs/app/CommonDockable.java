@@ -15,7 +15,7 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.menu.edit.Undoable;
-import com.trollworks.toolkit.ui.menu.file.CloseableProxy;
+import com.trollworks.toolkit.ui.menu.file.CloseHandler;
 import com.trollworks.toolkit.ui.menu.file.SaveCommand;
 import com.trollworks.toolkit.ui.menu.file.Saveable;
 import com.trollworks.toolkit.ui.widget.DataModifiedListener;
@@ -32,7 +32,7 @@ import java.io.File;
 import javax.swing.Icon;
 
 /** Provides a common base for library and sheet files. */
-public abstract class CommonDockable extends Dockable implements CloseableProxy, Saveable, Undoable {
+public abstract class CommonDockable extends Dockable implements CloseHandler, Saveable, Undoable {
 	@Localize("An error occurred while trying to save the file.")
 	private static String	SAVE_ERROR;
 
@@ -119,10 +119,12 @@ public abstract class CommonDockable extends Dockable implements CloseableProxy,
 	}
 
 	@Override
-	public void attemptClose() {
+	public boolean attemptClose() {
 		if (SaveCommand.attemptSave(this)) {
 			getDockContainer().close(this);
+			return true;
 		}
+		return false;
 	}
 
 	@Override

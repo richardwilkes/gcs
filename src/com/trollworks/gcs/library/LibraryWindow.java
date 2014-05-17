@@ -33,6 +33,7 @@ import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.ui.image.ToolkitImage;
 import com.trollworks.toolkit.ui.layout.FlexColumn;
 import com.trollworks.toolkit.ui.layout.FlexRow;
+import com.trollworks.toolkit.ui.menu.file.PrintProxy;
 import com.trollworks.toolkit.ui.menu.file.Saveable;
 import com.trollworks.toolkit.ui.widget.BaseWindow;
 import com.trollworks.toolkit.ui.widget.DataModifiedListener;
@@ -388,6 +389,11 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 	@Override
 	public File getCurrentBackingFile() {
 		return mFile.getFile();
+	}
+
+	@Override
+	public PrintProxy getPrintProxy() {
+		return null;
 	}
 
 	@Override

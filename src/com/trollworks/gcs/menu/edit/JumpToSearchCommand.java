@@ -15,8 +15,6 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.utility.Localization;
 
-import java.awt.Component;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
@@ -38,23 +36,15 @@ public class JumpToSearchCommand extends Command {
 
 	@Override
 	public void adjust() {
-		KeyboardFocusManager mgr = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-		Component focus = mgr.getPermanentFocusOwner();
-		if (!(focus instanceof JumpToSearchTarget)) {
-			focus = mgr.getActiveWindow();
-		}
-		setEnabled(focus instanceof JumpToSearchTarget && ((JumpToSearchTarget) focus).isJumpToSearchAvailable());
+		JumpToSearchTarget target = getTarget(JumpToSearchTarget.class);
+		setEnabled(target != null && target.isJumpToSearchAvailable());
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
-		KeyboardFocusManager mgr = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-		Component focus = mgr.getPermanentFocusOwner();
-		if (!(focus instanceof JumpToSearchTarget)) {
-			focus = mgr.getActiveWindow();
-		}
-		if (focus instanceof JumpToSearchTarget) {
-			((JumpToSearchTarget) focus).jumpToSearchField();
+		JumpToSearchTarget target = getTarget(JumpToSearchTarget.class);
+		if (target != null) {
+			target.jumpToSearchField();
 		}
 	}
 }

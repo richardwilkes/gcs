@@ -11,11 +11,11 @@
 
 package com.trollworks.gcs.menu.edit;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.names.USCensusNames;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -24,11 +24,11 @@ import java.text.MessageFormat;
 /** Provides the "Generate Random Name" command. */
 public class RandomizeNameCommand extends Command {
 	@Localize("Male")
-	private static String MALE;
+	private static String						MALE;
 	@Localize("Female")
-	private static String FEMALE;
+	private static String						FEMALE;
 	@Localize("Generate Random {0} Name")
-	private static String TITLE;
+	private static String						TITLE;
 
 	static {
 		Localization.initialize();
@@ -49,11 +49,14 @@ public class RandomizeNameCommand extends Command {
 
 	@Override
 	public void adjust() {
-		setEnabled(getActiveWindow() instanceof SheetWindow);
+		setEnabled(getTarget(CharacterSheet.class) != null);
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
-		((SheetWindow) getActiveWindow()).getCharacter().getDescription().setName(USCensusNames.INSTANCE.getFullName(this == MALE_INSTANCE));
+		CharacterSheet target = getTarget(CharacterSheet.class);
+		if (target != null) {
+			target.getCharacter().getDescription().setName(USCensusNames.INSTANCE.getFullName(this == MALE_INSTANCE));
+		}
 	}
 }
