@@ -105,6 +105,8 @@ public class GURPSCharacter extends DataFile {
 		Localization.initialize();
 	}
 
+	/** The extension for character sheets. */
+	public static final String					EXTENSION								= "gcs";														//$NON-NLS-1$
 	private static final int					CURRENT_VERSION							= 2;
 	private static final String					EMPTY									= "";															//$NON-NLS-1$
 	private static final String					TAG_ROOT								= "character";													//$NON-NLS-1$
@@ -386,6 +388,11 @@ public class GURPSCharacter extends DataFile {
 	/** @return The page settings. May return <code>null</code> if not printer has been defined. */
 	public PrintManager getPageSettings() {
 		return mPageSettings;
+	}
+
+	@Override
+	public String getExtension() {
+		return EXTENSION;
 	}
 
 	@Override

@@ -62,6 +62,13 @@ public class ModifierList extends ListFile {
 	}
 
 	@Override
+	// Not used
+	public String getExtension() {
+		return null;
+	}
+
+	@Override
+	// Not used
 	public IconSet getFileIcons() {
 		return null;
 	}

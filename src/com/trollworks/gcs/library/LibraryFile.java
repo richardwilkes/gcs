@@ -104,6 +104,11 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 	}
 
 	@Override
+	public String getExtension() {
+		return EXTENSION;
+	}
+
+	@Override
 	public IconSet getFileIcons() {
 		return GCSImages.getLibraryIcons();
 	}

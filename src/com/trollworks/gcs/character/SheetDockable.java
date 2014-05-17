@@ -13,6 +13,7 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.app.CommonDockable;
 import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.ui.menu.file.ExportToCommand;
 import com.trollworks.toolkit.ui.menu.file.PrintProxy;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
@@ -37,14 +38,6 @@ public class SheetDockable extends CommonDockable {
 		Localization.initialize();
 	}
 
-	/** The extension for character sheets. */
-	public static final String	SHEET_EXTENSION	= "gcs";	//$NON-NLS-1$
-	/** The PNG extension. */
-	public static final String	PNG_EXTENSION	= "png";	//$NON-NLS-1$
-	/** The PDF extension. */
-	public static final String	PDF_EXTENSION	= "pdf";	//$NON-NLS-1$
-	/** The HTML extension. */
-	public static final String	HTML_EXTENSION	= "html";	//$NON-NLS-1$
 	private JScrollPane			mScroller;
 	private CharacterSheet		mSheet;
 	private PrerequisitesThread	mPrereqThread;
@@ -91,7 +84,7 @@ public class SheetDockable extends CommonDockable {
 
 	@Override
 	public String[] getAllowedExtensions() {
-		return new String[] { SHEET_EXTENSION, PDF_EXTENSION, HTML_EXTENSION, PNG_EXTENSION };
+		return new String[] { GURPSCharacter.EXTENSION, ExportToCommand.PDF_EXTENSION, ExportToCommand.HTML_EXTENSION, ExportToCommand.PNG_EXTENSION };
 	}
 
 	@Override
@@ -107,17 +100,17 @@ public class SheetDockable extends CommonDockable {
 	public File[] saveTo(File file) {
 		ArrayList<File> result = new ArrayList<>();
 		String extension = PathUtils.getExtension(file.getName());
-		if (HTML_EXTENSION.equals(extension)) {
+		if (ExportToCommand.HTML_EXTENSION.equals(extension)) {
 			if (mSheet.saveAsHTML(file, null, null)) {
 				result.add(file);
 			} else {
 				WindowUtils.showError(mScroller, SAVE_AS_HTML_ERROR);
 			}
-		} else if (PNG_EXTENSION.equals(extension)) {
+		} else if (ExportToCommand.PNG_EXTENSION.equals(extension)) {
 			if (!mSheet.saveAsPNG(file, result)) {
 				WindowUtils.showError(mScroller, SAVE_AS_PNG_ERROR);
 			}
-		} else if (PDF_EXTENSION.equals(extension)) {
+		} else if (ExportToCommand.PDF_EXTENSION.equals(extension)) {
 			if (mSheet.saveAsPDF(file)) {
 				result.add(file);
 			} else {

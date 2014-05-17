@@ -306,10 +306,10 @@ public class LibraryExplorerDockable implements Dockable, DocumentListener, Jump
 				case LibraryFile.EXTENSION:
 					openLibrary(path);
 					break;
-				case SheetDockable.SHEET_EXTENSION:
+				case GURPSCharacter.EXTENSION:
 					openCharacterSheet(path);
 					break;
-				case TemplateDockable.EXTENSION:
+				case Template.EXTENSION:
 					openTemplate(path);
 					break;
 				default:

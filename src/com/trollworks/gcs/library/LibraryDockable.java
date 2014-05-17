@@ -80,6 +80,11 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 	}
 
 	@Override
+	public String[] getAllowedExtensions() {
+		return new String[] { getDataFile().getExtension() };
+	}
+
+	@Override
 	public PrintProxy getPrintProxy() {
 		// Don't want to allow printing of the library files
 		return null;
@@ -229,11 +234,6 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 
 	private void documentChanged() {
 		mOutline.reapplyRowFilter();
-	}
-
-	@Override
-	public String[] getAllowedExtensions() {
-		return new String[] { LibraryFile.EXTENSION };
 	}
 
 	@Override

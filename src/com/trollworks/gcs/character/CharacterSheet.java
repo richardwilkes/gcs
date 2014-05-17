@@ -47,6 +47,7 @@ import com.trollworks.toolkit.ui.image.Images;
 import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
+import com.trollworks.toolkit.ui.menu.file.ExportToCommand;
 import com.trollworks.toolkit.ui.menu.file.PrintProxy;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.Wrapper;
@@ -1062,7 +1063,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		Profile description = mCharacter.getDescription();
 
 		if (key.equals("PORTRAIT")) { //$NON-NLS-1$
-			String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base.getName(), false), SheetWindow.PNG_EXTENSION);
+			String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base.getName(), false), ExportToCommand.PNG_EXTENSION);
 			Images.writePNG(new File(base.getParentFile(), fileName), description.getPortrait(true), 150);
 			writeXMLData(out, fileName);
 		} else if (key.equals("NAME")) { //$NON-NLS-1$
@@ -1822,7 +1823,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				print(gc, format, pageNum++);
 				setPrinting(false);
 				gc.dispose();
-				pngFile = new File(file, PathUtils.enforceExtension(name + (pageNum > 1 ? " " + pageNum : ""), SheetWindow.PNG_EXTENSION)); //$NON-NLS-1$ //$NON-NLS-2$
+				pngFile = new File(file, PathUtils.enforceExtension(name + (pageNum > 1 ? " " + pageNum : ""), ExportToCommand.PNG_EXTENSION)); //$NON-NLS-1$ //$NON-NLS-2$
 				if (!Images.writePNG(pngFile, buffer, dpi)) {
 					throw new IOException();
 				}

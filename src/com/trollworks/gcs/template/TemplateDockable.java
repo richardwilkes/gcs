@@ -25,10 +25,8 @@ import javax.swing.JScrollPane;
 
 /** A list of advantages and disadvantages from a library. */
 public class TemplateDockable extends CommonDockable implements NotifierTarget {
-	/** The extension for templates. */
-	public static final String	EXTENSION	= "gct";	//$NON-NLS-1$
-	private JScrollPane			mScroller;
-	private TemplateSheet		mTemplate;
+	private JScrollPane		mScroller;
+	private TemplateSheet	mTemplate;
 
 	/** Creates a new {@link TemplateDockable}. */
 	public TemplateDockable(Template template) {
@@ -73,7 +71,7 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget {
 
 	@Override
 	public String[] getAllowedExtensions() {
-		return new String[] { EXTENSION };
+		return new String[] { Template.EXTENSION };
 	}
 
 	@Override

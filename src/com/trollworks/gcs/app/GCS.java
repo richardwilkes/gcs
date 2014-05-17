@@ -21,11 +21,13 @@ import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.library.LibraryWindow;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.spell.SpellList;
+import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.Fonts;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
+import com.trollworks.toolkit.ui.menu.file.ExportToCommand;
 import com.trollworks.toolkit.ui.menu.file.FileType;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.utility.BundleInfo;
@@ -134,13 +136,13 @@ public class GCS {
 		GCSFonts.register();
 		Fonts.loadFromPreferences();
 		App.setAboutPanel(AboutPanel.class);
-		FileType.register(SheetWindow.SHEET_EXTENSION, GCSImages.getCharacterSheetIcons(), SheetWindow::new, true);
+		FileType.register(GURPSCharacter.EXTENSION, GCSImages.getCharacterSheetIcons(), SheetWindow::new, true);
 		FileType.register(AdvantageList.EXTENSION, GCSImages.getLibraryIcons(), LibraryWindow::new, true);
 		FileType.register(EquipmentList.EXTENSION, GCSImages.getLibraryIcons(), LibraryWindow::new, true);
 		FileType.register(SkillList.EXTENSION, GCSImages.getLibraryIcons(), LibraryWindow::new, true);
 		FileType.register(SpellList.EXTENSION, GCSImages.getLibraryIcons(), LibraryWindow::new, true);
 		FileType.register(LibraryFile.EXTENSION, GCSImages.getLibraryIcons(), LibraryWindow::new, true);
-		FileType.register(TemplateWindow.EXTENSION, GCSImages.getTemplateIcons(), TemplateWindow::new, true);
+		FileType.register(Template.EXTENSION, GCSImages.getTemplateIcons(), TemplateWindow::new, true);
 	}
 
 	private static int convert(CmdLine cmdLine) {
@@ -161,7 +163,7 @@ public class GCS {
 			}
 			GraphicsUtilities.setHeadlessPrintMode(true);
 			for (File file : cmdLine.getArgumentsAsFiles()) {
-				if (SheetWindow.SHEET_EXTENSION.equals(PathUtils.getExtension(file.getName())) && file.canRead()) {
+				if (GURPSCharacter.EXTENSION.equals(PathUtils.getExtension(file.getName())) && file.canRead()) {
 					System.out.print(MessageFormat.format(LOADING, file));
 					System.out.flush();
 					timing.reset();
@@ -193,7 +195,7 @@ public class GCS {
 
 							System.out.print(CREATING_HTML);
 							System.out.flush();
-							output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), SheetWindow.HTML_EXTENSION));
+							output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), ExportToCommand.HTML_EXTENSION));
 							timing.reset();
 							success = sheet.saveAsHTML(output, htmlTemplate, builder);
 							System.out.println(timing);
@@ -206,7 +208,7 @@ public class GCS {
 						if (pdf) {
 							System.out.print(CREATING_PDF);
 							System.out.flush();
-							output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), SheetWindow.PDF_EXTENSION));
+							output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), ExportToCommand.PDF_EXTENSION));
 							timing.reset();
 							success = sheet.saveAsPDF(output);
 							System.out.println(timing);
@@ -220,7 +222,7 @@ public class GCS {
 
 							System.out.print(CREATING_PNG);
 							System.out.flush();
-							output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), SheetWindow.PNG_EXTENSION));
+							output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), ExportToCommand.PNG_EXTENSION));
 							timing.reset();
 							success = sheet.saveAsPNG(output, result);
 							System.out.println(timing);

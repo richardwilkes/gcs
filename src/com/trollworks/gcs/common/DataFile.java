@@ -184,6 +184,9 @@ public abstract class DataFile implements Undoable {
 		return getXMLTagName().equals(name);
 	}
 
+	/** @return The extension used for data files of this type. */
+	public abstract String getExtension();
+
 	/** @return The icons representing this file, at various resolutions. */
 	public abstract IconSet getFileIcons();
 

@@ -57,21 +57,19 @@ import javax.swing.undo.StateEdit;
 /** The template window. */
 public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget, NotifierTarget {
 	@Localize("Untitled Template")
-	private static String		UNTITLED;
+	private static String	UNTITLED;
 	@Localize("Add Rows")
-	private static String		ADD_ROWS;
+	private static String	ADD_ROWS;
 	@Localize("An error occurred while trying to save the template.")
-	private static String		SAVE_ERROR;
+	private static String	SAVE_ERROR;
 
 	static {
 		Localization.initialize();
 	}
 
-	/** The extension for templates. */
-	public static final String	EXTENSION	= "gct";	//$NON-NLS-1$
-	private TemplateSheet		mContent;
-	private Template			mTemplate;
-	private Search				mSearch;
+	private TemplateSheet	mContent;
+	private Template		mTemplate;
+	private Search			mSearch;
 
 	/** @return The top template sheet window, if any. */
 	public static TemplateWindow getTopTemplate() {
@@ -412,7 +410,7 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 
 	@Override
 	public String[] getAllowedExtensions() {
-		return new String[] { EXTENSION };
+		return new String[] { Template.EXTENSION };
 	}
 
 	@Override

@@ -52,6 +52,8 @@ public class Template extends DataFile implements StateEditable {
 		Localization.initialize();
 	}
 
+	/** The extension for templates. */
+	public static final String	EXTENSION				= "gct";							//$NON-NLS-1$
 	private static final int	CURRENT_VERSION			= 1;
 	private static final String	TAG_ROOT				= "template";						//$NON-NLS-1$
 	private static final String	TAG_NOTES				= "notes";							//$NON-NLS-1$
@@ -107,6 +109,11 @@ public class Template extends DataFile implements StateEditable {
 	public Template(File file) throws IOException {
 		this();
 		load(file);
+	}
+
+	@Override
+	public String getExtension() {
+		return EXTENSION;
 	}
 
 	@Override
