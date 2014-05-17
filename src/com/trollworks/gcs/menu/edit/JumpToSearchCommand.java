@@ -20,8 +20,6 @@ import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-import javax.swing.JMenuItem;
-
 /** Provides the "Jump To Search" command. */
 public class JumpToSearchCommand extends Command {
 	@Localize("Jump To Search")
@@ -39,7 +37,7 @@ public class JumpToSearchCommand extends Command {
 	}
 
 	@Override
-	public void adjustForMenu(JMenuItem item) {
+	public void adjust() {
 		KeyboardFocusManager mgr = KeyboardFocusManager.getCurrentKeyboardFocusManager();
 		Component focus = mgr.getPermanentFocusOwner();
 		if (!(focus instanceof JumpToSearchTarget)) {

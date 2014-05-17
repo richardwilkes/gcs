@@ -13,8 +13,6 @@ package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentOutline;
@@ -29,8 +27,6 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-
-import javax.swing.JMenuItem;
 
 /** Provides the "Rotate Equipment State" command. */
 public class RotateEquipmentStateCommand extends Command {
@@ -52,7 +48,7 @@ public class RotateEquipmentStateCommand extends Command {
 	}
 
 	@Override
-	public void adjustForMenu(JMenuItem item) {
+	public void adjust() {
 		Component focus = getFocusOwner();
 		if (focus instanceof OutlineProxy) {
 			focus = ((OutlineProxy) focus).getRealOutline();

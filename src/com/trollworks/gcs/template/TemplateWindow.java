@@ -166,6 +166,11 @@ public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget,
 		Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY);
 	}
 
+	@Override
+	public String getSaveTitle() {
+		return getTitle();
+	}
+
 	private void adjustWindowTitle() {
 		File file = mTemplate.getFile();
 		String title;

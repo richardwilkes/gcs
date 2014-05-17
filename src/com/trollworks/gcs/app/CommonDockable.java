@@ -13,13 +13,12 @@ package com.trollworks.gcs.app;
 
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.menu.edit.Undoable;
+import com.trollworks.toolkit.ui.menu.file.CloseableProxy;
 import com.trollworks.toolkit.ui.menu.file.SaveCommand;
 import com.trollworks.toolkit.ui.menu.file.Saveable;
 import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
-import com.trollworks.toolkit.ui.widget.dock.DockCloseable;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
@@ -28,14 +27,9 @@ import com.trollworks.toolkit.utility.undo.StdUndoManager;
 import java.io.File;
 
 import javax.swing.Icon;
-import javax.swing.JOptionPane;
 
 /** Provides a common base for library and sheet files. */
-public abstract class CommonDockable implements Dockable, DockCloseable, Saveable, Undoable {
-	@Localize("Save")
-	private static String	SAVE;
-	@Localize("Save changes to \"%s\"?")
-	private static String	SAVE_CHANGES;
+public abstract class CommonDockable implements Dockable, CloseableProxy, Saveable, Undoable {
 	@Localize("An error occurred while trying to save the file.")
 	private static String	SAVE_ERROR;
 
@@ -86,6 +80,11 @@ public abstract class CommonDockable implements Dockable, DockCloseable, Saveabl
 	}
 
 	@Override
+	public String getSaveTitle() {
+		return getTitle();
+	}
+
+	@Override
 	public String getPreferredSavePath() {
 		return PathUtils.getFullPath(getBackingFile());
 	}
@@ -102,21 +101,15 @@ public abstract class CommonDockable implements Dockable, DockCloseable, Saveabl
 	}
 
 	@Override
-	public boolean attemptClose() {
-		UIUtilities.forceFocusToAccept();
-		if (mDataFile.isModified()) {
-			switch (JOptionPane.showConfirmDialog(getContent(), String.format(SAVE_CHANGES, getTitle()), SAVE, JOptionPane.YES_NO_CANCEL_OPTION)) {
-				case JOptionPane.CANCEL_OPTION:
-				case JOptionPane.CLOSED_OPTION:
-					return false;
-				case JOptionPane.YES_OPTION:
-					SaveCommand.save(this);
-					return !mDataFile.isModified();
-				default:
-					return true;
-			}
-		}
+	public boolean mayAttemptClose() {
 		return true;
+	}
+
+	@Override
+	public void attemptClose() {
+		if (SaveCommand.attemptSave(this)) {
+			getDockContainer().close(this);
+		}
 	}
 
 	@Override

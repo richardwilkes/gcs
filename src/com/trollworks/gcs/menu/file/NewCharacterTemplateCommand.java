@@ -13,16 +13,12 @@ package com.trollworks.gcs.menu.file;
 
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateWindow;
 import com.trollworks.toolkit.ui.menu.Command;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-
-import javax.swing.JMenuItem;
 
 /** Provides the "New Character Template" command. */
 public class NewCharacterTemplateCommand extends Command {
@@ -44,7 +40,7 @@ public class NewCharacterTemplateCommand extends Command {
 	}
 
 	@Override
-	public void adjustForMenu(JMenuItem item) {
+	public void adjust() {
 		// Do nothing. We're always enabled.
 	}
 

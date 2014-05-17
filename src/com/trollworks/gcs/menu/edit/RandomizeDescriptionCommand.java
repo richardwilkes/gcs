@@ -22,7 +22,6 @@ import com.trollworks.toolkit.utility.Localization;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
 /** Provides the "Randomize Description" command. */
@@ -51,7 +50,7 @@ public class RandomizeDescriptionCommand extends Command {
 	}
 
 	@Override
-	public void adjustForMenu(JMenuItem item) {
+	public void adjust() {
 		Window window = getActiveWindow();
 		setEnabled(window instanceof SheetWindow);
 	}

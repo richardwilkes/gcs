@@ -11,23 +11,19 @@
 
 package com.trollworks.gcs.menu.edit;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 
-import javax.swing.JMenuItem;
-
 /** Provides the "Add Natural Punch" command. */
 public class AddNaturalPunchCommand extends Command {
 	@Localize("Include Punch In Weapons")
-	private static String ADD_NATURAL_PUNCH;
+	private static String						ADD_NATURAL_PUNCH;
 
 	static {
 		Localization.initialize();
@@ -44,7 +40,7 @@ public class AddNaturalPunchCommand extends Command {
 	}
 
 	@Override
-	public void adjustForMenu(JMenuItem item) {
+	public void adjust() {
 		Window window = getActiveWindow();
 		if (window instanceof SheetWindow) {
 			setEnabled(true);
@@ -53,7 +49,6 @@ public class AddNaturalPunchCommand extends Command {
 			setEnabled(false);
 			setMarked(false);
 		}
-		updateMark(item);
 	}
 
 	@Override

@@ -13,16 +13,12 @@ package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-
-import javax.swing.JMenuItem;
 
 /** Provides the "Decrement" command. */
 public class DecrementCommand extends Command {
@@ -44,7 +40,7 @@ public class DecrementCommand extends Command {
 	}
 
 	@Override
-	public void adjustForMenu(JMenuItem item) {
+	public void adjust() {
 		Component focus = getFocusOwner();
 		if (focus instanceof OutlineProxy) {
 			focus = ((OutlineProxy) focus).getRealOutline();

@@ -13,8 +13,6 @@ package com.trollworks.gcs.menu.item;
 
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.common.DataFile;
@@ -27,8 +25,6 @@ import com.trollworks.toolkit.ui.menu.Command;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-
-import javax.swing.JMenuItem;
 
 /** Provides the "New Equipment" command. */
 public class NewEquipmentCommand extends Command {
@@ -57,7 +53,7 @@ public class NewEquipmentCommand extends Command {
 	}
 
 	@Override
-	public void adjustForMenu(JMenuItem item) {
+	public void adjust() {
 		Window window = getActiveWindow();
 		if (window instanceof LibraryWindow) {
 			setEnabled(!((LibraryWindow) window).getOutline().getModel().isLocked());

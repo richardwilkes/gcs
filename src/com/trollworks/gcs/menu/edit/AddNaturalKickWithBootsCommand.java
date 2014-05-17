@@ -11,23 +11,19 @@
 
 package com.trollworks.gcs.menu.edit;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 
-import javax.swing.JMenuItem;
-
 /** Provides the "Add Natural Kick w/Boots" command. */
 public class AddNaturalKickWithBootsCommand extends Command {
 	@Localize("Include Kick w/Boots In Weapons")
-	private static String ADD_NATURAL_KICK_WITH_BOOTS;
+	private static String								ADD_NATURAL_KICK_WITH_BOOTS;
 
 	static {
 		Localization.initialize();
@@ -44,7 +40,7 @@ public class AddNaturalKickWithBootsCommand extends Command {
 	}
 
 	@Override
-	public void adjustForMenu(JMenuItem item) {
+	public void adjust() {
 		Window window = getActiveWindow();
 		if (window instanceof SheetWindow) {
 			setEnabled(true);
@@ -53,7 +49,6 @@ public class AddNaturalKickWithBootsCommand extends Command {
 			setEnabled(false);
 			setMarked(false);
 		}
-		updateMark(item);
 	}
 
 	@Override

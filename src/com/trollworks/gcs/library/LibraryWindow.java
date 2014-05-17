@@ -243,6 +243,11 @@ public class LibraryWindow extends GCSWindow implements Saveable, ActionListener
 		return "LibraryWindow:" + mFile.getUniqueID() + "."; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
+	@Override
+	public String getSaveTitle() {
+		return getTitle();
+	}
+
 	/** Called to adjust the window title to reflect the window's contents. */
 	protected void adjustWindowTitle() {
 		File file = mFile.getFile();

@@ -13,8 +13,6 @@ package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.toolkit.ui.menu.Command;
@@ -22,8 +20,6 @@ import com.trollworks.toolkit.ui.menu.Command;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.text.MessageFormat;
-
-import javax.swing.JMenuItem;
 
 /** Provides the "Generate Random Name" command. */
 public class RandomizeNameCommand extends Command {
@@ -52,7 +48,7 @@ public class RandomizeNameCommand extends Command {
 	}
 
 	@Override
-	public void adjustForMenu(JMenuItem item) {
+	public void adjust() {
 		setEnabled(getActiveWindow() instanceof SheetWindow);
 	}
 

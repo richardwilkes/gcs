@@ -26,8 +26,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
-import javax.swing.JMenuItem;
-
 /** Provides the "Apply Template To Sheet" command. */
 public class ApplyTemplateCommand extends Command {
 	@Localize("Apply Template To Character Sheet")
@@ -49,7 +47,7 @@ public class ApplyTemplateCommand extends Command {
 	}
 
 	@Override
-	public void adjustForMenu(JMenuItem item) {
+	public void adjust() {
 		Window window = getActiveWindow();
 		if (window instanceof TemplateWindow) {
 			setEnabled(SheetWindow.getTopSheet() != null);

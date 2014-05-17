@@ -13,8 +13,6 @@ package com.trollworks.gcs.menu.item;
 
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
@@ -22,8 +20,6 @@ import com.trollworks.toolkit.ui.widget.outline.Outline;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-
-import javax.swing.JMenuItem;
 
 /** Provides the "Open Detail Editor" command. */
 public class OpenEditorCommand extends Command {
@@ -45,7 +41,7 @@ public class OpenEditorCommand extends Command {
 	}
 
 	@Override
-	public void adjustForMenu(JMenuItem item) {
+	public void adjust() {
 		Component comp = getFocusOwner();
 		if (comp instanceof Outline) {
 			setEnabled(((Outline) comp).getModel().hasSelection());

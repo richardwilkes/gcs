@@ -187,6 +187,11 @@ public class SheetWindow extends GCSWindow implements Saveable, Printable, Searc
 		mPrereqThread.markForUpdate();
 	}
 
+	@Override
+	public String getSaveTitle() {
+		return getTitle();
+	}
+
 	private void adjustWindowTitle() {
 		File file = mCharacter.getFile();
 		String title;

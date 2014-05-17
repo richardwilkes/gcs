@@ -15,6 +15,9 @@ import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.edit.Undoable;
+import com.trollworks.toolkit.ui.menu.file.CloseableProxy;
+import com.trollworks.toolkit.ui.menu.file.Saveable;
+import com.trollworks.toolkit.ui.menu.file.SaveableProvider;
 import com.trollworks.toolkit.ui.menu.file.SignificantFrame;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.ui.widget.Toolbar;
@@ -29,7 +32,7 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 
 /** The main GCS window. */
-public class MainWindow extends AppWindow implements SignificantFrame, JumpToSearchTarget {
+public class MainWindow extends AppWindow implements SignificantFrame, JumpToSearchTarget, SaveableProvider, CloseableProxy {
 	@Localize("Workspace")
 	private static String	TITLE;
 
@@ -89,5 +92,43 @@ public class MainWindow extends AppWindow implements SignificantFrame, JumpToSea
 				((JumpToSearchTarget) dockable).jumpToSearchField();
 			}
 		}
+	}
+
+	@Override
+	public boolean mayAttemptClose() {
+		DockContainer dc = mDock.getFocusedDockContainer();
+		if (dc != null) {
+			Dockable dockable = dc.getCurrentDockable();
+			if (dockable instanceof CloseableProxy) {
+				return ((CloseableProxy) dockable).mayAttemptClose();
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public void attemptClose() {
+		DockContainer dc = mDock.getFocusedDockContainer();
+		if (dc != null) {
+			Dockable dockable = dc.getCurrentDockable();
+			if (dockable instanceof CloseableProxy) {
+				CloseableProxy closeable = (CloseableProxy) dockable;
+				if (closeable.mayAttemptClose()) {
+					closeable.attemptClose();
+				}
+			}
+		}
+	}
+
+	@Override
+	public Saveable getCurrentSaveable() {
+		DockContainer dc = mDock.getFocusedDockContainer();
+		if (dc != null) {
+			Dockable dockable = dc.getCurrentDockable();
+			if (dockable instanceof Saveable) {
+				return (Saveable) dockable;
+			}
+		}
+		return null;
 	}
 }
