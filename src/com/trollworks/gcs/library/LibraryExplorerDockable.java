@@ -63,13 +63,12 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.Icon;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** A list of available library files. */
-public class LibraryExplorerDockable implements Dockable, DocumentListener, JumpToSearchTarget, ListCollectionListener, FieldAccessor, IconAccessor, Openable {
+public class LibraryExplorerDockable extends Dockable implements DocumentListener, JumpToSearchTarget, ListCollectionListener, FieldAccessor, IconAccessor, Openable {
 	@Localize("Library Explorer")
 	private static String	TITLE;
 	@Localize("Enter text here to narrow the list to only those rows containing matching items")
@@ -81,11 +80,37 @@ public class LibraryExplorerDockable implements Dockable, DocumentListener, Jump
 		Localization.initialize();
 	}
 
-	private JPanel			mContent;
 	private Toolbar			mToolbar;
 	private JTextField		mFilterField;
 	private TreePanel		mTreePanel;
 	private Notifier		mNotifier;
+
+	public LibraryExplorerDockable() {
+		super(new BorderLayout());
+		ListCollectionThread listCollectionThread = ListCollectionThread.get();
+		mNotifier = new Notifier();
+		TreeRoot root = new TreeRoot(mNotifier);
+		fillTree(listCollectionThread.getLists(), root);
+		mTreePanel = new TreePanel(root);
+		mTreePanel.setShowHeader(false);
+		mTreePanel.addColumn(new TextTreeColumn(TITLE, this, this));
+		mTreePanel.setAllowColumnDrag(false);
+		mTreePanel.setAllowColumnResize(false);
+		mTreePanel.setAllowColumnContextMenu(false);
+		mTreePanel.setAllowRowDropFromExternal(false);
+		mTreePanel.setAllowedRowDragTypes(0); // Turns off row dragging
+		mTreePanel.setShowRowDivider(false);
+		mTreePanel.setShowColumnDivider(false);
+		mTreePanel.setUseBanding(false);
+		mTreePanel.setUserSortable(false);
+		mTreePanel.setOpenableProxy(this);
+		mToolbar = new Toolbar();
+		createFilterField();
+		mToolbar.add(new IconButton(ToolkitImage.getToggleOpenIcon(), TOGGLE_ROWS_OPEN_TOOLTIP, () -> mTreePanel.toggleDisclosure()));
+		add(mToolbar, BorderLayout.NORTH);
+		add(mTreePanel, BorderLayout.CENTER);
+		listCollectionThread.addListener(this);
+	}
 
 	@Override
 	public String getDescriptor() {
@@ -105,37 +130,6 @@ public class LibraryExplorerDockable implements Dockable, DocumentListener, Jump
 	@Override
 	public String getTitleTooltip() {
 		return TITLE;
-	}
-
-	@Override
-	public JPanel getContent() {
-		if (mContent == null) {
-			ListCollectionThread listCollectionThread = ListCollectionThread.get();
-			mNotifier = new Notifier();
-			TreeRoot root = new TreeRoot(mNotifier);
-			fillTree(listCollectionThread.getLists(), root);
-			mTreePanel = new TreePanel(root);
-			mTreePanel.setShowHeader(false);
-			mTreePanel.addColumn(new TextTreeColumn(TITLE, this, this));
-			mTreePanel.setAllowColumnDrag(false);
-			mTreePanel.setAllowColumnResize(false);
-			mTreePanel.setAllowColumnContextMenu(false);
-			mTreePanel.setAllowRowDropFromExternal(false);
-			mTreePanel.setAllowedRowDragTypes(0); // Turns off row dragging
-			mTreePanel.setShowRowDivider(false);
-			mTreePanel.setShowColumnDivider(false);
-			mTreePanel.setUseBanding(false);
-			mTreePanel.setUserSortable(false);
-			mTreePanel.setOpenableProxy(this);
-			mContent = new JPanel(new BorderLayout());
-			mToolbar = new Toolbar();
-			createFilterField();
-			mToolbar.add(new IconButton(ToolkitImage.getToggleOpenIcon(), TOGGLE_ROWS_OPEN_TOOLTIP, () -> mTreePanel.toggleDisclosure()));
-			mContent.add(mToolbar, BorderLayout.NORTH);
-			mContent.add(mTreePanel, BorderLayout.CENTER);
-			listCollectionThread.addListener(this);
-		}
-		return mContent;
 	}
 
 	@Override
@@ -316,7 +310,7 @@ public class LibraryExplorerDockable implements Dockable, DocumentListener, Jump
 					break;
 			}
 		} catch (Throwable throwable) {
-			StdFileDialog.showCannotOpenMsg(getContent(), PathUtils.getLeafName(path, true), throwable);
+			StdFileDialog.showCannotOpenMsg(this, PathUtils.getLeafName(path, true), throwable);
 		}
 	}
 

@@ -19,18 +19,27 @@ import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.notification.NotifierTarget;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 
 import javax.swing.JScrollPane;
 
 /** A list of advantages and disadvantages from a library. */
 public class TemplateDockable extends CommonDockable implements NotifierTarget {
-	private JScrollPane		mScroller;
 	private TemplateSheet	mTemplate;
 
 	/** Creates a new {@link TemplateDockable}. */
 	public TemplateDockable(Template template) {
 		super(template);
+		Template dataFile = getDataFile();
+		mTemplate = new TemplateSheet(dataFile);
+		JScrollPane scroller = new JScrollPane(mTemplate);
+		scroller.setBorder(null);
+		scroller.getViewport().setBackground(Color.LIGHT_GRAY);
+		add(scroller, BorderLayout.CENTER);
+		getUndoManager().discardAllEdits();
+		dataFile.setModified(false);
+		Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY);
 	}
 
 	@Override
@@ -52,21 +61,6 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget {
 	@Override
 	public String getTitle() {
 		return PathUtils.getLeafName(getCurrentBackingFile().getName(), false);
-	}
-
-	@Override
-	public JScrollPane getContent() {
-		if (mScroller == null) {
-			Template dataFile = getDataFile();
-			mTemplate = new TemplateSheet(dataFile);
-			mScroller = new JScrollPane(mTemplate);
-			mScroller.setBorder(null);
-			mScroller.getViewport().setBackground(Color.LIGHT_GRAY);
-			getUndoManager().discardAllEdits();
-			dataFile.setModified(false);
-			Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY);
-		}
-		return mScroller;
 	}
 
 	@Override

@@ -51,7 +51,6 @@ import com.trollworks.toolkit.ui.menu.file.ExportToCommand;
 import com.trollworks.toolkit.ui.menu.file.PrintProxy;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.Wrapper;
-import com.trollworks.toolkit.ui.widget.dock.Dock;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
@@ -1856,7 +1855,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 	@Override
 	public String getPrintJobTitle() {
-		Dockable dockable = Dock.getParentDockable(this);
+		Dockable dockable = UIUtilities.getAncestorOfType(this, Dockable.class);
 		if (dockable != null) {
 			return dockable.getTitle();
 		}

@@ -38,7 +38,6 @@ import java.awt.KeyboardFocusManager;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -61,7 +60,6 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 		Localization.initialize();
 	}
 
-	private JPanel				mContent;
 	private Toolbar				mToolbar;
 	private JTextField			mFilterField;
 	private JComboBox<Object>	mCategoryCombo;
@@ -72,6 +70,28 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 	/** Creates a new {@link LibraryDockable}. */
 	public LibraryDockable(ListFile file) {
 		super(file);
+		mOutline = createOutline();
+		mOutline.setDynamicRowHeight(true);
+		OutlineModel outlineModel = mOutline.getModel();
+		outlineModel.applySortConfig(outlineModel.getSortConfig());
+		outlineModel.setRowFilter(this);
+		outlineModel.setLocked(true); // RAW: This should be determined, not just set
+		mToolbar = new Toolbar();
+		createFilterField();
+		createCategoryCombo();
+		mLockButton = new IconButton(outlineModel.isLocked() ? ToolkitImage.getLockedIcon() : ToolkitImage.getUnlockedIcon(), TOGGLE_EDIT_MODE_TOOLTIP, () -> {
+			OutlineModel model = mOutline.getModel();
+			model.setLocked(!model.isLocked());
+			mLockButton.setIcon(model.isLocked() ? ToolkitImage.getLockedIcon() : ToolkitImage.getUnlockedIcon());
+		});
+		mToolbar.add(mLockButton);
+		mToolbar.add(new IconButton(ToolkitImage.getToggleOpenIcon(), TOGGLE_ROWS_OPEN_TOOLTIP, () -> mOutline.getModel().toggleRowOpenState()));
+		mToolbar.add(new IconButton(ToolkitImage.getSizeToFitIcon(), SIZE_COLUMNS_TO_FIT_TOOLTIP, () -> mOutline.sizeColumnsToFit()));
+		add(mToolbar, BorderLayout.NORTH);
+		mScroller = new JScrollPane(mOutline);
+		mScroller.setBorder(null);
+		mScroller.setColumnHeaderView(mOutline.getHeaderPanel());
+		add(mScroller, BorderLayout.CENTER);
 	}
 
 	@Override
@@ -116,36 +136,6 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 	 * @return The newly created {@link ListOutline}.
 	 */
 	protected abstract ListOutline createOutline();
-
-	@Override
-	public JPanel getContent() {
-		if (mContent == null) {
-			mOutline = createOutline();
-			mOutline.setDynamicRowHeight(true);
-			OutlineModel outlineModel = mOutline.getModel();
-			outlineModel.applySortConfig(outlineModel.getSortConfig());
-			outlineModel.setRowFilter(this);
-			outlineModel.setLocked(true); // RAW: This should be determined, not just set
-			mContent = new JPanel(new BorderLayout());
-			mToolbar = new Toolbar();
-			createFilterField();
-			createCategoryCombo();
-			mLockButton = new IconButton(outlineModel.isLocked() ? ToolkitImage.getLockedIcon() : ToolkitImage.getUnlockedIcon(), TOGGLE_EDIT_MODE_TOOLTIP, () -> {
-				OutlineModel model = mOutline.getModel();
-				model.setLocked(!model.isLocked());
-				mLockButton.setIcon(model.isLocked() ? ToolkitImage.getLockedIcon() : ToolkitImage.getUnlockedIcon());
-			});
-			mToolbar.add(mLockButton);
-			mToolbar.add(new IconButton(ToolkitImage.getToggleOpenIcon(), TOGGLE_ROWS_OPEN_TOOLTIP, () -> mOutline.getModel().toggleRowOpenState()));
-			mToolbar.add(new IconButton(ToolkitImage.getSizeToFitIcon(), SIZE_COLUMNS_TO_FIT_TOOLTIP, () -> mOutline.sizeColumnsToFit()));
-			mContent.add(mToolbar, BorderLayout.NORTH);
-			mScroller = new JScrollPane(mOutline);
-			mScroller.setBorder(null);
-			mScroller.setColumnHeaderView(mOutline.getHeaderPanel());
-			mContent.add(mScroller, BorderLayout.CENTER);
-		}
-		return mContent;
-	}
 
 	private void createFilterField() {
 		mFilterField = new JTextField(10);

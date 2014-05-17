@@ -19,6 +19,7 @@ import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
@@ -38,13 +39,25 @@ public class SheetDockable extends CommonDockable {
 		Localization.initialize();
 	}
 
-	private JScrollPane			mScroller;
 	private CharacterSheet		mSheet;
 	private PrerequisitesThread	mPrereqThread;
 
 	/** Creates a new {@link SheetDockable}. */
 	public SheetDockable(GURPSCharacter character) {
 		super(character);
+		GURPSCharacter dataFile = getDataFile();
+		mSheet = new CharacterSheet(dataFile);
+		JScrollPane scroller = new JScrollPane(mSheet);
+		scroller.setBorder(null);
+		scroller.getViewport().setBackground(Color.LIGHT_GRAY);
+		mSheet.rebuild();
+		scroller.getViewport().addChangeListener(mSheet);
+		add(scroller, BorderLayout.CENTER);
+		mPrereqThread = new PrerequisitesThread(mSheet);
+		mPrereqThread.start();
+		PrerequisitesThread.waitForProcessingToFinish(dataFile);
+		getUndoManager().discardAllEdits();
+		dataFile.setModified(false);
 	}
 
 	@Override
@@ -61,25 +74,6 @@ public class SheetDockable extends CommonDockable {
 	public String getDescriptor() {
 		// RAW: Implement
 		return null;
-	}
-
-	@Override
-	public JScrollPane getContent() {
-		if (mScroller == null) {
-			GURPSCharacter dataFile = getDataFile();
-			mSheet = new CharacterSheet(dataFile);
-			mScroller = new JScrollPane(mSheet);
-			mScroller.setBorder(null);
-			mScroller.getViewport().setBackground(Color.LIGHT_GRAY);
-			mSheet.rebuild();
-			mScroller.getViewport().addChangeListener(mSheet);
-			mPrereqThread = new PrerequisitesThread(mSheet);
-			mPrereqThread.start();
-			PrerequisitesThread.waitForProcessingToFinish(dataFile);
-			getUndoManager().discardAllEdits();
-			dataFile.setModified(false);
-		}
-		return mScroller;
 	}
 
 	@Override
@@ -104,17 +98,17 @@ public class SheetDockable extends CommonDockable {
 			if (mSheet.saveAsHTML(file, null, null)) {
 				result.add(file);
 			} else {
-				WindowUtils.showError(mScroller, SAVE_AS_HTML_ERROR);
+				WindowUtils.showError(this, SAVE_AS_HTML_ERROR);
 			}
 		} else if (ExportToCommand.PNG_EXTENSION.equals(extension)) {
 			if (!mSheet.saveAsPNG(file, result)) {
-				WindowUtils.showError(mScroller, SAVE_AS_PNG_ERROR);
+				WindowUtils.showError(this, SAVE_AS_PNG_ERROR);
 			}
 		} else if (ExportToCommand.PDF_EXTENSION.equals(extension)) {
 			if (mSheet.saveAsPDF(file)) {
 				result.add(file);
 			} else {
-				WindowUtils.showError(mScroller, SAVE_AS_PDF_ERROR);
+				WindowUtils.showError(this, SAVE_AS_PDF_ERROR);
 			}
 		} else {
 			return super.saveTo(file);

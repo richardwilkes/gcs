@@ -25,13 +25,14 @@ import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
+import java.awt.BorderLayout;
 import java.awt.Window;
 import java.io.File;
 
 import javax.swing.Icon;
 
 /** Provides a common base for library and sheet files. */
-public abstract class CommonDockable implements Dockable, CloseableProxy, Saveable, Undoable {
+public abstract class CommonDockable extends Dockable implements CloseableProxy, Saveable, Undoable {
 	@Localize("An error occurred while trying to save the file.")
 	private static String	SAVE_ERROR;
 
@@ -47,6 +48,7 @@ public abstract class CommonDockable implements Dockable, CloseableProxy, Saveab
 	 * @param file The {@link DataFile} to use.
 	 */
 	protected CommonDockable(DataFile file) {
+		super(new BorderLayout());
 		mDataFile = file;
 		mDataFile.setUndoManager(new StdUndoManager());
 	}
@@ -63,7 +65,7 @@ public abstract class CommonDockable implements Dockable, CloseableProxy, Saveab
 
 	@Override
 	public void toFrontAndFocus() {
-		Window window = UIUtilities.getAncestorOfType(getContent(), Window.class);
+		Window window = UIUtilities.getAncestorOfType(this, Window.class);
 		if (window != null) {
 			window.toFront();
 		}
@@ -107,7 +109,7 @@ public abstract class CommonDockable implements Dockable, CloseableProxy, Saveab
 			getDockContainer().updateTitle(this);
 			return new File[] { file };
 		}
-		WindowUtils.showError(getContent(), SAVE_ERROR);
+		WindowUtils.showError(this, SAVE_ERROR);
 		return new File[0];
 	}
 
