@@ -14,6 +14,8 @@ package com.trollworks.gcs.widgets.search;
 import com.trollworks.toolkit.ui.UIUtilities;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -21,6 +23,7 @@ import java.awt.event.MouseListener;
 import java.util.List;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -36,7 +39,7 @@ class SearchDropDown extends JPanel implements MouseListener {
 
 	/**
 	 * Creates a new drop-down panel for use with {@link Search}.
-	 * 
+	 *
 	 * @param renderer The item renderer to use in the list.
 	 * @param filterField The text field the drop-down will appear to be attached to.
 	 * @param target The search target.
@@ -61,7 +64,7 @@ class SearchDropDown extends JPanel implements MouseListener {
 
 	/**
 	 * Adjust the list to the specified collection of hits.
-	 * 
+	 *
 	 * @param hits The current collection of hits.
 	 */
 	void adjustToHits(List<Object> hits) {
@@ -71,10 +74,24 @@ class SearchDropDown extends JPanel implements MouseListener {
 		}
 		Point where = new Point(0, mFilterField.getHeight());
 		int count = mModel.getSize();
-		int height = count > 0 ? mList.getCellBounds(0, 0).height * 5 + 1 : 0;
+		int height = 0;
+		if (count > 0) {
+			Component renderer = mList.getCellRenderer().getListCellRendererComponent(mList, mList.getModel().getElementAt(0), 0, true, true);
+			renderer.invalidate();
+			height = 5 * renderer.getPreferredSize().height;
+			Component component = mList;
+			while (component != this) {
+				if (component instanceof JComponent) {
+					Insets insets = ((JComponent) component).getInsets();
+					height += insets.top + insets.bottom;
+				}
+				component = component.getParent();
+			}
+		}
 		UIUtilities.convertPoint(where, mFilterField, getParent());
 		UIUtilities.revalidateImmediately(mFilterField);
-		setBounds(where.x, where.y, mFilterField.getWidth(), height);
+		Insets insets = getInsets();
+		setBounds(where.x, where.y, mFilterField.getWidth(), insets.top + height + insets.bottom);
 		revalidate();
 	}
 
