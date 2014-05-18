@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.app;
 
+import com.trollworks.gcs.common.Workspace;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.toolkit.ui.menu.file.FileProxy;
 import com.trollworks.toolkit.ui.menu.file.FileProxyCreator;

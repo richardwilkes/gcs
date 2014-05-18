@@ -13,11 +13,11 @@ package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.advantage.AdvantagesDockable;
-import com.trollworks.gcs.app.Workspace;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.common.ListCollectionListener;
 import com.trollworks.gcs.common.ListCollectionThread;
+import com.trollworks.gcs.common.Workspace;
 import com.trollworks.gcs.equipment.EquipmentDockable;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.skill.SkillList;

@@ -12,6 +12,7 @@
 package com.trollworks.gcs.app;
 
 import com.trollworks.gcs.common.ListCollectionThread;
+import com.trollworks.gcs.common.Workspace;
 import com.trollworks.gcs.menu.HelpMenuProvider;
 import com.trollworks.gcs.menu.edit.EditMenuProvider;
 import com.trollworks.gcs.menu.file.FileMenuProvider;

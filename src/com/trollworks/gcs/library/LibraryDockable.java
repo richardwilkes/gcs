@@ -12,7 +12,7 @@
 package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.app.CommonDockable;
+import com.trollworks.gcs.common.CommonDockable;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.widgets.outline.ListOutline;

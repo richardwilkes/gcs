@@ -9,9 +9,8 @@
  * by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.app;
+package com.trollworks.gcs.common;
 
-import com.trollworks.gcs.common.DataFile;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.menu.edit.Undoable;

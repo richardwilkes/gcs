@@ -9,8 +9,9 @@
  * by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.app;
+package com.trollworks.gcs.common;
 
+import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.toolkit.annotation.Localize;

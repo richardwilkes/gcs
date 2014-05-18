@@ -12,7 +12,7 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.app.CommonDockable;
+import com.trollworks.gcs.common.CommonDockable;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
