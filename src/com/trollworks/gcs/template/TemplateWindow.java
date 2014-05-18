@@ -17,7 +17,6 @@ import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.widgets.GCSWindow;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowItemRenderer;
@@ -28,6 +27,7 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.menu.file.PrintProxy;
 import com.trollworks.toolkit.ui.menu.file.Saveable;
+import com.trollworks.toolkit.ui.menu.file.SignificantFrame;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.ui.widget.BaseWindow;
 import com.trollworks.toolkit.ui.widget.DataModifiedListener;
@@ -56,7 +56,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
 
 /** The template window. */
-public class TemplateWindow extends GCSWindow implements Saveable, SearchTarget, NotifierTarget {
+public class TemplateWindow extends AppWindow implements SignificantFrame, Saveable, SearchTarget, NotifierTarget {
 	@Localize("Untitled Template")
 	private static String	UNTITLED;
 	@Localize("Add Rows")
