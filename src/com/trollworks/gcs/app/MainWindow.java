@@ -14,6 +14,7 @@ package com.trollworks.gcs.app;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.menu.edit.Undoable;
 import com.trollworks.toolkit.ui.menu.file.SignificantFrame;
 import com.trollworks.toolkit.ui.widget.AppWindow;
@@ -23,12 +24,14 @@ import com.trollworks.toolkit.ui.widget.dock.Dock;
 import com.trollworks.toolkit.ui.widget.dock.DockContainer;
 import com.trollworks.toolkit.ui.widget.dock.DockLocation;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
+import com.trollworks.toolkit.utility.Geometry;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.KeyboardFocusManager;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.util.ArrayList;
 
@@ -55,26 +58,33 @@ public class MainWindow extends AppWindow implements SignificantFrame, JumpToSea
 		}
 		if (window == null) {
 			window = new MainWindow();
-			window.pack();
-			window.setVisible(true);
 		}
 		return (MainWindow) window;
 	}
 
-	/** Creates a new {@link MainWindow}. */
-	public MainWindow() {
+	private MainWindow() {
 		super(TITLE, GCSImages.getAppIcons());
 		Container content = getContentPane();
 		mToolbar = new Toolbar();
 		content.add(mToolbar, BorderLayout.NORTH);
 		mDock = new Dock();
 		content.add(mDock, BorderLayout.CENTER);
-
 		LibraryExplorerDockable libraryExplorer = new LibraryExplorerDockable();
 		mDock.dock(libraryExplorer, DockLocation.WEST);
 		mDock.getLayout().findLayout(libraryExplorer.getDockContainer()).setDividerPosition(200);
+		restoreBounds();
+		setVisible(true);
+	}
 
-		//restoreBounds();
+	@Override
+	public void pack() {
+		super.pack();
+		setBounds(Geometry.inset(20, new Rectangle(GraphicsUtilities.getMaximumWindowBounds())));
+	}
+
+	@Override
+	public String getWindowPrefsPrefix() {
+		return "Workspace."; //$NON-NLS-1$
 	}
 
 	/** @return The {@link Dock}. */

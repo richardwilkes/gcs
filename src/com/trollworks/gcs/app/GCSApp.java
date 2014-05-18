@@ -83,9 +83,7 @@ public class GCSApp extends App {
 
 	@Override
 	public void noWindowsAreOpenAtStartup(boolean finalChance) {
-		MainWindow window = new MainWindow();
-		window.pack();
-		window.setVisible(true);
+		MainWindow.get();
 	}
 
 	@Override
