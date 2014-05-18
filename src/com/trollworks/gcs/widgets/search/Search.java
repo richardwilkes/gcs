@@ -132,31 +132,34 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 		adjustHits();
 	}
 
+	private boolean redirectKeyEventToFloater(KeyEvent event) {
+		if (mFloater != null) {
+			int keyCode = event.getKeyCode();
+			if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_DOWN) {
+				mFloater.handleKeyPressed(event);
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public void keyPressed(KeyEvent event) {
-		switch (event.getKeyCode()) {
-			case KeyEvent.VK_UP:
-			case KeyEvent.VK_DOWN:
-				if (mFloater != null) {
-					mFloater.handleKeyPressed(event);
-				}
-				break;
-			case KeyEvent.VK_ENTER:
+		if (!redirectKeyEventToFloater(event)) {
+			if (event.getKeyCode() == KeyEvent.VK_ENTER) {
 				searchSelect();
-				break;
-			default:
-				break;
+			}
 		}
 	}
 
 	@Override
 	public void keyReleased(KeyEvent event) {
-		// Not used.
+		redirectKeyEventToFloater(event);
 	}
 
 	@Override
 	public void keyTyped(KeyEvent event) {
-		// Not used.
+		redirectKeyEventToFloater(event);
 	}
 
 	@Override
