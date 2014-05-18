@@ -2549,7 +2549,7 @@ public class GURPSCharacter extends DataFile {
 	 */
 	void postUndoEdit(String name, String id, Object before, Object after) {
 		StdUndoManager mgr = getUndoManager();
-		if (mgr != null && !mgr.isInTransaction()) {
+		if (!mgr.isInTransaction()) {
 			boolean add;
 			if (before instanceof ListRow) {
 				add = !((ListRow) before).isEquivalentTo(after);
