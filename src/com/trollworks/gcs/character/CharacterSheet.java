@@ -22,6 +22,7 @@ import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.equipment.EquipmentOutline;
+import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillColumn;
@@ -230,10 +231,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			focus = outline.getRealOutline();
 		}
 
-		Container window = getTopLevelAncestor();
-		if (window instanceof SheetWindow) {
-			((SheetWindow) window).jumpToSearchField();
-		}
+		UIUtilities.getAncestorOfType(this, JumpToSearchTarget.class).jumpToSearchField();
 
 		// Make sure our primary outlines exist
 		createAdvantageOutline();
@@ -1026,7 +1024,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				templateUsed.append(PathUtils.getFullPath(template));
 			}
 			try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(template)));
-				BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
+							BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
 				while (in.read(buffer) != -1) {
 					char ch = buffer[0];
 					if (lookForKeyMarker) {
