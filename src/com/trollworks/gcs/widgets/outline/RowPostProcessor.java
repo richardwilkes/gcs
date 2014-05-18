@@ -12,13 +12,13 @@
 package com.trollworks.gcs.widgets.outline;
 
 import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.names.Namer;
 import com.trollworks.gcs.modifier.ModifierEnabler;
 import com.trollworks.toolkit.collections.FilteredList;
+import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 
-import java.awt.Container;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -28,7 +28,7 @@ public class RowPostProcessor implements Runnable {
 
 	/**
 	 * Creates a new post processor for name substitution.
-	 * 
+	 *
 	 * @param map The map to process.
 	 */
 	public RowPostProcessor(HashMap<Outline, ArrayList<ListRow>> map) {
@@ -37,7 +37,7 @@ public class RowPostProcessor implements Runnable {
 
 	/**
 	 * Creates a new post processor for name substitution.
-	 * 
+	 *
 	 * @param outline The outline containing the rows.
 	 * @param list The list to process.
 	 */
@@ -55,10 +55,9 @@ public class RowPostProcessor implements Runnable {
 			if (modified) {
 				outline.updateRowHeights(rows);
 				outline.repaint();
-				Container window = outline.getTopLevelAncestor();
-				if (window instanceof SheetWindow) {
-					SheetWindow sheetWindow = (SheetWindow) window;
-					sheetWindow.notifyOfPrereqOrFeatureModification();
+				SheetDockable dockable = UIUtilities.getAncestorOfType(outline, SheetDockable.class);
+				if (dockable != null) {
+					dockable.notifyOfPrereqOrFeatureModification();
 				}
 			}
 		}

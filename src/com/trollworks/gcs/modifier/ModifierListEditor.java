@@ -11,8 +11,6 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
@@ -20,12 +18,14 @@ import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.widgets.IconButton;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.collections.FilteredList;
 import com.trollworks.toolkit.ui.image.ToolkitImage;
 import com.trollworks.toolkit.ui.widget.ActionPanel;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -40,16 +40,16 @@ import javax.swing.ScrollPaneConstants;
 /** Editor for {@link ModifierList}s. */
 public class ModifierListEditor extends ActionPanel implements ActionListener {
 	@Localize("Modifiers")
-	private static String MODIFIERS;
+	private static String	MODIFIERS;
 
 	static {
 		Localization.initialize();
 	}
 
-	private DataFile	mOwner;
-	private Outline		mOutline;
-	IconButton			mAddButton;
-	boolean				mModified;
+	private DataFile		mOwner;
+	private Outline			mOutline;
+	IconButton				mAddButton;
+	boolean					mModified;
 
 	/**
 	 * @param advantage The {@link Advantage} to edit.
@@ -61,7 +61,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 
 	/**
 	 * Creates a new {@link ModifierListEditor} editor.
-	 * 
+	 *
 	 * @param owner The owning row.
 	 * @param readOnlyModifiers The list of {@link Modifier}s from parents, which are not to be
 	 *            modified.
@@ -76,7 +76,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 
 	/**
 	 * Creates a new {@link ModifierListEditor}.
-	 * 
+	 *
 	 * @param advantage Associated advantage
 	 */
 	public ModifierListEditor(Advantage advantage) {
@@ -145,7 +145,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 		}
 		if (!rows.isEmpty()) {
 			mOutline.getModel().setLocked(!mAddButton.isEnabled());
-			if (RowEditor.edit(getTopLevelAncestor(), rows)) {
+			if (RowEditor.edit(mOutline, rows)) {
 				mModified = true;
 				for (ListRow row : rows) {
 					row.update();

@@ -11,19 +11,17 @@
 
 package com.trollworks.gcs.menu.item;
 
-import com.trollworks.gcs.library.LibraryWindow;
-import com.trollworks.gcs.template.TemplateWindow;
+import com.trollworks.gcs.library.LibraryDockable;
+import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.utility.Localization;
 
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "Copy To Template" command. */
-//RAW: Implement for dockables
 public class CopyToTemplateCommand extends Command {
 	@Localize("Copy To Template")
 	private static String						COPY_TO_TEMPLATE;
@@ -43,9 +41,9 @@ public class CopyToTemplateCommand extends Command {
 
 	@Override
 	public void adjust() {
-		Window window = getActiveWindow();
-		if (window instanceof LibraryWindow) {
-			setEnabled(((LibraryWindow) window).getOutline().getModel().hasSelection() && TemplateWindow.getTopTemplate() != null);
+		LibraryDockable library = getTarget(LibraryDockable.class);
+		if (library != null) {
+			setEnabled(library.getOutline().getModel().hasSelection() && TemplateDockable.getLastActivated() != null);
 		} else {
 			setEnabled(false);
 		}
@@ -53,11 +51,11 @@ public class CopyToTemplateCommand extends Command {
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
-		Window window = getActiveWindow();
-		if (window instanceof LibraryWindow) {
-			OutlineModel outlineModel = ((LibraryWindow) window).getOutline().getModel();
+		LibraryDockable library = getTarget(LibraryDockable.class);
+		if (library != null) {
+			OutlineModel outlineModel = library.getOutline().getModel();
 			if (outlineModel.hasSelection()) {
-				TemplateWindow template = TemplateWindow.getTopTemplate();
+				TemplateDockable template = TemplateDockable.getLastActivated();
 				if (template != null) {
 					template.addRows(outlineModel.getSelectionAsList(true));
 				}

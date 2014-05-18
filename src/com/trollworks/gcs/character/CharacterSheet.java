@@ -901,7 +901,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	@Override
 	public void drop(DropTargetDropEvent dtde) {
 		dtde.acceptDrop(dtde.getDropAction());
-		((SheetWindow) getTopLevelAncestor()).addRows(mDragRows);
+		UIUtilities.getAncestorOfType(this, SheetDockable.class).addRows(mDragRows);
 		mDragRows = null;
 		dtde.dropComplete(true);
 	}
@@ -1024,7 +1024,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				templateUsed.append(PathUtils.getFullPath(template));
 			}
 			try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(template)));
-				BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
+							BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
 				while (in.read(buffer) != -1) {
 					char ch = buffer[0];
 					if (lookForKeyMarker) {

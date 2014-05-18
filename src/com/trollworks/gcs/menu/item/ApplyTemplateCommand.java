@@ -12,22 +12,20 @@
 package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.character.Profile;
-import com.trollworks.gcs.character.SheetWindow;
+import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.template.Template;
-import com.trollworks.gcs.template.TemplateWindow;
+import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.undo.MultipleUndo;
 
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 /** Provides the "Apply Template To Sheet" command. */
-// RAW: Implement for dockables
 public class ApplyTemplateCommand extends Command {
 	@Localize("Apply Template To Character Sheet")
 	private static String						APPLY_TEMPLATE_TO_SHEET;
@@ -49,9 +47,9 @@ public class ApplyTemplateCommand extends Command {
 
 	@Override
 	public void adjust() {
-		Window window = getActiveWindow();
-		if (window instanceof TemplateWindow) {
-			setEnabled(SheetWindow.getTopSheet() != null);
+		TemplateDockable template = getTarget(TemplateDockable.class);
+		if (template != null) {
+			setEnabled(SheetDockable.getLastActivated() != null);
 		} else {
 			setEnabled(false);
 		}
@@ -59,28 +57,30 @@ public class ApplyTemplateCommand extends Command {
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
-		Window window = getActiveWindow();
-		if (window instanceof TemplateWindow) {
-			Template template = ((TemplateWindow) window).getTemplate();
-			MultipleUndo edit = new MultipleUndo(UNDO);
-			ArrayList<Row> rows = new ArrayList<>();
-			String notes = template.getNotes().trim();
-			SheetWindow sheet = SheetWindow.getTopSheet();
-			template.addEdit(edit);
-			rows.addAll(template.getAdvantagesModel().getTopLevelRows());
-			rows.addAll(template.getSkillsModel().getTopLevelRows());
-			rows.addAll(template.getSpellsModel().getTopLevelRows());
-			rows.addAll(template.getEquipmentModel().getTopLevelRows());
-			sheet.addRows(rows);
-			if (notes.length() > 0) {
-				Profile description = sheet.getCharacter().getDescription();
-				String prevNotes = description.getNotes().trim();
-				if (prevNotes.length() > 0) {
-					notes = prevNotes + "\n\n" + notes; //$NON-NLS-1$
+		TemplateDockable templateDockable = getTarget(TemplateDockable.class);
+		if (templateDockable != null) {
+			SheetDockable sheetDockable = SheetDockable.getLastActivated();
+			if (sheetDockable != null) {
+				Template template = templateDockable.getDataFile();
+				MultipleUndo edit = new MultipleUndo(UNDO);
+				ArrayList<Row> rows = new ArrayList<>();
+				String notes = template.getNotes().trim();
+				template.addEdit(edit);
+				rows.addAll(template.getAdvantagesModel().getTopLevelRows());
+				rows.addAll(template.getSkillsModel().getTopLevelRows());
+				rows.addAll(template.getSpellsModel().getTopLevelRows());
+				rows.addAll(template.getEquipmentModel().getTopLevelRows());
+				sheetDockable.addRows(rows);
+				if (notes.length() > 0) {
+					Profile description = sheetDockable.getDataFile().getDescription();
+					String prevNotes = description.getNotes().trim();
+					if (prevNotes.length() > 0) {
+						notes = prevNotes + "\n\n" + notes; //$NON-NLS-1$
+					}
+					description.setNotes(notes);
 				}
-				description.setNotes(notes);
+				edit.end();
 			}
-			edit.end();
 		}
 	}
 }

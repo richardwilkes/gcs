@@ -11,19 +11,17 @@
 
 package com.trollworks.gcs.menu.item;
 
-import com.trollworks.gcs.character.SheetWindow;
-import com.trollworks.gcs.library.LibraryWindow;
+import com.trollworks.gcs.character.SheetDockable;
+import com.trollworks.gcs.library.LibraryDockable;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.utility.Localization;
 
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "Copy To Character Sheet" command. */
-// RAW: Implement for dockables
 public class CopyToSheetCommand extends Command {
 	@Localize("Copy To Character Sheet")
 	private static String					COPY_TO_SHEET;
@@ -44,9 +42,9 @@ public class CopyToSheetCommand extends Command {
 
 	@Override
 	public void adjust() {
-		Window window = getActiveWindow();
-		if (window instanceof LibraryWindow) {
-			setEnabled(((LibraryWindow) window).getOutline().getModel().hasSelection() && SheetWindow.getTopSheet() != null);
+		LibraryDockable library = getTarget(LibraryDockable.class);
+		if (library != null) {
+			setEnabled(library.getOutline().getModel().hasSelection() && SheetDockable.getLastActivated() != null);
 		} else {
 			setEnabled(false);
 		}
@@ -54,11 +52,11 @@ public class CopyToSheetCommand extends Command {
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
-		Window window = getActiveWindow();
-		if (window instanceof LibraryWindow) {
-			OutlineModel outlineModel = ((LibraryWindow) window).getOutline().getModel();
+		LibraryDockable library = getTarget(LibraryDockable.class);
+		if (library != null) {
+			OutlineModel outlineModel = library.getOutline().getModel();
 			if (outlineModel.hasSelection()) {
-				SheetWindow sheet = SheetWindow.getTopSheet();
+				SheetDockable sheet = SheetDockable.getLastActivated();
 				if (sheet != null) {
 					sheet.addRows(outlineModel.getSelectionAsList(true));
 				}

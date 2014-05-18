@@ -11,10 +11,6 @@
 
 package com.trollworks.gcs.template;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageOutline;
 import com.trollworks.gcs.character.GURPSCharacter;
@@ -27,6 +23,8 @@ import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineHeader;
@@ -34,6 +32,7 @@ import com.trollworks.toolkit.ui.widget.outline.OutlineSyncer;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowSelection;
 import com.trollworks.toolkit.utility.Debug;
+import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.notification.BatchNotifierTarget;
 
 import java.awt.Color;
@@ -58,15 +57,15 @@ import javax.swing.border.EmptyBorder;
 /** The template sheet. */
 public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTarget, DropTargetListener, ActionListener {
 	@Localize("Advantages, Disadvantages & Quirks")
-	private static String ADVANTAGES;
+	private static String				ADVANTAGES;
 	@Localize("Skills")
-	private static String SKILLS;
+	private static String				SKILLS;
 	@Localize("Spells")
-	private static String SPELLS;
+	private static String				SPELLS;
 	@Localize("Equipment")
-	private static String EQUIPMENT;
+	private static String				EQUIPMENT;
 	@Localize("Notes")
-	private static String NOTES;
+	private static String				NOTES;
 
 	static {
 		Localization.initialize();
@@ -294,7 +293,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 	@Override
 	public void drop(DropTargetDropEvent dtde) {
 		dtde.acceptDrop(dtde.getDropAction());
-		((TemplateWindow) getTopLevelAncestor()).addRows(mDragRows);
+		UIUtilities.getAncestorOfType(this, TemplateDockable.class).addRows(mDragRows);
 		mDragRows = null;
 		dtde.dropComplete(true);
 	}

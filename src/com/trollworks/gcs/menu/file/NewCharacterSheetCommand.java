@@ -13,7 +13,6 @@ package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetDockable;
-import com.trollworks.gcs.character.SheetWindow;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
@@ -51,7 +50,7 @@ public class NewCharacterSheetCommand extends Command {
 		newSheet();
 	}
 
-	/** @return The newly created a new {@link SheetWindow}. */
+	/** @return The newly created a new {@link SheetDockable}. */
 	public static SheetDockable newSheet() {
 		LibraryExplorerDockable library = LibraryExplorerDockable.get();
 		if (library != null) {
