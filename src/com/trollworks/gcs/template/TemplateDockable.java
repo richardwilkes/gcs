@@ -29,6 +29,7 @@ import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.notification.NotifierTarget;
+import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -67,8 +68,10 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
 		scroller.setBorder(null);
 		scroller.getViewport().setBackground(Color.LIGHT_GRAY);
 		add(scroller, BorderLayout.CENTER);
-		getUndoManager().discardAllEdits();
 		dataFile.setModified(false);
+		StdUndoManager undoManager = getUndoManager();
+		undoManager.discardAllEdits();
+		dataFile.setUndoManager(undoManager);
 		Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY);
 	}
 
