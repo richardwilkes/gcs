@@ -22,7 +22,6 @@ import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellOutline;
-import com.trollworks.gcs.widgets.GCSWindow;
 import com.trollworks.gcs.widgets.IconButton;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
@@ -35,6 +34,8 @@ import com.trollworks.toolkit.ui.layout.FlexColumn;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.menu.file.PrintProxy;
 import com.trollworks.toolkit.ui.menu.file.Saveable;
+import com.trollworks.toolkit.ui.menu.file.SignificantFrame;
+import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.ui.widget.BaseWindow;
 import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.ui.widget.ModifiedMarker;
@@ -67,7 +68,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** The library window. */
-public class LibraryWindow extends GCSWindow implements Saveable, ActionListener, BatchNotifierTarget, RowFilter, DocumentListener, JumpToSearchTarget {
+public class LibraryWindow extends AppWindow implements SignificantFrame, Saveable, ActionListener, BatchNotifierTarget, RowFilter, DocumentListener, JumpToSearchTarget {
 	@Localize("Library")
 	private static String		TITLE;
 	@Localize("Switches between allowing editing and not")
