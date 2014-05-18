@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Responsible for creating new {@link Dockable}s and installing them into the {@link MainWindow}.
+ * Responsible for creating new {@link Dockable}s and installing them into the {@link Workspace}.
  */
 public class GCSFileProxyCreator implements FileProxyCreator {
 	@Override

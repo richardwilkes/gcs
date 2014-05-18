@@ -12,7 +12,6 @@
 package com.trollworks.gcs.app;
 
 import com.trollworks.gcs.common.ListCollectionThread;
-import com.trollworks.gcs.menu.DataMenuProvider;
 import com.trollworks.gcs.menu.HelpMenuProvider;
 import com.trollworks.gcs.menu.edit.EditMenuProvider;
 import com.trollworks.gcs.menu.file.FileMenuProvider;
@@ -61,7 +60,7 @@ public class GCSApp extends App {
 
 		ListCollectionThread.get();
 
-		StdMenuBar.configure(new FileMenuProvider(), new EditMenuProvider(), new DataMenuProvider(), new ItemMenuProvider(), new WindowMenuProvider(), new HelpMenuProvider());
+		StdMenuBar.configure(new FileMenuProvider(), new EditMenuProvider(), new ItemMenuProvider(), new WindowMenuProvider(), new HelpMenuProvider());
 		SheetPreferences.initialize();
 		PreferencesWindow.addCategory(SheetPreferences::new);
 		PreferencesWindow.addCategory(FontPreferences::new);
@@ -70,7 +69,7 @@ public class GCSApp extends App {
 
 	@Override
 	public void noWindowsAreOpenAtStartup(boolean finalChance) {
-		MainWindow.get();
+		Workspace.get();
 	}
 
 	@Override

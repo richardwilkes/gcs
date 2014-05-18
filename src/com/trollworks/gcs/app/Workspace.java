@@ -15,7 +15,6 @@ import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
-import com.trollworks.toolkit.ui.menu.edit.Undoable;
 import com.trollworks.toolkit.ui.menu.file.SignificantFrame;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.ui.widget.BaseWindow;
@@ -26,7 +25,6 @@ import com.trollworks.toolkit.ui.widget.dock.DockLocation;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.utility.Geometry;
 import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -35,8 +33,8 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.util.ArrayList;
 
-/** The main GCS window. */
-public class MainWindow extends AppWindow implements SignificantFrame, JumpToSearchTarget {
+/** The workspace, where all files can be viewed and edited. */
+public class Workspace extends AppWindow implements SignificantFrame, JumpToSearchTarget {
 	@Localize("Workspace")
 	private static String	TITLE;
 
@@ -47,22 +45,22 @@ public class MainWindow extends AppWindow implements SignificantFrame, JumpToSea
 	private Toolbar			mToolbar;
 	private Dock			mDock;
 
-	/** @return The {@link MainWindow}. */
-	public static MainWindow get() {
+	/** @return The {@link Workspace}. */
+	public static Workspace get() {
 		Window window = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
-		if (window == null || !(window instanceof MainWindow)) {
-			ArrayList<MainWindow> windows = BaseWindow.getWindows(MainWindow.class);
+		if (window == null || !(window instanceof Workspace)) {
+			ArrayList<Workspace> windows = BaseWindow.getWindows(Workspace.class);
 			if (!windows.isEmpty()) {
 				window = windows.get(0);
 			}
 		}
 		if (window == null) {
-			window = new MainWindow();
+			window = new Workspace();
 		}
-		return (MainWindow) window;
+		return (Workspace) window;
 	}
 
-	private MainWindow() {
+	private Workspace() {
 		super(TITLE, GCSImages.getAppIcons());
 		Container content = getContentPane();
 		mToolbar = new Toolbar();
@@ -90,18 +88,6 @@ public class MainWindow extends AppWindow implements SignificantFrame, JumpToSea
 	/** @return The {@link Dock}. */
 	public Dock getDock() {
 		return mDock;
-	}
-
-	@Override
-	public StdUndoManager getUndoManager() {
-		DockContainer dc = mDock.getFocusedDockContainer();
-		if (dc != null) {
-			Dockable dockable = dc.getCurrentDockable();
-			if (dockable instanceof Undoable) {
-				return ((Undoable) dockable).getUndoManager();
-			}
-		}
-		return super.getUndoManager();
 	}
 
 	@Override
