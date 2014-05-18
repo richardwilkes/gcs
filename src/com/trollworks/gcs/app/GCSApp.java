@@ -21,7 +21,6 @@ import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.UpdateChecker;
 import com.trollworks.toolkit.ui.menu.StdMenuBar;
 import com.trollworks.toolkit.ui.menu.file.FileType;
-import com.trollworks.toolkit.ui.menu.window.WindowMenuProvider;
 import com.trollworks.toolkit.ui.preferences.FontPreferences;
 import com.trollworks.toolkit.ui.preferences.MenuKeyPreferences;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
@@ -60,7 +59,7 @@ public class GCSApp extends App {
 
 		ListCollectionThread.get();
 
-		StdMenuBar.configure(new FileMenuProvider(), new EditMenuProvider(), new ItemMenuProvider(), new WindowMenuProvider(), new HelpMenuProvider());
+		StdMenuBar.configure(new FileMenuProvider(), new EditMenuProvider(), new ItemMenuProvider(), new HelpMenuProvider());
 		SheetPreferences.initialize();
 		PreferencesWindow.addCategory(SheetPreferences::new);
 		PreferencesWindow.addCategory(FontPreferences::new);
