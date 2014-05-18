@@ -40,17 +40,11 @@ public abstract class DataFile implements Undoable {
 	/** The 'unique ID' attribute. */
 	public static final String				ATTRIBUTE_UNIQUE_ID		= "unique_id";			//$NON-NLS-1$
 	private File							mFile;
-	private UniqueID						mUniqueID;
-	private Notifier						mNotifier;
+	private UniqueID						mUniqueID				= new UniqueID();
+	private Notifier						mNotifier				= new Notifier();
 	private boolean							mModified;
-	private StdUndoManager					mUndoManager;
+	private StdUndoManager					mUndoManager			= new StdUndoManager();
 	private ArrayList<DataModifiedListener>	mDataModifiedListeners	= new ArrayList<>();
-
-	/** Creates a new {@link DataFile}. */
-	protected DataFile() {
-		mUniqueID = new UniqueID();
-		mNotifier = new Notifier();
-	}
 
 	/** @param file The file to load. */
 	public void load(File file) throws IOException {
@@ -331,7 +325,7 @@ public abstract class DataFile implements Undoable {
 		endNotify();
 	}
 
-	/** @return The {@link StdUndoManager} to use. May be <code>null</code>. */
+	/** @return The {@link StdUndoManager} to use. */
 	@Override
 	public final StdUndoManager getUndoManager() {
 		return mUndoManager;
@@ -344,8 +338,6 @@ public abstract class DataFile implements Undoable {
 
 	/** @param edit The {@link UndoableEdit} to add. */
 	public final void addEdit(UndoableEdit edit) {
-		if (mUndoManager != null) {
-			mUndoManager.addEdit(edit);
-		}
+		mUndoManager.addEdit(edit);
 	}
 }
