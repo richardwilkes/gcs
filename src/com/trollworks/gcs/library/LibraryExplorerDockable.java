@@ -34,6 +34,7 @@ import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.ui.image.ToolkitImage;
 import com.trollworks.toolkit.ui.menu.edit.Openable;
 import com.trollworks.toolkit.ui.menu.file.FileProxy;
+import com.trollworks.toolkit.ui.menu.file.RecentFilesMenu;
 import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.ui.widget.StdFileDialog;
 import com.trollworks.toolkit.ui.widget.Toolbar;
@@ -265,47 +266,62 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 	}
 
 	public FileProxy open(Path path) {
+		FileProxy proxy = null;
 		// See if it is already open
 		for (Dockable dockable : getDockContainer().getDock().getDockables()) {
 			if (dockable instanceof FileProxy) {
-				FileProxy proxy = (FileProxy) dockable;
+				proxy = (FileProxy) dockable;
 				File file = proxy.getBackingFile();
 				if (file != null) {
 					try {
 						if (Files.isSameFile(path, file.toPath())) {
 							dockable.getDockContainer().setCurrentDockable(dockable);
-							return proxy;
+							break;
 						}
 					} catch (IOException ioe) {
 						Log.error(ioe);
 					}
 				}
+				proxy = null;
 			}
 		}
-		// If it wasn't, load it and put it into the dock
-		try {
-			switch (PathUtils.getExtension(path)) {
-				case AdvantageList.EXTENSION:
-					return openAdvantageList(path);
-				case EquipmentList.EXTENSION:
-					return openEquipmentList(path);
-				case SkillList.EXTENSION:
-					return openSkillList(path);
-				case SpellList.EXTENSION:
-					return openSpellList(path);
-				case LibraryFile.EXTENSION:
-					return openLibrary(path);
-				case GURPSCharacter.EXTENSION:
-					return dockSheet(new SheetDockable(new GURPSCharacter(path.toFile())));
-				case Template.EXTENSION:
-					return dockTemplate(new TemplateDockable(new Template(path.toFile())));
-				default:
-					return null;
+		if (proxy == null) {
+			// If it wasn't, load it and put it into the dock
+			try {
+				switch (PathUtils.getExtension(path)) {
+					case AdvantageList.EXTENSION:
+						proxy = openAdvantageList(path);
+						break;
+					case EquipmentList.EXTENSION:
+						proxy = openEquipmentList(path);
+						break;
+					case SkillList.EXTENSION:
+						proxy = openSkillList(path);
+						break;
+					case SpellList.EXTENSION:
+						proxy = openSpellList(path);
+						break;
+					case LibraryFile.EXTENSION:
+						proxy = openLibrary(path);
+						break;
+					case GURPSCharacter.EXTENSION:
+						proxy = dockSheet(new SheetDockable(new GURPSCharacter(path.toFile())));
+						break;
+					case Template.EXTENSION:
+						proxy = dockTemplate(new TemplateDockable(new Template(path.toFile())));
+						break;
+					default:
+						break;
+				}
+			} catch (Throwable throwable) {
+				StdFileDialog.showCannotOpenMsg(this, PathUtils.getLeafName(path, true), throwable);
+				proxy = null;
 			}
-		} catch (Throwable throwable) {
-			StdFileDialog.showCannotOpenMsg(this, PathUtils.getLeafName(path, true), throwable);
-			return null;
 		}
+		if (proxy != null) {
+			RecentFilesMenu.addRecent(proxy.getBackingFile());
+		}
+		return proxy;
 	}
 
 	private FileProxy openAdvantageList(Path path) throws IOException {
