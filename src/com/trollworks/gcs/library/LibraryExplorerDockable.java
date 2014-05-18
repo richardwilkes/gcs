@@ -20,13 +20,14 @@ import com.trollworks.gcs.common.ListCollectionListener;
 import com.trollworks.gcs.common.ListCollectionThread;
 import com.trollworks.gcs.equipment.EquipmentDockable;
 import com.trollworks.gcs.equipment.EquipmentList;
-import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.SkillsDockable;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.spell.SpellsDockable;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateDockable;
+import com.trollworks.gcs.widgets.search.Search;
+import com.trollworks.gcs.widgets.search.SearchTarget;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.ui.image.ToolkitIcon;
@@ -52,7 +53,6 @@ import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.notification.Notifier;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.io.File;
 import java.io.IOException;
@@ -64,12 +64,12 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.Icon;
-import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** A list of available library files. */
-public class LibraryExplorerDockable extends Dockable implements DocumentListener, JumpToSearchTarget, ListCollectionListener, FieldAccessor, IconAccessor, Openable {
+public class LibraryExplorerDockable extends Dockable implements DocumentListener, SearchTarget, ListCollectionListener, FieldAccessor, IconAccessor, Openable {
 	@Localize("Library Explorer")
 	private static String	TITLE;
 	@Localize("Enter text here to narrow the list to only those rows containing matching items")
@@ -82,7 +82,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 	}
 
 	private Toolbar			mToolbar;
-	private JTextField		mFilterField;
+	private Search			mSearch;
 	private TreePanel		mTreePanel;
 	private Notifier		mNotifier;
 
@@ -116,7 +116,8 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 		mTreePanel.setUserSortable(false);
 		mTreePanel.setOpenableProxy(this);
 		mToolbar = new Toolbar();
-		createFilterField();
+		mSearch = new Search(this);
+		mToolbar.add(mSearch, Toolbar.LAYOUT_FILL);
 		mToolbar.add(new IconButton(ToolkitImage.getToggleOpenIcon(), TOGGLE_ROWS_OPEN_TOOLTIP, () -> mTreePanel.toggleDisclosure()));
 		add(mToolbar, BorderLayout.NORTH);
 		add(mTreePanel, BorderLayout.CENTER);
@@ -151,16 +152,6 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 	@Override
 	public ToolkitIcon getIcon(TreeRow row) {
 		return ((LibraryExplorerRow) row).getIcon();
-	}
-
-	private void createFilterField() {
-		mFilterField = new JTextField(10);
-		mFilterField.getDocument().addDocumentListener(this);
-		mFilterField.setToolTipText(SEARCH_FIELD_TOOLTIP);
-		// This client property is specific to Mac OS X
-		mFilterField.putClientProperty("JTextField.variant", "search"); //$NON-NLS-1$ //$NON-NLS-2$
-		mFilterField.setMinimumSize(new Dimension(60, mFilterField.getPreferredSize().height));
-		mToolbar.add(mFilterField, Toolbar.LAYOUT_FILL);
 	}
 
 	@Override
@@ -247,16 +238,6 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 			}
 		}
 		return list;
-	}
-
-	@Override
-	public boolean isJumpToSearchAvailable() {
-		return mFilterField.isEnabled() && mFilterField != KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
-	}
-
-	@Override
-	public void jumpToSearchField() {
-		mFilterField.requestFocusInWindow();
 	}
 
 	@Override
@@ -444,5 +425,55 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 			dock.dock(template, this, DockLocation.EAST);
 		}
 		return template;
+	}
+
+	@Override
+	public boolean isJumpToSearchAvailable() {
+		return mSearch.isEnabled() && mSearch != KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
+	}
+
+	@Override
+	public void jumpToSearchField() {
+		mSearch.requestFocusInWindow();
+	}
+
+	@Override
+	public ListCellRenderer<Object> getSearchRenderer() {
+		return new LibraryExplorerRowRenderer();
+	}
+
+	@Override
+	public List<Object> search(String filter) {
+		ArrayList<Object> list = new ArrayList<>();
+		filter = filter.toLowerCase();
+		collect(mTreePanel.getRoot(), filter, list);
+		return list;
+	}
+
+	private static void collect(TreeRow row, String text, ArrayList<Object> list) {
+		if (row instanceof LibraryExplorerRow) {
+			if (((LibraryExplorerRow) row).getName().toLowerCase().contains(text)) {
+				list.add(row);
+			}
+		}
+		if (row instanceof TreeContainerRow) {
+			for (TreeRow child : ((TreeContainerRow) row).getChildren()) {
+				collect(child, text, list);
+			}
+		}
+	}
+
+	@Override
+	public void searchSelect(List<Object> selection) {
+		List<TreeRow> list = new ArrayList<>();
+		for (Object one : selection) {
+			if (one instanceof TreeRow) {
+				list.add((TreeRow) one);
+
+			}
+		}
+		mTreePanel.setParentsOpen(list);
+		mTreePanel.select(list);
+		mTreePanel.requestFocus();
 	}
 }
