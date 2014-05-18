@@ -13,7 +13,7 @@ package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.advantage.AdvantagesDockable;
-import com.trollworks.gcs.app.MainWindow;
+import com.trollworks.gcs.app.Workspace;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.common.ListCollectionListener;
@@ -87,7 +87,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 	private Notifier		mNotifier;
 
 	public static LibraryExplorerDockable get() {
-		for (Dockable dockable : MainWindow.get().getDock().getDockables()) {
+		for (Dockable dockable : Workspace.get().getDock().getDockables()) {
 			if (dockable instanceof LibraryExplorerDockable) {
 				return (LibraryExplorerDockable) dockable;
 			}
@@ -192,7 +192,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 	public void dataFileListUpdated(List<Object> lists) {
 		TreeRoot root = mTreePanel.getRoot();
 		Set<String> selected = new HashSet<>();
-		for (TreeRow row : mTreePanel.getSelectedRows()) {
+		for (TreeRow row : mTreePanel.getExplicitlySelectedRows()) {
 			selected.add(((LibraryExplorerRow) row).getSelectionKey());
 		}
 		Set<String> open = new HashSet<>();
@@ -206,7 +206,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 		fillTree(lists, root);
 		mNotifier.endBatch();
 		mTreePanel.setOpen(true, collectRowsToOpen(root, open, null));
-		mTreePanel.select(collectRows(root, open, null));
+		mTreePanel.select(collectRows(root, selected, null));
 	}
 
 	private List<TreeContainerRow> collectRowsToOpen(TreeContainerRow parent, Set<String> selectors, List<TreeContainerRow> list) {
@@ -247,12 +247,19 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 
 	@Override
 	public void openSelection() {
-		for (TreeRow row : mTreePanel.getSelectedRows()) {
+		List<TreeContainerRow> containers = new ArrayList<>();
+		boolean hadFile = false;
+		for (TreeRow row : mTreePanel.getExplicitlySelectedRows()) {
 			if (row instanceof TreeContainerRow) {
-				TreeContainerRow container = (TreeContainerRow) row;
-				mTreePanel.setOpen(!mTreePanel.isOpen(container), container);
+				containers.add((TreeContainerRow) row);
 			} else {
 				open(((LibraryFileRow) row).getPath());
+				hadFile = true;
+			}
+		}
+		if (!hadFile) {
+			for (TreeContainerRow container : containers) {
+				mTreePanel.setOpen(!mTreePanel.isOpen(container), container);
 			}
 		}
 	}
