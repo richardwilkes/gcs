@@ -20,6 +20,7 @@ import com.trollworks.toolkit.ui.menu.file.SaveCommand;
 import com.trollworks.toolkit.ui.menu.file.Saveable;
 import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
+import com.trollworks.toolkit.ui.widget.dock.DockContainer;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
@@ -70,7 +71,9 @@ public abstract class CommonDockable extends Dockable implements CloseHandler, S
 		if (window != null) {
 			window.toFront();
 		}
-		getDockContainer().acquireFocus();
+		DockContainer dc = getDockContainer();
+		dc.setCurrentDockable(this);
+		dc.acquireFocus();
 	}
 
 	@Override
