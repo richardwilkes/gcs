@@ -17,6 +17,7 @@ import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.Numbers;
 
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -193,12 +194,17 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 
 	private void removeFloater() {
 		if (mFloater != null) {
-			Rectangle bounds = mFloater.getBounds();
 			JRootPane rootPane = getRootPane();
-			UIUtilities.convertRectangle(bounds, mFloater.getParent(), rootPane);
-			mFloater.getParent().remove(mFloater);
+			Container parent = mFloater.getParent();
+			Rectangle bounds = mFloater.getBounds();
+			UIUtilities.convertRectangle(bounds, parent, rootPane);
+			if (parent != null) {
+				parent.remove(mFloater);
+			}
 			mFloater = null;
-			rootPane.repaint(bounds);
+			if (rootPane != null) {
+				rootPane.repaint(bounds);
+			}
 		}
 	}
 }
