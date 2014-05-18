@@ -19,7 +19,6 @@ import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 
 /** Provides the "New Character Template" command. */
 public class NewCharacterTemplateCommand extends Command {
@@ -37,7 +36,7 @@ public class NewCharacterTemplateCommand extends Command {
 	public static final NewCharacterTemplateCommand	INSTANCE					= new NewCharacterTemplateCommand();
 
 	private NewCharacterTemplateCommand() {
-		super(NEW_CHARACTER_TEMPLATE, CMD_NEW_CHARACTER_TEMPLATE, KeyEvent.VK_N, SHIFTED_COMMAND_MODIFIER);
+		super(NEW_CHARACTER_TEMPLATE, CMD_NEW_CHARACTER_TEMPLATE);
 	}
 
 	@Override

@@ -19,7 +19,6 @@ import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 
 /** Provides the "New Equipment Library" command. */
 public class NewEquipmentLibraryCommand extends Command {
@@ -37,7 +36,7 @@ public class NewEquipmentLibraryCommand extends Command {
 	public static final NewEquipmentLibraryCommand	INSTANCE		= new NewEquipmentLibraryCommand();
 
 	private NewEquipmentLibraryCommand() {
-		super(TITLE, CMD_NEW_LIBRARY, KeyEvent.VK_L);
+		super(TITLE, CMD_NEW_LIBRARY);
 	}
 
 	@Override

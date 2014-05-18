@@ -14,7 +14,7 @@ H
 I		Open Detail Editor
 J		Jump to Find Field
 K		New Skill
-L		New Library
+L
 M
 N		New Character Sheet
 O		Open
@@ -43,7 +43,7 @@ SHIFT+J
 SHIFT+K	New Skill Container
 SHIFT+L
 SHIFT+M
-SHIFT+N	New Template
+SHIFT+N
 SHIFT+O
 SHIFT+P	Page Setup
 SHIFT+Q
@@ -56,5 +56,3 @@ SHIFT+W
 SHIFT+X
 SHIFT+Y
 SHIFT+Z
-
-ALT+L	Library
