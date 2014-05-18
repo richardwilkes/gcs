@@ -17,6 +17,7 @@ import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.Numbers;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
@@ -58,12 +59,14 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 	public Search(SearchTarget target) {
 		mTarget = target;
 
-		mFilterField = new JTextField(20);
+		mFilterField = new JTextField(10);
 		mFilterField.getDocument().addDocumentListener(this);
 		mFilterField.addKeyListener(this);
 		mFilterField.addFocusListener(this);
 		mFilterField.setToolTipText(MSG_SEARCH_FIELD_TOOLTIP);
+		// This client property is specific to Mac OS X
 		mFilterField.putClientProperty("JTextField.variant", "search"); //$NON-NLS-1$ //$NON-NLS-2$
+		mFilterField.setMinimumSize(new Dimension(60, mFilterField.getPreferredSize().height));
 		add(mFilterField);
 
 		mHits = new JLabel();
