@@ -28,6 +28,7 @@ import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
+import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -79,8 +80,10 @@ public class SheetDockable extends CommonDockable implements SearchTarget {
 		mPrereqThread = new PrerequisitesThread(mSheet);
 		mPrereqThread.start();
 		PrerequisitesThread.waitForProcessingToFinish(dataFile);
-		getUndoManager().discardAllEdits();
 		dataFile.setModified(false);
+		StdUndoManager undoManager = getUndoManager();
+		undoManager.discardAllEdits();
+		dataFile.setUndoManager(undoManager);
 	}
 
 	@Override
