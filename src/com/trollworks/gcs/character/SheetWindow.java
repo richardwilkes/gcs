@@ -16,7 +16,6 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.widgets.GCSWindow;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowItemRenderer;
@@ -28,6 +27,7 @@ import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.menu.file.ExportToCommand;
 import com.trollworks.toolkit.ui.menu.file.PrintProxy;
 import com.trollworks.toolkit.ui.menu.file.Saveable;
+import com.trollworks.toolkit.ui.menu.file.SignificantFrame;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.ui.widget.BaseWindow;
 import com.trollworks.toolkit.ui.widget.DataModifiedListener;
@@ -39,6 +39,7 @@ import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
+import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
 import java.awt.Color;
 import java.awt.EventQueue;
@@ -55,7 +56,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
 
 /** The character sheet window. */
-public class SheetWindow extends GCSWindow implements Saveable, SearchTarget {
+public class SheetWindow extends AppWindow implements SignificantFrame, Saveable, SearchTarget {
 	@Localize("An error occurred while trying to save the sheet as a PNG.")
 	private static String		SAVE_AS_PNG_ERROR;
 	@Localize("An error occurred while trying to save the sheet as a PDF.")
@@ -168,8 +169,9 @@ public class SheetWindow extends GCSWindow implements Saveable, SearchTarget {
 		mPrereqThread.start();
 		PrerequisitesThread.waitForProcessingToFinish(character);
 		mCharacter.setModified(false);
-		getUndoManager().discardAllEdits();
-		mCharacter.setUndoManager(getUndoManager());
+		StdUndoManager undoManager = getUndoManager();
+		undoManager.discardAllEdits();
+		mCharacter.setUndoManager(undoManager);
 	}
 
 	/** Notify background threads of prereq or feature modifications. */
