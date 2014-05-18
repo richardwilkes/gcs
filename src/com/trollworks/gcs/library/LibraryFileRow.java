@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.gcs.menu.DataMenuProvider;
 import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.ui.menu.file.FileType;
 import com.trollworks.toolkit.ui.widget.tree.TreeRow;
@@ -45,10 +44,6 @@ public class LibraryFileRow extends TreeRow implements LibraryExplorerRow {
 
 	@Override
 	public String getName() {
-		String name = PathUtils.getLeafName(mPath.getFileName(), false);
-		if (name.matches(DataMenuProvider.MENU_KEY_SUFFIX_REGEX)) {
-			name = name.substring(0, name.length() - 3);
-		}
-		return name;
+		return PathUtils.getLeafName(mPath.getFileName(), false);
 	}
 }
