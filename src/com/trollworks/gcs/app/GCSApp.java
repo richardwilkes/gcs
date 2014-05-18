@@ -11,26 +11,22 @@
 
 package com.trollworks.gcs.app;
 
-import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.ListCollectionThread;
-import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.DataMenuProvider;
 import com.trollworks.gcs.menu.HelpMenuProvider;
 import com.trollworks.gcs.menu.edit.EditMenuProvider;
 import com.trollworks.gcs.menu.file.FileMenuProvider;
 import com.trollworks.gcs.menu.item.ItemMenuProvider;
 import com.trollworks.gcs.preferences.SheetPreferences;
-import com.trollworks.gcs.template.Template;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.UpdateChecker;
 import com.trollworks.toolkit.ui.menu.StdMenuBar;
+import com.trollworks.toolkit.ui.menu.file.FileType;
 import com.trollworks.toolkit.ui.menu.window.WindowMenuProvider;
 import com.trollworks.toolkit.ui.preferences.FontPreferences;
 import com.trollworks.toolkit.ui.preferences.MenuKeyPreferences;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
 import com.trollworks.toolkit.ui.widget.AppWindow;
-import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.Platform;
 import com.trollworks.toolkit.utility.WindowsRegistry;
 import com.trollworks.toolkit.utility.cmdline.CmdLine;
@@ -40,17 +36,6 @@ import java.util.HashMap;
 
 /** The main application user interface. */
 public class GCSApp extends App {
-	@Localize("GURPS Character Sheet")
-	private static String		SHEET_DESCRIPTION;
-	@Localize("GCS Library")
-	private static String		LIBRARY_DESCRIPTION;
-	@Localize("GCS Character Template")
-	private static String		TEMPLATE_DESCRIPTION;
-
-	static {
-		Localization.initialize();
-	}
-
 	/** The one and only instance of this class. */
 	public static final GCSApp	INSTANCE	= new GCSApp();
 
@@ -63,9 +48,11 @@ public class GCSApp extends App {
 	public void configureApplication(CmdLine cmdLine) {
 		if (Platform.isWindows()) {
 			HashMap<String, String> map = new HashMap<>();
-			map.put(GURPSCharacter.EXTENSION, SHEET_DESCRIPTION);
-			map.put(LibraryFile.EXTENSION, LIBRARY_DESCRIPTION);
-			map.put(Template.EXTENSION, TEMPLATE_DESCRIPTION);
+			for (FileType fileType : FileType.getAll()) {
+				if (fileType.allowOpen()) {
+					map.put(fileType.getExtension(), fileType.getDescription());
+				}
+			}
 			Path home = App.getHomePath();
 			WindowsRegistry.register("GCS", map, home.resolve("gcs"), home.resolve("support")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		}

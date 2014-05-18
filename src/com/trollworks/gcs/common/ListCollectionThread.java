@@ -142,7 +142,7 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path> {
 	@Override
 	public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 		if (!shouldSkip(file)) {
-			String ext = "." + PathUtils.getExtension(file.getFileName()); //$NON-NLS-1$
+			String ext = PathUtils.getExtension(file.getFileName());
 			for (String one : FileType.getOpenableExtensions()) {
 				if (one.equalsIgnoreCase(ext)) {
 					mCurrent.add(file);

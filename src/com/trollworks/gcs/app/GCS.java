@@ -45,6 +45,20 @@ import java.util.StringTokenizer;
 
 /** The main entry point for the character sheet. */
 public class GCS {
+	@Localize("GURPS Character Sheet")
+	private static String				SHEET_DESCRIPTION;
+	@Localize("GCS Advantages Library")
+	private static String				ADVANTAGES_LIBRARY_DESCRIPTION;
+	@Localize("GCS Equipment Library")
+	private static String				EQUIPMENT_LIBRARY_DESCRIPTION;
+	@Localize("GCS Skills Library")
+	private static String				SKILLS_LIBRARY_DESCRIPTION;
+	@Localize("GCS Spells Library")
+	private static String				SPELLS_LIBRARY_DESCRIPTION;
+	@Localize("GCS Library")
+	private static String				LIBRARY_DESCRIPTION;
+	@Localize("GCS Character Template")
+	private static String				TEMPLATE_DESCRIPTION;
 	@Localize("Create PDF versions of sheets specified on the command line.")
 	private static String				PDF_OPTION_DESCRIPTION;
 	@Localize("Create HTML versions of sheets specified on the command line.")
@@ -134,13 +148,14 @@ public class GCS {
 		Fonts.loadFromPreferences();
 		App.setAboutPanel(AboutPanel.class);
 		GCSFileProxyCreator fileProxyCreator = new GCSFileProxyCreator();
-		FileType.register(GURPSCharacter.EXTENSION, GCSImages.getCharacterSheetIcons(), fileProxyCreator, true);
-		FileType.register(AdvantageList.EXTENSION, GCSImages.getLibraryIcons(), fileProxyCreator, true);
-		FileType.register(EquipmentList.EXTENSION, GCSImages.getLibraryIcons(), fileProxyCreator, true);
-		FileType.register(SkillList.EXTENSION, GCSImages.getLibraryIcons(), fileProxyCreator, true);
-		FileType.register(SpellList.EXTENSION, GCSImages.getLibraryIcons(), fileProxyCreator, true);
-		FileType.register(LibraryFile.EXTENSION, GCSImages.getLibraryIcons(), fileProxyCreator, true);
-		FileType.register(Template.EXTENSION, GCSImages.getTemplateIcons(), fileProxyCreator, true);
+		FileType.register(GURPSCharacter.EXTENSION, GCSImages.getCharacterSheetIcons(), SHEET_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(AdvantageList.EXTENSION, GCSImages.getLibraryIcons(), ADVANTAGES_LIBRARY_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(EquipmentList.EXTENSION, GCSImages.getLibraryIcons(), EQUIPMENT_LIBRARY_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(SkillList.EXTENSION, GCSImages.getLibraryIcons(), SKILLS_LIBRARY_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(SpellList.EXTENSION, GCSImages.getLibraryIcons(), SPELLS_LIBRARY_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(Template.EXTENSION, GCSImages.getTemplateIcons(), TEMPLATE_DESCRIPTION, fileProxyCreator, true);
+		// For legacy
+		FileType.register(LibraryFile.EXTENSION, GCSImages.getLibraryIcons(), LIBRARY_DESCRIPTION, fileProxyCreator, true);
 	}
 
 	private static int convert(CmdLine cmdLine) {
