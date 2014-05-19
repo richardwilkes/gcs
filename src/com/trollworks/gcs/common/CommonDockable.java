@@ -72,6 +72,7 @@ public abstract class CommonDockable extends Dockable implements CloseHandler, S
 		}
 		DockContainer dc = getDockContainer();
 		dc.setCurrentDockable(this);
+		dc.doLayout();
 		dc.acquireFocus();
 	}
 
