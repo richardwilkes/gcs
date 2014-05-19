@@ -319,7 +319,10 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 			}
 		}
 		if (proxy != null) {
-			RecentFilesMenu.addRecent(proxy.getBackingFile());
+			File file = proxy.getBackingFile();
+			if (file != null) {
+				RecentFilesMenu.addRecent(file);
+			}
 		}
 		return proxy;
 	}
@@ -327,32 +330,59 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 	private FileProxy openAdvantageList(Path path) throws IOException {
 		AdvantageList list = new AdvantageList();
 		list.load(path.toFile());
+		list.getModel().setLocked(true);
 		return dockLibrary(new AdvantagesDockable(list));
 	}
 
 	private FileProxy openEquipmentList(Path path) throws IOException {
 		EquipmentList list = new EquipmentList();
 		list.load(path.toFile());
+		list.getModel().setLocked(true);
 		return dockLibrary(new EquipmentDockable(list));
 	}
 
 	private FileProxy openSkillList(Path path) throws IOException {
 		SkillList list = new SkillList();
 		list.load(path.toFile());
+		list.getModel().setLocked(true);
 		return dockLibrary(new SkillsDockable(list));
 	}
 
 	private FileProxy openSpellList(Path path) throws IOException {
 		SpellList list = new SpellList();
 		list.load(path.toFile());
+		list.getModel().setLocked(true);
 		return dockLibrary(new SpellsDockable(list));
 	}
 
 	private FileProxy openLibrary(Path path) throws IOException {
-		// RAW: Needs to import these as separate files
-		AdvantageList list = new AdvantageList();
-		list.load(path.toFile());
-		return dockLibrary(new AdvantagesDockable(list));
+		FileProxy proxy = null;
+		LibraryFile library = new LibraryFile(path.toFile());
+		SpellList spells = library.getSpellList();
+		if (!spells.isEmpty()) {
+			spells.removeDataModifiedListener(library);
+			spells.setModified(true);
+			proxy = dockLibrary(new SpellsDockable(spells));
+		}
+		SkillList skills = library.getSkillList();
+		if (!skills.isEmpty()) {
+			skills.removeDataModifiedListener(library);
+			skills.setModified(true);
+			proxy = dockLibrary(new SkillsDockable(skills));
+		}
+		EquipmentList equipment = library.getEquipmentList();
+		if (!equipment.isEmpty()) {
+			equipment.removeDataModifiedListener(library);
+			equipment.setModified(true);
+			proxy = dockLibrary(new EquipmentDockable(equipment));
+		}
+		AdvantageList adq = library.getAdvantageList();
+		if (!adq.isEmpty()) {
+			adq.removeDataModifiedListener(library);
+			adq.setModified(true);
+			proxy = dockLibrary(new AdvantagesDockable(adq));
+		}
+		return proxy;
 	}
 
 	/**

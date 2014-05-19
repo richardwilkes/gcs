@@ -75,7 +75,6 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 		OutlineModel outlineModel = mOutline.getModel();
 		outlineModel.applySortConfig(outlineModel.getSortConfig());
 		outlineModel.setRowFilter(this);
-		outlineModel.setLocked(true); // RAW: This should be determined, not just set
 		mToolbar = new Toolbar();
 		createFilterField();
 		createCategoryCombo();
