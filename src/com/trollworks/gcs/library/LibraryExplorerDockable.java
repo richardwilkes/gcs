@@ -39,6 +39,8 @@ import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.ui.widget.StdFileDialog;
 import com.trollworks.toolkit.ui.widget.Toolbar;
 import com.trollworks.toolkit.ui.widget.dock.Dock;
+import com.trollworks.toolkit.ui.widget.dock.DockContainer;
+import com.trollworks.toolkit.ui.widget.dock.DockLayout;
 import com.trollworks.toolkit.ui.widget.dock.DockLocation;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.ui.widget.tree.FieldAccessor;
@@ -392,23 +394,31 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 	public LibraryDockable dockLibrary(LibraryDockable library) {
 		// Order of docking:
 		// 1. Stack with another library
-		// 2. Dock to the right of a sheet or template
+		// 2. Dock to the top of a template
+		// 2. Dock to the right of a sheet
 		// 3. Dock to the right of the library explorer
-		Dockable other = null;
+		Dockable template = null;
+		Dockable sheet = null;
 		Dock dock = getDockContainer().getDock();
 		for (Dockable dockable : dock.getDockables()) {
 			if (dockable instanceof LibraryDockable) {
 				dockable.getDockContainer().stack(library);
 				return library;
 			}
-			if (other == null && (dockable instanceof SheetDockable || dockable instanceof TemplateDockable)) {
-				other = dockable;
+			if (template == null && dockable instanceof TemplateDockable) {
+				template = dockable;
+			}
+			if (sheet == null && dockable instanceof SheetDockable) {
+				sheet = dockable;
 			}
 		}
-		if (other == null) {
-			other = this;
+		if (template != null) {
+			dock.dock(library, template, DockLocation.NORTH);
+		} else if (sheet != null) {
+			dock.dock(library, sheet, DockLocation.EAST);
+		} else {
+			dock.dock(library, this, DockLocation.EAST);
 		}
-		dock.dock(library, other, DockLocation.EAST);
 		return library;
 	}
 
@@ -419,27 +429,27 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 	public SheetDockable dockSheet(SheetDockable sheet) {
 		// Order of docking:
 		// 1. Stack with another sheet
-		// 2. Stack with a template
-		// 3. Dock to the left of a library
-		// 4. Dock to the right of the library explorer
-		Dockable template = null;
-		Dockable library = null;
+		// 2. Dock to the left of a library or template
+		// 3. Dock to the right of the library explorer
+		Dockable other = null;
 		Dock dock = getDockContainer().getDock();
 		for (Dockable dockable : dock.getDockables()) {
 			if (dockable instanceof SheetDockable) {
 				dockable.getDockContainer().stack(sheet);
 				return sheet;
 			}
-			if (template == null && dockable instanceof TemplateDockable) {
-				template = dockable;
-			} else if (library == null && dockable instanceof LibraryDockable) {
-				library = dockable;
+			if (other == null && (dockable instanceof TemplateDockable || dockable instanceof LibraryDockable)) {
+				other = dockable;
 			}
 		}
-		if (template != null) {
-			template.getDockContainer().stack(sheet);
-		} else if (library != null) {
-			dock.dock(sheet, library, DockLocation.WEST);
+		if (other != null) {
+			DockContainer dc = other.getDockContainer();
+			DockLayout layout = dc.getDock().getLayout().findLayout(dc);
+			if (layout.isVertical()) {
+				dock.dock(sheet, layout, DockLocation.WEST);
+			} else {
+				dock.dock(sheet, other, DockLocation.WEST);
+			}
 		} else {
 			dock.dock(sheet, this, DockLocation.EAST);
 		}
@@ -453,8 +463,8 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 	public TemplateDockable dockTemplate(TemplateDockable template) {
 		// Order of docking:
 		// 1. Stack with another template
-		// 2. Stack with a sheet
-		// 3. Dock to the left of a library
+		// 2. Dock to the bottom of a library
+		// 3. Dock to the right of a sheet
 		// 4. Dock to the right of the library explorer
 		Dockable sheet = null;
 		Dockable library = null;
@@ -466,14 +476,15 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 			}
 			if (sheet == null && dockable instanceof SheetDockable) {
 				sheet = dockable;
-			} else if (library == null && dockable instanceof LibraryDockable) {
+			}
+			if (library == null && dockable instanceof LibraryDockable) {
 				library = dockable;
 			}
 		}
-		if (sheet != null) {
-			sheet.getDockContainer().stack(template);
-		} else if (library != null) {
-			dock.dock(template, library, DockLocation.WEST);
+		if (library != null) {
+			dock.dock(template, library, DockLocation.SOUTH);
+		} else if (sheet != null) {
+			dock.dock(template, sheet, DockLocation.EAST);
 		} else {
 			dock.dock(template, this, DockLocation.EAST);
 		}
