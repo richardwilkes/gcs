@@ -53,7 +53,9 @@ public class NewSkillsLibraryCommand extends Command {
 	public static SkillsDockable newSkillsLibrary() {
 		LibraryExplorerDockable library = LibraryExplorerDockable.get();
 		if (library != null) {
-			SkillsDockable dockable = new SkillsDockable(new SkillList());
+			SkillList list = new SkillList();
+			list.getModel().setLocked(false);
+			SkillsDockable dockable = new SkillsDockable(list);
 			library.dockLibrary(dockable);
 			return dockable;
 		}

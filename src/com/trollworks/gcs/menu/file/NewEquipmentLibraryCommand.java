@@ -53,7 +53,9 @@ public class NewEquipmentLibraryCommand extends Command {
 	public static EquipmentDockable newEquipmentLibrary() {
 		LibraryExplorerDockable library = LibraryExplorerDockable.get();
 		if (library != null) {
-			EquipmentDockable dockable = new EquipmentDockable(new EquipmentList());
+			EquipmentList list = new EquipmentList();
+			list.getModel().setLocked(false);
+			EquipmentDockable dockable = new EquipmentDockable(list);
 			library.dockLibrary(dockable);
 			return dockable;
 		}

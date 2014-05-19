@@ -53,7 +53,9 @@ public class NewSpellsLibraryCommand extends Command {
 	public static SpellsDockable newSpellsLibrary() {
 		LibraryExplorerDockable library = LibraryExplorerDockable.get();
 		if (library != null) {
-			SpellsDockable dockable = new SpellsDockable(new SpellList());
+			SpellList list = new SpellList();
+			list.getModel().setLocked(false);
+			SpellsDockable dockable = new SpellsDockable(list);
 			library.dockLibrary(dockable);
 			return dockable;
 		}

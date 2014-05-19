@@ -53,7 +53,9 @@ public class NewAdvantagesLibraryCommand extends Command {
 	public static AdvantagesDockable newAdvantagesLibrary() {
 		LibraryExplorerDockable library = LibraryExplorerDockable.get();
 		if (library != null) {
-			AdvantagesDockable dockable = new AdvantagesDockable(new AdvantageList());
+			AdvantageList list = new AdvantageList();
+			list.getModel().setLocked(false);
+			AdvantagesDockable dockable = new AdvantagesDockable(list);
 			library.dockLibrary(dockable);
 			return dockable;
 		}
