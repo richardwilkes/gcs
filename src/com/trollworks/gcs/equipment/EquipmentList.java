@@ -47,7 +47,7 @@ public class EquipmentList extends ListFile {
 
 	@Override
 	public IconSet getFileIcons() {
-		return GCSImages.getEquipmentIcons();
+		return GCSImages.getEquipmentDocumentIcons();
 	}
 
 	@Override

@@ -627,7 +627,7 @@ public class Skill extends ListRow {
 
 	@Override
 	public ToolkitIcon getIcon(boolean large) {
-		return GCSImages.getSkillIcon(large, true);
+		return GCSImages.getSkillsIcons().getIcon(large ? 64 : 16);
 	}
 
 	@Override

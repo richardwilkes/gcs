@@ -118,7 +118,7 @@ public class Template extends DataFile implements StateEditable {
 
 	@Override
 	public IconSet getFileIcons() {
-		return GCSImages.getTemplateIcons();
+		return GCSImages.getTemplateDocumentIcons();
 	}
 
 	@Override

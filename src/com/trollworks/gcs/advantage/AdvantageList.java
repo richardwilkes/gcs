@@ -47,7 +47,7 @@ public class AdvantageList extends ListFile {
 
 	@Override
 	public IconSet getFileIcons() {
-		return GCSImages.getAdvantagesIcons();
+		return GCSImages.getAdvantagesDocumentIcons();
 	}
 
 	@Override

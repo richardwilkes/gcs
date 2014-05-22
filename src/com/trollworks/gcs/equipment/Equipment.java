@@ -609,7 +609,7 @@ public class Equipment extends ListRow {
 
 	@Override
 	public ToolkitIcon getIcon(boolean large) {
-		return GCSImages.getEquipmentIcon(large, true);
+		return GCSImages.getEquipmentIcons().getIcon(large ? 64 : 16);
 	}
 
 	@Override

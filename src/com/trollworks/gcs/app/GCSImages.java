@@ -11,220 +11,226 @@
 
 package com.trollworks.gcs.app;
 
-import com.trollworks.toolkit.io.Log;
+import com.trollworks.gcs.advantage.AdvantageList;
+import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.equipment.EquipmentList;
+import com.trollworks.gcs.skill.SkillList;
+import com.trollworks.gcs.spell.SpellList;
+import com.trollworks.gcs.template.Template;
 import com.trollworks.toolkit.ui.image.IconSet;
 import com.trollworks.toolkit.ui.image.Images;
 import com.trollworks.toolkit.ui.image.ToolkitIcon;
+import com.trollworks.toolkit.utility.BundleInfo;
+import com.trollworks.toolkit.utility.cmdline.CmdLine;
+import com.trollworks.toolkit.utility.cmdline.CmdLineOption;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /** Provides standardized image access. */
 @SuppressWarnings("nls")
 public class GCSImages {
-	private static final Set<String>	ICON_SETS_ATTEMPTED	= new HashSet<>();
-	private static final String			SMALL				= "Small";
-	private static final String			LARGE				= "Large";
-	private static final String			SINGLE				= "Single";
-	private static final String			FILE				= "";
-
 	static {
 		Images.addLocation(GCSImages.class.getResource("images/"));
 	}
 
-	private static final IconSet getOrLoadIconSet(String name) {
-		IconSet iconSet = IconSet.get(name);
-		if (iconSet == null) {
-			if (ICON_SETS_ATTEMPTED.add(name)) {
-				try (InputStream in = GCSImages.class.getResource("iconsets/" + name + ".icns").openStream()) {
-					iconSet = IconSet.loadIcns(name, in);
-				} catch (IOException ioe) {
-					Log.error(ioe);
-				}
-			}
-		}
-		return iconSet;
-	}
-
 	/** @return The exotic type icon. */
 	public static final ToolkitIcon getExoticTypeIcon() {
-		return Images.get("ExoticType");
+		return Images.get("exotic_type");
 	}
 
 	/** @return The selected exotic type icon. */
 	public static final ToolkitIcon getExoticTypeSelectedIcon() {
-		return Images.get("ExoticTypeSelected");
+		return Images.get("exotic_type_selected");
 	}
 
 	/** @return The mental type icon. */
 	public static final ToolkitIcon getMentalTypeIcon() {
-		return Images.get("MentalType");
+		return Images.get("mental_type");
 	}
 
 	/** @return The selected mental type icon. */
 	public static final ToolkitIcon getMentalTypeSelectedIcon() {
-		return Images.get("MentalTypeSelected");
+		return Images.get("mental_type_selected");
 	}
 
 	/** @return The physical type icon. */
 	public static final ToolkitIcon getPhysicalTypeIcon() {
-		return Images.get("PhysicalType");
+		return Images.get("physical_type");
 	}
 
 	/** @return The selected physical type icon. */
 	public static final ToolkitIcon getPhysicalTypeSelectedIcon() {
-		return Images.get("PhysicalTypeSelected");
+		return Images.get("physical_type_selected");
 	}
 
 	/** @return The social type icon. */
 	public static final ToolkitIcon getSocialTypeIcon() {
-		return Images.get("SocialType");
+		return Images.get("social_type");
 	}
 
 	/** @return The selected social type icon. */
 	public static final ToolkitIcon getSocialTypeSelectedIcon() {
-		return Images.get("SocialTypeSelected");
+		return Images.get("social_type_selected");
 	}
 
 	/** @return The supernatural type icon. */
 	public static final ToolkitIcon getSupernaturalTypeIcon() {
-		return Images.get("SupernaturalType");
+		return Images.get("supernatural_type");
 	}
 
 	/** @return The selected supernatural type icon. */
 	public static final ToolkitIcon getSupernaturalTypeSelectedIcon() {
-		return Images.get("SupernaturalTypeSelected");
+		return Images.get("supernatural_type_selected");
 	}
 
 	/** @return The default portrait. */
 	public static final ToolkitIcon getDefaultPortrait() {
-		return Images.get("DefaultPortrait");
+		return Images.get("default_portrait");
 	}
 
 	/** @return The 'about' image. */
 	public static final ToolkitIcon getAbout() {
-		return Images.get("About");
+		return Images.get("about");
 	}
 
 	/** @return The application icons. */
 	public static final IconSet getAppIcons() {
-		return getOrLoadIconSet("app");
+		return IconSet.getOrLoad("app");
 	}
 
 	/** @return The character sheet icons. */
 	public static final IconSet getCharacterSheetIcons() {
-		return getOrLoadIconSet("gcs");
+		return IconSet.getOrLoad(GURPSCharacter.EXTENSION);
 	}
 
 	/** @return The character template icons. */
 	public static final IconSet getTemplateIcons() {
-		return getOrLoadIconSet("gct");
+		return IconSet.getOrLoad(Template.EXTENSION);
 	}
 
 	/** @return The advantages icons. */
 	public static final IconSet getAdvantagesIcons() {
-		return getOrLoadIconSet("adq");
+		return IconSet.getOrLoad(AdvantageList.EXTENSION);
 	}
 
 	/** @return The skills icons. */
 	public static final IconSet getSkillsIcons() {
-		return getOrLoadIconSet("skl");
+		return IconSet.getOrLoad(SkillList.EXTENSION);
 	}
 
 	/** @return The spells icons. */
 	public static final IconSet getSpellsIcons() {
-		return getOrLoadIconSet("spl");
+		return IconSet.getOrLoad(SpellList.EXTENSION);
 	}
 
 	/** @return The equipment icons. */
 	public static final IconSet getEquipmentIcons() {
-		return getOrLoadIconSet("eqp");
+		return IconSet.getOrLoad(EquipmentList.EXTENSION);
 	}
 
-	/**
-	 * @param large The large (32x32) or the small (16x16) version.
-	 * @param single The single or file version.
-	 * @return The advantage icon.
-	 */
-	public static final ToolkitIcon getAdvantageIcon(boolean large, boolean single) {
-		return Images.get("Advantage" + (large ? LARGE : SMALL) + (single ? SINGLE : FILE));
+	/** @return The character sheet icons. */
+	public static final IconSet getCharacterSheetDocumentIcons() {
+		return getDocumentIcons(GURPSCharacter.EXTENSION);
 	}
 
-	/**
-	 * @param large The large (32x32) or the small (16x16) version.
-	 * @param single The single or file version.
-	 * @return The skill icon.
-	 */
-	public static final ToolkitIcon getSkillIcon(boolean large, boolean single) {
-		return Images.get("Skill" + (large ? LARGE : SMALL) + (single ? SINGLE : FILE));
+	/** @return The character template icons. */
+	public static final IconSet getTemplateDocumentIcons() {
+		return getDocumentIcons(Template.EXTENSION);
 	}
 
-	/**
-	 * @param large The large (32x32) or the small (16x16) version.
-	 * @param single The single or file version.
-	 * @return The spell icon.
-	 */
-	public static final ToolkitIcon getSpellIcon(boolean large, boolean single) {
-		return Images.get("Spell" + (large ? LARGE : SMALL) + (single ? SINGLE : FILE));
+	/** @return The advantages icons. */
+	public static final IconSet getAdvantagesDocumentIcons() {
+		return getDocumentIcons(AdvantageList.EXTENSION);
 	}
 
-	/**
-	 * @param large The large (32x32) or the small (16x16) version.
-	 * @param single The single or file version.
-	 * @return The equipment icon.
-	 */
-	public static final ToolkitIcon getEquipmentIcon(boolean large, boolean single) {
-		return Images.get("Equipment" + (large ? LARGE : SMALL) + (single ? SINGLE : FILE));
+	/** @return The skills icons. */
+	public static final IconSet getSkillsDocumentIcons() {
+		return getDocumentIcons(SkillList.EXTENSION);
+	}
+
+	/** @return The spells icons. */
+	public static final IconSet getSpellsDocumentIcons() {
+		return getDocumentIcons(SpellList.EXTENSION);
+	}
+
+	/** @return The equipment icons. */
+	public static final IconSet getEquipmentDocumentIcons() {
+		return getDocumentIcons(EquipmentList.EXTENSION);
+	}
+
+	private static IconSet getDocumentIcons(String prefix) {
+		String name = prefix + "_doc";
+		IconSet set = IconSet.get(name);
+		if (set == null) {
+			set = new IconSet(name, IconSet.getOrLoad("document"), IconSet.getOrLoad(prefix));
+		}
+		return set;
 	}
 
 	/** Utility for creating GCS's icon sets. */
 	public static void main(String[] args) {
+		BundleInfo.setDefault(new BundleInfo("GenerateIcons", "1.0", "Richard A. Wilkes", "2014", "Mozilla Public License 2.0"));
+		CmdLineOption icnsOption = new CmdLineOption("Generate ICNS files", null, "icns");
+		CmdLineOption icoOption = new CmdLineOption("Generate ICO files", null, "ico");
+		CmdLineOption appOption = new CmdLineOption("Generate just the 128x128 app icon", null, "app");
+		CmdLineOption dirOption = new CmdLineOption("The directory to place the generated files into", "DIR", "dir");
+		CmdLine cmdline = new CmdLine();
+		cmdline.addOptions(icnsOption, icoOption, dirOption);
+		cmdline.processArguments(args);
+		boolean icns = cmdline.isOptionUsed(icnsOption);
+		boolean ico = cmdline.isOptionUsed(icoOption);
+		boolean app = cmdline.isOptionUsed(icoOption);
+		if (!icns && !ico && !app) {
+			System.err.printf("At least one of %s, %s, or %s must be specified.\n", icnsOption, icoOption, appOption);
+			System.exit(1);
+		}
 		try {
-			ToolkitIcon base1024 = Images.loadImage(new File("graphics/iconset_parts/document_1024.png"));
-			ToolkitIcon base64 = Images.loadImage(new File("graphics/iconset_parts/document_64.png"));
-			ToolkitIcon base32 = Images.loadImage(new File("graphics/iconset_parts/document_32.png"));
-			ToolkitIcon base16 = Images.loadImage(new File("graphics/iconset_parts/document_16.png"));
-			for (String one : new String[] { "adq", "eqp", "gcs", "gct", "skl", "spl" }) {
-				createIcns(one, base1024, base64, base32, base16);
+			File dir = new File(cmdline.isOptionUsed(dirOption) ? cmdline.getOptionArgument(dirOption) : ".");
+			System.out.println("Generating icons into " + dir);
+			dir.mkdirs();
+			if (app) {
+				File file = new File(dir, "gcs.png");
+				if (Images.writePNG(file, getAppIcons().getIcon(128), 72)) {
+					System.out.println("Created: " + file);
+				} else {
+					System.err.println("Unable to create: " + file);
+				}
 			}
-			List<ToolkitIcon> images = new ArrayList<>();
-			ToolkitIcon icon = Images.loadImage(new File("graphics/iconset_parts/app_1024.png"));
-			images.add(icon);
-			images.add(Images.scale(icon, 512));
-			images.add(Images.scale(icon, 256));
-			images.add(Images.scale(icon, 128));
-			images.add(Images.scale(icon, 64));
-			images.add(Images.scale(icon, 32));
-			images.add(Images.scale(icon, 16));
-			IconSet set = new IconSet("app", images);
-			try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream("src/com/trollworks/gcs/app/iconsets/app.icns"))) {
-				set.saveAsIcns(out);
+			if (icns || ico) {
+				createIconFiles(getAppIcons(), dir, "app", icns, ico);
+				createIconFiles(getAdvantagesDocumentIcons(), dir, AdvantageList.EXTENSION, icns, ico);
+				createIconFiles(getEquipmentDocumentIcons(), dir, EquipmentList.EXTENSION, icns, ico);
+				createIconFiles(getCharacterSheetDocumentIcons(), dir, GURPSCharacter.EXTENSION, icns, ico);
+				createIconFiles(getTemplateDocumentIcons(), dir, Template.EXTENSION, icns, ico);
+				createIconFiles(getSkillsDocumentIcons(), dir, SkillList.EXTENSION, icns, ico);
+				createIconFiles(getSpellsDocumentIcons(), dir, SpellList.EXTENSION, icns, ico);
 			}
 		} catch (Exception exception) {
 			exception.printStackTrace(System.err);
 		}
 	}
 
-	private static void createIcns(String name, ToolkitIcon base1024, ToolkitIcon base64, ToolkitIcon base32, ToolkitIcon base16) throws IOException {
-		List<ToolkitIcon> images = new ArrayList<>();
-		ToolkitIcon icon = Images.loadImage(new File("graphics/iconset_parts/" + name + "_1024.png"));
-		images.add(Images.superimpose(base1024, icon));
-		images.add(Images.superimpose(Images.scale(base1024, 512), Images.scale(icon, 512)));
-		images.add(Images.superimpose(Images.scale(base1024, 256), Images.scale(icon, 256)));
-		images.add(Images.superimpose(Images.scale(base1024, 128), Images.scale(icon, 128)));
-		images.add(Images.superimpose(base64, Images.scale(icon, 64)));
-		images.add(Images.superimpose(base32, Images.scale(icon, 32)));
-		images.add(Images.superimpose(base16, Images.scale(icon, 16)));
-		IconSet set = new IconSet(name, images);
-		try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream("src/com/trollworks/gcs/app/iconsets/" + name + ".icns"))) {
-			set.saveAsIcns(out);
+	private static void createIconFiles(IconSet set, File dir, String name, boolean generateICNS, boolean generateICO) throws IOException {
+		for (int size : IconSet.STD_SIZES) {
+			set.getIcon(size);
+		}
+		File file;
+		if (generateICNS) {
+			file = new File(dir, name + ".icns");
+			try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file))) {
+				set.saveAsIcns(out);
+				System.out.println("Created: " + file);
+			}
+		}
+		if (generateICO) {
+			file = new File(dir, name + ".ico");
+			try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file))) {
+				set.saveAsIco(out);
+				System.out.println("Created: " + file);
+			}
 		}
 	}
 }

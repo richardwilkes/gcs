@@ -792,7 +792,7 @@ public class Advantage extends ListRow {
 
 	@Override
 	public ToolkitIcon getIcon(boolean large) {
-		return GCSImages.getAdvantageIcon(large, true);
+		return GCSImages.getAdvantagesIcons().getIcon(large ? 64 : 16);
 	}
 
 	@Override

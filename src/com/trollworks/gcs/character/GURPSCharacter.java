@@ -397,7 +397,7 @@ public class GURPSCharacter extends DataFile {
 
 	@Override
 	public IconSet getFileIcons() {
-		return GCSImages.getCharacterSheetIcons();
+		return GCSImages.getCharacterSheetDocumentIcons();
 	}
 
 	@Override

@@ -46,7 +46,6 @@
 	<property name="build_app_bundle" value="${dist_root}/${app_name}.app/Contents"/>
 	<property name="bundle_res" value="${build_app_bundle}/Resources"/>
 	<property name="java_bundle_dir" value="${build_app_bundle}/Java"/>
-	<property name="launcher_stub_src" value="com/trollworks/gcs/app/GCS.java"/>
 	<property name="icons" value="graphics/icons"/>
 
 	<tstamp>
@@ -70,7 +69,7 @@
 		<!-- Compile the code. -->
 		<javac srcdir="${src}" destdir="${gcs_build}" debug="no" optimize="yes"
 			target="${min_jdk}" source="${min_jdk}" deprecation="true"
-			excludes="${launcher_stub_src}" includeantruntime="no">
+			includeantruntime="no">
 			<classpath>
 				<pathelement location="${toolkit_path}"/>
 				<pathelement location="${trove_path}"/>
@@ -86,20 +85,9 @@
 			<compilerarg value="-implicit:class"/>
 		</javac>
 
-		<!-- Compile the launcher code to be compatible with Java 1.1. -->
-		<javac srcdir="${src}" destdir="${gcs_build}"
-			includes="${launcher_stub_src}" debug="no" optimize="yes"
-			target="1.1" source="1.1" deprecation="true" includeantruntime="no">
-			<classpath>
-				<pathelement location="${toolkit_path}"/>
-			</classpath>
-			<compilerarg value="-Xlint:all"/>
-			<compilerarg value="-Xlint:-options"/>
-		</javac>
-
 		<!-- Copy the resources over. -->
 		<copy todir="${gcs_build}">
-			<fileset dir="${src}" includes="**/*.txt,**/*.png,**/*.gif"/>
+			<fileset dir="${src}" includes="**/*.txt,**/*.png"/>
 		</copy>
 
 		<!-- Create the jar file. -->
@@ -173,17 +161,23 @@
 		<copy file="launcher/${platform}/${app.exe}" todir="${app.dir}"/>
 		<chmod file="${app.dir}/${app.exe}" perm="+x"/>
 
-		<!-- Copy the icons. -->
+		<!-- Copy the jars. -->
+		<mkdir dir="${app.jars}"/>
+		<copy file="${lib}/${app}-${primary_version}.jar" todir="${app.jars}"/>
+		<copy file="${toolkit_path}" todir="${app.jars}"/>
+		<copy file="${trove_path}" todir="${app.jars}"/>
+		<copy file="${iText_path}" todir="${app.jars}"/>
+		<copy file="${apple_stubs_path}" todir="${app.jars}"/>
+
+		<!-- Create the icons. -->
 		<mkdir dir="${app.icons}"/>
-		<copy if:true="${platform.mac}" file="${icons}/app.icns" todir="${app.icons}"/>
-		<copy if:true="${platform.mac}" file="${icons}/gcs.icns" todir="${app.icons}"/>
-		<copy if:true="${platform.mac}" file="${icons}/gct.icns" todir="${app.icons}"/>
-		<copy if:true="${platform.mac}" file="${icons}/glb.icns" todir="${app.icons}"/>
-		<copy if:true="${platform.linux}" file="${icons}/app.iconset/icon_128x128.png" tofile="${app.icons}/${app}.png"/>
-		<copy if:true="${platform.windows}" file="${icons}/app.ico" todir="${app.icons}"/>
-		<copy if:true="${platform.windows}" file="${icons}/gcs.ico" todir="${app.icons}"/>
-		<copy if:true="${platform.windows}" file="${icons}/gct.ico" todir="${app.icons}"/>
-		<copy if:true="${platform.windows}" file="${icons}/glb.ico" todir="${app.icons}"/>
+		<java classpath="${app.jars}/${app}-${primary_version}.jar" classname="com.trollworks.gcs.app.GCSImages">
+			<arg if:true="${platform.mac}" value="-icns"/>
+			<arg if:true="${platform.windows}" value="-ico"/>
+			<arg if:true="${platform.linux}" value="-app"/>
+			<arg value="-dir"/>
+			<arg value="${app.icons}"/>
+		</java>
 
 		<!-- Extract the JRE. -->
 		<ant dir="../toolkit" target="jre" inheritall="no">
@@ -192,14 +186,6 @@
 			<property name="platform.linux" value="${platform.linux}"/>
 			<property name="support" location="${support}"/>
 		</ant>
-
-		<!-- Copy the jars. -->
-		<mkdir dir="${app.jars}"/>
-		<copy file="${lib}/${app}-${primary_version}.jar" todir="${app.jars}"/>
-		<copy file="${toolkit_path}" todir="${app.jars}"/>
-		<copy file="${trove_path}" todir="${app.jars}"/>
-		<copy file="${iText_path}" todir="${app.jars}"/>
-		<copy file="${apple_stubs_path}" todir="${app.jars}"/>
 
 		<!-- Copy the Mac bundle information. -->
 		<copy if:true="${platform.mac}" file="launcher/${platform}/Info.plist" todir="${mac.bundle}">

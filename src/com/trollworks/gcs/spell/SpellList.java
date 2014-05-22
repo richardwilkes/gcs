@@ -47,7 +47,7 @@ public class SpellList extends ListFile {
 
 	@Override
 	public IconSet getFileIcons() {
-		return GCSImages.getSpellsIcons();
+		return GCSImages.getSpellsDocumentIcons();
 	}
 
 	@Override

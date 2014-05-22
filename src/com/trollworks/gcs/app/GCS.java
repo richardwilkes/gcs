@@ -148,14 +148,14 @@ public class GCS {
 		Fonts.loadFromPreferences();
 		App.setAboutPanel(AboutPanel.class);
 		GCSFileProxyCreator fileProxyCreator = new GCSFileProxyCreator();
-		FileType.register(GURPSCharacter.EXTENSION, GCSImages.getCharacterSheetIcons(), SHEET_DESCRIPTION, fileProxyCreator, true);
-		FileType.register(AdvantageList.EXTENSION, GCSImages.getAdvantagesIcons(), ADVANTAGES_LIBRARY_DESCRIPTION, fileProxyCreator, true);
-		FileType.register(EquipmentList.EXTENSION, GCSImages.getEquipmentIcons(), EQUIPMENT_LIBRARY_DESCRIPTION, fileProxyCreator, true);
-		FileType.register(SkillList.EXTENSION, GCSImages.getSkillsIcons(), SKILLS_LIBRARY_DESCRIPTION, fileProxyCreator, true);
-		FileType.register(SpellList.EXTENSION, GCSImages.getSpellsIcons(), SPELLS_LIBRARY_DESCRIPTION, fileProxyCreator, true);
-		FileType.register(Template.EXTENSION, GCSImages.getTemplateIcons(), TEMPLATE_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(GURPSCharacter.EXTENSION, GCSImages.getCharacterSheetDocumentIcons(), SHEET_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(AdvantageList.EXTENSION, GCSImages.getAdvantagesDocumentIcons(), ADVANTAGES_LIBRARY_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(EquipmentList.EXTENSION, GCSImages.getEquipmentDocumentIcons(), EQUIPMENT_LIBRARY_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(SkillList.EXTENSION, GCSImages.getSkillsDocumentIcons(), SKILLS_LIBRARY_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(SpellList.EXTENSION, GCSImages.getSpellsDocumentIcons(), SPELLS_LIBRARY_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(Template.EXTENSION, GCSImages.getTemplateDocumentIcons(), TEMPLATE_DESCRIPTION, fileProxyCreator, true);
 		// For legacy
-		FileType.register(LibraryFile.EXTENSION, GCSImages.getAdvantagesIcons(), LIBRARY_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(LibraryFile.EXTENSION, GCSImages.getAdvantagesDocumentIcons(), LIBRARY_DESCRIPTION, fileProxyCreator, true);
 	}
 
 	private static int convert(CmdLine cmdLine) {

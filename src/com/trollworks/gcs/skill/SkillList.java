@@ -47,7 +47,7 @@ public class SkillList extends ListFile {
 
 	@Override
 	public IconSet getFileIcons() {
-		return GCSImages.getSkillsIcons();
+		return GCSImages.getSkillsDocumentIcons();
 	}
 
 	@Override

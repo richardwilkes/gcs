@@ -713,7 +713,7 @@ public class Spell extends ListRow {
 
 	@Override
 	public ToolkitIcon getIcon(boolean large) {
-		return GCSImages.getSpellIcon(large, true);
+		return GCSImages.getSpellsIcons().getIcon(large ? 64 : 16);
 	}
 
 	/** @return Whether this is a "Very Hard" spell or not. */
