@@ -47,8 +47,7 @@ public class SkillList extends ListFile {
 
 	@Override
 	public IconSet getFileIcons() {
-		// RAW: Need real icons
-		return GCSImages.getLibraryIcons();
+		return GCSImages.getSkillsIcons();
 	}
 
 	@Override

@@ -14,7 +14,6 @@ package com.trollworks.gcs.advantage;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
-import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListOutline;
@@ -50,9 +49,6 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
 		}
 		if (dataFile instanceof Template) {
 			return ((Template) dataFile).getAdvantagesModel();
-		}
-		if (dataFile instanceof LibraryFile) {
-			return ((LibraryFile) dataFile).getAdvantageList().getModel();
 		}
 		return ((ListFile) dataFile).getModel();
 	}

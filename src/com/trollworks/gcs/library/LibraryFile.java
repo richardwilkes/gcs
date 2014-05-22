@@ -12,7 +12,6 @@
 package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.advantage.AdvantageList;
-import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.equipment.EquipmentList;
@@ -23,18 +22,13 @@ import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.IconSet;
-import com.trollworks.toolkit.ui.widget.DataModifiedListener;
-import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.PathUtils;
 
-import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 
 /** Holds the contents of a library file. */
-public class LibraryFile extends DataFile implements DataModifiedListener {
+public class LibraryFile extends DataFile {
 	@Localize("The file \"{0}\" was imported into a data library.\nThe original file has not been modified.")
 	static String				WARNING;
 
@@ -52,8 +46,6 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 	private SkillList			mSkills;
 	private SpellList			mSpells;
 	private EquipmentList		mEquipment;
-	private boolean				mImported;
-	private String				mSuggestedName;
 
 	/** Creates a new, empty, {@link LibraryFile}. */
 	public LibraryFile() {
@@ -70,37 +62,13 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 	public LibraryFile(final File file) throws IOException {
 		this();
 		load(file);
-		if (mImported) {
-			mSuggestedName = PathUtils.getLeafName(file.getName(), false);
-			setFile(null);
-			EventQueue.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					WindowUtils.showWarning(null, MessageFormat.format(WARNING, file.getName()));
-				}
-			});
-		}
-	}
-
-	/** @return Whether this file was imported and not saved yet. */
-	public boolean wasImported() {
-		return mImported && getFile() == null;
-	}
-
-	/** @return The suggested file name to use after an import. */
-	public String getSuggestedFileNameFromImport() {
-		return mSuggestedName;
 	}
 
 	private void setup() {
 		mAdvantages = new AdvantageList();
-		mAdvantages.addDataModifiedListener(this);
 		mSkills = new SkillList();
-		mSkills.addDataModifiedListener(this);
 		mSpells = new SpellList();
-		mSpells.addDataModifiedListener(this);
 		mEquipment = new EquipmentList();
-		mEquipment.addDataModifiedListener(this);
 	}
 
 	@Override
@@ -110,7 +78,8 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 
 	@Override
 	public IconSet getFileIcons() {
-		return GCSImages.getLibraryIcons();
+		// Unused
+		return null;
 	}
 
 	@Override
@@ -150,18 +119,6 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 					}
 				}
 			} while (reader.withinMarker(marker));
-		} else if (AdvantageList.TAG_ROOT.equals(name)) {
-			mImported = true;
-			mAdvantages.load(reader, state);
-		} else if (SkillList.TAG_ROOT.equals(name)) {
-			mImported = true;
-			mSkills.load(reader, state);
-		} else if (SpellList.TAG_ROOT.equals(name)) {
-			mImported = true;
-			mSpells.load(reader, state);
-		} else if (EquipmentList.TAG_ROOT.equals(name)) {
-			mImported = true;
-			mEquipment.load(reader, state);
 		}
 	}
 
@@ -191,10 +148,5 @@ public class LibraryFile extends DataFile implements DataModifiedListener {
 	/** @return The {@link EquipmentList}. */
 	public EquipmentList getEquipmentList() {
 		return mEquipment;
-	}
-
-	@Override
-	public void dataModificationStateChanged(Object obj, boolean modified) {
-		setModified(mAdvantages.isModified() | mSkills.isModified() | mSpells.isModified() | mEquipment.isModified());
 	}
 }

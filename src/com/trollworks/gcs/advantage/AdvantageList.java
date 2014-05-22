@@ -47,8 +47,7 @@ public class AdvantageList extends ListFile {
 
 	@Override
 	public IconSet getFileIcons() {
-		// RAW: Need real icons
-		return GCSImages.getLibraryIcons();
+		return GCSImages.getAdvantagesIcons();
 	}
 
 	@Override

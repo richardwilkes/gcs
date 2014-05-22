@@ -362,25 +362,21 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 		LibraryFile library = new LibraryFile(path.toFile());
 		SpellList spells = library.getSpellList();
 		if (!spells.isEmpty()) {
-			spells.removeDataModifiedListener(library);
 			spells.setModified(true);
 			proxy = dockLibrary(new SpellsDockable(spells));
 		}
 		SkillList skills = library.getSkillList();
 		if (!skills.isEmpty()) {
-			skills.removeDataModifiedListener(library);
 			skills.setModified(true);
 			proxy = dockLibrary(new SkillsDockable(skills));
 		}
 		EquipmentList equipment = library.getEquipmentList();
 		if (!equipment.isEmpty()) {
-			equipment.removeDataModifiedListener(library);
 			equipment.setModified(true);
 			proxy = dockLibrary(new EquipmentDockable(equipment));
 		}
 		AdvantageList adq = library.getAdvantageList();
 		if (!adq.isEmpty()) {
-			adq.removeDataModifiedListener(library);
 			adq.setModified(true);
 			proxy = dockLibrary(new AdvantagesDockable(adq));
 		}

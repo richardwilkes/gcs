@@ -149,13 +149,13 @@ public class GCS {
 		App.setAboutPanel(AboutPanel.class);
 		GCSFileProxyCreator fileProxyCreator = new GCSFileProxyCreator();
 		FileType.register(GURPSCharacter.EXTENSION, GCSImages.getCharacterSheetIcons(), SHEET_DESCRIPTION, fileProxyCreator, true);
-		FileType.register(AdvantageList.EXTENSION, GCSImages.getLibraryIcons(), ADVANTAGES_LIBRARY_DESCRIPTION, fileProxyCreator, true);
-		FileType.register(EquipmentList.EXTENSION, GCSImages.getLibraryIcons(), EQUIPMENT_LIBRARY_DESCRIPTION, fileProxyCreator, true);
-		FileType.register(SkillList.EXTENSION, GCSImages.getLibraryIcons(), SKILLS_LIBRARY_DESCRIPTION, fileProxyCreator, true);
-		FileType.register(SpellList.EXTENSION, GCSImages.getLibraryIcons(), SPELLS_LIBRARY_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(AdvantageList.EXTENSION, GCSImages.getAdvantagesIcons(), ADVANTAGES_LIBRARY_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(EquipmentList.EXTENSION, GCSImages.getEquipmentIcons(), EQUIPMENT_LIBRARY_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(SkillList.EXTENSION, GCSImages.getSkillsIcons(), SKILLS_LIBRARY_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(SpellList.EXTENSION, GCSImages.getSpellsIcons(), SPELLS_LIBRARY_DESCRIPTION, fileProxyCreator, true);
 		FileType.register(Template.EXTENSION, GCSImages.getTemplateIcons(), TEMPLATE_DESCRIPTION, fileProxyCreator, true);
 		// For legacy
-		FileType.register(LibraryFile.EXTENSION, GCSImages.getLibraryIcons(), LIBRARY_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(LibraryFile.EXTENSION, GCSImages.getAdvantagesIcons(), LIBRARY_DESCRIPTION, fileProxyCreator, true);
 	}
 
 	private static int convert(CmdLine cmdLine) {
