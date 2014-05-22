@@ -11,20 +11,46 @@
 
 package com.trollworks.gcs.app;
 
+import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.ui.image.IconSet;
 import com.trollworks.toolkit.ui.image.Images;
 import com.trollworks.toolkit.ui.image.ToolkitIcon;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /** Provides standardized image access. */
 @SuppressWarnings("nls")
 public class GCSImages {
-	private static final String	SMALL	= "Small";
-	private static final String	LARGE	= "Large";
-	private static final String	SINGLE	= "Single";
-	private static final String	FILE	= "";
+	private static final Set<String>	ICON_SETS_ATTEMPTED	= new HashSet<>();
+	private static final String			SMALL				= "Small";
+	private static final String			LARGE				= "Large";
+	private static final String			SINGLE				= "Single";
+	private static final String			FILE				= "";
 
 	static {
 		Images.addLocation(GCSImages.class.getResource("images/"));
+	}
+
+	private static final IconSet getOrLoadIconSet(String name) {
+		IconSet iconSet = IconSet.get(name);
+		if (iconSet == null) {
+			if (ICON_SETS_ATTEMPTED.add(name)) {
+				try (InputStream in = GCSImages.class.getResource("iconsets/" + name + ".icns").openStream()) {
+					iconSet = IconSet.loadIcns(name, in);
+				} catch (IOException ioe) {
+					Log.error(ioe);
+				}
+			}
+		}
+		return iconSet;
 	}
 
 	/** @return The exotic type icon. */
@@ -89,22 +115,37 @@ public class GCSImages {
 
 	/** @return The application icons. */
 	public static final IconSet getAppIcons() {
-		return IconSet.get("AppIcon");
+		return getOrLoadIconSet("app");
 	}
 
 	/** @return The character sheet icons. */
 	public static final IconSet getCharacterSheetIcons() {
-		return IconSet.get("CharacterSheet");
+		return getOrLoadIconSet("gcs");
 	}
 
 	/** @return The character template icons. */
 	public static final IconSet getTemplateIcons() {
-		return IconSet.get("Template");
+		return getOrLoadIconSet("gct");
 	}
 
-	/** @return The library icons. */
-	public static final IconSet getLibraryIcons() {
-		return IconSet.get("Library");
+	/** @return The advantages icons. */
+	public static final IconSet getAdvantagesIcons() {
+		return getOrLoadIconSet("adq");
+	}
+
+	/** @return The skills icons. */
+	public static final IconSet getSkillsIcons() {
+		return getOrLoadIconSet("skl");
+	}
+
+	/** @return The spells icons. */
+	public static final IconSet getSpellsIcons() {
+		return getOrLoadIconSet("spl");
+	}
+
+	/** @return The equipment icons. */
+	public static final IconSet getEquipmentIcons() {
+		return getOrLoadIconSet("eqp");
 	}
 
 	/**
@@ -141,5 +182,49 @@ public class GCSImages {
 	 */
 	public static final ToolkitIcon getEquipmentIcon(boolean large, boolean single) {
 		return Images.get("Equipment" + (large ? LARGE : SMALL) + (single ? SINGLE : FILE));
+	}
+
+	/** Utility for creating GCS's icon sets. */
+	public static void main(String[] args) {
+		try {
+			ToolkitIcon base1024 = Images.loadImage(new File("graphics/iconset_parts/document_1024.png"));
+			ToolkitIcon base64 = Images.loadImage(new File("graphics/iconset_parts/document_64.png"));
+			ToolkitIcon base32 = Images.loadImage(new File("graphics/iconset_parts/document_32.png"));
+			ToolkitIcon base16 = Images.loadImage(new File("graphics/iconset_parts/document_16.png"));
+			for (String one : new String[] { "adq", "eqp", "gcs", "gct", "skl", "spl" }) {
+				createIcns(one, base1024, base64, base32, base16);
+			}
+			List<ToolkitIcon> images = new ArrayList<>();
+			ToolkitIcon icon = Images.loadImage(new File("graphics/iconset_parts/app_1024.png"));
+			images.add(icon);
+			images.add(Images.scale(icon, 512));
+			images.add(Images.scale(icon, 256));
+			images.add(Images.scale(icon, 128));
+			images.add(Images.scale(icon, 64));
+			images.add(Images.scale(icon, 32));
+			images.add(Images.scale(icon, 16));
+			IconSet set = new IconSet("app", images);
+			try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream("src/com/trollworks/gcs/app/iconsets/app.icns"))) {
+				set.saveAsIcns(out);
+			}
+		} catch (Exception exception) {
+			exception.printStackTrace(System.err);
+		}
+	}
+
+	private static void createIcns(String name, ToolkitIcon base1024, ToolkitIcon base64, ToolkitIcon base32, ToolkitIcon base16) throws IOException {
+		List<ToolkitIcon> images = new ArrayList<>();
+		ToolkitIcon icon = Images.loadImage(new File("graphics/iconset_parts/" + name + "_1024.png"));
+		images.add(Images.superimpose(base1024, icon));
+		images.add(Images.superimpose(Images.scale(base1024, 512), Images.scale(icon, 512)));
+		images.add(Images.superimpose(Images.scale(base1024, 256), Images.scale(icon, 256)));
+		images.add(Images.superimpose(Images.scale(base1024, 128), Images.scale(icon, 128)));
+		images.add(Images.superimpose(base64, Images.scale(icon, 64)));
+		images.add(Images.superimpose(base32, Images.scale(icon, 32)));
+		images.add(Images.superimpose(base16, Images.scale(icon, 16)));
+		IconSet set = new IconSet(name, images);
+		try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream("src/com/trollworks/gcs/app/iconsets/" + name + ".icns"))) {
+			set.saveAsIcns(out);
+		}
 	}
 }
