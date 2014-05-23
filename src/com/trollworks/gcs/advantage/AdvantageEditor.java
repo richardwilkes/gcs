@@ -22,7 +22,7 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
-import com.trollworks.toolkit.ui.image.ToolkitIcon;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.Alignment;
 import com.trollworks.toolkit.ui.layout.FlexComponent;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
@@ -338,7 +338,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		return button;
 	}
 
-	private LinkedLabel createTypeLabel(ToolkitIcon icon, final JCheckBox linkTo) {
+	private LinkedLabel createTypeLabel(StdImage icon, final JCheckBox linkTo) {
 		LinkedLabel label = new LinkedLabel(icon, linkTo);
 		label.addMouseListener(new MouseAdapter() {
 			@Override

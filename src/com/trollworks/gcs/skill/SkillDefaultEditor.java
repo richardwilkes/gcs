@@ -14,7 +14,7 @@ package com.trollworks.gcs.skill;
 import com.trollworks.gcs.common.EditorPanel;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
-import com.trollworks.toolkit.ui.image.ToolkitImage;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.Alignment;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
@@ -127,15 +127,15 @@ public class SkillDefaultEditor extends EditorPanel {
 
 			row = new FlexRow();
 			row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
-			row.add(addButton(ToolkitImage.getRemoveIcon(), REMOVE, REMOVE_DEFAULT));
-			row.add(addButton(ToolkitImage.getAddIcon(), ADD, ADD_DEFAULT));
+			row.add(addButton(StdImage.REMOVE, REMOVE, REMOVE_DEFAULT));
+			row.add(addButton(StdImage.ADD, ADD, ADD_DEFAULT));
 			grid.add(row, 0, 2);
 			grid.apply(this);
 		} else {
 			FlexRow row = new FlexRow();
 			row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
 			row.add(new FlexSpacer(0, 0, true, false));
-			row.add(addButton(ToolkitImage.getAddIcon(), ADD, ADD_DEFAULT));
+			row.add(addButton(StdImage.ADD, ADD, ADD_DEFAULT));
 			row.apply(this);
 		}
 

@@ -15,8 +15,7 @@ import com.trollworks.gcs.character.Profile;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.UIUtilities;
-import com.trollworks.toolkit.ui.image.Images;
-import com.trollworks.toolkit.ui.image.ToolkitIcon;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.Alignment;
 import com.trollworks.toolkit.ui.layout.FlexColumn;
 import com.trollworks.toolkit.ui.layout.FlexComponent;
@@ -343,9 +342,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	}
 
 	private PortraitPreferencePanel createPortrait() {
-		ToolkitIcon image = Profile.getPortraitFromPortraitPath(Profile.getDefaultPortraitPath());
+		StdImage image = Profile.getPortraitFromPortraitPath(Profile.getDefaultPortraitPath());
 		if (image != null) {
-			image = Images.scale(image, Profile.PORTRAIT_WIDTH, Profile.PORTRAIT_HEIGHT);
+			image = StdImage.scale(image, Profile.PORTRAIT_WIDTH, Profile.PORTRAIT_HEIGHT);
 		}
 		PortraitPreferencePanel panel = new PortraitPreferencePanel(image);
 		panel.addActionListener(this);
@@ -474,10 +473,10 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	}
 
 	private void setPortrait(String path) {
-		ToolkitIcon image = Profile.getPortraitFromPortraitPath(path);
+		StdImage image = Profile.getPortraitFromPortraitPath(path);
 		Profile.setDefaultPortraitPath(path);
 		if (image != null) {
-			image = Images.scale(image, Profile.PORTRAIT_WIDTH, Profile.PORTRAIT_HEIGHT);
+			image = StdImage.scale(image, Profile.PORTRAIT_WIDTH, Profile.PORTRAIT_HEIGHT);
 		}
 		mPortrait.setPortrait(image);
 	}

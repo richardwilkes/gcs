@@ -16,7 +16,7 @@ import com.trollworks.gcs.character.Profile;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.border.BoxedDropShadowBorder;
-import com.trollworks.toolkit.ui.image.ToolkitIcon;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.ActionPanel;
 import com.trollworks.toolkit.utility.Localization;
 
@@ -42,14 +42,14 @@ public class PortraitPreferencePanel extends ActionPanel {
 		Localization.initialize();
 	}
 
-	private ToolkitIcon		mImage;
+	private StdImage		mImage;
 
 	/**
 	 * Creates a new character portrait.
 	 *
 	 * @param image The image to display.
 	 */
-	public PortraitPreferencePanel(ToolkitIcon image) {
+	public PortraitPreferencePanel(StdImage image) {
 		super();
 		mImage = image;
 		setBorder(new BoxedDropShadowBorder(UIManager.getFont(GCSFonts.KEY_LABEL), PORTRAIT));
@@ -67,7 +67,7 @@ public class PortraitPreferencePanel extends ActionPanel {
 	}
 
 	/** @param image The new portrait. */
-	public void setPortrait(ToolkitIcon image) {
+	public void setPortrait(StdImage image) {
 		mImage = image;
 		repaint();
 	}

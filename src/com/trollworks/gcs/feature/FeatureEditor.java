@@ -11,15 +11,15 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.gcs.common.EditorPanel;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
-import com.trollworks.toolkit.ui.image.ToolkitImage;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.widget.EditorField;
+import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.DoubleFormatter;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
 
@@ -35,25 +35,25 @@ import javax.swing.text.DefaultFormatterFactory;
 /** A generic feature editor panel. */
 public abstract class FeatureEditor extends EditorPanel {
 	@Localize("Add a feature")
-	private static String ADD_FEATURE_TOOLTIP;
+	private static String			ADD_FEATURE_TOOLTIP;
 	@Localize("Remove this feature")
-	private static String REMOVE_FEATURE_TOOLTIP;
+	private static String			REMOVE_FEATURE_TOOLTIP;
 	@Localize("Gives an attribute bonus of")
-	private static String ATTRIBUTE_BONUS;
+	private static String			ATTRIBUTE_BONUS;
 	@Localize("Reduces the attribute cost of")
-	private static String COST_REDUCTION;
+	private static String			COST_REDUCTION;
 	@Localize("Gives a DR bonus of")
-	private static String DR_BONUS;
+	private static String			DR_BONUS;
 	@Localize("Gives a skill level bonus of")
-	private static String SKILL_BONUS;
+	private static String			SKILL_BONUS;
 	@Localize("Gives a spell level bonus of")
-	private static String SPELL_BONUS;
+	private static String			SPELL_BONUS;
 	@Localize("Gives a weapon damage bonus of")
-	private static String WEAPON_BONUS;
+	private static String			WEAPON_BONUS;
 	@Localize("per level")
-	private static String PER_LEVEL;
+	private static String			PER_LEVEL;
 	@Localize("per die")
-	private static String PER_DIE;
+	private static String			PER_DIE;
 
 	static {
 		Localization.initialize();
@@ -72,7 +72,7 @@ public abstract class FeatureEditor extends EditorPanel {
 
 	/**
 	 * Creates a new {@link FeatureEditor}.
-	 * 
+	 *
 	 * @param row The row this feature will belong to.
 	 * @param feature The feature to edit.
 	 * @return The newly created editor panel.
@@ -101,7 +101,7 @@ public abstract class FeatureEditor extends EditorPanel {
 
 	/**
 	 * Creates a new {@link FeatureEditor}.
-	 * 
+	 *
 	 * @param row The row this feature will belong to.
 	 * @param feature The feature to edit.
 	 */
@@ -119,9 +119,9 @@ public abstract class FeatureEditor extends EditorPanel {
 		FlexRow right = new FlexRow();
 		rebuildSelf(grid, right);
 		if (mFeature != null) {
-			right.add(addButton(ToolkitImage.getRemoveIcon(), REMOVE, REMOVE_FEATURE_TOOLTIP));
+			right.add(addButton(StdImage.REMOVE, REMOVE, REMOVE_FEATURE_TOOLTIP));
 		}
-		right.add(addButton(ToolkitImage.getAddIcon(), ADD, ADD_FEATURE_TOOLTIP));
+		right.add(addButton(StdImage.ADD, ADD, ADD_FEATURE_TOOLTIP));
 		grid.add(right, 0, 1);
 		grid.apply(this);
 		revalidate();
@@ -130,7 +130,7 @@ public abstract class FeatureEditor extends EditorPanel {
 
 	/**
 	 * Sub-classes must implement this method to add any components they want to be visible.
-	 * 
+	 *
 	 * @param grid The general {@link FlexGrid}. Add items in column 0.
 	 * @param right The right-side {@link FlexRow}, situated in grid row 0, column 1.
 	 */

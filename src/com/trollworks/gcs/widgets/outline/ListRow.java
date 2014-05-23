@@ -28,7 +28,7 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.ui.image.ToolkitIcon;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.VersionException;
@@ -607,7 +607,7 @@ public abstract class ListRow extends Row {
 	 * @param large Whether to return the small (16x16) or large (32x32) image.
 	 * @return An image representative of this row.
 	 */
-	public abstract ToolkitIcon getIcon(boolean large);
+	public abstract StdImage getIcon(boolean large);
 
 	/** @param set The nameable keys. */
 	public void fillWithNameableKeys(HashSet<String> set) {

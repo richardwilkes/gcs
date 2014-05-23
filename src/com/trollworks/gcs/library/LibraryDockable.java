@@ -18,7 +18,7 @@ import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.ui.image.ToolkitImage;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.menu.file.PrintProxy;
 import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.ui.widget.Toolbar;
@@ -78,14 +78,14 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 		mToolbar = new Toolbar();
 		createFilterField();
 		createCategoryCombo();
-		mLockButton = new IconButton(outlineModel.isLocked() ? ToolkitImage.getLockedIcon() : ToolkitImage.getUnlockedIcon(), TOGGLE_EDIT_MODE_TOOLTIP, () -> {
+		mLockButton = new IconButton(outlineModel.isLocked() ? StdImage.LOCKED : StdImage.UNLOCKED, TOGGLE_EDIT_MODE_TOOLTIP, () -> {
 			OutlineModel model = mOutline.getModel();
 			model.setLocked(!model.isLocked());
-			mLockButton.setIcon(model.isLocked() ? ToolkitImage.getLockedIcon() : ToolkitImage.getUnlockedIcon());
+			mLockButton.setIcon(model.isLocked() ? StdImage.LOCKED : StdImage.UNLOCKED);
 		});
 		mToolbar.add(mLockButton);
-		mToolbar.add(new IconButton(ToolkitImage.getToggleOpenIcon(), TOGGLE_ROWS_OPEN_TOOLTIP, () -> mOutline.getModel().toggleRowOpenState()));
-		mToolbar.add(new IconButton(ToolkitImage.getSizeToFitIcon(), SIZE_COLUMNS_TO_FIT_TOOLTIP, () -> mOutline.sizeColumnsToFit()));
+		mToolbar.add(new IconButton(StdImage.TOGGLE_OPEN, TOGGLE_ROWS_OPEN_TOOLTIP, () -> mOutline.getModel().toggleRowOpenState()));
+		mToolbar.add(new IconButton(StdImage.SIZE_TO_FIT, SIZE_COLUMNS_TO_FIT_TOOLTIP, () -> mOutline.sizeColumnsToFit()));
 		add(mToolbar, BorderLayout.NORTH);
 		mScroller = new JScrollPane(mOutline);
 		mScroller.setBorder(null);

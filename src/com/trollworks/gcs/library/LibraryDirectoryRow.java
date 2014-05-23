@@ -11,8 +11,7 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.toolkit.ui.image.ToolkitIcon;
-import com.trollworks.toolkit.ui.image.ToolkitImage;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.tree.TreeContainerRow;
 import com.trollworks.toolkit.ui.widget.tree.TreeRow;
 
@@ -32,8 +31,8 @@ public class LibraryDirectoryRow extends TreeContainerRow implements LibraryExpl
 	}
 
 	@Override
-	public ToolkitIcon getIcon() {
-		return ToolkitImage.getFolderIcons().getIcon(16);
+	public StdImage getIcon() {
+		return StdImage.FOLDER.getImage(16);
 	}
 
 	@Override

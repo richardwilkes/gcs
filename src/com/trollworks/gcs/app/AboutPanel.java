@@ -13,7 +13,7 @@ package com.trollworks.gcs.app;
 
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
-import com.trollworks.toolkit.ui.image.ToolkitIcon;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.utility.BundleInfo;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.Version;
@@ -53,7 +53,7 @@ public class AboutPanel extends JPanel {
 	public AboutPanel() {
 		setOpaque(true);
 		setBackground(Color.black);
-		ToolkitIcon img = GCSImages.getAbout();
+		StdImage img = GCSImages.getAbout();
 		setPreferredSize(new Dimension(img.getWidth(), img.getHeight()));
 	}
 

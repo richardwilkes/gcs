@@ -21,7 +21,7 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.ui.image.IconSet;
+import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.utility.Localization;
 
 import java.io.File;
@@ -77,7 +77,7 @@ public class LibraryFile extends DataFile {
 	}
 
 	@Override
-	public IconSet getFileIcons() {
+	public StdImageSet getFileIcons() {
 		// Unused
 		return null;
 	}

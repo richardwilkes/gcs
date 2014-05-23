@@ -15,7 +15,7 @@ import com.trollworks.gcs.common.EditorPanel;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
-import com.trollworks.toolkit.ui.image.ToolkitImage;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.utility.Localization;
@@ -120,7 +120,7 @@ public abstract class PrereqEditor extends EditorPanel {
 		grid.add(left, 0, 0);
 		rebuildSelf(left, grid, right);
 		if (mDepth > 0) {
-			right.add(addButton(ToolkitImage.getRemoveIcon(), REMOVE, mPrereq instanceof PrereqList ? REMOVE_PREREQ_LIST_TOOLTIP : REMOVE_PREREQ_TOOLTIP));
+			right.add(addButton(StdImage.REMOVE, REMOVE, mPrereq instanceof PrereqList ? REMOVE_PREREQ_LIST_TOOLTIP : REMOVE_PREREQ_TOOLTIP));
 		}
 		grid.add(right, 0, 2);
 		grid.apply(this);

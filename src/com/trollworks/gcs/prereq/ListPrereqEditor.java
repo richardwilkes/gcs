@@ -16,7 +16,7 @@ import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
-import com.trollworks.toolkit.ui.image.ToolkitImage;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
@@ -99,8 +99,8 @@ public class ListPrereqEditor extends PrereqEditor {
 
 		grid.add(new FlexSpacer(0, 0, true, false), 0, 1);
 
-		right.add(addButton(ToolkitImage.getMoreIcon(), ADD_PREREQ_LIST, ADD_PREREQ_LIST_TOOLTIP));
-		right.add(addButton(ToolkitImage.getAddIcon(), ADD_PREREQ, ADD_PREREQ_TOOLTIP));
+		right.add(addButton(StdImage.MORE, ADD_PREREQ_LIST, ADD_PREREQ_LIST_TOOLTIP));
+		right.add(addButton(StdImage.ADD, ADD_PREREQ, ADD_PREREQ_TOOLTIP));
 	}
 
 	@Override

@@ -29,7 +29,7 @@ import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.ui.image.IconSet;
+import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
@@ -117,7 +117,7 @@ public class Template extends DataFile implements StateEditable {
 	}
 
 	@Override
-	public IconSet getFileIcons() {
+	public StdImageSet getFileIcons() {
 		return GCSImages.getTemplateDocumentIcons();
 	}
 

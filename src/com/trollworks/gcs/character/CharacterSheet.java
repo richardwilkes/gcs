@@ -39,13 +39,13 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.FilteredIterator;
+import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.Fonts;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.Selection;
 import com.trollworks.toolkit.ui.UIUtilities;
-import com.trollworks.toolkit.ui.image.Images;
-import com.trollworks.toolkit.ui.image.ToolkitIcon;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.menu.file.ExportToCommand;
@@ -62,7 +62,6 @@ import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.ui.widget.outline.RowSelection;
 import com.trollworks.toolkit.utility.BundleInfo;
-import com.trollworks.toolkit.utility.Debug;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.Preferences;
@@ -872,7 +871,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				}
 			}
 		} catch (Exception exception) {
-			assert false : Debug.toString(exception);
+			Log.error(exception);
 		}
 
 		if (!mDragWasAcceptable) {
@@ -1061,7 +1060,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 		if (key.equals("PORTRAIT")) { //$NON-NLS-1$
 			String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base.getName(), false), ExportToCommand.PNG_EXTENSION);
-			Images.writePNG(new File(base.getParentFile(), fileName), description.getPortrait(true), 150);
+			StdImage.writePNG(new File(base.getParentFile(), fileName), description.getPortrait(true), 150);
 			writeXMLData(out, fileName);
 		} else if (key.equals("NAME")) { //$NON-NLS-1$
 			writeXMLText(out, description.getName());
@@ -1302,7 +1301,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
 		boolean lookForKeyMarker = true;
-		for (int level = GURPSCharacter.ENCUMBRANCE_NONE; level <= GURPSCharacter.ENCUMBRANCE_EXTRA_HEAVY; level++) {
+		for (Encumbrance encumbrance : Encumbrance.values()) {
 			for (int i = 0; i < length; i++) {
 				char ch = contents.charAt(i);
 				if (lookForKeyMarker) {
@@ -1320,17 +1319,17 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 						keyBuffer.setLength(0);
 						lookForKeyMarker = true;
 						if (key.equals("CURRENT_MARKER")) { //$NON-NLS-1$
-							if (level == mCharacter.getEncumbranceLevel()) {
+							if (encumbrance == mCharacter.getEncumbranceLevel()) {
 								out.write(" class=\"encumbrance\" "); //$NON-NLS-1$
 							}
 						} else if (key.equals("LEVEL")) { //$NON-NLS-1$
-							writeXMLText(out, MessageFormat.format(level == mCharacter.getEncumbranceLevel() ? EncumbrancePanel.CURRENT_ENCUMBRANCE_FORMAT : EncumbrancePanel.ENCUMBRANCE_FORMAT, EncumbrancePanel.ENCUMBRANCE_TITLES[level], Numbers.format(level)));
+							writeXMLText(out, MessageFormat.format(encumbrance == mCharacter.getEncumbranceLevel() ? EncumbrancePanel.CURRENT_ENCUMBRANCE_FORMAT : EncumbrancePanel.ENCUMBRANCE_FORMAT, encumbrance, Numbers.format(-encumbrance.getEncumbrancePenalty())));
 						} else if (key.equals("MAX_LOAD")) { //$NON-NLS-1$
-							writeXMLText(out, mCharacter.getMaximumCarry(level).toString());
+							writeXMLText(out, mCharacter.getMaximumCarry(encumbrance).toString());
 						} else if (key.equals("MOVE")) { //$NON-NLS-1$
-							writeXMLText(out, Numbers.format(mCharacter.getMove(level)));
+							writeXMLText(out, Numbers.format(mCharacter.getMove(encumbrance)));
 						} else if (key.equals("DODGE")) { //$NON-NLS-1$
-							writeXMLText(out, Numbers.format(mCharacter.getDodge(level)));
+							writeXMLText(out, Numbers.format(mCharacter.getDodge(encumbrance)));
 						} else {
 							writeXMLText(out, UNIDENTIFIED_KEY);
 						}
@@ -1798,7 +1797,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			Paper paper = format.getPaper();
 			int width = (int) (paper.getWidth() / 72.0 * dpi);
 			int height = (int) (paper.getHeight() / 72.0 * dpi);
-			ToolkitIcon buffer = Images.create(width, height, Transparency.OPAQUE);
+			StdImage buffer = StdImage.create(width, height, Transparency.OPAQUE);
 			int pageNum = 0;
 			String name = PathUtils.getLeafName(file.getName(), false);
 
@@ -1821,7 +1820,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				setPrinting(false);
 				gc.dispose();
 				pngFile = new File(file, PathUtils.enforceExtension(name + (pageNum > 1 ? " " + pageNum : ""), ExportToCommand.PNG_EXTENSION)); //$NON-NLS-1$ //$NON-NLS-2$
-				if (!Images.writePNG(pngFile, buffer, dpi)) {
+				if (!StdImage.writePNG(pngFile, buffer, dpi)) {
 					throw new IOException();
 				}
 				createdFiles.add(pngFile);

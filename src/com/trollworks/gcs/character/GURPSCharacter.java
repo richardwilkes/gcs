@@ -37,10 +37,11 @@ import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.FilteredIterator;
+import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.ui.image.IconSet;
+import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.ui.print.PageOrientation;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
@@ -100,6 +101,8 @@ public class GURPSCharacter extends DataFile {
 	private static String						INCLUDE_KICK_UNDO;
 	@Localize("Include Kick w/Boots In Weapons")
 	private static String						INCLUDE_BOOTS_UNDO;
+	@Localize("Unable to set a value for %s")
+	private static String						UNABLE_TO_SET_VALUE;
 
 	static {
 		Localization.initialize();
@@ -255,19 +258,6 @@ public class GURPSCharacter extends DataFile {
 	public static final String					ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS	= FATIGUE_POINTS_PREFIX + "UnconsciousChecks";					//$NON-NLS-1$
 	/** The field ID for unconscious fatigue point changes. */
 	public static final String					ID_UNCONSCIOUS_FATIGUE_POINTS			= FATIGUE_POINTS_PREFIX + "Unconscious";						//$NON-NLS-1$
-	/** The encumbrance level for "None". */
-	public static final int						ENCUMBRANCE_NONE						= 0;
-	/** The encumbrance level for "Light". */
-	public static final int						ENCUMBRANCE_LIGHT						= 1;
-	/** The encumbrance level for "Medium". */
-	public static final int						ENCUMBRANCE_MEDIUM						= 2;
-	/** The encumbrance level for "Heavy". */
-	public static final int						ENCUMBRANCE_HEAVY						= 3;
-	/** The encumbrance level for "Extra Heavy". */
-	public static final int						ENCUMBRANCE_EXTRA_HEAVY					= 4;
-	/** The number of difference encumbrance levels. */
-	public static final int						ENCUMBRANCE_LEVELS						= 5;
-	private static final double[]				ENCUMBRANCE_MULTIPLIER					= { 1.0, 2.0, 3.0, 6.0, 10.0 };
 	private long								mLastModified;
 	private long								mCreatedOn;
 	private HashMap<String, ArrayList<Feature>>	mFeatureMap;
@@ -396,7 +386,7 @@ public class GURPSCharacter extends DataFile {
 	}
 
 	@Override
-	public IconSet getFileIcons() {
+	public StdImageSet getFileIcons() {
 		return GCSImages.getCharacterSheetDocumentIcons();
 	}
 
@@ -736,15 +726,16 @@ public class GURPSCharacter extends DataFile {
 		} else if (id.startsWith(Armor.DR_PREFIX)) {
 			return mArmor.getValueForID(id);
 		} else {
-			for (int i = 0; i < ENCUMBRANCE_LEVELS; i++) {
-				if ((DODGE_PREFIX + i).equals(id)) {
-					return new Integer(getDodge(i));
+			for (Encumbrance encumbrance : Encumbrance.values()) {
+				int index = encumbrance.ordinal();
+				if ((DODGE_PREFIX + index).equals(id)) {
+					return new Integer(getDodge(encumbrance));
 				}
-				if ((MOVE_PREFIX + i).equals(id)) {
-					return new Integer(getMove(i));
+				if ((MOVE_PREFIX + index).equals(id)) {
+					return new Integer(getMove(encumbrance));
 				}
-				if ((MAXIMUM_CARRY_PREFIX + i).equals(id)) {
-					return getMaximumCarry(i);
+				if ((MAXIMUM_CARRY_PREFIX + index).equals(id)) {
+					return getMaximumCarry(encumbrance);
 				}
 			}
 			return null;
@@ -794,7 +785,7 @@ public class GURPSCharacter extends DataFile {
 			} else if (id.startsWith(Armor.DR_PREFIX)) {
 				mArmor.setValueForID(id, value);
 			} else {
-				assert false : "Unable to set value for: " + id; //$NON-NLS-1$
+				Log.error(String.format(UNABLE_TO_SET_VALUE, id));
 			}
 		}
 	}
@@ -1005,8 +996,8 @@ public class GURPSCharacter extends DataFile {
 			notify(ID_RUNNING_SHOVE_AND_KNOCK_OVER, getRunningShoveAndKnockOver());
 			notify(ID_CARRY_ON_BACK, getCarryOnBack());
 			notify(ID_SHIFT_SLIGHTLY, getShiftSlightly());
-			for (int i = 0; i < ENCUMBRANCE_LEVELS; i++) {
-				notify(MAXIMUM_CARRY_PREFIX + i, getMaximumCarry(i));
+			for (Encumbrance encumbrance : Encumbrance.values()) {
+				notify(MAXIMUM_CARRY_PREFIX + encumbrance.ordinal(), getMaximumCarry(encumbrance));
 			}
 		}
 
@@ -1153,13 +1144,12 @@ public class GURPSCharacter extends DataFile {
 	}
 
 	/**
-	 * @param level The encumbrance level
+	 * @param encumbrance The encumbrance level.
 	 * @return The maximum amount the character can carry for the specified encumbrance level.
 	 */
-	public WeightValue getMaximumCarry(int level) {
-		assert level >= ENCUMBRANCE_NONE && level < ENCUMBRANCE_LEVELS;
+	public WeightValue getMaximumCarry(Encumbrance encumbrance) {
 		WeightValue lift = getBasicLift(WeightUnits.POUNDS);
-		lift.setValue(Math.floor(lift.getValue() * ENCUMBRANCE_MULTIPLIER[level] * 10.0) / 10.0);
+		lift.setValue(Math.floor(lift.getValue() * encumbrance.getWeightMultiplier() * 10.0) / 10.0);
 		WeightUnits desiredUnits = SheetPreferences.getWeightUnits();
 		return new WeightValue(desiredUnits.convert(WeightUnits.POUNDS, lift.getValue()), desiredUnits);
 	}
@@ -1282,15 +1272,12 @@ public class GURPSCharacter extends DataFile {
 	}
 
 	/**
-	 * @param level The encumbrance level
+	 * @param encumbrance The encumbrance level.
 	 * @return The character's ground move for the specified encumbrance level.
 	 */
-	public int getMove(int level) {
-		assert level >= ENCUMBRANCE_NONE && level < ENCUMBRANCE_LEVELS;
-
+	public int getMove(Encumbrance encumbrance) {
 		int basicMove = getBasicMove();
-		int move = basicMove * (10 - 2 * level) / 10;
-
+		int move = basicMove * (10 + 2 * encumbrance.getEncumbrancePenalty()) / 10;
 		if (move < 1) {
 			return basicMove > 0 ? 1 : 0;
 		}
@@ -1298,14 +1285,11 @@ public class GURPSCharacter extends DataFile {
 	}
 
 	/**
-	 * @param level The encumbrance level
+	 * @param encumbrance The encumbrance level.
 	 * @return The character's dodge for the specified encumbrance level.
 	 */
-	public int getDodge(int level) {
-		assert level >= ENCUMBRANCE_NONE && level < ENCUMBRANCE_LEVELS;
-
-		int dodge = (int) Math.floor(getBasicSpeed()) + 3 + getEncumbrancePenalty(level) + mDodgeBonus;
-
+	public int getDodge(Encumbrance encumbrance) {
+		int dodge = (int) Math.floor(getBasicSpeed()) + 3 + encumbrance.getEncumbrancePenalty() + mDodgeBonus;
 		return dodge < 1 ? 1 : dodge;
 	}
 
@@ -1353,26 +1337,15 @@ public class GURPSCharacter extends DataFile {
 		}
 	}
 
-	/**
-	 * @param level The encumbrance level (0-4)
-	 * @return The encumbrance penalty for the specified encumbrance level.
-	 */
-	@SuppressWarnings("static-method")
-	public int getEncumbrancePenalty(int level) {
-		return -level;
-	}
-
-	/**
-	 * @return The current encumbrance level.
-	 */
-	public int getEncumbranceLevel() {
+	/** @return The current encumbrance level. */
+	public Encumbrance getEncumbranceLevel() {
 		double carried = getWeightCarried().getNormalizedValue();
-		for (int i = ENCUMBRANCE_NONE; i < ENCUMBRANCE_LEVELS; i++) {
-			if (carried <= getMaximumCarry(i).getNormalizedValue()) {
-				return i;
+		for (Encumbrance encumbrance : Encumbrance.values()) {
+			if (carried <= getMaximumCarry(encumbrance).getNormalizedValue()) {
+				return encumbrance;
 			}
 		}
-		return ENCUMBRANCE_EXTRA_HEAVY;
+		return Encumbrance.EXTRA_HEAVY;
 	}
 
 	/** @return The current weight being carried. */
@@ -1416,25 +1389,27 @@ public class GURPSCharacter extends DataFile {
 	}
 
 	private int[] preserveMoveAndDodge() {
-		int[] data = new int[ENCUMBRANCE_LEVELS * 2];
-
-		for (int i = 0; i < ENCUMBRANCE_LEVELS; i++) {
-			data[i] = getMove(i);
-			data[ENCUMBRANCE_LEVELS + i] = getDodge(i);
+		Encumbrance[] values = Encumbrance.values();
+		int[] data = new int[values.length * 2];
+		for (Encumbrance encumbrance : values) {
+			int index = encumbrance.ordinal();
+			data[index] = getMove(encumbrance);
+			data[values.length + index] = getDodge(encumbrance);
 		}
 		return data;
 	}
 
 	private void notifyIfMoveOrDodgeAltered(int[] data) {
-		for (int i = 0; i < ENCUMBRANCE_LEVELS; i++) {
-			int tmp = getDodge(i);
-
-			if (tmp != data[ENCUMBRANCE_LEVELS + i]) {
-				notify(DODGE_PREFIX + i, new Integer(tmp));
+		Encumbrance[] values = Encumbrance.values();
+		for (Encumbrance encumbrance : values) {
+			int index = encumbrance.ordinal();
+			int tmp = getDodge(encumbrance);
+			if (tmp != data[values.length + index]) {
+				notify(DODGE_PREFIX + index, new Integer(tmp));
 			}
-			tmp = getMove(i);
-			if (tmp != data[i]) {
-				notify(MOVE_PREFIX + i, new Integer(tmp));
+			tmp = getMove(encumbrance);
+			if (tmp != data[index]) {
+				notify(MOVE_PREFIX + index, new Integer(tmp));
 			}
 		}
 	}

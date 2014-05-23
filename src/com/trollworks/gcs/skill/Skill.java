@@ -25,7 +25,7 @@ import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.ui.image.ToolkitIcon;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.Localization;
@@ -626,8 +626,8 @@ public class Skill extends ListRow {
 	}
 
 	@Override
-	public ToolkitIcon getIcon(boolean large) {
-		return GCSImages.getSkillsIcons().getIcon(large ? 64 : 16);
+	public StdImage getIcon(boolean large) {
+		return GCSImages.getSkillsIcons().getImage(large ? 64 : 16);
 	}
 
 	@Override
@@ -695,7 +695,7 @@ public class Skill extends ListRow {
 				bonus = character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
 				level += bonus;
 				relativeLevel += bonus;
-				level += character.getEncumbrancePenalty(character.getEncumbranceLevel()) * encPenaltyMult;
+				level += character.getEncumbranceLevel().getEncumbrancePenalty() * encPenaltyMult;
 			}
 		}
 		return new SkillLevel(level, relativeLevel);

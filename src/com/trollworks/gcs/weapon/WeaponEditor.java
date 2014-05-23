@@ -11,15 +11,14 @@
 
 package com.trollworks.gcs.weapon;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.gcs.skill.Defaults;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.widgets.IconButton;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.Selection;
 import com.trollworks.toolkit.ui.UIUtilities;
-import com.trollworks.toolkit.ui.image.ToolkitImage;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.widget.EditorField;
@@ -27,6 +26,7 @@ import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -49,17 +49,17 @@ import javax.swing.text.DefaultFormatterFactory;
 /** An abstract editor for weapon statistics. */
 public abstract class WeaponEditor extends JPanel implements ActionListener, PropertyChangeListener {
 	@Localize("Usage")
-	private static String USAGE;
+	private static String					USAGE;
 	@Localize("Damage")
-	private static String DAMAGE;
+	private static String					DAMAGE;
 	@Localize("Minimum Strength")
-	private static String MINIMUM_STRENGTH;
+	private static String					MINIMUM_STRENGTH;
 
 	static {
 		Localization.initialize();
 	}
 
-	static final String						EMPTY	= "";	//$NON-NLS-1$
+	static final String						EMPTY	= "";		//$NON-NLS-1$
 	private ListRow							mOwner;
 	private WeaponOutline					mOutline;
 	private IconButton						mAddButton;
@@ -74,7 +74,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 
 	/**
 	 * Creates a new {@link WeaponEditor}.
-	 * 
+	 *
 	 * @param owner The owning row.
 	 * @param weapons The weapons to modify.
 	 * @param weaponClass The {@link Class} of weapons.
@@ -83,7 +83,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 		super(new BorderLayout());
 		mOwner = owner;
 		mWeaponClass = weaponClass;
-		mAddButton = new IconButton(ToolkitImage.getAddIcon());
+		mAddButton = new IconButton(StdImage.ADD);
 		mAddButton.addActionListener(this);
 		add(mAddButton, BorderLayout.WEST);
 		add(createOutline(weapons, weaponClass), BorderLayout.NORTH);
@@ -152,7 +152,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 
 	/**
 	 * Called to add the necessary fields.
-	 * 
+	 *
 	 * @param parent The parent to add the fields to.
 	 */
 	protected abstract void createFields(Container parent);
@@ -173,7 +173,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 
 	/**
 	 * Creates a new text field.
-	 * 
+	 *
 	 * @param parent The parent.
 	 * @param title The title of the field.
 	 * @param value The initial value.
@@ -220,7 +220,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 
 	/**
 	 * Called to update from a field.
-	 * 
+	 *
 	 * @param field The field that was altered.
 	 */
 	protected abstract void updateFromField(Object field);
@@ -313,7 +313,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 
 	/**
 	 * Called to enable/disable all fields.
-	 * 
+	 *
 	 * @param enabled Whether to enable the fields.
 	 */
 	protected void enableFields(boolean enabled) {

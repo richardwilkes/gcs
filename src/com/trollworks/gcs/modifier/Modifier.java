@@ -19,7 +19,7 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.Enums;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.ui.image.ToolkitIcon;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.notification.Notifier;
@@ -300,7 +300,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 	}
 
 	@Override
-	public ToolkitIcon getIcon(boolean large) {
+	public StdImage getIcon(boolean large) {
 		return null;
 	}
 

@@ -17,9 +17,8 @@ import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.template.Template;
-import com.trollworks.toolkit.ui.image.IconSet;
-import com.trollworks.toolkit.ui.image.Images;
-import com.trollworks.toolkit.ui.image.ToolkitIcon;
+import com.trollworks.toolkit.ui.image.StdImageSet;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.utility.BundleInfo;
 import com.trollworks.toolkit.utility.cmdline.CmdLine;
 import com.trollworks.toolkit.utility.cmdline.CmdLineOption;
@@ -33,139 +32,139 @@ import java.io.IOException;
 @SuppressWarnings("nls")
 public class GCSImages {
 	static {
-		Images.addLocation(GCSImages.class.getResource("images/"));
+		StdImage.addLocation(GCSImages.class.getResource("images/"));
 	}
 
 	/** @return The exotic type icon. */
-	public static final ToolkitIcon getExoticTypeIcon() {
-		return Images.get("exotic_type");
+	public static final StdImage getExoticTypeIcon() {
+		return StdImage.get("exotic_type");
 	}
 
 	/** @return The selected exotic type icon. */
-	public static final ToolkitIcon getExoticTypeSelectedIcon() {
-		return Images.get("exotic_type_selected");
+	public static final StdImage getExoticTypeSelectedIcon() {
+		return StdImage.get("exotic_type_selected");
 	}
 
 	/** @return The mental type icon. */
-	public static final ToolkitIcon getMentalTypeIcon() {
-		return Images.get("mental_type");
+	public static final StdImage getMentalTypeIcon() {
+		return StdImage.get("mental_type");
 	}
 
 	/** @return The selected mental type icon. */
-	public static final ToolkitIcon getMentalTypeSelectedIcon() {
-		return Images.get("mental_type_selected");
+	public static final StdImage getMentalTypeSelectedIcon() {
+		return StdImage.get("mental_type_selected");
 	}
 
 	/** @return The physical type icon. */
-	public static final ToolkitIcon getPhysicalTypeIcon() {
-		return Images.get("physical_type");
+	public static final StdImage getPhysicalTypeIcon() {
+		return StdImage.get("physical_type");
 	}
 
 	/** @return The selected physical type icon. */
-	public static final ToolkitIcon getPhysicalTypeSelectedIcon() {
-		return Images.get("physical_type_selected");
+	public static final StdImage getPhysicalTypeSelectedIcon() {
+		return StdImage.get("physical_type_selected");
 	}
 
 	/** @return The social type icon. */
-	public static final ToolkitIcon getSocialTypeIcon() {
-		return Images.get("social_type");
+	public static final StdImage getSocialTypeIcon() {
+		return StdImage.get("social_type");
 	}
 
 	/** @return The selected social type icon. */
-	public static final ToolkitIcon getSocialTypeSelectedIcon() {
-		return Images.get("social_type_selected");
+	public static final StdImage getSocialTypeSelectedIcon() {
+		return StdImage.get("social_type_selected");
 	}
 
 	/** @return The supernatural type icon. */
-	public static final ToolkitIcon getSupernaturalTypeIcon() {
-		return Images.get("supernatural_type");
+	public static final StdImage getSupernaturalTypeIcon() {
+		return StdImage.get("supernatural_type");
 	}
 
 	/** @return The selected supernatural type icon. */
-	public static final ToolkitIcon getSupernaturalTypeSelectedIcon() {
-		return Images.get("supernatural_type_selected");
+	public static final StdImage getSupernaturalTypeSelectedIcon() {
+		return StdImage.get("supernatural_type_selected");
 	}
 
 	/** @return The default portrait. */
-	public static final ToolkitIcon getDefaultPortrait() {
-		return Images.get("default_portrait");
+	public static final StdImage getDefaultPortrait() {
+		return StdImage.get("default_portrait");
 	}
 
 	/** @return The 'about' image. */
-	public static final ToolkitIcon getAbout() {
-		return Images.get("about");
+	public static final StdImage getAbout() {
+		return StdImage.get("about");
 	}
 
 	/** @return The application icons. */
-	public static final IconSet getAppIcons() {
-		return IconSet.getOrLoad("app");
+	public static final StdImageSet getAppIcons() {
+		return StdImageSet.getOrLoad("app");
 	}
 
 	/** @return The character sheet icons. */
-	public static final IconSet getCharacterSheetIcons() {
-		return IconSet.getOrLoad(GURPSCharacter.EXTENSION);
+	public static final StdImageSet getCharacterSheetIcons() {
+		return StdImageSet.getOrLoad(GURPSCharacter.EXTENSION);
 	}
 
 	/** @return The character template icons. */
-	public static final IconSet getTemplateIcons() {
-		return IconSet.getOrLoad(Template.EXTENSION);
+	public static final StdImageSet getTemplateIcons() {
+		return StdImageSet.getOrLoad(Template.EXTENSION);
 	}
 
 	/** @return The advantages icons. */
-	public static final IconSet getAdvantagesIcons() {
-		return IconSet.getOrLoad(AdvantageList.EXTENSION);
+	public static final StdImageSet getAdvantagesIcons() {
+		return StdImageSet.getOrLoad(AdvantageList.EXTENSION);
 	}
 
 	/** @return The skills icons. */
-	public static final IconSet getSkillsIcons() {
-		return IconSet.getOrLoad(SkillList.EXTENSION);
+	public static final StdImageSet getSkillsIcons() {
+		return StdImageSet.getOrLoad(SkillList.EXTENSION);
 	}
 
 	/** @return The spells icons. */
-	public static final IconSet getSpellsIcons() {
-		return IconSet.getOrLoad(SpellList.EXTENSION);
+	public static final StdImageSet getSpellsIcons() {
+		return StdImageSet.getOrLoad(SpellList.EXTENSION);
 	}
 
 	/** @return The equipment icons. */
-	public static final IconSet getEquipmentIcons() {
-		return IconSet.getOrLoad(EquipmentList.EXTENSION);
+	public static final StdImageSet getEquipmentIcons() {
+		return StdImageSet.getOrLoad(EquipmentList.EXTENSION);
 	}
 
 	/** @return The character sheet icons. */
-	public static final IconSet getCharacterSheetDocumentIcons() {
+	public static final StdImageSet getCharacterSheetDocumentIcons() {
 		return getDocumentIcons(GURPSCharacter.EXTENSION);
 	}
 
 	/** @return The character template icons. */
-	public static final IconSet getTemplateDocumentIcons() {
+	public static final StdImageSet getTemplateDocumentIcons() {
 		return getDocumentIcons(Template.EXTENSION);
 	}
 
 	/** @return The advantages icons. */
-	public static final IconSet getAdvantagesDocumentIcons() {
+	public static final StdImageSet getAdvantagesDocumentIcons() {
 		return getDocumentIcons(AdvantageList.EXTENSION);
 	}
 
 	/** @return The skills icons. */
-	public static final IconSet getSkillsDocumentIcons() {
+	public static final StdImageSet getSkillsDocumentIcons() {
 		return getDocumentIcons(SkillList.EXTENSION);
 	}
 
 	/** @return The spells icons. */
-	public static final IconSet getSpellsDocumentIcons() {
+	public static final StdImageSet getSpellsDocumentIcons() {
 		return getDocumentIcons(SpellList.EXTENSION);
 	}
 
 	/** @return The equipment icons. */
-	public static final IconSet getEquipmentDocumentIcons() {
+	public static final StdImageSet getEquipmentDocumentIcons() {
 		return getDocumentIcons(EquipmentList.EXTENSION);
 	}
 
-	private static IconSet getDocumentIcons(String prefix) {
+	private static StdImageSet getDocumentIcons(String prefix) {
 		String name = prefix + "_doc";
-		IconSet set = IconSet.get(name);
+		StdImageSet set = StdImageSet.get(name);
 		if (set == null) {
-			set = new IconSet(name, IconSet.getOrLoad("document"), IconSet.getOrLoad(prefix));
+			set = new StdImageSet(name, StdImageSet.getOrLoad("document"), StdImageSet.getOrLoad(prefix));
 		}
 		return set;
 	}
@@ -193,7 +192,7 @@ public class GCSImages {
 			dir.mkdirs();
 			if (app) {
 				File file = new File(dir, "gcs.png");
-				if (Images.writePNG(file, getAppIcons().getIcon(128), 72)) {
+				if (StdImage.writePNG(file, getAppIcons().getImage(128), 72)) {
 					System.out.println("Created: " + file);
 				} else {
 					System.err.println("Unable to create: " + file);
@@ -213,9 +212,9 @@ public class GCSImages {
 		}
 	}
 
-	private static void createIconFiles(IconSet set, File dir, String name, boolean generateICNS, boolean generateICO) throws IOException {
-		for (int size : IconSet.STD_SIZES) {
-			set.getIcon(size);
+	private static void createIconFiles(StdImageSet set, File dir, String name, boolean generateICNS, boolean generateICO) throws IOException {
+		for (int size : StdImageSet.STD_SIZES) {
+			set.getImage(size);
 		}
 		File file;
 		if (generateICNS) {

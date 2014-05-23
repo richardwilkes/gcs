@@ -15,7 +15,7 @@ import com.trollworks.toolkit.io.SafeFileUpdater;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.ui.image.IconSet;
+import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.ui.menu.edit.Undoable;
 import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.utility.Debug;
@@ -182,7 +182,7 @@ public abstract class DataFile implements Undoable {
 	public abstract String getExtension();
 
 	/** @return The icons representing this file, at various resolutions. */
-	public abstract IconSet getFileIcons();
+	public abstract StdImageSet getFileIcons();
 
 	/** @return The file associated with this data file. */
 	public File getFile() {

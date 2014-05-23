@@ -30,8 +30,7 @@ import com.trollworks.gcs.widgets.search.Search;
 import com.trollworks.gcs.widgets.search.SearchTarget;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.Log;
-import com.trollworks.toolkit.ui.image.ToolkitIcon;
-import com.trollworks.toolkit.ui.image.ToolkitImage;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.menu.edit.Openable;
 import com.trollworks.toolkit.ui.menu.file.FileProxy;
 import com.trollworks.toolkit.ui.menu.file.RecentFilesMenu;
@@ -121,7 +120,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 		mToolbar = new Toolbar();
 		mSearch = new Search(this);
 		mToolbar.add(mSearch, Toolbar.LAYOUT_FILL);
-		mToolbar.add(new IconButton(ToolkitImage.getToggleOpenIcon(), TOGGLE_ROWS_OPEN_TOOLTIP, () -> mTreePanel.toggleDisclosure()));
+		mToolbar.add(new IconButton(StdImage.TOGGLE_OPEN, TOGGLE_ROWS_OPEN_TOOLTIP, () -> mTreePanel.toggleDisclosure()));
 		add(mToolbar, BorderLayout.NORTH);
 		add(mTreePanel, BorderLayout.CENTER);
 		listCollectionThread.addListener(this);
@@ -134,7 +133,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 
 	@Override
 	public Icon getTitleIcon() {
-		return ToolkitImage.getFolderIcons().getIcon(16);
+		return StdImage.FOLDER.getImage(16);
 	}
 
 	@Override
@@ -153,7 +152,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 	}
 
 	@Override
-	public ToolkitIcon getIcon(TreeRow row) {
+	public StdImage getIcon(TreeRow row) {
 		return ((LibraryExplorerRow) row).getIcon();
 	}
 

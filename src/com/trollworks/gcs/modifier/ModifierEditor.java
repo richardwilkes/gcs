@@ -15,7 +15,7 @@ import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
-import com.trollworks.toolkit.ui.image.ToolkitIcon;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.utility.Localization;
@@ -105,7 +105,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		JPanel content = new JPanel(new ColumnLayout(2));
 		JPanel fields = new JPanel(new ColumnLayout(2));
 		JLabel icon;
-		ToolkitIcon image = modifier.getIcon(true);
+		StdImage image = modifier.getIcon(true);
 		if (image != null) {
 			icon = new JLabel(image);
 		} else {

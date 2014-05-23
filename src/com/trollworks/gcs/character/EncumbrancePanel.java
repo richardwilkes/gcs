@@ -29,47 +29,35 @@ import javax.swing.SwingConstants;
 /** The character encumbrance panel. */
 public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 	@Localize("Encumbrance, Move & Dodge")
-	private static String			ENCUMBRANCE_MOVE_DODGE;
+	private static String		ENCUMBRANCE_MOVE_DODGE;
 	@Localize("Level")
-	private static String			ENCUMBRANCE_LEVEL;
+	private static String		ENCUMBRANCE_LEVEL;
 	@Localize("Max Load")
-	private static String			MAX_CARRY;
+	private static String		MAX_CARRY;
 	@Localize("Move")
-	private static String			MOVE;
+	private static String		MOVE;
 	@Localize("Dodge")
-	private static String			DODGE;
+	private static String		DODGE;
 	@Localize("The encumbrance level")
-	private static String			ENCUMBRANCE_TOOLTIP;
+	private static String		ENCUMBRANCE_TOOLTIP;
 	@Localize("The maximum load a character can carry and still remain within a specific encumbrance level")
-	private static String			MAX_CARRY_TOOLTIP;
+	private static String		MAX_CARRY_TOOLTIP;
 	@Localize("The character's ground movement rate for a specific encumbrance level")
-	private static String			MOVE_TOOLTIP;
+	private static String		MOVE_TOOLTIP;
 	@Localize("The character's dodge for a specific encumbrance level")
-	private static String			DODGE_TOOLTIP;
-	@Localize("None")
-	private static String			NONE;
-	@Localize("Light")
-	private static String			LIGHT;
-	@Localize("Medium")
-	private static String			MEDIUM;
-	@Localize("Heavy")
-	private static String			HEAVY;
-	@Localize("X-Heavy")
-	private static String			EXTRA_HEAVY;
+	private static String		DODGE_TOOLTIP;
 	@Localize("{0} ({1})")
-	static String					ENCUMBRANCE_FORMAT;
+	static String				ENCUMBRANCE_FORMAT;
 	@Localize("\u2022 {0} ({1})")
-	static String					CURRENT_ENCUMBRANCE_FORMAT;
+	static String				CURRENT_ENCUMBRANCE_FORMAT;
 
 	static {
 		Localization.initialize();
 	}
 
-	private static final Color		CURRENT_ENCUMBRANCE_COLOR	= new Color(252, 242, 196);
-	/** The various encumbrance titles. */
-	public static final String[]	ENCUMBRANCE_TITLES			= new String[] { NONE, LIGHT, MEDIUM, HEAVY, EXTRA_HEAVY };
-	private GURPSCharacter			mCharacter;
-	private PageLabel[]				mMarkers;
+	private static final Color	CURRENT_ENCUMBRANCE_COLOR	= new Color(252, 242, 196);
+	private GURPSCharacter		mCharacter;
+	private PageLabel[]			mMarkers;
 
 	/**
 	 * Creates a new encumbrance panel.
@@ -79,7 +67,8 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 	public EncumbrancePanel(GURPSCharacter character) {
 		super(new ColumnLayout(7, 2, 0), ENCUMBRANCE_MOVE_DODGE, true);
 		mCharacter = character;
-		mMarkers = new PageLabel[GURPSCharacter.ENCUMBRANCE_LEVELS];
+		Encumbrance[] encumbranceValues = Encumbrance.values();
+		mMarkers = new PageLabel[encumbranceValues.length];
 		PageHeader header = createHeader(this, ENCUMBRANCE_LEVEL, ENCUMBRANCE_TOOLTIP);
 		addHorizontalBackground(header, Color.black);
 		addVerticalBackground(createDivider(), Color.black);
@@ -88,25 +77,26 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 		createHeader(this, MOVE, MOVE_TOOLTIP);
 		addVerticalBackground(createDivider(), Color.black);
 		createHeader(this, DODGE, DODGE_TOOLTIP);
-		int current = character.getEncumbranceLevel();
-		for (int i = 0; i < GURPSCharacter.ENCUMBRANCE_LEVELS; i++) {
-			mMarkers[i] = new PageLabel(getMarkerText(i, current), header);
-			add(mMarkers[i]);
-			if (current == i) {
-				addHorizontalBackground(mMarkers[i], CURRENT_ENCUMBRANCE_COLOR);
+		Encumbrance current = character.getEncumbranceLevel();
+		for (Encumbrance encumbrance : encumbranceValues) {
+			int index = encumbrance.ordinal();
+			mMarkers[index] = new PageLabel(getMarkerText(encumbrance, current), header);
+			add(mMarkers[index]);
+			if (current == encumbrance) {
+				addHorizontalBackground(mMarkers[index], CURRENT_ENCUMBRANCE_COLOR);
 			}
 			createDivider();
-			createDisabledField(this, character, GURPSCharacter.MAXIMUM_CARRY_PREFIX + i, MAX_CARRY_TOOLTIP, SwingConstants.RIGHT);
+			createDisabledField(this, character, GURPSCharacter.MAXIMUM_CARRY_PREFIX + index, MAX_CARRY_TOOLTIP, SwingConstants.RIGHT);
 			createDivider();
-			createDisabledField(this, character, GURPSCharacter.MOVE_PREFIX + i, MOVE_TOOLTIP, SwingConstants.RIGHT);
+			createDisabledField(this, character, GURPSCharacter.MOVE_PREFIX + index, MOVE_TOOLTIP, SwingConstants.RIGHT);
 			createDivider();
-			createDisabledField(this, character, GURPSCharacter.DODGE_PREFIX + i, DODGE_TOOLTIP, SwingConstants.RIGHT);
+			createDisabledField(this, character, GURPSCharacter.DODGE_PREFIX + index, DODGE_TOOLTIP, SwingConstants.RIGHT);
 		}
 		character.addTarget(this, GURPSCharacter.ID_CARRIED_WEIGHT, GURPSCharacter.ID_BASIC_LIFT);
 	}
 
-	private static String getMarkerText(int which, int current) {
-		return MessageFormat.format(which == current ? CURRENT_ENCUMBRANCE_FORMAT : ENCUMBRANCE_FORMAT, ENCUMBRANCE_TITLES[which], Numbers.format(which));
+	private static String getMarkerText(Encumbrance which, Encumbrance current) {
+		return MessageFormat.format(which == current ? CURRENT_ENCUMBRANCE_FORMAT : ENCUMBRANCE_FORMAT, which, Numbers.format(-which.getEncumbrancePenalty()));
 	}
 
 	private Container createDivider() {
@@ -118,14 +108,15 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 
 	@Override
 	public void handleNotification(Object producer, String type, Object data) {
-		int current = mCharacter.getEncumbranceLevel();
-		for (int i = 0; i < GURPSCharacter.ENCUMBRANCE_LEVELS; i++) {
-			if (i == current) {
-				addHorizontalBackground(mMarkers[i], CURRENT_ENCUMBRANCE_COLOR);
+		Encumbrance current = mCharacter.getEncumbranceLevel();
+		for (Encumbrance encumbrance : Encumbrance.values()) {
+			int index = encumbrance.ordinal();
+			if (encumbrance == current) {
+				addHorizontalBackground(mMarkers[index], CURRENT_ENCUMBRANCE_COLOR);
 			} else {
-				removeHorizontalBackground(mMarkers[i]);
+				removeHorizontalBackground(mMarkers[index]);
 			}
-			mMarkers[i].setText(getMarkerText(i, current));
+			mMarkers[index].setText(getMarkerText(encumbrance, current));
 		}
 		revalidate();
 		repaint();

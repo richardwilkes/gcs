@@ -12,7 +12,7 @@
 package com.trollworks.gcs.widgets;
 
 import com.trollworks.toolkit.ui.UIUtilities;
-import com.trollworks.toolkit.ui.image.ToolkitIcon;
+import com.trollworks.toolkit.ui.image.StdImage;
 
 import java.awt.Dimension;
 
@@ -39,7 +39,7 @@ public class IconButton extends JButton {
 	 *
 	 * @param icon The image to use for the icon.
 	 */
-	public IconButton(ToolkitIcon icon) {
+	public IconButton(StdImage icon) {
 		this(icon, null);
 	}
 
@@ -49,7 +49,7 @@ public class IconButton extends JButton {
 	 * @param icon The image to use for the icon.
 	 * @param tooltip The tooltip to use.
 	 */
-	public IconButton(ToolkitIcon icon, String tooltip) {
+	public IconButton(StdImage icon, String tooltip) {
 		super(icon);
 		setToolTipText(tooltip);
 		initialize();

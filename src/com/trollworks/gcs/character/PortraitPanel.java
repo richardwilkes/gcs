@@ -16,7 +16,7 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.border.BoxedDropShadowBorder;
-import com.trollworks.toolkit.ui.image.Images;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.print.PrintUtilities;
 import com.trollworks.toolkit.ui.widget.StdFileDialog;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
@@ -84,7 +84,7 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 		File file = StdFileDialog.choose(this, true, SELECT_PORTRAIT, null, null, "png", "jpg", "gif", "jpeg"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		if (file != null) {
 			try {
-				mCharacter.getDescription().setPortrait(Images.loadImage(file));
+				mCharacter.getDescription().setPortrait(StdImage.loadImage(file));
 			} catch (Exception exception) {
 				WindowUtils.showError(this, MessageFormat.format(BAD_IMAGE, PathUtils.getFullPath(file)));
 			}

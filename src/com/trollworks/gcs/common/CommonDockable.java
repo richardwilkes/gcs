@@ -150,7 +150,7 @@ public abstract class CommonDockable extends Dockable implements CloseHandler, S
 
 	@Override
 	public Icon getTitleIcon() {
-		return getDataFile().getFileIcons().getIcon(16);
+		return getDataFile().getFileIcons().getImage(16);
 	}
 
 	@Override

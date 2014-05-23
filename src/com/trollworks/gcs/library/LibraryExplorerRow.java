@@ -11,12 +11,12 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.toolkit.ui.image.ToolkitIcon;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 
 /** A {@link Row} that represents a node in the library explorer. */
 public interface LibraryExplorerRow {
-	ToolkitIcon getIcon();
+	StdImage getIcon();
 
 	String getName();
 

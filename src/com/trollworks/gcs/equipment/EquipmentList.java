@@ -16,7 +16,7 @@ import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
-import com.trollworks.toolkit.ui.image.IconSet;
+import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 
 import java.io.IOException;
@@ -46,7 +46,7 @@ public class EquipmentList extends ListFile {
 	}
 
 	@Override
-	public IconSet getFileIcons() {
+	public StdImageSet getFileIcons() {
 		return GCSImages.getEquipmentDocumentIcons();
 	}
 

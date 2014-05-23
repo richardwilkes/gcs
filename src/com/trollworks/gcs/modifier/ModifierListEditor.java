@@ -21,7 +21,7 @@ import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.collections.FilteredList;
-import com.trollworks.toolkit.ui.image.ToolkitImage;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.ActionPanel;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
@@ -109,7 +109,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 		JScrollPane scroller;
 		OutlineModel model;
 
-		mAddButton = new IconButton(ToolkitImage.getAddIcon());
+		mAddButton = new IconButton(StdImage.ADD);
 		mAddButton.addActionListener(this);
 
 		mOutline = new ModifierOutline();

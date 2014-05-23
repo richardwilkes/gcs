@@ -200,8 +200,8 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		FACTORY_MAP.put(GURPSCharacter.ID_RUNNING_SHOVE_AND_KNOCK_OVER, factory);
 		FACTORY_MAP.put(GURPSCharacter.ID_CARRY_ON_BACK, factory);
 		FACTORY_MAP.put(GURPSCharacter.ID_SHIFT_SLIGHTLY, factory);
-		for (int i = 0; i < GURPSCharacter.ENCUMBRANCE_LEVELS; i++) {
-			FACTORY_MAP.put(GURPSCharacter.MAXIMUM_CARRY_PREFIX + i, factory);
+		for (Encumbrance encumbrance : Encumbrance.values()) {
+			FACTORY_MAP.put(GURPSCharacter.MAXIMUM_CARRY_PREFIX + encumbrance.ordinal(), factory);
 		}
 
 		factory = new DefaultFormatterFactory(new IntegerFormatter(0, 9999, false));
@@ -227,9 +227,10 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		FACTORY_MAP.put(Armor.ID_HAND_DR, factory);
 		FACTORY_MAP.put(Armor.ID_FOOT_DR, factory);
 		FACTORY_MAP.put(Armor.ID_NECK_DR, factory);
-		for (int i = 0; i < GURPSCharacter.ENCUMBRANCE_LEVELS; i++) {
-			FACTORY_MAP.put(GURPSCharacter.MOVE_PREFIX + i, factory);
-			FACTORY_MAP.put(GURPSCharacter.DODGE_PREFIX + i, factory);
+		for (Encumbrance encumbrance : Encumbrance.values()) {
+			int index = encumbrance.ordinal();
+			FACTORY_MAP.put(GURPSCharacter.MOVE_PREFIX + index, factory);
+			FACTORY_MAP.put(GURPSCharacter.DODGE_PREFIX + index, factory);
 		}
 
 		factory = new DefaultFormatterFactory(new IntegerFormatter(-99999, 99999, false));

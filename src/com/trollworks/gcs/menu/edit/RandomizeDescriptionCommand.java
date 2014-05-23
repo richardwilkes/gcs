@@ -58,7 +58,7 @@ public class RandomizeDescriptionCommand extends Command {
 		CharacterSheet target = getTarget(CharacterSheet.class);
 		if (target != null) {
 			DescriptionRandomizer panel = new DescriptionRandomizer(target.getCharacter());
-			if (WindowUtils.showOptionDialog(null, panel, RANDOMIZER, true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, GCSImages.getCharacterSheetDocumentIcons().getIcon(32), new String[] { APPLY, CANCEL }, APPLY) == JOptionPane.OK_OPTION) {
+			if (WindowUtils.showOptionDialog(null, panel, RANDOMIZER, true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, GCSImages.getCharacterSheetDocumentIcons().getImage(32), new String[] { APPLY, CANCEL }, APPLY) == JOptionPane.OK_OPTION) {
 				panel.applyChanges();
 			}
 		}

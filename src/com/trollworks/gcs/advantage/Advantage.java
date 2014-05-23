@@ -29,7 +29,7 @@ import com.trollworks.toolkit.collections.Enums;
 import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.ui.image.ToolkitIcon;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.utility.Localization;
 
@@ -791,8 +791,8 @@ public class Advantage extends ListRow {
 	}
 
 	@Override
-	public ToolkitIcon getIcon(boolean large) {
-		return GCSImages.getAdvantagesIcons().getIcon(large ? 64 : 16);
+	public StdImage getIcon(boolean large) {
+		return GCSImages.getAdvantagesIcons().getImage(large ? 64 : 16);
 	}
 
 	@Override

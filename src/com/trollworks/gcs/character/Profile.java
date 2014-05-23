@@ -20,8 +20,7 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.ui.image.Images;
-import com.trollworks.toolkit.ui.image.ToolkitIcon;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.text.TextUtility;
@@ -226,8 +225,8 @@ public class Profile {
 	private static final String[]	HAIR_OPTIONS;
 	private GURPSCharacter			mCharacter;
 	private boolean					mCustomPortrait;
-	private ToolkitIcon				mPortrait;
-	private ToolkitIcon				mDisplayPortrait;
+	private StdImage			mPortrait;
+	private StdImage			mDisplayPortrait;
 	private String					mName;
 	private String					mTitle;
 	private int						mAge;
@@ -324,7 +323,7 @@ public class Profile {
 			mReligion = reader.readText();
 		} else if (TAG_PORTRAIT.equals(tag)) {
 			try {
-				setPortraitInternal(Images.loadImage(Base64.getMimeDecoder().decode(reader.readText())));
+				setPortraitInternal(StdImage.loadImage(Base64.getMimeDecoder().decode(reader.readText())));
 				mCustomPortrait = true;
 			} catch (Exception imageException) {
 				// Ignore
@@ -385,7 +384,7 @@ public class Profile {
 	 *            display).
 	 * @return The portrait.
 	 */
-	public ToolkitIcon getPortrait(boolean forPrinting) {
+	public StdImage getPortrait(boolean forPrinting) {
 		return forPrinting ? mPortrait : mDisplayPortrait;
 	}
 
@@ -394,7 +393,7 @@ public class Profile {
 	 *
 	 * @param portrait The new portrait.
 	 */
-	public void setPortrait(ToolkitIcon portrait) {
+	public void setPortrait(StdImage portrait) {
 		if (mPortrait != portrait) {
 			mCustomPortrait = true;
 			mCharacter.postUndoEdit(PORTRAIT_UNDO, ID_PORTRAIT, mPortrait, portrait);
@@ -403,16 +402,16 @@ public class Profile {
 		}
 	}
 
-	private void setPortraitInternal(ToolkitIcon portrait) {
+	private void setPortraitInternal(StdImage portrait) {
 		if (portrait == null) {
 			mPortrait = null;
 			mDisplayPortrait = null;
 		} else {
 			if (portrait.getWidth() != PORTRAIT_WIDTH * 2 || portrait.getHeight() != PORTRAIT_HEIGHT * 2) {
-				portrait = Images.scale(portrait, PORTRAIT_WIDTH * 2, PORTRAIT_HEIGHT * 2);
+				portrait = StdImage.scale(portrait, PORTRAIT_WIDTH * 2, PORTRAIT_HEIGHT * 2);
 			}
 			mPortrait = portrait;
-			mDisplayPortrait = Images.scale(mPortrait, PORTRAIT_WIDTH, PORTRAIT_HEIGHT);
+			mDisplayPortrait = StdImage.scale(mPortrait, PORTRAIT_WIDTH, PORTRAIT_HEIGHT);
 		}
 	}
 
@@ -897,8 +896,8 @@ public class Profile {
 			} else if (ID_TECH_LEVEL.equals(id)) {
 				setTechLevel((String) value);
 			} else if (ID_PORTRAIT.equals(id)) {
-				if (value instanceof ToolkitIcon) {
-					setPortrait((ToolkitIcon) value);
+				if (value instanceof StdImage) {
+					setPortrait((StdImage) value);
 				}
 			} else if (ID_SIZE_MODIFIER.equals(id)) {
 				setSizeModifier(((Integer) value).intValue());
@@ -1050,11 +1049,11 @@ public class Profile {
 	 * @param path The path to load.
 	 * @return The portrait.
 	 */
-	public static ToolkitIcon getPortraitFromPortraitPath(String path) {
+	public static StdImage getPortraitFromPortraitPath(String path) {
 		if (DEFAULT_PORTRAIT.equals(path)) {
 			return GCSImages.getDefaultPortrait();
 		}
-		return path != null ? Images.loadImage(new File(path)) : null;
+		return path != null ? StdImage.loadImage(new File(path)) : null;
 	}
 
 	/** @return The default portrait path. */

@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.toolkit.ui.image.ToolkitIcon;
+import com.trollworks.toolkit.ui.image.StdImage;
 
 import java.awt.Component;
 
@@ -23,7 +23,7 @@ public class LibraryExplorerRowRenderer extends DefaultListCellRenderer {
 	@Override
 	public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 		String title;
-		ToolkitIcon icon;
+		StdImage icon;
 		if (value instanceof LibraryExplorerRow) {
 			LibraryExplorerRow row = (LibraryExplorerRow) value;
 			title = row.getName();
