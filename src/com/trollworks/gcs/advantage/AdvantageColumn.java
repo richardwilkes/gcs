@@ -32,7 +32,6 @@ import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -188,7 +187,7 @@ public enum AdvantageColumn {
 							int x = 0;
 							Graphics2D g2d;
 
-							for (BufferedImage one : list) {
+							for (ToolkitIcon one : list) {
 								int tmp;
 
 								width += one.getWidth();
@@ -199,7 +198,7 @@ public enum AdvantageColumn {
 							}
 							img = Images.createTransparent(width, height);
 							g2d = img.getGraphics();
-							for (BufferedImage one : list) {
+							for (ToolkitIcon one : list) {
 								g2d.drawImage(one, x, (height - one.getHeight()) / 2, null);
 								x += one.getWidth();
 							}

@@ -11,15 +11,14 @@
 
 package com.trollworks.gcs.preferences;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.character.Profile;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.border.BoxedDropShadowBorder;
+import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.ui.widget.ActionPanel;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -28,7 +27,6 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.text.MessageFormat;
 
 import javax.swing.UIManager;
@@ -36,22 +34,22 @@ import javax.swing.UIManager;
 /** The character portrait. */
 public class PortraitPreferencePanel extends ActionPanel {
 	@Localize("Portrait")
-	private static String PORTRAIT;
+	private static String	PORTRAIT;
 	@Localize("<html><body>The portrait to use when a new character sheet is created.<br><br>Ideal original portrait size is {0} pixels wide by {1} pixels tall,<br>although the image will be automatically scaled to these<br>dimensions, if necessary.</body></html>")
-	private static String PORTRAIT_TOOLTIP;
+	private static String	PORTRAIT_TOOLTIP;
 
 	static {
 		Localization.initialize();
 	}
 
-	private BufferedImage	mImage;
+	private ToolkitIcon		mImage;
 
 	/**
 	 * Creates a new character portrait.
-	 * 
+	 *
 	 * @param image The image to display.
 	 */
-	public PortraitPreferencePanel(BufferedImage image) {
+	public PortraitPreferencePanel(ToolkitIcon image) {
 		super();
 		mImage = image;
 		setBorder(new BoxedDropShadowBorder(UIManager.getFont(GCSFonts.KEY_LABEL), PORTRAIT));
@@ -69,7 +67,7 @@ public class PortraitPreferencePanel extends ActionPanel {
 	}
 
 	/** @param image The new portrait. */
-	public void setPortrait(BufferedImage image) {
+	public void setPortrait(ToolkitIcon image) {
 		mImage = image;
 		repaint();
 	}

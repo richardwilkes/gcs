@@ -21,6 +21,7 @@ import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.Images;
+import com.trollworks.toolkit.ui.image.ToolkitIcon;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.text.TextUtility;
@@ -29,7 +30,6 @@ import com.trollworks.toolkit.utility.units.LengthValue;
 import com.trollworks.toolkit.utility.units.WeightUnits;
 import com.trollworks.toolkit.utility.units.WeightValue;
 
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -226,8 +226,8 @@ public class Profile {
 	private static final String[]	HAIR_OPTIONS;
 	private GURPSCharacter			mCharacter;
 	private boolean					mCustomPortrait;
-	private BufferedImage			mPortrait;
-	private BufferedImage			mDisplayPortrait;
+	private ToolkitIcon				mPortrait;
+	private ToolkitIcon				mDisplayPortrait;
 	private String					mName;
 	private String					mTitle;
 	private int						mAge;
@@ -385,7 +385,7 @@ public class Profile {
 	 *            display).
 	 * @return The portrait.
 	 */
-	public BufferedImage getPortrait(boolean forPrinting) {
+	public ToolkitIcon getPortrait(boolean forPrinting) {
 		return forPrinting ? mPortrait : mDisplayPortrait;
 	}
 
@@ -394,7 +394,7 @@ public class Profile {
 	 *
 	 * @param portrait The new portrait.
 	 */
-	public void setPortrait(BufferedImage portrait) {
+	public void setPortrait(ToolkitIcon portrait) {
 		if (mPortrait != portrait) {
 			mCustomPortrait = true;
 			mCharacter.postUndoEdit(PORTRAIT_UNDO, ID_PORTRAIT, mPortrait, portrait);
@@ -403,7 +403,7 @@ public class Profile {
 		}
 	}
 
-	private void setPortraitInternal(BufferedImage portrait) {
+	private void setPortraitInternal(ToolkitIcon portrait) {
 		if (portrait == null) {
 			mPortrait = null;
 			mDisplayPortrait = null;
@@ -897,8 +897,8 @@ public class Profile {
 			} else if (ID_TECH_LEVEL.equals(id)) {
 				setTechLevel((String) value);
 			} else if (ID_PORTRAIT.equals(id)) {
-				if (value instanceof BufferedImage) {
-					setPortrait((BufferedImage) value);
+				if (value instanceof ToolkitIcon) {
+					setPortrait((ToolkitIcon) value);
 				}
 			} else if (ID_SIZE_MODIFIER.equals(id)) {
 				setSizeModifier(((Integer) value).intValue());
@@ -1050,7 +1050,7 @@ public class Profile {
 	 * @param path The path to load.
 	 * @return The portrait.
 	 */
-	public static BufferedImage getPortraitFromPortraitPath(String path) {
+	public static ToolkitIcon getPortraitFromPortraitPath(String path) {
 		if (DEFAULT_PORTRAIT.equals(path)) {
 			return GCSImages.getDefaultPortrait();
 		}
