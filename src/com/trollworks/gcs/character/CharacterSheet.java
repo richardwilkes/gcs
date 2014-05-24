@@ -144,7 +144,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private static String		KICK;
 	@Localize("Kick w/Boots")
 	private static String		BOOTS;
-	@Localize("Unidentified key!")
+	@Localize("Unidentified key: '%s'")
 	private static String		UNIDENTIFIED_KEY;
 	@Localize("Notes")
 	private static String		NOTES;
@@ -1030,9 +1030,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 						if (ch == '@') {
 							lookForKeyMarker = false;
 							in.mark(1);
-							break;
+						} else {
+							out.append(ch);
 						}
-						out.append(ch);
 					} else {
 						if (ch == '_' || Character.isLetterOrDigit(ch)) {
 							keyBuffer.append(ch);
@@ -1250,7 +1250,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		} else if (key.equals("NOTES")) { //$NON-NLS-1$
 			writeXMLText(out, description.getNotes());
 		} else {
-			writeXMLText(out, UNIDENTIFIED_KEY);
+			writeXMLText(out, String.format(UNIDENTIFIED_KEY, key));
 		}
 	}
 
@@ -1273,16 +1273,15 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				if (ch == '@') {
 					lookForKeyMarker = false;
 					in.mark(1);
-					break;
+				} else {
+					extraction.append(ch);
 				}
-				extraction.append(ch);
 			} else {
 				if (ch == '_' || Character.isLetterOrDigit(ch)) {
 					keyBuffer.append(ch);
 					in.mark(1);
 				} else {
 					String key = keyBuffer.toString();
-
 					in.reset();
 					if (key.equals(marker)) {
 						return extraction.toString();
@@ -1307,9 +1306,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				if (lookForKeyMarker) {
 					if (ch == '@') {
 						lookForKeyMarker = false;
-						break;
+					} else {
+						out.append(ch);
 					}
-					out.append(ch);
 				} else {
 					if (ch == '_' || Character.isLetterOrDigit(ch)) {
 						keyBuffer.append(ch);
@@ -1349,9 +1348,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				if (lookForKeyMarker) {
 					if (ch == '@') {
 						lookForKeyMarker = false;
-						break;
+					} else {
+						out.append(ch);
 					}
-					out.append(ch);
 				} else {
 					if (ch == '_' || Character.isLetterOrDigit(ch)) {
 						keyBuffer.append(ch);
@@ -1390,9 +1389,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				if (lookForKeyMarker) {
 					if (ch == '@') {
 						lookForKeyMarker = false;
-						break;
+					} else {
+						out.append(ch);
 					}
-					out.append(ch);
 				} else {
 					if (ch == '_' || Character.isLetterOrDigit(ch)) {
 						keyBuffer.append(ch);
@@ -1472,9 +1471,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				if (lookForKeyMarker) {
 					if (ch == '@') {
 						lookForKeyMarker = false;
-						break;
+					} else {
+						out.append(ch);
 					}
-					out.append(ch);
 				} else {
 					if (ch == '_' || Character.isLetterOrDigit(ch)) {
 						keyBuffer.append(ch);
@@ -1552,9 +1551,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				if (lookForKeyMarker) {
 					if (ch == '@') {
 						lookForKeyMarker = false;
-						break;
+					} else {
+						out.append(ch);
 					}
-					out.append(ch);
 				} else {
 					if (ch == '_' || Character.isLetterOrDigit(ch)) {
 						keyBuffer.append(ch);
@@ -1613,9 +1612,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				if (lookForKeyMarker) {
 					if (ch == '@') {
 						lookForKeyMarker = false;
-						break;
+					} else {
+						out.append(ch);
 					}
-					out.append(ch);
 				} else {
 					if (ch == '_' || Character.isLetterOrDigit(ch)) {
 						keyBuffer.append(ch);
@@ -1682,9 +1681,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				if (lookForKeyMarker) {
 					if (ch == '@') {
 						lookForKeyMarker = false;
-						break;
+					} else {
+						out.append(ch);
 					}
-					out.append(ch);
 				} else {
 					if (ch == '_' || Character.isLetterOrDigit(ch)) {
 						keyBuffer.append(ch);
@@ -1742,9 +1741,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				if (lookForKeyMarker) {
 					if (ch == '@') {
 						lookForKeyMarker = false;
-						break;
+					} else {
+						out.append(ch);
 					}
-					out.append(ch);
 				} else {
 					if (ch == '_' || Character.isLetterOrDigit(ch)) {
 						keyBuffer.append(ch);
