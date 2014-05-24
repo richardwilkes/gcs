@@ -26,6 +26,7 @@ import com.trollworks.gcs.widgets.search.Search;
 import com.trollworks.gcs.widgets.search.SearchTarget;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
+import com.trollworks.toolkit.ui.menu.RetargetableFocus;
 import com.trollworks.toolkit.ui.widget.Toolbar;
 import com.trollworks.toolkit.ui.widget.dock.Dock;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
@@ -40,6 +41,7 @@ import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.KeyboardFocusManager;
 import java.util.ArrayList;
@@ -51,7 +53,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
 
 /** A list of advantages and disadvantages from a library. */
-public class TemplateDockable extends CommonDockable implements NotifierTarget, SearchTarget {
+public class TemplateDockable extends CommonDockable implements NotifierTarget, SearchTarget, RetargetableFocus {
 	@Localize("Untitled Template")
 	private static String			UNTITLED;
 	@Localize("Add Rows")
@@ -84,6 +86,11 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
 		undoManager.discardAllEdits();
 		dataFile.setUndoManager(undoManager);
 		Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY);
+	}
+
+	@Override
+	public Component getRetargetedFocus() {
+		return mTemplate;
 	}
 
 	/** @return The last activated {@link TemplateDockable}. */

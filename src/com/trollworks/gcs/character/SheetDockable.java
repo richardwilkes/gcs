@@ -25,6 +25,7 @@ import com.trollworks.gcs.widgets.search.Search;
 import com.trollworks.gcs.widgets.search.SearchTarget;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
+import com.trollworks.toolkit.ui.menu.RetargetableFocus;
 import com.trollworks.toolkit.ui.menu.file.ExportToCommand;
 import com.trollworks.toolkit.ui.widget.Toolbar;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
@@ -40,6 +41,7 @@ import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.KeyboardFocusManager;
 import java.io.File;
@@ -52,7 +54,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
 
 /** A list of advantages and disadvantages from a library. */
-public class SheetDockable extends CommonDockable implements SearchTarget {
+public class SheetDockable extends CommonDockable implements SearchTarget, RetargetableFocus {
 	@Localize("Untitled Sheet")
 	private static String			UNTITLED;
 	@Localize("An error occurred while trying to save the sheet as a PNG.")
@@ -96,6 +98,11 @@ public class SheetDockable extends CommonDockable implements SearchTarget {
 		StdUndoManager undoManager = getUndoManager();
 		undoManager.discardAllEdits();
 		dataFile.setUndoManager(undoManager);
+	}
+
+	@Override
+	public Component getRetargetedFocus() {
+		return mSheet;
 	}
 
 	/** @return The last activated {@link SheetDockable}. */

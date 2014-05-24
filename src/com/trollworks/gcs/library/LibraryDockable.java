@@ -19,6 +19,7 @@ import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.image.StdImage;
+import com.trollworks.toolkit.ui.menu.RetargetableFocus;
 import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.ui.widget.Toolbar;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
@@ -44,7 +45,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** A list from a library. */
-public abstract class LibraryDockable extends CommonDockable implements RowFilter, DocumentListener, BatchNotifierTarget, JumpToSearchTarget {
+public abstract class LibraryDockable extends CommonDockable implements RowFilter, DocumentListener, BatchNotifierTarget, JumpToSearchTarget, RetargetableFocus {
 	@Localize("Enter text here to narrow the list to only those rows containing matching items")
 	private static String		SEARCH_FIELD_TOOLTIP;
 	@Localize("Any Category")
@@ -91,6 +92,11 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 		mScroller.setBorder(null);
 		mScroller.setColumnHeaderView(mOutline.getHeaderPanel());
 		add(mScroller, BorderLayout.CENTER);
+	}
+
+	@Override
+	public Component getRetargetedFocus() {
+		return mOutline;
 	}
 
 	@Override
