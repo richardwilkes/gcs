@@ -17,8 +17,8 @@ import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.template.Template;
-import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.ui.image.StdImage;
+import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.utility.BundleInfo;
 import com.trollworks.toolkit.utility.cmdline.CmdLine;
 import com.trollworks.toolkit.utility.cmdline.CmdLineOption;
@@ -27,6 +27,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.jar.Attributes;
 
 /** Provides standardized image access. */
 @SuppressWarnings("nls")
@@ -171,7 +172,14 @@ public class GCSImages {
 
 	/** Utility for creating GCS's icon sets. */
 	public static void main(String[] args) {
-		BundleInfo.setDefault(new BundleInfo("GenerateIcons", "1.0", "Richard A. Wilkes", "2014", "Mozilla Public License 2.0"));
+		String name = "GenerateIcons";
+		Attributes attributes = new Attributes();
+		attributes.putValue(BundleInfo.BUNDLE_NAME, name);
+		attributes.putValue(BundleInfo.BUNDLE_VERSION, "1.0");
+		attributes.putValue(BundleInfo.BUNDLE_COPYRIGHT_OWNER, "Richard A. Wilkes");
+		attributes.putValue(BundleInfo.BUNDLE_COPYRIGHT_YEARS, "2014");
+		attributes.putValue(BundleInfo.BUNDLE_LICENSE, "Mozilla Public License 2.0");
+		BundleInfo.setDefault(new BundleInfo(attributes, name));
 		CmdLineOption icnsOption = new CmdLineOption("Generate ICNS files", null, "icns");
 		CmdLineOption icoOption = new CmdLineOption("Generate ICO files", null, "ico");
 		CmdLineOption appOption = new CmdLineOption("Generate just the 128x128 app icon", null, "app");

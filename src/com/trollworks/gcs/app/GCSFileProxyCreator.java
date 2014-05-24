@@ -13,9 +13,9 @@ package com.trollworks.gcs.app;
 
 import com.trollworks.gcs.common.Workspace;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
-import com.trollworks.toolkit.ui.menu.file.FileProxy;
-import com.trollworks.toolkit.ui.menu.file.FileProxyCreator;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
+import com.trollworks.toolkit.utility.FileProxy;
+import com.trollworks.toolkit.utility.FileProxyCreator;
 
 import java.io.File;
 import java.io.IOException;

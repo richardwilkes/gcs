@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.common;
 
+import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.io.SafeFileUpdater;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
@@ -18,7 +19,6 @@ import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.ui.menu.edit.Undoable;
 import com.trollworks.toolkit.ui.widget.DataModifiedListener;
-import com.trollworks.toolkit.utility.Debug;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.UniqueID;
 import com.trollworks.toolkit.utility.VersionException;
@@ -123,7 +123,7 @@ public abstract class DataFile implements Undoable {
 				transaction.abort();
 			}
 		} catch (Exception exception) {
-			Debug.diagnoseLoadAndSave(exception);
+			Log.error(exception);
 			transaction.abort();
 		}
 		return success;

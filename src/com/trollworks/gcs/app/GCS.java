@@ -25,9 +25,10 @@ import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.Fonts;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.menu.file.ExportToCommand;
-import com.trollworks.toolkit.ui.menu.file.FileType;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.utility.BundleInfo;
+import com.trollworks.toolkit.utility.FileProxyCreator;
+import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.LaunchProxy;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
@@ -106,6 +107,7 @@ public class GCS {
 	private static final CmdLineOption	PNG_OPTION				= new CmdLineOption(PNG_OPTION_DESCRIPTION, null, "png");									//$NON-NLS-1$
 	private static final CmdLineOption	SIZE_OPTION				= new CmdLineOption(SIZE_OPTION_DESCRIPTION, "SIZE", "paper");								//$NON-NLS-1$ //$NON-NLS-2$
 	private static final CmdLineOption	MARGIN_OPTION			= new CmdLineOption(MARGIN_OPTION_DESCRIPTION, "MARGINS", "margins");						//$NON-NLS-1$ //$NON-NLS-2$
+	private static final String			REFERENCE_URL			= "http://gcs.trollworks.com";																//$NON-NLS-1$
 
 	/**
 	 * The main entry point for the character sheet.
@@ -147,15 +149,23 @@ public class GCS {
 		GCSFonts.register();
 		Fonts.loadFromPreferences();
 		App.setAboutPanel(AboutPanel.class);
-		GCSFileProxyCreator fileProxyCreator = new GCSFileProxyCreator();
-		FileType.register(GURPSCharacter.EXTENSION, GCSImages.getCharacterSheetDocumentIcons(), SHEET_DESCRIPTION, fileProxyCreator, true);
-		FileType.register(AdvantageList.EXTENSION, GCSImages.getAdvantagesDocumentIcons(), ADVANTAGES_LIBRARY_DESCRIPTION, fileProxyCreator, true);
-		FileType.register(EquipmentList.EXTENSION, GCSImages.getEquipmentDocumentIcons(), EQUIPMENT_LIBRARY_DESCRIPTION, fileProxyCreator, true);
-		FileType.register(SkillList.EXTENSION, GCSImages.getSkillsDocumentIcons(), SKILLS_LIBRARY_DESCRIPTION, fileProxyCreator, true);
-		FileType.register(SpellList.EXTENSION, GCSImages.getSpellsDocumentIcons(), SPELLS_LIBRARY_DESCRIPTION, fileProxyCreator, true);
-		FileType.register(Template.EXTENSION, GCSImages.getTemplateDocumentIcons(), TEMPLATE_DESCRIPTION, fileProxyCreator, true);
+		registerFileTypes(new GCSFileProxyCreator());
+	}
+
+	/**
+	 * Registers the file types the app can open.
+	 *
+	 * @param fileProxyCreator The {@link FileProxyCreator} to use.
+	 */
+	public static void registerFileTypes(FileProxyCreator fileProxyCreator) {
+		FileType.register(GURPSCharacter.EXTENSION, GCSImages.getCharacterSheetDocumentIcons(), SHEET_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true);
+		FileType.register(AdvantageList.EXTENSION, GCSImages.getAdvantagesDocumentIcons(), ADVANTAGES_LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true);
+		FileType.register(EquipmentList.EXTENSION, GCSImages.getEquipmentDocumentIcons(), EQUIPMENT_LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true);
+		FileType.register(SkillList.EXTENSION, GCSImages.getSkillsDocumentIcons(), SKILLS_LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true);
+		FileType.register(SpellList.EXTENSION, GCSImages.getSpellsDocumentIcons(), SPELLS_LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true);
+		FileType.register(Template.EXTENSION, GCSImages.getTemplateDocumentIcons(), TEMPLATE_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true);
 		// For legacy
-		FileType.register(LibraryFile.EXTENSION, GCSImages.getAdvantagesDocumentIcons(), LIBRARY_DESCRIPTION, fileProxyCreator, true);
+		FileType.register(LibraryFile.EXTENSION, GCSImages.getAdvantagesDocumentIcons(), LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true);
 	}
 
 	private static int convert(CmdLine cmdLine) {

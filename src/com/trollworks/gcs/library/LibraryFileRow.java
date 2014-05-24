@@ -12,8 +12,8 @@
 package com.trollworks.gcs.library;
 
 import com.trollworks.toolkit.ui.image.StdImage;
-import com.trollworks.toolkit.ui.menu.file.FileType;
 import com.trollworks.toolkit.ui.widget.tree.TreeRow;
+import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.PathUtils;
 
 import java.nio.file.Path;

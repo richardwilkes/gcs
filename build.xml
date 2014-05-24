@@ -100,39 +100,12 @@
 				<attribute name="bundle-license" value="Mozilla Public License 2.0"/>
 				<attribute name="bundle-copyright-owner" value="${copyright_owner}"/>
 				<attribute name="bundle-copyright-years" value="1998-${year}"/>
+				<attribute name="bundle-executable" value="${app.exe}"/>
+				<attribute name="bundle-id" value="com.trollworks.gcs"/>
+				<attribute name="bundle-signature" value="${app.signature}"/>
+				<attribute name="bundle-category" value="public.app-category.role-playing-games"/>
 			</manifest>
 		</jar>
-	</target>
-
-	<target name="build_icons" description="Packs the various iconsets into icns files">
-		<!-- Used http://convertico.org/Multi_Image_to_one_icon/ to create the .ico files. -->
-		<delete dir="${icons}/app.icns"/>
-		<exec executable="/usr/bin/iconutil" dir="${icons}">
-			<arg value="--convert"/>
-			<arg value="icns"/>
-			<arg value="app.iconset"/>
-		</exec>
-
-		<delete dir="${icons}/gcs.icns"/>
-		<exec executable="/usr/bin/iconutil" dir="${icons}">
-			<arg value="--convert"/>
-			<arg value="icns"/>
-			<arg value="gcs.iconset"/>
-		</exec>
-
-		<delete dir="${icons}/gcs.icns"/>
-		<exec executable="/usr/bin/iconutil" dir="${icons}">
-			<arg value="--convert"/>
-			<arg value="icns"/>
-			<arg value="gct.iconset"/>
-		</exec>
-
-		<delete dir="${icons}/glb.icns"/>
-		<exec executable="/usr/bin/iconutil" dir="${icons}">
-			<arg value="--convert"/>
-			<arg value="icns"/>
-			<arg value="glb.iconset"/>
-		</exec>
 	</target>
 
 	<target name="clean_bundle" description="Cleans up after a bundle build">
@@ -153,8 +126,7 @@
 		<property unless:true="${platform.mac}" name="app.icons" value="${support}"/>
 		<property name="app.jre" value="${support}/jre"/>
 		<property name="app.jars" value="${support}/jars"/>
-		<property name="samples" value="${dist.root}/samples"/>
-		<property name="data" value="${dist.root}/data"/>
+		<property name="data" value="${dist.root}/Library"/>
 
 		<!-- Copy the launcher. -->
 		<mkdir dir="${app.dir}"/>
@@ -179,6 +151,13 @@
 			<arg value="${app.icons}"/>
 		</java>
 
+		<!-- Create the Info.plist and PkgInfo files. -->
+		<mkdir if:true="${platform.mac}" dir="${mac.bundle}"/>
+		<java if:true="${platform.mac}" classpath="${app.jars}/${app}-${primary_version}.jar" classname="com.trollworks.gcs.app.GCSInfoPlistCreator">
+			<arg value="${mac.bundle}/Info.plist"/>
+		</java>
+		<echo if:true="${platform.mac}" message="APPL${app.signature}" file="${mac.bundle}/PkgInfo"/>
+
 		<!-- Extract the JRE. -->
 		<ant dir="../toolkit" target="jre" inheritall="no">
 			<property name="platform.mac" value="${platform.mac}"/>
@@ -187,32 +166,13 @@
 			<property name="support" location="${support}"/>
 		</ant>
 
-		<!-- Copy the Mac bundle information. -->
-		<copy if:true="${platform.mac}" file="launcher/${platform}/Info.plist" todir="${mac.bundle}">
-			<filterset>
-				<filter token="APP_EXE" value="${app.exe}"/>
-				<filter token="APP_NAME" value="${app_name}"/>
-				<filter token="APP_VERSION" value="${primary_version}"/>
-				<filter token="APP_SIGNATURE" value="${app.signature}"/>
-				<filter token="COPYRIGHT_YEAR" value="${year}"/>
-				<filter token="COPYRIGHT_OWNER" value="${copyright_owner}"/>
-			</filterset>
-		</copy>
-		<echo if:true="${platform.mac}" message="APPL${app.signature}" file="${mac.bundle}/PkgInfo"/>
-
 		<!-- Copy the license. -->
 		<copy file="license.html" todir="${dist.root}"/>
-
-		<!-- Copy the samples. -->
-		<mkdir dir="${samples}"/>
-		<copy todir="${samples}">
-			<fileset dir="samples"/>
-		</copy>
 
 		<!-- Copy the database. -->
 		<mkdir dir="${data}"/>
 		<copy todir="${data}">
-			<fileset dir="data"/>
+			<fileset dir="Library"/>
 		</copy>
 
 		<!-- Create the zip file. Using native implementation to preserve execution bits on unix-like OS's. -->

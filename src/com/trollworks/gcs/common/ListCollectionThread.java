@@ -14,7 +14,7 @@ package com.trollworks.gcs.common;
 import com.trollworks.toolkit.collections.Stack;
 import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.ui.App;
-import com.trollworks.toolkit.ui.menu.file.FileType;
+import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.PathUtils;
 
 import java.awt.EventQueue;
