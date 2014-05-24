@@ -1648,14 +1648,14 @@
 			<category>Esoteric</category>
 		</categories>
 		<prereq_list all="yes">
-			<advantage_prereq has="yes">
+			<skill_prereq has="yes">
 				<name compare="is">meditation</name>
-				<notes compare="is anything"></notes>
-			</advantage_prereq>
-			<advantage_prereq has="yes">
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+			<skill_prereq has="yes">
 				<name compare="is">breath control</name>
-				<notes compare="is anything"></notes>
-			</advantage_prereq>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
 			<advantage_prereq has="yes">
 				<name compare="is">trained by a master</name>
 				<notes compare="is anything"></notes>
