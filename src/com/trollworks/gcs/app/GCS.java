@@ -27,6 +27,7 @@ import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.menu.file.ExportToCommand;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.utility.BundleInfo;
+import com.trollworks.toolkit.utility.Dice;
 import com.trollworks.toolkit.utility.FileProxyCreator;
 import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.LaunchProxy;
@@ -116,6 +117,7 @@ public class GCS {
 	 */
 	public static void main(String[] args) {
 		App.setup(GCS.class);
+		Dice.setAssumedSideCount(6);
 		CmdLine cmdLine = new CmdLine();
 		cmdLine.addOptions(HTML_OPTION, HTML_TEMPLATE_OPTION, PDF_OPTION, PNG_OPTION, SIZE_OPTION, MARGIN_OPTION);
 		cmdLine.processArguments(args);
