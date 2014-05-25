@@ -187,11 +187,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	}
 
 	private static void adjustOptionalDiceRulesProperty(boolean use) {
-		if (use) {
-			System.setProperty(Dice.EXTRA_DICE_FROM_MODIFIERS, Boolean.TRUE.toString());
-		} else {
-			System.clearProperty(Dice.EXTRA_DICE_FROM_MODIFIERS);
-		}
+		Dice.setConvertModifiersToExtraDice(use);
 	}
 
 	/** @return Whether the optional dice rules from B269 are in use. */
