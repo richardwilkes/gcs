@@ -12,9 +12,9 @@
 package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -23,7 +23,7 @@ import java.awt.event.KeyEvent;
 /** Provides the "Increment" command. */
 public class IncrementCommand extends Command {
 	@Localize("Increment")
-	private static String INCREMENT;
+	private static String					INCREMENT;
 
 	static {
 		Localization.initialize();
