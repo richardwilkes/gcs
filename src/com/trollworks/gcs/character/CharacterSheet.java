@@ -22,7 +22,6 @@ import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.equipment.EquipmentOutline;
-import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillColumn;
@@ -209,7 +208,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 	/** Synchronizes the display with the underlying model. */
 	public void rebuild() {
-		Component focus = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
+		KeyboardFocusManager focusMgr = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+		Component focus = focusMgr.getPermanentFocusOwner();
 		int firstRow = 0;
 		String focusKey = null;
 		PageAssembler pageAssembler;
@@ -230,7 +230,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			focus = outline.getRealOutline();
 		}
 
-		UIUtilities.getAncestorOfType(this, JumpToSearchTarget.class).jumpToSearchField();
+		focusMgr.clearFocusOwner();
 
 		// Make sure our primary outlines exist
 		createAdvantageOutline();
