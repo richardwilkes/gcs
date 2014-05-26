@@ -8687,12 +8687,6 @@
 			<category>Advantage</category>
 			<category>Language</category>
 		</categories>
-		<prereq_list all="yes">
-			<advantage_prereq has="no">
-				<name compare="is">Language Talent</name>
-				<notes compare="is anything"></notes>
-			</advantage_prereq>
-		</prereq_list>
 	</advantage>
 	<advantage version="2">
 		<name>Language: @Language@</name>
