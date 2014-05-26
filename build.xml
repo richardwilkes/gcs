@@ -46,7 +46,6 @@
 	<property name="build_app_bundle" value="${dist_root}/${app_name}.app/Contents"/>
 	<property name="bundle_res" value="${build_app_bundle}/Resources"/>
 	<property name="java_bundle_dir" value="${build_app_bundle}/Java"/>
-	<property name="icons" value="graphics/icons"/>
 
 	<tstamp>
 		<format property="version" pattern="${primary_version}.yyyyMMddHHmmss"/>
@@ -195,7 +194,7 @@
 			<property name="app.dir" location="launcher/${platform}"/>
 			<property name="app.name" value="${app_name}"/>
 			<property name="app.exe" value="${app.exe}"/>
-			<property if:true="${platform.windows}" name="app.icon.dir" location="${icons}"/>
+			<property if:true="${platform.windows}" name="app.icon.dir" location="${app.icons}"/>
 			<property if:true="${platform.linux}" name="app.categories" value="Game;Roleplaying;Utility"/>
 			<property if:true="${platform.linux}" name="app.keywords" value="Roleplaying"/>
 		</ant>
