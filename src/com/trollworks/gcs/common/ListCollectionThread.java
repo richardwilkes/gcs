@@ -15,6 +15,7 @@ import com.trollworks.toolkit.collections.Stack;
 import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.utility.FileType;
+import com.trollworks.toolkit.utility.NumericComparator;
 import com.trollworks.toolkit.utility.PathUtils;
 
 import java.awt.EventQueue;
@@ -26,11 +27,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 
 /** A thread that periodically updates the set of available list files. */
-public class ListCollectionThread extends Thread implements FileVisitor<Path> {
+public class ListCollectionThread extends Thread implements FileVisitor<Path>, Comparator<Object> {
 	private static final ListCollectionThread	INSTANCE;
 	private Path								mListDir;
 	private List<Object>						mLists;
@@ -164,11 +167,27 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path> {
 		if (exception != null) {
 			Log.error(exception);
 		}
+		Collections.sort(mCurrent, this);
 		List<Object> restoring = mStack.pop();
 		if (mCurrent.size() > 1) {
 			restoring.add(mCurrent);
 		}
 		mCurrent = restoring;
 		return FileVisitResult.CONTINUE;
+	}
+
+	@Override
+	public int compare(Object o1, Object o2) {
+		return NumericComparator.compareStrings(getName(o1), getName(o2));
+	}
+
+	private static final String getName(Object obj) {
+		if (obj instanceof Path) {
+			return ((Path) obj).getFileName().toString();
+		}
+		if (obj instanceof List) {
+			return ((List<?>) obj).get(0).toString();
+		}
+		return ""; //$NON-NLS-1$
 	}
 }
