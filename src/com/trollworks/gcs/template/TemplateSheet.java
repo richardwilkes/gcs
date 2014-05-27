@@ -24,6 +24,7 @@ import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
@@ -31,7 +32,6 @@ import com.trollworks.toolkit.ui.widget.outline.OutlineHeader;
 import com.trollworks.toolkit.ui.widget.outline.OutlineSyncer;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowSelection;
-import com.trollworks.toolkit.utility.Debug;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.notification.BatchNotifierTarget;
 
@@ -264,7 +264,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 				}
 			}
 		} catch (Exception exception) {
-			assert false : Debug.toString(exception);
+			Log.error(exception);
 		}
 
 		if (!mDragWasAcceptable) {
