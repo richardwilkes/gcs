@@ -21,7 +21,7 @@ public class WeaponDisplayRow extends Row {
 
 	/**
 	 * Creates a new weapon display row.
-	 * 
+	 *
 	 * @param weapon The weapon to display.
 	 */
 	public WeaponDisplayRow(WeaponStats weapon) {
@@ -60,6 +60,6 @@ public class WeaponDisplayRow extends Row {
 
 	@Override
 	public void setData(Column column, Object data) {
-		assert false : "setData() is not supported"; //$NON-NLS-1$
+		// Not used
 	}
 }
