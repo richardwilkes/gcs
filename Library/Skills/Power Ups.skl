@@ -1,0 +1,879 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<skill_list unique_id="hvpn4a0g:-dxt7orfd29yh" version="1">
+	<skill version="2">
+		<name>Annihilating Weapon</name>
+		<specialization>@Melee Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue6</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>Imbue</category>
+			<category>Melee</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Arching Shot</name>
+		<specialization>@Ranged Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue6</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>Imbue</category>
+			<category>Ranged</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Bank Shot</name>
+		<specialization>@Ranged Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue6</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>Imbue</category>
+			<category>Ranged</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Binding Shot</name>
+		<specialization>@Ranged Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue11</reference>
+		<categories>
+			<category>Imbue</category>
+			<category>Ranged</category>
+			<category>Transformation</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Burning Strike</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue11</reference>
+		<categories>
+			<category>General</category>
+			<category>Imbue</category>
+			<category>Transformation</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Chilling Strike</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue11</reference>
+		<categories>
+			<category>General</category>
+			<category>Imbue</category>
+			<category>Transformation</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Conic Blast</name>
+		<specialization>@Ranged Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue6</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>Imbue</category>
+			<category>Ranged</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Continuing Attack</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue7</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>General</category>
+			<category>Imbue</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Corrosive Strike</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue11</reference>
+		<categories>
+			<category>General</category>
+			<category>Imbue</category>
+			<category>Transformation</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Crippling Blow</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue7</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>General</category>
+			<category>Imbue</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Crushing Strike</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue11</reference>
+		<categories>
+			<category>General</category>
+			<category>Imbue</category>
+			<category>Transformation</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 1</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Cutting Strike</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue12</reference>
+		<categories>
+			<category>General</category>
+			<category>Imbue</category>
+			<category>Transformation</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Dancing Weapon</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue7</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>General</category>
+			<category>Imbue</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Dazzling Display</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue12</reference>
+		<categories>
+			<category>General</category>
+			<category>Imbue</category>
+			<category>Transformation</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Deafening Display</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue12</reference>
+		<categories>
+			<category>General</category>
+			<category>Imbue</category>
+			<category>Transformation</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 1</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Drugged Weapon</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue7</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>General</category>
+			<category>Imbue</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Electric Weapon</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue7</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>General</category>
+			<category>Imbue</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Envenomed Weapon</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue8</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>General</category>
+			<category>Imbue</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Far Shot</name>
+		<specialization>@Ranged Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue8</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>Imbue</category>
+			<category>Ranged</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Fatiguing Strike</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue12</reference>
+		<categories>
+			<category>General</category>
+			<category>Imbue</category>
+			<category>Transformation</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Forceful Blow</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue8</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>General</category>
+			<category>Imbue</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 1</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Ghostly Weapon</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue8</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>General</category>
+			<category>Imbue</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 1</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Guided Weapon</name>
+		<specialization>@Ranged Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue8</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>Imbue</category>
+			<category>Ranged</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Homing Weapon</name>
+		<specialization>@Ranged Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue9</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>Imbue</category>
+			<category>Ranged</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Impaling Strike</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue12</reference>
+		<categories>
+			<category>General</category>
+			<category>Imbue</category>
+			<category>Transformation</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Incendiary Weapon</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue9</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>General</category>
+			<category>Imbue</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Multi-Shot</name>
+		<specialization>@Ranged Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue9</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>Imbue</category>
+			<category>Ranged</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Penetrating Strike</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue9</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>General</category>
+			<category>Imbue</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Piercing Strike</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue13</reference>
+		<categories>
+			<category>General</category>
+			<category>Imbue</category>
+			<category>Transformation</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Project Blow</name>
+		<specialization>@Melee Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue9</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>Imbue</category>
+			<category>Melee</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Shattershot</name>
+		<specialization>@Ranged Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue9</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>Imbue</category>
+			<category>Ranged</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Shockwave</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue10</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>General</category>
+			<category>Imbue</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Stealthy Attack</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue10</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>General</category>
+			<category>Imbue</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 1</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Strike of Negation</name>
+		<specialization>@Melee Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue13</reference>
+		<categories>
+			<category>Imbue</category>
+			<category>Melee</category>
+			<category>Transformation</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Stupefying Blow</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue10</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>General</category>
+			<category>Imbue</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Sudden Death</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue10</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>General</category>
+			<category>Imbue</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Supreme Control</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue10</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>General</category>
+			<category>Imbue</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 1</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Telescoping Weapon</name>
+		<specialization>@Melee Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue10</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>Imbue</category>
+			<category>Melee</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 1</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Toxic Strike</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue13</reference>
+		<categories>
+			<category>General</category>
+			<category>Imbue</category>
+			<category>Transformation</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 1</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Traumatic Blow</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue11</reference>
+		<categories>
+			<category>Enhancement</category>
+			<category>General</category>
+			<category>Imbue</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 2</notes>
+			</advantage_prereq>
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 1</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Vampiric Weapon</name>
+		<specialization>@Melee Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue13</reference>
+		<categories>
+			<category>Imbue</category>
+			<category>Melee</category>
+			<category>Transformation</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+	<skill version="2">
+		<name>Withering Strike</name>
+		<specialization>@General Weapon Skill@</specialization>
+		<difficulty>DX/VH</difficulty>
+		<points>1</points>
+		<reference>Imbue13</reference>
+		<categories>
+			<category>General</category>
+			<category>Imbue</category>
+			<category>Transformation</category>
+		</categories>
+		<prereq_list all="no">
+			<advantage_prereq has="yes">
+				<name compare="is">Imbue</name>
+				<notes compare="contains">Imbue level 3</notes>
+			</advantage_prereq>
+		</prereq_list>
+	</skill>
+</skill_list>

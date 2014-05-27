@@ -1,0 +1,1269 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="g2gmtmpp:11xpfirww9a9u" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes" type="metatrait">
+			<name>Woodcutter</name>
+			<reference>HF118, HF4E50</reference>
+			<notes>[25 points]</notes>
+			<advantage_container version="2" open="yes" type="metatrait">
+				<name>Attributes</name>
+				<advantage version="2">
+					<name>Increased Strength</name>
+					<type>Physical</type>
+					<levels>1</levels>
+					<points_per_level>10</points_per_level>
+					<modifier version="1" enabled="no">
+						<name>No Fine Manipulators</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B15</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Size</name>
+						<cost type="percentage">-10</cost>
+						<levels>1</levels>
+						<affects>total</affects>
+						<reference>B15</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Super-Effort</name>
+						<cost type="percentage">300</cost>
+						<affects>total</affects>
+						<reference>Sup24</reference>
+					</modifier>
+					<reference>B14</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>st</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+			</advantage_container>
+			<advantage_container version="2" open="yes" type="metatrait">
+				<name>Secondary Characteristics</name>
+			</advantage_container>
+			<advantage_container version="2" open="yes" type="metatrait">
+				<name>Class Advantages</name>
+				<advantage_container version="2" open="yes" type="metatrait">
+					<name>10 Points Chosen From:</name>
+					<advantage version="2">
+						<name>Extra Fatigue Points</name>
+						<type>Physical</type>
+						<levels>1</levels>
+						<points_per_level>3</points_per_level>
+						<reference>B16</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>fp</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Increased Perception</name>
+						<type>Mental/Physical</type>
+						<levels>1</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B16</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>perception</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Talent (Animal Friend)</name>
+						<type>Mental</type>
+						<levels>1</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B90</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="contains">animal handling</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">falconry</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">packing</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">riding</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">teamster</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">veterinary</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Absolute Direction</name>
+						<type>Mental/Physical</type>
+						<base_points>5</base_points>
+						<modifier version="1" enabled="no">
+							<name>Requires signal</name>
+							<cost type="percentage">-20</cost>
+							<affects>total</affects>
+							<reference>B34</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>3D Spatial Sense</name>
+							<cost type="points">5</cost>
+							<affects>total</affects>
+							<reference>B34</reference>
+							<skill_bonus>
+								<name compare="starts with">piloting</name>
+								<specialization compare="is anything"></specialization>
+								<amount>1</amount>
+							</skill_bonus>
+							<skill_bonus>
+								<name compare="is">aerobatics</name>
+								<specialization compare="is anything"></specialization>
+								<amount>2</amount>
+							</skill_bonus>
+							<skill_bonus>
+								<name compare="is">free fall</name>
+								<specialization compare="is anything"></specialization>
+								<amount>2</amount>
+							</skill_bonus>
+							<skill_bonus>
+								<name compare="is">navigation</name>
+								<specialization compare="is">hyperspace</specialization>
+								<amount>2</amount>
+							</skill_bonus>
+							<skill_bonus>
+								<name compare="is">navigation</name>
+								<specialization compare="is">space</specialization>
+								<amount>2</amount>
+							</skill_bonus>
+						</modifier>
+						<reference>B34</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">body sense</name>
+							<specialization compare="is anything"></specialization>
+							<amount>3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">navigation</name>
+							<specialization compare="is">air</specialization>
+							<amount>3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">navigation</name>
+							<specialization compare="is">land</specialization>
+							<amount>3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">navigation</name>
+							<specialization compare="is">sea</specialization>
+							<amount>3</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Fearlessness</name>
+						<type>Mental</type>
+						<levels>1</levels>
+						<points_per_level>2</points_per_level>
+						<reference>B55</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Fit</name>
+						<type>Physical</type>
+						<base_points>5</base_points>
+						<reference>B55</reference>
+						<notes>+1 to all HT rolls to stay conscious, avoid death, resist disease, resist poison; recover FP at twice the normal rate (but not FP spent for spells or psi powers)</notes>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Talent (Green Thumb)</name>
+						<type>Mental</type>
+						<levels>1</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B90</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="contains">biology</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">farming</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">gardening</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">herb lore</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">naturalist</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>High Pain Threshold</name>
+						<type>Physical</type>
+						<base_points>10</base_points>
+						<reference>B59</reference>
+						<notes>Never suffer shock penalties when injured; +3 on all HT rolls to avoid knockdown and stunning; +3 to resist torture</notes>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+				</advantage_container>
+			</advantage_container>
+			<advantage_container version="2" open="yes" type="metatrait">
+				<name>Class Disadvantages</name>
+				<advantage_container version="2" open="yes" type="metatrait">
+					<name>-15 Points Chosen From:</name>
+					<advantage version="2">
+						<name>Bad Back (Mild)</name>
+						<type>Physical</type>
+						<base_points>-15</base_points>
+						<reference>B123</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Bad Back (Severe)</name>
+						<type>Physical</type>
+						<base_points>-25</base_points>
+						<reference>B123</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Claustrophobia (Enclosed Spaces)</name>
+						<type>Mental</type>
+						<base_points>-15</base_points>
+						<cr>12</cr>
+						<reference>B149</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Demophobia (Crowds)</name>
+						<type>Mental</type>
+						<base_points>-15</base_points>
+						<cr>12</cr>
+						<reference>B149</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Dull</name>
+						<type>Mental</type>
+						<base_points>-1</base_points>
+						<reference>B164</reference>
+						<categories>
+							<category>Quirk</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Hidebound</name>
+						<type>Physical</type>
+						<base_points>-5</base_points>
+						<reference>B138</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Loner</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<cr adj="reaction_penalty">12</cr>
+						<reference>B142</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Uncongenial</name>
+						<type>Mental</type>
+						<base_points>-1</base_points>
+						<reference>B164</reference>
+						<categories>
+							<category>Quirk</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Low Empathy</name>
+						<type>Mental</type>
+						<base_points>-20</base_points>
+						<reference>B142</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">acting</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">carousing</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">criminology</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">detect lies</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">diplomacy</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">enthrallment</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">fast-talk</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">interrogation</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">leadership</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">merchant</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">politics</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">psychology</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">savoir-faire</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">sex appeal</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">sociology</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">streetwise</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+						<prereq_list all="yes">
+							<advantage_prereq has="no">
+								<name compare="is">oblivious</name>
+								<notes compare="is anything"></notes>
+							</advantage_prereq>
+							<advantage_prereq has="no">
+								<name compare="is">callous</name>
+								<notes compare="is anything"></notes>
+							</advantage_prereq>
+							<advantage_prereq has="no">
+								<name compare="is">empathy</name>
+								<notes compare="is anything"></notes>
+							</advantage_prereq>
+						</prereq_list>
+					</advantage>
+					<advantage version="2">
+						<name>Odious Personal Habit</name>
+						<type>Physical</type>
+						<base_points>-5</base_points>
+						<reference>B22</reference>
+						<notes>@Habit@; -1 Reaction</notes>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Odious Personal Habit</name>
+						<type>Physical</type>
+						<base_points>-10</base_points>
+						<reference>B22</reference>
+						<notes>@Habit@; -2 Reaction</notes>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Odious Personal Habit</name>
+						<type>Physical</type>
+						<base_points>-15</base_points>
+						<reference>B22</reference>
+						<notes>@Habit@; -3 Reaction</notes>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth (Debt)</name>
+						<type>Social</type>
+						<levels>1</levels>
+						<points_per_level>-1</points_per_level>
+						<reference>B26</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth (Poor)</name>
+						<type>Social</type>
+						<base_points>-15</base_points>
+						<reference>B25</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth (Struggling)</name>
+						<type>Social</type>
+						<base_points>-10</base_points>
+						<reference>B25</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth (Dead Broke)</name>
+						<type>Social</type>
+						<base_points>-25</base_points>
+						<reference>B25</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Shyness (Mild)</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<reference>B154</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">acting</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">carousing</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">diplomacy</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">fast-talk</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">intimidation</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">leadership</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">merchant</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">panhandling</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">performance</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">politics</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">public speaking</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">savoir-faire</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">sex appeal</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">streetwise</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">teaching</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Shyness (Severe)</name>
+						<type>Mental</type>
+						<base_points>-10</base_points>
+						<reference>B154</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">acting</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">carousing</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">diplomacy</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">fast-talk</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">intimidation</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">leadership</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">merchant</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">panhandling</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">performance</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">politics</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">public speaking</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">savoir-faire</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">sex appeal</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">streetwise</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">teaching</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Shyness (Crippling)</name>
+						<type>Mental</type>
+						<base_points>-20</base_points>
+						<reference>B154</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">acting</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">carousing</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">diplomacy</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">fast-talk</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">intimidation</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">leadership</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">merchant</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">panhandling</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">performance</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">politics</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">public speaking</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">savoir-faire</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">sex appeal</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">streetwise</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">teaching</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Social Stigma (Uneducated)</name>
+						<type>Social</type>
+						<base_points>-5</base_points>
+						<reference>B156</reference>
+						<notes>-1 Reaction</notes>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Status (@Description@)</name>
+						<type>Social</type>
+						<levels>1</levels>
+						<points_per_level>-5</points_per_level>
+						<reference>B28</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Workaholic</name>
+						<type>Physical</type>
+						<base_points>-5</base_points>
+						<reference>B162</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+				</advantage_container>
+			</advantage_container>
+		</advantage_container>
+	</advantage_list>
+	<skill_list>
+		<skill_container version="2" open="yes">
+			<name>Woodcutter</name>
+			<skill_container version="2" open="yes">
+				<name>Primary Skills</name>
+				<skill version="2">
+					<name>Axe/Mace</name>
+					<difficulty>DX/A</difficulty>
+					<points>4</points>
+					<reference>B208</reference>
+					<categories>
+						<category>Combat/Weapon</category>
+						<category>Melee Combat</category>
+					</categories>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Two-Handed Axe/Mace</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Flail</name>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Professional Skill</name>
+					<specialization>Forestry</specialization>
+					<difficulty>IQ/A</difficulty>
+					<points>4</points>
+					<reference>B215</reference>
+					<categories>
+						<category>Knowledge</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+			</skill_container>
+			<skill_container version="2" open="yes">
+				<name>Secondary Skills</name>
+				<skill version="2">
+					<name>Survival</name>
+					<specialization>Woodlands</specialization>
+					<difficulty>Per/A</difficulty>
+					<points>2</points>
+					<reference>B223</reference>
+					<categories>
+						<category>Outdoor/Exploration</category>
+					</categories>
+					<default>
+						<type>Per</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Naturalist</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Survival</name>
+						<specialization>Arctic</specialization>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Survival</name>
+						<specialization>Desert</specialization>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Survival</name>
+						<specialization>Island/Beach</specialization>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Survival</name>
+						<specialization>Jungle</specialization>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Survival</name>
+						<specialization>Mountain</specialization>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Survival</name>
+						<specialization>Plains</specialization>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Survival</name>
+						<specialization>Swampland</specialization>
+						<modifier>-3</modifier>
+					</default>
+				</skill>
+				<skill_container version="2" open="yes">
+					<name>5 Points Chosen From:</name>
+					<skill version="2">
+						<name>Area Knowledge</name>
+						<specialization>Local Forest</specialization>
+						<difficulty>IQ/E</difficulty>
+						<points>1</points>
+						<reference>B176</reference>
+						<categories>
+							<category>Everyman</category>
+							<category>Knowledge</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-4</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Geography</name>
+							<specialization>Lacal Forest</specialization>
+							<modifier>-3</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Artist</name>
+						<specialization>Woodworking</specialization>
+						<difficulty>IQ/H</difficulty>
+						<points>1</points>
+						<reference>B179</reference>
+						<categories>
+							<category>Arts/Entertainment</category>
+							<category>Craft</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-6</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Carpentry</name>
+							<modifier>-3</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Carpentry</name>
+						<difficulty>IQ/E</difficulty>
+						<points>1</points>
+						<reference>B183</reference>
+						<categories>
+							<category>Craft</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-4</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Merchant</name>
+						<difficulty>IQ/A</difficulty>
+						<points>1</points>
+						<reference>B209</reference>
+						<categories>
+							<category>Business</category>
+							<category>Social</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-5</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Finance</name>
+							<modifier>-6</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Market Analysis</name>
+							<modifier>-4</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Naturalist</name>
+						<specialization>Earthlike</specialization>
+						<tech_level/>
+						<difficulty>IQ/H</difficulty>
+						<points>1</points>
+						<reference>B211</reference>
+						<categories>
+							<category>Animal</category>
+							<category>Natural Science</category>
+							<category>Outdoor/Exploration</category>
+							<category>Plant</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-6</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Biology</name>
+							<modifier>-3</modifier>
+						</default>
+					</skill>
+				</skill_container>
+			</skill_container>
+			<skill_container version="2" open="yes">
+				<name>Background Skills</name>
+				<skill_container version="2" open="yes">
+					<name>5 Points Chosen From:</name>
+					<skill version="2">
+						<name>Armoury</name>
+						<specialization>Missile Weapons</specialization>
+						<tech_level/>
+						<difficulty>IQ/A</difficulty>
+						<points>1</points>
+						<reference>B178</reference>
+						<categories>
+							<category>Military</category>
+							<category>Repair/Maintainance</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-5</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Engineer</name>
+							<specialization>Missile Weapons</specialization>
+							<modifier>-4</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Brawling</name>
+						<difficulty>DX/E</difficulty>
+						<points>1</points>
+						<reference>B182</reference>
+						<categories>
+							<category>Combat/Weapon</category>
+							<category>Melee Combat</category>
+						</categories>
+						<weapon_bonus>
+							<name compare="is">Brawling</name>
+							<specialization compare="is anything"></specialization>
+							<level compare="at_least">2</level>
+							<amount per_level="yes">1</amount>
+						</weapon_bonus>
+					</skill>
+					<skill version="2">
+						<name>Bow</name>
+						<difficulty>DX/A</difficulty>
+						<points>1</points>
+						<reference>B182</reference>
+						<categories>
+							<category>Combat/Weapon</category>
+							<category>Ranged Combat</category>
+						</categories>
+						<default>
+							<type>DX</type>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Camouflage</name>
+						<difficulty>IQ/E</difficulty>
+						<points>1</points>
+						<reference>B183</reference>
+						<categories>
+							<category>Military</category>
+							<category>Outdoor/Exploration</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-4</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Survival</name>
+							<modifier>-2</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Climbing</name>
+						<encumbrance_penalty_multiplier>1</encumbrance_penalty_multiplier>
+						<difficulty>DX/A</difficulty>
+						<points>1</points>
+						<reference>B183</reference>
+						<categories>
+							<category>Athletic</category>
+							<category>Criminal/Street</category>
+							<category>Outdoor/Exploration</category>
+						</categories>
+						<default>
+							<type>DX</type>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>First Aid</name>
+						<tech_level/>
+						<difficulty>IQ/E</difficulty>
+						<points>1</points>
+						<reference>B195</reference>
+						<categories>
+							<category>Everyman</category>
+							<category>Medical</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-4</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Esoteric Medicine</name>
+							<modifier>0</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Physician</name>
+							<modifier>0</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Veterinary</name>
+							<modifier>-4</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Hiking</name>
+						<difficulty>HT/A</difficulty>
+						<points>1</points>
+						<reference>B200</reference>
+						<categories>
+							<category>Athletic</category>
+							<category>Outdoor/Exploration</category>
+						</categories>
+						<default>
+							<type>HT</type>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Knife</name>
+						<difficulty>DX/E</difficulty>
+						<points>1</points>
+						<reference>B208</reference>
+						<categories>
+							<category>Combat/Weapon</category>
+							<category>Melee Combat</category>
+						</categories>
+						<default>
+							<type>Skill</type>
+							<name>Force Sword</name>
+							<modifier>-3</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Main-Gauche</name>
+							<modifier>-3</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Shortsword</name>
+							<modifier>-3</modifier>
+						</default>
+						<default>
+							<type>DX</type>
+							<modifier>-4</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Leatherworking</name>
+						<difficulty>DX/E</difficulty>
+						<points>1</points>
+						<reference>B205</reference>
+						<categories>
+							<category>Craft</category>
+						</categories>
+						<default>
+							<type>DX</type>
+							<modifier>-4</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Professional Skill</name>
+						<specialization>Charcoal Burning</specialization>
+						<difficulty>IQ/A</difficulty>
+						<points>1</points>
+						<reference>B215</reference>
+						<categories>
+							<category>Knowledge</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Stealth</name>
+						<encumbrance_penalty_multiplier>1</encumbrance_penalty_multiplier>
+						<difficulty>DX/A</difficulty>
+						<points>1</points>
+						<reference>B222</reference>
+						<categories>
+							<category>Criminal/Street</category>
+							<category>Police</category>
+							<category>Spy</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-5</modifier>
+						</default>
+						<default>
+							<type>DX</type>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Tracking</name>
+						<difficulty>Per/A</difficulty>
+						<points>1</points>
+						<reference>B226</reference>
+						<categories>
+							<category>Outdoor/Exploration</category>
+						</categories>
+						<default>
+							<type>Per</type>
+							<modifier>-5</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Naturalist</name>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Traps</name>
+						<tech_level/>
+						<difficulty>IQ/A</difficulty>
+						<points>1</points>
+						<reference>B226</reference>
+						<categories>
+							<category>Criminal/Street</category>
+							<category>Military</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-5</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Lockpicking</name>
+							<modifier>-3</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Weather Sense</name>
+						<tech_level/>
+						<difficulty>IQ/A</difficulty>
+						<points>1</points>
+						<reference>B209</reference>
+						<categories>
+							<category>Everyman</category>
+							<category>Outdoor/Exploration</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+				</skill_container>
+			</skill_container>
+		</skill_container>
+	</skill_list>
+</template>

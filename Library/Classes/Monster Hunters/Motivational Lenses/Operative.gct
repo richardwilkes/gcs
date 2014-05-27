@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="gnuh0san:1nn39c8y7tvgm" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes">
+			<name>Operative</name>
+			<advantage_container version="2" open="yes">
+				<name>Advantages</name>
+				<advantage_container version="2" open="yes">
+					<name>30 points chosen from</name>
+					<advantage version="2">
+						<name>Patron</name>
+						<type>Social</type>
+						<base_points>10</base_points>
+						<modifier version="1">
+							<name>Heavy Influence</name>
+							<cost type="percentage">100</cost>
+							<affects>total</affects>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Large Budget</name>
+							<cost type="percentage">100</cost>
+							<affects>total</affects>
+						</modifier>
+						<modifier version="1">
+							<name>Loaded Budget</name>
+							<cost type="percentage">200</cost>
+							<affects>total</affects>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Modest Budget</name>
+							<cost type="percentage">0</cost>
+							<affects>total</affects>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Light Influence</name>
+							<cost type="percentage">0</cost>
+							<affects>total</affects>
+						</modifier>
+						<reference>MH1:24</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Use remaining points on template options</name>
+						<type>Physical</type>
+					</advantage>
+				</advantage_container>
+			</advantage_container>
+			<advantage_container version="2" open="yes">
+				<name>Disadvantages</name>
+				<advantage version="2">
+					<name>Duty (@Duty@)</name>
+					<type>Social</type>
+					<modifier version="1" enabled="no">
+						<name>FR: 6</name>
+						<cost type="points">-2</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>FR: 9</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1">
+						<name>FR: 12</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>FR: 15</name>
+						<cost type="points">-15</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1">
+						<name>Extremely Hazardous</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Involuntary</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Nonhazardous</name>
+						<cost type="points">5</cost>
+						<affects>total</affects>
+					</modifier>
+					<reference>B133</reference>
+					<categories>
+						<category>Disadvantage</category>
+						<category>Why we fight</category>
+					</categories>
+				</advantage>
+				<advantage_container version="2" open="yes">
+					<name>Add to template options</name>
+					<advantage version="2">
+						<name>Secret (Works for an extra-legal organization)</name>
+						<type>Social</type>
+						<modifier version="1" enabled="no">
+							<name>Serious Embarrassment</name>
+							<cost type="points">-5</cost>
+							<affects>total</affects>
+							<reference>B152</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Utter Rejection</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B152</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Imprisonment</name>
+							<cost type="points">-20</cost>
+							<affects>total</affects>
+							<reference>B152</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Possible Death</name>
+							<cost type="points">-30</cost>
+							<affects>total</affects>
+							<reference>B152</reference>
+						</modifier>
+						<reference>B152</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Sense of Duty</name>
+						<type>Mental</type>
+						<modifier version="1" enabled="no">
+							<name>Friends and Companions</name>
+							<cost type="points">-5</cost>
+							<affects>total</affects>
+							<reference>B153</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Teammates</name>
+							<cost type="points">-5</cost>
+							<affects>total</affects>
+							<reference>B153</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Individual@</name>
+							<cost type="points">-2</cost>
+							<affects>total</affects>
+							<reference>B153</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Organization</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B153</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Entire Race@</name>
+							<cost type="points">-15</cost>
+							<affects>total</affects>
+							<reference>B153</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Every Living Being</name>
+							<cost type="points">-20</cost>
+							<affects>total</affects>
+							<reference>B153</reference>
+						</modifier>
+						<reference>B153</reference>
+						<notes>You cannot have both</notes>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+				</advantage_container>
+			</advantage_container>
+		</advantage_container>
+	</advantage_list>
+</template>

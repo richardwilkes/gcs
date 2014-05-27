@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<advantage_list unique_id="hvpn9q81:1hibxq60fwpfn" version="1">
+	<advantage version="2">
+		<name>Immunity to Fast-Penta</name>
+		<type>Physical</type>
+		<base_points>1</base_points>
+		<reference>VOR59</reference>
+		<categories>
+			<category>Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Code of Honor (Vor)</name>
+		<type>Mental</type>
+		<base_points>-15</base_points>
+		<reference>VOR59</reference>
+		<categories>
+			<category>Disadvantage</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Hermaphrodite</name>
+		<type>Physical</type>
+		<reference>VOR60</reference>
+	</advantage>
+	<advantage version="2">
+		<name>Jumpsickness</name>
+		<type>Physical</type>
+		<base_points>-10</base_points>
+		<reference>VOR60</reference>
+		<categories>
+			<category>Disadvantage</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Susceptible (Fast-Penta Allergy)</name>
+		<type>Physical</type>
+		<base_points>-1</base_points>
+		<reference>VOR60</reference>
+		<notes>may be worth -15 if fast penta will be important to the campaign</notes>
+		<categories>
+			<category>Disadvantage</category>
+			<category>Quirk</category>
+		</categories>
+	</advantage>
+</advantage_list>

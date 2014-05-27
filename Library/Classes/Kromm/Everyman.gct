@@ -1,0 +1,584 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="g4rerzuk:-15gv773uj5sya" version="1">
+	<skill_list>
+		<skill_container version="2" open="yes">
+			<name>Everyman</name>
+			<skill version="2">
+				<name>Area Knowledge</name>
+				<specialization>Region</specialization>
+				<difficulty>IQ/E</difficulty>
+				<points>1</points>
+				<reference>B176</reference>
+				<categories>
+					<category>Everyman</category>
+					<category>Knowledge</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Geography</name>
+					<specialization>Region</specialization>
+					<modifier>-3</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Computer Operation</name>
+				<tech_level/>
+				<difficulty>IQ/E</difficulty>
+				<points>1</points>
+				<reference>B184</reference>
+				<categories>
+					<category>Everyman</category>
+					<category>Scholarly</category>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill_container version="2" open="yes">
+				<name>Current Affairs</name>
+				<notes>pick one of these</notes>
+				<skill version="2">
+					<name>Current Affairs</name>
+					<specialization>Business</specialization>
+					<tech_level/>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B186</reference>
+					<categories>
+						<category>Business</category>
+						<category>Everyman</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Research</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Current Affairs</name>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Current Affairs</name>
+					<specialization>Headline News</specialization>
+					<tech_level/>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B186</reference>
+					<categories>
+						<category>Everyman</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Research</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Current Affairs</name>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Current Affairs</name>
+					<specialization>High Culture</specialization>
+					<tech_level/>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B186</reference>
+					<categories>
+						<category>Arts/Entertainment</category>
+						<category>Everyman</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Research</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Current Affairs</name>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Current Affairs</name>
+					<specialization>People</specialization>
+					<tech_level/>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B186</reference>
+					<categories>
+						<category>Everyman</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Research</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Current Affairs</name>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Current Affairs</name>
+					<specialization>Politics</specialization>
+					<tech_level/>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B186</reference>
+					<categories>
+						<category>Everyman</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Research</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Current Affairs</name>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Current Affairs</name>
+					<specialization>Popular Culture</specialization>
+					<tech_level/>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B186</reference>
+					<categories>
+						<category>Arts/Entertainment</category>
+						<category>Everyman</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Research</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Current Affairs</name>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Current Affairs</name>
+					<specialization>Regional</specialization>
+					<tech_level/>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B186</reference>
+					<categories>
+						<category>Everyman</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Research</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Current Affairs</name>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Current Affairs</name>
+					<specialization>Science &amp; Technology</specialization>
+					<tech_level/>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B186</reference>
+					<categories>
+						<category>Everyman</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Research</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Current Affairs</name>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Current Affairs</name>
+					<specialization>Sports</specialization>
+					<tech_level/>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B186</reference>
+					<categories>
+						<category>Everyman</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Research</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Current Affairs</name>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Current Affairs</name>
+					<specialization>Supers</specialization>
+					<tech_level/>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>Sup35</reference>
+					<categories>
+						<category>Everyman</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+						<category>Supers</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Research</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Current Affairs</name>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Current Affairs</name>
+					<specialization>Travel</specialization>
+					<tech_level/>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B186</reference>
+					<categories>
+						<category>Everyman</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Research</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Current Affairs</name>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+			</skill_container>
+			<skill_container version="2" open="yes">
+				<name>Hobbies</name>
+				<notes>pick one or more of these</notes>
+				<skill version="2">
+					<name>Carousing</name>
+					<difficulty>HT/E</difficulty>
+					<points>1</points>
+					<reference>B183</reference>
+					<categories>
+						<category>Criminal/Street</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>HT</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Connoisseur</name>
+					<specialization>Dance</specialization>
+					<difficulty>IQ/A</difficulty>
+					<points>1</points>
+					<reference>B185</reference>
+					<categories>
+						<category>Arts/Entertainment</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Connoisseur</name>
+					<specialization>Literature</specialization>
+					<difficulty>IQ/A</difficulty>
+					<points>1</points>
+					<reference>B185</reference>
+					<categories>
+						<category>Arts/Entertainment</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>Skill</type>
+						<name>Literature</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Poetry</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Writing</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Connoisseur</name>
+					<specialization>Music</specialization>
+					<difficulty>IQ/A</difficulty>
+					<points>1</points>
+					<reference>B185</reference>
+					<categories>
+						<category>Arts/Entertainment</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>Skill</type>
+						<name>Group Performance</name>
+						<specialization>Conducting</specialization>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Musical Composition</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Musical Instrument</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Connoisseur</name>
+					<specialization>Visual Arts</specialization>
+					<difficulty>IQ/A</difficulty>
+					<points>1</points>
+					<reference>B185</reference>
+					<categories>
+						<category>Arts/Entertainment</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Connoisseur</name>
+					<specialization>Wine</specialization>
+					<difficulty>IQ/A</difficulty>
+					<points>1</points>
+					<reference>B185</reference>
+					<categories>
+						<category>Arts/Entertainment</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Dancing</name>
+					<difficulty>DX/A</difficulty>
+					<points>1</points>
+					<reference>B187</reference>
+					<categories>
+						<category>Arts/Entertainment</category>
+					</categories>
+					<default>
+						<type>DX</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Games</name>
+					<specialization>Any Game</specialization>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B197</reference>
+					<categories>
+						<category>Knowledge</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Hobby Skill</name>
+					<specialization>Any Hobby</specialization>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B200</reference>
+					<categories>
+						<category>Knowledge</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Hobby Skill</name>
+					<specialization>Any Hobby</specialization>
+					<difficulty>DX/E</difficulty>
+					<points>1</points>
+					<reference>B200</reference>
+					<categories>
+						<category>Knowledge</category>
+					</categories>
+					<default>
+						<type>DX</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Musical Instrument</name>
+					<specialization>Any Instrument</specialization>
+					<difficulty>IQ/H</difficulty>
+					<points>1</points>
+					<reference>B211</reference>
+					<categories>
+						<category>Arts/Entertainment</category>
+					</categories>
+				</skill>
+				<skill version="2">
+					<name>Singing</name>
+					<difficulty>HT/E</difficulty>
+					<points>1</points>
+					<reference>B220</reference>
+					<categories>
+						<category>Arts/Entertainment</category>
+					</categories>
+					<default>
+						<type>HT</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Sports</name>
+					<specialization>Any Sport</specialization>
+					<difficulty>DX/A</difficulty>
+					<points>1</points>
+					<reference>B222</reference>
+					<categories>
+						<category>Athletic</category>
+					</categories>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+			</skill_container>
+			<skill version="2">
+				<name>Housekeeping</name>
+				<difficulty>IQ/E</difficulty>
+				<points>1</points>
+				<reference>B200</reference>
+				<categories>
+					<category>Everyman</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+		</skill_container>
+	</skill_list>
+</template>

@@ -1,0 +1,2511 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<equipment_list unique_id="hvpmr85p:72mmdv0kj8ss" version="1">
+	<equipment_container version="3" open="yes">
+		<description>Common Gadgets</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>0</value>
+		<notes>Items can be Cutting-Edge, Disguised, Fine-Quality, Good-Quality, Rugged</notes>
+		<equipment_container version="3" open="yes">
+			<description>Basic Gear</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Bandages</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>2</value>
+				<weight>0.2 lb</weight>
+				<reference>MH1:54</reference>
+				<categories>
+					<category>Emergency Equipment</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Cigarette Lighter</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>10</value>
+				<reference>MH1:54</reference>
+				<categories>
+					<category>General Equipment</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Duct Tape</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>1</value>
+				<weight>0.5 lb</weight>
+				<reference>MH1:54</reference>
+				<categories>
+					<category>General Equipment</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Flashlight, Mini</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<reference>MH1:54</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>MIrror, Pocket</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>5</value>
+				<reference>MH1:54</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Multi-Tool</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>0.5 lb</weight>
+				<reference>MH1:54</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Notebook, Pencil, Chalk</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>2</value>
+				<weight>0.1 lb</weight>
+				<reference>MH1:54</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Wristwatch</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>20</value>
+				<reference>MH1:54</reference>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Cameras</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Camcorder, Micro</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>200</value>
+				<weight>0.2 lb</weight>
+				<reference>MH1:54</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Camera, Digital</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>75</value>
+				<weight>0.5 lb</weight>
+				<reference>MH1:54</reference>
+				<notes>good quality 2.5 lbs, fine quality 10 lbs</notes>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Camera, Film</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>80</value>
+				<weight>0.5 lb</weight>
+				<reference>MH1:54</reference>
+				<notes>good quality 2.5 lbs, fine quality 10 lbs</notes>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Film</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>2</value>
+				<reference>MH1:54</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Film, Infrared</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>30</value>
+				<reference>MH1:54</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Film, Kirlian</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>100</value>
+				<reference>MH1:54</reference>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Communication</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Cell Phone</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>100</value>
+				<weight>0.5 lb</weight>
+				<reference>MH1:54</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Flare, Pen</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>15</value>
+				<weight>0.1 lb</weight>
+				<reference>MH1:54</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Headset, Bluetooth</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>0.1 lb</weight>
+				<reference>MH1:54</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Radio, Handheld</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>250</value>
+				<weight>0.5 lb</weight>
+				<reference>MH1:54</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Radio, Pocket</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>0.2 lb</weight>
+				<reference>MH1:54</reference>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Computers</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Computer, Desktop</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>1500</value>
+				<weight>17 lb</weight>
+				<reference>MH1:54</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Computer, Laptop</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>2050</value>
+				<weight>2.5 lb</weight>
+				<reference>MH1:54</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>PDA, Basic</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>60</value>
+				<weight>0.1 lb</weight>
+				<reference>MH1:54</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>PDA, Full-Featured</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>210</value>
+				<weight>0.3 lb</weight>
+				<reference>MH1:54</reference>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Containers</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Backpack, Small</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>120</value>
+				<weight>1.5 lb</weight>
+				<reference>MH1:54</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Balloon</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>2</value>
+				<reference>MH1:54</reference>
+				<notes>Pack of 10</notes>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Bottle</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>2</value>
+				<weight>0.1 lb</weight>
+				<reference>MH1:54</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Load-Bearing Vest</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>30</value>
+				<weight>2 lb</weight>
+				<reference>MH1:54</reference>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Demolition and Intrusion</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Bolt Cutters</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>30</value>
+				<weight>15 lb</weight>
+				<reference>MH1:55</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Detonator, Fuse</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>1 lb</weight>
+				<reference>MH1:55</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Detonator, Remote</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>1 lb</weight>
+				<reference>MH1:55</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Detonator, Timed</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>25</value>
+				<weight>0.5 lb</weight>
+				<reference>MH1:55</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Dynamite, Stick</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>5</value>
+				<weight>0.5 lb</weight>
+				<reference>MH1:55</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Go-Bar</description>
+				<legality_class>4</legality_class>
+				<value>175</value>
+				<weight>17 lb</weight>
+				<reference>MH1:55</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Lockpicks</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>0.1 lb</weight>
+				<reference>MH1:55</reference>
+				<notes>Good quality 0.5 lbs, fine quality 2 lbs</notes>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Plastique</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>40</value>
+				<weight>1.3 lb</weight>
+				<reference>MH1:55</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Thermite</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>40</value>
+				<weight>1 lb</weight>
+				<reference>MH1:55</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Wire Cutters</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>30</value>
+				<weight>2 lb</weight>
+				<reference>MH1:55</reference>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Gun Accessories</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Bayonet</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>40</value>
+				<weight>1 lb</weight>
+				<reference>MH1:55</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Holster</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>25</value>
+				<weight>0.5 lb</weight>
+				<reference>MH1:55</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Holster, Concealed</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>125</value>
+				<weight>1 lb</weight>
+				<reference>MH1:55</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Reflex Sight</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>550</value>
+				<weight>0.2 lb</weight>
+				<reference>MH1:55</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Scope</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>150</value>
+				<weight>1 lb</weight>
+				<reference>MH1:55</reference>
+				<notes>$150 * Acc (max 5)</notes>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Silencer</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>1000</value>
+				<weight>1 lb</weight>
+				<reference>MH1:55</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Sling</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>10</value>
+				<weight>1 lb</weight>
+				<reference>MH1:55</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Tactical Light</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>100</value>
+				<weight>0.2 lb</weight>
+				<reference>MH1:55</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Targeting Laser, Integral</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>900</value>
+				<reference>MH1:55</reference>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Labs and Tools Kits</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<notes>Double the price and half the cost for Electronics Repair tool kits</notes>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Lab or Tool Kit, Belt</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>1000</value>
+				<weight>4 lb</weight>
+				<reference>MH1:56</reference>
+				<notes>$200 for a tool kit</notes>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Lab or Tool Kit, Box</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>3000</value>
+				<weight>20 lb</weight>
+				<reference>MH1:56</reference>
+				<notes>$600 for a tool kit</notes>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Lab or Tool Kit, Field</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>15000</value>
+				<weight>200 lb</weight>
+				<reference>MH1:56</reference>
+				<notes>$3,000 for a tool kit</notes>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Lab or Tool Kit, Shop</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>75000</value>
+				<reference>MH1:56</reference>
+				<notes>$15,000 for a tool kit</notes>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Light Sources</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Flashlight, Mini</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>10</value>
+				<weight>0.2 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Flashlight, Regular</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>20</value>
+				<weight>1 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Flashlight, Smart</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>300</value>
+				<weight>0.5 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Glow Stick</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>2</value>
+				<weight>0.1 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Lantern, Electric</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>30</value>
+				<weight>3 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>UV Bulb</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>25</value>
+				<reference>MH1:56</reference>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Medical supplies</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Body Bag</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>5</value>
+				<weight>2.5 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Crash Kit</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>200</value>
+				<weight>10 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>First Aid Kit</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>10</value>
+				<weight>1 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Surgical Kit</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>300</value>
+				<weight>15 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Miscellaneous Gear</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Climbing Kit</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>400</value>
+				<weight>26 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Disguise Kit</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>200</value>
+				<weight>10 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Grapnel</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>40</value>
+				<weight>3 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Industrial Cleanser</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>5</value>
+				<weight>1 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Library</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>70000</value>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Media Player, DIgital</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>100</value>
+				<weight>0.2 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Reloading Press</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>100</value>
+				<weight>2 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Rope</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>25</value>
+				<weight>1.6 lb</weight>
+				<reference>MH1:56</reference>
+				<notes>Per 10 yards</notes>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Optics</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Binoculars</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>150</value>
+				<weight>3 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Binoculars, Nigth-Vision</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>6000</value>
+				<weight>3 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Binoculars, Thermal-Imaging</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>7000</value>
+				<weight>3 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Goggles, Night-Vision</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>3500</value>
+				<weight>1.5 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Goggles, Thermal-Imaging</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>13000</value>
+				<weight>1.5 lb</weight>
+				<reference>MH1:56</reference>
+			</equipment>
+		</equipment_container>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Esoteric Gear</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>0</value>
+		<equipment_container version="3" open="yes">
+			<description>Grimoires and Collections</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<notes>Items can be Dead-Language and Encrypted</notes>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Grimoire +2</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>100</value>
+				<weight>2 lb</weight>
+				<reference>MH1:57</reference>
+				<skill_bonus>
+					<name compare="is">@Specific Ritual@</name>
+					<specialization compare="is anything"></specialization>
+					<amount>2</amount>
+				</skill_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Grimoire +3</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>250</value>
+				<weight>2.5 lb</weight>
+				<reference>MH1:57</reference>
+				<skill_bonus>
+					<name compare="is">@Specific Ritual@</name>
+					<specialization compare="is anything"></specialization>
+					<amount>3</amount>
+				</skill_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Grimoire +4</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>600</value>
+				<weight>3 lb</weight>
+				<reference>MH1:57</reference>
+				<skill_bonus>
+					<name compare="is">@Specific Ritual@</name>
+					<specialization compare="is anything"></specialization>
+					<amount>4</amount>
+				</skill_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Grimoire +5</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>1500</value>
+				<weight>3.5 lb</weight>
+				<reference>MH1:57</reference>
+				<skill_bonus>
+					<name compare="is">@Specific Ritual@</name>
+					<specialization compare="is anything"></specialization>
+					<amount>5</amount>
+				</skill_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Grimoire +6</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>3500</value>
+				<weight>4 lb</weight>
+				<reference>MH1:57</reference>
+				<skill_bonus>
+					<name compare="is">@Specific Ritual@</name>
+					<specialization compare="is anything"></specialization>
+					<amount>6</amount>
+				</skill_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Grimoire +7</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>7500</value>
+				<weight>5 lb</weight>
+				<reference>MH1:57</reference>
+				<skill_bonus>
+					<name compare="is">@Specific Ritual@</name>
+					<specialization compare="is anything"></specialization>
+					<amount>7</amount>
+				</skill_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Grimoire +8</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>20000</value>
+				<weight>6 lb</weight>
+				<reference>MH1:57</reference>
+				<skill_bonus>
+					<name compare="is">@Specific Ritual@</name>
+					<specialization compare="is anything"></specialization>
+					<amount>8</amount>
+				</skill_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Grimoire +9</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>50000</value>
+				<weight>8 lb</weight>
+				<reference>MH1:57</reference>
+				<skill_bonus>
+					<name compare="is">@Specific Ritual@</name>
+					<specialization compare="is anything"></specialization>
+					<amount>9</amount>
+				</skill_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Grimoire +10</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>100000</value>
+				<weight>10 lb</weight>
+				<reference>MH1:57</reference>
+				<skill_bonus>
+					<name compare="is">@Specific Ritual@</name>
+					<specialization compare="is anything"></specialization>
+					<amount>10</amount>
+				</skill_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Collection</description>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<reference>MH1:57</reference>
+				<notes>Total cost of all Rituals, Weight: Highest weight + 1/5 total of the rest</notes>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Magical Workspace Kits</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Workspace Kit, Basic</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>3000</value>
+				<weight>20 lb</weight>
+				<reference>MH1:57</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Workspace Kit, Good</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>15000</value>
+				<weight>200 lb</weight>
+				<reference>MH1:57</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Workspace Kit, Fine</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>60000</value>
+				<reference>MH1:57</reference>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Mystical Supplies</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Esoteric Kit</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>200</value>
+				<weight>4 lb</weight>
+				<reference>MH1:57</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Holy Symbol</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>200</value>
+				<weight>0.5 lb</weight>
+				<reference>MH1:57</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Holy Symbol, Ancient</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>4000</value>
+				<weight>0.5 lb</weight>
+				<reference>MH1:57</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Holy Symbol, Aged</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>1000</value>
+				<weight>0.5 lb</weight>
+				<reference>MH1:57</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Holy Symbol, Mass-Produced</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>5</value>
+				<weight>0.1 lb</weight>
+				<reference>MH1:57</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Holy Water</description>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<weight>0.5 lb</weight>
+				<reference>MH1:57</reference>
+				<notes>per pint</notes>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Psychotronics</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<equipment_container version="3" open="yes">
+				<description>Electronics</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Ectocognitive Wave Detector (EWD)</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>1500</value>
+					<weight>1 lb</weight>
+					<reference>MH1:57</reference>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Ethereal Barrier Cord</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>50</value>
+					<weight>0.5 lb</weight>
+					<reference>MH1:57</reference>
+					<notes>per yard of cord. The power converter is $1,000, 10 lbs</notes>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Mental Shield</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>1000</value>
+					<weight>1 lb</weight>
+					<reference>MH1:58</reference>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Spiricom</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>3200</value>
+					<weight>80 lb</weight>
+					<reference>MH1:58</reference>
+				</equipment>
+			</equipment_container>
+			<equipment_container version="3" open="yes">
+				<description>Psi Drugs</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Psi-Block</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>30</value>
+					<reference>MH1:58</reference>
+					<notes>per dose</notes>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Psi-Boost</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>50</value>
+					<reference>MH1:58</reference>
+					<notes>per dose</notes>
+				</equipment>
+			</equipment_container>
+		</equipment_container>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Protective Clothing</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>0</value>
+		<notes>Items can be Scent-Masking and Undercover</notes>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Boots, Reinforced</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>75</value>
+			<weight>3 lb</weight>
+			<reference>MH1:59</reference>
+			<notes>DR +1 to underside of foot. Kicking dmg+1</notes>
+			<categories>
+				<category>Body Armor</category>
+				<category>Footwear</category>
+			</categories>
+			<dr_bonus>
+				<location>feet</location>
+				<amount>2</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Clothing, Extra Outfit</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>120</value>
+			<weight>2 lb</weight>
+			<reference>MH1:59</reference>
+			<categories>
+				<category>Clothing</category>
+			</categories>
+			<dr_bonus>
+				<location>full_body</location>
+				<amount>0</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Coat, Long</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>50</value>
+			<weight>5 lb</weight>
+			<reference>MH1:59</reference>
+			<notes>Holdout +4. Undercover for larger bonus.</notes>
+			<categories>
+				<category>Clothing</category>
+			</categories>
+			<dr_bonus>
+				<location>torso</location>
+				<amount>0</amount>
+			</dr_bonus>
+			<dr_bonus>
+				<location>arms</location>
+				<amount>10</amount>
+			</dr_bonus>
+			<dr_bonus>
+				<location>legs</location>
+				<amount>0</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Coat, Long Leather</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>250</value>
+			<weight>10 lb</weight>
+			<reference>MH1:59</reference>
+			<notes>Flexible. Holdout +4. Undercover for larger bonus. </notes>
+			<categories>
+				<category>Body Armor</category>
+			</categories>
+			<dr_bonus>
+				<location>torso</location>
+				<amount>1</amount>
+			</dr_bonus>
+			<dr_bonus>
+				<location>arms</location>
+				<amount>1</amount>
+			</dr_bonus>
+			<dr_bonus>
+				<location>legs</location>
+				<amount>1</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Collar, Reinforced</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>10</value>
+			<weight>0.5 lb</weight>
+			<reference>MH1:59</reference>
+			<categories>
+				<category>Body Armor</category>
+			</categories>
+			<dr_bonus>
+				<location>neck</location>
+				<amount>2</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Cup, Athletic</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>20</value>
+			<reference>MH1:59</reference>
+			<notes>Front. DR +1 vs. Crushing</notes>
+			<categories>
+				<category>Body Armor</category>
+			</categories>
+			<dr_bonus>
+				<location>neck</location>
+				<amount>1</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Glasses, Ballistic</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>35</value>
+			<reference>MH1:59</reference>
+			<categories>
+				<category>Body Armor</category>
+				<category>Eyewear</category>
+			</categories>
+			<dr_bonus>
+				<location>eyes</location>
+				<amount>4</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Gloves, Sap</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>60</value>
+			<weight>1 lb</weight>
+			<reference>MH1:59</reference>
+			<notes>Flexible. Punching dmg +1. Bad Grip 1.</notes>
+			<categories>
+				<category>Body Armor</category>
+				<category>Gloves</category>
+			</categories>
+			<dr_bonus>
+				<location>hands</location>
+				<amount>2</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Gloves, Shooting</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>50</value>
+			<weight>0.5 lb</weight>
+			<reference>MH1:59</reference>
+			<notes>Flexible</notes>
+			<categories>
+				<category>Body Armor</category>
+				<category>Gloves</category>
+			</categories>
+			<dr_bonus>
+				<location>hands</location>
+				<amount>1</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Hat, Leather</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>60</value>
+			<weight>0.5 lb</weight>
+			<reference>MH1:59</reference>
+			<notes>Flexible</notes>
+			<categories>
+				<category>Body Armor</category>
+				<category>Headgear</category>
+			</categories>
+			<dr_bonus>
+				<location>skull</location>
+				<amount>1</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Helmet, Motorcycle with visor</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>250</value>
+			<weight>3.5 lb</weight>
+			<reference>MH1:59</reference>
+			<notes>Skull DR +3 vs. Crushing</notes>
+			<categories>
+				<category>Body Armor</category>
+				<category>Headgear</category>
+			</categories>
+			<dr_bonus>
+				<location>skull</location>
+				<amount>3</amount>
+			</dr_bonus>
+			<dr_bonus>
+				<location>eyes</location>
+				<amount>1</amount>
+			</dr_bonus>
+			<dr_bonus>
+				<location>face</location>
+				<amount>1</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Jacket, Leather</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>50</value>
+			<weight>5 lb</weight>
+			<reference>MH1:59</reference>
+			<notes>Flexible</notes>
+			<categories>
+				<category>Body Armor</category>
+			</categories>
+			<dr_bonus>
+				<location>arms</location>
+				<amount>1</amount>
+			</dr_bonus>
+			<dr_bonus>
+				<location>torso</location>
+				<amount>1</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Leggings, Sharp-Proof</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>100</value>
+			<weight>4 lb</weight>
+			<reference>MH1:59</reference>
+			<notes>Concealable under clothing, not as clothing. DR +2 vs. Cutting and Impaling</notes>
+			<categories>
+				<category>Body Armor</category>
+			</categories>
+			<dr_bonus>
+				<location>legs</location>
+				<amount>1</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Pants, Leather</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>40</value>
+			<weight>4 lb</weight>
+			<reference>MH1:59</reference>
+			<notes>Flexible</notes>
+			<categories>
+				<category>Body Armor</category>
+			</categories>
+			<dr_bonus>
+				<location>legs</location>
+				<amount>1</amount>
+			</dr_bonus>
+			<dr_bonus>
+				<location>groin</location>
+				<amount>1</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Shoes, Climbing</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>80</value>
+			<weight>1 lb</weight>
+			<reference>MH1:59</reference>
+			<notes>Flexible</notes>
+			<categories>
+				<category>Body Armor</category>
+				<category>Footwear</category>
+			</categories>
+			<dr_bonus>
+				<location>feet</location>
+				<amount>1</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Sleeves, Sharp-Proof</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>100</value>
+			<weight>2 lb</weight>
+			<reference>MH1:59</reference>
+			<notes>Concealable under clothing, not as clothing. DR +2 vs. Cutting and Impaling</notes>
+			<categories>
+				<category>Body Armor</category>
+			</categories>
+			<dr_bonus>
+				<location>arms</location>
+				<amount>1</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Vest, Advanced</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>4600</value>
+			<weight>17 lb</weight>
+			<reference>MH1:59</reference>
+			<notes>Flexible. Concealable under clothing, not as clothing. DR 5 vs. Crushing</notes>
+			<categories>
+				<category>Body Armor</category>
+			</categories>
+			<dr_bonus>
+				<location>torso</location>
+				<amount>35</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Vest, Concealable</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>1000</value>
+			<weight>2 lb</weight>
+			<reference>MH1:59</reference>
+			<notes>Flexible. Concealable under clothing, not as clothing. DR +7 vs. Cutting/Piercing</notes>
+			<categories>
+				<category>Body Armor</category>
+			</categories>
+			<dr_bonus>
+				<location>torso</location>
+				<amount>5</amount>
+			</dr_bonus>
+		</equipment>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Weapons</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>0</value>
+		<equipment_container version="3" open="yes">
+			<description>Melee Weapons</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<notes>Weapons can be Balanced, Disguised, Fine, Holy, Silver, Silver-Coated, Titanium, Very Fine, Weighted</notes>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Chainsaw</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>300</value>
+				<weight>13 lb</weight>
+				<reference>MH1:60</reference>
+				<melee_weapon>
+					<damage>sw+ 1d cut</damage>
+					<strength>11&#8225;</strength>
+					<usage>swing</usage>
+					<reach>1</reach>
+					<parry>0U</parry>
+					<default>
+						<type>Skill</type>
+						<name>Two-Handed Axe/Mace</name>
+						<modifier>-2</modifier>
+					</default>
+				</melee_weapon>
+				<notes>low-end chainsaw is half price with 1/6 chance of chain snapping if stopped by DR</notes>
+				<categories>
+					<category>Improvised Weapon</category>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Circular Saw</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>75</value>
+				<weight>20 lb</weight>
+				<reference>MH1:60</reference>
+				<melee_weapon>
+					<damage>sw+ 3(2) cut</damage>
+					<strength>11&#8225;</strength>
+					<usage>swing</usage>
+					<reach>1</reach>
+					<parry>0</parry>
+					<default>
+						<type>Skill</type>
+						<name>Two-Handed Axe/Mace</name>
+						<modifier>-3</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Improvised Weapon</category>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Pool Cue</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>30</value>
+				<weight>2 lb</weight>
+				<reference>MH1:60</reference>
+				<melee_weapon>
+					<damage>sw cr</damage>
+					<strength>9</strength>
+					<usage>swing</usage>
+					<reach>1</reach>
+					<parry>0</parry>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-1</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Improvised Weapon</category>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Power Drill</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>2 lb</weight>
+				<reference>MH1:60</reference>
+				<melee_weapon>
+					<damage>1d+2(2) pi++</damage>
+					<strength>8</strength>
+					<usage>thrust</usage>
+					<reach>C</reach>
+					<parry>0</parry>
+					<default>
+						<type>Skill</type>
+						<name>Karate</name>
+						<modifier>-2</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Improvised Weapon</category>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Road Flare</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>5</value>
+				<weight>1 lb</weight>
+				<reference>MH1:60</reference>
+				<melee_weapon>
+					<damage>1d-4 burn</damage>
+					<strength>6</strength>
+					<reach>1</reach>
+					<parry>0</parry>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>-2</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Improvised Weapon</category>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Scissors OR Screwdriver</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>2</value>
+				<weight>0.3 lb</weight>
+				<reference>MH1:60</reference>
+				<melee_weapon>
+					<damage>thr-2 imp</damage>
+					<strength>5</strength>
+					<usage>thrust</usage>
+					<reach>C</reach>
+					<parry>0</parry>
+					<default>
+						<type>Skill</type>
+						<name>Knife</name>
+						<modifier>-1</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Improvised Weapon</category>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Shovel</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>15</value>
+				<weight>6 lb</weight>
+				<reference>MH1:60</reference>
+				<melee_weapon>
+					<damage>sw+3 cut</damage>
+					<strength>12&#8225;</strength>
+					<usage>swing</usage>
+					<reach>1, 2*</reach>
+					<parry>0</parry>
+					<default>
+						<type>Skill</type>
+						<name>Two-Handed Axe/Mace</name>
+						<modifier>-2</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Improvised Weapon</category>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Tire Iron</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>10</value>
+				<weight>2 lb</weight>
+				<reference>MH1:60</reference>
+				<melee_weapon>
+					<damage>sw+1 cr</damage>
+					<strength>10</strength>
+					<usage>swing</usage>
+					<reach>1</reach>
+					<parry>0</parry>
+					<default>
+						<type>Skill</type>
+						<name>Axe/Mace</name>
+						<modifier>-2</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Improvised Weapon</category>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Muscle-Powered Ranged Weapons</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Bows and Crossbows</description>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<notes>See Basic Set. They can be Balanced, Compound, Fine. Arrow and bolt heads can be normal, bodkin-point, willow-leaf in shape and silver in material</notes>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Thrown Weapons</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<notes>Same as Melee Weapons</notes>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Firearms</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<notes>Firearms can be Disguised, Fine, Very Fine</notes>
+			<equipment_container version="3" open="yes">
+				<description>Beam Weapons (Projector)</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Ghost Blaster</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>12500</value>
+					<weight>50 lb</weight>
+					<reference>MH1:58, 62</reference>
+					<ranged_weapon>
+						<damage>2d fat</damage>
+						<strength>11&#8225;</strength>
+						<accuracy>2</accuracy>
+						<range>25 /40</range>
+						<rate_of_fire>1</rate_of_fire>
+						<shots>30</shots>
+						<bulk>-7</bulk>
+						<recoil>1</recoil>
+					</ranged_weapon>
+					<notes>Psychotronic weapon. Reload by recharging internal batteries</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Mind Disruptor</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>26000</value>
+					<weight>11 lb</weight>
+					<reference>MH1:58, 62</reference>
+					<ranged_weapon>
+						<damage>Will-2 aff</damage>
+						<strength>9&#8225;</strength>
+						<accuracy>3</accuracy>
+						<range>10/30</range>
+						<rate_of_fire>1</rate_of_fire>
+						<shots>22</shots>
+						<bulk>-5</bulk>
+						<recoil>1</recoil>
+					</ranged_weapon>
+					<notes>Psychotronic weapon. Reload by recharging internal batteries</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Neutralizer</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>19000</value>
+					<weight>15 lb</weight>
+					<reference>MH1:58, 62</reference>
+					<ranged_weapon>
+						<damage>Will-4 aff</damage>
+						<strength>10&#8225;</strength>
+						<accuracy>3</accuracy>
+						<range>23/70</range>
+						<rate_of_fire>1</rate_of_fire>
+						<shots>33</shots>
+						<bulk>-6</bulk>
+						<recoil>1</recoil>
+					</ranged_weapon>
+					<notes>Psychotronic weapon. Reload by recharging internal batteries</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+			</equipment_container>
+			<equipment_container version="3" open="yes">
+				<description>Guns (Pistol)</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Auto Pistol, .40</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>770</value>
+					<weight>2.3 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>2d+2 pi++</damage>
+						<strength>9</strength>
+						<accuracy>2</accuracy>
+						<range>160/1,800</range>
+						<rate_of_fire>3</rate_of_fire>
+						<shots>13+1(3)</shots>
+						<bulk>-2</bulk>
+						<recoil>2</recoil>
+					</ranged_weapon>
+					<notes>$4($32). 0.6 lb</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Auto Pistol, .50AE</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>1250</value>
+					<weight>4.6 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>4d pi+</damage>
+						<strength>12</strength>
+						<accuracy>2</accuracy>
+						<range>220/2,500</range>
+						<rate_of_fire>3</rate_of_fire>
+						<shots>7+1(3)</shots>
+						<bulk>-4</bulk>
+						<recoil>4</recoil>
+					</ranged_weapon>
+					<notes>$8($45) 0.6 lb</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Backup Auto Pistol, .40</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>720</value>
+					<weight>1.9 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>2d+1 pi+</damage>
+						<strength>8</strength>
+						<accuracy>1</accuracy>
+						<range>140/1,600</range>
+						<rate_of_fire>3</rate_of_fire>
+						<shots>6+1(3)</shots>
+						<bulk>-1</bulk>
+						<recoil>2</recoil>
+					</ranged_weapon>
+					<notes>$2($37) 0.4 lb</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Revolver, .44M</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>770</value>
+					<weight>3.1 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>3d+2 pi+</damage>
+						<strength>11</strength>
+						<accuracy>2</accuracy>
+						<range>210/2,300</range>
+						<rate_of_fire>3</rate_of_fire>
+						<shots>6(6)</shots>
+						<bulk>-3</bulk>
+						<recoil>4</recoil>
+					</ranged_weapon>
+					<notes>$4($10) 0.4 lb</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Revolver, Snub .38</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>350</value>
+					<weight>1.2 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>2d-1 pi</damage>
+						<strength>9</strength>
+						<accuracy>1</accuracy>
+						<range>90/1,000</range>
+						<rate_of_fire>3</rate_of_fire>
+						<shots>5(6)</shots>
+						<bulk>-1</bulk>
+						<recoil>2</recoil>
+					</ranged_weapon>
+					<notes>$2($10) 0.3 lb</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+			</equipment_container>
+			<equipment_container version="3" open="yes">
+				<description>Guns (Rifle)</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Assault Carbine, 5.56mm</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>950</value>
+					<weight>7.3 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>4d+2 pi</damage>
+						<strength>9&#8224;</strength>
+						<accuracy>4</accuracy>
+						<range>750/2,900</range>
+						<rate_of_fire>15</rate_of_fire>
+						<shots>30+1(3)</shots>
+						<bulk>-4</bulk>
+						<recoil>2</recoil>
+					</ranged_weapon>
+					<notes>$15($34) 1 lb</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Assault Rifle, 5.56mm</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>850</value>
+					<weight>8.9 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>5d pi</damage>
+						<strength>8&#8224;</strength>
+						<accuracy>5</accuracy>
+						<range>800/3,500</range>
+						<rate_of_fire>13</rate_of_fire>
+						<shots>30+1(3)</shots>
+						<bulk>-5</bulk>
+						<recoil>2</recoil>
+					</ranged_weapon>
+					<notes>$15($34) 1 lb</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Entry Rifle, .50BW</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>1200</value>
+					<weight>7 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>6d+1 pi+</damage>
+						<strength>10&#8224;</strength>
+						<accuracy>4</accuracy>
+						<range>380/2,700</range>
+						<rate_of_fire>3</rate_of_fire>
+						<shots>10+1(3)</shots>
+						<bulk>-5</bulk>
+						<recoil>4</recoil>
+					</ranged_weapon>
+					<notes>$11($34) 1.1 lbs</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Sniper Rifle, 7.62mm</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>2350</value>
+					<weight>15 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>7d pi</damage>
+						<strength>11B&#8224;</strength>
+						<accuracy>5+3</accuracy>
+						<range>1,000/4,200</range>
+						<rate_of_fire>1</rate_of_fire>
+						<shots>10+1(3)</shots>
+						<bulk>-6</bulk>
+						<recoil>3</recoil>
+					</ranged_weapon>
+					<notes>$9($50) 1 lb. Requires two hands to use, regardless of wielder's ST</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+			</equipment_container>
+			<equipment_container version="3" open="yes">
+				<description>Guns (SMG)</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Machine Pistol, 9mm</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>425</value>
+					<weight>7.5 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>2d+2 pi</damage>
+						<strength>10</strength>
+						<accuracy>2</accuracy>
+						<range>130/1,400</range>
+						<rate_of_fire>18</rate_of_fire>
+						<shots>32(3)</shots>
+						<bulk>-2</bulk>
+						<recoil>3</recoil>
+					</ranged_weapon>
+					<notes>$10($29) 1.3 lbs</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>SMG, .45</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>900</value>
+					<weight>6.5 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>2d+1 pi+</damage>
+						<strength>8&#8224;</strength>
+						<accuracy>3</accuracy>
+						<range>160/1,700</range>
+						<rate_of_fire>10</rate_of_fire>
+						<shots>25+1(3)</shots>
+						<bulk>-4</bulk>
+						<recoil>2</recoil>
+					</ranged_weapon>
+					<notes>$13($36) 1.6 lbs</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>SMG, 9mm</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>1500</value>
+					<weight>6 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>3d-1</damage>
+						<strength>8&#8224;</strength>
+						<accuracy>4</accuracy>
+						<range>170/1,900</range>
+						<rate_of_fire>13</rate_of_fire>
+						<shots>30+1(3)</shots>
+						<bulk>-4</bulk>
+						<recoil>2</recoil>
+					</ranged_weapon>
+					<notes>$9($29) 1.2 lbs</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>SMG, Compact 9mm</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>1200</value>
+					<weight>3.8 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>2d+2 pi</damage>
+						<strength>8&#8224;</strength>
+						<accuracy>2</accuracy>
+						<range>160/1,800</range>
+						<rate_of_fire>15</rate_of_fire>
+						<shots>30+1(3)</shots>
+						<bulk>-2</bulk>
+						<recoil>2</recoil>
+					</ranged_weapon>
+					<notes>$9($34) 1 lb</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+			</equipment_container>
+			<equipment_container version="3" open="yes">
+				<description>Liquid Projector (Flamethrower)</description>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Backpack Flamethrower</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>2000</value>
+					<weight>50 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>3d burn</damage>
+						<strength>10&#8224;</strength>
+						<range>40</range>
+						<rate_of_fire>Jet</rate_of_fire>
+						<shots>10</shots>
+						<bulk>-7</bulk>
+					</ranged_weapon>
+					<notes>$10. 20 lbs. If hit, take 1d burn/s for 2dx5s (1dx5 past 25 yards). If dmg through tank DR2t, 1/6 explodes to hit all within 2 yards</notes>
+					<categories>
+						<category>Heavy Weapon</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Handheld Flamethrower</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>500</value>
+					<weight>7.8 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>3d burn</damage>
+						<strength>6&#8224;</strength>
+						<range>40</range>
+						<rate_of_fire>Jet</rate_of_fire>
+						<shots>1</shots>
+						<bulk>-4</bulk>
+					</ranged_weapon>
+					<notes>$1. 2 lbs. If hit, take 1d burn/s for 2dx5s (1dx5 past 25 yards).</notes>
+					<categories>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+			</equipment_container>
+			<equipment_container version="3" open="yes">
+				<description>Guns (Shotgun)</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Auto Shotgun, 12G</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>1000</value>
+					<weight>8.2 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>1d+1 pi</damage>
+						<strength>10&#8224;</strength>
+						<accuracy>3</accuracy>
+						<range>40/800</range>
+						<rate_of_fire>3x9</rate_of_fire>
+						<shots>7+1(2i)</shots>
+						<bulk>-5</bulk>
+						<recoil>1</recoil>
+					</ranged_weapon>
+					<notes>$4</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Auto Shotgun, 12G</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>1000</value>
+					<weight>8.2 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>5d pi++</damage>
+						<strength>10&#8224;</strength>
+						<usage>Firing slugs</usage>
+						<accuracy>4</accuracy>
+						<range>100/1,200</range>
+						<rate_of_fire>3</rate_of_fire>
+						<shots>7+1(2i)</shots>
+						<bulk>-5</bulk>
+						<recoil>4</recoil>
+					</ranged_weapon>
+					<notes>$4. firing slugs</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Compact Pump Shotgun, 12G</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>400</value>
+					<weight>6.7 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>1d+1 pi</damage>
+						<strength>12&#8224;</strength>
+						<accuracy>2</accuracy>
+						<range>40/800</range>
+						<rate_of_fire>2x9</rate_of_fire>
+						<shots>4+1(2i)</shots>
+						<bulk>-3</bulk>
+						<recoil>1</recoil>
+					</ranged_weapon>
+					<notes>$2. 0.4 lb</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Compact Pump Shotgun, 12G</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>400</value>
+					<weight>6.7 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>5d pi++</damage>
+						<strength>12&#8224;</strength>
+						<usage>firing slugs</usage>
+						<accuracy>3</accuracy>
+						<range>100/1,200</range>
+						<rate_of_fire>3</rate_of_fire>
+						<shots>4+1(2i)</shots>
+						<bulk>-3</bulk>
+						<recoil>6</recoil>
+					</ranged_weapon>
+					<notes>$2. 0.4 lb. firing slugs</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Pump Shotgun, 12G</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>400</value>
+					<weight>8.3 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>1d+1 pi</damage>
+						<strength>10&#8224;</strength>
+						<accuracy>3</accuracy>
+						<range>40/800</range>
+						<rate_of_fire>2x9</rate_of_fire>
+						<shots>7+1(2i)</shots>
+						<bulk>-5</bulk>
+						<recoil>1</recoil>
+					</ranged_weapon>
+					<notes>$4. 0.9 lb</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Pump Shotgun, 12G</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>400</value>
+					<weight>8.3 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>5d pi++</damage>
+						<strength>10&#8224;</strength>
+						<usage>firing slugs</usage>
+						<accuracy>4</accuracy>
+						<range>100/1,200</range>
+						<rate_of_fire>2</rate_of_fire>
+						<shots>7+1(2i)</shots>
+						<bulk>-5</bulk>
+						<recoil>5</recoil>
+					</ranged_weapon>
+					<notes>$4. 0.9 lb. firing slugs</notes>
+					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+			</equipment_container>
+			<equipment_container version="3" open="yes">
+				<description>Lioquid Projector (Squirt Gun)</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Backpack Squirt Gun</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>45</value>
+					<weight>18 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>special</damage>
+						<strength>4&#8224;</strength>
+						<range>12</range>
+						<rate_of_fire>Jet</rate_of_fire>
+						<shots>15(12)</shots>
+						<bulk>-3</bulk>
+					</ranged_weapon>
+					<notes>($15) 15 lbs. Usually filled with Holy Water. Dispersion gives +2 to hit</notes>
+					<categories>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Squirt Carbine</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>30</value>
+					<weight>3.5 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>special</damage>
+						<strength>4&#8224;</strength>
+						<range>8</range>
+						<rate_of_fire>Jet</rate_of_fire>
+						<shots>2(7)</shots>
+						<bulk>-3</bulk>
+					</ranged_weapon>
+					<notes>($5) 2 lbs. Usually filled with Holy Water. Dispersion gives +2 to hit</notes>
+					<categories>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+			</equipment_container>
+			<equipment_container version="3" open="yes">
+				<description>Liquid Projector (Sprayer)</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Handheld Sprayer</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>10</value>
+					<weight>0.1 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>special</damage>
+						<strength>3</strength>
+						<range>2</range>
+						<rate_of_fire>Jet</rate_of_fire>
+						<shots>20</shots>
+						<bulk>-1</bulk>
+					</ranged_weapon>
+					<notes>Usually filled with Holy Water. Dispersion gives +2 to hit</notes>
+					<categories>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+			</equipment_container>
+			<equipment_container version="3" open="yes">
+				<description>Improvised</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Flare Gun</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>480</value>
+					<weight>2 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>1d+1(0.5) cr dkb inc</damage>
+						<strength>?</strength>
+						<usage>any Guns-4</usage>
+						<accuracy>?</accuracy>
+						<range>10/330</range>
+						<rate_of_fire>?</rate_of_fire>
+						<shots>1(3)</shots>
+						<bulk>?</bulk>
+						<recoil>?</recoil>
+					</ranged_weapon>
+					<notes>Hot for 10 seconds after firing, 1d burn to anyone touching it</notes>
+					<categories>
+						<category>Improvised Weapon</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Nail Gun</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>350</value>
+					<weight>8 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>2d-1 pi-</damage>
+						<strength>?</strength>
+						<usage>Pistol-4</usage>
+						<accuracy>?</accuracy>
+						<range>5/25</range>
+						<rate_of_fire>?</rate_of_fire>
+						<shots>50(3)</shots>
+						<bulk>?</bulk>
+						<recoil>?</recoil>
+					</ranged_weapon>
+					<categories>
+						<category>Improvised Weapon</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Spray Can and a Lighter</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>2</value>
+					<weight>0.5 lb</weight>
+					<reference>MH1:63</reference>
+					<ranged_weapon>
+						<damage>1d-2 burn</damage>
+						<strength>?</strength>
+						<usage>Flamethrower-2, Sprayer</usage>
+						<accuracy>?</accuracy>
+						<range>1</range>
+						<rate_of_fire>?</rate_of_fire>
+						<shots>5</shots>
+						<bulk>?</bulk>
+						<recoil>?</recoil>
+					</ranged_weapon>
+					<categories>
+						<category>Improvised Weapon</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+			</equipment_container>
+			<equipment_container version="3" open="yes">
+				<description>Special Ammo</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Powder Options</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>0</value>
+					<reference>MH1:63</reference>
+					<notes>Extra-Powerful, Hand-Matched, Match-Grade, Silent</notes>
+					<categories>
+						<category>Ammunition</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Payload Options</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>0</value>
+					<reference>MH1:63</reference>
+					<notes>Armor-Piercing, Chemical, Dragon's Breath, Explosive, Flare, Hollow-Point, Holy-Water, Rock Salt, Silver, Thermate, Wooden</notes>
+					<categories>
+						<category>Ammunition</category>
+					</categories>
+				</equipment>
+			</equipment_container>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Grenades</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>MH1:63</reference>
+			<categories>
+				<category>Hand Grenade</category>
+			</categories>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Concussion Grenade</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>30</value>
+				<weight>0.3 lb</weight>
+				<reference>MH1:63</reference>
+				<ranged_weapon>
+					<damage>5d cr ex</damage>
+				</ranged_weapon>
+				<notes>4s fuse. Heard at +3</notes>
+				<categories>
+					<category>Hand Grenade</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Fragmentation Grenade</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>25</value>
+				<weight>0.4 lb</weight>
+				<reference>MH1:63</reference>
+				<ranged_weapon>
+					<damage>3d-1 [2d] cr ex</damage>
+				</ranged_weapon>
+				<notes>4s fuse. Heard at +3</notes>
+				<categories>
+					<category>Hand Grenade</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Smoke Grenade</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>25</value>
+				<weight>0.2 lb</weight>
+				<reference>MH1:63</reference>
+				<ranged_weapon>
+				</ranged_weapon>
+				<notes>2s fuse. Heard at +0. Tear Gas +$10. Fills 4 yard radius for 20s</notes>
+				<categories>
+					<category>Hand Grenade</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>White Phosphorus Grenade</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>1 lb</weight>
+				<reference>MH1:63</reference>
+				<ranged_weapon>
+					<damage>2d [1d(0.2)] burn ex</damage>
+				</ranged_weapon>
+				<notes>4s fuse. Heard at +3. Each fragment does dmg every 10s for 1 minute. DX roll per fragment to brush off. Also acts as smoke grenade.</notes>
+				<categories>
+					<category>Hand Grenade</category>
+				</categories>
+			</equipment>
+		</equipment_container>
+	</equipment_container>
+</equipment_list>

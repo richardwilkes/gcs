@@ -1,0 +1,854 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<skill_list unique_id="hvpmr85o:pm0rs3ifpy2e" version="1">
+	<skill_container version="2" open="yes">
+		<name>Wildcards</name>
+		<skill version="2">
+			<name>Blade!</name>
+			<difficulty>DX/W</difficulty>
+			<points>1</points>
+			<reference>MH1:29</reference>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Melee Combat</category>
+				<category>Wildcard</category>
+			</categories>
+		</skill>
+		<skill version="2">
+			<name>Detective!</name>
+			<difficulty>IQ/W</difficulty>
+			<points>1</points>
+			<reference>MH1:29</reference>
+			<categories>
+				<category>Police</category>
+				<category>Wildcard</category>
+			</categories>
+		</skill>
+		<skill version="2">
+			<name>Gun!</name>
+			<difficulty>DX/W</difficulty>
+			<points>1</points>
+			<reference>MH1:29</reference>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Ranged Combat</category>
+				<category>Wildcard</category>
+			</categories>
+		</skill>
+		<skill version="2">
+			<name>Inventor!</name>
+			<difficulty>IQ/W</difficulty>
+			<points>1</points>
+			<reference>MH1:29</reference>
+			<categories>
+				<category>Design/Invention</category>
+				<category>Wildcard</category>
+			</categories>
+		</skill>
+		<skill version="2">
+			<name>Lore!</name>
+			<difficulty>IQ/W</difficulty>
+			<points>1</points>
+			<reference>MH1:29</reference>
+			<categories>
+				<category>Scholarly</category>
+				<category>Social Sciences/Humanities</category>
+				<category>Wildcard</category>
+			</categories>
+		</skill>
+		<skill version="2">
+			<name>Medic!</name>
+			<difficulty>IQ/W</difficulty>
+			<points>1</points>
+			<reference>MH1:30</reference>
+			<categories>
+				<category>Medical</category>
+				<category>Wildcard</category>
+			</categories>
+		</skill>
+		<skill version="2">
+			<name>Science!</name>
+			<difficulty>IQ/W</difficulty>
+			<points>1</points>
+			<reference>MH1:30</reference>
+			<categories>
+				<category>Design/Invention</category>
+				<category>Natural Science</category>
+				<category>Social Science/Humanities</category>
+				<category>Wildcard</category>
+			</categories>
+		</skill>
+		<skill version="2">
+			<name>Talker!</name>
+			<difficulty>IQ/W</difficulty>
+			<points>1</points>
+			<reference>MH1:30</reference>
+			<categories>
+				<category>Business</category>
+				<category>Crime</category>
+				<category>Police</category>
+				<category>Social</category>
+				<category>Spy</category>
+				<category>Wildcard</category>
+			</categories>
+		</skill>
+		<skill version="2">
+			<name>Ten-Hut!</name>
+			<difficulty>IQ/W</difficulty>
+			<points>1</points>
+			<reference>MH1:31</reference>
+			<categories>
+				<category>Military</category>
+				<category>Wildcard</category>
+			</categories>
+		</skill>
+	</skill_container>
+	<skill_container version="2" open="yes">
+		<name>Know Thy Enemy</name>
+		<reference>MH1:16</reference>
+		<skill_container version="2" open="yes">
+			<name>Cryptids</name>
+			<notes>chupacabras, yeti, etc</notes>
+			<skill version="2">
+				<name>Animal Handling</name>
+				<specialization>@Specialty@</specialization>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B175</reference>
+				<categories>
+					<category>Animal</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Biology</name>
+				<specialization>@Specialty@</specialization>
+				<tech_level/>
+				<difficulty>IQ/VH</difficulty>
+				<points>1</points>
+				<reference>B180</reference>
+				<categories>
+					<category>Natural Science</category>
+					<category>Plant</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Naturalist</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Hidden Lore</name>
+				<specialization>Cryptozoology</specialization>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B199</reference>
+				<categories>
+					<category>Knowledge</category>
+				</categories>
+			</skill>
+			<skill version="2">
+				<name>Veterinary</name>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B228</reference>
+				<categories>
+					<category>Animal</category>
+					<category>Medical</category>
+				</categories>
+				<default>
+					<type>Skill</type>
+					<name>Animal Handling</name>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Physician</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Surgery</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Demons</name>
+			<skill version="2">
+				<name>Hidden Lore</name>
+				<specialization>Demons</specialization>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B199</reference>
+				<categories>
+					<category>Knowledge</category>
+				</categories>
+			</skill>
+			<skill version="2">
+				<name>Theology</name>
+				<specialization>Abrahamic</specialization>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B226</reference>
+				<categories>
+					<category>Social Sciences/Humanities</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Religious Ritual</name>
+					<specialization>@Specialty@</specialization>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Free-Willed Spirits</name>
+			<notes>fae, in-betweeners, etc</notes>
+			<skill version="2">
+				<name>Hidden Lore</name>
+				<specialization>Free Spirits</specialization>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B199</reference>
+				<categories>
+					<category>Knowledge</category>
+				</categories>
+			</skill>
+			<skill version="2">
+				<name>Theology</name>
+				<specialization>Shamanic OR Voodoo</specialization>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B226</reference>
+				<categories>
+					<category>Social Sciences/Humanities</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Religious Ritual</name>
+					<specialization>@Specialty@</specialization>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Ghosts</name>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Psychotronics</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<specialization>Psychotronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Hidden Lore</name>
+				<specialization>Restless Undead</specialization>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B199</reference>
+				<categories>
+					<category>Knowledge</category>
+				</categories>
+			</skill>
+			<skill version="2">
+				<name>Physics</name>
+				<specialization>Paraphysics</specialization>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B213</reference>
+				<categories>
+					<category>Natural Science</category>
+				</categories>
+				<prereq_list all="yes">
+					<skill_prereq has="yes">
+						<name compare="is">mathematics</name>
+						<specialization compare="is">applied</specialization>
+					</skill_prereq>
+				</prereq_list>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Theology</name>
+				<specialization>Shamanic</specialization>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B226</reference>
+				<categories>
+					<category>Social Sciences/Humanities</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Religious Ritual</name>
+					<specialization>@Specialty@</specialization>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Lycanthropes</name>
+			<skill version="2">
+				<name>Hidden Lore</name>
+				<specialization>Lycanthropes</specialization>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B199</reference>
+				<categories>
+					<category>Knowledge</category>
+				</categories>
+			</skill>
+			<skill version="2">
+				<name>Veterinary</name>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B228</reference>
+				<categories>
+					<category>Animal</category>
+					<category>Medical</category>
+				</categories>
+				<default>
+					<type>Skill</type>
+					<name>Animal Handling</name>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Physician</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Surgery</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Mummies</name>
+			<skill version="2">
+				<name>Archaeology</name>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B176</reference>
+				<categories>
+					<category>Social Sciences/Humanities</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Hidden Lore</name>
+				<specialization>Mummies</specialization>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B199</reference>
+				<categories>
+					<category>Knowledge</category>
+				</categories>
+			</skill>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Outcast Angels</name>
+			<skill version="2">
+				<name>Hidden Lore</name>
+				<specialization>Angels</specialization>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B199</reference>
+				<categories>
+					<category>Knowledge</category>
+				</categories>
+			</skill>
+			<skill version="2">
+				<name>Theology</name>
+				<specialization>Abrahamic</specialization>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B226</reference>
+				<categories>
+					<category>Social Sciences/Humanities</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Religious Ritual</name>
+					<specialization>@Specialty@</specialization>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Parasites</name>
+			<skill version="2">
+				<name>Biology</name>
+				<specialization>@Specialty@</specialization>
+				<tech_level/>
+				<difficulty>IQ/VH</difficulty>
+				<points>1</points>
+				<reference>B180</reference>
+				<categories>
+					<category>Natural Science</category>
+					<category>Plant</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Naturalist</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Diagnosis</name>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B187</reference>
+				<categories>
+					<category>Medical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>First Aid</name>
+					<modifier>-8</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Physician</name>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Veterinary</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Rogue Psis</name>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Psychotronics</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<specialization>Psychotronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Expert Skill</name>
+				<specialization>Psionics</specialization>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B193</reference>
+				<categories>
+					<category>Knowledge</category>
+					<category>Occult/Magical</category>
+					<category>Scholarly</category>
+				</categories>
+			</skill>
+			<skill version="2">
+				<name>Physics</name>
+				<specialization>Paraphysics</specialization>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B213</reference>
+				<categories>
+					<category>Natural Science</category>
+				</categories>
+				<prereq_list all="yes">
+					<skill_prereq has="yes">
+						<name compare="is">mathematics</name>
+						<specialization compare="is">applied</specialization>
+					</skill_prereq>
+				</prereq_list>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Psychology</name>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B216</reference>
+				<categories>
+					<category>Social Sciences/Humanities</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Sociology</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Rogue Witches</name>
+			<skill version="2">
+				<name>Hidden Lore</name>
+				<specialization>Sacred Places</specialization>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B199</reference>
+				<categories>
+					<category>Knowledge</category>
+				</categories>
+			</skill>
+			<skill version="2">
+				<name>Psychology</name>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B216</reference>
+				<categories>
+					<category>Social Sciences/Humanities</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Sociology</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Thaumatology</name>
+				<difficulty>IQ/VH</difficulty>
+				<points>1</points>
+				<reference>B225</reference>
+				<categories>
+					<category>Occult/Magical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-7</modifier>
+				</default>
+			</skill>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Vampires</name>
+			<skill version="2">
+				<name>Hidden Lore</name>
+				<specialization>Vampires</specialization>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B199</reference>
+				<categories>
+					<category>Knowledge</category>
+				</categories>
+			</skill>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Zombies</name>
+			<notes>and Skeletons etc.</notes>
+			<skill version="2">
+				<name>Hidden Lore</name>
+				<specialization>Restless Undead</specialization>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B199</reference>
+				<categories>
+					<category>Knowledge</category>
+				</categories>
+			</skill>
+			<skill version="2">
+				<name>Theology</name>
+				<specialization>Voodoo</specialization>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B226</reference>
+				<categories>
+					<category>Social Sciences/Humanities</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Religious Ritual</name>
+					<specialization>@Specialty@</specialization>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+		</skill_container>
+	</skill_container>
+	<skill version="2">
+		<name>Path of Body</name>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>MH1:32</reference>
+		<categories>
+			<category>Occult/Magic</category>
+			<category>Ritual Path Magic</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Thaumatology</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+		<default>
+			<type>Skill</type>
+			<name>Thaumatology</name>
+			<modifier>-6</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Path of Change</name>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>MH1:32</reference>
+		<categories>
+			<category>Occult/Magic</category>
+			<category>Ritual Path Magic</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Thaumatology</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+		<default>
+			<type>Skill</type>
+			<name>Thaumatology</name>
+			<modifier>-6</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Path of Crossroads</name>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>MH1:32</reference>
+		<categories>
+			<category>Occult/Magic</category>
+			<category>Ritual Path Magic</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Thaumatology</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+		<default>
+			<type>Skill</type>
+			<name>Thaumatology</name>
+			<modifier>-6</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Path of Energy</name>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>MH1:32</reference>
+		<categories>
+			<category>Occult/Magic</category>
+			<category>Ritual Path Magic</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Thaumatology</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+		<default>
+			<type>Skill</type>
+			<name>Thaumatology</name>
+			<modifier>-6</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Path of Magic</name>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>MH1:33</reference>
+		<categories>
+			<category>Occult/Magic</category>
+			<category>Ritual Path Magic</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Thaumatology</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+		<default>
+			<type>Skill</type>
+			<name>Thaumatology</name>
+			<modifier>-6</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Path of Matter</name>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>MH1:33</reference>
+		<categories>
+			<category>Occult/Magic</category>
+			<category>Ritual Path Magic</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Thaumatology</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+		<default>
+			<type>Skill</type>
+			<name>Thaumatology</name>
+			<modifier>-6</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Path of Mind</name>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>MH1:33</reference>
+		<categories>
+			<category>Occult/Magic</category>
+			<category>Ritual Path Magic</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Thaumatology</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+		<default>
+			<type>Skill</type>
+			<name>Thaumatology</name>
+			<modifier>-6</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Path of Spirit</name>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>MH1:33</reference>
+		<categories>
+			<category>Occult/Magic</category>
+			<category>Ritual Path Magic</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Thaumatology</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+		<default>
+			<type>Skill</type>
+			<name>Thaumatology</name>
+			<modifier>-6</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Path of Undead</name>
+		<difficulty>IQ/VH</difficulty>
+		<points>1</points>
+		<reference>MH1:33</reference>
+		<categories>
+			<category>Occult/Magic</category>
+			<category>Ritual Path Magic</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Thaumatology</name>
+				<specialization compare="is anything"></specialization>
+			</skill_prereq>
+		</prereq_list>
+		<default>
+			<type>Skill</type>
+			<name>Thaumatology</name>
+			<modifier>-6</modifier>
+		</default>
+	</skill>
+</skill_list>

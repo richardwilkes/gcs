@@ -1,0 +1,3 @@
+- Default key isn't working in some dialogs (text field is consuming it instead)
+- Templates REALLY need a way to be applied more sensibly
+- Should be able to delete, rename, move, duplicate from the Library

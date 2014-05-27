@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="g4rf47af:-sdlutqlrup2d" version="1">
+	<skill_list>
+		<skill_container version="2" open="yes">
+			<name>Adventurer</name>
+			<skill version="2">
+				<name>First Aid</name>
+				<tech_level/>
+				<difficulty>IQ/E</difficulty>
+				<points>1</points>
+				<reference>B195</reference>
+				<categories>
+					<category>Everyman</category>
+					<category>Medical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Esoteric Medicine</name>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Physician</name>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Veterinary</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill_container version="2" open="yes">
+				<name>People Skills</name>
+				<notes>pick one of these</notes>
+				<skill version="2">
+					<name>Savoir-Faire</name>
+					<specialization>High Society</specialization>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B218</reference>
+					<categories>
+						<category>Business</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Savoir-Faire</name>
+						<specialization>Servant</specialization>
+						<modifier>-2</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Savoir-Faire</name>
+					<specialization>Mafia</specialization>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B218</reference>
+					<categories>
+						<category>Criminal/Street</category>
+						<category>Knowledge</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Streetwise</name>
+						<modifier>-3</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Savoir-Faire</name>
+					<specialization>Military</specialization>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B218</reference>
+					<categories>
+						<category>Knowledge</category>
+						<category>Military</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Streetwise</name>
+					<difficulty>IQ/A</difficulty>
+					<points>1</points>
+					<reference>B223</reference>
+					<categories>
+						<category>Criminal/Street</category>
+						<category>Police</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+			</skill_container>
+			<skill version="2">
+				<name>Gesture</name>
+				<difficulty>IQ/E</difficulty>
+				<points>1</points>
+				<reference>B198</reference>
+				<categories>
+					<category>Social</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill_container version="2" open="yes">
+				<name>Influence Skills</name>
+				<notes>pick one of these</notes>
+				<skill version="2">
+					<name>Carousing</name>
+					<difficulty>HT/E</difficulty>
+					<points>1</points>
+					<reference>B183</reference>
+					<categories>
+						<category>Criminal/Street</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>HT</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Diplomacy</name>
+					<difficulty>IQ/H</difficulty>
+					<points>1</points>
+					<reference>B187</reference>
+					<categories>
+						<category>Business</category>
+						<category>Police</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-6</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Politics</name>
+						<modifier>-6</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Fast-Talk</name>
+					<difficulty>IQ/A</difficulty>
+					<points>1</points>
+					<reference>B195</reference>
+					<categories>
+						<category>Criminal/Street</category>
+						<category>Social</category>
+						<category>Spy</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Acting</name>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Interrogation</name>
+					<difficulty>IQ/A</difficulty>
+					<points>1</points>
+					<reference>B202</reference>
+					<categories>
+						<category>Military</category>
+						<category>Police</category>
+						<category>Spy</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Intimidation</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Psychology</name>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+			</skill_container>
+			<skill_container version="2" open="yes">
+				<name>Looking Skills</name>
+				<notes>pick one of these</notes>
+				<skill version="2">
+					<name>Observation</name>
+					<difficulty>Per/A</difficulty>
+					<points>1</points>
+					<reference>B211</reference>
+					<categories>
+						<category>Criminal/Street</category>
+						<category>Military</category>
+						<category>Police</category>
+						<category>Spy</category>
+					</categories>
+					<default>
+						<type>Per</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shadowing</name>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Scrounging</name>
+					<difficulty>Per/E</difficulty>
+					<points>1</points>
+					<reference>B218</reference>
+					<categories>
+						<category>Criminal/Street</category>
+					</categories>
+					<default>
+						<type>Per</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Search</name>
+					<difficulty>Per/A</difficulty>
+					<points>1</points>
+					<reference>B219</reference>
+					<categories>
+						<category>Police</category>
+						<category>Spy</category>
+					</categories>
+					<default>
+						<type>Per</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Criminology</name>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+			</skill_container>
+			<skill_container version="2" open="yes">
+				<name>Outdoor Skills</name>
+				<notes>take all of these</notes>
+				<skill version="2">
+					<name>Climbing</name>
+					<encumbrance_penalty_multiplier>1</encumbrance_penalty_multiplier>
+					<difficulty>DX/A</difficulty>
+					<points>1</points>
+					<reference>B183</reference>
+					<categories>
+						<category>Athletic</category>
+						<category>Criminal/Street</category>
+						<category>Outdoor/Exploration</category>
+					</categories>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Hiking</name>
+					<difficulty>HT/A</difficulty>
+					<points>1</points>
+					<reference>B200</reference>
+					<categories>
+						<category>Athletic</category>
+						<category>Outdoor/Exploration</category>
+					</categories>
+					<default>
+						<type>HT</type>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Stealth</name>
+					<encumbrance_penalty_multiplier>1</encumbrance_penalty_multiplier>
+					<difficulty>DX/A</difficulty>
+					<points>1</points>
+					<reference>B222</reference>
+					<categories>
+						<category>Criminal/Street</category>
+						<category>Police</category>
+						<category>Spy</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+			</skill_container>
+			<skill_container version="2" open="yes">
+				<name>Vehicle Skills</name>
+				<notes>pick one of these</notes>
+				<skill version="2">
+					<name>Driving</name>
+					<specialization>Automobile</specialization>
+					<tech_level/>
+					<difficulty>DX/A</difficulty>
+					<points>1</points>
+					<reference>B188</reference>
+					<categories>
+						<category>Vehicle</category>
+					</categories>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Driving</name>
+						<specialization>Heavy Wheeled</specialization>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Driving</name>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Driving</name>
+					<specialization>Motorcycle</specialization>
+					<tech_level/>
+					<difficulty>DX/A</difficulty>
+					<points>1</points>
+					<reference>B188</reference>
+					<categories>
+						<category>Vehicle</category>
+					</categories>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Bicycling</name>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Riding</name>
+					<specialization>Camel</specialization>
+					<difficulty>DX/A</difficulty>
+					<points>1</points>
+					<reference>B217</reference>
+					<categories>
+						<category>Animal</category>
+					</categories>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Animal Handling</name>
+						<specialization>Camel</specialization>
+						<modifier>-3</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Riding</name>
+					<specialization>Equine</specialization>
+					<difficulty>DX/A</difficulty>
+					<points>1</points>
+					<reference>B217</reference>
+					<categories>
+						<category>Animal</category>
+					</categories>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Animal Handling</name>
+						<specialization>Equine</specialization>
+						<modifier>-3</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Teamster</name>
+					<specialization>Equines</specialization>
+					<difficulty>IQ/A</difficulty>
+					<points>1</points>
+					<reference>B225</reference>
+					<categories>
+						<category>Animal</category>
+						<category>Vehicle</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Animal Handling</name>
+						<specialization>Equines</specialization>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Riding</name>
+						<specialization>Equines</specialization>
+						<modifier>-2</modifier>
+					</default>
+				</skill>
+			</skill_container>
+		</skill_container>
+	</skill_list>
+</template>
