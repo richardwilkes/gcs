@@ -185,11 +185,11 @@ public class GCSImages {
 		CmdLineOption appOption = new CmdLineOption("Generate just the 128x128 app icon", null, "app");
 		CmdLineOption dirOption = new CmdLineOption("The directory to place the generated files into", "DIR", "dir");
 		CmdLine cmdline = new CmdLine();
-		cmdline.addOptions(icnsOption, icoOption, dirOption);
+		cmdline.addOptions(icnsOption, icoOption, appOption, dirOption);
 		cmdline.processArguments(args);
 		boolean icns = cmdline.isOptionUsed(icnsOption);
 		boolean ico = cmdline.isOptionUsed(icoOption);
-		boolean app = cmdline.isOptionUsed(icoOption);
+		boolean app = cmdline.isOptionUsed(appOption);
 		if (!icns && !ico && !app) {
 			System.err.printf("At least one of %s, %s, or %s must be specified.\n", icnsOption, icoOption, appOption);
 			System.exit(1);
