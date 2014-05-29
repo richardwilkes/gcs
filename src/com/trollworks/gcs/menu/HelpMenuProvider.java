@@ -66,13 +66,13 @@ public class HelpMenuProvider implements MenuProvider {
 		}
 		menu.add(new JMenuItem(UpdateCommand.INSTANCE));
 		menu.addSeparator();
-		menu.add(new JMenuItem(new OpenURICommand(RELEASE_NOTES, "http://gurpscharactersheet.com/Release_Notes"))); //$NON-NLS-1$
+		menu.add(new JMenuItem(new OpenURICommand(RELEASE_NOTES, "http://gurpscharactersheet.com/release_notes.php"))); //$NON-NLS-1$
 		menu.add(new JMenuItem(new OpenURICommand(LICENSE, App.getHomePath().resolve("license.html").toUri()))); //$NON-NLS-1$
 		menu.addSeparator();
 		menu.add(new JMenuItem(new OpenURICommand(WEB_SITE, "http://gurpscharactersheet.com"))); //$NON-NLS-1$
-		menu.add(new JMenuItem(new OpenURICommand(MAILING_LISTS, "http://sourceforge.net/mail/?group_id=185516"))); //$NON-NLS-1$
-		menu.add(new JMenuItem(new OpenURICommand(FEATURES, "http://sourceforge.net/tracker/?atid=913592&group_id=185516&func=browse"))); //$NON-NLS-1$
-		menu.add(new JMenuItem(new OpenURICommand(BUGS, "http://sourceforge.net/tracker/?atid=913589&group_id=185516&func=browse"))); //$NON-NLS-1$
+		menu.add(new JMenuItem(new OpenURICommand(MAILING_LISTS, "http://gurpscharactersheet.com/mailing_lists.php"))); //$NON-NLS-1$
+		menu.add(new JMenuItem(new OpenURICommand(FEATURES, "http://sourceforge.net/p/gcs-java/feature-requests"))); //$NON-NLS-1$
+		menu.add(new JMenuItem(new OpenURICommand(BUGS, "http://sourceforge.net/p/gcs-java/bugs"))); //$NON-NLS-1$
 		DynamicMenuEnabler.add(menu);
 		return menu;
 	}
