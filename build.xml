@@ -17,6 +17,12 @@
 	<property if:true="${platform.mac}" name="platform" value="mac"/>
 	<property if:true="${platform.windows}" name="platform" value="windows"/>
 	<property if:true="${platform.linux}" name="platform" value="linux"/>
+	<condition property="platformWithBits" value="${platform}-32" else="${platform}">
+		<and>
+			<os family="unix"/>
+			<os name="i386"/>
+		</and>
+	</condition>
 
 	<property name="app" value="gcs"/>
 	<property if:true="${platform.windows}" name="app.exe" value="${app}.exe"/>
@@ -110,12 +116,12 @@
 	<target name="clean_bundle" description="Cleans up after a bundle build">
 		<delete dir="${build_root}"/>
 		<delete>
-			<fileset dir="." includes="gcs-*-${platform}.zip"/>
+			<fileset dir="." includes="${app}-*-${platformWithBits}.zip"/>
 		</delete>
 	</target>
 	
 	<target name="bundle" description="Create a distribution bundle" depends="clean_bundle">
-		<property name="dist.name" value="${app}-${primary_version}-${platform}"/>
+		<property name="dist.name" value="${app}-${primary_version}-${platformWithBits}"/>
 		<property name="dist.root" value="${dist.build}/${dist.name}"/>
 		<property if:true="${platform.mac}" name="mac.bundle" value="${dist.root}/${app_name}.app/Contents"/>
 		<property if:true="${platform.mac}" name="app.dir" value="${mac.bundle}/MacOS"/>
@@ -129,7 +135,7 @@
 
 		<!-- Copy the launcher. -->
 		<mkdir dir="${app.dir}"/>
-		<copy file="launcher/${platform}/${app.exe}" todir="${app.dir}"/>
+		<copy file="launcher/${platformWithBits}/${app.exe}" todir="${app.dir}"/>
 		<chmod file="${app.dir}/${app.exe}" perm="+x"/>
 
 		<!-- Copy the jars. -->
@@ -191,7 +197,7 @@
 			<property name="platform.mac" value="${platform.mac}"/>
 			<property name="platform.windows" value="${platform.windows}"/>
 			<property name="platform.linux" value="${platform.linux}"/>
-			<property name="app.dir" location="launcher/${platform}"/>
+			<property name="app.dir" location="launcher/${platformWithBits}"/>
 			<property name="app.name" value="${app_name}"/>
 			<property name="app.exe" value="${app.exe}"/>
 			<property if:true="${platform.windows}" name="app.icon.dir" location="${app.icons}"/>
