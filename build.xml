@@ -193,6 +193,7 @@
 	</target>
 
 	<target name="build_launcher_exe" description="Build the native launcher">
+		<mkdir dir="launcher/${platformWithBits}"/>
 		<ant dir="../toolkit" target="launcher" inheritall="false">
 			<property name="platform.mac" value="${platform.mac}"/>
 			<property name="platform.windows" value="${platform.windows}"/>
