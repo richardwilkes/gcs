@@ -20,7 +20,7 @@
 	<condition property="platformWithBits" value="${platform}-32" else="${platform}">
 		<and>
 			<os family="unix"/>
-			<os name="i386"/>
+			<os arch="i386"/>
 		</and>
 	</condition>
 
