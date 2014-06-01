@@ -206,22 +206,31 @@
 			<property if:true="${platform.linux}" name="app.keywords" value="Roleplaying"/>
 		</ant>
 	</target>
-	
+
 	<target name="bundle_all" description="Create distribution bundles for all platforms">
 		<antcall target="bundle" inheritall="no">
 			<param name="platform.mac" value="true"/>
 			<param name="platform.windows" value="false"/>
 			<param name="platform.linux" value="false"/>
-		</antcall>
-		<antcall target="bundle" inheritall="no">
-			<param name="platform.mac" value="false"/>
-			<param name="platform.windows" value="false"/>
-			<param name="platform.linux" value="true"/>
+			<param name="platformWithBits" value="mac"/>
 		</antcall>
 		<antcall target="bundle" inheritall="no">
 			<param name="platform.mac" value="false"/>
 			<param name="platform.windows" value="true"/>
 			<param name="platform.linux" value="false"/>
+			<param name="platformWithBits" value="windows"/>
+		</antcall>
+		<antcall target="bundle" inheritall="no">
+			<param name="platform.mac" value="false"/>
+			<param name="platform.windows" value="false"/>
+			<param name="platform.linux" value="true"/>
+			<param name="platformWithBits" value="linux"/>
+		</antcall>
+		<antcall target="bundle" inheritall="no">
+			<param name="platform.mac" value="false"/>
+			<param name="platform.windows" value="false"/>
+			<param name="platform.linux" value="true"/>
+			<param name="platformWithBits" value="linux-32"/>
 		</antcall>
 	</target>
 </project>
