@@ -20,6 +20,7 @@ import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.widget.EditorField;
+import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
 
@@ -48,8 +49,6 @@ public class SkillDefaultEditor extends EditorPanel {
 		Localization.initialize();
 	}
 
-	private static final String		ADD				= "Add";				//$NON-NLS-1$
-	private static final String		REMOVE			= "Remove";			//$NON-NLS-1$
 	private static SkillDefaultType	LAST_ITEM_TYPE	= SkillDefaultType.DX;
 	private SkillDefault			mDefault;
 	private JComboBox<?>			mTypeCombo;
@@ -127,15 +126,21 @@ public class SkillDefaultEditor extends EditorPanel {
 
 			row = new FlexRow();
 			row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
-			row.add(addButton(StdImage.REMOVE, REMOVE, REMOVE_DEFAULT));
-			row.add(addButton(StdImage.ADD, ADD, ADD_DEFAULT));
+			IconButton button = new IconButton(StdImage.REMOVE, REMOVE_DEFAULT, () -> removeDefault());
+			add(button);
+			row.add(button);
+			button = new IconButton(StdImage.ADD, ADD_DEFAULT, () -> addDefault());
+			add(button);
+			row.add(button);
 			grid.add(row, 0, 2);
 			grid.apply(this);
 		} else {
 			FlexRow row = new FlexRow();
 			row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
 			row.add(new FlexSpacer(0, 0, true, false));
-			row.add(addButton(StdImage.ADD, ADD, ADD_DEFAULT));
+			IconButton button = new IconButton(StdImage.ADD, ADD_DEFAULT, () -> addDefault());
+			add(button);
+			row.add(button);
 			row.apply(this);
 		}
 
@@ -146,6 +151,29 @@ public class SkillDefaultEditor extends EditorPanel {
 	/** @return The underlying skill default. */
 	public SkillDefault getSkillDefault() {
 		return mDefault;
+	}
+
+	private void addDefault() {
+		SkillDefault skillDefault = new SkillDefault(LAST_ITEM_TYPE, LAST_ITEM_TYPE.isSkillBased() ? "" : null, null, 0); //$NON-NLS-1$
+		JComponent parent = (JComponent) getParent();
+		parent.add(new SkillDefaultEditor(skillDefault));
+		if (mDefault == null) {
+			parent.remove(this);
+		}
+		parent.revalidate();
+		parent.repaint();
+		notifyActionListeners();
+	}
+
+	private void removeDefault() {
+		JComponent parent = (JComponent) getParent();
+		parent.remove(this);
+		if (parent.getComponentCount() == 0) {
+			parent.add(new SkillDefaultEditor());
+		}
+		parent.revalidate();
+		parent.repaint();
+		notifyActionListeners();
 	}
 
 	@Override
@@ -169,26 +197,7 @@ public class SkillDefaultEditor extends EditorPanel {
 	public void actionPerformed(ActionEvent event) {
 		Object src = event.getSource();
 		String command = event.getActionCommand();
-		JComponent parent = (JComponent) getParent();
-
-		if (ADD.equals(command)) {
-			SkillDefault skillDefault = new SkillDefault(LAST_ITEM_TYPE, LAST_ITEM_TYPE.isSkillBased() ? "" : null, null, 0); //$NON-NLS-1$
-			parent.add(new SkillDefaultEditor(skillDefault));
-			if (mDefault == null) {
-				parent.remove(this);
-			}
-			parent.revalidate();
-			parent.repaint();
-			notifyActionListeners();
-		} else if (REMOVE.equals(command)) {
-			parent.remove(this);
-			if (parent.getComponentCount() == 0) {
-				parent.add(new SkillDefaultEditor());
-			}
-			parent.revalidate();
-			parent.repaint();
-			notifyActionListeners();
-		} else if (SkillDefault.TAG_TYPE.equals(command)) {
+		if (SkillDefault.TAG_TYPE.equals(command)) {
 			SkillDefaultType current = mDefault.getType();
 			SkillDefaultType value = (SkillDefaultType) ((JComboBox<?>) src).getSelectedItem();
 			if (!current.equals(value)) {

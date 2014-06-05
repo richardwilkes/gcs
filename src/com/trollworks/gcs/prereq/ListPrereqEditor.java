@@ -20,6 +20,7 @@ import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
+import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.event.ActionEvent;
@@ -52,8 +53,6 @@ public class ListPrereqEditor extends PrereqEditor {
 
 	private static Class<?>		LAST_ITEM_TYPE	= AdvantagePrereq.class;
 	private static final String	ANY_ALL			= "AnyAll";				//$NON-NLS-1$
-	private static final String	ADD_PREREQ		= "AddPrereq";				//$NON-NLS-1$
-	private static final String	ADD_PREREQ_LIST	= "AddPrereqList";			//$NON-NLS-1$
 	private static final String	WHEN_TL			= "WhenTL";				//$NON-NLS-1$
 
 	/** @param type The last item type created or switched to. */
@@ -99,8 +98,24 @@ public class ListPrereqEditor extends PrereqEditor {
 
 		grid.add(new FlexSpacer(0, 0, true, false), 0, 1);
 
-		right.add(addButton(StdImage.MORE, ADD_PREREQ_LIST, ADD_PREREQ_LIST_TOOLTIP));
-		right.add(addButton(StdImage.ADD, ADD_PREREQ, ADD_PREREQ_TOOLTIP));
+		IconButton button = new IconButton(StdImage.MORE, ADD_PREREQ_LIST_TOOLTIP, () -> addPrereqList());
+		add(button);
+		right.add(button);
+		button = new IconButton(StdImage.ADD, ADD_PREREQ_TOOLTIP, () -> addPrereq());
+		add(button);
+	}
+
+	private void addPrereqList() {
+		addItem(new PrereqList((PrereqList) mPrereq, true));
+	}
+
+	private void addPrereq() {
+		try {
+			addItem((Prereq) LAST_ITEM_TYPE.getConstructor(PrereqList.class).newInstance(mPrereq));
+		} catch (Exception exception) {
+			// Shouldn't have a failure...
+			exception.printStackTrace(System.err);
+		}
 	}
 
 	@Override
@@ -109,15 +124,6 @@ public class ListPrereqEditor extends PrereqEditor {
 		if (ANY_ALL.equals(command)) {
 			((PrereqList) mPrereq).setRequiresAll(((JComboBox<?>) event.getSource()).getSelectedIndex() == 0);
 			getParent().repaint();
-		} else if (ADD_PREREQ.equals(command)) {
-			try {
-				addItem((Prereq) LAST_ITEM_TYPE.getConstructor(PrereqList.class).newInstance(mPrereq));
-			} catch (Exception exception) {
-				// Shouldn't have a failure...
-				exception.printStackTrace(System.err);
-			}
-		} else if (ADD_PREREQ_LIST.equals(command)) {
-			addItem(new PrereqList((PrereqList) mPrereq, true));
 		} else if (WHEN_TL.equals(command)) {
 			PrereqList prereqList = (PrereqList) mPrereq;
 			IntegerCriteria whenTLCriteria = prereqList.getWhenTLCriteria();

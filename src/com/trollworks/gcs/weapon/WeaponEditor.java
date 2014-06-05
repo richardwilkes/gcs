@@ -13,7 +13,6 @@ package com.trollworks.gcs.weapon;
 
 import com.trollworks.gcs.skill.Defaults;
 import com.trollworks.gcs.skill.SkillDefault;
-import com.trollworks.gcs.widgets.IconButton;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.Selection;
@@ -22,6 +21,7 @@ import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.widget.EditorField;
+import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
@@ -54,6 +54,8 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 	private static String					DAMAGE;
 	@Localize("Minimum Strength")
 	private static String					MINIMUM_STRENGTH;
+	@Localize("Add a weapon")
+	private static String					ADD_TOOLTIP;
 
 	static {
 		Localization.initialize();
@@ -83,8 +85,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 		super(new BorderLayout());
 		mOwner = owner;
 		mWeaponClass = weaponClass;
-		mAddButton = new IconButton(StdImage.ADD);
-		mAddButton.addActionListener(this);
+		mAddButton = new IconButton(StdImage.ADD, ADD_TOOLTIP, () -> addWeapon());
 		add(mAddButton, BorderLayout.WEST);
 		add(createOutline(weapons, weaponClass), BorderLayout.NORTH);
 		add(createEditorPanel(), BorderLayout.CENTER);

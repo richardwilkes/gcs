@@ -15,7 +15,6 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
-import com.trollworks.gcs.widgets.IconButton;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.annotation.Localize;
@@ -23,6 +22,7 @@ import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.collections.FilteredList;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.ActionPanel;
+import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.utility.Localization;
@@ -41,6 +41,8 @@ import javax.swing.ScrollPaneConstants;
 public class ModifierListEditor extends ActionPanel implements ActionListener {
 	@Localize("Modifiers")
 	private static String	MODIFIERS;
+	@Localize("Add a modifier")
+	private static String	ADD_TOOLTIP;
 
 	static {
 		Localization.initialize();
@@ -91,10 +93,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		Object source = event.getSource();
-
-		if (mAddButton == source) {
-			addModifier();
-		} else if (mOutline == source) {
+		if (mOutline == source) {
 			handleOutline(event.getActionCommand());
 		}
 	}
@@ -109,8 +108,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 		JScrollPane scroller;
 		OutlineModel model;
 
-		mAddButton = new IconButton(StdImage.ADD);
-		mAddButton.addActionListener(this);
+		mAddButton = new IconButton(StdImage.ADD, ADD_TOOLTIP, () -> addModifier());
 
 		mOutline = new ModifierOutline();
 		model = mOutline.getModel();

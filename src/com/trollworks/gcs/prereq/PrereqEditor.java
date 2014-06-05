@@ -18,6 +18,7 @@ import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
+import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.event.ActionEvent;
@@ -50,7 +51,6 @@ public abstract class PrereqEditor extends EditorPanel {
 		Localization.initialize();
 	}
 
-	private static final String		REMOVE				= "Remove";																															//$NON-NLS-1$
 	private static final String		CHANGE_BASE_TYPE	= "ChangeBaseType";																													//$NON-NLS-1$
 	private static final String		CHANGE_HAS			= "ChangeHas";																															//$NON-NLS-1$
 	private static final Class<?>[]	BASE_TYPES			= new Class<?>[] { AttributePrereq.class, AdvantagePrereq.class, SkillPrereq.class, SpellPrereq.class, ContainedWeightPrereq.class };
@@ -120,7 +120,9 @@ public abstract class PrereqEditor extends EditorPanel {
 		grid.add(left, 0, 0);
 		rebuildSelf(left, grid, right);
 		if (mDepth > 0) {
-			right.add(addButton(StdImage.REMOVE, REMOVE, mPrereq instanceof PrereqList ? REMOVE_PREREQ_LIST_TOOLTIP : REMOVE_PREREQ_TOOLTIP));
+			IconButton button = new IconButton(StdImage.REMOVE, mPrereq instanceof PrereqList ? REMOVE_PREREQ_LIST_TOOLTIP : REMOVE_PREREQ_TOOLTIP, () -> remove());
+			add(button);
+			right.add(button);
 		}
 		grid.add(right, 0, 2);
 		grid.apply(this);
@@ -170,6 +172,18 @@ public abstract class PrereqEditor extends EditorPanel {
 		return mPrereq;
 	}
 
+	private void remove() {
+		JComponent parent = (JComponent) getParent();
+		int index = UIUtilities.getIndexOf(parent, this);
+		int count = countSelfAndDescendents(mPrereq);
+		for (int i = 0; i < count; i++) {
+			parent.remove(index);
+		}
+		mPrereq.removeFromParent();
+		parent.revalidate();
+		parent.repaint();
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
@@ -199,16 +213,6 @@ public abstract class PrereqEditor extends EditorPanel {
 			}
 		} else if (CHANGE_HAS.equals(command)) {
 			((HasPrereq) mPrereq).has(((JComboBox<?>) event.getSource()).getSelectedIndex() == 0);
-		} else if (REMOVE.equals(command)) {
-			JComponent parent = (JComponent) getParent();
-			int index = UIUtilities.getIndexOf(parent, this);
-			int count = countSelfAndDescendents(mPrereq);
-			for (int i = 0; i < count; i++) {
-				parent.remove(index);
-			}
-			mPrereq.removeFromParent();
-			parent.revalidate();
-			parent.repaint();
 		} else {
 			super.actionPerformed(event);
 		}

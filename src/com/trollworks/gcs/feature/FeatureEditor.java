@@ -19,6 +19,7 @@ import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.widget.EditorField;
+import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.DoubleFormatter;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
@@ -59,8 +60,6 @@ public abstract class FeatureEditor extends EditorPanel {
 		Localization.initialize();
 	}
 
-	private static final String		ADD					= "Add";																																//$NON-NLS-1$
-	private static final String		REMOVE				= "Remove";																															//$NON-NLS-1$
 	private static final String		CHANGE_BASE_TYPE	= "ChangeBaseType";																													//$NON-NLS-1$
 	private static final String		BLANK				= " ";																																	//$NON-NLS-1$
 	private static final Class<?>[]	BASE_TYPES			= new Class<?>[] { AttributeBonus.class, DRBonus.class, SkillBonus.class, SpellBonus.class, WeaponBonus.class, CostReduction.class };
@@ -119,9 +118,13 @@ public abstract class FeatureEditor extends EditorPanel {
 		FlexRow right = new FlexRow();
 		rebuildSelf(grid, right);
 		if (mFeature != null) {
-			right.add(addButton(StdImage.REMOVE, REMOVE, REMOVE_FEATURE_TOOLTIP));
+			IconButton button = new IconButton(StdImage.REMOVE, REMOVE_FEATURE_TOOLTIP, () -> removeFeature());
+			add(button);
+			right.add(button);
 		}
-		right.add(addButton(StdImage.ADD, ADD, ADD_FEATURE_TOOLTIP));
+		IconButton button = new IconButton(StdImage.ADD, ADD_FEATURE_TOOLTIP, () -> addFeature());
+		add(button);
+		right.add(button);
 		grid.add(right, 0, 1);
 		grid.apply(this);
 		revalidate();
@@ -194,6 +197,30 @@ public abstract class FeatureEditor extends EditorPanel {
 		return mFeature;
 	}
 
+	private void addFeature() {
+		JComponent parent = (JComponent) getParent();
+		try {
+			parent.add(create(mRow, (Feature) LAST_ITEM_TYPE.newInstance()));
+		} catch (Exception exception) {
+			// Shouldn't have a failure...
+			exception.printStackTrace(System.err);
+		}
+		if (mFeature == null) {
+			parent.remove(this);
+		}
+		parent.revalidate();
+	}
+
+	private void removeFeature() {
+		JComponent parent = (JComponent) getParent();
+		parent.remove(this);
+		if (parent.getComponentCount() == 0) {
+			parent.add(new NoFeature(mRow));
+		}
+		parent.revalidate();
+		parent.repaint();
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
@@ -215,24 +242,6 @@ public abstract class FeatureEditor extends EditorPanel {
 				parent.revalidate();
 				parent.repaint();
 			}
-		} else if (ADD.equals(command)) {
-			try {
-				parent.add(create(mRow, (Feature) LAST_ITEM_TYPE.newInstance()));
-			} catch (Exception exception) {
-				// Shouldn't have a failure...
-				exception.printStackTrace(System.err);
-			}
-			if (mFeature == null) {
-				parent.remove(this);
-			}
-			parent.revalidate();
-		} else if (REMOVE.equals(command)) {
-			parent.remove(this);
-			if (parent.getComponentCount() == 0) {
-				parent.add(new NoFeature(mRow));
-			}
-			parent.revalidate();
-			parent.repaint();
 		} else {
 			super.actionPerformed(event);
 		}
