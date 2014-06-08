@@ -16,13 +16,13 @@ import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.collections.Enums;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.notification.Notifier;
+import com.trollworks.toolkit.utility.text.Enums;
 import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.io.IOException;
@@ -383,13 +383,13 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 	protected void saveSelf(XMLWriter out, boolean forUndo) {
 		out.simpleTag(TAG_NAME, mName);
 		if (mCostType == CostType.MULTIPLIER) {
-			out.simpleTagWithAttribute(TAG_COST, mCostMultiplier, ATTRIBUTE_COST_TYPE, mCostType.name().toLowerCase());
+			out.simpleTagWithAttribute(TAG_COST, mCostMultiplier, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
 		} else {
-			out.simpleTagWithAttribute(TAG_COST, mCost, ATTRIBUTE_COST_TYPE, mCostType.name().toLowerCase());
+			out.simpleTagWithAttribute(TAG_COST, mCost, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
 		}
 		out.simpleTagNotZero(TAG_LEVELS, mLevels);
 		if (mCostType != CostType.MULTIPLIER) {
-			out.simpleTag(TAG_AFFECTS, mAffects.name().toLowerCase());
+			out.simpleTag(TAG_AFFECTS, Enums.toId(mAffects));
 		}
 		out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
 	}

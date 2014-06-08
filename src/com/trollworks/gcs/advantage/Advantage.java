@@ -25,13 +25,13 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.collections.Enums;
 import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.text.Enums;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -326,7 +326,7 @@ public class Advantage extends ListRow {
 	protected void saveAttributes(XMLWriter out, boolean forUndo) {
 		super.saveAttributes(out, forUndo);
 		if (canHaveChildren() && mContainerType != AdvantageContainerType.GROUP) {
-			out.writeAttribute(TAG_TYPE, mContainerType.name().toLowerCase());
+			out.writeAttribute(TAG_TYPE, Enums.toId(mContainerType));
 		}
 	}
 

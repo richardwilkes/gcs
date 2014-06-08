@@ -11,18 +11,16 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.collections.Enums;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.text.Enums;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -30,9 +28,9 @@ import java.text.MessageFormat;
 /** A Attribute prerequisite. */
 public class AttributePrereq extends HasPrereq {
 	@Localize("{0}{1} {2} which {3}\\n")
-	private static String DESCRIPTION;
+	private static String						DESCRIPTION;
 	@Localize("{0}+{1}")
-	private static String COMBINED;
+	private static String						COMBINED;
 
 	static {
 		Localization.initialize();
@@ -51,7 +49,7 @@ public class AttributePrereq extends HasPrereq {
 
 	/**
 	 * Creates a new prerequisite.
-	 * 
+	 *
 	 * @param parent The owning prerequisite list, if any.
 	 */
 	public AttributePrereq(PrereqList parent) {
@@ -63,7 +61,7 @@ public class AttributePrereq extends HasPrereq {
 
 	/**
 	 * Loads a prerequisite.
-	 * 
+	 *
 	 * @param parent The owning prerequisite list, if any.
 	 * @param reader The XML reader to load from.
 	 */
@@ -78,7 +76,7 @@ public class AttributePrereq extends HasPrereq {
 
 	/**
 	 * Creates a copy of the specified prerequisite.
-	 * 
+	 *
 	 * @param parent The owning prerequisite list, if any.
 	 * @param prereq The prerequisite to clone.
 	 */
@@ -120,11 +118,11 @@ public class AttributePrereq extends HasPrereq {
 	public void save(XMLWriter out) {
 		out.startTag(TAG_ROOT);
 		saveHasAttribute(out);
-		out.writeAttribute(ATTRIBUTE_WHICH, mWhich.name().toLowerCase());
+		out.writeAttribute(ATTRIBUTE_WHICH, Enums.toId(mWhich));
 		if (mCombinedWith != null) {
-			out.writeAttribute(ATTRIBUTE_COMBINED_WITH, mCombinedWith.name().toLowerCase());
+			out.writeAttribute(ATTRIBUTE_COMBINED_WITH, Enums.toId(mCombinedWith));
 		}
-		out.writeAttribute(ATTRIBUTE_COMPARE, mValueCompare.getType().name().toLowerCase());
+		out.writeAttribute(ATTRIBUTE_COMPARE, Enums.toId(mValueCompare.getType()));
 		out.finishTag();
 		out.writeEncodedData(Integer.toString(mValueCompare.getQualifier()));
 		out.endTagEOL(TAG_ROOT, false);

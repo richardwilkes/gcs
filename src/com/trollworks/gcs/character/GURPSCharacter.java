@@ -365,7 +365,7 @@ public class GURPSCharacter extends DataFile {
 		mIncludeKickBoots = true;
 		mCachedWeightCarried = new WeightValue(0, SheetPreferences.getWeightUnits());
 		try {
-			mPageSettings = new PrintManager(PageOrientation.PORTRAIT, 0.5, LengthUnits.INCHES);
+			mPageSettings = new PrintManager(PageOrientation.PORTRAIT, 0.5, LengthUnits.IN);
 		} catch (Exception exception) {
 			mPageSettings = null;
 		}
@@ -575,7 +575,7 @@ public class GURPSCharacter extends DataFile {
 		saveList(EquipmentList.TAG_ROOT, mEquipment, out);
 
 		if (mPageSettings != null) {
-			mPageSettings.save(out, LengthUnits.INCHES);
+			mPageSettings.save(out, LengthUnits.IN);
 		}
 	}
 
@@ -1104,7 +1104,7 @@ public class GURPSCharacter extends DataFile {
 		if (value >= 10.0) {
 			value = Math.round(value);
 		}
-		return new WeightValue(desiredUnits.convert(WeightUnits.POUNDS, value), desiredUnits);
+		return new WeightValue(desiredUnits.convert(WeightUnits.LB, value), desiredUnits);
 	}
 
 	private WeightValue getMultipleOfBasicLift(double multiple) {
@@ -1148,10 +1148,10 @@ public class GURPSCharacter extends DataFile {
 	 * @return The maximum amount the character can carry for the specified encumbrance level.
 	 */
 	public WeightValue getMaximumCarry(Encumbrance encumbrance) {
-		WeightValue lift = getBasicLift(WeightUnits.POUNDS);
+		WeightValue lift = getBasicLift(WeightUnits.LB);
 		lift.setValue(Math.floor(lift.getValue() * encumbrance.getWeightMultiplier() * 10.0) / 10.0);
 		WeightUnits desiredUnits = SheetPreferences.getWeightUnits();
-		return new WeightValue(desiredUnits.convert(WeightUnits.POUNDS, lift.getValue()), desiredUnits);
+		return new WeightValue(desiredUnits.convert(WeightUnits.LB, lift.getValue()), desiredUnits);
 	}
 
 	/**

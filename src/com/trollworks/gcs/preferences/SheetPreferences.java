@@ -30,6 +30,7 @@ import com.trollworks.toolkit.utility.Dice;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.Preferences;
+import com.trollworks.toolkit.utility.text.Enums;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.units.LengthUnits;
 import com.trollworks.toolkit.utility.units.WeightUnits;
@@ -134,11 +135,11 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private static final String			LENGTH_UNITS_KEY					= "LengthUnits";													//$NON-NLS-1$
 	/** The default length units preference key. */
 	public static final String			LENGTH_UNITS_PREF_KEY				= Preferences.getModuleKey(MODULE, LENGTH_UNITS_KEY);
-	private static final LengthUnits	DEFAULT_LENGTH_UNITS				= LengthUnits.FEET_AND_INCHES;
+	private static final LengthUnits	DEFAULT_LENGTH_UNITS				= LengthUnits.FT_IN;
 	private static final String			WEIGHT_UNITS_KEY					= "WeightUnits";													//$NON-NLS-1$
 	/** The default weight units preference key. */
 	public static final String			WEIGHT_UNITS_PREF_KEY				= Preferences.getModuleKey(MODULE, WEIGHT_UNITS_KEY);
-	private static final WeightUnits	DEFAULT_WEIGHT_UNITS				= WeightUnits.POUNDS;
+	private static final WeightUnits	DEFAULT_WEIGHT_UNITS				= WeightUnits.LB;
 	private static final int			DEFAULT_PNG_RESOLUTION				= 200;
 	private static final String			PNG_RESOLUTION_KEY					= "PNGResolution";													//$NON-NLS-1$
 	private static final int[]			DPI									= { 72, 96, 144, 150, 200, 300 };
@@ -170,20 +171,12 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 	/** @return The default length units to use. */
 	public static LengthUnits getLengthUnits() {
-		try {
-			return LengthUnits.valueOf(Preferences.getInstance().getStringValue(MODULE, LENGTH_UNITS_KEY, DEFAULT_LENGTH_UNITS.name()));
-		} catch (Exception exception) {
-			return DEFAULT_LENGTH_UNITS;
-		}
+		return Enums.extract(Preferences.getInstance().getStringValue(MODULE, LENGTH_UNITS_KEY), LengthUnits.values(), DEFAULT_LENGTH_UNITS);
 	}
 
 	/** @return The default weight units to use. */
 	public static WeightUnits getWeightUnits() {
-		try {
-			return WeightUnits.valueOf(Preferences.getInstance().getStringValue(MODULE, WEIGHT_UNITS_KEY, DEFAULT_WEIGHT_UNITS.name()));
-		} catch (Exception exception) {
-			return DEFAULT_WEIGHT_UNITS;
-		}
+		return Enums.extract(Preferences.getInstance().getStringValue(MODULE, WEIGHT_UNITS_KEY), WeightUnits.values(), DEFAULT_WEIGHT_UNITS);
 	}
 
 	private static void adjustOptionalDiceRulesProperty(boolean use) {
@@ -428,9 +421,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		} else if (source == mPNGResolutionCombo) {
 			Preferences.getInstance().setValue(MODULE, PNG_RESOLUTION_KEY, DPI[mPNGResolutionCombo.getSelectedIndex()]);
 		} else if (source == mLengthUnitsCombo) {
-			Preferences.getInstance().setValue(MODULE, LENGTH_UNITS_KEY, LengthUnits.values()[mLengthUnitsCombo.getSelectedIndex()].name());
+			Preferences.getInstance().setValue(MODULE, LENGTH_UNITS_KEY, Enums.toId(LengthUnits.values()[mLengthUnitsCombo.getSelectedIndex()]));
 		} else if (source == mWeightUnitsCombo) {
-			Preferences.getInstance().setValue(MODULE, WEIGHT_UNITS_KEY, WeightUnits.values()[mWeightUnitsCombo.getSelectedIndex()].name());
+			Preferences.getInstance().setValue(MODULE, WEIGHT_UNITS_KEY, Enums.toId(WeightUnits.values()[mWeightUnitsCombo.getSelectedIndex()]));
 		} else if (source == mHTMLTemplatePicker) {
 			File file = StdFileDialog.choose(this, true, SELECT_HTML_TEMPLATE, null, null, "html", "htm"); //$NON-NLS-1$ //$NON-NLS-2$
 			if (file != null) {

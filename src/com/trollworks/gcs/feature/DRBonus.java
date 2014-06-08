@@ -12,9 +12,9 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.character.Armor;
-import com.trollworks.toolkit.collections.Enums;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.utility.text.Enums;
 
 import java.io.IOException;
 
@@ -33,7 +33,7 @@ public class DRBonus extends Bonus {
 
 	/**
 	 * Loads a {@link DRBonus}.
-	 * 
+	 *
 	 * @param reader The XML reader to use.
 	 */
 	public DRBonus(XMLReader reader) throws IOException {
@@ -43,7 +43,7 @@ public class DRBonus extends Bonus {
 
 	/**
 	 * Creates a clone of the specified bonus.
-	 * 
+	 *
 	 * @param other The bonus to clone.
 	 */
 	public DRBonus(DRBonus other) {
@@ -92,13 +92,13 @@ public class DRBonus extends Bonus {
 
 	/**
 	 * Saves the bonus.
-	 * 
+	 *
 	 * @param out The XML writer to use.
 	 */
 	@Override
 	public void save(XMLWriter out) {
 		out.startSimpleTagEOL(TAG_ROOT);
-		out.simpleTag(TAG_LOCATION, mLocation.name().toLowerCase());
+		out.simpleTag(TAG_LOCATION, Enums.toId(mLocation));
 		saveBase(out);
 		out.endTagEOL(TAG_ROOT, true);
 	}

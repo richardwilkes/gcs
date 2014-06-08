@@ -27,10 +27,10 @@ public enum AdvantageContainerType {
 	 * The meta-trait grouping container type. Acts as one normal trait, listed as an advantage if
 	 * its point total is positive, or a disadvantage if it is negative.
 	 */
-	METATRAIT {
+	META_TRAIT {
 		@Override
 		public String toString() {
-			return METATRAIT_TITLE;
+			return META_TRAIT_TITLE;
 		}
 	},
 	/**
@@ -44,9 +44,9 @@ public enum AdvantageContainerType {
 		}
 	},
 	/**
-	 * The alternative abilities grouping container type. It behaves similar to a {@link #METATRAIT}
-	 * , but applies the rules for alternative abilities (see B61 and P11) to its immediate
-	 * children.
+	 * The alternative abilities grouping container type. It behaves similar to a
+	 * {@link #META_TRAIT} , but applies the rules for alternative abilities (see B61 and P11) to
+	 * its immediate children.
 	 */
 	ALTERNATIVE_ABILITIES {
 		@Override
@@ -58,7 +58,7 @@ public enum AdvantageContainerType {
 	@Localize("Group")
 	static String	GROUP_TITLE;
 	@Localize("Meta-Trait")
-	static String	METATRAIT_TITLE;
+	static String	META_TRAIT_TITLE;
 	@Localize("Race")
 	static String	RACE_TITLE;
 	@Localize("Alternative Abilities")

@@ -12,10 +12,10 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.toolkit.collections.Enums;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.utility.text.Enums;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -136,7 +136,7 @@ public class CostReduction implements Feature {
 	@Override
 	public void save(XMLWriter out) {
 		out.startSimpleTagEOL(TAG_ROOT);
-		out.simpleTag(TAG_ATTRIBUTE, mAttribute.name().toLowerCase());
+		out.simpleTag(TAG_ATTRIBUTE, Enums.toId(mAttribute));
 		out.simpleTag(TAG_PERCENTAGE, mPercentage);
 		out.endTagEOL(TAG_ROOT, true);
 	}

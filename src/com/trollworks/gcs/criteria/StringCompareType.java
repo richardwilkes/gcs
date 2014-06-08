@@ -12,7 +12,6 @@
 package com.trollworks.gcs.criteria;
 
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.collections.Enums;
 import com.trollworks.toolkit.utility.Localization;
 
 /** The allowed string comparison types. */
@@ -170,23 +169,4 @@ public enum StringCompareType {
 	 * @return Whether the data matches the criteria or not.
 	 */
 	public abstract boolean matches(String qualifier, String data);
-
-	/**
-	 * @param buffer The buffer to load from.
-	 * @return The units representing the buffer's description.
-	 */
-	public static final StringCompareType get(String buffer) {
-		StringCompareType result = Enums.extract(buffer, values());
-		if (result == null) {
-			// Check a few others, for legacy reasons
-			if ("starts".equalsIgnoreCase(buffer)) { //$NON-NLS-1$
-				result = STARTS_WITH;
-			} else if ("ends".equalsIgnoreCase(buffer)) { //$NON-NLS-1$
-				result = ENDS_WITH;
-			} else {
-				result = IS;
-			}
-		}
-		return result;
-	}
 }

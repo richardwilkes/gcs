@@ -13,6 +13,7 @@ package com.trollworks.gcs.criteria;
 
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.utility.text.Enums;
 
 import java.io.IOException;
 
@@ -24,7 +25,7 @@ public class StringCriteria {
 
 	/**
 	 * Creates a new string comparison.
-	 * 
+	 *
 	 * @param type The type of comparison.
 	 * @param qualifier The qualifier to match against.
 	 */
@@ -35,7 +36,7 @@ public class StringCriteria {
 
 	/**
 	 * Creates a new string comparison.
-	 * 
+	 *
 	 * @param other A {@link StringCriteria} to clone.
 	 */
 	public StringCriteria(StringCriteria other) {
@@ -64,18 +65,18 @@ public class StringCriteria {
 	 * @param reader The reader to load data from.
 	 */
 	public void load(XMLReader reader) throws IOException {
-		setType(StringCompareType.get(reader.getAttribute(ATTRIBUTE_COMPARE)));
+		setType(Enums.extract(reader.getAttribute(ATTRIBUTE_COMPARE), StringCompareType.values()));
 		setQualifier(reader.readText());
 	}
 
 	/**
 	 * Saves this object as XML to a stream.
-	 * 
+	 *
 	 * @param out The XML writer to use.
 	 * @param tag The tag to use.
 	 */
 	public void save(XMLWriter out, String tag) {
-		out.simpleTagWithAttribute(tag, mQualifier, ATTRIBUTE_COMPARE, mType.toString());
+		out.simpleTagWithAttribute(tag, mQualifier, ATTRIBUTE_COMPARE, Enums.toId(mType));
 	}
 
 	/** @return The type of comparison to make. */

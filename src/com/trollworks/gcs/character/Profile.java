@@ -977,7 +977,7 @@ public class Profile {
 			base = (int) Math.max(Math.round(base * Math.pow(10.0, sm / 6.0)), 1);
 		}
 		LengthUnits desiredUnits = SheetPreferences.getLengthUnits();
-		return new LengthValue(desiredUnits.convert(LengthUnits.FEET_AND_INCHES, base), desiredUnits);
+		return new LengthValue(desiredUnits.convert(LengthUnits.FT_IN, base), desiredUnits);
 	}
 
 	/**
@@ -1012,7 +1012,7 @@ public class Profile {
 		}
 		base = (int) Math.max(Math.round(base * multiplier), 1);
 		WeightUnits desiredUnits = SheetPreferences.getWeightUnits();
-		return new WeightValue(desiredUnits.convert(WeightUnits.POUNDS, base), desiredUnits);
+		return new WeightValue(desiredUnits.convert(WeightUnits.LB, base), desiredUnits);
 	}
 
 	/** @return The default player name. */

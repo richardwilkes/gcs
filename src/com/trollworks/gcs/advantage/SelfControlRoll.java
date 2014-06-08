@@ -14,6 +14,7 @@ package com.trollworks.gcs.advantage;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.text.Enums;
 import com.trollworks.toolkit.utility.text.Numbers;
 
 /** The possible self-control rolls, from page B121. */
@@ -164,7 +165,7 @@ public enum SelfControlRoll {
 	 */
 	public void save(XMLWriter out, String tag, SelfControlRollAdjustments adj) {
 		if (adj != SelfControlRollAdjustments.NONE) {
-			out.simpleTagWithAttribute(tag, getCR(), ATTR_ADJUSTMENT, adj.name().toLowerCase());
+			out.simpleTagWithAttribute(tag, getCR(), ATTR_ADJUSTMENT, Enums.toId(adj));
 		} else {
 			out.simpleTag(tag, getCR());
 		}

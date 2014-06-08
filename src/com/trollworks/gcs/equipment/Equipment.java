@@ -24,13 +24,13 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.collections.Enums;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.text.Enums;
 import com.trollworks.toolkit.utility.units.WeightValue;
 
 import java.io.IOException;
@@ -297,7 +297,7 @@ public class Equipment extends ListRow {
 	@Override
 	protected void saveAttributes(XMLWriter out, boolean forUndo) {
 		if (mDataFile instanceof GURPSCharacter) {
-			out.writeAttribute(ATTRIBUTE_STATE, mState.name().toLowerCase());
+			out.writeAttribute(ATTRIBUTE_STATE, Enums.toId(mState));
 		}
 	}
 

@@ -12,9 +12,9 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.toolkit.collections.Enums;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.utility.text.Enums;
 
 import java.io.IOException;
 
@@ -36,7 +36,7 @@ public class AttributeBonus extends Bonus {
 
 	/**
 	 * Loads a {@link AttributeBonus}.
-	 * 
+	 *
 	 * @param reader The XML reader to use.
 	 */
 	public AttributeBonus(XMLReader reader) throws IOException {
@@ -46,7 +46,7 @@ public class AttributeBonus extends Bonus {
 
 	/**
 	 * Creates a clone of the specified bonus.
-	 * 
+	 *
 	 * @param other The bonus to clone.
 	 */
 	public AttributeBonus(AttributeBonus other) {
@@ -106,7 +106,7 @@ public class AttributeBonus extends Bonus {
 
 	/**
 	 * Saves the bonus.
-	 * 
+	 *
 	 * @param out The XML writer to use.
 	 */
 	@Override
@@ -114,10 +114,10 @@ public class AttributeBonus extends Bonus {
 		out.startSimpleTagEOL(TAG_ROOT);
 		out.startTag(TAG_ATTRIBUTE);
 		if (mLimitation != AttributeBonusLimitation.NONE) {
-			out.writeAttribute(ATTRIBUTE_LIMITATION, mLimitation.name().toLowerCase());
+			out.writeAttribute(ATTRIBUTE_LIMITATION, Enums.toId(mLimitation));
 		}
 		out.finishTag();
-		out.writeEncodedData(mAttribute.name().toLowerCase());
+		out.writeEncodedData(Enums.toId(mAttribute));
 		out.endTagEOL(TAG_ATTRIBUTE, false);
 		saveBase(out);
 		out.endTagEOL(TAG_ROOT, true);

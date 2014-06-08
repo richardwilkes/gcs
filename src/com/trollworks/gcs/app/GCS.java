@@ -206,10 +206,10 @@ public class GCS {
 						PrerequisitesThread.waitForProcessingToFinish(character);
 
 						if (paperSize != null && settings != null) {
-							settings.setPageSize(paperSize, LengthUnits.INCHES);
+							settings.setPageSize(paperSize, LengthUnits.IN);
 						}
 						if (margins != null && settings != null) {
-							settings.setPageMargins(margins, LengthUnits.INCHES);
+							settings.setPageMargins(margins, LengthUnits.IN);
 						}
 						sheet.rebuild();
 						sheet.setSize(sheet.getPreferredSize());
@@ -278,7 +278,7 @@ public class GCS {
 			}
 
 			if ("A4".equalsIgnoreCase(argument)) { //$NON-NLS-1$
-				return new double[] { LengthUnits.INCHES.convert(LengthUnits.CENTIMETERS, 21), LengthUnits.INCHES.convert(LengthUnits.CENTIMETERS, 29.7) };
+				return new double[] { LengthUnits.IN.convert(LengthUnits.CM, 21), LengthUnits.IN.convert(LengthUnits.CM, 29.7) };
 			}
 
 			index = argument.indexOf('x');

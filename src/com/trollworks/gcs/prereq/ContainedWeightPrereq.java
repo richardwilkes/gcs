@@ -11,19 +11,17 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.criteria.WeightCriteria;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.collections.Enums;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.text.Enums;
 import com.trollworks.toolkit.utility.units.WeightValue;
 
 import java.io.IOException;
@@ -32,7 +30,7 @@ import java.text.MessageFormat;
 /** An equipment contained weight prerequisite. */
 public class ContainedWeightPrereq extends HasPrereq {
 	@Localize("{0}{1} a contained weight which {2}\n")
-	private static String CONTAINED_WEIGHT;
+	private static String		CONTAINED_WEIGHT;
 
 	static {
 		Localization.initialize();
@@ -45,7 +43,7 @@ public class ContainedWeightPrereq extends HasPrereq {
 
 	/**
 	 * Creates a new prerequisite.
-	 * 
+	 *
 	 * @param parent The owning prerequisite list, if any.
 	 */
 	public ContainedWeightPrereq(PrereqList parent) {
@@ -55,7 +53,7 @@ public class ContainedWeightPrereq extends HasPrereq {
 
 	/**
 	 * Loads a prerequisite.
-	 * 
+	 *
 	 * @param parent The owning prerequisite list, if any.
 	 * @param reader The XML reader to load from.
 	 */
@@ -68,7 +66,7 @@ public class ContainedWeightPrereq extends HasPrereq {
 
 	/**
 	 * Creates a copy of the specified prerequisite.
-	 * 
+	 *
 	 * @param parent The owning prerequisite list, if any.
 	 * @param prereq The prerequisite to clone.
 	 */
@@ -107,7 +105,7 @@ public class ContainedWeightPrereq extends HasPrereq {
 	public void save(XMLWriter out) {
 		out.startTag(TAG_ROOT);
 		saveHasAttribute(out);
-		out.writeAttribute(ATTRIBUTE_COMPARE, mWeightCompare.getType().name().toLowerCase());
+		out.writeAttribute(ATTRIBUTE_COMPARE, Enums.toId(mWeightCompare.getType()));
 		out.finishTag();
 		out.writeEncodedData(mWeightCompare.getQualifier().toString(false));
 		out.endTagEOL(TAG_ROOT, false);
@@ -134,7 +132,7 @@ public class ContainedWeightPrereq extends HasPrereq {
 			satisfied = !satisfied;
 		}
 		if (!satisfied && builder != null) {
-			builder.append(MessageFormat.format(CONTAINED_WEIGHT, prefix, has() ? HAS : DOES_NOT_HAVE, mWeightCompare.toString()));
+			builder.append(MessageFormat.format(CONTAINED_WEIGHT, prefix, has() ? HAS : DOES_NOT_HAVE, mWeightCompare));
 		}
 		return satisfied;
 	}
