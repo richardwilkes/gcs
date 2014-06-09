@@ -42,7 +42,6 @@
 	<property name="build_root" value="ant_build"/>
 	<property name="gcs_build" value="${build_root}/${app}"/>
 	<property name="dist.build" value="${build_root}/dist"/>
-	<property name="annotations_src" value="${build_root}/annotations"/>
 	<property name="min_jdk" value="1.8"/>
 	<property name="app_name" value="GURPS Character Sheet"/>
 	<property name="copyright_owner" value="Richard A. Wilkes"/>
@@ -69,7 +68,6 @@
 
 	<target name="build_jar" description="Build the GCS jar" depends="clean">
 		<mkdir dir="${gcs_build}"/>
-		<mkdir dir="${annotations_src}"/>
 
 		<!-- Compile the code. -->
 		<javac srcdir="${src}" destdir="${gcs_build}" debug="no" optimize="yes"
@@ -83,11 +81,6 @@
 			</classpath>
 			<compilerarg value="-Xlint:all"/>
 			<compilerarg value="-Xlint:-serial"/>
-			<compilerarg value="-processorpath"/>
-			<compilerarg value="${toolkit_lib}/toolkit_annotation_processors.jar"/>
-			<compilerarg value="-s"/>
-			<compilerarg value="${annotations_src}"/>
-			<compilerarg value="-implicit:class"/>
 		</javac>
 
 		<!-- Copy the resources over. -->
