@@ -103,6 +103,7 @@ public class ListPrereqEditor extends PrereqEditor {
 		right.add(button);
 		button = new IconButton(StdImage.ADD, ADD_PREREQ_TOOLTIP, () -> addPrereq());
 		add(button);
+		right.add(button);
 	}
 
 	private void addPrereqList() {
