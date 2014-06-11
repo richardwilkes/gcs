@@ -177,10 +177,11 @@ public enum SkillColumn {
 					if (skill.getLevel() < 0) {
 						return Integer.MIN_VALUE;
 					}
+					int level = skill.getRelativeLevel();
 					if (skill instanceof Technique) {
-						return skill.getRelativeLevel() + ((Technique) skill).getDefault().getModifier();
+						level += ((Technique) skill).getDefault().getModifier();
 					}
-					return skill.getRelativeLevel();
+					return level;
 				} else if (skill.getTemplate() != null) {
 					int points = skill.getPoints();
 
