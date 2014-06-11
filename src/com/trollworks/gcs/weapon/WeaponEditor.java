@@ -19,6 +19,7 @@ import com.trollworks.toolkit.ui.Selection;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
+import com.trollworks.toolkit.ui.layout.PrecisionLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.ui.widget.IconButton;
@@ -32,6 +33,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -54,8 +56,10 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 	private static String					DAMAGE;
 	@Localize("Minimum Strength")
 	private static String					MINIMUM_STRENGTH;
-	@Localize("Add a weapon")
+	@Localize("Add an attack")
 	private static String					ADD_TOOLTIP;
+	@Localize("Remove the selected attacks")
+	private static String					REMOVE_TOOLTIP;
 
 	static {
 		Localization.initialize();
@@ -65,6 +69,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 	private ListRow							mOwner;
 	private WeaponOutline					mOutline;
 	private IconButton						mAddButton;
+	private IconButton						mDeleteButton;
 	private JPanel							mEditorPanel;
 	private EditorField						mUsage;
 	private EditorField						mDamage;
@@ -86,8 +91,15 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 		mOwner = owner;
 		mWeaponClass = weaponClass;
 		mAddButton = new IconButton(StdImage.ADD, ADD_TOOLTIP, () -> addWeapon());
-		add(mAddButton, BorderLayout.WEST);
-		add(createOutline(weapons, weaponClass), BorderLayout.NORTH);
+		mDeleteButton = new IconButton(StdImage.REMOVE, REMOVE_TOOLTIP, () -> mOutline.deleteSelection());
+		mDeleteButton.setEnabled(false);
+		Panel top = new Panel(new BorderLayout());
+		Panel left = new Panel(new PrecisionLayout());
+		left.add(mAddButton);
+		left.add(mDeleteButton);
+		top.add(left, BorderLayout.WEST);
+		top.add(createOutline(weapons, weaponClass), BorderLayout.CENTER);
+		add(top, BorderLayout.NORTH);
 		add(createEditorPanel(), BorderLayout.CENTER);
 		setName(toString());
 	}
@@ -192,9 +204,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 	@Override
 	public final void actionPerformed(ActionEvent event) {
 		Object source = event.getSource();
-		if (mAddButton == source) {
-			addWeapon();
-		} else if (mOutline == source) {
+		if (mOutline == source) {
 			handleOutline(event.getActionCommand());
 		} else if (mRespond) {
 			if (mDefaults == source) {
@@ -270,11 +280,13 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 		if (Outline.CMD_SELECTION_CHANGED.equals(cmd)) {
 			OutlineModel model = mOutline.getModel();
 			Selection selection = model.getSelection();
-			if (selection.getCount() == 1) {
+			int count = selection.getCount();
+			if (count == 1) {
 				setWeapon(((WeaponDisplayRow) model.getRowAtIndex(selection.firstSelectedIndex())).getWeapon());
 			} else {
 				setWeapon(null);
 			}
+			mDeleteButton.setEnabled(count > 0);
 		}
 	}
 
