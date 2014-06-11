@@ -21778,7 +21778,7 @@
 			<default>
 				<type>Skill</type>
 				<name>Guns</name>
-				<specialization>SMG</specialization>
+				<specialization>Submachine Gun</specialization>
 				<modifier>0</modifier>
 			</default>
 			<default>
