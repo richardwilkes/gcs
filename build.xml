@@ -19,8 +19,11 @@
 	<property if:true="${platform.linux}" name="platform" value="linux"/>
 	<condition property="platformWithBits" value="${platform}-32" else="${platform}">
 		<and>
-			<os family="unix"/>
 			<os arch="i386"/>
+			<or>
+				<os family="unix"/>
+				<os family="windows"/>
+			</or>
 		</and>
 	</condition>
 
@@ -212,6 +215,12 @@
 			<param name="platform.windows" value="true"/>
 			<param name="platform.linux" value="false"/>
 			<param name="platformWithBits" value="windows"/>
+		</antcall>
+		<antcall target="bundle" inheritall="no">
+			<param name="platform.mac" value="false"/>
+			<param name="platform.windows" value="true"/>
+			<param name="platform.linux" value="false"/>
+			<param name="platformWithBits" value="windows-32"/>
 		</antcall>
 		<antcall target="bundle" inheritall="no">
 			<param name="platform.mac" value="false"/>
