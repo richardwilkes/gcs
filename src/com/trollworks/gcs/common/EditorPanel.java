@@ -135,30 +135,16 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 	 * @return The {@link JComboBox} that allows a comparison to be changed.
 	 */
 	protected JComboBox<Object> addNumericCompareCombo(NumericCriteria compare, String extra) {
-		Object[] values;
-		Object selection;
-		if (extra == null) {
-			Object[] orig = NumericCompareType.values();
-			values = new Object[orig.length];
-			System.arraycopy(orig, 0, values, 0, orig.length);
-			selection = compare.getType();
-			values[NumericCompareType.IS.ordinal()] = EXACTLY;
-			if (selection == NumericCompareType.IS) {
-				selection = EXACTLY;
+		Object selection = null;
+		ArrayList<String> list = new ArrayList<>();
+		for (NumericCompareType type : NumericCompareType.values()) {
+			String title = extra == null ? type.toString() : extra + type.getDescription();
+			list.add(title);
+			if (type == compare.getType()) {
+				selection = title;
 			}
-		} else {
-			ArrayList<String> list = new ArrayList<>();
-			selection = null;
-			for (NumericCompareType type : NumericCompareType.values()) {
-				String title = extra + type.getDescription();
-				list.add(title);
-				if (type == compare.getType()) {
-					selection = title;
-				}
-			}
-			values = list.toArray();
 		}
-		JComboBox<Object> combo = addComboBox(COMPARISON, values, selection);
+		JComboBox<Object> combo = addComboBox(COMPARISON, list.toArray(), selection);
 		combo.putClientProperty(NumericCriteria.class, compare);
 		return combo;
 	}

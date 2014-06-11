@@ -70,7 +70,7 @@ public enum NumericCompareType {
 		}
 	};
 
-	@Localize("is")
+	@Localize("exactly")
 	static String	IS_TITLE;
 	@Localize("at least")
 	static String	AT_LEAST_TITLE;
