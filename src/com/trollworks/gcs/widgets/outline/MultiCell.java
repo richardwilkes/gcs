@@ -36,19 +36,45 @@ import javax.swing.UIManager;
 public class MultiCell implements Cell {
 	private static final int	H_MARGIN	= 2;
 	private int					mMaxPreferredWidth;
+	private boolean				mForEditor;
 
 	/** Creates a new {@link MultiCell} with a maximum preferred width of 250. */
 	public MultiCell() {
-		this(250);
+		this(false);
+	}
+
+	/**
+	 * Creates a new {@link MultiCell} with a maximum preferred width of 250.
+	 *
+	 * @param forEditor Whether this is for an editor dialog or for a character sheet.
+	 */
+	public MultiCell(boolean forEditor) {
+		this(250, forEditor);
+	}
+
+	/** @return The primary font. */
+	public Font getPrimaryFont() {
+		return UIManager.getFont(mForEditor ? "TextField.font" : GCSFonts.KEY_FIELD); //$NON-NLS-1$
+	}
+
+	/** @return The secondary font, for notes. */
+	public Font getSecondaryFont() {
+		if (mForEditor) {
+			Font font = getPrimaryFont();
+			return font.deriveFont(font.getSize() * 7f / 8f);
+		}
+		return UIManager.getFont(GCSFonts.KEY_FIELD_NOTES);
 	}
 
 	/**
 	 * Creates a new {@link MultiCell}.
 	 *
 	 * @param maxPreferredWidth The maximum preferred width to use. Pass in -1 for no limit.
+	 * @param forEditor Whether this is for an editor dialog or for a character sheet.
 	 */
-	public MultiCell(int maxPreferredWidth) {
+	public MultiCell(int maxPreferredWidth, boolean forEditor) {
 		mMaxPreferredWidth = maxPreferredWidth;
+		mForEditor = forEditor;
 	}
 
 	/**
@@ -90,7 +116,7 @@ public class MultiCell implements Cell {
 		ListRow theRow = (ListRow) row;
 		Rectangle insetBounds = new Rectangle(bounds.x + H_MARGIN, bounds.y, bounds.width - H_MARGIN * 2, bounds.height);
 		String notes = getSecondaryText(theRow);
-		Font font = UIManager.getFont(GCSFonts.KEY_FIELD);
+		Font font = getPrimaryFont();
 		int pos;
 		gc.setColor(getColor(selected, active, row, column));
 		gc.setFont(font);
@@ -98,7 +124,7 @@ public class MultiCell implements Cell {
 		if (notes.trim().length() > 0) {
 			insetBounds.height -= pos - insetBounds.y;
 			insetBounds.y = pos;
-			gc.setFont(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES));
+			gc.setFont(getSecondaryFont());
 			TextDrawing.draw(gc, insetBounds, notes, SwingConstants.LEFT, SwingConstants.TOP);
 		}
 	}
@@ -121,10 +147,10 @@ public class MultiCell implements Cell {
 	@Override
 	public int getPreferredWidth(Row row, Column column) {
 		ListRow theRow = (ListRow) row;
-		int width = TextDrawing.getWidth(UIManager.getFont(GCSFonts.KEY_FIELD), getPrimaryText(theRow));
+		int width = TextDrawing.getWidth(getPrimaryFont(), getPrimaryText(theRow));
 		String notes = getSecondaryText(theRow);
 		if (notes.trim().length() > 0) {
-			int notesWidth = TextDrawing.getWidth(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES), notes);
+			int notesWidth = TextDrawing.getWidth(getSecondaryFont(), notes);
 
 			if (notesWidth > width) {
 				width = notesWidth;
@@ -137,11 +163,11 @@ public class MultiCell implements Cell {
 	@Override
 	public int getPreferredHeight(Row row, Column column) {
 		ListRow theRow = (ListRow) row;
-		Font font = UIManager.getFont(GCSFonts.KEY_FIELD);
+		Font font = getPrimaryFont();
 		int height = TextDrawing.getPreferredSize(font, wrap(theRow, column, getPrimaryText(theRow), font)).height;
 		String notes = getSecondaryText(theRow);
 		if (notes.trim().length() > 0) {
-			font = UIManager.getFont(GCSFonts.KEY_FIELD_NOTES);
+			font = getSecondaryFont();
 			height += TextDrawing.getPreferredSize(font, wrap(theRow, column, notes, font)).height;
 		}
 		return height;

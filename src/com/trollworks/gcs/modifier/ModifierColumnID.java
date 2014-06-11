@@ -19,6 +19,7 @@ import com.trollworks.toolkit.ui.widget.outline.Cell;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
+import com.trollworks.toolkit.ui.widget.outline.TextCell;
 import com.trollworks.toolkit.utility.Localization;
 
 import javax.swing.SwingConstants;
@@ -38,7 +39,10 @@ public enum ModifierColumnID {
 		}
 
 		@Override
-		public Cell getCell() {
+		public Cell getCell(boolean forEditor) {
+			if (forEditor) {
+				return new TextCell(SwingConstants.CENTER, false);
+			}
 			return new ListTextCell(SwingConstants.CENTER, false);
 		}
 
@@ -60,8 +64,8 @@ public enum ModifierColumnID {
 		}
 
 		@Override
-		public Cell getCell() {
-			return new MultiCell();
+		public Cell getCell(boolean forEditor) {
+			return new MultiCell(forEditor);
 		}
 
 		@Override
@@ -91,7 +95,10 @@ public enum ModifierColumnID {
 		}
 
 		@Override
-		public Cell getCell() {
+		public Cell getCell(boolean forEditor) {
+			if (forEditor) {
+				return new TextCell(SwingConstants.LEFT, false);
+			}
 			return new ListTextCell(SwingConstants.LEFT, false);
 		}
 
@@ -114,7 +121,10 @@ public enum ModifierColumnID {
 		}
 
 		@Override
-		public Cell getCell() {
+		public Cell getCell(boolean forEditor) {
+			if (forEditor) {
+				return new TextCell(SwingConstants.RIGHT, false);
+			}
 			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
@@ -164,8 +174,11 @@ public enum ModifierColumnID {
 	/** @return The tooltip for the column. */
 	public abstract String getToolTip();
 
-	/** @return The {@link Cell} used to display the data. */
-	public abstract Cell getCell();
+	/**
+	 * @param forEditor Whether this is for an editor or not.
+	 * @return The {@link Cell} used to display the data.
+	 */
+	public abstract Cell getCell(boolean forEditor);
 
 	/** @return Whether this column should be displayed for the specified data file. */
 	@SuppressWarnings("static-method")
@@ -184,7 +197,7 @@ public enum ModifierColumnID {
 
 		for (ModifierColumnID one : values()) {
 			if (one.shouldDisplay()) {
-				Column column = new Column(one.ordinal(), one.toString(), one.getToolTip(), one.getCell());
+				Column column = new Column(one.ordinal(), one.toString(), one.getToolTip(), one.getCell(forEditor));
 
 				if (!forEditor) {
 					column.setHeaderCell(new ListHeaderCell(true));
