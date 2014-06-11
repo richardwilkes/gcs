@@ -18,11 +18,9 @@ import com.trollworks.gcs.criteria.NumericCriteria;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.criteria.WeightCriteria;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.widget.ActionPanel;
 import com.trollworks.toolkit.ui.widget.EditorField;
-import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.DoubleFormatter;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
 import com.trollworks.toolkit.utility.text.WeightFormatter;
@@ -42,13 +40,6 @@ import javax.swing.text.DefaultFormatterFactory;
 
 /** A generic editor panel. */
 public abstract class EditorPanel extends ActionPanel implements ActionListener, PropertyChangeListener {
-	@Localize("exactly")
-	private static String		EXACTLY;
-
-	static {
-		Localization.initialize();
-	}
-
 	private static final int	GAP			= 5;
 	private static final String	COMPARISON	= "Comparison"; //$NON-NLS-1$
 
