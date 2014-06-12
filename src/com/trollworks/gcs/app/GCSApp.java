@@ -37,6 +37,7 @@ import java.util.HashMap;
 public class GCSApp extends App {
 	/** The one and only instance of this class. */
 	public static final GCSApp	INSTANCE	= new GCSApp();
+	public static final String	WEB_SITE	= "http://gurpscharactersheet.com"; //$NON-NLS-1$
 
 	private GCSApp() {
 		super();
@@ -56,7 +57,7 @@ public class GCSApp extends App {
 			WindowsRegistry.register("GCS", map, home.resolve("gcs"), home.resolve("support")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		}
 
-		UpdateChecker.check("gcs", "http://gurpscharactersheet.com/current.txt", "http://gurpscharactersheet.com"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		UpdateChecker.check("gcs", WEB_SITE + "/versions.txt", WEB_SITE); //$NON-NLS-1$ //$NON-NLS-2$
 
 		ListCollectionThread.get();
 
