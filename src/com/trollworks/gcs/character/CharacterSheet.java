@@ -18,6 +18,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageColumn;
 import com.trollworks.gcs.advantage.AdvantageOutline;
+import com.trollworks.gcs.app.GCSApp;
 import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
@@ -119,7 +120,7 @@ import javax.swing.event.ChangeListener;
 public class CharacterSheet extends JPanel implements ChangeListener, Scrollable, BatchNotifierTarget, PageOwner, PrintProxy, ActionListener, Runnable, DropTargetListener {
 	@Localize("Page {0} of {1}")
 	private static String		PAGE_NUMBER;
-	@Localize("Visit us at gurpscharactersheet.com")
+	@Localize("Visit us at %s")
 	private static String		ADVERTISEMENT;
 	@Localize("Melee Weapons")
 	private static String		MELEE_WEAPONS;
@@ -732,7 +733,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		gc.setFont(font1);
 		gc.drawString(left, bounds.x, y);
 		gc.drawString(right, bounds.x + bounds.width - (int) fm1.getStringBounds(right, gc).getWidth(), y);
-		gc.drawString(ADVERTISEMENT, bounds.x + (bounds.width - (int) fm1.getStringBounds(ADVERTISEMENT, gc).getWidth()) / 2, y);
+		String advertisement = String.format(ADVERTISEMENT, GCSApp.WEB_SITE.substring(7)); // Trim off the leading 'http://'
+		gc.drawString(advertisement, bounds.x + (bounds.width - (int) fm1.getStringBounds(advertisement, gc).getWidth()) / 2, y);
 
 		gc.setFont(savedFont);
 	}

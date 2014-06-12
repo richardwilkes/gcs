@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.menu;
 
+import com.trollworks.gcs.app.GCSApp;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.menu.Command;
@@ -66,11 +67,11 @@ public class HelpMenuProvider implements MenuProvider {
 		}
 		menu.add(new JMenuItem(UpdateCommand.INSTANCE));
 		menu.addSeparator();
-		menu.add(new JMenuItem(new OpenURICommand(RELEASE_NOTES, "http://gurpscharactersheet.com/release_notes.php"))); //$NON-NLS-1$
+		menu.add(new JMenuItem(new OpenURICommand(RELEASE_NOTES, GCSApp.WEB_SITE + "/release_notes.php"))); //$NON-NLS-1$
 		menu.add(new JMenuItem(new OpenURICommand(LICENSE, App.getHomePath().resolve("license.html").toUri()))); //$NON-NLS-1$
 		menu.addSeparator();
-		menu.add(new JMenuItem(new OpenURICommand(WEB_SITE, "http://gurpscharactersheet.com"))); //$NON-NLS-1$
-		menu.add(new JMenuItem(new OpenURICommand(MAILING_LISTS, "http://gurpscharactersheet.com/mailing_lists.php"))); //$NON-NLS-1$
+		menu.add(new JMenuItem(new OpenURICommand(WEB_SITE, GCSApp.WEB_SITE)));
+		menu.add(new JMenuItem(new OpenURICommand(MAILING_LISTS, GCSApp.WEB_SITE + "/mailing_lists.php"))); //$NON-NLS-1$
 		menu.add(new JMenuItem(new OpenURICommand(FEATURES, "http://sourceforge.net/p/gcs-java/feature-requests"))); //$NON-NLS-1$
 		menu.add(new JMenuItem(new OpenURICommand(BUGS, "http://sourceforge.net/p/gcs-java/bugs"))); //$NON-NLS-1$
 		DynamicMenuEnabler.add(menu);
