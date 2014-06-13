@@ -191,7 +191,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 	private static final AbstractFormatterFactory					DEFAULT_FACTORY;
 
 	static {
-		DefaultFormatterFactory factory = new DefaultFormatterFactory(new WeightFormatter());
+		DefaultFormatterFactory factory = new DefaultFormatterFactory(new WeightFormatter(true));
 		FACTORY_MAP.put(Profile.ID_WEIGHT, factory);
 		FACTORY_MAP.put(GURPSCharacter.ID_BASIC_LIFT, factory);
 		FACTORY_MAP.put(GURPSCharacter.ID_ONE_HANDED_LIFT, factory);
@@ -262,8 +262,8 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		FACTORY_MAP.put(GURPSCharacter.ID_BASIC_SWING, factory);
 
 		FACTORY_MAP.put(Profile.ID_SIZE_MODIFIER, new DefaultFormatterFactory(new IntegerFormatter(-99, 9999, true)));
-		FACTORY_MAP.put(Profile.ID_AGE, new DefaultFormatterFactory(new IntegerFormatter(0, Integer.MAX_VALUE, false)));
-		FACTORY_MAP.put(Profile.ID_HEIGHT, new DefaultFormatterFactory(new HeightFormatter()));
+		FACTORY_MAP.put(Profile.ID_AGE, new DefaultFormatterFactory(new IntegerFormatter(0, Integer.MAX_VALUE, false, true)));
+		FACTORY_MAP.put(Profile.ID_HEIGHT, new DefaultFormatterFactory(new HeightFormatter(true)));
 		FACTORY_MAP.put(GURPSCharacter.ID_CREATED_ON, new DefaultFormatterFactory(new DateFormatter(DateFormat.MEDIUM)));
 		FACTORY_MAP.put(GURPSCharacter.ID_BASIC_SPEED, new DefaultFormatterFactory(new DoubleFormatter(0, 9999, false)));
 

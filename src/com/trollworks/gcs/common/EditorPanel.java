@@ -175,7 +175,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 	 * @return The {@link EditorField} that allows a weight comparison to be changed.
 	 */
 	protected EditorField addWeightCompareField(WeightCriteria compare) {
-		EditorField field = new EditorField(new DefaultFormatterFactory(new WeightFormatter()), this, SwingConstants.LEFT, compare.getQualifier(), null, null);
+		EditorField field = new EditorField(new DefaultFormatterFactory(new WeightFormatter(true)), this, SwingConstants.LEFT, compare.getQualifier(), null, null);
 		field.putClientProperty(WeightCriteria.class, compare);
 		add(field);
 		return field;
