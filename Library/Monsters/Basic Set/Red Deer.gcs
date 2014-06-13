@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<character unique_id="hrqem6xz:-12q44zdgx33fl" version="2">
+	<created_date>Feb 16, 2014</created_date>
+	<modified_date>Jun 13, 2014 9:57 AM</modified_date>
+	<profile>
+		<name>Red Deer</name>
+		<age>0</age>
+		<weight>200 lb</weight>
+		<SM>1</SM>
+		<race>Deer</race>
+	</profile>
+	<HP>0</HP>
+	<FP>0</FP>
+	<total_points>12</total_points>
+	<ST>12</ST>
+	<DX>13</DX>
+	<IQ>3</IQ>
+	<HT>12</HT>
+	<will>7</will>
+	<perception>7</perception>
+	<speed>0</speed>
+	<move>3</move>
+	<include_punch>true</include_punch>
+	<include_kick>true</include_kick>
+	<include_kick_with_boots>true</include_kick_with_boots>
+	<advantage_list>
+		<advantage version="2">
+			<name>Hooves</name>
+			<type>Physical</type>
+			<base_points>3</base_points>
+			<melee_weapon>
+				<damage>thr:+1 cr</damage>
+				<usage>Trample</usage>
+				<reach>C,1</reach>
+				<parry>No</parry>
+				<block>No</block>
+				<default>
+					<type>DX</type>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Brawling</name>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Karate</name>
+					<modifier>-2</modifier>
+				</default>
+			</melee_weapon>
+			<reference>B42</reference>
+			<categories>
+				<category>Advantage</category>
+				<category>Animal</category>
+			</categories>
+			<dr_bonus>
+				<location>feet</location>
+				<amount>1</amount>
+			</dr_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Striker, Impaling (Antlers)</name>
+			<type>Physical, Exotic</type>
+			<base_points>8</base_points>
+			<melee_weapon>
+				<damage>thr:+1 imp</damage>
+				<reach>C</reach>
+				<parry>0</parry>
+				<block>No</block>
+				<default>
+					<type>DX</type>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Brawling</name>
+					<modifier>0</modifier>
+				</default>
+			</melee_weapon>
+			<reference>B88</reference>
+			<categories>
+				<category>Advantage</category>
+				<category>Animal</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Horizontal</name>
+			<type>Physical, Exotic</type>
+			<base_points>-10</base_points>
+			<reference>B139</reference>
+			<categories>
+				<category>Animal</category>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Weak Bite</name>
+			<type>Physical, Exotic</type>
+			<base_points>-2</base_points>
+			<reference>B161</reference>
+			<categories>
+				<category>Animal</category>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage_container version="2" open="yes" type="meta trait">
+			<name>Meta-Trait: Wild Animal</name>
+			<reference>B263</reference>
+			<advantage version="2">
+				<name>Bestial</name>
+				<type>Mental, Exotic</type>
+				<base_points>-10</base_points>
+				<reference>B124</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Cannot Speak</name>
+				<type>Physical</type>
+				<base_points>-15</base_points>
+				<reference>B125</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Hidebound</name>
+				<type>Physical</type>
+				<base_points>-5</base_points>
+				<reference>B138</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Taboo Trait (Fixed IQ)</name>
+				<type>Physical</type>
+				<reference>B263</reference>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+	<print_settings printer="HP LaserJet M1536dnf MFP (C1388F) @ Spock" units="in">
+		<orientation>portrait</orientation>
+		<width>8.267716407775879</width>
+		<height>11.692913055419922</height>
+		<top_margin>0.5</top_margin>
+		<left_margin>0.5</left_margin>
+		<bottom_margin>0.5</bottom_margin>
+		<right_margin>0.5</right_margin>
+		<ink_chromaticity>monochrome</ink_chromaticity>
+		<sides>duplex</sides>
+		<quality>normal</quality>
+	</print_settings>
+</character>
