@@ -65,7 +65,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 		Localization.initialize();
 	}
 
-	static final String						EMPTY	= "";		//$NON-NLS-1$
+	protected static final String			EMPTY	= "";		//$NON-NLS-1$
 	private ListRow							mOwner;
 	private WeaponOutline					mOutline;
 	private IconButton						mAddButton;

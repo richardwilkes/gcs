@@ -733,7 +733,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		gc.setFont(font1);
 		gc.drawString(left, bounds.x, y);
 		gc.drawString(right, bounds.x + bounds.width - (int) fm1.getStringBounds(right, gc).getWidth(), y);
-		String advertisement = String.format(ADVERTISEMENT, GCSApp.WEB_SITE.substring(7)); // Trim off the leading 'http://'
+		// Trim off the leading URI scheme and authority path component. (http://, https://, ...)
+		String advertisement = String.format(ADVERTISEMENT, GCSApp.WEB_SITE.replaceAll(".*://", "")); //$NON-NLS-1$ //$NON-NLS-2$
 		gc.drawString(advertisement, bounds.x + (bounds.width - (int) fm1.getStringBounds(advertisement, gc).getWidth()) / 2, y);
 
 		gc.setFont(savedFont);
