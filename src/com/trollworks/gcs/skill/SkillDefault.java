@@ -11,14 +11,12 @@
 
 package com.trollworks.gcs.skill;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -27,9 +25,9 @@ import java.util.HashSet;
 /** Describes a skill default. */
 public class SkillDefault {
 	@Localize(" Parry")
-	private static String PARRY;
+	private static String		PARRY;
 	@Localize(" Block")
-	private static String BLOCK;
+	private static String		BLOCK;
 
 	static {
 		Localization.initialize();
@@ -56,7 +54,7 @@ public class SkillDefault {
 
 	/**
 	 * Creates a new skill default.
-	 * 
+	 *
 	 * @param type The type of default.
 	 * @param name The name of the skill to default from. Pass in <code>null</code> if type is not
 	 *            skill-based.
@@ -73,7 +71,7 @@ public class SkillDefault {
 
 	/**
 	 * Creates a clone of the specified skill default.
-	 * 
+	 *
 	 * @param other The skill default to clone.
 	 */
 	public SkillDefault(SkillDefault other) {
@@ -85,7 +83,7 @@ public class SkillDefault {
 
 	/**
 	 * Creates a skill default.
-	 * 
+	 *
 	 * @param reader The XML reader to use.
 	 */
 	public SkillDefault(XMLReader reader) throws IOException {
@@ -155,7 +153,7 @@ public class SkillDefault {
 
 	/**
 	 * Saves the skill default.
-	 * 
+	 *
 	 * @param out The XML writer to use.
 	 */
 	public void save(XMLWriter out) {

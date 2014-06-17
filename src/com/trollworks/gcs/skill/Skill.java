@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /** A GURPS Skill. */
 public class Skill extends ListRow {
@@ -105,6 +106,7 @@ public class Skill extends ListRow {
 	private String					mReference;
 	private int						mEncumbrancePenaltyMultiplier;
 	private ArrayList<WeaponStats>	mWeapons;
+	private SkillDefault			mDefaultedFrom;
 
 	/**
 	 * Creates a string suitable for displaying the level.
@@ -480,7 +482,8 @@ public class Skill extends ListRow {
 
 	/** @return The calculated skill level. */
 	protected SkillLevel calculateLevelSelf() {
-		return calculateLevel(getCharacter(), this, getName(), getSpecialization(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), new HashSet<String>(), getEncumbrancePenaltyMultiplier());
+		mDefaultedFrom = getBestDefaultWithPoints();
+		return calculateLevel(getCharacter(), getName(), getSpecialization(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), new HashSet<String>(), getEncumbrancePenaltyMultiplier());
 	}
 
 	/**
@@ -488,7 +491,7 @@ public class Skill extends ListRow {
 	 * @return The calculated level.
 	 */
 	public int getLevel(HashSet<String> excludes) {
-		return calculateLevel(getCharacter(), this, getName(), getSpecialization(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), excludes, getEncumbrancePenaltyMultiplier()).mLevel;
+		return calculateLevel(getCharacter(), getName(), getSpecialization(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), excludes, getEncumbrancePenaltyMultiplier()).mLevel;
 	}
 
 	/** @return The attribute. */
@@ -639,7 +642,6 @@ public class Skill extends ListRow {
 	 * Calculates the skill level.
 	 *
 	 * @param character The character the skill will be attached to.
-	 * @param exclude A specific skill to exclude from default calculations.
 	 * @param name The name of the skill.
 	 * @param specialization The specialization of the skill.
 	 * @param defaults The defaults the skill has.
@@ -650,20 +652,15 @@ public class Skill extends ListRow {
 	 * @param encPenaltyMult The encumbrance penalty multiplier.
 	 * @return The calculated skill level.
 	 */
-	public static SkillLevel calculateLevel(GURPSCharacter character, Skill exclude, String name, String specialization, List<SkillDefault> defaults, SkillAttribute attribute, SkillDifficulty difficulty, int points, HashSet<String> excludes, int encPenaltyMult) {
+	public SkillLevel calculateLevel(GURPSCharacter character, String name, String specialization, List<SkillDefault> defaults, SkillAttribute attribute, SkillDifficulty difficulty, int points, HashSet<String> excludes, int encPenaltyMult) {
 		int relativeLevel = difficulty.getBaseRelativeLevel();
 		int level = attribute.getBaseSkillLevel(character);
-
 		if (level != Integer.MIN_VALUE) {
-			SkillDefault best;
-
 			if (difficulty != SkillDifficulty.W) {
-				best = getBestDefaultWithPoints(character, exclude, defaults, attribute, difficulty, excludes);
-				if (best != null && best.getPoints() > 0) {
-					points += best.getPoints();
+				if (mDefaultedFrom != null && mDefaultedFrom.getPoints() > 0) {
+					points += mDefaultedFrom.getPoints();
 				}
 			} else {
-				best = null;
 				points /= 3;
 			}
 
@@ -675,8 +672,8 @@ public class Skill extends ListRow {
 				} else {
 					relativeLevel += 1 + points / 4;
 				}
-			} else if (best != null && best.getPoints() < 0) {
-				relativeLevel = best.getAdjLevel() - level;
+			} else if (mDefaultedFrom != null && mDefaultedFrom.getPoints() < 0) {
+				relativeLevel = mDefaultedFrom.getAdjLevel() - level;
 			} else {
 				level = Integer.MIN_VALUE;
 				relativeLevel = 0;
@@ -684,9 +681,9 @@ public class Skill extends ListRow {
 
 			if (level != Integer.MIN_VALUE) {
 				level += relativeLevel;
-				if (best != null) {
-					if (level < best.getAdjLevel()) {
-						level = best.getAdjLevel();
+				if (mDefaultedFrom != null) {
+					if (level < mDefaultedFrom.getAdjLevel()) {
+						level = mDefaultedFrom.getAdjLevel();
 					}
 				}
 				int bonus = character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, specialization);
@@ -701,10 +698,11 @@ public class Skill extends ListRow {
 		return new SkillLevel(level, relativeLevel);
 	}
 
-	private static SkillDefault getBestDefaultWithPoints(GURPSCharacter character, Skill exclude, Collection<SkillDefault> defaults, SkillAttribute attribute, SkillDifficulty difficulty, HashSet<String> excludes) {
-		SkillDefault best = getBestDefault(character, exclude, defaults, excludes);
+	private SkillDefault getBestDefaultWithPoints() {
+		SkillDefault best = getBestDefault();
 		if (best != null) {
-			int baseLine = attribute.getBaseSkillLevel(character) + difficulty.getBaseRelativeLevel();
+			GURPSCharacter character = getCharacter();
+			int baseLine = getAttribute().getBaseSkillLevel(character) + getDifficulty().getBaseRelativeLevel();
 			int level = best.getLevel();
 			if (best.getType().isSkillBased()) {
 				String name = best.getName();
@@ -725,25 +723,52 @@ public class Skill extends ListRow {
 		return best;
 	}
 
-	private static SkillDefault getBestDefault(GURPSCharacter character, Skill exclude, Collection<SkillDefault> defaults, HashSet<String> excludes) {
+	private SkillDefault getBestDefault() {
+		GURPSCharacter character = getCharacter();
 		if (character != null) {
+			Collection<SkillDefault> defaults = getDefaults();
 			if (!defaults.isEmpty()) {
 				int best = Integer.MIN_VALUE;
 				SkillDefault bestSkill = null;
-				excludes.add(exclude.toString());
+				String exclude = toString();
+				HashSet<String> excludes = new HashSet<>();
+				excludes.add(exclude);
 				for (SkillDefault skillDefault : defaults) {
-					int level = skillDefault.getType().getSkillLevel(character, skillDefault, excludes);
-					if (level > best) {
-						best = level;
-						bestSkill = new SkillDefault(skillDefault);
-						bestSkill.setLevel(level);
+					// For skill-based defaults, prune out any that already use a default that we are involved with
+					if (!isInDefaultChain(this, skillDefault, new HashSet<>())) {
+						int level = skillDefault.getType().getSkillLevel(character, skillDefault, excludes);
+						if (level > best) {
+							best = level;
+							bestSkill = new SkillDefault(skillDefault);
+							bestSkill.setLevel(level);
+						}
 					}
 				}
-				excludes.remove(exclude.toString());
+				excludes.remove(exclude);
 				return bestSkill;
 			}
 		}
 		return null;
+	}
+
+	private boolean isInDefaultChain(Skill skill, SkillDefault skillDefault, Set<Skill> lookedAt) {
+		GURPSCharacter character = getCharacter();
+		if (character != null && skillDefault != null && skillDefault.getType().isSkillBased()) {
+			boolean hadOne = false;
+			for (Skill one : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, null)) {
+				if (one == skill) {
+					return true;
+				}
+				if (lookedAt.add(one)) {
+					if (isInDefaultChain(skill, one.mDefaultedFrom, lookedAt)) {
+						return true;
+					}
+				}
+				hadOne = true;
+			}
+			return !hadOne;
+		}
+		return false;
 	}
 
 	@Override
