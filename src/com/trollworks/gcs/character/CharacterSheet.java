@@ -1026,7 +1026,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				templateUsed.append(PathUtils.getFullPath(template));
 			}
 			try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(template)));
-							BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
+				BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
 				while (in.read(buffer) != -1) {
 					char ch = buffer[0];
 					if (lookForKeyMarker) {
@@ -1083,7 +1083,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		} else if (key.equals("CAMPAIGN")) { //$NON-NLS-1$
 			writeXMLText(out, description.getCampaign());
 		} else if (key.equals("TOTAL_POINTS")) { //$NON-NLS-1$
-			writeXMLText(out, Numbers.format(mCharacter.getTotalPoints()));
+			writeXMLText(out, Numbers.format(SheetPreferences.shouldIncludeUnspentPointsInTotalPointDisplay() ? mCharacter.getTotalPoints() : mCharacter.getSpentPoints()));
 		} else if (key.equals("ATTRIBUTE_POINTS")) { //$NON-NLS-1$
 			writeXMLText(out, Numbers.format(mCharacter.getAttributePoints()));
 		} else if (key.equals("ADVANTAGE_POINTS")) { //$NON-NLS-1$

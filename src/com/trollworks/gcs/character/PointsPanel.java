@@ -11,12 +11,14 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.widget.Wrapper;
 import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.notification.NotifierTarget;
 import com.trollworks.toolkit.utility.text.Numbers;
 
@@ -87,6 +89,7 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
 		createDivider();
 		createLabelAndField(this, character, GURPSCharacter.ID_EARNED_POINTS, EARNED_POINTS, EARNED_POINTS_TOOLTIP, SwingConstants.RIGHT);
 		mCharacter.addTarget(this, GURPSCharacter.ID_TOTAL_POINTS);
+		Preferences.getInstance().getNotifier().add(this, SheetPreferences.TOTAL_POINTS_DISPLAY_PREF_KEY);
 	}
 
 	@Override
@@ -115,7 +118,7 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
 	}
 
 	private static String getTitle(GURPSCharacter character) {
-		return MessageFormat.format(POINTS, Numbers.format(character.getTotalPoints()));
+		return MessageFormat.format(POINTS, Numbers.format(SheetPreferences.shouldIncludeUnspentPointsInTotalPointDisplay() ? character.getTotalPoints() : character.getSpentPoints()));
 	}
 
 	@Override

@@ -110,6 +110,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private static String				AND;
 	@Localize("for display of generated units")
 	private static String				FOR_UNIT_DISPLAY;
+	@Localize("Character point total display includes unspent points")
+	private static String				TOTAL_POINTS_INCLUDES_UNSPENT_POINTS;
 
 	static {
 		Localization.initialize();
@@ -140,6 +142,10 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	/** The default weight units preference key. */
 	public static final String			WEIGHT_UNITS_PREF_KEY				= Preferences.getModuleKey(MODULE, WEIGHT_UNITS_KEY);
 	private static final WeightUnits	DEFAULT_WEIGHT_UNITS				= WeightUnits.LB;
+	private static final String			TOTAL_POINTS_DISPLAY_KEY			= "TotalPointsIncludesUnspentPoints";								//$NON-NLS-1$
+	/** The optional dice rules preference key. */
+	public static final String			TOTAL_POINTS_DISPLAY_PREF_KEY		= Preferences.getModuleKey(MODULE, TOTAL_POINTS_DISPLAY_KEY);
+	private static final boolean		DEFAULT_TOTAL_POINTS_DISPLAY		= true;
 	private static final int			DEFAULT_PNG_RESOLUTION				= 200;
 	private static final String			PNG_RESOLUTION_KEY					= "PNGResolution";													//$NON-NLS-1$
 	private static final int[]			DPI									= { 72, 96, 144, 150, 200, 300 };
@@ -161,6 +167,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private JCheckBox					mUseOptionalDiceRules;
 	private JCheckBox					mUseOptionalIQRules;
 	private JCheckBox					mUseOptionalModifierRules;
+	private JCheckBox					mIncludeUnspentPointsInTotal;
 	private JCheckBox					mAutoName;
 	private JCheckBox					mUseNativePrinter;
 
@@ -196,6 +203,14 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	/** @return Whether the optional modifier rules from PW102 are in use. */
 	public static boolean areOptionalModifierRulesUsed() {
 		return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_MODIFIER_RULES_KEY, DEFAULT_OPTIONAL_MODIFIER_RULES);
+	}
+
+	/**
+	 * @return Whether the character's total points are displayed with or without including earned
+	 *         (but unspent) points.
+	 */
+	public static boolean shouldIncludeUnspentPointsInTotalPointDisplay() {
+		return Preferences.getInstance().getBooleanValue(MODULE, TOTAL_POINTS_DISPLAY_KEY, DEFAULT_TOTAL_POINTS_DISPLAY);
 	}
 
 	/** @return Whether a new character should be automatically named. */
@@ -291,6 +306,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 		mUseOptionalDiceRules = createCheckBox(OPTIONAL_DICE_RULES, null, areOptionalDiceRulesUsed());
 		column.add(mUseOptionalDiceRules);
+
+		mIncludeUnspentPointsInTotal = createCheckBox(TOTAL_POINTS_INCLUDES_UNSPENT_POINTS, null, shouldIncludeUnspentPointsInTotalPointDisplay());
+		column.add(mIncludeUnspentPointsInTotal);
 
 		row = new FlexRow();
 		mUseHTMLTemplateOverride = createCheckBox(HTML_TEMPLATE_OVERRIDE, HTML_TEMPLATE_OVERRIDE_TOOLTIP, isHTMLTemplateOverridden());
@@ -453,6 +471,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		mUseOptionalDiceRules.setSelected(DEFAULT_OPTIONAL_DICE_RULES);
 		mUseOptionalIQRules.setSelected(DEFAULT_OPTIONAL_IQ_RULES);
 		mUseOptionalModifierRules.setSelected(DEFAULT_OPTIONAL_MODIFIER_RULES);
+		mIncludeUnspentPointsInTotal.setSelected(DEFAULT_TOTAL_POINTS_DISPLAY);
 		mUseNativePrinter.setSelected(false);
 	}
 
@@ -514,6 +533,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 			Preferences.getInstance().setValue(MODULE, OPTIONAL_IQ_RULES_KEY, mUseOptionalIQRules.isSelected());
 		} else if (source == mUseOptionalModifierRules) {
 			Preferences.getInstance().setValue(MODULE, OPTIONAL_MODIFIER_RULES_KEY, mUseOptionalModifierRules.isSelected());
+		} else if (source == mIncludeUnspentPointsInTotal) {
+			Preferences.getInstance().setValue(MODULE, TOTAL_POINTS_DISPLAY_KEY, mIncludeUnspentPointsInTotal.isSelected());
 		} else if (source == mAutoName) {
 			Preferences.getInstance().setValue(MODULE, AUTO_NAME_KEY, mAutoName.isSelected());
 		} else if (source == mUseNativePrinter) {
