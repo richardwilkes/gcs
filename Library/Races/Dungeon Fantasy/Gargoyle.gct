@@ -150,21 +150,21 @@
 					<reference>B47</reference>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances @Trait@</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">100</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances any trait</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
@@ -509,7 +509,7 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
-				<name>Feature: Torso armour not interchangable with that of humans</name>
+				<name>Feature: Torso armour not interchangeable with that of humans</name>
 				<type>Physical</type>
 			</advantage>
 		</advantage_container>

@@ -27,7 +27,7 @@ These wild carnivores hunt in packs.  They can be domesticated, more or less, bu
 	<include_kick_with_boots>true</include_kick_with_boots>
 	<advantage_list>
 		<advantage version="2">
-			<name>Discriminitory Smell</name>
+			<name>Discriminatory Smell</name>
 			<type>Physical, Exotic</type>
 			<base_points>15</base_points>
 			<modifier version="1" enabled="no">
@@ -59,21 +59,21 @@ These wild carnivores hunt in packs.  They can be domesticated, more or less, bu
 				<reference>B47</reference>
 			</modifier>
 			<modifier version="1" enabled="no">
-				<name>Absorbtion</name>
+				<name>Absorption</name>
 				<cost type="percentage">80</cost>
 				<affects>total</affects>
 				<reference>B46</reference>
 				<notes>Enhances @Trait@</notes>
 			</modifier>
 			<modifier version="1" enabled="no">
-				<name>Absorbtion</name>
+				<name>Absorption</name>
 				<cost type="percentage">100</cost>
 				<affects>total</affects>
 				<reference>B46</reference>
 				<notes>Enhances any trait</notes>
 			</modifier>
 			<modifier version="1" enabled="no">
-				<name>Absorbtion</name>
+				<name>Absorption</name>
 				<cost type="percentage">80</cost>
 				<affects>total</affects>
 				<reference>B46</reference>

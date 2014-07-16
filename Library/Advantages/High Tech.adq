@@ -154,7 +154,7 @@
 			<name>Alternate Benefit</name>
 			<cost type="percentage">0</cost>
 			<affects>total</affects>
-			<notes>IQ-4+level to notice anything od in an area youve lived 6-level months</notes>
+			<notes>IQ-4+level to notice anything odd in an area you have lived 6-level months</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>

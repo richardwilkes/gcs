@@ -68,10 +68,10 @@
 				</skill_bonus>
 			</advantage>
 			<advantage_container open="yes" type="race">
-				<name>Materilized Djinni (200 pt, covered by Alternate form)</name>
+				<name>Materialized Djinni (200 pt, covered by Alternate form)</name>
 				<reference>F107</reference>
 				<advantage>
-					<name>Appeaance (Very handsome/beautiful) (16 pts)</name>
+					<name>Appearance (Very handsome/beautiful) (16 pts)</name>
 					<type>Physical</type>
 					<reference>B21</reference>
 				</advantage>
@@ -171,7 +171,7 @@
 					<type>Physical</type>
 				</advantage>
 				<advantage>
-					<name>Vulnerability (Vaccum and wind based attacks, Damage x2)</name>
+					<name>Vulnerability (Vacuum and wind based attacks, Damage x2)</name>
 					<type>Physical, Exotic</type>
 					<base_points>-20</base_points>
 					<reference>B161</reference>

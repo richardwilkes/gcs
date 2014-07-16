@@ -1174,7 +1174,7 @@
 							<reference>B140</reference>
 						</modifier>
 						<modifier version="1" enabled="no">
-							<name>Scope: Occassional</name>
+							<name>Scope: Occasional</name>
 							<cost type="points">-2</cost>
 							<affects>total</affects>
 							<reference>B140</reference>

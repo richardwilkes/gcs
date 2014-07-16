@@ -176,7 +176,7 @@
 					</skill_bonus>
 				</advantage>
 				<advantage_container version="2" open="yes" type="metatrait">
-					<name>25 Points in holy ablities</name>
+					<name>25 Points in holy abilities</name>
 					<notes>put leftovers into more Advantages</notes>
 					<advantage_container version="2" open="yes">
 						<name>Holy Might</name>
@@ -1834,7 +1834,7 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
-						<name>Fanatacism</name>
+						<name>Fanaticism</name>
 						<type>Mental</type>
 						<base_points>-15</base_points>
 						<modifier version="1" enabled="no">
@@ -1858,7 +1858,7 @@
 							<reference>B140</reference>
 						</modifier>
 						<modifier version="1" enabled="no">
-							<name>Scope: Occassional</name>
+							<name>Scope: Occasional</name>
 							<cost type="points">-2</cost>
 							<affects>total</affects>
 							<reference>B140</reference>
@@ -1890,7 +1890,7 @@
 							<reference>B140</reference>
 						</modifier>
 						<modifier version="1" enabled="no">
-							<name>Scope: Occassional</name>
+							<name>Scope: Occasional</name>
 							<cost type="points">-2</cost>
 							<affects>total</affects>
 							<reference>B140</reference>

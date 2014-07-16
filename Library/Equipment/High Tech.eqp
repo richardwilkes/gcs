@@ -2472,7 +2472,7 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>A/V Transciever</description>
+		<description>A/V Transceiver</description>
 		<tech_level>7</tech_level>
 		<legality_class>4</legality_class>
 		<value>100</value>
@@ -2485,7 +2485,7 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>A/V Transciever</description>
+		<description>A/V Transceiver</description>
 		<tech_level>8</tech_level>
 		<legality_class>4</legality_class>
 		<value>100</value>
@@ -4963,7 +4963,7 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Avalanche Transciever</description>
+		<description>Avalanche Transceiver</description>
 		<tech_level>7</tech_level>
 		<legality_class>4</legality_class>
 		<value>1000</value>
@@ -26325,7 +26325,7 @@
 		<value>1500</value>
 		<weight>160 lb</weight>
 		<reference>HT27</reference>
-		<notes>Requires air compresser and hose. External power.</notes>
+		<notes>Requires air compressor and hose. External power.</notes>
 		<categories>
 			<category>General Equipment</category>
 		</categories>
@@ -31281,7 +31281,7 @@
 		<value>200</value>
 		<weight>0.25 lb</weight>
 		<reference>HT43</reference>
-		<notes>Rechargable battery lasts 1hr. Holdout +1.</notes>
+		<notes>Rechargeable battery lasts 1hr. Holdout +1.</notes>
 		<categories>
 			<category>General Equipment</category>
 		</categories>

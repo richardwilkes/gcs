@@ -72,7 +72,7 @@
 				</attribute_bonus>
 			</advantage>
 			<advantage>
-				<name>Toxic Attack, 2 points damage (Cannot Parry, -5%; Irresistable Attack, +300%; Melee Attack, Reach C, -30%)</name>
+				<name>Toxic Attack, 2 points damage (Cannot Parry, -5%; Irresistible Attack, +300%; Melee Attack, Reach C, -30%)</name>
 				<type>Physical, Exotic</type>
 				<levels>1</levels>
 				<points_per_level>11</points_per_level>

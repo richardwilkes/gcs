@@ -2377,7 +2377,7 @@
 			<category>Talent</category>
 		</categories>
 		<skill_bonus>
-			<name compare="is">Acrobabtics</name>
+			<name compare="is">Acrobatics</name>
 			<specialization compare="is anything"></specialization>
 			<amount per_level="yes">1</amount>
 		</skill_bonus>
@@ -3466,7 +3466,7 @@
 			<name>Alternate Benefit</name>
 			<cost type="percentage">0</cost>
 			<affects>total</affects>
-			<notes>Bonus to Influence or Carrousing to demonstrate you are "cool".</notes>
+			<notes>Bonus to Influence or Carousing to demonstrate you are "cool".</notes>
 		</modifier>
 		<reference>PU3:14</reference>
 		<categories>
@@ -3677,7 +3677,7 @@
 			<name>Alternate Benefit</name>
 			<cost type="percentage">0</cost>
 			<affects>total</affects>
-			<notes>Bonus to rank for clearnad and aid, but not for authority or pay.</notes>
+			<notes>Bonus to rank for clearance and aid, but not for authority or pay.</notes>
 		</modifier>
 		<reference>PU3:16</reference>
 		<categories>

@@ -1307,7 +1307,7 @@
 						<type>Mental</type>
 						<base_points>1</base_points>
 						<reference>MA52</reference>
-						<notes>Let yoou use one class of weapons with a different skill </notes>
+						<notes>Let you use one class of weapons with a different skill </notes>
 						<categories>
 							<category>Perk</category>
 						</categories>
@@ -1446,7 +1446,7 @@
 							<reference>B135</reference>
 						</modifier>
 						<modifier version="1" enabled="no">
-							<name>Utterly Formidible Group</name>
+							<name>Utterly Formidable Group</name>
 							<cost type="points">-40</cost>
 							<affects>total</affects>
 							<reference>B135</reference>
@@ -1903,7 +1903,7 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
-						<name>Magic Suceptibility</name>
+						<name>Magic Susceptibility</name>
 						<type>Mental, Supernatural</type>
 						<levels>1</levels>
 						<points_per_level>-3</points_per_level>
@@ -4032,7 +4032,7 @@
 				</skill_container>
 				<skill_container version="2" open="yes">
 					<name>Choose two</name>
-					<notes>IIncluding unselected ranged weapons from previous list</notes>
+					<notes>Including unselected ranged weapons from previous list</notes>
 					<skill version="2">
 						<name>Acrobatics</name>
 						<difficulty>DX/H</difficulty>

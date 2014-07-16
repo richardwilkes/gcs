@@ -87,21 +87,21 @@
 					<reference>B47</reference>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances @Trait@</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">100</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances any trait</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
@@ -749,7 +749,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -910,7 +910,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -1099,7 +1099,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -1314,21 +1314,21 @@
 					<reference>B47</reference>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances @Trait@</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">100</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances any trait</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
@@ -1423,7 +1423,7 @@
 				</dr_bonus>
 			</advantage>
 			<advantage version="2">
-				<name>Discriminitory Taste</name>
+				<name>Discriminatory Taste</name>
 				<type>Physical, Exotic</type>
 				<base_points>10</base_points>
 				<modifier version="1" enabled="no">
@@ -2683,7 +2683,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -3046,7 +3046,7 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
-				<name>Discriminitory Hearing</name>
+				<name>Discriminatory Hearing</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>
 				<modifier version="1" enabled="no">
@@ -3461,21 +3461,21 @@
 						<reference>B47</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances @Trait@</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">100</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances any trait</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
@@ -3717,21 +3717,21 @@
 						<reference>B47</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances @Trait@</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">100</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances any trait</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
@@ -3954,7 +3954,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -3983,21 +3983,21 @@
 						<reference>B47</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances @Trait@</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">100</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances any trait</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
@@ -4220,7 +4220,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -4293,21 +4293,21 @@
 						<reference>B47</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances @Trait@</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">100</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances any trait</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
@@ -4530,7 +4530,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -4603,21 +4603,21 @@
 						<reference>B47</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances @Trait@</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">100</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances any trait</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
@@ -4854,21 +4854,21 @@
 					<reference>B47</reference>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances @Trait@</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">100</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances any trait</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
@@ -6856,7 +6856,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -7051,7 +7051,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -7264,7 +7264,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -7618,21 +7618,21 @@
 					<reference>B47</reference>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances @Trait@</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">100</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances any trait</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
@@ -7727,7 +7727,7 @@
 				</dr_bonus>
 			</advantage>
 			<advantage version="2">
-				<name>Discriminitory Taste</name>
+				<name>Discriminatory Taste</name>
 				<type>Physical, Exotic</type>
 				<base_points>10</base_points>
 				<modifier version="1" enabled="no">
@@ -8531,21 +8531,21 @@
 						<reference>B47</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances @Trait@</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">100</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances any trait</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
@@ -8846,7 +8846,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -9503,7 +9503,7 @@
 					<reference>P71</reference>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Rattachment</name>
+					<name>Reattachment</name>
 					<cost type="percentage">50</cost>
 					<affects>total</affects>
 					<reference>P71</reference>
@@ -10173,21 +10173,21 @@
 						<reference>B47</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances @Trait@</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">100</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances any trait</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
@@ -10336,21 +10336,21 @@
 						<reference>B47</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances @Trait@</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">100</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances any trait</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
@@ -10848,21 +10848,21 @@
 					<reference>B47</reference>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances @Trait@</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">100</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances any trait</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
@@ -10957,7 +10957,7 @@
 				</dr_bonus>
 			</advantage>
 			<advantage version="2">
-				<name>Discriminitory Taste</name>
+				<name>Discriminatory Taste</name>
 				<type>Physical, Exotic</type>
 				<base_points>10</base_points>
 				<modifier version="1">
@@ -11660,7 +11660,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -11802,7 +11802,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -11972,7 +11972,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -12162,21 +12162,21 @@
 					<reference>B47</reference>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances @Trait@</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">100</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances any trait</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
@@ -12271,7 +12271,7 @@
 				</dr_bonus>
 			</advantage>
 			<advantage version="2">
-				<name>Discriminitory Smell</name>
+				<name>Discriminatory Smell</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>
 				<modifier version="1" enabled="no">
@@ -12896,7 +12896,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -13042,7 +13042,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -13216,7 +13216,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -14708,7 +14708,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -14734,7 +14734,7 @@
 					<category>Lens</category>
 				</categories>
 				<advantage version="2">
-					<name>Discriminitory Smell</name>
+					<name>Discriminatory Smell</name>
 					<type>Physical, Exotic</type>
 					<base_points>15</base_points>
 					<modifier version="1" enabled="no">
@@ -14801,7 +14801,7 @@
 					<category>Lens</category>
 				</categories>
 				<advantage version="2">
-					<name>Discriminitory Smell</name>
+					<name>Discriminatory Smell</name>
 					<type>Physical, Exotic</type>
 					<base_points>15</base_points>
 					<modifier version="1" enabled="no">
@@ -14872,7 +14872,7 @@
 					<category>Lens</category>
 				</categories>
 				<advantage version="2">
-					<name>Discriminitory Smell</name>
+					<name>Discriminatory Smell</name>
 					<type>Physical, Exotic</type>
 					<base_points>15</base_points>
 					<modifier version="1" enabled="no">
@@ -15048,21 +15048,21 @@
 					<reference>B47</reference>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances @Trait@</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">100</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances any trait</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
@@ -16387,7 +16387,7 @@
 					<reference>B143</reference>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Freqency: Constant</name>
+					<name>Frequency: Constant</name>
 					<cost type="multiplier">5</cost>
 					<reference>B143</reference>
 				</modifier>
@@ -17349,7 +17349,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -17594,7 +17594,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -17944,7 +17944,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -19791,21 +19791,21 @@
 						<reference>B47</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances @Trait@</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">100</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances any trait</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
@@ -20028,7 +20028,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -20065,21 +20065,21 @@
 						<reference>B47</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances @Trait@</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">100</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances any trait</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
@@ -20302,7 +20302,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -20374,21 +20374,21 @@
 						<reference>B47</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances @Trait@</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">100</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances any trait</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
@@ -20611,7 +20611,7 @@
 						<reference>B143</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Freqency: Constant</name>
+						<name>Frequency: Constant</name>
 						<cost type="multiplier">5</cost>
 						<reference>B143</reference>
 					</modifier>
@@ -20683,21 +20683,21 @@
 						<reference>B47</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances @Trait@</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">100</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances any trait</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>

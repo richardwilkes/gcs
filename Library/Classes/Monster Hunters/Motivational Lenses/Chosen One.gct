@@ -305,7 +305,7 @@
 							<reference>B135</reference>
 						</modifier>
 						<modifier version="1" enabled="no">
-							<name>Utterly Formidible Group</name>
+							<name>Utterly Formidable Group</name>
 							<cost type="points">-40</cost>
 							<affects>total</affects>
 							<reference>B135</reference>

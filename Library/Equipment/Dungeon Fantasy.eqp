@@ -432,7 +432,7 @@
 		<value>5</value>
 		<weight>0.5 lb</weight>
 		<reference>DF1:25</reference>
-		<notes>Ready to deplay. Vision-2 to avoid, MoF hits. thr-3 imp (victim ST). Penetrating hits continue until removed (2 Ready)</notes>
+		<notes>Ready to deploy. Vision-2 to avoid, MoF hits. thr-3 imp (victim ST). Penetrating hits continue until removed (2 Ready)</notes>
 		<categories>
 			<category>Covert Ops and Security Gear</category>
 		</categories>
@@ -1602,7 +1602,7 @@
 		<value>40</value>
 		<weight>0.2 lb</weight>
 		<reference>DF1:25</reference>
-		<notes>HT aff, 10 yd radius, vison based. Blindness, HT each turn to recover.</notes>
+		<notes>HT aff, 10 yd radius, vision based. Blindness, HT each turn to recover.</notes>
 		<categories>
 			<category>Covert Ops and Security Gear</category>
 		</categories>
@@ -1949,7 +1949,7 @@
 		<value>4920</value>
 		<weight>0.25 lb</weight>
 		<reference>DF1:30</reference>
-		<notes>Alchemical. Immunity to mudane fire or fire spells.</notes>
+		<notes>Alchemical. Immunity to mundane fire or fire spells.</notes>
 		<categories>
 			<category>Magic Items</category>
 		</categories>
@@ -2020,7 +2020,7 @@
 		<legality_class>4</legality_class>
 		<value>550</value>
 		<reference>DF1:30</reference>
-		<notes>Adds 5d to blow against an inaimate object. (Rive, Spell Stone)</notes>
+		<notes>Adds 5d to blow against an inanimate object. (Rive, Spell Stone)</notes>
 		<categories>
 			<category>Magic Items</category>
 		</categories>

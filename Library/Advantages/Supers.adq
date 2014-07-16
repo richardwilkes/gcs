@@ -209,7 +209,7 @@
 		<type>Physical, Exotic</type>
 		<base_points>1</base_points>
 		<reference>Sup31</reference>
-		<notes>You can ignite Highly Flamable or Super Flamable material.</notes>
+		<notes>You can ignite Highly Flammable or Super Flammable material.</notes>
 		<categories>
 			<category>Perk</category>
 		</categories>
@@ -542,7 +542,7 @@
 		<type>Physical, Exotic</type>
 		<base_points>1</base_points>
 		<reference>Sup31</reference>
-		<notes>Puch and kick as if you had brass knuckles and boots.</notes>
+		<notes>Punch and kick as if you had brass knuckles and boots.</notes>
 		<categories>
 			<category>Perk</category>
 		</categories>

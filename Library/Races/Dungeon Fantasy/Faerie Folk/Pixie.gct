@@ -468,7 +468,7 @@
 				<type>Physical</type>
 			</advantage>
 			<advantage version="2">
-				<name>Feature: Torso armour not interchangable with that of other SM-6 humanoids</name>
+				<name>Feature: Torso armour not interchangeable with that of other SM-6 humanoids</name>
 				<type>Physical</type>
 			</advantage>
 		</advantage_container>

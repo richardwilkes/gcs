@@ -125,21 +125,21 @@
 						<reference>B47</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances @Trait@</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">100</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
 						<notes>Enhances any trait</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
-						<name>Absorbtion</name>
+						<name>Absorption</name>
 						<cost type="percentage">80</cost>
 						<affects>total</affects>
 						<reference>B46</reference>
@@ -362,7 +362,7 @@
 						<amount per_level="yes">-3</amount>
 					</skill_bonus>
 					<skill_bonus>
-						<name compare="is">machnist</name>
+						<name compare="is">machinist</name>
 						<specialization compare="is anything"></specialization>
 						<amount per_level="yes">-3</amount>
 					</skill_bonus>

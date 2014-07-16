@@ -7,13 +7,13 @@
 			<name>0 point psionic abilities</name>
 			<cost type="percentage">0</cost>
 			<affects>total</affects>
-			<notes>Many psionic abilites in the GURPS Psionic Powers book do not have a fixed cost per level.  To deal with this, I used modifiers as a replacement for ability levels.  You only need 1 level active at a time (i.e. you do not need Interruption_2 and Interruption_1 active, only Interruption_2).</notes>
+			<notes>Many psionic abilities in the GURPS Psionic Powers book do not have a fixed cost per level.  To deal with this, I used modifiers as a replacement for ability levels.  You only need 1 level active at a time (i.e. you do not need Interruption_2 and Interruption_1 active, only Interruption_2).</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Skills requiring an _ (underscore) as a prereq.</name>
 			<cost type="percentage">0</cost>
 			<affects>total</affects>
-			<notes>The underscore is related to the irregular points per level of some psionic abilities.  If a skill is red and says this is the problem, go to the related ability and activate a modifier to "level up" your ability.  All levels 1+ fullfil this requirement.</notes>
+			<notes>The underscore is related to the irregular points per level of some psionic abilities.  If a skill is red and says this is the problem, go to the related ability and activate a modifier to "level up" your ability.  All levels 1+ fulfil this requirement.</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Custom Psionic Powers</name>

@@ -855,7 +855,7 @@ zPaQSYiygr595ZJC5L+//aBDx3s9/n+N1r/xxkBG8wAAAABJRU5ErkJggg==
 						<amount>2</amount>
 					</skill_bonus>
 					<skill_bonus>
-						<name compare="is">mimcry</name>
+						<name compare="is">mimicry</name>
 						<specialization compare="is anything"></specialization>
 						<amount>2</amount>
 					</skill_bonus>
@@ -1343,7 +1343,7 @@ zPaQSYiygr595ZJC5L+//aBDx3s9/n+N1r/xxkBG8wAAAABJRU5ErkJggg==
 	</advantage_list>
 	<skill_list>
 		<skill version="2">
-			<name>Connoisseur (Natural Enviroments)</name>
+			<name>Connoisseur (Natural Environments)</name>
 			<difficulty>IQ/A</difficulty>
 			<points>1</points>
 			<reference>B185</reference>

@@ -673,7 +673,7 @@
 							<amount>2</amount>
 						</skill_bonus>
 						<skill_bonus>
-							<name compare="starts with">mimcry</name>
+							<name compare="starts with">mimicry</name>
 							<specialization compare="is anything"></specialization>
 							<amount>2</amount>
 						</skill_bonus>

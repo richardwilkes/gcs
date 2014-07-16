@@ -1381,7 +1381,7 @@
 							<reference>B140</reference>
 						</modifier>
 						<modifier version="1" enabled="no">
-							<name>Scope: Occassional</name>
+							<name>Scope: Occasional</name>
 							<cost type="points">-2</cost>
 							<affects>total</affects>
 							<reference>B140</reference>
@@ -1438,7 +1438,7 @@
 				</advantage_container>
 			</advantage_container>
 			<advantage_container version="2" open="yes">
-				<name>Secondary Characterisics</name>
+				<name>Secondary Characteristic</name>
 				<advantage version="2">
 					<name>Decreased Basic Speed</name>
 					<type>Physical</type>

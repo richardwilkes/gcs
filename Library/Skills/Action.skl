@@ -616,7 +616,7 @@
 		</default>
 		<default>
 			<type>Skill</type>
-			<name>Drving</name>
+			<name>Driving</name>
 			<specialization>Motorcycle</specialization>
 			<modifier>-4</modifier>
 		</default>

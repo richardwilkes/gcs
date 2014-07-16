@@ -301,7 +301,7 @@
 						</attribute_bonus>
 					</advantage>
 					<advantage version="2">
-						<name>Discriminitory Smell</name>
+						<name>Discriminatory Smell</name>
 						<type>Physical, Exotic</type>
 						<base_points>15</base_points>
 						<modifier version="1" enabled="no">
@@ -1339,7 +1339,7 @@
 							<amount>-3</amount>
 						</skill_bonus>
 						<skill_bonus>
-							<name compare="is">machnist</name>
+							<name compare="is">machinist</name>
 							<specialization compare="is anything"></specialization>
 							<amount>-3</amount>
 						</skill_bonus>

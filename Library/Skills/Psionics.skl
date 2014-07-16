@@ -2299,7 +2299,7 @@
 		</categories>
 	</technique>
 	<skill_container version="2" open="yes">
-		<name>Probabilitly Alteration</name>
+		<name>Probability Alteration</name>
 		<reference>Psi43</reference>
 		<categories>
 			<category>Probability Alteration</category>
@@ -2842,7 +2842,7 @@
 			<category>Psychic Vampirism</category>
 		</categories>
 		<technique version="2" limit="0">
-			<name>Destabilzing</name>
+			<name>Destabilizing</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
 			<reference>Psi51</reference>
@@ -2859,7 +2859,7 @@
 			</categories>
 		</technique>
 		<technique version="2" limit="0">
-			<name>Destabilzing</name>
+			<name>Destabilizing</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
 			<reference>Psi51</reference>
@@ -2876,7 +2876,7 @@
 			</categories>
 		</technique>
 		<technique version="2" limit="0">
-			<name>Destabilzing</name>
+			<name>Destabilizing</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
 			<reference>Psi51</reference>
@@ -2893,7 +2893,7 @@
 			</categories>
 		</technique>
 		<technique version="2" limit="0">
-			<name>Destabilzing</name>
+			<name>Destabilizing</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
 			<reference>Psi51</reference>
@@ -2910,7 +2910,7 @@
 			</categories>
 		</technique>
 		<technique version="2" limit="0">
-			<name>Destabilzing</name>
+			<name>Destabilizing</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
 			<reference>Psi51</reference>
@@ -2927,7 +2927,7 @@
 			</categories>
 		</technique>
 		<technique version="2" limit="0">
-			<name>Destabilzing</name>
+			<name>Destabilizing</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
 			<reference>Psi51</reference>
@@ -2944,7 +2944,7 @@
 			</categories>
 		</technique>
 		<technique version="2" limit="0">
-			<name>Destabilzing</name>
+			<name>Destabilizing</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
 			<reference>Psi51</reference>

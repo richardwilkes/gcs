@@ -68,7 +68,7 @@
 				<type>Physical</type>
 			</advantage>
 			<advantage>
-				<name>Vulnerability (Vaccum and wind based attacks, Damage x2)</name>
+				<name>Vulnerability (Vacuum and wind based attacks, Damage x2)</name>
 				<type>Physical, Exotic</type>
 				<base_points>-20</base_points>
 				<reference>B161</reference>

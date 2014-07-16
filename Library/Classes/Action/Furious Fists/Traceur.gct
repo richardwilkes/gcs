@@ -337,21 +337,21 @@
 							<reference>B47</reference>
 						</modifier>
 						<modifier version="1" enabled="no">
-							<name>Absorbtion</name>
+							<name>Absorption</name>
 							<cost type="percentage">80</cost>
 							<affects>total</affects>
 							<reference>B46</reference>
 							<notes>Enhances @Trait@</notes>
 						</modifier>
 						<modifier version="1" enabled="no">
-							<name>Absorbtion</name>
+							<name>Absorption</name>
 							<cost type="percentage">100</cost>
 							<affects>total</affects>
 							<reference>B46</reference>
 							<notes>Enhances any trait</notes>
 						</modifier>
 						<modifier version="1" enabled="no">
-							<name>Absorbtion</name>
+							<name>Absorption</name>
 							<cost type="percentage">80</cost>
 							<affects>total</affects>
 							<reference>B46</reference>
@@ -1633,7 +1633,7 @@
 								<reference>B140</reference>
 							</modifier>
 							<modifier version="1" enabled="no">
-								<name>Scope: Occassional</name>
+								<name>Scope: Occasional</name>
 								<cost type="points">-2</cost>
 								<affects>total</affects>
 								<reference>B140</reference>
@@ -7453,7 +7453,7 @@
 						</default>
 						<default>
 							<type>Skill</type>
-							<name>Drving</name>
+							<name>Driving</name>
 							<specialization>Motorcycle</specialization>
 							<modifier>-4</modifier>
 						</default>

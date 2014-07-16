@@ -70,21 +70,21 @@
 					<reference>B47</reference>
 				</modifier>
 				<modifier enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances @Trait@</notes>
 				</modifier>
 				<modifier enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">100</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances any trait</notes>
 				</modifier>
 				<modifier enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>

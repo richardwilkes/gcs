@@ -166,7 +166,7 @@
 		</categories>
 	</technique>
 	<technique version="2" limit="0">
-		<name>Drunkeness</name>
+		<name>Drunkenness</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
 		<reference>M219</reference>
@@ -571,7 +571,7 @@
 		</categories>
 	</technique>
 	<technique version="2" limit="0">
-		<name>Letcherousness</name>
+		<name>Lecherousness</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
 		<reference>M215</reference>
@@ -721,7 +721,7 @@
 		</categories>
 	</technique>
 	<technique version="2" limit="0">
-		<name>Pain Resisistance</name>
+		<name>Pain Resistance</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
 		<reference>M216</reference>

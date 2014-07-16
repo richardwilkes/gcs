@@ -1459,7 +1459,7 @@
 			<notes>@Sense@</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
-			<name>Independance</name>
+			<name>Independence</name>
 			<cost type="percentage">50</cost>
 			<affects>total</affects>
 			<reference>P95</reference>
@@ -2292,7 +2292,7 @@
 			<reference>P98</reference>
 		</modifier>
 		<modifier version="1" enabled="no">
-			<name>Resistable</name>
+			<name>Resistible</name>
 			<cost type="percentage">-50</cost>
 			<affects>total</affects>
 			<reference>P98</reference>

@@ -575,21 +575,21 @@
 				<reference>B47</reference>
 			</modifier>
 			<modifier version="1" enabled="no">
-				<name>Absorbtion</name>
+				<name>Absorption</name>
 				<cost type="percentage">80</cost>
 				<affects>total</affects>
 				<reference>B46</reference>
 				<notes>Enhances @Trait@</notes>
 			</modifier>
 			<modifier version="1" enabled="no">
-				<name>Absorbtion</name>
+				<name>Absorption</name>
 				<cost type="percentage">100</cost>
 				<affects>total</affects>
 				<reference>B46</reference>
 				<notes>Enhances any trait</notes>
 			</modifier>
 			<modifier version="1" enabled="no">
-				<name>Absorbtion</name>
+				<name>Absorption</name>
 				<cost type="percentage">80</cost>
 				<affects>total</affects>
 				<reference>B46</reference>
@@ -3651,7 +3651,7 @@
 				<amount>2</amount>
 			</skill_bonus>
 			<skill_bonus>
-				<name compare="starts with">mimcry</name>
+				<name compare="starts with">mimicry</name>
 				<specialization compare="is anything"></specialization>
 				<amount>2</amount>
 			</skill_bonus>
@@ -4799,7 +4799,7 @@
 				<reference>B135</reference>
 			</modifier>
 			<modifier version="1" enabled="no">
-				<name>Utterly Formidible Group</name>
+				<name>Utterly Formidable Group</name>
 				<cost type="points">-40</cost>
 				<affects>total</affects>
 				<reference>B135</reference>
@@ -5083,7 +5083,7 @@
 				<amount>-3</amount>
 			</skill_bonus>
 			<skill_bonus>
-				<name compare="is">machnist</name>
+				<name compare="is">machinist</name>
 				<specialization compare="is anything"></specialization>
 				<amount>-3</amount>
 			</skill_bonus>
@@ -5191,7 +5191,7 @@
 				<reference>B140</reference>
 			</modifier>
 			<modifier version="1" enabled="no">
-				<name>Scope: Occassional</name>
+				<name>Scope: Occasional</name>
 				<cost type="points">-2</cost>
 				<affects>total</affects>
 				<reference>B140</reference>
@@ -5223,7 +5223,7 @@
 				<reference>B140</reference>
 			</modifier>
 			<modifier version="1" enabled="no">
-				<name>Scope: Occassional</name>
+				<name>Scope: Occasional</name>
 				<cost type="points">-2</cost>
 				<affects>total</affects>
 				<reference>B140</reference>

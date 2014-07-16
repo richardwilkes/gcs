@@ -193,7 +193,7 @@
 								<reference>B69</reference>
 							</modifier>
 							<modifier version="1" enabled="no">
-								<name>Independant</name>
+								<name>Independent</name>
 								<cost type="percentage">70</cost>
 								<affects>total</affects>
 								<reference>P61</reference>
@@ -1184,7 +1184,7 @@
 						<amount>2</amount>
 					</skill_bonus>
 					<skill_bonus>
-						<name compare="starts with">mimcry</name>
+						<name compare="starts with">mimicry</name>
 						<specialization compare="is anything"></specialization>
 						<amount>2</amount>
 					</skill_bonus>

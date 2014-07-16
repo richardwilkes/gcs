@@ -250,7 +250,7 @@
 			<name>Mind Block</name>
 			<modifier>-5</modifier>
 		</default>
-		<notes>Can not excede level of Invisibility Art</notes>
+		<notes>Can not exceed level of Invisibility Art</notes>
 		<prereq_list all="yes">
 			<skill_prereq has="yes">
 				<name compare="is">Invisibility Art</name>

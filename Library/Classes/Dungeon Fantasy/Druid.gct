@@ -1067,21 +1067,21 @@
 								<reference>B47</reference>
 							</modifier>
 							<modifier version="1" enabled="no">
-								<name>Absorbtion</name>
+								<name>Absorption</name>
 								<cost type="percentage">80</cost>
 								<affects>total</affects>
 								<reference>B46</reference>
 								<notes>Enhances @Trait@</notes>
 							</modifier>
 							<modifier version="1" enabled="no">
-								<name>Absorbtion</name>
+								<name>Absorption</name>
 								<cost type="percentage">100</cost>
 								<affects>total</affects>
 								<reference>B46</reference>
 								<notes>Enhances any trait</notes>
 							</modifier>
 							<modifier version="1" enabled="no">
-								<name>Absorbtion</name>
+								<name>Absorption</name>
 								<cost type="percentage">80</cost>
 								<affects>total</affects>
 								<reference>B46</reference>
@@ -1402,7 +1402,7 @@
 								<reference>B69</reference>
 							</modifier>
 							<modifier version="1" enabled="no">
-								<name>Independant</name>
+								<name>Independent</name>
 								<cost type="percentage">70</cost>
 								<affects>total</affects>
 								<reference>P61</reference>
@@ -1677,7 +1677,7 @@
 							<reference>B140</reference>
 						</modifier>
 						<modifier version="1" enabled="no">
-							<name>Scope: Occassional</name>
+							<name>Scope: Occasional</name>
 							<cost type="points">-2</cost>
 							<affects>total</affects>
 							<reference>B140</reference>
@@ -4696,7 +4696,7 @@
 					</prereq_list>
 				</spell>
 				<spell version="2">
-					<name>Predict Earth Movment</name>
+					<name>Predict Earth Movement</name>
 					<college>Druid</college>
 					<power_source>Arcane</power_source>
 					<spell_class>Info</spell_class>

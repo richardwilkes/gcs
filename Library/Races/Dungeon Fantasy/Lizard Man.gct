@@ -154,21 +154,21 @@
 					<reference>B47</reference>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances @Trait@</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">100</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
 					<notes>Enhances any trait</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Absorbtion</name>
+					<name>Absorption</name>
 					<cost type="percentage">80</cost>
 					<affects>total</affects>
 					<reference>B46</reference>
@@ -415,7 +415,7 @@
 				<reference>DF3:15</reference>
 			</advantage>
 			<advantage version="2">
-				<name>Feature: Head armour not interchangable with humans.</name>
+				<name>Feature: Head armour not interchangeable with humans.</name>
 				<type>Physical</type>
 				<reference>DF3:15</reference>
 			</advantage>

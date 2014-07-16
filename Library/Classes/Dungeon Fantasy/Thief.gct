@@ -91,7 +91,7 @@
 				</advantage>
 			</advantage_container>
 			<advantage_container version="2" open="yes">
-				<name>Secondary Charactaristics</name>
+				<name>Secondary Characteristic</name>
 				<advantage version="2">
 					<name>Increased Perception</name>
 					<type>Mental/Physical</type>
@@ -215,7 +215,7 @@
 					</advantage>
 				</advantage_container>
 				<advantage_container version="2" open="yes">
-					<name>-20 Ponits from</name>
+					<name>-20 Points from</name>
 					<advantage version="2">
 						<name>Bad Temper</name>
 						<type>Mental</type>

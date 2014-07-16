@@ -4130,7 +4130,7 @@
 		</prereq_list>
 	</spell>
 	<spell version="2">
-		<name>Predict Earth Movment</name>
+		<name>Predict Earth Movement</name>
 		<college>Earth</college>
 		<power_source>Arcane</power_source>
 		<spell_class>Info</spell_class>
@@ -4962,7 +4962,7 @@
 		</prereq_list>
 	</spell>
 	<spell version="2">
-		<name>Restist Enchantment</name>
+		<name>Resist Enchantment</name>
 		<college>Enchantment</college>
 		<power_source>Arcane</power_source>
 		<spell_class>Enchantment</spell_class>

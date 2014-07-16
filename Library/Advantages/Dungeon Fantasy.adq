@@ -112,7 +112,7 @@
 		</prereq_list>
 	</advantage>
 	<advantage_container version="2" open="yes">
-		<name>Chi Mastry</name>
+		<name>Chi Maestry</name>
 		<modifier version="1">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
@@ -666,7 +666,7 @@
 			<name>Alternate Benefit</name>
 			<cost type="percentage">0</cost>
 			<affects>total</affects>
-			<notes>IQ-4+Level to notice distrubances in nature</notes>
+			<notes>IQ-4+Level to notice disturbances in nature</notes>
 		</modifier>
 		<reference>DF11,PU3:8</reference>
 		<categories>
@@ -975,7 +975,7 @@
 			<name>Alternate Benefit</name>
 			<cost type="percentage">0</cost>
 			<affects>total</affects>
-			<notes>Bonus to will for Extra Effort when digging, HT on failure at such, and all rolls to avoid disaters in mines</notes>
+			<notes>Bonus to will for Extra Effort when digging, HT on failure at such, and all rolls to avoid disasters in mines</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
@@ -1034,7 +1034,7 @@
 			<name>Alternate Benefit</name>
 			<cost type="percentage">0</cost>
 			<affects>total</affects>
-			<notes>Bonus to self control rolls after a successfoul Meditation, Mental Strength, or Mind Block</notes>
+			<notes>Bonus to self control rolls after a successful Meditation, Mental Strength, or Mind Block</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
@@ -1091,7 +1091,7 @@
 			<name>Reaction Bonus</name>
 			<cost type="percentage">0</cost>
 			<affects>total</affects>
-			<notes>Sailors, pirates, and aquatic races sypathetic to sea travel</notes>
+			<notes>Sailors, pirates, and aquatic races sympathetic to sea travel</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Alternate Benefit</name>

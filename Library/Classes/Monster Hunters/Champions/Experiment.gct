@@ -242,7 +242,7 @@
 						<category>Power</category>
 					</categories>
 					<advantage version="2">
-						<name>Addrenal-Muscular Trigger</name>
+						<name>Adrenal-Muscular Trigger</name>
 						<type>Physical, Exotic</type>
 						<levels>1</levels>
 						<points_per_level>8</points_per_level>
@@ -452,7 +452,7 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
-						<name>Occular Adaptability</name>
+						<name>Ocular Adaptability</name>
 						<type>Physical, Exotic</type>
 						<base_points>10</base_points>
 						<modifier version="1" enabled="no">
@@ -1941,7 +1941,7 @@
 							<reference>B135</reference>
 						</modifier>
 						<modifier version="1" enabled="no">
-							<name>Utterly Formidible Group</name>
+							<name>Utterly Formidable Group</name>
 							<cost type="points">-40</cost>
 							<affects>total</affects>
 							<reference>B135</reference>
@@ -4800,7 +4800,7 @@
 						</default>
 						<default>
 							<type>Skill</type>
-							<name>Drving</name>
+							<name>Driving</name>
 							<specialization>Motorcycle</specialization>
 							<modifier>-4</modifier>
 						</default>
