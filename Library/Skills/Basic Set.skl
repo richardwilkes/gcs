@@ -9111,7 +9111,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9142,7 +9142,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9173,7 +9173,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9204,7 +9204,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9235,7 +9235,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9266,7 +9266,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9297,7 +9297,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9328,7 +9328,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9359,7 +9359,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9390,7 +9390,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9421,7 +9421,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9452,7 +9452,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9483,7 +9483,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9514,7 +9514,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9545,7 +9545,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9576,7 +9576,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9607,7 +9607,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9638,7 +9638,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9669,7 +9669,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9700,7 +9700,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9731,7 +9731,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9762,7 +9762,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9793,7 +9793,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9824,7 +9824,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9855,7 +9855,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9886,7 +9886,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9917,7 +9917,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9948,7 +9948,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -9979,7 +9979,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -10010,7 +10010,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -10041,7 +10041,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -10072,7 +10072,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -10103,7 +10103,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -10134,7 +10134,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -10165,7 +10165,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -10227,7 +10227,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -10289,7 +10289,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -10320,7 +10320,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -10351,7 +10351,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -10382,7 +10382,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -10413,7 +10413,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -10444,7 +10444,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
@@ -10475,7 +10475,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Machinist</name>
-			<modifier>-4</modifier>
+			<modifier>-5</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
