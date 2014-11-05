@@ -10876,7 +10876,6 @@
 	<skill version="2">
 		<name>Naturalist</name>
 		<specialization>@Planet type@</specialization>
-		<tech_level/>
 		<difficulty>IQ/H</difficulty>
 		<points>1</points>
 		<reference>B211</reference>
@@ -10899,7 +10898,6 @@
 	<skill version="2">
 		<name>Naturalist</name>
 		<specialization>Earthlike</specialization>
-		<tech_level/>
 		<difficulty>IQ/H</difficulty>
 		<points>1</points>
 		<reference>B211</reference>
@@ -10922,7 +10920,6 @@
 	<skill version="2">
 		<name>Naturalist</name>
 		<specialization>Gas Giants</specialization>
-		<tech_level/>
 		<difficulty>IQ/H</difficulty>
 		<points>1</points>
 		<reference>B211</reference>
@@ -10945,7 +10942,6 @@
 	<skill version="2">
 		<name>Naturalist</name>
 		<specialization>Hostile Terrestrial</specialization>
-		<tech_level/>
 		<difficulty>IQ/H</difficulty>
 		<points>1</points>
 		<reference>B211</reference>
@@ -10968,7 +10964,6 @@
 	<skill version="2">
 		<name>Naturalist</name>
 		<specialization>Ice Dwarfs</specialization>
-		<tech_level/>
 		<difficulty>IQ/H</difficulty>
 		<points>1</points>
 		<reference>B211</reference>
@@ -10991,7 +10986,6 @@
 	<skill version="2">
 		<name>Naturalist</name>
 		<specialization>Ice Worlds</specialization>
-		<tech_level/>
 		<difficulty>IQ/H</difficulty>
 		<points>1</points>
 		<reference>B211</reference>
@@ -11014,7 +11008,6 @@
 	<skill version="2">
 		<name>Naturalist</name>
 		<specialization>Rock Worlds</specialization>
-		<tech_level/>
 		<difficulty>IQ/H</difficulty>
 		<points>1</points>
 		<reference>B211</reference>
