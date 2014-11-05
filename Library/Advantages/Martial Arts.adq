@@ -143,7 +143,7 @@
 			</default>
 		</melee_weapon>
 		<reference>MA50</reference>
-		<notes>+3 to resit injury from Arm Lock, Arm Wrench, etc.; You may opt to buy Partial DR or Striker</notes>
+		<notes>+3 to resist injury from Arm Lock, Arm Wrench, etc.; You may opt to buy Partial DR or Striker</notes>
 		<categories>
 			<category>Cinematic</category>
 			<category>Perk</category>
@@ -322,7 +322,7 @@
 		<type>Mental</type>
 		<base_points>1</base_points>
 		<reference>MA51</reference>
-		<notes>let you use an setup attack differently</notes>
+		<notes>Lets you use a setup attack differently</notes>
 		<categories>
 			<category>Perk</category>
 		</categories>
@@ -381,7 +381,7 @@
 			<name>Alternate Benefit</name>
 			<cost type="percentage">0</cost>
 			<affects>total</affects>
-			<notes>Bonus to resist seasicknes and reduce unfamiliarity penalties for system on an appropriate boat or ship</notes>
+			<notes>Bonus to resist seasickness and reduce unfamiliarity penalties for system on an appropriate boat or ship</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
@@ -782,7 +782,7 @@
 		<type>Mental</type>
 		<base_points>1</base_points>
 		<reference>MA52</reference>
-		<notes>increases your maximum level in a technique</notes>
+		<notes>Increases your maximum level in a technique</notes>
 		<categories>
 			<category>Perk</category>
 		</categories>
@@ -820,7 +820,7 @@
 		<type>Mental</type>
 		<base_points>1</base_points>
 		<reference>MA52</reference>
-		<notes>Let you use one class of weapons with a different skill </notes>
+		<notes>Let you use one class of weapons with a different skill.</notes>
 		<categories>
 			<category>Perk</category>
 		</categories>

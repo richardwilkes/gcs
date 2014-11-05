@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<template unique_id="eis1sp0j:1emqlireq83ey">
+<template unique_id="i1kcgxqm:-1teqhws2nkkqr">
 	<advantage_list>
 		<advantage_container open="yes" type="metatrait">
-			<name>Meta-Trait: Astral Entity</name>
-			<reference>B263</reference>
+			<name>Meta-Trait: Specter</name>
+			<reference>H27</reference>
 			<advantage>
 				<name>Doesn't Breathe</name>
 				<type>Physical, Exotic</type>
@@ -23,27 +23,19 @@
 				<reference>B50</reference>
 			</advantage>
 			<advantage>
-				<name>Insubstantiality</name>
+				<name>Insubstantiality (Affect Substantial, Difficult Materialization)</name>
 				<type>Mental/Physical, Exotic</type>
-				<base_points>80</base_points>
-				<modifier version="1" enabled="yes">
-					<name>Always On</name>
-					<cost type="percentage">-50</cost>
-					<affects>total</affects>
-					<reference>B63</reference>
-				</modifier>
-				<reference>B63</reference>
-				<notes>Always On</notes>
+				<base_points>144</base_points>
+				<reference>B62</reference>
 			</advantage>
 			<advantage>
-				<name>Invisibility</name>
+				<name>Invisibility (Substantial Only, Switchable)</name>
 				<type>Mental/Physical, Exotic</type>
-				<base_points>36</base_points>
+				<base_points>40</base_points>
 				<reference>B63</reference>
-				<notes>Substantial Only</notes>
 			</advantage>
 			<advantage>
-				<name>Resistant (Immune to Metabolic Hazards)</name>
+				<name>Resistant (Immunity to Metabolic Hazards)</name>
 				<type>Physical</type>
 				<base_points>30</base_points>
 				<reference>B81</reference>
@@ -54,6 +46,9 @@
 				<base_points>15</base_points>
 				<reference>B95</reference>
 			</advantage>
+			<notes>A specter can become visible effortlessly. 
+				It materializes with some difficulty (1 FP/minute),
+				but more easily than normal spirits.</notes>
 		</advantage_container>
 	</advantage_list>
 </template>

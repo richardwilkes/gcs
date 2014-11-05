@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<template unique_id="eis1sp0j:1emqlireq83ey">
+<template unique_id="i1kccjzy:-4oahzbgg08nl">
 	<advantage_list>
 		<advantage_container open="yes" type="metatrait">
-			<name>Meta-Trait: Astral Entity</name>
-			<reference>B263</reference>
+			<name>Meta-Trait: Haunt</name>
+			<reference>H27</reference>
 			<advantage>
 				<name>Doesn't Breathe</name>
 				<type>Physical, Exotic</type>
@@ -26,6 +26,12 @@
 				<name>Insubstantiality</name>
 				<type>Mental/Physical, Exotic</type>
 				<base_points>80</base_points>
+				<modifier version="1" enabled="yes">
+					<name>Affect Substantial</name>
+					<cost type="percentage">100</cost>
+					<affects>total</affects>
+					<reference>B63</reference>
+				</modifier>
 				<modifier version="1" enabled="yes">
 					<name>Always On</name>
 					<cost type="percentage">-50</cost>

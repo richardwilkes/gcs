@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="i1kc0wmj:-1haj9kypaiwhv">
+	<advantage_list>
+		<advantage_container open="yes" type="metatrait">
+			<name>Meta-Trait: Rotting Undead</name>
+			<reference>H27</reference>
+			<advantage version="2">
+				<name>Appearance</name>
+				<type>Physical</type>
+				<modifier version="1" enabled="yes">
+					<name>Universal</name>
+					<cost type="percentage">25</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Off-the-Shelf Looks</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Androgynous</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Impressive</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Attractive</name>
+					<cost type="points">4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Average</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Horrific</name>
+					<cost type="points">-24</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="yes">
+					<name>Monstrous</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Hideous</name>
+					<cost type="points">-16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Ugly</name>
+					<cost type="points">-8</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Unattractive</name>
+					<cost type="points">-4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Handsome</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Beautiful</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Handsome</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Beautiful</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Transcendent</name>
+					<cost type="points">20</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B21</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Bad Smell</name>
+				<type>Physical</type>
+				<base_points>-10</base_points>
+				<reference>B128</reference>
+				<notes>-2 Reaction penalty</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage>
+				<name>Doesn't Breathe</name>
+				<type>Physical, Exotic</type>
+				<base_points>20</base_points>
+				<reference>B49</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Doesn't Eat or Drink</name>
+				<type>Physical, Exotic</type>
+				<base_points>10</base_points>
+				<reference>B50</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Resistant</name>
+				<type>Physical</type>
+				<modifier version="1" enabled="yes">
+					<name>Immunity to Metabolic Hazards</name>
+					<cost type="points">30</cost>
+					<affects>total</affects>
+					<reference>B80</reference>
+				</modifier>
+			</advantage>
+			<advantage version="2">
+				<name>Injury Tolerance (No Blood)</name>
+				<type>Physical, Exotic</type>
+				<base_points>5</base_points>
+				<reference>B61</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Injury Tolerance (Unliving)</name>
+				<type>Physical, Exotic</type>
+				<base_points>20</base_points>
+				<reference>B61</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>High Pain Threshold</name>
+				<type>Physical</type>
+				<base_points>10</base_points>
+				<reference>B59</reference>
+				<notes>Never suffer shock penalties when injured; +3 on all HT
+				rolls to avoid knockdown and stunning; +3 to resist torture</notes>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>No Sense of Smell/Taste</name>
+				<type>Physical</type>
+				<base_points>-5</base_points>
+				<reference>B146</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Sexless</name>
+				<type>Physical</type>
+				<base_points>-1</base_points>
+				<reference>B165</reference>
+				<categories>
+					<category>Quirk</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Social Stigma (Dead)</name>
+				<type>Social</type>
+				<base_points>-20</base_points>
+				<reference>H25</reference>
+				<notes>When dealing with the living, you suffer -4 to reactions
+				and social skills – and those encountering you unexpectedly must
+				make Fright Checks.</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Temperature Tolerance</name>
+				<type>Physical</type>
+				<levels>10</levels>
+				<points_per_level>1</points_per_level>
+				<reference>B93</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Unaging</name>
+				<type>Physical, Exotic</type>
+				<base_points>15</base_points>
+				<modifier version="1" enabled="no">
+					<name>Age Control</name>
+					<cost type="percentage">20</cost>
+					<affects>total</affects>
+					<reference>B95</reference>
+				</modifier>
+				<reference>B95</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+</template>

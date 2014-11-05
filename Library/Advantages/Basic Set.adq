@@ -2490,6 +2490,34 @@
 			<notes>Healing only</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
+			<name>Bane</name>
+			<cost type="percentage">-15</cost>
+			<affects>total</affects>
+			<reference>H14</reference>
+			<notes>@Very Common@</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Bane</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>H14</reference>
+			<notes>@Common@</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Bane</name>
+			<cost type="percentage">-5</cost>
+			<affects>total</affects>
+			<reference>H14</reference>
+			<notes>@Occasional@</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Bane</name>
+			<cost type="points">-1</cost>
+			<affects>total</affects>
+			<reference>H14</reference>
+			<notes>@Rare@</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
 			<name>Can't wear armor</name>
 			<cost type="percentage">-40</cost>
 			<affects>total</affects>
@@ -3423,6 +3451,12 @@
 			<cost type="percentage">-50</cost>
 			<affects>total</affects>
 			<reference>B133</reference>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Insensitive</name>
+			<cost type="percentage">-50</cost>
+			<affects>total</affects>
+			<reference>H25</reference>
 		</modifier>
 		<reference>B132</reference>
 		<categories>
@@ -4569,7 +4603,7 @@
 		</categories>
 	</advantage>
 	<advantage version="2">
-		<name>Flashbacks (Mild-2, 2D seconds)</name>
+		<name>Flashbacks (Mild, -2, 2D seconds)</name>
 		<type>Physical</type>
 		<base_points>-5</base_points>
 		<reference>B136</reference>
@@ -8182,6 +8216,39 @@
 			<affects>total</affects>
 			<reference>P56</reference>
 		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Reversion</name>
+			<cost type="percentage">60</cost>
+			<affects>total</affects>
+			<reference>H16</reference>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Touch</name>
+			<cost type="percentage">0</cost>
+			<affects>total</affects>
+			<reference>H16</reference>
+			<notes>Always On</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Touch</name>
+			<cost type="percentage">5</cost>
+			<affects>total</affects>
+			<reference>H16</reference>
+			<notes>Switchable</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Difficult Materialization</name>
+			<cost type="percentage">-20</cost>
+			<affects>total</affects>
+			<reference>H16</reference>
+			<notes>Mutually exclusive with Usually On.</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Ectoplasmic Materialization</name>
+			<cost type="percentage">-35</cost>
+			<affects>total</affects>
+			<reference>H16</reference>
+		</modifier>
 		<reference>B62</reference>
 		<categories>
 			<category>Advantage</category>
@@ -9760,6 +9827,12 @@
 			<cost type="percentage">-50</cost>
 			<affects>total</affects>
 			<reference>P61</reference>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>One Emotion Only</name>
+			<cost type="percentage">-80</cost>
+			<affects>total</affects>
+			<reference>H17</reference>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Suggestion</name>
@@ -12243,6 +12316,26 @@
 			<affects>total</affects>
 			<reference>P70</reference>
 		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Bane</name>
+			<cost type="percentage">-50</cost>
+			<affects>total</affects>
+			<reference>H18</reference>
+			<notes>@Common or Very Common@</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Bane</name>
+			<cost type="percentage">-30</cost>
+			<affects>total</affects>
+			<reference>H18</reference>
+			<notes>@Occasional@</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Bane</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>H18</reference>
+			<notes>@Rare@</notes>
 		<reference>B80</reference>
 		<categories>
 			<category>Advantage</category>
@@ -13045,6 +13138,55 @@
 	<advantage version="2">
 		<name>Shapeshifting</name>
 		<type>Physical, Exotic</type>
+		<modifier version="1" enabled="no">
+			<name>Cannot Memorize Forms</name>
+			<cost type="percentage">-50</cost>
+			<affects>total</affects>
+			<reference>H18</reference>
+			<notes>Only for Morph.</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Flawed</name>
+			<cost type="percentage">-10</cost>
+			<affects>total</affects>
+			<reference>H18</reference>
+			<notes>Only for Morph. Flawed is mutually incompatible with Cosmetic.</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Needs Sample</name>
+			<cost type="percentage">-5</cost>
+			<affects>total</affects>
+			<reference>H18</reference>
+			<notes>Only for Morph. You must touch the target.</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Needs Sample</name>
+			<cost type="percentage">-15</cost>
+			<affects>total</affects>
+			<reference>H18</reference>
+			<notes>Only for Morph. You must obtain a drop of blood, hair sample, etc. from the target.</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Needs Sample</name>
+			<cost type="percentage">-50</cost>
+			<affects>total</affects>
+			<reference>H18</reference>
+			<notes>Only for Morph. You must eat the entire target.</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Projected Form</name>
+			<cost type="percentage">-50</cost>
+			<affects>total</affects>
+			<reference>H19</reference>
+			<notes> Only for Alternate Form.</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Skinbound</name>
+			<cost type="percentage">0</cost>
+			<affects>total</affects>
+			<reference>H19</reference>
+			<notes>Only for Alternate Form.</notes>
+		</modifier>
 		<reference>B83</reference>
 		<categories>
 			<category>Advantage</category>
@@ -14563,6 +14705,15 @@
 		<reference>B157</reference>
 		<categories>
 			<category>Quirk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Supernatural Features (No Pulse)</name>
+		<type>Physical, Supernatural</type>
+		<base_points>-5</base_points>
+		<reference>H26</reference>
+		<categories>
+			<category>Disadvantage</category>
 		</categories>
 	</advantage>
 	<advantage version="2">
@@ -16217,6 +16368,12 @@
 		<name>Unfazeable</name>
 		<type>Mental</type>
 		<base_points>15</base_points>
+		<modifier version="1" enabled="no">
+			<name>Familiar Horrors</name>
+			<cost type="percentage">50</cost>
+			<affects>total</affects>
+			<reference>H20</reference>
+		</modifier>
 		<reference>B95</reference>
 		<categories>
 			<category>Advantage</category>

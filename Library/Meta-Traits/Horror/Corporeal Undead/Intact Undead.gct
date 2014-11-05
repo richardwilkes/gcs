@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="i1kbryor:16ne5n3a44jtw">
+	<advantage_list>
+		<advantage_container open="yes" type="metatrait">
+			<name>Meta-Trait: Intact Undead</name>
+			<reference>H27</reference>
+			<advantage>
+				<name>Doesn't Breathe</name>
+				<type>Physical, Exotic</type>
+				<base_points>20</base_points>
+				<reference>B49</reference>
+			</advantage>
+			<advantage version="2">
+				<name>High Pain Threshold</name>
+				<type>Physical</type>
+				<base_points>10</base_points>
+				<reference>B59</reference>
+				<notes>Never suffer shock penalties when injured; +3 on all HT
+				rolls to avoid knockdown and stunning; +3 to resist torture</notes>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Resistant</name>
+				<type>Physical</type>
+				<modifier version="1" enabled="yes">
+					<name>Immunity to Metabolic Hazards</name>
+					<cost type="points">30</cost>
+					<affects>total</affects>
+					<reference>B80</reference>
+				</modifier>
+			</advantage>
+			<advantage version="2">
+				<name>Injury Tolerance (No Blood)</name>
+				<type>Physical, Exotic</type>
+				<base_points>5</base_points>
+				<reference>B61</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Injury Tolerance (Unliving)</name>
+				<type>Physical, Exotic</type>
+				<base_points>20</base_points>
+				<reference>B61</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Supernatural Features (No Body Heat)</name>
+				<type>Physical, Supernatural</type>
+				<base_points>-5</base_points>
+				<reference>B157</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Supernatural Features (No Pulse)</name>
+				<type>Physical, Supernatural</type>
+				<base_points>-5</base_points>
+				<reference>H26</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Supernatural Features (Pallor)</name>
+				<type>Physical, Supernatural</type>
+				<base_points>-10</base_points>
+				<reference>B157</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Temperature Tolerance</name>
+				<type>Physical</type>
+				<levels>10</levels>
+				<points_per_level>1</points_per_level>
+				<reference>B93</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Unaging</name>
+				<type>Physical, Exotic</type>
+				<base_points>15</base_points>
+				<modifier version="1" enabled="no">
+					<name>Age Control</name>
+					<cost type="percentage">20</cost>
+					<affects>total</affects>
+					<reference>B95</reference>
+				</modifier>
+				<reference>B95</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>	
+		</advantage_container>
+	</advantage_list>
+</template>

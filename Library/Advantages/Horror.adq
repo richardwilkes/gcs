@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<advantage_list unique_id="hv8renqd:14n5tu2fwh7nz" version="1">
+	<advantage version="2">
+		<name>Panic Attacks (Mild, 2d seconds)</name>
+		<type>Physical</type>
+		<base_points>-5</base_points>
+		<reference>H27</reference>
+		<notes>You have -2 to all attribute and skill rolls, and -4 to active defenses.</notes>
+		<categories>
+			<category>Disadvantage</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Panic Attacks (Severe, 1d minutes)</name>
+		<type>Physical</type>
+		<base_points>-10</base_points>
+		<reference>H27</reference>
+		<notes>You have -3 to all attribute and skill rolls, and -5 to active
+		defenses. You can’t move from the spot unless you flee at full Move from it!
+		At the beginning of the attack, you lose 2 FP. </notes>
+		<categories>
+			<category>Disadvantage</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Panic Attacks (Crippling, 3d minutes)</name>
+		<type>Physical</type>
+		<base_points>-25</base_points>
+		<reference>H27</reference>
+		<notes>You have -4 to all attribute and skill rolls, and -6 to active
+		defenses. You can’t move from the spot, although you may cower (crouch).
+		At the beginning of the attack, you lose 3 FP. At the end, the GM will
+		immediately roll again to see if it triggers another attack!</notes>
+		<categories>
+			<category>Disadvantage</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Pestilent</name>
+		<type>Physical, Exotic</type>
+		<base_points>1</base_points>
+		<reference>H22</reference>
+		<categories>
+			<category>Perk</category>
+		</categories>
+	</advantage>
+</advantage_list>
