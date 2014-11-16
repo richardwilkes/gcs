@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -37,12 +37,16 @@ import javax.swing.text.DefaultFormatterFactory;
 /** A skill default editor panel. */
 public class SkillDefaultEditor extends EditorPanel {
 	@Localize("Add a default")
+	@Localize(locale = "ru", value = "Добавить новую строку")
 	private static String			ADD_DEFAULT;
 	@Localize("Remove this default")
+	@Localize(locale = "ru", value = "Удалить это строку")
 	private static String			REMOVE_DEFAULT;
 	@Localize("or")
+	@Localize(locale = "ru", value = "или")
 	private static String			OR;
 	@Localize("Optional Specialization")
+	@Localize(locale = "ru", value = "Необязательная специализация")
 	private static String			SPECIALIZATION_TOOLTIP;
 
 	static {

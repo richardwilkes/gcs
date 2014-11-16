@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -30,6 +30,7 @@ import java.text.MessageFormat;
 /** An equipment contained weight prerequisite. */
 public class ContainedWeightPrereq extends HasPrereq {
 	@Localize("{0}{1} a contained weight which {2}\n")
+	@Localize(locale = "ru", value = "{0}{1} имеет вес равный {2}\n")
 	private static String		CONTAINED_WEIGHT;
 
 	static {

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -41,16 +41,21 @@ import java.util.List;
 /** A GURPS Spell. */
 public class Spell extends ListRow {
 	@Localize("Spell")
+	@Localize(locale = "ru", value = "Заклинание")
 	private static String			DEFAULT_NAME;
 	@Localize("Arcane")
+	@Localize(locale = "ru", value = "Тайный")
 	private static String			DEFAULT_POWER_SOURCE;
 	@Localize("Regular")
+	@Localize(locale = "ru", value = "Обычный")
 	private static String			DEFAULT_SPELL_CLASS;
 	@Localize("1")
 	private static String			DEFAULT_CASTING_COST;
 	@Localize("1 sec")
+	@Localize(locale = "ru", value = "1 сек")
 	private static String			DEFAULT_CASTING_TIME;
 	@Localize("Instant")
+	@Localize(locale = "ru", value = "Мгновенное")
 	private static String			DEFAULT_DURATION;
 
 	static {

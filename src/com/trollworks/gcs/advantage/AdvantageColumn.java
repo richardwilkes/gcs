@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -282,24 +282,34 @@ public enum AdvantageColumn {
 	};
 
 	@Localize("Advantages & Disadvantages")
+	@Localize(locale = "ru", value = "Преимущества и недостатки")
 	static String	DESCRIPTION_TITLE;
 	@Localize("The name, level and notes describing an advantage")
+	@Localize(locale = "ru", value = "Название, уровень и заметки преимущества")
 	static String	DESCRIPTION_TOOLTIP;
 	@Localize("Pts")
+	@Localize(locale = "ru", value = "Очк")
 	static String	POINTS_TITLE;
 	@Localize("The points spent in the advantage")
+	@Localize(locale = "ru", value = "Потраченые очки на преимущество")
 	static String	POINTS_TOOLTIP;
 	@Localize("Type")
+	@Localize(locale = "ru", value = "Тип")
 	static String	TYPE_TITLE;
 	@Localize("The type of advantage")
+	@Localize(locale = "ru", value = "Тип преимущества")
 	static String	TYPE_TOOLTIP;
 	@Localize("Category")
+	@Localize(locale = "ru", value = "Категория")
 	static String	CATEGORY_TITLE;
 	@Localize("The category or categories the advantage belongs to")
+	@Localize(locale = "ru", value = "Категория или категории, к которым относится преимущество")
 	static String	CATEGORY_TOOLTIP;
 	@Localize("Ref")
+	@Localize(locale = "ru", value = "Ссыл")
 	static String	REFERENCE_TITLE;
 	@Localize("A reference to the book and page this advantage appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая преимущество\n (например, B22 - книга \"Базовые правила\", страница 22)")
 	static String	REFERENCE_TOOLTIP;
 
 	static {

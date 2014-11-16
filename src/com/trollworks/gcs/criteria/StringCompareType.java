@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -126,22 +126,31 @@ public enum StringCompareType {
 	};
 
 	@Localize("is anything")
+	@Localize(locale = "ru", value = "люб(ое,ая)")
 	static String	IS_ANYTHING_TITLE;
 	@Localize("is")
+	@Localize(locale = "ru", value = " ")
 	static String	IS_TITLE;
 	@Localize("is not")
+	@Localize(locale = "ru", value = "не")
 	static String	IS_NOT_TITLE;
 	@Localize("contains")
+	@Localize(locale = "ru", value = "содержит")
 	static String	CONTAINS_TITLE;
 	@Localize("does not contain")
+	@Localize(locale = "ru", value = "не содержит")
 	static String	DOES_NOT_CONTAIN_TITLE;
 	@Localize("starts with")
+	@Localize(locale = "ru", value = "начинается с")
 	static String	STARTS_WITH_TITLE;
 	@Localize("does not start with")
+	@Localize(locale = "ru", value = "не начинается с")
 	static String	DOES_NOT_START_WITH_TITLE;
 	@Localize("ends with")
+	@Localize(locale = "ru", value = "заканчивается на")
 	static String	ENDS_WITH_TITLE;
 	@Localize("does not end with")
+	@Localize(locale = "ru", value = "не заканчивается на")
 	static String	DOES_NOT_END_WITH_TITLE;
 
 	static {

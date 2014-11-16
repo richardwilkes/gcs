@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -41,6 +41,7 @@ public enum CostType {
 	@Localize("%")
 	static String	PERCENTAGE_TITLE;
 	@Localize("points")
+	@Localize(locale = "ru", value = "очки")
 	static String	POINTS_TITLE;
 	@Localize("x")
 	static String	MULTIPLIER_TITLE;

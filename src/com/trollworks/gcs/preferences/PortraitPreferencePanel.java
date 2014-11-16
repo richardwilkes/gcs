@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -34,8 +34,10 @@ import javax.swing.UIManager;
 /** The character portrait. */
 public class PortraitPreferencePanel extends ActionPanel {
 	@Localize("Portrait")
+	@Localize(locale = "ru", value = "Изображение")
 	private static String	PORTRAIT;
 	@Localize("<html><body>The portrait to use when a new character sheet is created.<br><br>Ideal original portrait size is {0} pixels wide by {1} pixels tall,<br>although the image will be automatically scaled to these<br>dimensions, if necessary.</body></html>")
+	@Localize(locale = "ru", value = "<html><body>Изображение, используемое при создании нового листа персонажа.<br><br>Наилучший размер изображения - {0} пикселей в ширину и {1} пикселей в высоту, но при необходимости, <br>изображение будет автоматически смасштабировано в этипропорции.</body></html>")
 	private static String	PORTRAIT_TOOLTIP;
 
 	static {

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -35,8 +35,10 @@ import java.util.List;
 /** A prerequisite list. */
 public class PrereqList extends Prereq {
 	@Localize("{0}Requires all of:\n")
+	@Localize(locale = "ru", value = "{0}Требует всё из:\n")
 	private static String REQUIRES_ALL;
 	@Localize("{0}Requires at least one of:\n")
+	@Localize(locale = "ru", value = "{0}Требует одно из:\n")
 	private static String REQUIRES_ANY;
 
 	static {

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -135,22 +135,30 @@ public enum ModifierColumnID {
 	};
 
 	@Localize("Enabled")
+	@Localize(locale = "ru", value = "Включено")
 	static String	ENABLED_TITLE;
 	@Localize("Whether this modifier has been enabled or not")
+	@Localize(locale = "ru", value = "Включить этот модификатор")
 	static String	ENABLED_TOOLTIP;
 	@Localize("\u221a")
 	static String	ENABLED_COLUMN;
 	@Localize("Enhancements & Limitations")
+	@Localize(locale = "ru", value = "Улучшения и ограничения")
 	static String	DESCRIPTION_TITLE;
 	@Localize("The name and notes describing an enhancement or limitation")
+	@Localize(locale = "ru", value = "Название и заметки, описывающие улучшение или ограничение")
 	static String	DESCRIPTION_TOOLTIP;
 	@Localize("Cost Modifier")
+	@Localize(locale = "ru", value = "Модификатор стоимости")
 	static String	COST_MODIFIER_TITLE;
 	@Localize("The cost modifier for this enhancement or limitation")
+	@Localize(locale = "ru", value = "Стоимость модификатора за улучшение или ограничение")
 	static String	COST_MODIFIER_TOOLTIP;
 	@Localize("Ref")
+	@Localize(locale = "ru", value = "Ссыл")
 	static String	REFERENCE_TITLE;
 	@Localize("A reference to the book and page this modifier appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая модификатор\n (например B22 - \"Базовые правила\", страница 22)")
 	static String	REFERENCE_TOOLTIP;
 
 	static {

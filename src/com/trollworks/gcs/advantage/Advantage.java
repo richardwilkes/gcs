@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -44,6 +44,7 @@ import java.util.List;
 /** A GURPS Advantage. */
 public class Advantage extends ListRow {
 	@Localize("Advantage")
+	@Localize(locale = "ru", value = "Преимущество")
 	private static String				DEFAULT_NAME;
 
 	static {

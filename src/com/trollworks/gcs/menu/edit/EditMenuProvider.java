@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -36,6 +36,7 @@ import javax.swing.JMenu;
 /** Provides the standard "Edit" menu. */
 public class EditMenuProvider implements MenuProvider {
 	@Localize("Edit")
+	@Localize(locale = "ru", value = "Правка")
 	private static String		EDIT;
 
 	static {

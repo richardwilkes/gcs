@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -56,12 +56,16 @@ public enum AdvantageContainerType {
 	};
 
 	@Localize("Group")
+	@Localize(locale = "ru", value = "Группа")
 	static String	GROUP_TITLE;
 	@Localize("Meta-Trait")
+	@Localize(locale = "ru", value = "Мета-черта")
 	static String	META_TRAIT_TITLE;
 	@Localize("Race")
+	@Localize(locale = "ru", value = "Раса")
 	static String	RACE_TITLE;
 	@Localize("Alternative Abilities")
+	@Localize(locale = "ru", value = "Альтернативные способности")
 	static String	ALTERNATIVE_ABILITIES_TITLE;
 
 	static {

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -61,10 +61,13 @@ public enum EquipmentState {
 	};
 
 	@Localize("Equipped")
+	@Localize(locale = "ru", value = "Экипирован")
 	static String	EQUIPPED_TITLE;
 	@Localize("Carried")
+	@Localize(locale = "ru", value = "Носимый")
 	static String	CARRIED_TITLE;
 	@Localize("Not Carried")
+	@Localize(locale = "ru", value = "Не носимый")
 	static String	NOT_CARRIED_TITLE;
 
 	static {

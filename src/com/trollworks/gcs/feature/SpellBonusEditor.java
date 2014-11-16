@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -28,12 +28,16 @@ import javax.swing.JComboBox;
 /** A spell bonus editor. */
 public class SpellBonusEditor extends FeatureEditor {
 	@Localize("to all colleges")
+	@Localize(locale = "ru", value = "всем школам")
 	private static String		ALL_COLLEGES;
 	@Localize("to the college whose name")
+	@Localize(locale = "ru", value = "школе с названием")
 	private static String		ONE_COLLEGE;
 	@Localize("to the spell whose name")
+	@Localize(locale = "ru", value = "заклинанию с названием")
 	private static String		SPELL_NAME;
 	@Localize("to the power source whose name")
+	@Localize(locale = "ru", value = "источнику силы, чьё название")
 	private static String		POWER_SOURCE_NAME;
 
 	static {

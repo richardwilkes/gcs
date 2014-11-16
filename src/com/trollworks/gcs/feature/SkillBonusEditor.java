@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -26,8 +26,10 @@ import java.awt.Insets;
 /** A skill bonus editor. */
 public class SkillBonusEditor extends FeatureEditor {
 	@Localize("to skills whose name ")
+	@Localize(locale = "ru", value = "умение с названием ")
 	private static String SKILL_NAME;
 	@Localize("and specialization ")
+	@Localize(locale = "ru", value = "и специализация ")
 	private static String SPECIALIZATION;
 
 	static {

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -30,8 +30,10 @@ import java.util.ArrayList;
 // RAW: This should be reimplemented in terms of the Duplicatable interface
 public class DuplicateCommand extends Command {
 	@Localize("Duplicate")
+	@Localize(locale = "ru", value = "Дублировать")
 	private static String					DUPLICATE;
 	@Localize("Duplicate Rows")
+	@Localize(locale = "ru", value = "Дублировать строки")
 	private static String					DUPLICATE_UNDO;
 
 	static {

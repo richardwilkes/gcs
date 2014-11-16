@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -30,8 +30,10 @@ import java.util.HashSet;
 /** An Advantage prerequisite. */
 public class AdvantagePrereq extends NameLevelPrereq {
 	@Localize("{0}{1} an advantage whose name {2}")
+	@Localize(locale = "ru", value = "{0}{1}преимущество с названием {2}")
 	private static String		NAME_PART;
 	@Localize(", notes {0},")
+	@Localize(locale = "ru", value = ", заметок {0},")
 	private static String		NOTES_PART;
 
 	static {

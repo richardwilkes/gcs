@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -27,8 +27,10 @@ import java.awt.event.KeyEvent;
 /** Provides the "New Equipment" command. */
 public class NewEquipmentCommand extends Command {
 	@Localize("New Equipment")
+	@Localize(locale = "ru", value = "Новое снаряжение")
 	private static String					EQUIPMENT;
 	@Localize("New Equipment Container")
+	@Localize(locale = "ru", value = "Новый контейнер снаряжения")
 	private static String					EQUIPMENT_CONTAINER;
 
 	static {

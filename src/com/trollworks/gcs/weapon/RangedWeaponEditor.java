@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -28,18 +28,25 @@ import java.util.List;
 /** An editor for ranged weapon statistics. */
 public class RangedWeaponEditor extends WeaponEditor {
 	@Localize("Ranged Weapon")
+	@Localize(locale = "ru", value = "Дистанционное оружие")
 	private static String RANGED_WEAPON;
 	@Localize("Accuracy")
+	@Localize(locale = "ru", value = "Точность")
 	private static String ACCURACY;
 	@Localize("Range")
+	@Localize(locale = "ru", value = "Дальность")
 	private static String RANGE;
 	@Localize("Rate of Fire")
+	@Localize(locale = "ru", value = "Скорострельность")
 	private static String RATE_OF_FIRE;
 	@Localize("Shots")
+	@Localize(locale = "ru", value = "Боезапас")
 	private static String SHOTS;
 	@Localize("Bulk")
+	@Localize(locale = "ru", value = "Размер")
 	private static String BULK;
 	@Localize("Recoil")
+	@Localize(locale = "ru", value = "Отдача")
 	private static String RECOIL;
 
 	static {

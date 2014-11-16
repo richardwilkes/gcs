@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -21,6 +21,7 @@ import com.trollworks.toolkit.ui.widget.BandedPanel;
 /** Displays and edits {@link Prereq} objects. */
 public class PrereqsPanel extends BandedPanel {
 	@Localize("Prerequisites")
+	@Localize(locale = "ru", value = "Требования")
 	private static String PREREQUISITES;
 
 	static {

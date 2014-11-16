@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -27,8 +27,10 @@ import java.awt.event.KeyEvent;
 /** Provides the "New Spell" command. */
 public class NewSpellCommand extends Command {
 	@Localize("New Spell")
+	@Localize(locale = "ru", value = "Новое заклинание")
 	private static String				SPELL;
 	@Localize("New Spell Container")
+	@Localize(locale = "ru", value = "Новый контейнер заклинаний")
 	private static String				SPELL_CONTAINER;
 
 	static {

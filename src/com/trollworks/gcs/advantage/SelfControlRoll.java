@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -116,14 +116,19 @@ public enum SelfControlRoll {
 	};
 
 	@Localize("CR: 6 (Rarely)")
+	@Localize(locale = "ru", value = "СК: 6 (редко)")
 	static String				CR6_TITLE;
 	@Localize("CR: 9 (Fairly Often)")
+	@Localize(locale = "ru", value = "СК: 9 (часто)")
 	static String				CR9_TITLE;
 	@Localize("CR: 12 (Quite Often)")
+	@Localize(locale = "ru", value = "СК: 12 (достаточно часто)")
 	static String				CR12_TITLE;
 	@Localize("CR: 15 (Almost All The Time)")
+	@Localize(locale = "ru", value = "СК: 15 (почти всегда)")
 	static String				CR15_TITLE;
 	@Localize("None Required")
+	@Localize(locale = "ru", value = "Не требуется")
 	static String				NONE_REQUIRED_TITLE;
 
 	static {

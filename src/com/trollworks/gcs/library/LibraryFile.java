@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -30,6 +30,7 @@ import java.io.IOException;
 /** Holds the contents of a library file. */
 public class LibraryFile extends DataFile {
 	@Localize("The file \"{0}\" was imported into a data library.\nThe original file has not been modified.")
+	@Localize(locale = "ru", value = "Файл \"{0}\" был импортирован в библиотеку данных.\nИсходный файл не был изменен.")
 	static String				WARNING;
 
 	static {

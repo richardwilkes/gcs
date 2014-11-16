@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -27,48 +27,69 @@ import javax.swing.SwingConstants;
 /** The character hit location panel. */
 public class HitLocationPanel extends DropPanel {
 	@Localize("Hit Location")
+	@Localize(locale = "ru", value = "Зоны попадания")
 	private static String			HIT_LOCATION;
 	@Localize("Roll")
+	@Localize(locale = "ru", value = "ДБ")
 	private static String			ROLL;
 	@Localize("<html><body>The random roll needed to hit the <b>{0}</b> hit location</body></html>")
+	@Localize(locale = "ru", value = "<html><body>Для попадания в <b>{0}</b>, необходимо сделать дополнительный бросок (ДБ) и выбросить указанные числа</body></html>")
 	private static String			ROLL_TOOLTIP;
 	@Localize("Where")
+	@Localize(locale = "ru", value = "Где")
 	private static String			LOCATION;
 	@Localize("-")
 	private static String			PENALTY;
 	@Localize("The hit penalty for targeting a specific hit location")
+	@Localize(locale = "ru", value = "Штраф для попадания в указанную зону")
 	private static String			PENALTY_TITLE_TOOLTIP;
 	@Localize("<html><body>The hit penalty for targeting the <b>{0}</b> hit location</body></html>")
+	@Localize(locale = "ru", value = "<html><body>Штраф за прицеливания в зону попадания <b>{0}</b></body></html>")
 	private static String			PENALTY_TOOLTIP;
 	@Localize("DR")
+	@Localize(locale = "ru", value = "СП")
 	private static String			DR;
 	@Localize("<html><body>The total DR protecting the <b>{0}</b> hit location</body></html>")
+	@Localize(locale = "ru", value = "<html><body>Суммарное СП, защищающее зону попадания: <b>{0}</b></body></html>")
 	private static String			DR_TOOLTIP;
 	@Localize("Eye")
+	@Localize(locale = "ru", value = "Глаз")
 	private static String			EYE;
 	@Localize("Skull")
+	@Localize(locale = "ru", value = "Череп")
 	private static String			SKULL;
 	@Localize("Face")
+	@Localize(locale = "ru", value = "Лицо")
 	private static String			FACE;
 	@Localize("R. Leg")
+	@Localize(locale = "ru", value = "Пр. нога")
 	private static String			RIGHT_LEG;
 	@Localize("R. Arm")
+	@Localize(locale = "ru", value = "Пр. рука")
 	private static String			RIGHT_ARM;
 	@Localize("Torso")
+	@Localize(locale = "ru", value = "Туловище")
 	private static String			TORSO;
 	@Localize("Groin")
+	@Localize(locale = "ru", value = "Пах")
 	private static String			GROIN;
 	@Localize("L. Arm")
+	@Localize(locale = "ru", value = "Л. рука")
 	private static String			LEFT_ARM;
 	@Localize("L. Leg")
+	@Localize(locale = "ru", value = "Л. нога")
 	private static String			LEFT_LEG;
 	@Localize("Hand")
+	@Localize(locale = "ru", value = "Рука")
 	private static String			HAND;
 	@Localize("Foot")
+	@Localize(locale = "ru", value = "Нога")
 	private static String			FOOT;
 	@Localize("Neck")
+	@Localize(locale = "ru", value = "Шея")
 	private static String			NECK;
 	@Localize("Vitals")
+	@Localize(locale = "ru", value = "Жиз.орг.")
 	private static String			VITALS;
 
 	static {

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -32,18 +32,25 @@ import javax.swing.JMenuItem;
 /** Provides the standard "Help" menu. */
 public class HelpMenuProvider implements MenuProvider {
 	@Localize("Help")
+	@Localize(locale = "ru", value = "Справка")
 	private static String		HELP;
 	@Localize("Release Notes")
+	@Localize(locale = "ru", value = "Примечания к выпуску")
 	private static String		RELEASE_NOTES;
 	@Localize("Bug Reports")
+	@Localize(locale = "ru", value = "Отчет об ошибках")
 	private static String		BUGS;
 	@Localize("Feature Requests")
+	@Localize(locale = "ru", value = "Заявки на добавление новых функций")
 	private static String		FEATURES;
 	@Localize("License")
+	@Localize(locale = "ru", value = "Лицензия")
 	private static String		LICENSE;
 	@Localize("Web Site")
+	@Localize(locale = "ru", value = "Сайт")
 	private static String		WEB_SITE;
 	@Localize("Mailing Lists")
+	@Localize(locale = "ru", value = "Списки рассылки")
 	private static String		MAILING_LISTS;
 
 	static {

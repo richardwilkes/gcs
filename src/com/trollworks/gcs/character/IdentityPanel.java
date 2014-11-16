@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -20,12 +20,16 @@ import javax.swing.SwingConstants;
 /** The character identity panel. */
 public class IdentityPanel extends DropPanel {
 	@Localize("Identity")
+	@Localize(locale = "ru", value = "Личность")
 	private static String	IDENTITY;
 	@Localize("Name:")
+	@Localize(locale = "ru", value = "Имя:")
 	private static String	NAME;
 	@Localize("Title:")
+	@Localize(locale = "ru", value = "Статус:")
 	private static String	TITLE;
 	@Localize("Religion:")
+	@Localize(locale = "ru", value = "Религия:")
 	private static String	RELIGION;
 
 	static {

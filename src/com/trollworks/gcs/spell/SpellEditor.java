@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -51,78 +51,115 @@ import javax.swing.text.Document;
 /** The detailed editor for {@link Spell}s. */
 public class SpellEditor extends RowEditor<Spell> implements ActionListener, DocumentListener {
 	@Localize("Name")
+	@Localize(locale = "ru", value = "Название")
 	private static String		NAME;
 	@Localize("The name of the spell, without any notes")
+	@Localize(locale = "ru", value = "Название заклинания без заметок")
 	private static String		NAME_TOOLTIP;
 	@Localize("The name field may not be empty")
+	@Localize(locale = "ru", value = "Поле \"Название\" не может быть пустым")
 	private static String		NAME_CANNOT_BE_EMPTY;
 	@Localize("Tech Level")
+	@Localize(locale = "ru", value = "Технологический уровень")
 	private static String		TECH_LEVEL;
 	@Localize("Whether this spell requires tech level specialization,\nand, if so, at what tech level it was learned")
+	@Localize(locale = "ru", value = "Для заклинания необходима специализация с технологическим уровнем \nс указанием уровня изучения")
 	private static String		TECH_LEVEL_TOOLTIP;
 	@Localize("Tech Level Required")
+	@Localize(locale = "ru", value = "Необходимый технологический уровень")
 	private static String		TECH_LEVEL_REQUIRED;
 	@Localize("Whether this spell requires tech level specialization")
+	@Localize(locale = "ru", value = "Для заклинания необходима специализация с технологическим уровнем")
 	private static String		TECH_LEVEL_REQUIRED_TOOLTIP;
 	@Localize("College")
+	@Localize(locale = "ru", value = "Школа")
 	private static String		COLLEGE;
 	@Localize("The college the spell belongs to")
+	@Localize(locale = "ru", value = "Школа, к которой относится заклинание")
 	private static String		COLLEGE_TOOLTIP;
 	@Localize("Power Source")
+	@Localize(locale = "ru", value = "Источник силы")
 	private static String		POWER_SOURCE;
 	@Localize("The source of power for the spell")
+	@Localize(locale = "ru", value = "Источник силы для заклинания")
 	private static String		POWER_SOURCE_TOOLTIP;
 	@Localize("Class")
+	@Localize(locale = "ru", value = "Класс")
 	private static String		CLASS;
 	@Localize("The class of spell (Area, Missile, etc.)")
+	@Localize(locale = "ru", value = "Класс заклинания (областные, метательные и т.д.)")
 	private static String		CLASS_ONLY_TOOLTIP;
 	@Localize("The class field may not be empty")
+	@Localize(locale = "ru", value = "Поле \"Класс\" не может быть пустым")
 	private static String		CLASS_CANNOT_BE_EMPTY;
 	@Localize("Casting Cost")
+	@Localize(locale = "ru", value = "Стоимость заклинания")
 	private static String		CASTING_COST;
 	@Localize("The casting cost of the spell")
+	@Localize(locale = "ru", value = "Стоимость сотворения заклинания")
 	private static String		CASTING_COST_TOOLTIP;
 	@Localize("The casting cost field may not be empty")
+	@Localize(locale = "ru", value = "Поле \"Мана-Стоимость\" не может быть пустым")
 	private static String		CASTING_COST_CANNOT_BE_EMPTY;
 	@Localize("Maintenance Cost")
+	@Localize(locale = "ru", value = "Стоимость обслуживания")
 	private static String		MAINTENANCE_COST;
 	@Localize("The cost to maintain a spell after its initial duration")
+	@Localize(locale = "ru", value = "Стоимость поддержки заклинания свыше исходной длительности")
 	private static String		MAINTENANCE_COST_TOOLTIP;
 	@Localize("Casting Time")
+	@Localize(locale = "ru", value = "Время сотворения")
 	private static String		CASTING_TIME;
 	@Localize("The casting time of the spell")
+	@Localize(locale = "ru", value = "Время сотворения заклинания")
 	private static String		CASTING_TIME_TOOLTIP;
 	@Localize("The casting time field may not be empty")
+	@Localize(locale = "ru", value = "Поле \"Время сотворения\" не может быть пустым")
 	private static String		CASTING_TIME_CANNOT_BE_EMPTY;
 	@Localize("Duration")
+	@Localize(locale = "ru", value = "Длительность")
 	private static String		DURATION;
 	@Localize("The duration of the spell once its cast")
+	@Localize(locale = "ru", value = "Длительность заклинания после сотворения")
 	private static String		DURATION_TOOLTIP;
 	@Localize("The duration field may not be empty")
+	@Localize(locale = "ru", value = "Поле \"Длительность\" не может быть пустым")
 	private static String		DURATION_CANNOT_BE_EMPTY;
 	@Localize("Categories")
+	@Localize(locale = "ru", value = "Категории")
 	private static String		CATEGORIES;
 	@Localize("The category or categories the spell belongs to (separate multiple categories with a comma)")
+	@Localize(locale = "ru", value = "Категория или категории, к которым относится заклинание (перечислить через запятую)")
 	private static String		CATEGORIES_TOOLTIP;
 	@Localize("Notes")
+	@Localize(locale = "ru", value = "Заметка")
 	private static String		NOTES;
 	@Localize("Any notes that you would like to show up in the list along with this spell")
+	@Localize(locale = "ru", value = "Заметки, которые показываются в списке рядом с заклинанием")
 	private static String		NOTES_TOOLTIP;
 	@Localize("Points")
+	@Localize(locale = "ru", value = "Очки")
 	private static String		EDITOR_POINTS;
 	@Localize("The number of points spent on this spell")
+	@Localize(locale = "ru", value = "Потрачено на заклинание количество очков")
 	private static String		EDITOR_POINTS_TOOLTIP;
 	@Localize("Level")
+	@Localize(locale = "ru", value = "Уровень")
 	private static String		EDITOR_LEVEL;
 	@Localize("The spell level and relative spell level to roll against")
+	@Localize(locale = "ru", value = "Уровень заклинания и относительный уровень заклинания для повторного броска")
 	private static String		EDITOR_LEVEL_TOOLTIP;
 	@Localize("Difficulty")
+	@Localize(locale = "ru", value = "Сложность")
 	private static String		DIFFICULTY;
 	@Localize("The difficulty of the spell")
+	@Localize(locale = "ru", value = "Сложность заклинания")
 	private static String		DIFFICULTY_TOOLTIP;
 	@Localize("Page Reference")
+	@Localize(locale = "ru", value = "Ссылка на страницу")
 	private static String		EDITOR_REFERENCE;
 	@Localize("A reference to the book and page this spell appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая заклинание\n (например B22 - книга \"Базовые правила\", страница 22)")
 	private static String		REFERENCE_TOOLTIP;
 
 	static {

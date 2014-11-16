@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -37,6 +37,7 @@ import javax.swing.undo.StateEdit;
 /** Base outline class. */
 public class ListOutline extends Outline implements Runnable, ActionListener {
 	@Localize("Remove Rows")
+	@Localize(locale = "ru", value = "Удалить строки")
 	private static String CLEAR_UNDO;
 
 	static {

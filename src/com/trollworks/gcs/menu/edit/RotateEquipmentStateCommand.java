@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -31,6 +31,7 @@ import java.util.ArrayList;
 /** Provides the "Rotate Equipment State" command. */
 public class RotateEquipmentStateCommand extends Command {
 	@Localize("Rotate Equipment State")
+	@Localize(locale = "ru", value = "Смена статуса снаряжения")
 	private static String TITLE;
 
 	static {

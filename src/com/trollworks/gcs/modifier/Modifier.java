@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -32,10 +32,13 @@ import java.util.HashSet;
 /** Model for trait modifiers */
 public class Modifier extends ListRow implements Comparable<Modifier> {
 	@Localize("Modifier")
+	@Localize(locale = "ru", value = "Модификатор")
 	private static String			DEFAULT_NAME;
 	@Localize("Enhancement/Limitation")
+	@Localize(locale = "ru", value = "Улучшение/ограничение")
 	private static String			MODIFIER_TYPE;
 	@Localize("** From container - not modifiable here **")
+	@Localize(locale = "ru", value = "** Из контейнера – не меняйте здесь **")
 	private static String			READ_ONLY;
 
 	static {

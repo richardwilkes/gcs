@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -42,16 +42,22 @@ import javax.swing.SwingConstants;
 /** Asks the user to name items that have been marked to be customized. */
 public class Namer extends JPanel {
 	@Localize("Name {0}")
+	@Localize(locale = "ru", value = "Имя {0}")
 	private static String			NAME_TITLE;
 	@Localize("1 item remaining to be named.")
+	@Localize(locale = "ru", value = "осталось назвать 1 элемент.")
 	private static String			ONE_REMAINING;
 	@Localize("{0} items remaining to be named.")
+	@Localize(locale = "ru", value = "{0} элементов осталось назвать.")
 	private static String			REMAINING;
 	@Localize("Apply")
+	@Localize(locale = "ru", value = "Применить")
 	private static String			APPLY;
 	@Localize("Cancel")
+	@Localize(locale = "ru", value = "Отмена")
 	private static String			CANCEL;
 	@Localize("Cancel Remaining")
+	@Localize(locale = "ru", value = "Пропустить остальные")
 	private static String			CANCEL_REST;
 
 	static {

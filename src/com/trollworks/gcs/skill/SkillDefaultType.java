@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -182,12 +182,16 @@ public enum SkillDefaultType {
 	};
 
 	@Localize("Perception")
+	@Localize(locale = "ru", value = "Восприятие")
 	static String	PERCEPTION;
 	@Localize("Skill named")
+	@Localize(locale = "ru", value = "Название умения")
 	static String	SKILL_NAMED;
 	@Localize("Parrying skill named")
+	@Localize(locale = "ru", value = "Название умения парирования")
 	static String	PARRY_SKILL_NAMED;
 	@Localize("Blocking skill named")
+	@Localize(locale = "ru", value = "Название умения блока")
 	static String	BLOCK_SKILL_NAMED;
 
 	static {

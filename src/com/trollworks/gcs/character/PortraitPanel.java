@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -42,12 +42,16 @@ import javax.swing.UIManager;
 /** The character portrait. */
 public class PortraitPanel extends DropPanel implements NotifierTarget {
 	@Localize("Select A Portrait")
+	@Localize(locale = "ru", value = "Выберите изображение")
 	private static String	SELECT_PORTRAIT;
 	@Localize("Portrait")
+	@Localize(locale = "ru", value = "Изображение")
 	private static String	PORTRAIT;
 	@Localize("<html><body><b>Double-click</b> to set a character portrait.<br><br>The dimensions of the chosen picture should be in a ratio of<br><b>3 pixels wide for every 4 pixels tall</b> to scale without distortion.<br><br>Dimensions of <b>{0}x{1}</b> are ideal.</body></html>")
+	@Localize(locale = "ru", value = "<html><body><b>Дважды щёлкните</b> чтобы изменить изображение персонажа.<br><br>Для масштабирования без искажений, размер картинки должен быть<br>в пропорции <b>3 пикселя в ширину на 4 пикселя в высоту</b>.<br><br>Размер <b>{0}x{1}</b> будет идеальным.</body></html>")
 	private static String	PORTRAIT_TOOLTIP;
 	@Localize("Unable to load\n{0}.")
+	@Localize(locale = "ru", value = "Невозможно загрузить\n{0}.")
 	private static String	BAD_IMAGE;
 
 	static {

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 /** Provides the "New Spells Library" command. */
 public class NewSpellsLibraryCommand extends Command {
 	@Localize("New Spells Library")
+	@Localize(locale = "ru", value = "Новая библиотека заклинаний")
 	private static String						TITLE;
 
 	static {

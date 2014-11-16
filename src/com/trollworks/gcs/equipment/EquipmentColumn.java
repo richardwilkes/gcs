@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -403,50 +403,68 @@ public enum EquipmentColumn {
 	};
 
 	@Localize("Equipment")
+	@Localize(locale = "ru", value = "Снаряжение")
 	static String	DESCRIPTION_TITLE;
 	@Localize("The name and notes describing a piece of equipment")
+	@Localize(locale = "ru", value = "Название и заметки, описывающие снаряжения")
 	static String	DESCRIPTION_TOOLTIP;
 	@Localize("Equipment ({0}; ${1})")
+	@Localize(locale = "ru", value = "Снаряжение ({0}; ${1})")
 	static String	DESCRIPTION_TOTALS;
 	@Localize("?")
 	static String	STATE_TITLE;
 	@Localize("Whether this piece of equipment is carried & equipped (E), just\ncarried (C), or not carried (-). Items that are not equipped do\nnot apply any features they may normally contribute to the\ncharacter.")
+	@Localize(locale = "ru", value = "Предмет снаряжения носим и экипирован (E), только носим (C), \nили не переносим (-). Не экипированные предметы \nне добавляют никаких свойств, которыми может воспользоваться персонаж.")
 	static String	STATE_TOOLTIP;
 	@Localize("TL")
+	@Localize(locale = "ru", value = "ТУ")
 	static String	TECH_LEVEL_TITLE;
 	@Localize("The tech level of this piece of equipment")
+	@Localize(locale = "ru", value = "Технологический уровень снаряжения")
 	static String	TECH_LEVEL_TOOLTIP;
 	@Localize("LC")
+	@Localize(locale = "ru", value = "КЛ")
 	static String	LEGALITY_CLASS_TITLE;
 	@Localize("The legality class of this piece of equipment")
+	@Localize(locale = "ru", value = "Класс легальности снаряжения")
 	static String	LEGALITY_CLASS_TOOLTIP;
 	@Localize("#")
 	static String	QUANTITY_TITLE;
 	@Localize("The quantity of this piece of equipment")
+	@Localize(locale = "ru", value = "Количество предметов снаряжения")
 	static String	QUANTITY_TOOLTIP;
 	@Localize("$")
 	static String	VALUE_TITLE;
 	@Localize("The value of one of these pieces of equipment")
+	@Localize(locale = "ru", value = "Цена снаряжения")
 	static String	VALUE_TOOLTIP;
 	@Localize("W")
+	@Localize(locale = "ru", value = "В")
 	static String	WEIGHT_TITLE;
 	@Localize("The weight of one of these pieces of equipment")
+	@Localize(locale = "ru", value = "Вес снаряжения")
 	static String	WEIGHT_TOOLTIP;
 	@Localize("\u2211 $")
 	static String	EXT_VALUE_TITLE;
 	@Localize("The value of all of these pieces of equipment,\nplus the value of any contained equipment")
+	@Localize(locale = "ru", value = "Цена всего снаряжения,\nплюс цена любого входящего в него снаряжения")
 	static String	EXT_VALUE_TOOLTIP;
 	@Localize("\u2211 W")
 	static String	EXT_WEIGHT_TITLE;
 	@Localize("The weight of all of these pieces of equipment\n, plus the weight of any contained equipment")
+	@Localize(locale = "ru", value = "Вес всего снаряжения,\nплюс вес любого входящего в него снаряжения")
 	static String	EXT_WEIGHT_TOOLTIP;
 	@Localize("Category")
+	@Localize(locale = "ru", value = "Категория")
 	static String	CATEGORY_TITLE;
 	@Localize("The category or categories the equipment belongs to")
+	@Localize(locale = "ru", value = "Категория или категории снаряжения, к которым оно принадлежит")
 	static String	CATEGORY_TOOLTIP;
 	@Localize("Ref")
+	@Localize(locale = "ru", value = "Ссыл")
 	static String	REFERENCE_TITLE;
 	@Localize("A reference to the book and page this equipment appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая снаряжение\n (например B22 - книга \"Базовые правила\", страница 22)")
 	static String	REFERENCE_TOOLTIP;
 
 	static {

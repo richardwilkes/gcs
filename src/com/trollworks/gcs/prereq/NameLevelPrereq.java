@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -32,6 +32,7 @@ import java.util.HashSet;
  */
 public abstract class NameLevelPrereq extends HasPrereq {
 	@Localize(" and level {0}\n")
+	@Localize(locale = "ru", value = " и уровень {0}\n ")
 	static String				LEVEL_PART;
 
 	static {

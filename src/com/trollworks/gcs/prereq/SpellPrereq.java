@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -34,16 +34,22 @@ import java.util.HashSet;
 /** A Spell prerequisite. */
 public class SpellPrereq extends HasPrereq {
 	@Localize("spell")
+	@Localize(locale = "ru", value = "заклинание")
 	private static String ONE_SPELL;
 	@Localize("spells")
+	@Localize(locale = "ru", value = "заклинания")
 	private static String MULTIPLE_SPELLS;
 	@Localize("{0}{1} {2} {3} whose name {4}\n")
+	@Localize(locale = "ru", value = "{0}{1} {2} {3} с названием {4}\n")
 	private static String WHOSE_NAME;
 	@Localize("{0}{1} {2} {3} of any kind\n")
+	@Localize(locale = "ru", value = "{0}{1} {2} {3} любого вида\n ")
 	private static String OF_ANY_KIND;
 	@Localize("{0}{1} {2} {3} whose college {4}\n")
+	@Localize(locale = "ru", value = "{0}{1} {2} {3} со школой {4}\n")
 	private static String WHOSE_COLLEGE;
 	@Localize("{0}{1} college count which {2}\n")
+	@Localize(locale = "ru", value = "{0}{1} заклинаний школы {2}\n")
 	private static String COLLEGE_COUNT;
 
 	static {

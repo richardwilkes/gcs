@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -26,6 +26,7 @@ import java.util.List;
 /** Displays and edits {@link SkillDefault} objects. */
 public class Defaults extends BandedPanel implements ActionListener {
 	@Localize("Defaults")
+	@Localize(locale = "ru", value = "По умолчанию")
 	private static String TITLE;
 
 	static {

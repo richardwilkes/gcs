@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -382,40 +382,58 @@ public enum SpellColumn {
 	};
 
 	@Localize("Spells")
+	@Localize(locale = "ru", value = "Заклинания")
 	static String	DESCRIPTION_TITLE;
 	@Localize("The name, tech level and notes describing the spell")
+	@Localize(locale = "ru", value = "Название, ТУ и заметки заклинания")
 	static String	DESCRIPTION_TOOLTIP;
 	@Localize("Class")
+	@Localize(locale = "ru", value = "Класс")
 	static String	CLASS_TITLE;
 	@Localize("The class and college of the spell")
+	@Localize(locale = "ru", value = "Класс и школа заклинания")
 	static String	CLASS_TOOLTIP;
 	@Localize("Mana Cost")
+	@Localize(locale = "ru", value = "Мана")
 	static String	MANA_COST_TITLE;
 	@Localize("The mana cost to cast and maintain the spell")
+	@Localize(locale = "ru", value = "Мана-стоимость сотворения заклинания и его поддержание")
 	static String	MANA_COST_TOOLTIP;
 	@Localize("Time")
+	@Localize(locale = "ru", value = "Время")
 	static String	TIME_TITLE;
 	@Localize("THe time required to cast the spell and its duration")
+	@Localize(locale = "ru", value = "Необходимое время для сотворения заклинания и его длительность")
 	static String	TIME_TOOLTIP;
 	@Localize("Pts")
+	@Localize(locale = "ru", value = "Очк")
 	static String	POINTS_TITLE;
 	@Localize("The points spent in the spell")
+	@Localize(locale = "ru", value = "Потраченные очки на заклинание")
 	static String	POINTS_TOOLTIP;
 	@Localize("SL")
+	@Localize(locale = "ru", value = "УУ")
 	static String	LEVEL_TITLE;
 	@Localize("The spell level")
+	@Localize(locale = "ru", value = "Уровень заклинания")
 	static String	LEVEL_TOOLTIP;
 	@Localize("RSL")
+	@Localize(locale = "ru", value = "ОУУ")
 	static String	RELATIVE_LEVEL_TITLE;
 	@Localize("The relative spell level")
+	@Localize(locale = "ru", value = "Относительный уровень заклинания")
 	static String	RELATIVE_LEVEL_TOOLTIP;
 	@Localize("Category")
+	@Localize(locale = "ru", value = "Категория")
 	static String	CATEGORY_TITLE;
 	@Localize("The category or categories the spell belongs to")
+	@Localize(locale = "ru", value = "Категория или категории, к которым относится заклинание")
 	static String	CATEGORY_TOOLTIP;
 	@Localize("Ref")
+	@Localize(locale = "ru", value = "Ссыл")
 	static String	REFERENCE_TITLE;
 	@Localize("A reference to the book and page this spell appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая заклинание\n (например B22 - книга \"Базовые правила\", страница 22)")
 	static String	REFERENCE_TOOLTIP;
 
 	static {

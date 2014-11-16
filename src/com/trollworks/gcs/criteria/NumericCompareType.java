@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -71,22 +71,30 @@ public enum NumericCompareType {
 	};
 
 	@Localize("exactly")
+	@Localize(locale = "ru", value = "точно")
 	static String	IS_TITLE;
 	@Localize("at least")
+	@Localize(locale = "ru", value = "по крайней мере")
 	static String	AT_LEAST_TITLE;
 	@Localize("at most")
+	@Localize(locale = "ru", value = "не более")
 	static String	AT_MOST_TITLE;
 	@Localize("{0}\"{1}\"")
 	static String	IS_FORMAT;
 	@Localize("{0}at least \"{1}\"")
+	@Localize(locale = "ru", value = "{0}по крайне мере \"{1}\"")
 	static String	AT_LEAST_FORMAT;
 	@Localize("{0}at most \"{1}\"")
+	@Localize(locale = "ru", value = "{0}на самых \"{1}\"")
 	static String	AT_MOST_FORMAT;
 	@Localize("is")
+	@Localize(locale = "ru", value = " ")
 	static String	IS_DESCRIPTION;
 	@Localize("is at least")
+	@Localize(locale = "ru", value = "по крайней мере")
 	static String	AT_LEAST_DESCRIPTION;
 	@Localize("is at most")
+	@Localize(locale = "ru", value = "не более")
 	static String	AT_MOST_DESCRIPTION;
 
 	static {

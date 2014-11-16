@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 /** Provides the "New Skills Library" command. */
 public class NewSkillsLibraryCommand extends Command {
 	@Localize("New Skills Library")
+	@Localize(locale = "ru", value = "Новая библиотека умений")
 	private static String						TITLE;
 
 	static {

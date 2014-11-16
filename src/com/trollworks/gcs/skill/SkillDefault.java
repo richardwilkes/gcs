@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -25,8 +25,10 @@ import java.util.HashSet;
 /** Describes a skill default. */
 public class SkillDefault {
 	@Localize(" Parry")
+	@Localize(locale = "ru", value = " Парирование")
 	private static String		PARRY;
 	@Localize(" Block")
+	@Localize(locale = "ru", value = " Блок")
 	private static String		BLOCK;
 
 	static {

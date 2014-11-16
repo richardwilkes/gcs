@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -116,30 +116,43 @@ public enum HitLocation {
 	};
 
 	@Localize("to the skull")
+	@Localize(locale = "ru", value = "черепу")
 	static String	SKULL_TITLE;
 	@Localize("to the eyes")
+	@Localize(locale = "ru", value = "глазам")
 	static String	EYES_TITLE;
 	@Localize("to the face")
+	@Localize(locale = "ru", value = "лицу")
 	static String	FACE_TITLE;
 	@Localize("to the neck")
+	@Localize(locale = "ru", value = "шее")
 	static String	NECK_TITLE;
 	@Localize("to the torso")
+	@Localize(locale = "ru", value = "туловищу")
 	static String	TORSO_TITLE;
 	@Localize("to the vitals")
+	@Localize(locale = "ru", value = "жизненно-важным органам")
 	static String	VITALS_TITLE;
 	@Localize("to the groin")
+	@Localize(locale = "ru", value = "паху")
 	static String	GROIN_TITLE;
 	@Localize("to the arms")
+	@Localize(locale = "ru", value = "рукам")
 	static String	ARMS_TITLE;
 	@Localize("to the hands")
+	@Localize(locale = "ru", value = "рукам")
 	static String	HANDS_TITLE;
 	@Localize("to the legs")
+	@Localize(locale = "ru", value = "ногам")
 	static String	LEGS_TITLE;
 	@Localize("to the feet")
+	@Localize(locale = "ru", value = "стопам")
 	static String	FEET_TITLE;
 	@Localize("to the full body")
+	@Localize(locale = "ru", value = "всему телу")
 	static String	FULL_BODY_TITLE;
 	@Localize("to the full body except the eyes")
+	@Localize(locale = "ru", value = "всему телу, кроме глаз")
 	static String	FULL_BODY_EXCEPT_EYES_TITLE;
 
 	static {

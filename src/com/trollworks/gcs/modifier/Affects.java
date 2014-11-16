@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -54,16 +54,21 @@ public enum Affects {
 	};
 
 	@Localize("to cost")
+	@Localize(locale = "ru", value = "стоимости")
 	static String	TOTAL_TITLE;
 	@Localize("")
 	static String	TOTAL_SHORT;
 	@Localize("to base cost only")
+	@Localize(locale = "ru", value = "только базовой стоимости")
 	static String	BASE_ONLY_TITLE;
 	@Localize("(base only)")
+	@Localize(locale = "ru", value = "(только база)")
 	static String	BASE_ONLY_SHORT;
 	@Localize("to leveled cost only")
+	@Localize(locale = "ru", value = "только к стоимости уровня")
 	static String	LEVELS_ONLY_TITLE;
 	@Localize("(levels only)")
+	@Localize(locale = "ru", value = "(только уровни)")
 	static String	LEVELS_ONLY_SHORT;
 
 	static {

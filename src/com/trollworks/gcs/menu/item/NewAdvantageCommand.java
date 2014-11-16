@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -27,8 +27,10 @@ import java.awt.event.KeyEvent;
 /** Provides the "New Advantage" command. */
 public class NewAdvantageCommand extends Command {
 	@Localize("New Advantage")
+	@Localize(locale = "ru", value = "Новое преимущество")
 	private static String					ADVANTAGE;
 	@Localize("New Advantage Container")
+	@Localize(locale = "ru", value = "Новый контейнер преимущества")
 	private static String					ADVANTAGE_CONTAINER;
 
 	static {

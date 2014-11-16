@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -47,14 +47,19 @@ import javax.swing.event.DocumentListener;
 /** A list from a library. */
 public abstract class LibraryDockable extends CommonDockable implements RowFilter, DocumentListener, BatchNotifierTarget, JumpToSearchTarget, RetargetableFocus {
 	@Localize("Enter text here to narrow the list to only those rows containing matching items")
+	@Localize(locale = "ru", value = "Введите текст здесь, чтобы сузить список до содержащих подходящие элементы")
 	private static String		SEARCH_FIELD_TOOLTIP;
 	@Localize("Any Category")
+	@Localize(locale = "ru", value = "Любая категория")
 	private static String		CHOOSE_CATEGORY;
 	@Localize("Switches between allowing editing and not")
+	@Localize(locale = "ru", value = "Переключение между разрешать редактировать или нет")
 	private static String		TOGGLE_EDIT_MODE_TOOLTIP;
 	@Localize("Opens/closes all hierarchical rows")
+	@Localize(locale = "ru", value = "Развернуть/свернуть все вложенные строки")
 	private static String		TOGGLE_ROWS_OPEN_TOOLTIP;
 	@Localize("Sets the width of each column to exactly fit its contents")
+	@Localize(locale = "ru", value = "Подобрать ширину каждого столбца по его содержимому")
 	private static String		SIZE_COLUMNS_TO_FIT_TOOLTIP;
 
 	static {

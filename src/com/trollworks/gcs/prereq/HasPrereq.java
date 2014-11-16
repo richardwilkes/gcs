@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -19,8 +19,10 @@ import com.trollworks.toolkit.utility.Localization;
 /** An abstract prerequisite class for whether or not the specific item is present. */
 public abstract class HasPrereq extends Prereq {
 	@Localize("Has")
+	@Localize(locale = "ru", value = "Имеет")
 	static String					HAS;
 	@Localize("Does not have")
+	@Localize(locale = "ru", value = "Не имеет")
 	static String					DOES_NOT_HAVE;
 
 	static {

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -31,38 +31,55 @@ import javax.swing.SwingConstants;
 /** The character points panel. */
 public class PointsPanel extends DropPanel implements NotifierTarget {
 	@Localize("{0} Points")
+	@Localize(locale = "ru", value = "{0} очков")
 	private static String	POINTS;
 	@Localize("Attributes:")
+	@Localize(locale = "ru", value = "Атрибуты:")
 	private static String	ATTRIBUTE_POINTS;
 	@Localize("A summary of all points spent on attributes for this character")
+	@Localize(locale = "ru", value = "Очки, потраченные на атрибуты")
 	private static String	ATTRIBUTE_POINTS_TOOLTIP;
 	@Localize("Advantages:")
+	@Localize(locale = "ru", value = "Преимущ-во:")
 	private static String	ADVANTAGE_POINTS;
 	@Localize("A summary of all points spent on advantages for this character")
+	@Localize(locale = "ru", value = "Очки, потраченные на преимущества")
 	private static String	ADVANTAGE_POINTS_TOOLTIP;
 	@Localize("Disadvantages:")
+	@Localize(locale = "ru", value = "Недостатки:")
 	private static String	DISADVANTAGE_POINTS;
 	@Localize("A summary of all points spent on disadvantages for this character")
+	@Localize(locale = "ru", value = "Очки, потраченные на недостатки")
 	private static String	DISADVANTAGE_POINTS_TOOLTIP;
 	@Localize("Quirks:")
+	@Localize(locale = "ru", value = "Причуды:")
 	private static String	QUIRK_POINTS;
 	@Localize("A summary of all points spent on quirks for this character")
+	@Localize(locale = "ru", value = "Очки, потраченные на причуды")
 	private static String	QUIRK_POINTS_TOOLTIP;
 	@Localize("Skills:")
+	@Localize(locale = "ru", value = "Умения:")
 	private static String	SKILL_POINTS;
 	@Localize("A summary of all points spent on skills for this character")
+	@Localize(locale = "ru", value = "Очки, потраченные на умения")
 	private static String	SKILL_POINTS_TOOLTIP;
 	@Localize("Spells:")
+	@Localize(locale = "ru", value = "Заклинания:")
 	private static String	SPELL_POINTS;
 	@Localize("A summary of all points spent on spells for this character")
+	@Localize(locale = "ru", value = "Очки, потраченные на заклинания")
 	private static String	SPELL_POINTS_TOOLTIP;
 	@Localize("Race:")
+	@Localize(locale = "ru", value = "Раса:")
 	private static String	RACE_POINTS;
 	@Localize("A summary of all points spent on a racial package for this character")
+	@Localize(locale = "ru", value = "Очки, потраченные на расовый пакет")
 	private static String	RACE_POINTS_TOOLTIP;
 	@Localize("Earned:")
+	@Localize(locale = "ru", value = "Заработано:")
 	private static String	EARNED_POINTS;
 	@Localize("Points that have been earned but not yet been spent")
+	@Localize(locale = "ru", value = "Нераспределенные очки")
 	private static String	EARNED_POINTS_TOOLTIP;
 
 	static {

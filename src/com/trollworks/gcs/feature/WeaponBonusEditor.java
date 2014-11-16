@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -27,10 +27,13 @@ import java.awt.Insets;
 /** A weapon bonus editor. */
 public class WeaponBonusEditor extends FeatureEditor {
 	@Localize("to weapons whose required skill name ")
+	@Localize(locale = "ru", value = "оружию, которое требует умения с названием ")
 	private static String WEAPON_SKILL;
 	@Localize("and relative skill level ")
+	@Localize(locale = "ru", value = "и относительный уровень умения ")
 	private static String RELATIVE_SKILL_LEVEL;
 	@Localize("and specialization ")
+	@Localize(locale = "ru", value = "и специализация ")
 	private static String SPECIALIZATION;
 
 	static {

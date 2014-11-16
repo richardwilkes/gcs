@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -36,8 +36,10 @@ import java.util.List;
 /** An outline specifically for skills. */
 public class SkillOutline extends ListOutline implements Incrementable {
 	@Localize("Increment Points")
+	@Localize(locale = "ru", value = "Увеличить очки")
 	private static String	INCREMENT;
 	@Localize("Decrement Points")
+	@Localize(locale = "ru", value = "Уменьшить очки")
 	private static String	DECREMENT;
 
 	static {

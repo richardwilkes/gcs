@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -24,6 +24,7 @@ import java.awt.event.KeyEvent;
 /** Provides the "Open Detail Editor" command. */
 public class OpenEditorCommand extends Command {
 	@Localize("Open Detail Editor")
+	@Localize(locale = "ru", value = "Открыть расширенный редактор")
 	private static String OPEN_EDITOR;
 
 	static {

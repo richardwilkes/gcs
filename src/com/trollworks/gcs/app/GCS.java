@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -48,54 +48,79 @@ import java.util.StringTokenizer;
 /** The main entry point for the character sheet. */
 public class GCS {
 	@Localize("GURPS Character Sheet")
+	@Localize(locale = "ru", value = "GURPS персонаж")
 	private static String				SHEET_DESCRIPTION;
 	@Localize("GCS Advantages Library")
+	@Localize(locale = "ru", value = "GCS библиотека преимуществ")
 	private static String				ADVANTAGES_LIBRARY_DESCRIPTION;
 	@Localize("GCS Equipment Library")
+	@Localize(locale = "ru", value = "GCS библиотека снаряжения")
 	private static String				EQUIPMENT_LIBRARY_DESCRIPTION;
 	@Localize("GCS Skills Library")
+	@Localize(locale = "ru", value = "GCS библиотека умений")
 	private static String				SKILLS_LIBRARY_DESCRIPTION;
 	@Localize("GCS Spells Library")
+	@Localize(locale = "ru", value = "GCS библиотека заклинаний")
 	private static String				SPELLS_LIBRARY_DESCRIPTION;
 	@Localize("GCS Library")
+	@Localize(locale = "ru", value = "GCS библиотека")
 	private static String				LIBRARY_DESCRIPTION;
 	@Localize("GCS Character Template")
+	@Localize(locale = "ru", value = "GCS шаблон персонажа")
 	private static String				TEMPLATE_DESCRIPTION;
 	@Localize("Create PDF versions of sheets specified on the command line.")
+	@Localize(locale = "ru", value = "Создать PDF-версии листов, указанных в командной строке.")
 	private static String				PDF_OPTION_DESCRIPTION;
 	@Localize("Create HTML versions of sheets specified on the command line.")
+	@Localize(locale = "ru", value = "Создать HTML-версии листов, указанных в командной строке.")
 	private static String				HTML_OPTION_DESCRIPTION;
 	@Localize("A template to use when creating HTML versions of the sheets. If this is not specified, then the template found in the data directory will be used by default.")
+	@Localize(locale = "ru", value = "Шаблон, используемый при создании HTML-версии листа. Если не указано, по умолчанию будет использоваться шаблон из папки с данными.")
 	private static String				HTML_TEMPLATE_OPTION_DESCRIPTION;
 	@Localize("FILE")
+	@Localize(locale = "ru", value = "ФАЙЛ")
 	private static String				HTML_TEMPLATE_ARG;
 	@Localize("Create PNG versions of sheets specified on the command line.")
+	@Localize(locale = "ru", value = "Создать PNG-версии листов, указанных в командной строке.")
 	private static String				PNG_OPTION_DESCRIPTION;
 	@Localize("When generating PDF or PNG from the command line, allows you to specify a paper size to use, rather than the one embedded in the file. Valid choices are: LETTER, A4, or the width and height, expressed in inches and separated by an 'x', such as '5x7'.")
+	@Localize(locale = "ru", value = "При создании PDF или PNG из командной строки, позволяет указывать размер бумаги, отличный от того, что содержится в файле. Можно выбрать следующие: Letter, A4 или ширину и высоту в дюймах и разделенную 'х', например '5x7'.")
 	private static String				SIZE_OPTION_DESCRIPTION;
 	@Localize("When generating PDF or PNG from the command line, allows you to specify the margins to use, rather than the ones embedded in the file. The top, left, bottom, and right margins must all be specified in inches, separated by colons, such as '1:1:1:1'.")
+	@Localize(locale = "ru", value = "При создании PDF или PNG из командной строки, позволяет указать размеры отступов, отличные от тех, что содержатся в файле. Сверху, слева, снизу, и справа должны быть указаны в дюймах, разделенные двоеточиями, например '1:1:1:1'.")
 	private static String				MARGIN_OPTION_DESCRIPTION;
 	@Localize("You must specify one or more sheet files to process.")
+	@Localize(locale = "ru", value = "Вы должны указать один или несколько файлов листов для обработки.")
 	private static String				NO_FILES_TO_PROCESS;
 	@Localize("Loading \"{0}\"... ")
+	@Localize(locale = "ru", value = "Загрузка \"{0}\"... ")
 	private static String				LOADING;
 	@Localize("  Creating PDF... ")
+	@Localize(locale = "ru", value = "  Создание PDF... ")
 	private static String				CREATING_PDF;
 	@Localize("  Creating HMTL... ")
+	@Localize(locale = "ru", value = "  Создание HMTL... ")
 	private static String				CREATING_HTML;
 	@Localize("  Creating PNG... ")
+	@Localize(locale = "ru", value = "  Создание PNG... ")
 	private static String				CREATING_PNG;
 	@Localize("  ** ERROR ENCOUNTERED **")
+	@Localize(locale = "ru", value = "  ** ОБНАРУЖЕНА ОШИБКА **")
 	private static String				PROCESSING_FAILED;
 	@Localize("\nDone! {0} overall.")
+	@Localize(locale = "ru", value = "\nГотово! {0} всего.")
 	private static String				FINISHED;
 	@Localize("    Created \"{0}\".")
+	@Localize(locale = "ru", value = "    Создано \"{0}\".")
 	private static String				CREATED;
 	@Localize("WARNING: Invalid paper size specification.")
+	@Localize(locale = "ru", value = "ПРЕДУПРЕЖДЕНИЕ: Неверный размер бумаги.")
 	private static String				INVALID_PAPER_SIZE;
 	@Localize("WARNING: Invalid paper margins specification.")
+	@Localize(locale = "ru", value = "ПРЕДУПРЕЖДЕНИЕ: Неверные поля бумаги.")
 	private static String				INVALID_PAPER_MARGINS;
 	@Localize("    Used template file \"{0}\".")
+	@Localize(locale = "ru", value = "    Использован файл шаблона\"{0}\".")
 	private static String				TEMPLATE_USED;
 
 	static {

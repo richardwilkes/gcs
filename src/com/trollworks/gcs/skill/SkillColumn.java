@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -331,32 +331,46 @@ public enum SkillColumn {
 	};
 
 	@Localize("Skills")
+	@Localize(locale = "ru", value = "Умения")
 	static String	DESCRIPTION_TITLE;
 	@Localize("The name, specialty, tech level and notes describing a skill")
+	@Localize(locale = "ru", value = "Название, специализация, ТУ и заметки умения")
 	static String	DESCRIPTION_TOOLTIP;
 	@Localize("SL")
+	@Localize(locale = "ru", value = "УУ")
 	static String	LEVEL_TITLE;
 	@Localize("The skill level")
+	@Localize(locale = "ru", value = "Уровень умения")
 	static String	LEVEL_TOOLTIP;
 	@Localize("RSL")
+	@Localize(locale = "ru", value = "ОУУ")
 	static String	RELATIVE_LEVEL_TITLE;
 	@Localize("The relative skill level")
+	@Localize(locale = "ru", value = "Относительный уровень умения")
 	static String	RELATIVE_LEVEL_TOOLTIP;
 	@Localize("Pts")
+	@Localize(locale = "ru", value = "Очк")
 	static String	POINTS_TITLE;
 	@Localize("The points spent in the skill")
+	@Localize(locale = "ru", value = "Потраченые очки на умение")
 	static String	POINTS_TOOLTIP;
 	@Localize("Diff")
+	@Localize(locale = "ru", value = "Сложн.")
 	static String	DIFFICULTY_TITLE;
 	@Localize("The skill difficulty")
+	@Localize(locale = "ru", value = "Сложность умения")
 	static String	DIFFICULTY_TOOLTIP;
 	@Localize("Category")
+	@Localize(locale = "ru", value = "Категория")
 	static String	CATEGORY_TITLE;
 	@Localize("The category or categories the skill belongs to")
+	@Localize(locale = "ru", value = "Категория или категории, к которым относится умение")
 	static String	CATEGORY_TOOLTIP;
 	@Localize("Ref")
+	@Localize(locale = "ru", value = "Ссыл")
 	static String	REFERENCE_TITLE;
 	@Localize("A reference to the book and page this skill appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая умение\n (например B22 - книга \"Базовые правила\", страница 22)")
 	static String	REFERENCE_TOOLTIP;
 
 	static {

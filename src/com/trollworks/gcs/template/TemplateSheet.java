@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -57,14 +57,19 @@ import javax.swing.border.EmptyBorder;
 /** The template sheet. */
 public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTarget, DropTargetListener, ActionListener {
 	@Localize("Advantages, Disadvantages & Quirks")
+	@Localize(locale = "ru", value = "Преимущества, недостатки и причуды")
 	private static String				ADVANTAGES;
 	@Localize("Skills")
+	@Localize(locale = "ru", value = "Умения")
 	private static String				SKILLS;
 	@Localize("Spells")
+	@Localize(locale = "ru", value = "Заклинания")
 	private static String				SPELLS;
 	@Localize("Equipment")
+	@Localize(locale = "ru", value = "Снаряжение")
 	private static String				EQUIPMENT;
 	@Localize("Notes")
+	@Localize(locale = "ru", value = "Заметка")
 	private static String				NOTES;
 
 	static {

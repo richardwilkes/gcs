@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -39,8 +39,10 @@ import javax.swing.event.DocumentListener;
 /** A standard search control. */
 public class Search extends JPanel implements DocumentListener, KeyListener, FocusListener {
 	@Localize("The number of matches found")
+	@Localize(locale = "ru", value = "Количество найденных соответствий")
 	private static String	MSG_HIT_TOOLTIP;
 	@Localize("Enter text here and press RETURN to select all matching items")
+	@Localize(locale = "ru", value = "Введите здесь текст и нажмите ВВОД, чтобы выбрать все подходящие элементы")
 	private static String	MSG_SEARCH_FIELD_TOOLTIP;
 	private SearchTarget	mTarget;
 	private JLabel			mHits;

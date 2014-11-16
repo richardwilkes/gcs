@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -24,10 +24,13 @@ import java.text.MessageFormat;
 /** Provides the "Generate Random Name" command. */
 public class RandomizeNameCommand extends Command {
 	@Localize("Male")
+	@Localize(locale = "ru", value = "муж.")
 	private static String						MALE;
 	@Localize("Female")
+	@Localize(locale = "ru", value = "жен.")
 	private static String						FEMALE;
 	@Localize("Generate Random {0} Name")
+	@Localize(locale = "ru", value = "Создать случайное {0} имя")
 	private static String						TITLE;
 
 	static {

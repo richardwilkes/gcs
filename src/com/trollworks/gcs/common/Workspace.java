@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -37,6 +37,7 @@ import java.util.ArrayList;
 /** The workspace, where all files can be viewed and edited. */
 public class Workspace extends AppWindow implements SignificantFrame, JumpToSearchTarget {
 	@Localize("GURPS Workspace")
+	@Localize(locale = "ru", value = "GURPS рабочее пространство")
 	private static String	TITLE;
 
 	static {

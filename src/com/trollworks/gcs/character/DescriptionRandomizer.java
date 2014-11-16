@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -33,8 +33,10 @@ import javax.swing.border.EmptyBorder;
 /** A character description randomizer. */
 public class DescriptionRandomizer extends JPanel implements ActionListener {
 	@Localize("Randomize")
+	@Localize(locale = "ru", value = "Сгенерировать")
 	private static String		RANDOMIZE;
 	@Localize("Description Randomization")
+	@Localize(locale = "ru", value = "Создать описание")
 	private static String		UNDO_RANDOMIZE;
 
 	static {

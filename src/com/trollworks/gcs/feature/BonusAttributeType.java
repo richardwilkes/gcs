@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -156,42 +156,61 @@ public enum BonusAttributeType {
 	};
 
 	@Localize("to ST")
+	@Localize(locale = "ru", value = "СЛ")
 	static String	ST_TITLE;
 	@Localize("to DX")
+	@Localize(locale = "ru", value = "ЛВ")
 	static String	DX_TITLE;
 	@Localize("to IQ")
+	@Localize(locale = "ru", value = "ИН")
 	static String	IQ_TITLE;
 	@Localize("to HT")
+	@Localize(locale = "ru", value = "ЗД")
 	static String	HT_TITLE;
 	@Localize("to will")
+	@Localize(locale = "ru", value = "воле")
 	static String	WILL_TITLE;
 	@Localize("to fright checks")
+	@Localize(locale = "ru", value = "проверкам страха")
 	static String	FRIGHT_CHECK_TITLE;
 	@Localize("to perception")
+	@Localize(locale = "ru", value = "восприятию")
 	static String	PERCEPTION_TITLE;
 	@Localize("to vision")
+	@Localize(locale = "ru", value = "зрению")
 	static String	VISION_TITLE;
 	@Localize("to hearing")
+	@Localize(locale = "ru", value = "слуху")
 	static String	HEARING_TITLE;
 	@Localize("to taste & smell")
+	@Localize(locale = "ru", value = "вкусу и запаху")
 	static String	TASTE_SMELL_TITLE;
 	@Localize("to touch")
+	@Localize(locale = "ru", value = "осязанию")
 	static String	TOUCH_TITLE;
 	@Localize("to dodge")
+	@Localize(locale = "ru", value = "уклонению")
 	static String	DODGE_TITLE;
 	@Localize("to parry")
+	@Localize(locale = "ru", value = "парированию")
 	static String	PARRY_TITLE;
 	@Localize("to block")
+	@Localize(locale = "ru", value = "блоку")
 	static String	BLOCK_TITLE;
 	@Localize("to basic speed")
+	@Localize(locale = "ru", value = "базовой скорости")
 	static String	SPEED_TITLE;
 	@Localize("to basic move")
+	@Localize(locale = "ru", value = "базовому движению")
 	static String	MOVE_TITLE;
 	@Localize("to FP")
+	@Localize(locale = "ru", value = "ЕУ")
 	static String	FP_TITLE;
 	@Localize("to HP")
+	@Localize(locale = "ru", value = "ЕЖ")
 	static String	HP_TITLE;
 	@Localize("to size modifier")
+	@Localize(locale = "ru", value = "модификатору размера")
 	static String	SM_TITLE;
 
 	static {

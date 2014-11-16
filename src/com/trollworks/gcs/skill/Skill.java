@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -43,6 +43,7 @@ import java.util.Set;
 /** A GURPS Skill. */
 public class Skill extends ListRow {
 	@Localize("Skill")
+	@Localize(locale = "ru", value = "Умение")
 	static String					DEFAULT_NAME;
 
 	static {

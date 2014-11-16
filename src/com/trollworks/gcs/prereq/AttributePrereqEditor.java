@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -27,8 +27,10 @@ import javax.swing.JComboBox;
 /** An attribute prerequisite editor panel. */
 public class AttributePrereqEditor extends PrereqEditor {
 	@Localize("combined with {0}")
+	@Localize(locale = "ru", value = "в сочетании с {0}")
 	private static String		COMBINED_WITH;
 	@Localize("which ")
+	@Localize(locale = "ru", value = "который")
 	private static String		WHICH;
 
 	static {

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -19,6 +19,7 @@ import com.trollworks.toolkit.utility.Localization;
 /** A list of advantages and disadvantages from a library. */
 public class AdvantagesDockable extends LibraryDockable {
 	@Localize("Untitled Advantages")
+	@Localize(locale = "ru", value = "Безымянный список преимуществ")
 	private static String	UNTITLED;
 
 	static {

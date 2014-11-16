@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -28,8 +28,10 @@ import java.util.ArrayList;
 /** Provides the "Apply Template To Sheet" command. */
 public class ApplyTemplateCommand extends Command {
 	@Localize("Apply Template To Character Sheet")
+	@Localize(locale = "ru", value = "Применить шаблон к листу персонажа")
 	private static String						APPLY_TEMPLATE_TO_SHEET;
 	@Localize("Apply Template")
+	@Localize(locale = "ru", value = "Применить шаблон")
 	private static String						UNDO;
 
 	static {

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -34,6 +34,7 @@ import javax.swing.Icon;
 /** Provides a common base for library and sheet files. */
 public abstract class CommonDockable extends Dockable implements CloseHandler, Saveable, Undoable {
 	@Localize("An error occurred while trying to save the file.")
+	@Localize(locale = "ru", value = "Произошла ошибка при попытке сохранить файл.")
 	private static String	SAVE_ERROR;
 
 	static {

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -24,6 +24,7 @@ import java.awt.event.KeyEvent;
 /** Provides the "Copy To Character Sheet" command. */
 public class CopyToSheetCommand extends Command {
 	@Localize("Copy To Character Sheet")
+	@Localize(locale = "ru", value = "Копировать в лист персонажа")
 	private static String					COPY_TO_SHEET;
 
 	static {

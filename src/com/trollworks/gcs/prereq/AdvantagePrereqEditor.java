@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -23,10 +23,13 @@ import com.trollworks.toolkit.ui.layout.FlexSpacer;
 /** An advantage prerequisite editor panel. */
 public class AdvantagePrereqEditor extends PrereqEditor {
 	@Localize("whose name ")
+	@Localize(locale = "ru", value = "чье имя ")
 	private static String WHOSE_NAME;
 	@Localize("and whose level ")
+	@Localize(locale = "ru", value = "и чей уровень ")
 	private static String WHOSE_LEVEL;
 	@Localize("and whose notes ")
+	@Localize(locale = "ru", value = "и чьи заметки ")
 	private static String WHOSE_NOTES;
 
 	static {

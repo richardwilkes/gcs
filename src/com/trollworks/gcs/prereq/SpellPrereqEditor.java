@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -26,12 +26,16 @@ import javax.swing.JComboBox;
 /** A spell prerequisite editor panel. */
 public class SpellPrereqEditor extends PrereqEditor {
 	@Localize("whose name")
+	@Localize(locale = "ru", value = "чьё название")
 	private static String			WHOSE_SPELL_NAME;
 	@Localize("of any kind")
+	@Localize(locale = "ru", value = "любого вида")
 	private static String			ANY;
 	@Localize("whose college name")
+	@Localize(locale = "ru", value = "чьё название школы")
 	private static String			COLLEGE;
 	@Localize("from different colleges")
+	@Localize(locale = "ru", value = "из разных школ")
 	private static String			COLLEGE_COUNT;
 
 	static {

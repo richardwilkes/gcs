@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -32,14 +32,19 @@ import javax.swing.UIManager;
 /** The about box contents. */
 public class AboutPanel extends JPanel {
 	@Localize("Version %s")
+	@Localize(locale = "ru", value = "Версия %s")
 	private static String		VERSION_FORMAT;
 	@Localize("%s %s\n%s Architecture\nJava %s")
+	@Localize(locale = "ru", value = "%s %s\n%s Архитектура\nJava %s")
 	private static String		PLATFORM_FORMAT;
 	@Localize("GURPS is a trademark of Steve Jackson Games, used by permission. All rights reserved.\nThis product includes copyrighted material from the GURPS game, which is used by permission of Steve Jackson Games.\nThe iText Library is licensed under LGPL 2.1 by Bruno Lowagie and Paulo Soares.\nThe Trove Library is licensed under LGPL 2.1 by Eric D. Friedman and Rob Eden.")
+	@Localize(locale = "ru", value = "GURPS является торговой маркой компании Steve Jackson Games, используется с разрешения.\nВсе права защищены. Эта программа включает в себя защищенный авторским правом материал из игры GURPS, который\nиспользуется с разрешения Steve Jackson Games.\nБиблиотека iText распространяется под лицензией LGPL 2.1 - Бруно Ловаки (Bruno Lowagie) и Пауло Соарес (Paulo Soares).\nБиблиотека Trove распространяется под лицензией LGPL 2.1 - Эрик Д. Фридман (Eric D. Friedman) и Роб Эдема (Rob Eden).")
 	private static String		LICENSES;
 	@Localize("Unknown build date")
+	@Localize(locale = "ru", value = "Неизвестная дата сборки")
 	private static String		UNKNOWN_BUILD_DATE;
 	@Localize("Development Version")
+	@Localize(locale = "ru", value = "Разрабатываемая версия")
 	private static String		DEVELOPMENT;
 
 	static {

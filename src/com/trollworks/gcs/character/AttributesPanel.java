@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -29,56 +29,82 @@ import javax.swing.SwingConstants;
 /** The character attributes panel. */
 public class AttributesPanel extends DropPanel {
 	@Localize("Attributes")
+	@Localize(locale = "ru", value = "Атрибуты")
 	private static String	ATTRIBUTES;
 	@Localize("Strength (ST):")
+	@Localize(locale = "ru", value = "Сила (СЛ):")
 	private static String	ST;
 	@Localize("<html><body><b>{0} points</b> have been spent to modify <b>Strength</b></body></html>")
+	@Localize(locale = "ru", value = "<html><body><b>{0} очков</b> было потрачено на <b>Силу</b><br>или по-английски Strength, кратко <b>ST</b></body></html>")
 	private static String	ST_TOOLTIP;
 	@Localize("Dexterity (DX):")
+	@Localize(locale = "ru", value = "Ловкость (ЛВ):")
 	private static String	DX;
 	@Localize("<html><body><b>{0} points</b> have been spent to modify <b>Dexterity</b></body></html>")
+	@Localize(locale = "ru", value = "<html><body><b>{0} очков</b> было потрачено на <b>Ловкость </b><br>или по-английски Dexterity, кратко <b>DX</b></body></html>")
 	private static String	DX_TOOLTIP;
 	@Localize("Intelligence (IQ):")
+	@Localize(locale = "ru", value = "Интел-кт (ИН):")
 	private static String	IQ;
 	@Localize("<html><body><b>{0} points</b> have been spent to modify <b>Intelligence</b></body></html>")
+	@Localize(locale = "ru", value = "<html><body><b>{0} очков</b> было потрачено на <b>Интеллект</b><br>или по-английски Intelligence, кратко <b>IQ</b></body></html>")
 	private static String	IQ_TOOLTIP;
 	@Localize("Health (HT):")
+	@Localize(locale = "ru", value = "Здоровье (ЗД):")
 	private static String	HT;
 	@Localize("<html><body><b>{0} points</b> have been spent to modify <b>Health</b></body></html>")
+	@Localize(locale = "ru", value = "<html><body><b>{0} очков</b> было потрачено на <b>Здоровье</b><br>или по-английски Health, кратко <b>HT</b></body></html>")
 	private static String	HT_TOOLTIP;
 	@Localize("Will:")
+	@Localize(locale = "ru", value = "Воля:")
 	private static String	WILL;
 	@Localize("<html><body><b>{0} points</b> have been spent to modify <b>Will</b></body></html>")
+	@Localize(locale = "ru", value = "<html><body><b>{0} очков</b> было потрачено на <b>Волю</b> (по-английски <b>Will</b>)</body></html>")
 	private static String	WILL_TOOLTIP;
 	@Localize("Fright Check:")
+	@Localize(locale = "ru", value = "Бросок страха:")
 	private static String	FRIGHT_CHECK;
 	@Localize("Perception:")
+	@Localize(locale = "ru", value = "Восприятие:")
 	private static String	PERCEPTION;
 	@Localize("<html><body><b>{0} points</b> have been spent to modify <b>Perception</b></body></html>")
+	@Localize(locale = "ru", value = "<html><body><b>{0} очков</b> было потрачено на <b>Восприятие</b><br>или по-английски Perception, кратко <b>Per</b></body></html>")
 	private static String	PERCEPTION_TOOLTIP;
 	@Localize("Vision:")
+	@Localize(locale = "ru", value = "Зрение:")
 	private static String	VISION;
 	@Localize("Hearing:")
+	@Localize(locale = "ru", value = "Слух:")
 	private static String	HEARING;
 	@Localize("Touch:")
+	@Localize(locale = "ru", value = "Осязание:")
 	private static String	TOUCH;
 	@Localize("Taste & Smell:")
+	@Localize(locale = "ru", value = "Вкус и запах:")
 	private static String	TASTE_SMELL;
 	@Localize("Basic Speed:")
+	@Localize(locale = "ru", value = "Баз. скорость:")
 	private static String	BASIC_SPEED;
 	@Localize("<html><body><b>{0} points</b> have been spent to modify <b>Basic Speed</b></body></html>")
+	@Localize(locale = "ru", value = "<html><body><b>{0} очков</b> было потрачено на <b>Базовую скорость</b> (по-английски Basic Speed)</body></html>")
 	private static String	BASIC_SPEED_TOOLTIP;
 	@Localize("Basic Move:")
+	@Localize(locale = "ru", value = "Баз. движение:")
 	private static String	BASIC_MOVE;
 	@Localize("<html><body><b>{0} points</b> have been spent to modify <b>Basic Move</b></body></html>")
+	@Localize(locale = "ru", value = "<html><body><b>{0} очков</b> было потрачено на <b>Базовое движение</b> (по-английски Basic Move)</body></html>")
 	private static String	BASIC_MOVE_TOOLTIP;
 	@Localize("thr:")
+	@Localize(locale = "ru", value = "прм:")
 	private static String	BASIC_THRUST;
 	@Localize("The basic damage value for thrust attacks")
+	@Localize(locale = "ru", value = "Величина базового урона для прямых атак")
 	private static String	BASIC_THRUST_TOOLTIP;
 	@Localize("sw:")
+	@Localize(locale = "ru", value = "амп:")
 	private static String	BASIC_SWING;
 	@Localize("The basic damage value for swing attacks")
+	@Localize(locale = "ru", value = "Величина базового урона для амплитудных атак")
 	private static String	BASIC_SWING_TOOLTIP;
 
 	static {

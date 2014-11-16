@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -21,6 +21,7 @@ import java.awt.event.KeyEvent;
 /** Provides the "Jump To Search" command. */
 public class JumpToSearchCommand extends Command {
 	@Localize("Jump To Search")
+	@Localize(locale = "ru", value = "Перейти к поиску")
 	private static String					JUMP_TO_SEARCH;
 
 	static {

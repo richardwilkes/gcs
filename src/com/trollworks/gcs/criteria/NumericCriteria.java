@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -22,6 +22,7 @@ import java.io.IOException;
 /** Manages numeric comparison criteria. */
 public abstract class NumericCriteria {
 	@Localize("is ")
+	@Localize(locale = "ru", value = "  ")
 	private static String		IS_PREFIX;
 
 	static {

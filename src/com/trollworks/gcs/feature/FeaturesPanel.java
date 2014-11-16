@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -24,6 +24,7 @@ import java.util.List;
 /** Displays and edits {@link Feature} objects. */
 public class FeaturesPanel extends BandedPanel {
 	@Localize("Features")
+	@Localize(locale = "ru", value = "Особенности")
 	private static String FEATURES;
 
 	static {

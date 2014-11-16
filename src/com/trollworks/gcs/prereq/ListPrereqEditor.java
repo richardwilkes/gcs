@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -31,20 +31,27 @@ import javax.swing.JComponent;
 /** A prerequisite list editor panel. */
 public class ListPrereqEditor extends PrereqEditor {
 	@Localize("Requires all of:")
+	@Localize(locale = "ru", value = "Требует всё из:")
 	private static String		REQUIRES_ALL;
 	@Localize("Requires at least one of:")
+	@Localize(locale = "ru", value = "Требует одно из:")
 	private static String		REQUIRES_ANY;
 	@Localize("Add a prerequisite to this list")
+	@Localize(locale = "ru", value = "Добавить требование в этот список")
 	private static String		ADD_PREREQ_TOOLTIP;
 	@Localize("Add a prerequisite list to this list")
+	@Localize(locale = "ru", value = "Добавить список требований в этот список")
 	private static String		ADD_PREREQ_LIST_TOOLTIP;
 	@Localize(" ")
 	private static String		NO_TL_PREREQ;
 	@Localize("When the Character's TL is")
+	@Localize(locale = "ru", value = "Когда ТУ персонажа")
 	private static String		TL_IS;
 	@Localize("When the Character's TL is at least")
+	@Localize(locale = "ru", value = "Когда ТУ персонажа по крайней мере")
 	private static String		TL_IS_AT_LEAST;
 	@Localize("When the Character's TL is at most")
+	@Localize(locale = "ru", value = "Когда ТУ персонажа не более")
 	private static String		TL_IS_AT_MOST;
 
 	static {

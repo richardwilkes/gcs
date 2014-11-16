@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -29,22 +29,31 @@ import javax.swing.SwingConstants;
 /** The character encumbrance panel. */
 public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 	@Localize("Encumbrance, Move & Dodge")
+	@Localize(locale = "ru", value = "Нагрузка, движение и уклонение")
 	private static String		ENCUMBRANCE_MOVE_DODGE;
 	@Localize("Level")
+	@Localize(locale = "ru", value = "Уровень")
 	private static String		ENCUMBRANCE_LEVEL;
 	@Localize("Max Load")
+	@Localize(locale = "ru", value = "Макс нагрузка")
 	private static String		MAX_CARRY;
 	@Localize("Move")
+	@Localize(locale = "ru", value = "Движ.")
 	private static String		MOVE;
 	@Localize("Dodge")
+	@Localize(locale = "ru", value = "Укл.")
 	private static String		DODGE;
 	@Localize("The encumbrance level")
+	@Localize(locale = "ru", value = "Уровень нагрузки")
 	private static String		ENCUMBRANCE_TOOLTIP;
 	@Localize("The maximum load a character can carry and still remain within a specific encumbrance level")
+	@Localize(locale = "ru", value = "Максимальная нагрузка, которую персонаж может нести, \nоставаясь в пределах указанного уровня нагрузки")
 	private static String		MAX_CARRY_TOOLTIP;
 	@Localize("The character's ground movement rate for a specific encumbrance level")
+	@Localize(locale = "ru", value = "Единицы движения персонажа при указанном уровне нагрузки")
 	private static String		MOVE_TOOLTIP;
 	@Localize("The character's dodge for a specific encumbrance level")
+	@Localize(locale = "ru", value = "Уклонение персонажа для указанного уровня нагрузки")
 	private static String		DODGE_TOOLTIP;
 	@Localize("{0} ({1})")
 	static String				ENCUMBRANCE_FORMAT;

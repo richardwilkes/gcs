@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -35,8 +35,10 @@ import java.util.List;
 /** An outline specifically for Advantages. */
 public class AdvantageOutline extends ListOutline implements Incrementable {
 	@Localize("Increment Level")
+	@Localize(locale = "ru", value = "Повысить уровень")
 	private static String	INCREMENT;
 	@Localize("Decrement Level")
+	@Localize(locale = "ru", value = "Понизить уровень")
 	private static String	DECREMENT;
 
 	static {

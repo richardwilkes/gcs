@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -28,10 +28,13 @@ import java.awt.event.KeyEvent;
 /** Provides the "New Skill" command. */
 public class NewSkillCommand extends Command {
 	@Localize("New Skill")
+	@Localize(locale = "ru", value = "Новое умение")
 	private static String				SKILL;
 	@Localize("New Skill Container")
+	@Localize(locale = "ru", value = "Новый контейнер умения")
 	private static String				SKILL_CONTAINER;
 	@Localize("New Technique")
+	@Localize(locale = "ru", value = "Новая техника")
 	private static String				TECHNIQUE;
 
 	static {

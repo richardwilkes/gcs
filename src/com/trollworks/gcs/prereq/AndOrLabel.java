@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -26,8 +26,10 @@ import javax.swing.SwingConstants;
 /** A label that displays the "and" or the "or" message, or nothing if it is the first one. */
 public class AndOrLabel extends JLabel {
 	@Localize("and")
+	@Localize(locale = "ru", value = "и")
 	private static String AND;
 	@Localize("or")
+	@Localize(locale = "ru", value = "или")
 	private static String OR;
 
 	static {

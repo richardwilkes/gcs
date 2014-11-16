@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -49,52 +49,76 @@ import javax.swing.event.DocumentListener;
 /** The detailed editor for {@link Equipment}s. */
 public class EquipmentEditor extends RowEditor<Equipment> implements ActionListener, DocumentListener, FocusListener {
 	@Localize("A reference to the book and page this equipment appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая снаряжение\n (например B22 - книга \"Базовые правила\", страница 22)")
 	private static String				REFERENCE_TOOLTIP;
 	@Localize("The value of one of these pieces of equipment")
+	@Localize(locale = "ru", value = "Цена снаряжения")
 	private static String				VALUE_TOOLTIP;
 	@Localize("The value of all of these pieces of equipment,\nplus the value of any contained equipment")
+	@Localize(locale = "ru", value = "Цена всего снаряжения,\nплюс цена любого входящего в него снаряжения")
 	private static String				EXT_VALUE_TOOLTIP;
 	@Localize("Name")
+	@Localize(locale = "ru", value = "Название")
 	private static String				NAME;
 	@Localize("The name/description of the equipment, without any notes")
+	@Localize(locale = "ru", value = "Название/описание снаряжения без заметок")
 	private static String				NAME_TOOLTIP;
 	@Localize("The name field may not be empty")
+	@Localize(locale = "ru", value = "Поле \"Название\" не может быть пустым")
 	private static String				NAME_CANNOT_BE_EMPTY;
 	@Localize("Tech Level")
+	@Localize(locale = "ru", value = "Технологический уровень")
 	private static String				EDITOR_TECH_LEVEL;
 	@Localize("The first Tech Level this equipment is available at")
+	@Localize(locale = "ru", value = "Первый тех. уровень этого снаряжения доступен с")
 	private static String				EDITOR_TECH_LEVEL_TOOLTIP;
 	@Localize("Legality Class")
+	@Localize(locale = "ru", value = "Клас легальности")
 	private static String				EDITOR_LEGALITY_CLASS;
 	@Localize("The legality class of this equipment")
+	@Localize(locale = "ru", value = "Класс легальности снаряжения")
 	private static String				EDITOR_LEGALITY_CLASS_TOOLTIP;
 	@Localize("Quantity")
+	@Localize(locale = "ru", value = "Количество")
 	private static String				EDITOR_QUANTITY;
 	@Localize("The number of this equipment present")
+	@Localize(locale = "ru", value = "Количество этого снаряжения")
 	private static String				EDITOR_QUANTITY_TOOLTIP;
 	@Localize("Value")
+	@Localize(locale = "ru", value = "Цена")
 	private static String				EDITOR_VALUE;
 	@Localize("Extended Value")
+	@Localize(locale = "ru", value = "Полная цена")
 	private static String				EDITOR_EXTENDED_VALUE;
 	@Localize("Weight")
+	@Localize(locale = "ru", value = "Вес")
 	private static String				EDITOR_WEIGHT;
 	@Localize("The weight of one of these pieces of equipment")
+	@Localize(locale = "ru", value = "Вес снаряжения")
 	private static String				EDITOR_WEIGHT_TOOLTIP;
 	@Localize("Extended Weight")
+	@Localize(locale = "ru", value = "Полный вес")
 	private static String				EDITOR_EXTENDED_WEIGHT;
 	@Localize("The total weight of this quantity of equipment, plus everything contained by it")
+	@Localize(locale = "ru", value = "Общий вес имеющегося снаряжения и его содержимого")
 	private static String				EDITOR_EXTENDED_WEIGHT_TOOLTIP;
 	@Localize("Categories")
+	@Localize(locale = "ru", value = "Категории")
 	private static String				CATEGORIES;
 	@Localize("The category or categories the equipment belongs to (separate multiple categories with a comma)")
+	@Localize(locale = "ru", value = "Категория или категории снаряжения, к которым оно принадлежит (несколько категорий разделяются точкой с запятой)")
 	private static String				CATEGORIES_TOOLTIP;
 	@Localize("Notes")
+	@Localize(locale = "ru", value = "Заметка")
 	private static String				NOTES;
 	@Localize("Any notes that you would like to show up in the list along with this equipment")
+	@Localize(locale = "ru", value = "Заметки, которые показываются в списке рядом с снаряжением")
 	private static String				NOTES_TOOLTIP;
 	@Localize("Page Reference")
+	@Localize(locale = "ru", value = "Ссылка на страницу")
 	private static String				EDITOR_REFERENCE;
 	@Localize("Items that are not equipped do not apply any features they may\nnormally contribute to the character.")
+	@Localize(locale = "ru", value = "Не экипированные предметы не добавляют свойств, которые обычно\n может использовать персонаж.")
 	private static String				STATE_TOOLTIP;
 
 	static {

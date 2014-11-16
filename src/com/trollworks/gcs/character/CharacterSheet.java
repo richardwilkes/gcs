@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -119,34 +119,49 @@ import javax.swing.event.ChangeListener;
 /** The character sheet. */
 public class CharacterSheet extends JPanel implements ChangeListener, Scrollable, BatchNotifierTarget, PageOwner, PrintProxy, ActionListener, Runnable, DropTargetListener {
 	@Localize("Page {0} of {1}")
+	@Localize(locale = "ru", value = "Стр. {0} из {1}")
 	private static String		PAGE_NUMBER;
 	@Localize("Visit us at %s")
+	@Localize(locale = "ru", value = "Посетите нас на %s")
 	private static String		ADVERTISEMENT;
 	@Localize("Melee Weapons")
+	@Localize(locale = "ru", value = "Контактные орудия")
 	private static String		MELEE_WEAPONS;
 	@Localize("Ranged Weapons")
+	@Localize(locale = "ru", value = "Дистанционные орудия")
 	private static String		RANGED_WEAPONS;
 	@Localize("Advantages, Disadvantages & Quirks")
+	@Localize(locale = "ru", value = "Преимущества, недостатки и причуды")
 	private static String		ADVANTAGES;
 	@Localize("Skills")
+	@Localize(locale = "ru", value = "Умения")
 	private static String		SKILLS;
 	@Localize("Spells")
+	@Localize(locale = "ru", value = "Заклинания")
 	private static String		SPELLS;
 	@Localize("Equipment")
+	@Localize(locale = "ru", value = "Снаряжение")
 	private static String		EQUIPMENT;
 	@Localize("{0} (continued)")
+	@Localize(locale = "ru", value = "{0} (продолжается)")
 	private static String		CONTINUED;
 	@Localize("Natural")
+	@Localize(locale = "ru", value = "Природное")
 	private static String		NATURAL;
 	@Localize("Punch")
+	@Localize(locale = "ru", value = "Удар")
 	private static String		PUNCH;
 	@Localize("Kick")
+	@Localize(locale = "ru", value = "Пинок")
 	private static String		KICK;
 	@Localize("Kick w/Boots")
+	@Localize(locale = "ru", value = "Пинок (ботинком)")
 	private static String		BOOTS;
 	@Localize("Unidentified key: '%s'")
+	@Localize(locale = "ru", value = "Неопознанный ключ: '%s'")
 	private static String		UNIDENTIFIED_KEY;
 	@Localize("Notes")
+	@Localize(locale = "ru", value = "Заметка")
 	private static String		NOTES;
 
 	static {

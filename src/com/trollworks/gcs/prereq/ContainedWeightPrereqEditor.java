@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -23,6 +23,7 @@ import com.trollworks.toolkit.ui.layout.FlexSpacer;
 /** A contained weight prerequisite editor panel. */
 public class ContainedWeightPrereqEditor extends PrereqEditor {
 	@Localize("which ")
+	@Localize(locale = "ru", value = "который")
 	private static String WHICH;
 
 	static {

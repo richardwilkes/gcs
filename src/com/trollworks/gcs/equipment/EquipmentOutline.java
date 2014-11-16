@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -36,8 +36,10 @@ import java.util.List;
 /** An outline specifically for equipment. */
 public class EquipmentOutline extends ListOutline implements Incrementable {
 	@Localize("Increment Quantity")
+	@Localize(locale = "ru", value = "Увеличить количество")
 	private static String	INCREMENT;
 	@Localize("Decrement Quantity")
+	@Localize(locale = "ru", value = "Уменьшить количество")
 	private static String	DECREMENT;
 
 	static {

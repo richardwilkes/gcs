@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -56,14 +56,19 @@ import javax.swing.undo.StateEdit;
 /** A list of advantages and disadvantages from a library. */
 public class SheetDockable extends CommonDockable implements SearchTarget, RetargetableFocus {
 	@Localize("Untitled Sheet")
+	@Localize(locale = "ru", value = "Лист без названия")
 	private static String			UNTITLED;
 	@Localize("An error occurred while trying to save the sheet as a PNG.")
+	@Localize(locale = "ru", value = "Произошла ошибка при попытке сохранить лист как PNG.")
 	private static String			SAVE_AS_PNG_ERROR;
 	@Localize("An error occurred while trying to save the sheet as a PDF.")
+	@Localize(locale = "ru", value = "Произошла ошибка при попытке сохранить лист в формате PDF.")
 	private static String			SAVE_AS_PDF_ERROR;
 	@Localize("An error occurred while trying to save the sheet as HTML.")
+	@Localize(locale = "ru", value = "Произошла ошибка при попытке сохранить лист в формате HTML.")
 	private static String			SAVE_AS_HTML_ERROR;
 	@Localize("Add Rows")
+	@Localize(locale = "ru", value = "Добавить строки")
 	private static String			ADD_ROWS;
 
 	static {

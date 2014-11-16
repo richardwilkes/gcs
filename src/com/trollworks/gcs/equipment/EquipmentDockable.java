@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -19,6 +19,7 @@ import com.trollworks.toolkit.utility.Localization;
 /** A list of equipment from a library. */
 public class EquipmentDockable extends LibraryDockable {
 	@Localize("Untitled Equipment")
+	@Localize(locale = "ru", value = "Безымянное снаряжение")
 	private static String	UNTITLED;
 
 	static {

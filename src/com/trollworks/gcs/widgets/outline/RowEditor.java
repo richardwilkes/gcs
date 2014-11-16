@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -39,16 +39,22 @@ import javax.swing.border.EmptyBorder;
  */
 public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 	@Localize("Edit {0}")
+	@Localize(locale = "ru", value = "Изменить {0}")
 	private static String WINDOW_TITLE;
 	@Localize("Cancel Remaining")
+	@Localize(locale = "ru", value = "Пропустить остальные")
 	private static String CANCEL_REST;
 	@Localize("Cancel")
+	@Localize(locale = "ru", value = "Отмена")
 	private static String CANCEL;
 	@Localize("Apply")
+	@Localize(locale = "ru", value = "Применить")
 	private static String APPLY;
 	@Localize("1 item remaining to be edited.")
+	@Localize(locale = "ru", value = "осталось отредактировать 1 элемент.")
 	private static String ONE_REMAINING;
 	@Localize("{0} items remaining to be edited.")
+	@Localize(locale = "ru", value = "{0} элементов осталось отредактировать.")
 	private static String REMAINING;
 
 	static {

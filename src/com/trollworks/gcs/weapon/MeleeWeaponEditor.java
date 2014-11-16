@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -28,12 +28,16 @@ import java.util.List;
 /** An editor for melee weapon statistics. */
 public class MeleeWeaponEditor extends WeaponEditor {
 	@Localize("Melee Weapon")
+	@Localize(locale = "ru", value = "Контактное оружие")
 	private static String MELEE_WEAPON;
 	@Localize("Reach")
+	@Localize(locale = "ru", value = "Досягаемость")
 	private static String REACH;
 	@Localize("Parry Modifier")
+	@Localize(locale = "ru", value = "Модификатор парирования")
 	private static String PARRY;
 	@Localize("Block Modifier")
+	@Localize(locale = "ru", value = "Модификатор блока")
 	private static String BLOCK;
 
 	static {

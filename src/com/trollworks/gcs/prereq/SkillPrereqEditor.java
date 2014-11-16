@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 1998-2014 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
@@ -23,10 +23,13 @@ import com.trollworks.toolkit.ui.layout.FlexSpacer;
 /** A skill prerequisite editor panel. */
 public class SkillPrereqEditor extends PrereqEditor {
 	@Localize("whose name ")
+	@Localize(locale = "ru", value = "чье имя ")
 	private static String WHOSE_NAME;
 	@Localize("and whose level ")
+	@Localize(locale = "ru", value = "и чей уровень ")
 	private static String WHOSE_LEVEL;
 	@Localize("and whose specialization ")
+	@Localize(locale = "ru", value = "и чья специализация")
 	private static String WHOSE_SPECIALIZATION;
 
 	static {
