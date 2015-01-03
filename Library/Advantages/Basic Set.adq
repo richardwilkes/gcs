@@ -2145,6 +2145,12 @@
 			<attribute>fright_check</attribute>
 			<amount>2</amount>
 		</attribute_bonus>
+		<prereq_list all="yes">
+			<advantage_prereq has="no">
+				<name compare="is">Enhanced Time Sense</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+		</prereq_list>
 	</advantage>
 	<advantage version="2">
 		<name>Common Sense</name>
@@ -4144,6 +4150,7 @@
 		<type>Mental, Exotic</type>
 		<base_points>45</base_points>
 		<reference>B52</reference>
+		<notes>You immediately act in combat before those without Enhanced Time Sense; Never freeze; +6 on all IQ rolls to wake up or to recover from surprise or mental stun; Your side gets +1 to initiative rolls (+2 if you're the leader)</notes>
 		<categories>
 			<category>Advantage</category>
 		</categories>
@@ -4152,6 +4159,28 @@
 			<specialization compare="is anything"></specialization>
 			<amount>1</amount>
 		</skill_bonus>
+		<attribute_bonus>
+			<attribute>dodge</attribute>
+			<amount>1</amount>
+		</attribute_bonus>
+		<attribute_bonus>
+			<attribute>parry</attribute>
+			<amount>1</amount>
+		</attribute_bonus>
+		<attribute_bonus>
+			<attribute>block</attribute>
+			<amount>1</amount>
+		</attribute_bonus>
+		<attribute_bonus>
+			<attribute>fright check</attribute>
+			<amount>2</amount>
+		</attribute_bonus>
+		<prereq_list all="yes">
+			<advantage_prereq has="no">
+				<name compare="is">Combat Reflexes</name>
+				<notes compare="is anything"></notes>
+			</advantage_prereq>
+		</prereq_list>
 	</advantage>
 	<advantage version="2">
 		<name>Enhanced Tracking</name>
@@ -12336,6 +12365,7 @@
 			<affects>total</affects>
 			<reference>H18</reference>
 			<notes>@Rare@</notes>
+		</modifier>
 		<reference>B80</reference>
 		<categories>
 			<category>Advantage</category>
