@@ -19474,7 +19474,7 @@
 			<category>Defenses</category>
 		</categories>
 		<dr_bonus>
-			<location>feet</location>
+			<location>legs</location>
 			<amount>8</amount>
 		</dr_bonus>
 		<dr_bonus>
