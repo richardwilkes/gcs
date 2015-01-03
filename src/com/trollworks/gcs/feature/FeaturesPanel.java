@@ -11,12 +11,10 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.widget.BandedPanel;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +24,7 @@ public class FeaturesPanel extends BandedPanel {
 	@Localize("Features")
 	@Localize(locale = "de", value = "Eigenschaften")
 	@Localize(locale = "ru", value = "Особенности")
-	private static String FEATURES;
+	private static String	FEATURES;
 
 	static {
 		Localization.initialize();
@@ -34,7 +32,7 @@ public class FeaturesPanel extends BandedPanel {
 
 	/**
 	 * Creates a new feature editor.
-	 * 
+	 *
 	 * @param row The row these features will belong to.
 	 * @param features The initial features to display.
 	 */

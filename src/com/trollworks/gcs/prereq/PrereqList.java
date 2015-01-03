@@ -11,17 +11,15 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.io.IOException;
@@ -37,11 +35,11 @@ public class PrereqList extends Prereq {
 	@Localize("{0}Requires all of:\n")
 	@Localize(locale = "de", value = "{0}Benötigt alles von:")
 	@Localize(locale = "ru", value = "{0}Требует всё из:\n")
-	private static String REQUIRES_ALL;
+	private static String		REQUIRES_ALL;
 	@Localize("{0}Requires at least one of:\n")
 	@Localize(locale = "de", value = "{0}Benötigt mindestens eines von:")
 	@Localize(locale = "ru", value = "{0}Требует одно из:\n")
-	private static String REQUIRES_ANY;
+	private static String		REQUIRES_ANY;
 
 	static {
 		Localization.initialize();
@@ -57,7 +55,7 @@ public class PrereqList extends Prereq {
 
 	/**
 	 * Creates a new prerequisite list.
-	 * 
+	 *
 	 * @param parent The owning prerequisite list, if any.
 	 * @param all Whether only one criteria in this list has to be met, or all of them must be met.
 	 */
@@ -70,7 +68,7 @@ public class PrereqList extends Prereq {
 
 	/**
 	 * Loads a prerequisite list.
-	 * 
+	 *
 	 * @param parent The owning prerequisite list, if any.
 	 * @param reader The XML reader to load from.
 	 */
@@ -104,7 +102,7 @@ public class PrereqList extends Prereq {
 
 	/**
 	 * Creates a clone of the specified prerequisite list.
-	 * 
+	 *
 	 * @param parent The new owning prerequisite list, if any.
 	 * @param prereqList The prerequisite to clone.
 	 */
@@ -213,7 +211,7 @@ public class PrereqList extends Prereq {
 
 	/**
 	 * Adds the specified prerequisite to this list.
-	 * 
+	 *
 	 * @param index The index to add the list at.
 	 * @param prereq The prerequisite to add.
 	 */
@@ -223,7 +221,7 @@ public class PrereqList extends Prereq {
 
 	/**
 	 * Removes the specified prerequisite from this list.
-	 * 
+	 *
 	 * @param prereq The prerequisite to remove.
 	 */
 	public void remove(Prereq prereq) {

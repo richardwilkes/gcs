@@ -12,10 +12,8 @@
 package com.trollworks.gcs.skill;
 
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.toolkit.ui.widget.BandedPanel;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -28,7 +26,7 @@ public class Defaults extends BandedPanel implements ActionListener {
 	@Localize("Defaults")
 	@Localize(locale = "de", value = "Grundwerte")
 	@Localize(locale = "ru", value = "По умолчанию")
-	private static String TITLE;
+	private static String	TITLE;
 
 	static {
 		Localization.initialize();
@@ -36,7 +34,7 @@ public class Defaults extends BandedPanel implements ActionListener {
 
 	/**
 	 * Creates a new skill defaults editor.
-	 * 
+	 *
 	 * @param defaults The initial defaults to display.
 	 */
 	public Defaults(List<SkillDefault> defaults) {

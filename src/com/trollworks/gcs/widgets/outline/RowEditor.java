@@ -12,12 +12,12 @@
 package com.trollworks.gcs.widgets.outline;
 
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.widget.ActionPanel;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -34,34 +34,34 @@ import javax.swing.border.EmptyBorder;
 
 /**
  * The base class for all row editors.
- * 
+ *
  * @param <T> The row class being edited.
  */
 public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 	@Localize("Edit {0}")
 	@Localize(locale = "de", value = "Bearbeite {0}")
 	@Localize(locale = "ru", value = "Изменить {0}")
-	private static String WINDOW_TITLE;
+	private static String						WINDOW_TITLE;
 	@Localize("Cancel Remaining")
 	@Localize(locale = "de", value = "Alles Abbrechen")
 	@Localize(locale = "ru", value = "Пропустить остальные")
-	private static String CANCEL_REST;
+	private static String						CANCEL_REST;
 	@Localize("Cancel")
 	@Localize(locale = "de", value = "Abbrechen")
 	@Localize(locale = "ru", value = "Отмена")
-	private static String CANCEL;
+	private static String						CANCEL;
 	@Localize("Apply")
 	@Localize(locale = "de", value = "Anwenden")
 	@Localize(locale = "ru", value = "Применить")
-	private static String APPLY;
+	private static String						APPLY;
 	@Localize("1 item remaining to be edited.")
 	@Localize(locale = "de", value = "1 weiteres Element zu bearbeiten.")
 	@Localize(locale = "ru", value = "осталось отредактировать 1 элемент.")
-	private static String ONE_REMAINING;
+	private static String						ONE_REMAINING;
 	@Localize("{0} items remaining to be edited.")
 	@Localize(locale = "de", value = "{0} weitere Elemente zu bearbeiten.")
 	@Localize(locale = "ru", value = "{0} элементов осталось отредактировать.")
-	private static String REMAINING;
+	private static String						REMAINING;
 
 	static {
 		Localization.initialize();
@@ -75,7 +75,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 
 	/**
 	 * Brings up a modal detailed editor for each row in the list.
-	 * 
+	 *
 	 * @param owner The owning component.
 	 * @param list The rows to edit.
 	 * @return Whether anything was modified.
@@ -132,7 +132,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 
 	/**
 	 * Creates a new {@link RowEditor}.
-	 * 
+	 *
 	 * @param row The row being edited.
 	 */
 	protected RowEditor(T row) {
@@ -153,7 +153,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 
 	/**
 	 * Called to apply any changes that were made.
-	 * 
+	 *
 	 * @return Whether anything was modified.
 	 */
 	public final boolean applyChanges() {
@@ -167,7 +167,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 
 	/**
 	 * Called to apply any changes that were made.
-	 * 
+	 *
 	 * @return Whether anything was modified.
 	 */
 	protected abstract boolean applyChangesSelf();

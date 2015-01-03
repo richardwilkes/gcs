@@ -11,10 +11,6 @@
 
 package com.trollworks.gcs.spell;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
@@ -26,9 +22,11 @@ import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.MultipleRowUndo;
 import com.trollworks.gcs.widgets.outline.RowPostProcessor;
 import com.trollworks.gcs.widgets.outline.RowUndo;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.EventQueue;
 import java.awt.dnd.DropTargetDragEvent;
@@ -40,11 +38,11 @@ public class SpellOutline extends ListOutline implements Incrementable {
 	@Localize("Increment Points")
 	@Localize(locale = "de", value = "Punkte erhöhen")
 	@Localize(locale = "ru", value = "Увеличить очки")
-	private static String INCREMENT;
+	private static String	INCREMENT;
 	@Localize("Decrement Points")
 	@Localize(locale = "de", value = "Punkte verringern")
 	@Localize(locale = "ru", value = "Уменьшить очки")
-	private static String DECREMENT;
+	private static String	DECREMENT;
 
 	static {
 		Localization.initialize();
@@ -65,7 +63,7 @@ public class SpellOutline extends ListOutline implements Incrementable {
 
 	/**
 	 * Create a new spells outline.
-	 * 
+	 *
 	 * @param dataFile The owning data file.
 	 */
 	public SpellOutline(DataFile dataFile) {
@@ -74,7 +72,7 @@ public class SpellOutline extends ListOutline implements Incrementable {
 
 	/**
 	 * Create a new spells outline.
-	 * 
+	 *
 	 * @param dataFile The owning data file.
 	 * @param model The {@link OutlineModel} to use.
 	 */

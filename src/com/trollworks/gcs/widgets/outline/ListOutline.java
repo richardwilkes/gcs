@@ -11,20 +11,18 @@
 
 package com.trollworks.gcs.widgets.outline;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.names.Namer;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.template.Template;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.FilteredList;
 import com.trollworks.toolkit.ui.Selection;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
 import com.trollworks.toolkit.ui.widget.outline.Row;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -39,19 +37,19 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 	@Localize("Remove Rows")
 	@Localize(locale = "de", value = "Zeilen entfernen")
 	@Localize(locale = "ru", value = "Удалить строки")
-	private static String CLEAR_UNDO;
+	private static String	CLEAR_UNDO;
 
 	static {
 		Localization.initialize();
 	}
 
 	/** The owning data file. */
-	protected DataFile	mDataFile;
-	private String		mRowSetChangedID;
+	protected DataFile		mDataFile;
+	private String			mRowSetChangedID;
 
 	/**
 	 * Create a new outline.
-	 * 
+	 *
 	 * @param dataFile The owning data file.
 	 * @param model The outline model to use.
 	 * @param rowSetChangedID The notification ID to use when the row set changes.
@@ -116,7 +114,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 
 	/**
 	 * Adds a row at the "best" place (i.e. looks at the selection).
-	 * 
+	 *
 	 * @param row The row to add.
 	 * @param name The name for the undo event.
 	 * @param sibling If the current selection is a container, whether to insert into it, or as a
@@ -129,7 +127,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 
 	/**
 	 * Adds rows at the "best" place (i.e. looks at the selection).
-	 * 
+	 *
 	 * @param rows The rows to add.
 	 * @param name The name for the undo event.
 	 * @param sibling If the current selection is a container, whether to insert into it, or as a
@@ -189,7 +187,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 
 	/**
 	 * Opens detailed editors for the current selection.
-	 * 
+	 *
 	 * @param later Whether to call {@link EventQueue#invokeLater(Runnable)} rather than immediately
 	 *            opening the editor.
 	 */
@@ -256,7 +254,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 	/**
 	 * Adds the row to the list. Recursively descends the row's children and does the same with
 	 * them.
-	 * 
+	 *
 	 * @param list The list to add rows to.
 	 * @param row The row to check.
 	 */

@@ -178,7 +178,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 	}
 
 	private void documentChanged() {
-		//mOutline.reapplyRowFilter();
+		// mOutline.reapplyRowFilter();
 	}
 
 	private void fillTree(List<?> lists, TreeContainerRow parent) {

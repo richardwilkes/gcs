@@ -11,16 +11,14 @@
 
 package com.trollworks.gcs.weapon;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.widget.EditorField;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Container;
 import java.util.List;
@@ -30,46 +28,46 @@ public class RangedWeaponEditor extends WeaponEditor {
 	@Localize("Ranged Weapon")
 	@Localize(locale = "de", value = "Fernkampfwaffe")
 	@Localize(locale = "ru", value = "Дистанционное оружие")
-	private static String RANGED_WEAPON;
+	private static String	RANGED_WEAPON;
 	@Localize("Accuracy")
 	@Localize(locale = "de", value = "Genauigkeit")
 	@Localize(locale = "ru", value = "Точность")
-	private static String ACCURACY;
+	private static String	ACCURACY;
 	@Localize("Range")
 	@Localize(locale = "de", value = "Reichweite")
 	@Localize(locale = "ru", value = "Дальность")
-	private static String RANGE;
+	private static String	RANGE;
 	@Localize("Rate of Fire")
 	@Localize(locale = "de", value = "Schussrate")
 	@Localize(locale = "ru", value = "Скорострельность")
-	private static String RATE_OF_FIRE;
+	private static String	RATE_OF_FIRE;
 	@Localize("Shots")
 	@Localize(locale = "de", value = "Schüsse")
 	@Localize(locale = "ru", value = "Боезапас")
-	private static String SHOTS;
+	private static String	SHOTS;
 	@Localize("Bulk")
 	@Localize(locale = "de", value = "Handlichkeit")
 	@Localize(locale = "ru", value = "Размер")
-	private static String BULK;
+	private static String	BULK;
 	@Localize("Recoil")
 	@Localize(locale = "de", value = "Rückstoß")
 	@Localize(locale = "ru", value = "Отдача")
-	private static String RECOIL;
+	private static String	RECOIL;
 
 	static {
 		Localization.initialize();
 	}
 
-	private EditorField	mAccuracy;
-	private EditorField	mRange;
-	private EditorField	mRateOfFire;
-	private EditorField	mShots;
-	private EditorField	mBulk;
-	private EditorField	mRecoil;
+	private EditorField		mAccuracy;
+	private EditorField		mRange;
+	private EditorField		mRateOfFire;
+	private EditorField		mShots;
+	private EditorField		mBulk;
+	private EditorField		mRecoil;
 
 	/**
 	 * Creates a new ranged weapon editor for the specified row.
-	 * 
+	 *
 	 * @param row The row to edit ranged weapon statistics for.
 	 * @return The editor, or <code>null</code> if the row is not appropriate.
 	 */
@@ -88,7 +86,7 @@ public class RangedWeaponEditor extends WeaponEditor {
 
 	/**
 	 * Creates a new {@link RangedWeaponStats} editor.
-	 * 
+	 *
 	 * @param owner The owning row.
 	 * @param weapons The weapons to modify.
 	 */

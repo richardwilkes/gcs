@@ -12,9 +12,9 @@
 package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -25,7 +25,7 @@ public class DecrementCommand extends Command {
 	@Localize("Decrement")
 	@Localize(locale = "de", value = "Verringern")
 	@Localize(locale = "ru", value = "Уменьшить")
-	private static String DECREMENT;
+	private static String					DECREMENT;
 
 	static {
 		Localization.initialize();

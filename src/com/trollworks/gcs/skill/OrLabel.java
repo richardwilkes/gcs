@@ -12,11 +12,9 @@
 package com.trollworks.gcs.skill;
 
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.UIUtilities;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Component;
 import java.awt.Graphics;
@@ -29,17 +27,17 @@ public class OrLabel extends JLabel {
 	@Localize("or")
 	@Localize(locale = "de", value = "oder")
 	@Localize(locale = "ru", value = "или")
-	private static String OR;
+	private static String	OR;
 
 	static {
 		Localization.initialize();
 	}
 
-	private Component	mOwner;
+	private Component		mOwner;
 
 	/**
 	 * Creates a new {@link OrLabel}.
-	 * 
+	 *
 	 * @param owner The owning component.
 	 */
 	public OrLabel(Component owner) {

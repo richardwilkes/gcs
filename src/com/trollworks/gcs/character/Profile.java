@@ -325,8 +325,8 @@ public class Profile {
 	private static final String[]	HAIR_OPTIONS;
 	private GURPSCharacter			mCharacter;
 	private boolean					mCustomPortrait;
-	private StdImage			mPortrait;
-	private StdImage			mDisplayPortrait;
+	private StdImage				mPortrait;
+	private StdImage				mDisplayPortrait;
 	private String					mName;
 	private String					mTitle;
 	private int						mAge;

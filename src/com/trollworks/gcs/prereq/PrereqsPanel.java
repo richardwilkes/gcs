@@ -11,19 +11,17 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.widget.BandedPanel;
+import com.trollworks.toolkit.utility.Localization;
 
 /** Displays and edits {@link Prereq} objects. */
 public class PrereqsPanel extends BandedPanel {
 	@Localize("Prerequisites")
 	@Localize(locale = "de", value = "Bedingungen")
 	@Localize(locale = "ru", value = "Требования")
-	private static String PREREQUISITES;
+	private static String	PREREQUISITES;
 
 	static {
 		Localization.initialize();
@@ -31,7 +29,7 @@ public class PrereqsPanel extends BandedPanel {
 
 	/**
 	 * Creates a new prerequisite editor.
-	 * 
+	 *
 	 * @param row The row these prerequisites will belong to.
 	 * @param prereqs The initial prerequisites to display.
 	 */

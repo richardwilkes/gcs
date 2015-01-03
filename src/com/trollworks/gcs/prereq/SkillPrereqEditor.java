@@ -11,29 +11,27 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
+import com.trollworks.toolkit.utility.Localization;
 
 /** A skill prerequisite editor panel. */
 public class SkillPrereqEditor extends PrereqEditor {
 	@Localize("whose name ")
 	@Localize(locale = "de", value = "dessen Name ")
 	@Localize(locale = "ru", value = "чье имя ")
-	private static String WHOSE_NAME;
+	private static String	WHOSE_NAME;
 	@Localize("and whose level ")
 	@Localize(locale = "de", value = "und dessen Fertigkeitswert ")
 	@Localize(locale = "ru", value = "и чей уровень ")
-	private static String WHOSE_LEVEL;
+	private static String	WHOSE_LEVEL;
 	@Localize("and whose specialization ")
 	@Localize(locale = "de", value = "und dessen Spezialisierung ")
 	@Localize(locale = "ru", value = "и чья специализация")
-	private static String WHOSE_SPECIALIZATION;
+	private static String	WHOSE_SPECIALIZATION;
 
 	static {
 		Localization.initialize();
@@ -41,7 +39,7 @@ public class SkillPrereqEditor extends PrereqEditor {
 
 	/**
 	 * Creates a new skill prerequisite editor panel.
-	 * 
+	 *
 	 * @param row The owning row.
 	 * @param prereq The prerequisite to edit.
 	 * @param depth The depth of this prerequisite.

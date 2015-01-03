@@ -11,15 +11,13 @@
 
 package com.trollworks.gcs.widgets.outline;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -37,21 +35,21 @@ public class RowUndo extends AbstractUndoableEdit {
 	@Localize("{0} Changes")
 	@Localize(locale = "de", value = "{0} Änderungen")
 	@Localize(locale = "ru", value = "{0} изменений")
-	private static String UNDO_FORMAT;
+	private static String	UNDO_FORMAT;
 
 	static {
 		Localization.initialize();
 	}
 
-	private DataFile	mDataFile;
-	private ListRow		mRow;
-	private String		mName;
-	private byte[]		mBefore;
-	private byte[]		mAfter;
+	private DataFile		mDataFile;
+	private ListRow			mRow;
+	private String			mName;
+	private byte[]			mBefore;
+	private byte[]			mAfter;
 
 	/**
 	 * Creates a new {@link RowUndo}.
-	 * 
+	 *
 	 * @param row The row being undone.
 	 */
 	public RowUndo(ListRow row) {
@@ -64,7 +62,7 @@ public class RowUndo extends AbstractUndoableEdit {
 
 	/**
 	 * Call to finish capturing the undo state.
-	 * 
+	 *
 	 * @return <code>true</code> if there is a difference between the before and after state.
 	 */
 	public boolean finish() {

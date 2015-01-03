@@ -11,16 +11,14 @@
 
 package com.trollworks.gcs.weapon;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.widget.EditorField;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Container;
 import java.util.List;
@@ -30,31 +28,31 @@ public class MeleeWeaponEditor extends WeaponEditor {
 	@Localize("Melee Weapon")
 	@Localize(locale = "de", value = "Nahkampfwaffe")
 	@Localize(locale = "ru", value = "Контактное оружие")
-	private static String MELEE_WEAPON;
+	private static String	MELEE_WEAPON;
 	@Localize("Reach")
 	@Localize(locale = "de", value = "Reichweite")
 	@Localize(locale = "ru", value = "Досягаемость")
-	private static String REACH;
+	private static String	REACH;
 	@Localize("Parry Modifier")
 	@Localize(locale = "de", value = "Paradewert")
 	@Localize(locale = "ru", value = "Модификатор парирования")
-	private static String PARRY;
+	private static String	PARRY;
 	@Localize("Block Modifier")
 	@Localize(locale = "de", value = "Abblockwert")
 	@Localize(locale = "ru", value = "Модификатор блока")
-	private static String BLOCK;
+	private static String	BLOCK;
 
 	static {
 		Localization.initialize();
 	}
 
-	private EditorField	mReach;
-	private EditorField	mParry;
-	private EditorField	mBlock;
+	private EditorField		mReach;
+	private EditorField		mParry;
+	private EditorField		mBlock;
 
 	/**
 	 * Creates a new melee weapon editor for the specified row.
-	 * 
+	 *
 	 * @param row The row to edit melee weapon statistics for.
 	 * @return The editor, or <code>null</code> if the row is not appropriate.
 	 */
@@ -73,7 +71,7 @@ public class MeleeWeaponEditor extends WeaponEditor {
 
 	/**
 	 * Creates a new {@link MeleeWeaponStats} editor.
-	 * 
+	 *
 	 * @param owner The owning row.
 	 * @param weapons The weapons to modify.
 	 */

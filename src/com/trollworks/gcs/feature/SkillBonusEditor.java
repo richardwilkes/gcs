@@ -11,15 +11,13 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Insets;
 
@@ -28,11 +26,11 @@ public class SkillBonusEditor extends FeatureEditor {
 	@Localize("to skills whose name ")
 	@Localize(locale = "de", value = "auf Fertigkeiten, deren Namen ")
 	@Localize(locale = "ru", value = "умение с названием ")
-	private static String SKILL_NAME;
+	private static String	SKILL_NAME;
 	@Localize("and specialization ")
 	@Localize(locale = "de", value = "und Spezialisierung ")
 	@Localize(locale = "ru", value = "и специализация ")
-	private static String SPECIALIZATION;
+	private static String	SPECIALIZATION;
 
 	static {
 		Localization.initialize();
@@ -40,7 +38,7 @@ public class SkillBonusEditor extends FeatureEditor {
 
 	/**
 	 * Create a new skill bonus editor.
-	 * 
+	 *
 	 * @param row The row this feature will belong to.
 	 * @param bonus The bonus to edit.
 	 */

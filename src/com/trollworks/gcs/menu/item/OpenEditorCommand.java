@@ -11,11 +11,11 @@
 
 package com.trollworks.gcs.menu.item;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.gcs.widgets.outline.ListOutline;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -26,7 +26,7 @@ public class OpenEditorCommand extends Command {
 	@Localize("Open Detail Editor")
 	@Localize(locale = "de", value = "Öffne Detail-Editor")
 	@Localize(locale = "ru", value = "Открыть расширенный редактор")
-	private static String OPEN_EDITOR;
+	private static String					OPEN_EDITOR;
 
 	static {
 		Localization.initialize();

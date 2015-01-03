@@ -12,11 +12,9 @@
 package com.trollworks.gcs.prereq;
 
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.UIUtilities;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Graphics;
 
@@ -28,21 +26,21 @@ public class AndOrLabel extends JLabel {
 	@Localize("and")
 	@Localize(locale = "de", value = "und")
 	@Localize(locale = "ru", value = "и")
-	private static String AND;
+	private static String	AND;
 	@Localize("or")
 	@Localize(locale = "de", value = "oder")
 	@Localize(locale = "ru", value = "или")
-	private static String OR;
+	private static String	OR;
 
 	static {
 		Localization.initialize();
 	}
 
-	private Prereq	mOwner;
+	private Prereq			mOwner;
 
 	/**
 	 * Creates a new {@link AndOrLabel}.
-	 * 
+	 *
 	 * @param owner The owning {@link Prereq}.
 	 */
 	public AndOrLabel(Prereq owner) {

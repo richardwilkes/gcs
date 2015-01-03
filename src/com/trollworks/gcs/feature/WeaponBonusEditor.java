@@ -11,16 +11,14 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Insets;
 
@@ -29,15 +27,15 @@ public class WeaponBonusEditor extends FeatureEditor {
 	@Localize("to weapons whose required skill name ")
 	@Localize(locale = "de", value = "auf Waffen, deren benötigte Fertigkeit ")
 	@Localize(locale = "ru", value = "оружию, которое требует умения с названием ")
-	private static String WEAPON_SKILL;
+	private static String	WEAPON_SKILL;
 	@Localize("and relative skill level ")
 	@Localize(locale = "de", value = "sowie relativer Fertigkeitswert ")
 	@Localize(locale = "ru", value = "и относительный уровень умения ")
-	private static String RELATIVE_SKILL_LEVEL;
+	private static String	RELATIVE_SKILL_LEVEL;
 	@Localize("and specialization ")
 	@Localize(locale = "de", value = "und Spezialisierung ")
 	@Localize(locale = "ru", value = "и специализация ")
-	private static String SPECIALIZATION;
+	private static String	SPECIALIZATION;
 
 	static {
 		Localization.initialize();
@@ -45,7 +43,7 @@ public class WeaponBonusEditor extends FeatureEditor {
 
 	/**
 	 * Create a new skill bonus editor.
-	 * 
+	 *
 	 * @param row The row this feature will belong to.
 	 * @param bonus The bonus to edit.
 	 */
