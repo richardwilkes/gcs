@@ -2,6 +2,31 @@
 <equipment_list unique_id="hv8irnjw:-jks2hyo6kqxr" version="1">
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Antibiotic</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<reference>B289</reference>
+		<notes>Prevents or cures (in 1d days) infections.</notes>
+		<categories>
+			<category>Medical Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Antitoxin Kit</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>25</value>
+		<weight>0.5 lb</weight>
+		<reference>B289</reference>
+		<notes>Antidote for specific poison. 10 uses</notes>
+		<categories>
+			<category>Medical Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Arrow</description>
 		<tech_level>0</tech_level>
 		<legality_class>4</legality_class>
@@ -1143,8 +1168,11 @@
 		<value>100</value>
 		<weight>10 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">100 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">100 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -1154,10 +1182,26 @@
 		<value>60</value>
 		<weight>3 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">40 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">40 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Balance and Weights</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>35</value>
+		<weight>3 lb</weight>
+		<reference>B289</reference>
+		<notes>For weighing goods</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
 		<description>Ballistic Gloves</description>
@@ -1482,6 +1526,18 @@
 			<location>torso</location>
 			<amount>24</amount>
 		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Bandages</description>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>2 lb</weight>
+		<reference>B289</reference>
+		<notes>Bandages for a  half-dozen wounds. Might be clean cloth, adhesive dressings, or spray-on "Plastiskin", depending on TL. Basic equipment for First Aid skill.</notes>
+		<categories>
+			<category>Medical Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -1814,6 +1870,17 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Batteries</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>1</value>
+		<reference>B288</reference>
+		<categories>
+			<category>Communications and Information Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Battle Rifle, 7.62mm</description>
 		<tech_level>7</tech_level>
 		<legality_class>2</legality_class>
@@ -1937,11 +2004,11 @@
 			<amount>50</amount>
 		</dr_bonus>
 		<attribute_bonus>
-			<attribute limitation="striking_only">st</attribute>
+			<attribute limitation="striking only">st</attribute>
 			<amount>10</amount>
 		</attribute_bonus>
 		<attribute_bonus>
-			<attribute limitation="lifting_only">st</attribute>
+			<attribute limitation="lifting only">st</attribute>
 			<amount>10</amount>
 		</attribute_bonus>
 		<prereq_list all="yes">
@@ -1991,11 +2058,11 @@
 			<amount>75</amount>
 		</dr_bonus>
 		<attribute_bonus>
-			<attribute limitation="striking_only">st</attribute>
+			<attribute limitation="striking only">st</attribute>
 			<amount>15</amount>
 		</attribute_bonus>
 		<attribute_bonus>
-			<attribute limitation="lifting_only">st</attribute>
+			<attribute limitation="lifting only">st</attribute>
 			<amount>15</amount>
 		</attribute_bonus>
 		<prereq_list all="yes">
@@ -2045,11 +2112,11 @@
 			<amount>100</amount>
 		</dr_bonus>
 		<attribute_bonus>
-			<attribute limitation="striking_only">st</attribute>
+			<attribute limitation="striking only">st</attribute>
 			<amount>20</amount>
 		</attribute_bonus>
 		<attribute_bonus>
-			<attribute limitation="lifting_only">st</attribute>
+			<attribute limitation="lifting only">st</attribute>
 			<amount>20</amount>
 		</attribute_bonus>
 		<prereq_list all="yes">
@@ -2218,6 +2285,32 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Binoculars</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>2 lb</weight>
+		<reference>B289</reference>
+		<notes>Gives (TL-4) levels of Telescopic Vision.</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Bit and Bridle</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>35</value>
+		<weight>3 lb</weight>
+		<reference>B289</reference>
+		<notes>+2 to control horse, or +3 if using both hands</notes>
+		<categories>
+			<category>Equestrian Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Blackjack</description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
@@ -2253,6 +2346,9 @@
 		<value>20</value>
 		<weight>4 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -2626,8 +2722,11 @@
 		<value>3</value>
 		<weight>1 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">2 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">2 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -2904,6 +3003,35 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Bug Stomper</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>1200</value>
+		<weight>2 lb</weight>
+		<reference>B289</reference>
+		<notes>Jams bugs in 10-yard radius. 8 hrs.</notes>
+		<categories>
+			<category>Law-Enforcement</category>
+			<category>Thief</category>
+			<category>and Spy Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Bug, Audio</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<reference>B289</reference>
+		<notes>-7 to spot, 1/4-mile range, transmits for 1 week.</notes>
+		<categories>
+			<category>Law-Enforcement</category>
+			<category>Thief</category>
+			<category>and Spy Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Cable, Steel, 1.5", 10 yards</description>
 		<tech_level>5</tech_level>
 		<legality_class>4</legality_class>
@@ -2911,6 +3039,9 @@
 		<weight>17 lb</weight>
 		<reference>B288</reference>
 		<notes>Supports 3,700 lbs.</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -2921,6 +3052,47 @@
 		<weight>34 lb</weight>
 		<reference>B288</reference>
 		<notes>Supports 3,700 lbs.</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Camcorder</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<weight>1 lb</weight>
+		<reference>B289</reference>
+		<notes>Has 10x zoom. Gives Night Vision 5. 7 hrs.</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Camera, 35mm</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>3 lb</weight>
+		<reference>B289</reference>
+		<notes>Basic equipment for Photography skill. Extra film is 32 shots ($10, neg.).</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Camera-Film</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<reference>B289</reference>
+		<notes>Extra film with 32 shots</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -2931,6 +3103,9 @@
 		<weight>2 lb</weight>
 		<reference>B288</reference>
 		<notes>Uses 1/4 gallon of kerosene per 4 hrs</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -2941,6 +3116,9 @@
 		<weight>1 lb</weight>
 		<reference>B288</reference>
 		<notes>Lasts 12 hours</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment_container version="3" open="yes">
 		<description>Canteen</description>
@@ -2949,8 +3127,11 @@
 		<value>10</value>
 		<weight>1 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">2 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">2 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -3215,6 +3396,19 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Cell Phone</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>250</value>
+		<weight>0.25 lb</weight>
+		<reference>B288</reference>
+		<notes>Only works in some areas; $20/month fee., 10 hrs.</notes>
+		<categories>
+			<category>Communications and Information Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Chainsaw</description>
 		<tech_level>6</tech_level>
 		<legality_class>4</legality_class>
@@ -3264,6 +3458,22 @@
 		<value>10</value>
 		<weight>0.01 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Climbing Gear</description>
+		<tech_level>2</tech_level>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<weight>4 lb</weight>
+		<reference>B288</reference>
+		<notes>Hammer, spikes, carabiners</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -3549,6 +3759,9 @@
 		<value>50</value>
 		<weight>0.144 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 		<skill_bonus>
 			<name compare="starts with">navigation</name>
 			<specialization compare="is anything"></specialization>
@@ -3587,6 +3800,32 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Computer, Laptop</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>1500</value>
+		<weight>3 lb</weight>
+		<reference>B288</reference>
+		<notes>Modem plugs into phone. 2 hrs.</notes>
+		<categories>
+			<category>Communications and Information Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Computer, Wearable</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<weight>2 lb</weight>
+		<reference>B288</reference>
+		<notes>Display glasses and wireless modem. 8 hrs.</notes>
+		<categories>
+			<category>Communications and Information Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Copper Farthing</description>
 		<legality_class>4</legality_class>
 		<value>1</value>
@@ -3605,6 +3844,9 @@
 		<weight>0.5 lb</weight>
 		<reference>B288</reference>
 		<notes>Supports 90 lbs.</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -3615,6 +3857,45 @@
 		<weight>1 lb</weight>
 		<reference>B288</reference>
 		<notes>Supports 90 lbs.</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Crash Kit/TL0-5</description>
+		<tech_level>0-5</tech_level>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>10 lb</weight>
+		<reference>B289</reference>
+		<notes>A complete kit for treating serous injuries. Includes sterile bandages, sutures, and drugs appropriate for the TL. Counts as improvised gear (-5) for Surgery</notes>
+		<categories>
+			<category>Medical Gear</category>
+		</categories>
+		<skill_bonus>
+			<name compare="is">First Aid</name>
+			<specialization compare="is anything"></specialization>
+			<amount>2</amount>
+		</skill_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Crash Kit/TL6+</description>
+		<tech_level>6+</tech_level>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>10 lb</weight>
+		<reference>B289</reference>
+		<notes>A complete kit for treating serous injuries. Includes sterile bandages, sutures, and drugs appropriate for the TL. Includes IV drip, needle, and plasma. Counts as improvised gear (-5) for Surgery</notes>
+		<categories>
+			<category>Medical Gear</category>
+		</categories>
+		<skill_bonus>
+			<name compare="is">First Aid</name>
+			<specialization compare="is anything"></specialization>
+			<amount>2</amount>
+		</skill_bonus>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -4051,6 +4332,24 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Crowbar, 3'</description>
+		<tech_level>2</tech_level>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<weight>3 lb</weight>
+		<reference>B289</reference>
+		<notes>Treat as a small mace in combat, but at -1 to skill</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+		<skill_bonus>
+			<name compare="is">Axe/Mace</name>
+			<specialization compare="is anything"></specialization>
+			<amount>-1</amount>
+		</skill_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Cutlass</description>
 		<tech_level>4</tech_level>
 		<legality_class>4</legality_class>
@@ -4173,6 +4472,32 @@
 		</melee_weapon>
 		<categories>
 			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Cutting Torch</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>30 lb</weight>
+		<reference>B289</reference>
+		<notes>1d+3(2) burn per second. Each gas bottle gives 30 seconds of cutting. Extra gas bottles are $50, 15 lbs. per bottle.</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Cutting Torch Gas Bottle</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>15 lb</weight>
+		<reference>B289</reference>
+		<notes>Extra Gas Bottle</notes>
+		<categories>
+			<category>Tools</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -4417,6 +4742,25 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Disguise Kit</description>
+		<tech_level>5</tech_level>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>10 lb</weight>
+		<reference>B289</reference>
+		<categories>
+			<category>Law-Enforcement</category>
+			<category>Thief</category>
+			<category>and Spy Gear</category>
+		</categories>
+		<skill_bonus>
+			<name compare="is">Disguise</name>
+			<specialization compare="is anything"></specialization>
+			<amount>1</amount>
+		</skill_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Double Shotgun, 10G</description>
 		<tech_level>5</tech_level>
 		<legality_class>4</legality_class>
@@ -4519,6 +4863,32 @@
 			<location>groin</location>
 			<amount>5</amount>
 		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Drum</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>2 lb</weight>
+		<reference>B288</reference>
+		<notes>Audible for several miles</notes>
+		<categories>
+			<category>Communications and Information Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ear Muffs</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>1 lb</weight>
+		<reference>B289</reference>
+		<notes>Block loud noises (e.g. gunshots). Give Protected Hearing.</notes>
+		<categories>
+			<category>Weapon and Combat Accessories</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -4632,6 +5002,21 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Electronic "Lockpicks"</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>1500</value>
+		<weight>3 lb</weight>
+		<reference>B289</reference>
+		<notes>+2 to pick electronic locks</notes>
+		<categories>
+			<category>Law-Enforcement</category>
+			<category>Thief</category>
+			<category>and Spy Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Face Mask</description>
 		<tech_level>3</tech_level>
 		<legality_class>3</legality_class>
@@ -4648,12 +5033,32 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>First Aid Kit</description>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>2 lb</weight>
+		<reference>B289</reference>
+		<notes>A complete kit for treating wounds, with bandages, ointments, etc.</notes>
+		<categories>
+			<category>Medical Gear</category>
+		</categories>
+		<skill_bonus>
+			<name compare="is">First Aid</name>
+			<specialization compare="is anything"></specialization>
+			<amount>1</amount>
+		</skill_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Fishhooks &amp; Line</description>
 		<tech_level>0</tech_level>
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>0.01 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -4774,6 +5179,9 @@
 		<weight>1 lb</weight>
 		<reference>B288</reference>
 		<notes>30' beam, lasts 5 hours</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -4784,6 +5192,9 @@
 		<weight>0.25 lb</weight>
 		<reference>B288</reference>
 		<notes>15' beam, lasts 1 hour</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -5203,6 +5614,9 @@
 		<value>2</value>
 		<weight>6 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -5486,6 +5900,9 @@
 		<weight>3 lb</weight>
 		<reference>B288</reference>
 		<notes>Satellite-updated, lasts 24 hours; Grants Absolute Direction (Requires Signal)</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -5496,6 +5913,9 @@
 		<weight>2 lb</weight>
 		<reference>B288</reference>
 		<notes>Supports 300 lbs; throw to STx2 yards</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -5639,6 +6059,19 @@
 		</melee_weapon>
 		<categories>
 			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Group Basics</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>20 lb</weight>
+		<reference>B288</reference>
+		<notes>Basic equipment for Cooking and Survival skill for a group. Cook pot, rope, hatchet etc., for 3-8 campers.</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -5833,6 +6266,25 @@
 		<categories>
 			<category>Melee Weapon</category>
 		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Handcuffs</description>
+		<tech_level>5</tech_level>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>0.5 lb</weight>
+		<reference>B289</reference>
+		<categories>
+			<category>Law-Enforcement</category>
+			<category>Thief</category>
+			<category>and Spy Gear</category>
+		</categories>
+		<skill_bonus>
+			<name compare="is">Escape</name>
+			<specialization compare="is anything"></specialization>
+			<amount>-5</amount>
+		</skill_bonus>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -6234,6 +6686,18 @@
 			<amount>7</amount>
 		</dr_bonus>
 	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Hip Quiver</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>15</value>
+		<weight>1 lb</weight>
+		<reference>B289</reference>
+		<notes>Holds 20 arrows or bolts</notes>
+		<categories>
+			<category>Weapon and Combat Accessories</category>
+		</categories>
+	</equipment_container>
 	<equipment version="3">
 		<quantity>1</quantity>
 		<description>HMG, .50</description>
@@ -6373,6 +6837,57 @@
 		</ranged_weapon>
 		<categories>
 			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Holster, Belt</description>
+		<tech_level>5</tech_level>
+		<legality_class>4</legality_class>
+		<value>25</value>
+		<weight>0.5 lb</weight>
+		<reference>B289</reference>
+		<notes>Fits most pistols</notes>
+		<categories>
+			<category>Weapon and Combat Accessories</category>
+		</categories>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Holster, Shoulder</description>
+		<tech_level>5</tech_level>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>1 lb</weight>
+		<reference>B289</reference>
+		<notes>Allows use of Holdout, but gives -1 to Fast-Draw.</notes>
+		<categories>
+			<category>Weapon and Combat Accessories</category>
+		</categories>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Homing Beacon</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<reference>B289</reference>
+		<notes>Scanner tracks at 1-mile range. 12 hrs.</notes>
+		<categories>
+			<category>Law-Enforcement</category>
+			<category>Thief</category>
+			<category>and Spy Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Horseshoes, Set</description>
+		<tech_level>3</tech_level>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>4 lb</weight>
+		<reference>B289</reference>
+		<notes>Shod horses get +2 HT on any rolls for stamina on long rides</notes>
+		<categories>
+			<category>Equestrian Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -6785,6 +7300,9 @@
 		<value>1</value>
 		<weight>0.5 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -7048,6 +7566,20 @@
 		<value>2</value>
 		<weight>6 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Knitting Needles, Pair</description>
+		<tech_level>3</tech_level>
+		<legality_class>4</legality_class>
+		<value>5</value>
+		<reference>B289</reference>
+		<categories>
+			<category>Tools</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -7136,7 +7668,32 @@
 		<weight>2 lb</weight>
 		<reference>B288</reference>
 		<notes>Uses 1 pint of oil per 24 hours</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Lanyard, Leather</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>1</value>
+		<reference>B289</reference>
+		<notes>Lets you retrieve a dropped weapon on a DX roll. Each attempt requires a Ready maneuver. Can be cut: -6 to hit, DR 2, HP 2.</notes>
+		<categories>
+			<category>Weapon and Combat Accessories</category>
+		</categories>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Lanyard, Woven Steel</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>15</value>
+		<reference>B289</reference>
+		<notes>Lets you retrieve a dropped weapon on a DX roll. Each attempt requires a Ready maneuver. Can be cut: -6 to hit, DR 6, HP 4.</notes>
+		<categories>
+			<category>Weapon and Combat Accessories</category>
+		</categories>
+	</equipment_container>
 	<equipment version="3">
 		<quantity>1</quantity>
 		<description>Large Knife</description>
@@ -7409,6 +7966,21 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Laser Microphone</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>2 lb</weight>
+		<reference>B289</reference>
+		<notes>Eavesdrop through glass. 300-yd. range.</notes>
+		<categories>
+			<category>Law-Enforcement</category>
+			<category>Thief</category>
+			<category>and Spy Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Laser Pistol</description>
 		<tech_level>10</tech_level>
 		<legality_class>3</legality_class>
@@ -7515,6 +8087,18 @@
 		</ranged_weapon>
 		<categories>
 			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Laser Sight</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<reference>B289</reference>
+		<notes>+1 to skill; see Laser Sights (B412). 6 hrs.</notes>
+		<categories>
+			<category>Weapon and Combat Accessories</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -7924,6 +8508,9 @@
 		<weight>6 lb</weight>
 		<reference>B288</reference>
 		<notes>Floats up to 350 lbs.</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -8411,6 +8998,20 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Lockpicks</description>
+		<tech_level>3</tech_level>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<reference>B289</reference>
+		<notes>Basic equipment for Lockpicking skill</notes>
+		<categories>
+			<category>Law-Enforcement</category>
+			<category>Thief</category>
+			<category>and Spy Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Long Spear</description>
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
@@ -8761,6 +9362,9 @@
 		<value>0.3</value>
 		<weight>0.001 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -8771,6 +9375,9 @@
 		<weight>0.051 lb</weight>
 		<reference>B288</reference>
 		<notes>Box of 50</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -9146,6 +9753,68 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Metal Detector Wand</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>3 lb</weight>
+		<reference>B289</reference>
+		<notes>+3 to find metal items. 8 hrs.</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Mini-Camera, Digital</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<reference>B289</reference>
+		<notes>Stores pictures on optical disk.</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Mini-Recorder</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>0.5 lb</weight>
+		<reference>B288</reference>
+		<notes>Palm-sized, with 3-hour tape</notes>
+		<categories>
+			<category>Communications and Information Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Mini-Recorder, Digital</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>0</value>
+		<reference>B288</reference>
+		<notes>Palm-sized, 3 hrs. recording time</notes>
+		<categories>
+			<category>Communications and Information Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Mini-Recorder-Tape</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>5</value>
+		<reference>B288</reference>
+		<notes>3-hour tape</notes>
+		<categories>
+			<category>Communications and Information Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Monowire Whip</description>
 		<tech_level>^</tech_level>
 		<legality_class>4</legality_class>
@@ -9443,6 +10112,20 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Nanobug</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<reference>B289</reference>
+		<notes>Pinhead-sized audio-visual bug (-10 to spot)</notes>
+		<categories>
+			<category>Law-Enforcement</category>
+			<category>Thief</category>
+			<category>and Spy Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>NBC Suit</description>
 		<tech_level>7</tech_level>
 		<legality_class>4</legality_class>
@@ -9493,6 +10176,19 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Night Vision Goggles</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>2 lb</weight>
+		<reference>B289</reference>
+		<notes>Give Night Vision 9. 8 hrs.</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Nunchaku</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
@@ -9538,6 +10234,9 @@
 		<value>2</value>
 		<weight>1 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -9547,6 +10246,9 @@
 		<value>1000</value>
 		<weight>30 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -9635,6 +10337,19 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Personal Basics</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>5</value>
+		<weight>1 lb</weight>
+		<reference>B288</reference>
+		<notes>Minimum gear for camping: -2 to any Survival roll without it. Includes utensils, tinderbox or flint and steel, towel, etc., as TL permits.</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Pick</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
@@ -9671,6 +10386,19 @@
 		<notes>May get stuck</notes>
 		<categories>
 			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Pickaxe</description>
+		<tech_level>2</tech_level>
+		<legality_class>4</legality_class>
+		<value>15</value>
+		<weight>8 lb</weight>
+		<reference>B289</reference>
+		<notes>Improves digging speed</notes>
+		<categories>
+			<category>Tools</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -10127,12 +10855,41 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Plow, Iron</description>
+		<tech_level>2</tech_level>
+		<legality_class>4</legality_class>
+		<value>220</value>
+		<weight>120 lb</weight>
+		<reference>B289</reference>
+		<notes>Works rough soils</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Plow, Wooden</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>55</value>
+		<weight>60 lb</weight>
+		<reference>B289</reference>
+		<notes>Pulled by oxen</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Pole, 6'</description>
 		<tech_level>0</tech_level>
 		<legality_class>4</legality_class>
 		<value>5</value>
 		<weight>3 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -10142,6 +10899,9 @@
 		<value>8</value>
 		<weight>5 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -10221,6 +10981,90 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Portable Tool Kit, Armoury</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>20 lb</weight>
+		<reference>B289</reference>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Portable Tool Kit, Carpentry</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>300</value>
+		<weight>20 lb</weight>
+		<reference>B289</reference>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Portable Tool Kit, Electrician</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>20 lb</weight>
+		<reference>B289</reference>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Portable Tool Kit, Electronics Repair</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>1200</value>
+		<weight>10 lb</weight>
+		<reference>B289</reference>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Portable Tool Kit, Explosives</description>
+		<tech_level>5</tech_level>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>20 lb</weight>
+		<reference>B289</reference>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Portable Tool Kit, Machinist</description>
+		<tech_level>5</tech_level>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>20 lb</weight>
+		<reference>B289</reference>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Portable Tool Kit, Mechanic</description>
+		<tech_level>5</tech_level>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>20 lb</weight>
+		<reference>B289</reference>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Pot-Helm</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
@@ -10242,8 +11086,11 @@
 		<value>10</value>
 		<weight>0.5 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">3 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">3 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -10758,8 +11605,11 @@
 		<value>10</value>
 		<weight>0.2 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">1 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -10903,6 +11753,58 @@
 		<notes>Using Two-Handed Sword skill</notes>
 		<categories>
 			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Radio, Backpack</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>6000</value>
+		<weight>15 lb</weight>
+		<reference>B288</reference>
+		<notes>VHF radio. 20-mile range. 12 hrs.</notes>
+		<categories>
+			<category>Communications and Information Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Radio, Hand</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>1 lb</weight>
+		<reference>B288</reference>
+		<notes>Classic "walkie-talkie." 2-mile range. 12 hrs.</notes>
+		<categories>
+			<category>Communications and Information Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Radio, Headset</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.5 lb</weight>
+		<reference>B288</reference>
+		<notes>With throat mike. 1-mile range. 12 hrs.</notes>
+		<categories>
+			<category>Communications and Information Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Radio, Headset, secure</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>5000</value>
+		<weight>0.5 lb</weight>
+		<reference>B288</reference>
+		<notes>With throat mike. 1-mile range. Secure, encrypted version. 12 hrs.</notes>
+		<categories>
+			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -11524,6 +12426,9 @@
 		<weight>5 lb</weight>
 		<reference>B288</reference>
 		<notes>Supports 1,100 lbs.</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -11534,6 +12439,9 @@
 		<weight>10 lb</weight>
 		<reference>B288</reference>
 		<notes>Supports 1,100 lbs.</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -11544,6 +12452,9 @@
 		<weight>1.5 lb</weight>
 		<reference>B288</reference>
 		<notes>Supports 300 lbs.</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -11554,6 +12465,9 @@
 		<weight>3 lb</weight>
 		<reference>B288</reference>
 		<notes>Supports 300 lbs.</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -11748,6 +12662,33 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Saddle and Tack</description>
+		<tech_level>2</tech_level>
+		<legality_class>4</legality_class>
+		<value>150</value>
+		<weight>15 lb</weight>
+		<reference>B289</reference>
+		<notes>Basic equipment for Riding skill.</notes>
+		<categories>
+			<category>Equestrian Gear</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Saddlebags</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>3 lb</weight>
+		<reference>B289</reference>
+		<categories>
+			<category>Equestrian Gear</category>
+		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at most">40 lb</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>SAM, 70mm</description>
 		<tech_level>8</tech_level>
 		<legality_class>1</legality_class>
@@ -11817,6 +12758,32 @@
 		</melee_weapon>
 		<categories>
 			<category>Melee Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Satellite Phone</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>3000</value>
+		<weight>3 lb</weight>
+		<reference>B288</reference>
+		<notes>Global range, satellite relay. 1 hr.</notes>
+		<categories>
+			<category>Communications and Information Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Saw</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>150</value>
+		<weight>3 lb</weight>
+		<reference>B289</reference>
+		<notes>A lumberjack's tool, not a carpentry saw</notes>
+		<categories>
+			<category>Tools</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -11958,6 +12925,32 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Scope, 4x</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>150</value>
+		<weight>1.5 lb</weight>
+		<reference>B289</reference>
+		<notes>+2 to Acc for aimed shots only.</notes>
+		<categories>
+			<category>Weapon and Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Scope, 4x, Thermal Imaging</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>8000</value>
+		<weight>4 lb</weight>
+		<reference>B289</reference>
+		<notes>+2 to Acc for aimed shots only. Gives the user Infravision. 2 hrs.</notes>
+		<categories>
+			<category>Weapon and Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Scorpion</description>
 		<tech_level>2</tech_level>
 		<legality_class>2</legality_class>
@@ -12021,6 +13014,9 @@
 		<weight>32 lb</weight>
 		<reference>B288</reference>
 		<notes>Includes 2-hour underwater air tank</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -12454,6 +13450,46 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Shotgun Mike</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>250</value>
+		<weight>2 lb</weight>
+		<reference>B289</reference>
+		<notes>Gives (TL-5) levels of Parabolic Hearing.</notes>
+		<categories>
+			<category>Law-Enforcement</category>
+			<category>Thief</category>
+			<category>and Spy Gear</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Shoulder Quiver</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>0.5 lb</weight>
+		<reference>B289</reference>
+		<notes>Holds 12 arrows or bolts</notes>
+		<categories>
+			<category>Weapon and Combat Accessories</category>
+		</categories>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Shovel</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>12</value>
+		<weight>6 lb</weight>
+		<reference>B289</reference>
+		<notes>Speeds up digging</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Shuriken</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
@@ -12490,6 +13526,19 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Silencer, Pistol or SMG</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>1 lb</weight>
+		<reference>B289</reference>
+		<notes>Reduces damage by -1 per die; see Silencers (B412)</notes>
+		<categories>
+			<category>Weapon and Combat Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Silver Coin</description>
 		<legality_class>4</legality_class>
 		<value>4</value>
@@ -12507,6 +13556,9 @@
 		<value>25</value>
 		<weight>7 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -12517,6 +13569,9 @@
 		<weight>15 lb</weight>
 		<reference>B288</reference>
 		<notes>+3 HT to resist freezing</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -12526,6 +13581,9 @@
 		<value>50</value>
 		<weight>8 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -13824,6 +14882,43 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Spinning Wheel</description>
+		<tech_level>3</tech_level>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>40 lb</weight>
+		<reference>B289</reference>
+		<notes>Produces yarn six times as fast.</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Spurs</description>
+		<tech_level>2</tech_level>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<reference>B289</reference>
+		<notes>+1 to control a mount.</notes>
+		<categories>
+			<category>Equestrian Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Spy Camera</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<reference>B289</reference>
+		<notes>Holds 36 exposures, uses microfilm</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Staff Sling</description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
@@ -13926,6 +15021,19 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Stirrups</description>
+		<tech_level>3</tech_level>
+		<legality_class>4</legality_class>
+		<value>125</value>
+		<weight>20 lb</weight>
+		<reference>B289</reference>
+		<notes>Make it easy to mount a horse and give +1 to control mount. Required to use Lance skill. With ordinary saddle</notes>
+		<categories>
+			<category>Equestrian Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Studded Leather Skirt</description>
 		<tech_level>1</tech_level>
 		<legality_class>-</legality_class>
@@ -13972,6 +15080,18 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Suitcase Lab</description>
+		<legality_class>4</legality_class>
+		<value>3000</value>
+		<weight>10 lb</weight>
+		<reference>B289</reference>
+		<notes>Basic equipment for a specific scientific skill (e.g., Chemistry or Forensics).</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
 	<equipment_container version="3" open="yes">
 		<description>Suitcase, Hard</description>
 		<tech_level>5</tech_level>
@@ -13980,10 +15100,25 @@
 		<weight>8 lb</weight>
 		<reference>B288</reference>
 		<notes>DR4, with key lock</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">100 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">100 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Surgical Instruments</description>
+		<legality_class>4</legality_class>
+		<value>300</value>
+		<weight>15 lb</weight>
+		<reference>B289</reference>
+		<notes>Includes scalpels, forceps, etc. Basic equipment f&#252;r Surgery skill.</notes>
+		<categories>
+			<category>Medical Gear</category>
+		</categories>
+	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
 		<description>Tactical Suit</description>
@@ -14232,6 +15367,19 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Telescope</description>
+		<tech_level>4</tech_level>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>6 lb</weight>
+		<reference>B289</reference>
+		<notes>Gives (TL-3) levels of Telescopic Vision.</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Tent, 1-Man</description>
 		<tech_level>0</tech_level>
 		<legality_class>4</legality_class>
@@ -14239,6 +15387,9 @@
 		<weight>5 lb</weight>
 		<reference>B288</reference>
 		<notes>Includes ropes; no poles needed</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -14249,6 +15400,9 @@
 		<weight>12 lb</weight>
 		<reference>B288</reference>
 		<notes>Includes ropes; requires one 6' pole</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -14259,6 +15413,9 @@
 		<weight>30 lb</weight>
 		<reference>B288</reference>
 		<notes>Includes ropes; requires two 6' poles</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -14269,6 +15426,9 @@
 		<weight>100 lb</weight>
 		<reference>B288</reference>
 		<notes>Includes ropes; requires 12 6' poles, 4 10' poles</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 	<equipment_container version="3" open="yes">
 		<description>Thermos Bottle</description>
@@ -14278,8 +15438,11 @@
 		<weight>2 lb</weight>
 		<reference>B288</reference>
 		<notes>Keeps 1 pint hot [24 hours] or cold [72 hours]</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">1 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -14716,6 +15879,22 @@
 		<weight>1 lb</weight>
 		<reference>B288</reference>
 		<notes>Burns for 1 hour</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Transistor Radio</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>15</value>
+		<weight>0.5 lb</weight>
+		<reference>B288</reference>
+		<notes>Receive-only; picks up radio stations. 8 hrs.</notes>
+		<categories>
+			<category>Communications and Information Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -14726,6 +15905,34 @@
 		<weight>0.5 lb</weight>
 		<reference>B288</reference>
 		<notes>One meal</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>TV Set, Mini</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>150</value>
+		<weight>3 lb</weight>
+		<reference>B288</reference>
+		<notes>5'' x 5'' flat-screen. 4 hrs.</notes>
+		<categories>
+			<category>Communications and Information Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Typewriter, Manual</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>10 lb</weight>
+		<reference>B289</reference>
+		<categories>
+			<category>Communications and Information Gear</category>
+		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -15024,6 +16231,19 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>War Saddle</description>
+		<tech_level>3</tech_level>
+		<legality_class>4</legality_class>
+		<value>250</value>
+		<weight>35 lb</weight>
+		<reference>B289</reference>
+		<notes>+1 to Riding skill to stay seated, 50% chance user will stay seated even if unconscious. With stirrups</notes>
+		<categories>
+			<category>Equestrian Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Warhammer</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
@@ -15076,7 +16296,35 @@
 		<weight>0.1 lb</weight>
 		<reference>B288</reference>
 		<notes>Bottle of 50; Purifies 1 quart each</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Wax Tablet</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>2 lb</weight>
+		<reference>B289</reference>
+		<notes>For writing; erasable</notes>
+		<categories>
+			<category>Communications and Information Gear</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Web Gear</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>2 lb</weight>
+		<reference>B289</reference>
+		<notes>Belt and suspenders with puches and rings for gear</notes>
+		<categories>
+			<category>Weapon and Combat Accessories</category>
+		</categories>
+	</equipment_container>
 	<equipment version="3">
 		<quantity>1</quantity>
 		<description>Wheel-Lock Pistol, .60</description>
@@ -15160,6 +16408,34 @@
 		</ranged_weapon>
 		<categories>
 			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Wheelbarrow</description>
+		<tech_level>2</tech_level>
+		<legality_class>4</legality_class>
+		<value>60</value>
+		<weight>18 lb</weight>
+		<reference>B289</reference>
+		<notes>Divide effective weight of load by 5a</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at most">350 lb</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Whetstone</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>5</value>
+		<weight>1 lb</weight>
+		<reference>B289</reference>
+		<notes>For sharpening tools and wapons</notes>
+		<categories>
+			<category>Tools</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -15435,8 +16711,11 @@
 		<value>10</value>
 		<weight>0.25 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">8 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">8 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -15517,5 +16796,8 @@
 		<value>20</value>
 		<weight>0.075 lb</weight>
 		<reference>B288</reference>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
 	</equipment>
 </equipment_list>
