@@ -13,6 +13,7 @@ package com.trollworks.gcs.spell;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.prereq.PrereqsPanel;
+import com.trollworks.gcs.skill.SkillAttribute;
 import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillLevel;
 import com.trollworks.gcs.weapon.MeleeWeaponEditor;
@@ -414,7 +415,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		if (level < 0) {
 			return "-"; //$NON-NLS-1$
 		}
-		return Numbers.format(level) + "/IQ" + Numbers.formatWithForcedSign(relativeLevel); //$NON-NLS-1$
+		return Numbers.format(level) + "/" + SkillAttribute.IQ + Numbers.formatWithForcedSign(relativeLevel); //$NON-NLS-1$
 	}
 
 	private JTextField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {

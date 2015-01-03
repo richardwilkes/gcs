@@ -342,7 +342,7 @@ public class Skill extends ListRow {
 			if (mEncumbrancePenaltyMultiplier != 0) {
 				out.simpleTag(TAG_ENCUMBRANCE_PENALTY, mEncumbrancePenaltyMultiplier);
 			}
-			out.simpleTag(TAG_DIFFICULTY, getDifficultyAsText());
+			out.simpleTag(TAG_DIFFICULTY, getDifficultyAsText(false));
 			out.simpleTag(TAG_POINTS, mPoints);
 			for (WeaponStats weapon : mWeapons) {
 				weapon.save(out);
@@ -589,7 +589,7 @@ public class Skill extends ListRow {
 			// We have to go backwards through the list to avoid the
 			// regex grabbing the "H" in "VH".
 			for (int j = difficulty.length - 1; j >= 0; j--) {
-				if (input.matches("(?i).*" + element + ".*/.*" + difficulty[j] + ".*")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				if (input.matches("(?i).*" + element.name() + ".*/.*" + difficulty[j].name() + ".*")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					setDifficulty(element, difficulty[j]);
 					return;
 				}
@@ -599,10 +599,18 @@ public class Skill extends ListRow {
 
 	/** @return The formatted attribute/difficulty. */
 	public String getDifficultyAsText() {
+		return getDifficultyAsText(true);
+	}
+
+	/**
+	 * @param localized Whether to use localized versions of attribute and difficulty.
+	 * @return The formatted attribute/difficulty.
+	 */
+	public String getDifficultyAsText(boolean localized) {
 		if (canHaveChildren()) {
 			return EMPTY;
 		}
-		return mAttribute + SLASH + mDifficulty;
+		return (localized ? mAttribute.toString():mAttribute.name()) + SLASH + mDifficulty;
 	}
 
 	@Override
