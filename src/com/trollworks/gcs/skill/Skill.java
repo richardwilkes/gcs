@@ -263,7 +263,7 @@ public class Skill extends ListRow {
 
 	@Override
 	public String getRowType() {
-		return "Skill"; //$NON-NLS-1$
+		return DEFAULT_NAME;
 	}
 
 	@Override

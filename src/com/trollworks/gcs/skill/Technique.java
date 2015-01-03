@@ -191,7 +191,7 @@ public class Technique extends Skill {
 
 	@Override
 	public String getRowType() {
-		return "Technique"; //$NON-NLS-1$
+		return TECHNIQUE_DEFAULT_NAME;
 	}
 
 	@Override

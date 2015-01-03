@@ -210,7 +210,7 @@ public class Advantage extends ListRow {
 
 	@Override
 	public String getRowType() {
-		return "Advantage"; //$NON-NLS-1$
+		return DEFAULT_NAME;
 	}
 
 	@Override

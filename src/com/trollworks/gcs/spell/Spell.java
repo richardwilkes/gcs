@@ -267,7 +267,7 @@ public class Spell extends ListRow {
 
 	@Override
 	public String getRowType() {
-		return "Spell"; //$NON-NLS-1$
+		return DEFAULT_NAME;
 	}
 
 	@Override

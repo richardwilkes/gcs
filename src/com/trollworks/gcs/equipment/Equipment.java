@@ -216,7 +216,7 @@ public class Equipment extends ListRow {
 
 	@Override
 	public String getRowType() {
-		return "Equipment"; //$NON-NLS-1$
+		return DEFAULT_NAME;
 	}
 
 	@Override
