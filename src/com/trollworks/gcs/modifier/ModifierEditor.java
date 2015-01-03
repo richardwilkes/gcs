@@ -362,16 +362,17 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		if (hasLevels()) {
 			mCostModifierField.setText(Numbers.formatWithForcedSign(getCost() * getLevels()) + "%"); //$NON-NLS-1$
 		} else {
-			switch (getCostType()) {
+			CostType costType = getCostType();
+			switch (costType) {
 				case PERCENTAGE:
 				default:
-					mCostModifierField.setText(Numbers.formatWithForcedSign(getCost()) + "%"); //$NON-NLS-1$
+					mCostModifierField.setText(Numbers.formatWithForcedSign(getCost()) + costType);
 					break;
 				case POINTS:
 					mCostModifierField.setText(Numbers.formatWithForcedSign(getCost()));
 					break;
 				case MULTIPLIER:
-					mCostModifierField.setText("x" + Numbers.format(getCostMultiplier())); //$NON-NLS-1$
+					mCostModifierField.setText(costType + Numbers.format(getCostMultiplier()));
 					mAffects.setSelectedItem(Affects.TOTAL);
 					enabled = false;
 					break;
