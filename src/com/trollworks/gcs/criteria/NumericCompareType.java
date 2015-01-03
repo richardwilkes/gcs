@@ -82,16 +82,16 @@ public enum NumericCompareType {
 	@Localize(locale = "de", value = "höchstens")
 	@Localize(locale = "ru", value = "не более")
 	static String	AT_MOST_TITLE;
-	@Localize("{0}\"{1}\"")
+	@Localize("{0}exactly {1}")
 	@Localize(locale = "de", value = "{0}genau {1}")
 	static String	IS_FORMAT;
-	@Localize("{0}at least \"{1}\"")
+	@Localize("{0}at least {1}")
 	@Localize(locale = "de", value = "{0}mindestens {1}")
-	@Localize(locale = "ru", value = "{0}по крайне мере \"{1}\"")
+	@Localize(locale = "ru", value = "{0}по крайне мере {1}")
 	static String	AT_LEAST_FORMAT;
-	@Localize("{0}at most \"{1}\"")
+	@Localize("{0}at most {1}")
 	@Localize(locale = "de", value = "{0}höchstens {1}")
-	@Localize(locale = "ru", value = "{0}на самых \"{1}\"")
+	@Localize(locale = "ru", value = "{0}на самых {1}")
 	static String	AT_MOST_FORMAT;
 	@Localize("is")
 	@Localize(locale = "de", value = "ist genau")
