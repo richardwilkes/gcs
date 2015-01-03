@@ -22,12 +22,22 @@ public enum SkillDefaultType {
 	/** The type for ST-based defaults. */
 	ST {
 		@Override
+		public String toString() {
+			return ST_TITLE;
+		}
+
+		@Override
 		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			return finalLevel(skillDefault, SkillAttribute.ST.getBaseSkillLevel(character));
 		}
 	},
 	/** The type for DX-based defaults. */
 	DX {
+		@Override
+		public String toString() {
+			return DX_TITLE;
+		}
+
 		@Override
 		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			return finalLevel(skillDefault, SkillAttribute.DX.getBaseSkillLevel(character));
@@ -36,6 +46,11 @@ public enum SkillDefaultType {
 	/** The type for IQ-based defaults. */
 	IQ {
 		@Override
+		public String toString() {
+			return IQ_TITLE;
+		}
+
+		@Override
 		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			return finalLevel(skillDefault, SkillAttribute.IQ.getBaseSkillLevel(character));
 		}
@@ -43,12 +58,22 @@ public enum SkillDefaultType {
 	/** The type for HT-based defaults. */
 	HT {
 		@Override
+		public String toString() {
+			return HT_TITLE;
+		}
+
+		@Override
 		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			return finalLevel(skillDefault, SkillAttribute.HT.getBaseSkillLevel(character));
 		}
 	},
 	/** The type for Will-based defaults. */
 	Will {
+		@Override
+		public String toString() {
+			return WILL_TITLE;
+		}
+
 		@Override
 		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
 			return finalLevel(skillDefault, SkillAttribute.Will.getBaseSkillLevel(character));
@@ -58,7 +83,7 @@ public enum SkillDefaultType {
 	Per {
 		@Override
 		public String toString() {
-			return PERCEPTION;
+			return PER_TITLE;
 		}
 
 		@Override
@@ -181,10 +206,23 @@ public enum SkillDefaultType {
 		}
 	};
 
+	@Localize("ST")
+	static String	ST_TITLE;
+	@Localize("DX")
+	@Localize(locale = "de", value = "GE")
+	static String	DX_TITLE;
+	@Localize("IQ")
+	static String	IQ_TITLE;
+	@Localize("HT")
+	@Localize(locale = "de", value = "KO")
+	static String	HT_TITLE;
+	@Localize("Will")
+	@Localize(locale = "de", value = "Wille")
+	static String	WILL_TITLE;
 	@Localize("Perception")
 	@Localize(locale = "de", value = "Wahrnehmung")
 	@Localize(locale = "ru", value = "Восприятие")
-	static String	PERCEPTION;
+	static String	PER_TITLE;
 	@Localize("Skill named")
 	@Localize(locale = "de", value = "Fertigkeit namens")
 	@Localize(locale = "ru", value = "Название умения")
