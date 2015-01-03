@@ -1212,7 +1212,7 @@
 							</modifier>
 							<modifier version="1" enabled="no">
 								<name>Vague</name>
-								<cost type="percentage">50</cost>
+								<cost type="percentage">-50</cost>
 								<affects>total</affects>
 								<reference>B48</reference>
 							</modifier>
@@ -1268,7 +1268,7 @@
 							</modifier>
 							<modifier version="1" enabled="no">
 								<name>Vague</name>
-								<cost type="percentage">50</cost>
+								<cost type="percentage">-50</cost>
 								<affects>total</affects>
 								<reference>B48</reference>
 							</modifier>
@@ -1324,7 +1324,7 @@
 							</modifier>
 							<modifier version="1" enabled="no">
 								<name>Vague</name>
-								<cost type="percentage">50</cost>
+								<cost type="percentage">-50</cost>
 								<affects>total</affects>
 								<reference>B48</reference>
 							</modifier>

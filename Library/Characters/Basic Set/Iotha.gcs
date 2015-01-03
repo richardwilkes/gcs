@@ -736,7 +736,7 @@ zPaQSYiygr595ZJC5L+//aBDx3s9/n+N1r/xxkBG8wAAAABJRU5ErkJggg==
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Vague</name>
-					<cost type="percentage">50</cost>
+					<cost type="percentage">-50</cost>
 					<affects>total</affects>
 					<reference>B48</reference>
 				</modifier>
