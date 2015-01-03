@@ -12,11 +12,18 @@
 package com.trollworks.gcs.skill;
 
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.utility.Localization;
 
 /** The possible skill attributes. */
 public enum SkillAttribute {
 	/** The strength attribute. */
 	ST {
+		@Override
+		public String toString() {
+			return ST_TITLE;
+		}
+
 		@Override
 		public int getBaseSkillLevel(GURPSCharacter character) {
 			return character != null ? character.getStrength() : Integer.MIN_VALUE;
@@ -25,12 +32,22 @@ public enum SkillAttribute {
 	/** The dexterity attribute. */
 	DX {
 		@Override
+		public String toString() {
+			return DX_TITLE;
+		}
+
+		@Override
 		public int getBaseSkillLevel(GURPSCharacter character) {
 			return character != null ? character.getDexterity() : Integer.MIN_VALUE;
 		}
 	},
 	/** The health attribute. */
 	HT {
+		@Override
+		public String toString() {
+			return HT_TITLE;
+		}
+
 		@Override
 		public int getBaseSkillLevel(GURPSCharacter character) {
 			return character != null ? character.getHealth() : Integer.MIN_VALUE;
@@ -39,12 +56,22 @@ public enum SkillAttribute {
 	/** The intelligence attribute. */
 	IQ {
 		@Override
+		public String toString() {
+			return IQ_TITLE;
+		}
+
+		@Override
 		public int getBaseSkillLevel(GURPSCharacter character) {
 			return character != null ? character.getIntelligence() : Integer.MIN_VALUE;
 		}
 	},
 	/** The will attribute. */
 	Will {
+		@Override
+		public String toString() {
+			return WILL_TITLE;
+		}
+
 		@Override
 		public int getBaseSkillLevel(GURPSCharacter character) {
 			return character != null ? character.getWill() : Integer.MIN_VALUE;
@@ -53,10 +80,36 @@ public enum SkillAttribute {
 	/** The perception attribute. */
 	Per {
 		@Override
+		public String toString() {
+			return PER_TITLE;
+		}
+
+		@Override
 		public int getBaseSkillLevel(GURPSCharacter character) {
 			return character != null ? character.getPerception() : Integer.MIN_VALUE;
 		}
 	};
+
+	@Localize("ST")
+	static String	ST_TITLE;
+	@Localize("DX")
+	@Localize(locale = "de", value = "GE")
+	static String	DX_TITLE;
+	@Localize("IQ")
+	static String	IQ_TITLE;
+	@Localize("HT")
+	@Localize(locale = "de", value = "KO")
+	static String	HT_TITLE;
+	@Localize("Will")
+	@Localize(locale = "de", value = "Wille")
+	static String	WILL_TITLE;
+	@Localize("Per")
+	@Localize(locale = "de", value = "WN")
+	static String	PER_TITLE;
+
+	static {
+		Localization.initialize();
+	}
 
 	/**
 	 * @param character The character to work with.
