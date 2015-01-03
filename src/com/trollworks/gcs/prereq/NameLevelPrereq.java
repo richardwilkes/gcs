@@ -16,11 +16,9 @@ import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.utility.Localization;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -31,15 +29,6 @@ import java.util.HashSet;
  * item is present.
  */
 public abstract class NameLevelPrereq extends HasPrereq {
-	@Localize(" and level {0}\n")
-	@Localize(locale = "de", value = " und Stufe {0}")
-	@Localize(locale = "ru", value = " и уровень {0}\n ")
-	static String				LEVEL_PART;
-
-	static {
-		Localization.initialize();
-	}
-
 	/** Provided for sub-classes. */
 	private static final String	TAG_NAME	= "name";	//$NON-NLS-1$
 	private static final String	TAG_LEVEL	= "level";	//$NON-NLS-1$

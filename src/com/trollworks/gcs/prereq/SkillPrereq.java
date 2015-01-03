@@ -39,6 +39,10 @@ public class SkillPrereq extends NameLevelPrereq {
 	@Localize(locale = "de", value = ", Spezialisierung {0},")
 	@Localize(locale = "ru", value = ", специализация {0},")
 	private static String SPECIALIZATION_PART;
+	@Localize(" and level {0}")
+	@Localize(locale = "de", value = " und Fertigkeitswert {0}")
+	@Localize(locale = "ru", value = " и уровень {0}\n ")
+	private static String LEVEL_PART;
 	@Localize(" level {0} and tech level matches\n")
 	@Localize(locale = "de", value = " Fertigkeitswert {0} und Techlevel stimmt überein")
 	@Localize(locale = "ru", value = " уровень {0} и ТУ совпадают\n")
