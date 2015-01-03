@@ -46,6 +46,9 @@ public class Profile {
 	@Localize("{0}, {1}, {2}")
 	@Localize(locale = "de", value = "{0}, {1}, {2}")
 	private static String			HAIR_FORMAT;
+	@Localize("MMMM d")
+	@Localize(locale = "de", value = "d. MMM.")
+	private static String			BIRTHDAY_FORMAT;
 	@Localize("Brown")
 	@Localize(locale = "de", value = "Braun")
 	@Localize(locale = "ru", value = "Коричнев(ые,ая)")
@@ -1046,7 +1049,7 @@ public class Profile {
 
 	/** @return A random month and day. */
 	public static String getRandomMonthAndDay() {
-		SimpleDateFormat formatter = new SimpleDateFormat("MMMM d"); //$NON-NLS-1$
+		SimpleDateFormat formatter = new SimpleDateFormat(BIRTHDAY_FORMAT);
 		return formatter.format(new Date(RANDOM.nextLong()));
 	}
 
