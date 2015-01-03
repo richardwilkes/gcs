@@ -143,6 +143,7 @@ public enum ModifierColumnID {
 	@Localize(locale = "ru", value = "Включить этот модификатор")
 	static String	ENABLED_TOOLTIP;
 	@Localize("\u2713")
+	@Localize(locale = "de", value = "\u2713")
 	static String	ENABLED_COLUMN;
 	@Localize("Enhancements & Limitations")
 	@Localize(locale = "de", value = "Verbesserungen & Einschränkungen")

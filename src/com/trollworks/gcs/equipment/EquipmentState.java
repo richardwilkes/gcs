@@ -75,6 +75,7 @@ public enum EquipmentState {
 	@Localize(locale = "ru", value = "Носимый")
 	static String	CARRIED_TITLE;
 	@Localize("-")
+	@Localize(locale = "de", value = "-")
 	static String	NOT_CARRIED_SHORT;
 	@Localize("Not Carried")
 	@Localize(locale = "de", value = "Nicht mitgeführt")

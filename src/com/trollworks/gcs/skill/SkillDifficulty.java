@@ -58,6 +58,7 @@ public enum SkillDifficulty {
 	};
 
 	@Localize("E")
+	@Localize(locale = "de", value = "E")
 	static String	E_TITLE;
 	@Localize("A")
 	@Localize(locale = "de", value = "D")
@@ -69,6 +70,7 @@ public enum SkillDifficulty {
 	@Localize(locale = "de", value = "ES")
 	static String	VH_TITLE;
 	@Localize("W")
+	@Localize(locale = "de", value = "W")
 	static String	W_TITLE;
 
 	static {
