@@ -24,7 +24,7 @@ public enum EquipmentState {
 	EQUIPPED {
 		@Override
 		public String toShortName() {
-			return "E"; //$NON-NLS-1$
+			return EQUIPPED_SHORT;
 		}
 
 		@Override
@@ -39,7 +39,7 @@ public enum EquipmentState {
 	CARRIED {
 		@Override
 		public String toShortName() {
-			return "C"; //$NON-NLS-1$
+			return CARRIED_SHORT;
 		}
 
 		@Override
@@ -51,7 +51,7 @@ public enum EquipmentState {
 	NOT_CARRIED {
 		@Override
 		public String toShortName() {
-			return "-"; //$NON-NLS-1$
+			return NOT_CARRIED_SHORT;
 		}
 
 		@Override
@@ -60,14 +60,22 @@ public enum EquipmentState {
 		}
 	};
 
+	@Localize("E")
+	@Localize(locale = "de", value = "A")
+	static String	EQUIPPED_SHORT;
 	@Localize("Equipped")
 	@Localize(locale = "de", value = "Ausgerüstet")
 	@Localize(locale = "ru", value = "Экипирован")
 	static String	EQUIPPED_TITLE;
+	@Localize("C")
+	@Localize(locale = "de", value = "M")
+	static String	CARRIED_SHORT;
 	@Localize("Carried")
 	@Localize(locale = "de", value = "Mitgeführt")
 	@Localize(locale = "ru", value = "Носимый")
 	static String	CARRIED_TITLE;
+	@Localize("-")
+	static String	NOT_CARRIED_SHORT;
 	@Localize("Not Carried")
 	@Localize(locale = "de", value = "Nicht mitgeführt")
 	@Localize(locale = "ru", value = "Не носимый")
