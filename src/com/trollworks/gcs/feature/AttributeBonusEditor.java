@@ -12,10 +12,12 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -24,6 +26,14 @@ import javax.swing.JComboBox;
 
 /** An attribute bonus editor. */
 public class AttributeBonusEditor extends FeatureEditor {
+	@Localize("to ")
+	@Localize(locale = "de", value = "auf ")
+	private static String		TO;
+
+	static {
+		Localization.initialize();
+	}
+
 	private static final String	CHANGE_ATTRIBUTE	= "ChangeAttribute";	//$NON-NLS-1$
 	private static final String	CHANGE_LIMITATION	= "ChangeLimitation";	//$NON-NLS-1$
 
@@ -52,7 +62,11 @@ public class AttributeBonusEditor extends FeatureEditor {
 
 		row = new FlexRow();
 		row.setInsets(new Insets(0, 20, 0, 0));
-		row.add(addComboBox(CHANGE_ATTRIBUTE, BonusAttributeType.values(), attribute));
+		String[] names = new String[BonusAttributeType.values().length];
+		for (int i = 0; i < BonusAttributeType.values().length; i++) {
+			names[i] = TO + BonusAttributeType.values()[i].toString();
+		}
+		row.add(addComboBox(CHANGE_ATTRIBUTE, names, names[attribute.ordinal()]));
 		if (BonusAttributeType.ST == attribute) {
 			row.add(addComboBox(CHANGE_LIMITATION, AttributeBonusLimitation.values(), bonus.getLimitation()));
 		}
@@ -64,7 +78,7 @@ public class AttributeBonusEditor extends FeatureEditor {
 	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
 		if (CHANGE_ATTRIBUTE.equals(command)) {
-			((AttributeBonus) getFeature()).setAttribute((BonusAttributeType) ((JComboBox<?>) event.getSource()).getSelectedItem());
+			((AttributeBonus) getFeature()).setAttribute(BonusAttributeType.values()[((JComboBox<?>) event.getSource()).getSelectedIndex()]);
 			UIUtilities.forceFocusToAccept();
 			rebuild();
 		} else if (CHANGE_LIMITATION.equals(command)) {

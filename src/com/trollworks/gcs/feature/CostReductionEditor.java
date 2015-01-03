@@ -54,7 +54,7 @@ public class CostReductionEditor extends FeatureEditor {
 		row.add(addChangeBaseTypeCombo());
 		String[] names = new String[CostReduction.TYPES.length];
 		for (int i = 0; i < CostReduction.TYPES.length; i++) {
-			names[i] = CostReduction.TYPES[i].name();
+			names[i] = CostReduction.TYPES[i].toString();
 		}
 		row.add(addComboBox(CHANGE_ATTRIBUTE, names, feature.getAttribute().name()));
 		String[] percents = new String[16];
