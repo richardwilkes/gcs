@@ -389,7 +389,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		boolean forTemplate = mRow.getTemplate() != null;
 		JPanel panel = new JPanel(new ColumnLayout(forCharacter ? 8 : forTemplate ? 6 : 4));
 
-		mDifficultyCombo = new JComboBox<>(new Object[] { SkillDifficulty.H.name(), SkillDifficulty.VH.name() });
+		mDifficultyCombo = new JComboBox<>(new Object[] { SkillDifficulty.H.toString(), SkillDifficulty.VH.toString() });
 		mDifficultyCombo.setSelectedIndex(mRow.isVeryHard() ? 1 : 0);
 		mDifficultyCombo.setToolTipText(DIFFICULTY_TOOLTIP);
 		UIUtilities.setOnlySize(mDifficultyCombo, mDifficultyCombo.getPreferredSize());

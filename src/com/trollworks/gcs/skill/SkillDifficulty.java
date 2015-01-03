@@ -11,24 +11,69 @@
 
 package com.trollworks.gcs.skill;
 
+import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.utility.Localization;
+
 /** The possible skill difficulty levels. */
 public enum SkillDifficulty {
 	/** The "easy" difficulty. */
-	E,
+	E {
+		@Override
+		public String toString() {
+			return E_TITLE;
+		}
+	},
 	/** The "average" difficulty. */
-	A,
+	A {
+		@Override
+		public String toString() {
+			return A_TITLE;
+		}
+	},
 	/** The "hard" difficulty. */
-	H,
+	H {
+		@Override
+		public String toString() {
+			return H_TITLE;
+		}
+	},
 	/** The "very hard" difficulty. */
-	VH,
+	VH {
+		@Override
+		public String toString() {
+			return VH_TITLE;
+		}
+	},
 	/** The "wildcard" difficulty. */
 	W {
+		@Override
+		public String toString() {
+			return W_TITLE;
+		}
 
 		@Override
 		public int getBaseRelativeLevel() {
 			return VH.getBaseRelativeLevel();
 		}
 	};
+
+	@Localize("E")
+	static String	E_TITLE;
+	@Localize("A")
+	@Localize(locale = "de", value = "D")
+	static String	A_TITLE;
+	@Localize("H")
+	@Localize(locale = "de", value = "S")
+	static String	H_TITLE;
+	@Localize("VH")
+	@Localize(locale = "de", value = "ES")
+	static String	VH_TITLE;
+	@Localize("W")
+	static String	W_TITLE;
+
+	static {
+		Localization.initialize();
+	}
 
 	/** @return The base relative skill level at 0 points. */
 	public int getBaseRelativeLevel() {

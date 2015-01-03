@@ -321,9 +321,9 @@ public class Technique extends Skill {
 	@Override
 	public void setDifficultyFromText(String text) {
 		text = text.trim();
-		if (SkillDifficulty.A.toString().equalsIgnoreCase(text)) {
+		if (SkillDifficulty.A.name().equalsIgnoreCase(text)) {
 			setDifficulty(SkillDifficulty.A);
-		} else if (SkillDifficulty.H.toString().equalsIgnoreCase(text)) {
+		} else if (SkillDifficulty.H.name().equalsIgnoreCase(text)) {
 			setDifficulty(SkillDifficulty.H);
 		}
 	}
