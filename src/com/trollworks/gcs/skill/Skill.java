@@ -610,7 +610,11 @@ public class Skill extends ListRow {
 		if (canHaveChildren()) {
 			return EMPTY;
 		}
-		return (localized ? mAttribute.toString():mAttribute.name()) + SLASH + mDifficulty;
+		StringBuilder buffer = new StringBuilder();
+		buffer.append(localized ? mAttribute.toString() : mAttribute.name());
+		buffer.append(SLASH);
+		buffer.append(localized ? mDifficulty.toString() : mDifficulty.name());
+		return buffer.toString();
 	}
 
 	@Override
