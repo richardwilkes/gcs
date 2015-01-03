@@ -921,6 +921,11 @@ mVpXR0dtZeOk9vLyE9cnMbdSv/LGOfHdavVHP3Y9vPd/AQ/Z5nQF3R5kAAAAAElFTkSuQmCC
 					<specialization compare="is anything"></specialization>
 					<amount>3</amount>
 				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">erotic art</name>
+					<specialization compare="is anything"></specialization>
+					<amount>3</amount>
+				</skill_bonus>
 			</advantage>
 			<advantage_container version="2" open="yes">
 				<name>ESP</name>

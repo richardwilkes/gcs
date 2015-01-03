@@ -365,6 +365,11 @@
 							<specialization compare="is anything"></specialization>
 							<amount>5</amount>
 						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">erotic art</name>
+							<specialization compare="is anything"></specialization>
+							<amount>5</amount>
+						</skill_bonus>
 						<prereq_list all="yes">
 							<advantage_prereq has="no">
 								<name compare="starts with">Flexibility</name>
@@ -1147,6 +1152,11 @@
 					</skill_bonus>
 					<skill_bonus>
 						<name compare="is">escape</name>
+						<specialization compare="is anything"></specialization>
+						<amount>3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">erotic art</name>
 						<specialization compare="is anything"></specialization>
 						<amount>3</amount>
 					</skill_bonus>
