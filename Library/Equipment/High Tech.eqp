@@ -13469,7 +13469,46 @@
 		<value>100</value>
 		<weight>0.25 lb</weight>
 		<reference>HT159</reference>
-		<notes>-1 Hearing.</notes>
+		<notes>-1 Hearing. -1 Bulk.</notes>
+		<categories>
+			<category>Firearm Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Detachable Baffle Suppressor, .22-caliber</description>
+		<tech_level>6</tech_level>
+		<legality_class>3</legality_class>
+		<value>200</value>
+		<weight>0.25 lb</weight>
+		<reference>HT159</reference>
+		<notes>-2 Hearing. -1 Bulk.</notes>
+		<categories>
+			<category>Firearm Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Detachable Baffle Suppressor, .22-caliber</description>
+		<tech_level>6</tech_level>
+		<legality_class>3</legality_class>
+		<value>300</value>
+		<weight>0.25 lb</weight>
+		<reference>HT159</reference>
+		<notes>-3 Hearing. -1 Bulk.</notes>
+		<categories>
+			<category>Firearm Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Detachable Baffle Suppressor, .22-caliber</description>
+		<tech_level>6</tech_level>
+		<legality_class>3</legality_class>
+		<value>400</value>
+		<weight>0.25 lb</weight>
+		<reference>HT159</reference>
+		<notes>-4 Hearing. -1 Bulk.</notes>
 		<categories>
 			<category>Firearm Accessories</category>
 		</categories>
@@ -13489,6 +13528,32 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Detachable Baffle Suppressor, Oversized</description>
+		<tech_level>8</tech_level>
+		<legality_class>3</legality_class>
+		<value>1200</value>
+		<weight>5 lb</weight>
+		<reference>HT159</reference>
+		<notes>-3 Hearing. -2 Bulk.</notes>
+		<categories>
+			<category>Firearm Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Detachable Baffle Suppressor, Oversized</description>
+		<tech_level>8</tech_level>
+		<legality_class>3</legality_class>
+		<value>1600</value>
+		<weight>5 lb</weight>
+		<reference>HT159</reference>
+		<notes>-4 Hearing. -2 Bulk.</notes>
+		<categories>
+			<category>Firearm Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Detachable Baffle Suppressor, Pistol or SMG</description>
 		<tech_level>6</tech_level>
 		<legality_class>3</legality_class>
@@ -13496,6 +13561,45 @@
 		<weight>1 lb</weight>
 		<reference>HT159</reference>
 		<notes>-1 Hearing. -1 Bulk.</notes>
+		<categories>
+			<category>Firearm Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Detachable Baffle Suppressor, Pistol or SMG</description>
+		<tech_level>6</tech_level>
+		<legality_class>3</legality_class>
+		<value>500</value>
+		<weight>1 lb</weight>
+		<reference>HT159</reference>
+		<notes>-2 Hearing. -1 Bulk.</notes>
+		<categories>
+			<category>Firearm Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Detachable Baffle Suppressor, Pistol or SMG</description>
+		<tech_level>6</tech_level>
+		<legality_class>3</legality_class>
+		<value>750</value>
+		<weight>1 lb</weight>
+		<reference>HT159</reference>
+		<notes>-3 Hearing. -1 Bulk.</notes>
+		<categories>
+			<category>Firearm Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Detachable Baffle Suppressor, Pistol or SMG</description>
+		<tech_level>6</tech_level>
+		<legality_class>3</legality_class>
+		<value>1000</value>
+		<weight>1 lb</weight>
+		<reference>HT159</reference>
+		<notes>-4 Hearing. -1 Bulk.</notes>
 		<categories>
 			<category>Firearm Accessories</category>
 		</categories>
@@ -13515,6 +13619,32 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Detachable Baffle Suppressor, Rifle</description>
+		<tech_level>6</tech_level>
+		<legality_class>3</legality_class>
+		<value>750</value>
+		<weight>1.5 lb</weight>
+		<reference>HT159</reference>
+		<notes>-3 Hearing. -1 Bulk.</notes>
+		<categories>
+			<category>Firearm Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Detachable Baffle Suppressor, Rifle</description>
+		<tech_level>6</tech_level>
+		<legality_class>3</legality_class>
+		<value>1000</value>
+		<weight>1.5 lb</weight>
+		<reference>HT159</reference>
+		<notes>-4 Hearing. -1 Bulk.</notes>
+		<categories>
+			<category>Firearm Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Detachable Wiper Suppressor, Pistol or SMG</description>
 		<tech_level>8</tech_level>
 		<legality_class>3</legality_class>
@@ -13528,6 +13658,32 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Detachable Wiper Suppressor, Pistol or SMG</description>
+		<tech_level>8</tech_level>
+		<legality_class>3</legality_class>
+		<value>450</value>
+		<weight>0.5 lb</weight>
+		<reference>HT159</reference>
+		<notes>-3 Hearing. -1 Bulk. Dmg, Range x0.8. 40 shots.</notes>
+		<categories>
+			<category>Firearm Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Detachable Wiper Suppressor, Pistol or SMG</description>
+		<tech_level>8</tech_level>
+		<legality_class>3</legality_class>
+		<value>600</value>
+		<weight>0.5 lb</weight>
+		<reference>HT159</reference>
+		<notes>-4 Hearing. -1 Bulk. Dmg, Range x0.8. 40 shots.</notes>
+		<categories>
+			<category>Firearm Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Detachable Wiper Suppressor, Rifle</description>
 		<tech_level>8</tech_level>
 		<legality_class>3</legality_class>
@@ -13535,6 +13691,58 @@
 		<weight>1.5 lb</weight>
 		<reference>HT159</reference>
 		<notes>-2 Hearing. -1 Bulk. Dmg, Range x0.5. 40 shots.</notes>
+		<categories>
+			<category>Firearm Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Detachable Wiper Suppressor, Rifle</description>
+		<tech_level>8</tech_level>
+		<legality_class>3</legality_class>
+		<value>450</value>
+		<weight>1.5 lb</weight>
+		<reference>HT159</reference>
+		<notes>-3 Hearing. -1 Bulk. Dmg, Range x0.5. 40 shots.</notes>
+		<categories>
+			<category>Firearm Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Detachable Wiper Suppressor, Rifle</description>
+		<tech_level>8</tech_level>
+		<legality_class>3</legality_class>
+		<value>600</value>
+		<weight>1.5 lb</weight>
+		<reference>HT159</reference>
+		<notes>-4 Hearing. -1 Bulk. Dmg, Range x0.5. 40 shots.</notes>
+		<categories>
+			<category>Firearm Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Detachable Wiper Suppressor, Rifle</description>
+		<tech_level>8</tech_level>
+		<legality_class>3</legality_class>
+		<value>750</value>
+		<weight>1.5 lb</weight>
+		<reference>HT159</reference>
+		<notes>-5 Hearing. -1 Bulk. Dmg, Range x0.5. 40 shots.</notes>
+		<categories>
+			<category>Firearm Accessories</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Detachable Wiper Suppressor, Rifle</description>
+		<tech_level>8</tech_level>
+		<legality_class>3</legality_class>
+		<value>900</value>
+		<weight>1.5 lb</weight>
+		<reference>HT159</reference>
+		<notes>-6 Hearing. -1 Bulk. Dmg, Range x0.5. 40 shots.</notes>
 		<categories>
 			<category>Firearm Accessories</category>
 		</categories>
