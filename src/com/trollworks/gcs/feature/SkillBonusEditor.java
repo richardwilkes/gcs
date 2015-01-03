@@ -26,9 +26,11 @@ import java.awt.Insets;
 /** A skill bonus editor. */
 public class SkillBonusEditor extends FeatureEditor {
 	@Localize("to skills whose name ")
+	@Localize(locale = "de", value = "auf Fertigkeiten, deren Namen ")
 	@Localize(locale = "ru", value = "умение с названием ")
 	private static String SKILL_NAME;
 	@Localize("and specialization ")
+	@Localize(locale = "de", value = "und Spezialisierung ")
 	@Localize(locale = "ru", value = "и специализация ")
 	private static String SPECIALIZATION;
 

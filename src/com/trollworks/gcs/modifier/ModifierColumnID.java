@@ -135,29 +135,38 @@ public enum ModifierColumnID {
 	};
 
 	@Localize("Enabled")
+	@Localize(locale = "de", value = "Aktiv")
 	@Localize(locale = "ru", value = "Включено")
 	static String	ENABLED_TITLE;
 	@Localize("Whether this modifier has been enabled or not")
+	@Localize(locale = "de", value = "Ob dieser Modifikator aktiv ist oder nicht.")
 	@Localize(locale = "ru", value = "Включить этот модификатор")
 	static String	ENABLED_TOOLTIP;
 	@Localize("\u221a")
+	@Localize(locale = "de", value = "\u2713")
 	static String	ENABLED_COLUMN;
 	@Localize("Enhancements & Limitations")
+	@Localize(locale = "de", value = "Verbesserungen & Einschränkungen")
 	@Localize(locale = "ru", value = "Улучшения и ограничения")
 	static String	DESCRIPTION_TITLE;
 	@Localize("The name and notes describing an enhancement or limitation")
+	@Localize(locale = "de", value = "Die Namen und Anmerkungen, die diese Verbesserung oder Einschränkung beschreiben.")
 	@Localize(locale = "ru", value = "Название и заметки, описывающие улучшение или ограничение")
 	static String	DESCRIPTION_TOOLTIP;
 	@Localize("Cost Modifier")
+	@Localize(locale = "de", value = "Kostenmodifikator")
 	@Localize(locale = "ru", value = "Модификатор стоимости")
 	static String	COST_MODIFIER_TITLE;
 	@Localize("The cost modifier for this enhancement or limitation")
+	@Localize(locale = "de", value = "Der Kostenmodifikator für diese Verbesserung oder Einschränkung.")
 	@Localize(locale = "ru", value = "Стоимость модификатора за улучшение или ограничение")
 	static String	COST_MODIFIER_TOOLTIP;
 	@Localize("Ref")
+	@Localize(locale = "de", value = "Ref.")
 	@Localize(locale = "ru", value = "Ссыл")
 	static String	REFERENCE_TITLE;
 	@Localize("A reference to the book and page this modifier appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Modifikator beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
 	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая модификатор\n (например B22 - \"Базовые правила\", страница 22)")
 	static String	REFERENCE_TOOLTIP;
 

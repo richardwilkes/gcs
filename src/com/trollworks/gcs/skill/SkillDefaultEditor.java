@@ -37,15 +37,19 @@ import javax.swing.text.DefaultFormatterFactory;
 /** A skill default editor panel. */
 public class SkillDefaultEditor extends EditorPanel {
 	@Localize("Add a default")
+	@Localize(locale = "de", value = "Grundwert hinzufügen")
 	@Localize(locale = "ru", value = "Добавить новую строку")
 	private static String			ADD_DEFAULT;
 	@Localize("Remove this default")
+	@Localize(locale = "de", value = "Diesen Grundwert entfernen")
 	@Localize(locale = "ru", value = "Удалить это строку")
 	private static String			REMOVE_DEFAULT;
 	@Localize("or")
+	@Localize(locale = "de", value = "oder")
 	@Localize(locale = "ru", value = "или")
 	private static String			OR;
 	@Localize("Optional Specialization")
+	@Localize(locale = "de", value = "Optionale Spezialisierung")
 	@Localize(locale = "ru", value = "Необязательная специализация")
 	private static String			SPECIALIZATION_TOOLTIP;
 

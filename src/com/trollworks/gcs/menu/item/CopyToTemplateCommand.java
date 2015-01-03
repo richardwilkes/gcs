@@ -24,6 +24,7 @@ import java.awt.event.KeyEvent;
 /** Provides the "Copy To Template" command. */
 public class CopyToTemplateCommand extends Command {
 	@Localize("Copy To Template")
+	@Localize(locale = "de", value = "Kopiere zur Vorlage")
 	@Localize(locale = "ru", value = "Копировать в шаблон")
 	private static String						COPY_TO_TEMPLATE;
 

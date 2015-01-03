@@ -20,15 +20,19 @@ import javax.swing.SwingConstants;
 /** The character player info panel. */
 public class PlayerInfoPanel extends DropPanel {
 	@Localize("Player Information")
+	@Localize(locale = "de", value = "Spielerinformation")
 	@Localize(locale = "ru", value = "Информация об игроке")
 	private static String	PLAYER_INFO;
 	@Localize("Player:")
+	@Localize(locale = "de", value = "Spieler:")
 	@Localize(locale = "ru", value = "Игрок:")
 	private static String	PLAYER_NAME;
 	@Localize("Campaign:")
+	@Localize(locale = "de", value = "Kampagne:")
 	@Localize(locale = "ru", value = "Компания:")
 	private static String	CAMPAIGN;
 	@Localize("Created On:")
+	@Localize(locale = "de", value = "Erstellt am:")
 	@Localize(locale = "ru", value = "Создан:")
 	private static String	CREATED_ON;
 

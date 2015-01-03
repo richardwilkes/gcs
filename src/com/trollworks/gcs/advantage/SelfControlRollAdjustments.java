@@ -194,42 +194,55 @@ public enum SelfControlRollAdjustments {
 	};
 
 	@Localize("None")
+	@Localize(locale = "de", value = "Keine Besonderheit")
 	@Localize(locale = "ru", value = "Нет")
 	static String	NONE_TITLE;
 	@Localize("Includes an Action Penalty for Failure")
+	@Localize(locale = "de", value = "Beinhaltet einen Aktions-Malus wenn nicht geschafft")
 	@Localize(locale = "ru", value = "Включает штрафы действий при провале")
 	static String	ACTION_PENALTY_TITLE;
 	@Localize("{0} Action Penalty")
+	@Localize(locale = "de", value = "{0} Aktions-Malus")
 	@Localize(locale = "ru", value = "{0} штраф действия")
 	static String	ACTION_PENALTY_DESCRIPTION;
 	@Localize("Includes a Reaction Penalty for Failure")
+	@Localize(locale = "de", value = "Beinhaltet einen Reaktions-Malus wenn nicht geschafft")
 	@Localize(locale = "ru", value = "Включает штрафы реакции при провале")
 	static String	REACTION_PENALTY_TITLE;
 	@Localize("{0} Reaction Penalty")
+	@Localize(locale = "de", value = "{0} Reaktions-Malus")
 	@Localize(locale = "ru", value = "{0} штраф реакции")
 	static String	REACTION_PENALTY_DESCRIPTION;
 	@Localize("Includes Fright Check Penalty")
+	@Localize(locale = "de", value = "Beinhaltet Schreckproben-Malus")
 	@Localize(locale = "ru", value = "Включает штраф броска страха")
 	static String	FRIGHT_CHECK_PENALTY_TITLE;
 	@Localize("{0} Fright Check Penalty")
+	@Localize(locale = "de", value = "{0} Schreckproben-Malus")
 	@Localize(locale = "ru", value = "{0} штраф проверки страха")
 	static String	FRIGHT_CHECK_PENALTY_DESCRIPTION;
 	@Localize("Includes Fright Check Bonus")
+	@Localize(locale = "de", value = "Beinhaltet Schreckproben-Bonus")
 	@Localize(locale = "ru", value = "Включает премию броска страха")
 	static String	FRIGHT_CHECK_BONUS_TITLE;
 	@Localize("{0} Fright Check Bonus")
+	@Localize(locale = "de", value = "{0} Schreckproben-Bonus")
 	@Localize(locale = "ru", value = "{0} премия проверки страха")
 	static String	FRIGHT_CHECK_BONUS_DESCRIPTION;
 	@Localize("Includes a Minor Cost of Living Increase")
+	@Localize(locale = "de", value = "Beinhaltet eine geringe Erhöhung der Lebenshaltungskosten")
 	@Localize(locale = "ru", value = "Включает малое возрастание расходов на жизнь")
 	static String	MINOR_COST_OF_LIVING_INCREASE_TITLE;
 	@Localize("{0}% Cost of Living Increase")
+	@Localize(locale = "de", value = "{0}% höhere Lebenshaltungskosten")
 	@Localize(locale = "ru", value = "{0}% возрастания расходов на жизнь")
 	static String	MINOR_COST_OF_LIVING_INCREASE_DESCRIPTION;
 	@Localize("Includes a Major Cost of Living Increase and Merchant Skill Penalty")
+	@Localize(locale = "de", value = "Beinhaltet eine deutliche Erhöhung der Lebenshaltungskosten und einen Malus der Händler-Fertigkeit")
 	@Localize(locale = "ru", value = "Включает большое возрастание расходов на жизнь и штраф на торговое дело")
 	static String	MAJOR_COST_OF_LIVING_INCREASE_TITLE;
 	@Localize("{0}% Cost of Living Increase")
+	@Localize(locale = "de", value = "{0}% höhere Lebenshaltungskosten")
 	@Localize(locale = "ru", value = "{0}% возрастания расходов на жизнь")
 	static String	MAJOR_COST_OF_LIVING_INCREASE_DESCRIPTION;
 

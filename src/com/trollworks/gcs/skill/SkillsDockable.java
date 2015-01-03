@@ -19,6 +19,7 @@ import com.trollworks.toolkit.utility.Localization;
 /** A list of skills from a library. */
 public class SkillsDockable extends LibraryDockable {
 	@Localize("Untitled Skills")
+	@Localize(locale = "de", value = "Unbenannte Fertigkeiten-Liste")
 	@Localize(locale = "ru", value = "Безымянный список умений")
 	private static String	UNTITLED;
 

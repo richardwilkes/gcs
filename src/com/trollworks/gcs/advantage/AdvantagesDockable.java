@@ -19,6 +19,7 @@ import com.trollworks.toolkit.utility.Localization;
 /** A list of advantages and disadvantages from a library. */
 public class AdvantagesDockable extends LibraryDockable {
 	@Localize("Untitled Advantages")
+	@Localize(locale = "de", value = "Unbenannte Vorteils-Liste")
 	@Localize(locale = "ru", value = "Безымянный список преимуществ")
 	private static String	UNTITLED;
 

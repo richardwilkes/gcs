@@ -35,9 +35,11 @@ import java.util.List;
 /** An outline specifically for Advantages. */
 public class AdvantageOutline extends ListOutline implements Incrementable {
 	@Localize("Increment Level")
+	@Localize(locale = "de", value = "Stufe erhöhen")
 	@Localize(locale = "ru", value = "Повысить уровень")
 	private static String	INCREMENT;
 	@Localize("Decrement Level")
+	@Localize(locale = "de", value = "Stufe verringen")
 	@Localize(locale = "ru", value = "Понизить уровень")
 	private static String	DECREMENT;
 

@@ -23,12 +23,15 @@ import com.trollworks.toolkit.ui.layout.FlexSpacer;
 /** An advantage prerequisite editor panel. */
 public class AdvantagePrereqEditor extends PrereqEditor {
 	@Localize("whose name ")
+	@Localize(locale = "de", value = "dessen Name ")
 	@Localize(locale = "ru", value = "чье имя ")
 	private static String WHOSE_NAME;
 	@Localize("and whose level ")
+	@Localize(locale = "de", value = "und dessen Stufe ")
 	@Localize(locale = "ru", value = "и чей уровень ")
 	private static String WHOSE_LEVEL;
 	@Localize("and whose notes ")
+	@Localize(locale = "de", value = "und dessen Anmerkungen ")
 	@Localize(locale = "ru", value = "и чьи заметки ")
 	private static String WHOSE_NOTES;
 

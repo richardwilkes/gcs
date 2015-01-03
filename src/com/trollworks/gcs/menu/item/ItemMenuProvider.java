@@ -26,6 +26,7 @@ import javax.swing.JMenu;
 /** Provides the "Item" menu. */
 public class ItemMenuProvider implements MenuProvider {
 	@Localize("Item")
+	@Localize(locale = "de", value = "Element")
 	@Localize(locale = "ru", value = "Элемент")
 	private static String		ITEM;
 

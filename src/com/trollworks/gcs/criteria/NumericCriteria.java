@@ -22,6 +22,7 @@ import java.io.IOException;
 /** Manages numeric comparison criteria. */
 public abstract class NumericCriteria {
 	@Localize("is ")
+	@Localize(locale = "de", value = "ist ")
 	@Localize(locale = "ru", value = "  ")
 	private static String		IS_PREFIX;
 

@@ -51,87 +51,115 @@ import javax.swing.event.DocumentListener;
 /** The detailed editor for {@link Skill}s. */
 public class SkillEditor extends RowEditor<Skill> implements ActionListener, DocumentListener {
 	@Localize("Name")
+	@Localize(locale = "de", value = "Name")
 	@Localize(locale = "ru", value = "Название")
 	private static String		NAME;
 	@Localize("The base name of the skill, without any notes or specialty information")
+	@Localize(locale = "de", value = "Der Name der Fertigkeit ohne Anmerkungen oder Spezialisierung")
 	@Localize(locale = "ru", value = "Базовое название умения, без заметок или информации по специализации")
 	private static String		NAME_TOOLTIP;
 	@Localize("The name field may not be empty")
+	@Localize(locale = "de", value = "Der Name darf nicht leer sein")
 	@Localize(locale = "ru", value = "Поле \"Название\" не может быть пустым")
 	private static String		NAME_CANNOT_BE_EMPTY;
 	@Localize("Specialization")
+	@Localize(locale = "de", value = "Spezialisierung")
 	@Localize(locale = "ru", value = "Специализация")
 	private static String		SPECIALIZATION;
 	@Localize("The specialization, if any, taken for this skill")
+	@Localize(locale = "de", value = "Die Spezialisierung, wenn für diese Fertigkeit eine genommen wurde")
 	@Localize(locale = "ru", value = "Специализация, если есть, используемая для этого умения")
 	private static String		SPECIALIZATION_TOOLTIP;
 	@Localize("Categories")
+	@Localize(locale = "de", value = "Kategorie")
 	@Localize(locale = "ru", value = "Категории")
 	private static String		CATEGORIES;
 	@Localize("The category or categories the skill belongs to (separate multiple categories with a comma)")
+	@Localize(locale = "de", value = "Die Kategorie oder Kategorien, denen diese Fertigkeit angehört (trenne mehrere Kategorien mit einem Komma)")
 	@Localize(locale = "ru", value = "Категория или категории, к которым относится умение (перечислить через запятую)")
 	private static String		CATEGORIES_TOOLTIP;
 	@Localize("Notes")
+	@Localize(locale = "de", value = "Anmerkungen")
 	@Localize(locale = "ru", value = "Заметка")
 	private static String		NOTES;
 	@Localize("Any notes that you would like to show up in the list along with this skill")
+	@Localize(locale = "de", value = "Anmerkungen, die in der Liste neben der Fertigkeit erscheinen sollen")
 	@Localize(locale = "ru", value = "Заметки, которые показываются в списке рядом с умением")
 	private static String		NOTES_TOOLTIP;
 	@Localize("Tech Level")
+	@Localize(locale = "de", value = "Techlevel")
 	@Localize(locale = "ru", value = "Технологический уровень")
 	private static String		TECH_LEVEL;
 	@Localize("Whether this skill requires tech level specialization,\nand, if so, at what tech level it was learned")
+	@Localize(locale = "de", value = "Ob diese Fertigkeit auf einen bestimmten Techlevel spezialisiert ist\nund wenn, mit welchem Techlevel sie gelernt wurde")
 	@Localize(locale = "ru", value = "Для умения необходима специализации с технологическим уровнем \nс указанием уровня изучения")
 	private static String		TECH_LEVEL_TOOLTIP;
 	@Localize("Tech Level Required")
+	@Localize(locale = "de", value = "Techlevel benötigt")
 	@Localize(locale = "ru", value = "Необходимый технологический уровень")
 	private static String		TECH_LEVEL_REQUIRED;
 	@Localize("Whether this skill requires tech level specialization")
+	@Localize(locale = "de", value = "Ob diese Fertigkeit auf einen bestimmten Techlevel spezialisiert ist")
 	@Localize(locale = "ru", value = "Для умения необходима специализация с технологическим уровнем")
 	private static String		TECH_LEVEL_REQUIRED_TOOLTIP;
 	@Localize("Difficulty")
+	@Localize(locale = "de", value = "Schwierigkeit")
 	@Localize(locale = "ru", value = "Сложность")
 	private static String		EDITOR_DIFFICULTY;
 	@Localize("The difficulty of learning this skill")
+	@Localize(locale = "de", value = "Die Schwierigkeit dieser Fertikgeit")
 	@Localize(locale = "ru", value = "Сложность изучения умения")
 	private static String		EDITOR_DIFFICULTY_TOOLTIP;
 	@Localize("The relative difficulty of learning this skill")
+	@Localize(locale = "de", value = "Die relative Schwierigkeit dieser Fertigkeit")
 	@Localize(locale = "ru", value = "Относительная сложность изучения умения")
 	private static String		EDITOR_DIFFICULTY_POPUP_TOOLTIP;
 	@Localize("Level")
+	@Localize(locale = "de", value = "Fertigkeitswert")
 	@Localize(locale = "ru", value = "Уровень")
 	private static String		EDITOR_LEVEL;
 	@Localize("The skill level and relative skill level to roll against")
+	@Localize(locale = "de", value = "Der Fertigkeitswert und relativer Fertigkeitswert, gegen die gewürfelt werden muss")
 	@Localize(locale = "ru", value = "Уровень умения и относительный уровень умения для повторного броска")
 	private static String		EDITOR_LEVEL_TOOLTIP;
 	@Localize("The attribute this skill is based on")
+	@Localize(locale = "de", value = "Das Attribut, auf dem diese Fertigkeit basiert")
 	@Localize(locale = "ru", value = "Базовый атрибут умения ")
 	private static String		ATTRIBUTE_POPUP_TOOLTIP;
 	@Localize("Points")
+	@Localize(locale = "de", value = "Punkte")
 	@Localize(locale = "ru", value = "Очки")
 	private static String		EDITOR_POINTS;
 	@Localize("The number of points spent on this skill")
+	@Localize(locale = "de", value = "Die Punkte, die für diese Fertigkeit aufgewendet wurden")
 	@Localize(locale = "ru", value = "Потрачено на умение количество очков")
 	private static String		EDITOR_POINTS_TOOLTIP;
 	@Localize("Page Reference")
+	@Localize(locale = "de", value = "Seitenangabe")
 	@Localize(locale = "ru", value = "Ссылка на страницу")
 	private static String		EDITOR_REFERENCE;
 	@Localize("A reference to the book and page this skill appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der diese Fertigkeit beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
 	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая умение\n (например B22 - книга \"Базовые правила\", страница 22)")
 	private static String		REFERENCE_TOOLTIP;
 	@Localize("Encumbrance")
+	@Localize(locale = "de", value = "Belastung")
 	@Localize(locale = "ru", value = "Нагрузка")
 	private static String		ENC_PENALTY_MULT;
 	@Localize("The encumbrance penalty multiplier")
+	@Localize(locale = "de", value = "Der Belastungs-Malus-Multiplikator")
 	@Localize(locale = "ru", value = "Множитель штрафа за нагрузку")
 	private static String		ENC_PENALTY_MULT_TOOLTIP;
 	@Localize("No penalty due to encumbrance")
+	@Localize(locale = "de", value = "Kein Malus durch Belastung")
 	@Localize(locale = "ru", value = "Нет штрафа за нагрузку")
 	private static String		NO_ENC_PENALTY;
 	@Localize("Penalty equal to the current encumbrance level")
+	@Localize(locale = "de", value = "Malus gleich der aktuellen Belastungsstufe")
 	@Localize(locale = "ru", value = "Штраф равен текущему уровню нагрузки")
 	private static String		ONE_ENC_PENALTY;
 	@Localize("Penalty equal to {0} times the current encumbrance level")
+	@Localize(locale = "de", value = "Malus gleich dem {0}-fachen der aktuellen Belastungsstufe")
 	@Localize(locale = "ru", value = "Штраф в {0} раза выше нынешнего уровня нагрузки")
 	private static String		ENC_PENALTY_FORMAT;
 

@@ -116,42 +116,55 @@ public enum HitLocation {
 	};
 
 	@Localize("to the skull")
+	@Localize(locale = "de", value = "auf den Schädel")
 	@Localize(locale = "ru", value = "черепу")
 	static String	SKULL_TITLE;
 	@Localize("to the eyes")
+	@Localize(locale = "de", value = "auf die Augen")
 	@Localize(locale = "ru", value = "глазам")
 	static String	EYES_TITLE;
 	@Localize("to the face")
+	@Localize(locale = "de", value = "auf das Gesicht")
 	@Localize(locale = "ru", value = "лицу")
 	static String	FACE_TITLE;
 	@Localize("to the neck")
+	@Localize(locale = "de", value = "auf den Hals")
 	@Localize(locale = "ru", value = "шее")
 	static String	NECK_TITLE;
 	@Localize("to the torso")
+	@Localize(locale = "de", value = "auf den Torso")
 	@Localize(locale = "ru", value = "туловищу")
 	static String	TORSO_TITLE;
 	@Localize("to the vitals")
+	@Localize(locale = "de", value = "auf die Organe")
 	@Localize(locale = "ru", value = "жизненно-важным органам")
 	static String	VITALS_TITLE;
 	@Localize("to the groin")
+	@Localize(locale = "de", value = "auf die Leiste")
 	@Localize(locale = "ru", value = "паху")
 	static String	GROIN_TITLE;
 	@Localize("to the arms")
+	@Localize(locale = "de", value = "auf die Arme")
 	@Localize(locale = "ru", value = "рукам")
 	static String	ARMS_TITLE;
 	@Localize("to the hands")
+	@Localize(locale = "de", value = "auf die Hände")
 	@Localize(locale = "ru", value = "рукам")
 	static String	HANDS_TITLE;
 	@Localize("to the legs")
+	@Localize(locale = "de", value = "auf die Beine")
 	@Localize(locale = "ru", value = "ногам")
 	static String	LEGS_TITLE;
 	@Localize("to the feet")
+	@Localize(locale = "de", value = "auf die Füße")
 	@Localize(locale = "ru", value = "стопам")
 	static String	FEET_TITLE;
 	@Localize("to the full body")
+	@Localize(locale = "de", value = "auf den gesamten Körper")
 	@Localize(locale = "ru", value = "всему телу")
 	static String	FULL_BODY_TITLE;
 	@Localize("to the full body except the eyes")
+	@Localize(locale = "de", value = "auf den gesamten Körper ohne Augen")
 	@Localize(locale = "ru", value = "всему телу, кроме глаз")
 	static String	FULL_BODY_EXCEPT_EYES_TITLE;
 

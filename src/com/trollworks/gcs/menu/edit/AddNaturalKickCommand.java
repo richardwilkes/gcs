@@ -22,6 +22,7 @@ import java.awt.event.ActionEvent;
 /** Provides the "Add Natural Kick" command. */
 public class AddNaturalKickCommand extends Command {
 	@Localize("Include Kick In Weapons")
+	@Localize(locale = "de", value = "Führe Tritt als Waffe auf")
 	@Localize(locale = "ru", value = "Отображать пинок в оружии")
 	private static String						ADD_NATURAL_KICK;
 

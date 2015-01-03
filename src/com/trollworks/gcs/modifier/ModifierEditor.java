@@ -44,51 +44,67 @@ import javax.swing.event.DocumentListener;
 /** Editor for {@link Modifier}s. */
 public class ModifierEditor extends RowEditor<Modifier> implements ActionListener, DocumentListener {
 	@Localize("Name")
+	@Localize(locale = "de", value = "Name")
 	@Localize(locale = "ru", value = "Название")
 	private static String		NAME;
 	@Localize("Name of Modifier")
+	@Localize(locale = "de", value = "Name des Modifikators.")
 	@Localize(locale = "ru", value = "Название модификатора")
 	private static String		NAME_TOOLTIP;
 	@Localize("Notes")
+	@Localize(locale = "de", value = "Anmerkungen")
 	@Localize(locale = "ru", value = "Заметка")
 	private static String		NOTES;
 	@Localize("Any notes that you would like to show up in the list along with this modifier")
+	@Localize(locale = "de", value = "Anmerkungen, die in der Liste neben dem Modifikator erscheinen sollen.")
 	@Localize(locale = "ru", value = "Заметки, которые показываются в списке рядом с модификатором")
 	private static String		NOTES_TOOLTIP;
 	@Localize("The name field may not be empty")
+	@Localize(locale = "de", value = "Das Namensfeld darf nicht leer sein.")
 	@Localize(locale = "ru", value = "Поле \"Название\" не может быть пустым")
 	private static String		NAME_CANNOT_BE_EMPTY;
 	@Localize("Cost")
+	@Localize(locale = "de", value = "Kosten")
 	@Localize(locale = "ru", value = "Стоимость")
 	private static String		COST;
 	@Localize("The base cost modifier")
+	@Localize(locale = "de", value = "Die Grundkosten.")
 	@Localize(locale = "ru", value = "Базовая стоимость модификатора")
 	private static String		COST_TOOLTIP;
 	@Localize("Levels")
+	@Localize(locale = "de", value = "Stufen")
 	@Localize(locale = "ru", value = "Уровни")
 	private static String		LEVELS;
 	@Localize("The number of levels this modifier has")
+	@Localize(locale = "de", value = "Die Anzahl der Stufen, die dieser Modifkiator hat.")
 	@Localize(locale = "ru", value = "Число уровней, которое имеет этот модификатор")
 	private static String		LEVELS_TOOLTIP;
 	@Localize("Total")
+	@Localize(locale = "de", value = "Gesamt")
 	@Localize(locale = "ru", value = "Всего")
 	private static String		TOTAL_COST;
 	@Localize("The cost modifier's total value")
+	@Localize(locale = "de", value = "Die Gesamtkosten des Modifikators.")
 	@Localize(locale = "ru", value = "Общая стоимость модификатора")
 	private static String		TOTAL_COST_TOOLTIP;
 	@Localize("{0} Per Level")
+	@Localize(locale = "de", value = "{0} pro Stufe")
 	@Localize(locale = "ru", value = "{0} за уровень")
 	private static String		HAS_LEVELS;
 	@Localize("Enabled")
+	@Localize(locale = "de", value = "Aktiv")
 	@Localize(locale = "ru", value = "Включено")
 	private static String		ENABLED;
 	@Localize("Whether this modifier has been enabled or not")
+	@Localize(locale = "de", value = "Ob dieser Modifikator aktiv ist oder nicht.")
 	@Localize(locale = "ru", value = "Включить этот модификатор")
 	private static String		ENABLED_TOOLTIP;
 	@Localize("Ref")
+	@Localize(locale = "de", value = "Ref.")
 	@Localize(locale = "ru", value = "Ссыл")
 	private static String		REFERENCE;
 	@Localize("A reference to the book and page this modifier appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Modifikator beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
 	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая модификатор\n (например B22 - \"Базовые правила\", страница 22)")
 	private static String		REFERENCE_TOOLTIP;
 

@@ -27,6 +27,7 @@ import javax.swing.SwingConstants;
 /** A label that displays the "or" message, or nothing if it is the first one. */
 public class OrLabel extends JLabel {
 	@Localize("or")
+	@Localize(locale = "de", value = "oder")
 	@Localize(locale = "ru", value = "или")
 	private static String OR;
 

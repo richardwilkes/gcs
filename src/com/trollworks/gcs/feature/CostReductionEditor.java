@@ -26,6 +26,7 @@ import javax.swing.JComboBox;
 /** An cost reduction editor. */
 public class CostReductionEditor extends FeatureEditor {
 	@Localize("by {0}%")
+	@Localize(locale = "de", value = "um {0}%")
 	@Localize(locale = "ru", value = "на {0}% ")
 	private static String		BY;
 

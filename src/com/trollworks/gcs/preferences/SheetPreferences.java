@@ -55,89 +55,118 @@ import javax.swing.text.Document;
 /** The sheet preferences panel. */
 public class SheetPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {
 	@Localize("Sheet")
+	@Localize(locale = "de", value = "Charakterblatt")
 	@Localize(locale = "ru", value = "Лист")
 	private static String				SHEET;
 	@Localize("Player")
+	@Localize(locale = "de", value = "Spieler")
 	@Localize(locale = "ru", value = "Игрок")
 	private static String				PLAYER;
 	@Localize("The player name to use when a new character sheet is created")
+	@Localize(locale = "de", value = "Der Spielername, der verwendet wird, wenn ein neues Charakterblatt erstellt wird.")
 	@Localize(locale = "ru", value = "Имя игрока при создании нового листа персонажа")
 	private static String				PLAYER_TOOLTIP;
 	@Localize("Campaign")
+	@Localize(locale = "de", value = "Kampagne")
 	@Localize(locale = "ru", value = "Компания")
 	private static String				CAMPAIGN;
 	@Localize("The campaign to use when a new character sheet is created")
+	@Localize(locale = "de", value = "Die Kampagne, die verwendet wird, wenn ein neues Charakterblatt erstellt wird.")
 	@Localize(locale = "ru", value = "Название компании при создании нового листа персонаж")
 	private static String				CAMPAIGN_TOOLTIP;
 	@Localize("Tech Level")
+	@Localize(locale = "de", value = "Techlevel")
 	@Localize(locale = "ru", value = "Технологический уровень")
 	private static String				TECH_LEVEL;
 	@Localize("<html><body>TL0: Stone Age<br>TL1: Bronze Age<br>TL2: Iron Age<br>TL3: Medieval<br>TL4: Age of Sail<br>TL5: Industrial Revolution<br>TL6: Mechanized Age<br>TL7: Nuclear Age<br>TL8: Digital Age<br>TL9: Microtech Age<br>TL10: Robotic Age<br>TL11: Age of Exotic Matter<br>TL12: Anything Goes</body></html>")
+	@Localize(locale = "de", value = "<html><body>TL0: Steinzeit (Vorzeit und älter)<br>TL1: Bronzezeit (ab 3500 v.Chr.)<br>TL2: Eisenzeit (ab 1200 v. Chr.)<br>TL3: Mittelalter(ab 600 n. Chr.)<br>TL4: Renaissance / Kolonialzeitalter (ab 1450)<br>TL5: Industrielle Revolution (ab 1730)<br>TL6: Zeitalter der Mechanik (ab 1880)<br>TL7: Ära der Kernkraft (ab 1940)<br>TL8: Ära der Digitalisierung (ab 1980)<br>TL9: Ära der Mikrotechnik (ab 2025?)<br>TL10: Ära der Robotik (ab 2070?)<br>TL11: Ära der Exotischen Materie<br>TL12: Was ihr wollt!</body></html>")
 	@Localize(locale = "ru", value = "<html><body>ТУ0: Каменный век<br>ТУ1: Бронзовый век<br>ТУ2: Железный век<br>ТУ3: Средневековье<br>ТУ4: Эпоха парусов<br>ТУ5: Промышленный переворот<br>ТУ6: Эпоха механики<br>ТУ7: Атомная эпоха<br>ТУ8: Цифровая эпоха<br>ТУ9: Эпоха микротехники<br>ТУ10: Эпоха роботизации<br>ТУ11: Эпоха экзотических материалов<br>ТУ12: Всё, что угодно</body></html>")
 	private static String				TECH_LEVEL_TOOLTIP;
 	@Localize("Initial Points")
+	@Localize(locale = "de", value = "Charakterpunkte")
 	@Localize(locale = "ru", value = "Начальные очки")
 	private static String				INITIAL_POINTS;
 	@Localize("The initial number of character points to start with")
+	@Localize(locale = "de", value = "Die Zahl der Charakterpunkte, mit denen der Charakter startet.")
 	@Localize(locale = "ru", value = "Первоначальное количество очков персонажа")
 	private static String				INITIAL_POINTS_TOOLTIP;
 	@Localize("Select A Portrait")
+	@Localize(locale = "de", value = "Wähle ein Charakterbild")
 	@Localize(locale = "ru", value = "Выберите изображение")
 	private static String				SELECT_PORTRAIT;
 	@Localize("Use optional (house) rule: Will and Perception are not based upon IQ")
+	@Localize(locale = "de", value = "Verwende die optionale (Haus-) Regel: Wille und Wahrnehmung basieren nicht auf IQ")
 	@Localize(locale = "ru", value = "Использовать опциональное (домашнее) правило: Воля и Восприятие не основаны на интеллекте (ИН)")
 	private static String				OPTIONAL_IQ_RULES;
 	@Localize("Use optional rule \"Multiplicative Modifiers\" from PW102 (note: changes point value)")
+	@Localize(locale = "de", value = "Verwende die optionale Regel \"Multiplicative Modifiers\" aus PW102 (Hinweis: Verändert den Punktwert)")
 	@Localize(locale = "ru", value = "Использовать необязательное правило \"Накопительные модификаторы\" из PW102 (прим.: изменяет количество очков)")
 	private static String				OPTIONAL_MODIFIER_RULES;
 	@Localize("Use optional rule \"Modifying Dice + Adds\" from B269")
+	@Localize(locale = "de", value = "Verwende die optionale Regel \"Verändere Würfel und Zugabe\" aus B269 (\"Modifying Dice + Adds\")")
 	@Localize(locale = "ru", value = "Использовать необязательное правило \"Замена модификаторов кубиками\" из B269")
 	private static String				OPTIONAL_DICE_RULES;
 	@Localize("when saving sheets to PNG")
+	@Localize(locale = "de", value = "beim Export als PNG-Datei")
 	@Localize(locale = "ru", value = "при сохранении листов в формате PNG")
 	private static String				PNG_RESOLUTION_POST;
 	@Localize("The resolution, in dots-per-inch, to use when saving sheets as PNG files")
+	@Localize(locale = "de", value = "Die Auflösung in DPI, mit der die Charakterblätter als PNG-Datei gespeichert werden.")
 	@Localize(locale = "ru", value = "Разрешение в точках на дюйм, которое используется при сохранении листов в формате PNG-файла")
 	private static String				PNG_RESOLUTION_TOOLTIP;
 	@Localize("{0} dpi")
+	@Localize(locale = "de", value = "{0} DPI")
 	private static String				DPI_FORMAT;
 	@Localize("HTML Template Override")
+	@Localize(locale = "de", value = "Alternative HTML-Vorlage")
 	@Localize(locale = "ru", value = "Переопределить HTML-шаблон")
 	private static String				HTML_TEMPLATE_OVERRIDE;
 	@Localize("Choose...")
+	@Localize(locale = "de", value = "wählen\u2026")
 	@Localize(locale = "ru", value = "Выбрать ...")
 	private static String				HTML_TEMPLATE_PICKER;
 	@Localize("Specify a file to use as the template when exporting to HTML")
+	@Localize(locale = "de", value = "Wähle die Datei, die als Vorlage für den HTML-Export verwendet werden soll.")
 	@Localize(locale = "ru", value = "Использовать указанный файл шаблона при экспорте в HTML")
 	private static String				HTML_TEMPLATE_OVERRIDE_TOOLTIP;
 	@Localize("Select A HTML Template")
+	@Localize(locale = "de", value = "Wähle eine HTML-Vorlage")
 	@Localize(locale = "ru", value = "Выберите HTML-шаблон")
 	private static String				SELECT_HTML_TEMPLATE;
 	@Localize("Use platform native print dialogs (settings cannot be saved)")
+	@Localize(locale = "de", value = "Verwende Druckdialoge des Betriebssystems (Einstellungen können nicht gespeichert werden)")
 	@Localize(locale = "ru", value = "Использовать диалоги печати родные для ОС (в этом случае не сохраняются настройки диалогов)")
 	private static String				NATIVE_PRINTER;
 	@Localize("<html><body>Whether or not the native print dialogs should be used.<br>Choosing this option will prevent the program from saving<br>and restoring print settings with the document.</body></html>")
+	@Localize(locale = "de", value = "<html><body>Ob die Druckdialoge des Betriebssystems verwendet werden sollen.<br>Das Auswählen dieser Option wird das Programm daran hindern,<br>die Druckeinstellungen im Dokument zu speichern und werderherzustellen.</body></html>")
 	@Localize(locale = "ru", value = "<html><body>Использовать родные диалоги печати ОС.<br>При выборе этого параметра программа не будет сохранять<br>настройки печати документа.</body></html>")
 	private static String				NATIVE_PRINTER_TOOLTIP;
 	@Localize("Automatically name new characters")
+	@Localize(locale = "de", value = "Neue Charaktere automatisch benennen")
 	@Localize(locale = "ru", value = "Автоматически называть новых персонажей")
 	private static String				AUTO_NAME;
 	@Localize("The units to use for display of generated lengths")
+	@Localize(locale = "de", value = "Die Einheit, in der die berechnete Länge angezeigt wird.")
 	@Localize(locale = "ru", value = "Единицы измерения создаваемых длин")
 	private static String				LENGTH_UNITS_TOOLTIP;
 	@Localize("The units to use for display of generated weights")
+	@Localize(locale = "de", value = "Die Einheit, in der das berechnete Gewicht angezeigt wird.")
 	@Localize(locale = "ru", value = "Единицы измерения создаваемых весов")
 	private static String				WEIGHT_UNITS_TOOLTIP;
 	@Localize("Use")
+	@Localize(locale = "de", value = "Verwende")
 	@Localize(locale = "ru", value = "Использовать")
 	private static String				USE;
 	@Localize("and")
+	@Localize(locale = "de", value = "und")
 	@Localize(locale = "ru", value = "и")
 	private static String				AND;
 	@Localize("for display of generated units")
+	@Localize(locale = "de", value = "zur Anzeige berechneter Werte")
 	@Localize(locale = "ru", value = "для отображения созданных единиц измерения")
 	private static String				FOR_UNIT_DISPLAY;
 	@Localize("Character point total display includes unspent points")
+	@Localize(locale = "de", value = "Die Gesamtpunktzahl des Charakters enthält die noch nicht ausgegebenen Punkte")
 	@Localize(locale = "ru", value = "Показывать в общих очках персонажа неизрасходованные (заработанные)")
 	private static String				TOTAL_POINTS_INCLUDES_UNSPENT_POINTS;
 

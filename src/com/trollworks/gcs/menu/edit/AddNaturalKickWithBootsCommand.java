@@ -22,6 +22,7 @@ import java.awt.event.ActionEvent;
 /** Provides the "Add Natural Kick w/Boots" command. */
 public class AddNaturalKickWithBootsCommand extends Command {
 	@Localize("Include Kick w/Boots In Weapons")
+	@Localize(locale = "de", value = "Führe Tritt mit Schuh als Waffe auf")
 	@Localize(locale = "ru", value = "Отображать пинок (в ботинке) в оружии")
 	private static String								ADD_NATURAL_KICK_WITH_BOOTS;
 

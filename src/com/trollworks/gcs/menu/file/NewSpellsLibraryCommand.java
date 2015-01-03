@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 /** Provides the "New Spells Library" command. */
 public class NewSpellsLibraryCommand extends Command {
 	@Localize("New Spells Library")
+	@Localize(locale = "de", value = "Neue Zauber-Liste")
 	@Localize(locale = "ru", value = "Новая библиотека заклинаний")
 	private static String						TITLE;
 

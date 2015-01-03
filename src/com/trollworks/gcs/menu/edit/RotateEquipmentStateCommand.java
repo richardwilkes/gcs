@@ -31,6 +31,7 @@ import java.util.ArrayList;
 /** Provides the "Rotate Equipment State" command. */
 public class RotateEquipmentStateCommand extends Command {
 	@Localize("Rotate Equipment State")
+	@Localize(locale = "de", value = "Ausrüstungszustand wechseln")
 	@Localize(locale = "ru", value = "Смена статуса снаряжения")
 	private static String TITLE;
 

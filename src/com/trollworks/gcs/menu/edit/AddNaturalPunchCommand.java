@@ -22,6 +22,7 @@ import java.awt.event.ActionEvent;
 /** Provides the "Add Natural Punch" command. */
 public class AddNaturalPunchCommand extends Command {
 	@Localize("Include Punch In Weapons")
+	@Localize(locale = "de", value = "Führe Schlag als Waffe auf")
 	@Localize(locale = "ru", value = "Отображать удар в оружии")
 	private static String						ADD_NATURAL_PUNCH;
 

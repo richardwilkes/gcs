@@ -19,6 +19,7 @@ import com.trollworks.toolkit.utility.Localization;
 /** A list of equipment from a library. */
 public class EquipmentDockable extends LibraryDockable {
 	@Localize("Untitled Equipment")
+	@Localize(locale = "de", value = "Unbenannte Ausrüstungs-Liste")
 	@Localize(locale = "ru", value = "Безымянное снаряжение")
 	private static String	UNTITLED;
 

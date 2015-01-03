@@ -353,93 +353,123 @@ public enum WeaponColumn {
 	};
 
 	@Localize("Weapons")
+	@Localize(locale = "de", value = "Waffen")
 	@Localize(locale = "ru", value = "Оружие")
 	static String	DESCRIPTION_TITLE;
 	@Localize("Melee Weapons")
+	@Localize(locale = "de", value = "Nahkampfwaffen")
 	@Localize(locale = "ru", value = "Контактные орудия")
 	static String	MELEE;
 	@Localize("Ranged Weapons")
+	@Localize(locale = "de", value = "Fernkampfwaffen")
 	@Localize(locale = "ru", value = "Дистанционные орудия")
 	static String	RANGED;
 	@Localize("The name/description of the weapon")
+	@Localize(locale = "de", value = "Der Name und die Beschreibung der Waffe.")
 	@Localize(locale = "ru", value = "Название/описание оружия")
 	static String	DESCRIPTION_TOOLTIP;
 	@Localize("Usage")
+	@Localize(locale = "de", value = "Nutzung")
 	@Localize(locale = "ru", value = "Применение")
 	static String	USAGE_TITLE;
 	@Localize("The usage type of the weapon (swung, thrust, thrown, fired, etc.)")
+	@Localize(locale = "de", value = "Wie die Waffe benutzt wird (Schwung, Stoß, Wurf, Schuss usw.).")
 	@Localize(locale = "ru", value = "Тип использования оружия (рубящее, колющее, метательное, огнестрельное, и т.д.)")
 	static String	USAGE_TOOLTIP;
 	@Localize("Damage")
+	@Localize(locale = "de", value = "Schaden")
 	@Localize(locale = "ru", value = "Повреждения")
 	static String	DAMAGE_TITLE;
 	@Localize("The damage the weapon inflicts")
+	@Localize(locale = "de", value = "Der Schaden, den die Waffe anrichtet.")
 	@Localize(locale = "ru", value = "Наносимый оружием урон")
 	static String	DAMAGE_TOOLTIP;
 	@Localize("Reach")
+	@Localize(locale = "de", value = "Reichw.")
 	@Localize(locale = "ru", value = "Досягаемость")
 	static String	REACH_TITLE;
 	@Localize("The reach of the weapon")
+	@Localize(locale = "de", value = "Die Reichweite der Waffe.")
 	@Localize(locale = "ru", value = "Досягаемость оружия")
 	static String	REACH_TOOLTIP;
 	@Localize("Parry")
+	@Localize(locale = "de", value = "Parade")
 	@Localize(locale = "ru", value = "Парирование")
 	static String	PARRY_TITLE;
 	@Localize("The Parry value with the weapon")
+	@Localize(locale = "de", value = "Der Paradewert der Waffe.")
 	@Localize(locale = "ru", value = "Величина парирования при использовании оружия")
 	static String	PARRY_TOOLTIP;
 	@Localize("Block")
+	@Localize(locale = "de", value = "Block")
 	@Localize(locale = "ru", value = "Блок")
 	static String	BLOCK_TITLE;
 	@Localize("The Block value with the weapon")
+	@Localize(locale = "de", value = "Der Abblockwert der Waffe.")
 	@Localize(locale = "ru", value = "Величина блока при использовании оружия")
 	static String	BLOCK_TOOLTIP;
 	@Localize("Acc")
+	@Localize(locale = "de", value = "Gen")
 	@Localize(locale = "ru", value = "Точн.")
 	static String	ACCURACY_TITLE;
 	@Localize("The accuracy bonus for the weapon")
+	@Localize(locale = "de", value = "Der Genauigkeitswert der Waffe.")
 	@Localize(locale = "ru", value = "Премия точности для оружия")
 	static String	ACCURACY_TOOLTIP;
 	@Localize("Range")
+	@Localize(locale = "de", value = "Reichw.")
 	@Localize(locale = "ru", value = "Дальность")
 	static String	RANGE_TITLE;
 	@Localize("The range of the weapon")
+	@Localize(locale = "de", value = "Die Reichweite der Waffe.")
 	@Localize(locale = "ru", value = "Дальность оружия")
 	static String	RANGE_TOOLTIP;
 	@Localize("RoF")
+	@Localize(locale = "de", value = "SR")
 	@Localize(locale = "ru", value = "Сс")
 	static String	RATE_OF_FIRE_TITLE;
 	@Localize("The rate of fire of the weapon")
+	@Localize(locale = "de", value = "Die Schussrate der Waffe.")
 	@Localize(locale = "ru", value = "Скорострельность оружия")
 	static String	RATE_OF_FIRE_TOOLTIP;
 	@Localize("Shots")
+	@Localize(locale = "de", value = "Schuss")
 	@Localize(locale = "ru", value = "Боезапас")
 	static String	SHOTS_TITLE;
 	@Localize("The number of shots the weapon can fire before reloading/recharging")
+	@Localize(locale = "de", value = "Die Anzahl der Schüsse, die die Waffe abfeuern kann, bevor sie neu geladen werden muss.")
 	@Localize(locale = "ru", value = "Количество выстрелов до перезарядки/подзарядки")
 	static String	SHOTS_TOOLTIP;
 	@Localize("Bulk")
+	@Localize(locale = "de", value = "Handl.")
 	@Localize(locale = "ru", value = "Размер")
 	static String	BULK_TITLE;
 	@Localize("The modifier to skill due to the bulk of the weapon")
+	@Localize(locale = "de", value = "Abschlag auf die Fertigkeit wegen der Handlichkeit der Waffe.")
 	@Localize(locale = "ru", value = "Модификатор умения за счет размера оружия")
 	static String	BULK_TOOLTIP;
 	@Localize("Rcl")
+	@Localize(locale = "de", value = "RS")
 	@Localize(locale = "ru", value = "Отдч")
 	static String	RECOIL_TITLE;
 	@Localize("The recoil modifier for the weapon")
+	@Localize(locale = "de", value = "Der Rückstoßwert der Waffe.")
 	@Localize(locale = "ru", value = "Модификатор отдачи оружия")
 	static String	RECOIL_TOOLTIP;
 	@Localize("ST")
+	@Localize(locale = "de", value = "ST")
 	@Localize(locale = "ru", value = "СЛ")
 	static String	MIN_ST_TITLE;
 	@Localize("The minimum strength required to use the weapon properly")
+	@Localize(locale = "de", value = "Die mindestens benötigte Stärke, um die Waffe richtig führen zu können.")
 	@Localize(locale = "ru", value = "Минимальная сила для использования оружия")
 	static String	MIN_ST_TOOLTIP;
 	@Localize("Lvl")
+	@Localize(locale = "de", value = "FW")
 	@Localize(locale = "ru", value = "Уров")
 	static String	LEVEL_TITLE;
 	@Localize("The skill level with the weapon")
+	@Localize(locale = "de", value = "Der Fertigkeitswert, mit dem die Waffe beherrscht wird.")
 	@Localize(locale = "ru", value = "Уровень умения владения оружием")
 	static String	LEVEL_TOOLTIP;
 

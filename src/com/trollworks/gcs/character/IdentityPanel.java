@@ -20,15 +20,19 @@ import javax.swing.SwingConstants;
 /** The character identity panel. */
 public class IdentityPanel extends DropPanel {
 	@Localize("Identity")
+	@Localize(locale = "de", value = "Identität")
 	@Localize(locale = "ru", value = "Личность")
 	private static String	IDENTITY;
 	@Localize("Name:")
+	@Localize(locale = "de", value = "Name:")
 	@Localize(locale = "ru", value = "Имя:")
 	private static String	NAME;
 	@Localize("Title:")
+	@Localize(locale = "de", value = "Titel:")
 	@Localize(locale = "ru", value = "Статус:")
 	private static String	TITLE;
 	@Localize("Religion:")
+	@Localize(locale = "de", value = "Religion:")
 	@Localize(locale = "ru", value = "Религия:")
 	private static String	RELIGION;
 

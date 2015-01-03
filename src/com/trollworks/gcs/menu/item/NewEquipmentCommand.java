@@ -27,9 +27,11 @@ import java.awt.event.KeyEvent;
 /** Provides the "New Equipment" command. */
 public class NewEquipmentCommand extends Command {
 	@Localize("New Equipment")
+	@Localize(locale = "de", value = "Neue Ausrüstung")
 	@Localize(locale = "ru", value = "Новое снаряжение")
 	private static String					EQUIPMENT;
 	@Localize("New Equipment Container")
+	@Localize(locale = "de", value = "Neuer Ausrüstungs-Container")
 	@Localize(locale = "ru", value = "Новый контейнер снаряжения")
 	private static String					EQUIPMENT_CONTAINER;
 

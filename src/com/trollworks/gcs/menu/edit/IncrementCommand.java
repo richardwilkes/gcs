@@ -23,6 +23,7 @@ import java.awt.event.KeyEvent;
 /** Provides the "Increment" command. */
 public class IncrementCommand extends Command {
 	@Localize("Increment")
+	@Localize(locale = "de", value = "Erhöhen")
 	@Localize(locale = "ru", value = "Увеличить")
 	private static String					INCREMENT;
 

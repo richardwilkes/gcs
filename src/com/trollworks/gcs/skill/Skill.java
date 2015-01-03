@@ -43,6 +43,7 @@ import java.util.Set;
 /** A GURPS Skill. */
 public class Skill extends ListRow {
 	@Localize("Skill")
+	@Localize(locale = "de", value = "Fertigkeit")
 	@Localize(locale = "ru", value = "Умение")
 	static String					DEFAULT_NAME;
 

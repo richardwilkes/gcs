@@ -182,15 +182,19 @@ public enum SkillDefaultType {
 	};
 
 	@Localize("Perception")
+	@Localize(locale = "de", value = "Wahrnehmung")
 	@Localize(locale = "ru", value = "Восприятие")
 	static String	PERCEPTION;
 	@Localize("Skill named")
+	@Localize(locale = "de", value = "Fertigkeit namens")
 	@Localize(locale = "ru", value = "Название умения")
 	static String	SKILL_NAMED;
 	@Localize("Parrying skill named")
+	@Localize(locale = "de", value = "Parieren-Fertigkeit namens")
 	@Localize(locale = "ru", value = "Название умения парирования")
 	static String	PARRY_SKILL_NAMED;
 	@Localize("Blocking skill named")
+	@Localize(locale = "de", value = "Abblocken-Fertigkeit namens")
 	@Localize(locale = "ru", value = "Название умения блока")
 	static String	BLOCK_SKILL_NAMED;
 

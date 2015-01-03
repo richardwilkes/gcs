@@ -19,9 +19,11 @@ import com.trollworks.toolkit.utility.Localization;
 /** An abstract prerequisite class for whether or not the specific item is present. */
 public abstract class HasPrereq extends Prereq {
 	@Localize("Has")
+	@Localize(locale = "de", value = "Hat")
 	@Localize(locale = "ru", value = "Имеет")
 	static String					HAS;
 	@Localize("Does not have")
+	@Localize(locale = "de", value = "Hat nicht")
 	@Localize(locale = "ru", value = "Не имеет")
 	static String					DOES_NOT_HAVE;
 

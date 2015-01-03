@@ -34,6 +34,7 @@ import javax.swing.Icon;
 /** Provides a common base for library and sheet files. */
 public abstract class CommonDockable extends Dockable implements CloseHandler, Saveable, Undoable {
 	@Localize("An error occurred while trying to save the file.")
+	@Localize(locale = "de", value = "Ein Fehler ist beim Speichern der Datei aufgetreten.")
 	@Localize(locale = "ru", value = "Произошла ошибка при попытке сохранить файл.")
 	private static String	SAVE_ERROR;
 

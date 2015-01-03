@@ -30,6 +30,7 @@ import java.io.IOException;
 /** Holds the contents of a library file. */
 public class LibraryFile extends DataFile {
 	@Localize("The file \"{0}\" was imported into a data library.\nThe original file has not been modified.")
+	@Localize(locale = "de", value = "Die Datei \"{0}\" wurde in eine Datenbibliothek importiert.\nDie Originaldatei wurde nicht verändert.")
 	@Localize(locale = "ru", value = "Файл \"{0}\" был импортирован в библиотеку данных.\nИсходный файл не был изменен.")
 	static String				WARNING;
 

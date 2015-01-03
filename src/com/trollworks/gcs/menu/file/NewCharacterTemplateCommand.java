@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 /** Provides the "New Character Template" command. */
 public class NewCharacterTemplateCommand extends Command {
 	@Localize("New Character Template")
+	@Localize(locale = "de", value = "Neue Charaktervorlage")
 	@Localize(locale = "ru", value = "Новый шаблон персонажа")
 	private static String							NEW_CHARACTER_TEMPLATE;
 

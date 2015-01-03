@@ -331,45 +331,59 @@ public enum SkillColumn {
 	};
 
 	@Localize("Skills")
+	@Localize(locale = "de", value = "Fertigkeiten")
 	@Localize(locale = "ru", value = "Умения")
 	static String	DESCRIPTION_TITLE;
 	@Localize("The name, specialty, tech level and notes describing a skill")
+	@Localize(locale = "de", value = "Der Name, Spezialisierung, Techlevel und Anmerkungen, die die Fertigkeit beschreiben")
 	@Localize(locale = "ru", value = "Название, специализация, ТУ и заметки умения")
 	static String	DESCRIPTION_TOOLTIP;
 	@Localize("SL")
+	@Localize(locale = "de", value = "FW")
 	@Localize(locale = "ru", value = "УУ")
 	static String	LEVEL_TITLE;
 	@Localize("The skill level")
+	@Localize(locale = "de", value = "Der Fertigkeitswert")
 	@Localize(locale = "ru", value = "Уровень умения")
 	static String	LEVEL_TOOLTIP;
 	@Localize("RSL")
+	@Localize(locale = "de", value = "RFW")
 	@Localize(locale = "ru", value = "ОУУ")
 	static String	RELATIVE_LEVEL_TITLE;
 	@Localize("The relative skill level")
+	@Localize(locale = "de", value = "Der relative Fertigkeitswert")
 	@Localize(locale = "ru", value = "Относительный уровень умения")
 	static String	RELATIVE_LEVEL_TOOLTIP;
 	@Localize("Pts")
+	@Localize(locale = "de", value = "Pkt")
 	@Localize(locale = "ru", value = "Очк")
 	static String	POINTS_TITLE;
 	@Localize("The points spent in the skill")
+	@Localize(locale = "de", value = "Die für die Fertigkeit aufgewendeten Punkte")
 	@Localize(locale = "ru", value = "Потраченые очки на умение")
 	static String	POINTS_TOOLTIP;
 	@Localize("Diff")
+	@Localize(locale = "de", value = "Schwierigkeit")
 	@Localize(locale = "ru", value = "Сложн.")
 	static String	DIFFICULTY_TITLE;
 	@Localize("The skill difficulty")
+	@Localize(locale = "de", value = "Die Schwierigkeitsstufe der Fertigkeit")
 	@Localize(locale = "ru", value = "Сложность умения")
 	static String	DIFFICULTY_TOOLTIP;
 	@Localize("Category")
+	@Localize(locale = "de", value = "Kategorie")
 	@Localize(locale = "ru", value = "Категория")
 	static String	CATEGORY_TITLE;
 	@Localize("The category or categories the skill belongs to")
+	@Localize(locale = "de", value = "Die Kategorie oder Kategorien, denen diese Fertigkeit angehört")
 	@Localize(locale = "ru", value = "Категория или категории, к которым относится умение")
 	static String	CATEGORY_TOOLTIP;
 	@Localize("Ref")
+	@Localize(locale = "de", value = "Ref")
 	@Localize(locale = "ru", value = "Ссыл")
 	static String	REFERENCE_TITLE;
 	@Localize("A reference to the book and page this skill appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Zauber beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
 	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая умение\n (например B22 - книга \"Базовые правила\", страница 22)")
 	static String	REFERENCE_TOOLTIP;
 

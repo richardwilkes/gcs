@@ -35,9 +35,11 @@ import java.util.List;
 /** A prerequisite list. */
 public class PrereqList extends Prereq {
 	@Localize("{0}Requires all of:\n")
+	@Localize(locale = "de", value = "{0}Benötigt alles von:")
 	@Localize(locale = "ru", value = "{0}Требует всё из:\n")
 	private static String REQUIRES_ALL;
 	@Localize("{0}Requires at least one of:\n")
+	@Localize(locale = "de", value = "{0}Benötigt mindestens eines von:")
 	@Localize(locale = "ru", value = "{0}Требует одно из:\n")
 	private static String REQUIRES_ANY;
 

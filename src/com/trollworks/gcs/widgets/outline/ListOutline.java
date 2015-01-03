@@ -37,6 +37,7 @@ import javax.swing.undo.StateEdit;
 /** Base outline class. */
 public class ListOutline extends Outline implements Runnable, ActionListener {
 	@Localize("Remove Rows")
+	@Localize(locale = "de", value = "Zeilen entfernen")
 	@Localize(locale = "ru", value = "Удалить строки")
 	private static String CLEAR_UNDO;
 

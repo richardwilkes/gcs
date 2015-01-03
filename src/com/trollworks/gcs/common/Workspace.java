@@ -37,6 +37,7 @@ import java.util.ArrayList;
 /** The workspace, where all files can be viewed and edited. */
 public class Workspace extends AppWindow implements SignificantFrame, JumpToSearchTarget {
 	@Localize("GURPS Workspace")
+	@Localize(locale = "de", value = "GURPS Charakter-Editor")
 	@Localize(locale = "ru", value = "GURPS рабочее пространство")
 	private static String	TITLE;
 

@@ -28,12 +28,15 @@ import java.awt.event.KeyEvent;
 /** Provides the "New Skill" command. */
 public class NewSkillCommand extends Command {
 	@Localize("New Skill")
+	@Localize(locale = "de", value = "Neue Fertigkeit")
 	@Localize(locale = "ru", value = "Новое умение")
 	private static String				SKILL;
 	@Localize("New Skill Container")
+	@Localize(locale = "de", value = "Neuer Fertigkeiten-Container")
 	@Localize(locale = "ru", value = "Новый контейнер умения")
 	private static String				SKILL_CONTAINER;
 	@Localize("New Technique")
+	@Localize(locale = "de", value = "Neue Technik")
 	@Localize(locale = "ru", value = "Новая техника")
 	private static String				TECHNIQUE;
 

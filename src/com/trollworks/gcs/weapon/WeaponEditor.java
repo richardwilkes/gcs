@@ -51,18 +51,23 @@ import javax.swing.text.DefaultFormatterFactory;
 /** An abstract editor for weapon statistics. */
 public abstract class WeaponEditor extends JPanel implements ActionListener, PropertyChangeListener {
 	@Localize("Usage")
+	@Localize(locale = "de", value = "Nutzungsart")
 	@Localize(locale = "ru", value = "Применение")
 	private static String					USAGE;
 	@Localize("Damage")
+	@Localize(locale = "de", value = "Schaden")
 	@Localize(locale = "ru", value = "Повреждения")
 	private static String					DAMAGE;
 	@Localize("Minimum Strength")
+	@Localize(locale = "de", value = "Mindeststärke")
 	@Localize(locale = "ru", value = "Минимальная сила")
 	private static String					MINIMUM_STRENGTH;
 	@Localize("Add an attack")
+	@Localize(locale = "de", value = "Angriff hinzufügen")
 	@Localize(locale = "ru", value = "Добавить атаку")
 	private static String					ADD_TOOLTIP;
 	@Localize("Remove the selected attacks")
+	@Localize(locale = "de", value = "Ausgewählte Angriffe entfernen")
 	@Localize(locale = "ru", value = "Удалить выбранные атаки")
 	private static String					REMOVE_TOOLTIP;
 

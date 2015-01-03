@@ -21,6 +21,7 @@ import java.awt.event.KeyEvent;
 /** Provides the "Jump To Search" command. */
 public class JumpToSearchCommand extends Command {
 	@Localize("Jump To Search")
+	@Localize(locale = "de", value = "Springe zur Suche")
 	@Localize(locale = "ru", value = "Перейти к поиску")
 	private static String					JUMP_TO_SEARCH;
 

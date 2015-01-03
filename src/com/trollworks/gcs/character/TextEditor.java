@@ -35,9 +35,11 @@ import javax.swing.border.EmptyBorder;
 /** Provides simplistic text editing. */
 public class TextEditor extends JDialog implements ActionListener, WindowFocusListener {
 	@Localize("Cancel")
+	@Localize(locale = "de", value = "Abbrechen")
 	@Localize(locale = "ru", value = "Отмена")
 	private static String	CANCEL;
 	@Localize("Set")
+	@Localize(locale = "de", value = "Ok")
 	@Localize(locale = "ru", value = "Принять")
 	private static String	SET;
 

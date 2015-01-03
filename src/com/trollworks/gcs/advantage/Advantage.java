@@ -44,6 +44,7 @@ import java.util.List;
 /** A GURPS Advantage. */
 public class Advantage extends ListRow {
 	@Localize("Advantage")
+	@Localize(locale = "de", value = "Vorteil")
 	@Localize(locale = "ru", value = "Преимущество")
 	private static String				DEFAULT_NAME;
 

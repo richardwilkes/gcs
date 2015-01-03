@@ -23,12 +23,15 @@ import com.trollworks.toolkit.ui.layout.FlexSpacer;
 /** A skill prerequisite editor panel. */
 public class SkillPrereqEditor extends PrereqEditor {
 	@Localize("whose name ")
+	@Localize(locale = "de", value = "dessen Name ")
 	@Localize(locale = "ru", value = "чье имя ")
 	private static String WHOSE_NAME;
 	@Localize("and whose level ")
+	@Localize(locale = "de", value = "und dessen Fertigkeitswert ")
 	@Localize(locale = "ru", value = "и чей уровень ")
 	private static String WHOSE_LEVEL;
 	@Localize("and whose specialization ")
+	@Localize(locale = "de", value = "und dessen Spezialisierung ")
 	@Localize(locale = "ru", value = "и чья специализация")
 	private static String WHOSE_SPECIALIZATION;
 

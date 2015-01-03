@@ -382,57 +382,75 @@ public enum SpellColumn {
 	};
 
 	@Localize("Spells")
+	@Localize(locale = "de", value = "Zauber")
 	@Localize(locale = "ru", value = "Заклинания")
 	static String	DESCRIPTION_TITLE;
 	@Localize("The name, tech level and notes describing the spell")
+	@Localize(locale = "de", value = "Der Name, Techlevel und Anmerkungen, die den Zauber beschreiben")
 	@Localize(locale = "ru", value = "Название, ТУ и заметки заклинания")
 	static String	DESCRIPTION_TOOLTIP;
 	@Localize("Class")
+	@Localize(locale = "de", value = "Klasse")
 	@Localize(locale = "ru", value = "Класс")
 	static String	CLASS_TITLE;
 	@Localize("The class and college of the spell")
+	@Localize(locale = "de", value = "Die Klasse und Schule des Zaubers")
 	@Localize(locale = "ru", value = "Класс и школа заклинания")
 	static String	CLASS_TOOLTIP;
 	@Localize("Mana Cost")
+	@Localize(locale = "de", value = "Mana-Kosten")
 	@Localize(locale = "ru", value = "Мана")
 	static String	MANA_COST_TITLE;
 	@Localize("The mana cost to cast and maintain the spell")
+	@Localize(locale = "de", value = "Die Mana-Kosten, um den Zauber zu wirken")
 	@Localize(locale = "ru", value = "Мана-стоимость сотворения заклинания и его поддержание")
 	static String	MANA_COST_TOOLTIP;
 	@Localize("Time")
+	@Localize(locale = "de", value = "Zeit")
 	@Localize(locale = "ru", value = "Время")
 	static String	TIME_TITLE;
 	@Localize("THe time required to cast the spell and its duration")
+	@Localize(locale = "de", value = "Die benötigte Zeit, um den Zauber zu wirken und seine Dauer")
 	@Localize(locale = "ru", value = "Необходимое время для сотворения заклинания и его длительность")
 	static String	TIME_TOOLTIP;
 	@Localize("Pts")
+	@Localize(locale = "de", value = "Pkt")
 	@Localize(locale = "ru", value = "Очк")
 	static String	POINTS_TITLE;
 	@Localize("The points spent in the spell")
+	@Localize(locale = "de", value = "Die für den Zauber aufgewendeten Punkte")
 	@Localize(locale = "ru", value = "Потраченные очки на заклинание")
 	static String	POINTS_TOOLTIP;
 	@Localize("SL")
+	@Localize(locale = "de", value = "FW")
 	@Localize(locale = "ru", value = "УУ")
 	static String	LEVEL_TITLE;
 	@Localize("The spell level")
+	@Localize(locale = "de", value = "Der Fertigkeitswert des Zaubers")
 	@Localize(locale = "ru", value = "Уровень заклинания")
 	static String	LEVEL_TOOLTIP;
 	@Localize("RSL")
+	@Localize(locale = "de", value = "RFW")
 	@Localize(locale = "ru", value = "ОУУ")
 	static String	RELATIVE_LEVEL_TITLE;
 	@Localize("The relative spell level")
+	@Localize(locale = "de", value = "Der relative Fertigkeitswert des Zaubers")
 	@Localize(locale = "ru", value = "Относительный уровень заклинания")
 	static String	RELATIVE_LEVEL_TOOLTIP;
 	@Localize("Category")
+	@Localize(locale = "de", value = "Kategorie")
 	@Localize(locale = "ru", value = "Категория")
 	static String	CATEGORY_TITLE;
 	@Localize("The category or categories the spell belongs to")
+	@Localize(locale = "de", value = "Die Kategorie oder Kategorien, denen dieser Zauber angehört")
 	@Localize(locale = "ru", value = "Категория или категории, к которым относится заклинание")
 	static String	CATEGORY_TOOLTIP;
 	@Localize("Ref")
+	@Localize(locale = "de", value = "Ref")
 	@Localize(locale = "ru", value = "Ссыл")
 	static String	REFERENCE_TITLE;
 	@Localize("A reference to the book and page this spell appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Zauber beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
 	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая заклинание\n (например B22 - книга \"Базовые правила\", страница 22)")
 	static String	REFERENCE_TOOLTIP;
 

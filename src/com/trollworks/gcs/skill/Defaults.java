@@ -26,6 +26,7 @@ import java.util.List;
 /** Displays and edits {@link SkillDefault} objects. */
 public class Defaults extends BandedPanel implements ActionListener {
 	@Localize("Defaults")
+	@Localize(locale = "de", value = "Grundwerte")
 	@Localize(locale = "ru", value = "По умолчанию")
 	private static String TITLE;
 

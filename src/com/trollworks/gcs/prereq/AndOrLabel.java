@@ -26,9 +26,11 @@ import javax.swing.SwingConstants;
 /** A label that displays the "and" or the "or" message, or nothing if it is the first one. */
 public class AndOrLabel extends JLabel {
 	@Localize("and")
+	@Localize(locale = "de", value = "und")
 	@Localize(locale = "ru", value = "и")
 	private static String AND;
 	@Localize("or")
+	@Localize(locale = "de", value = "oder")
 	@Localize(locale = "ru", value = "или")
 	private static String OR;
 

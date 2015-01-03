@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 /** Provides the "New Skills Library" command. */
 public class NewSkillsLibraryCommand extends Command {
 	@Localize("New Skills Library")
+	@Localize(locale = "de", value = "Neue Fertigkeiten-Liste")
 	@Localize(locale = "ru", value = "Новая библиотека умений")
 	private static String						TITLE;
 

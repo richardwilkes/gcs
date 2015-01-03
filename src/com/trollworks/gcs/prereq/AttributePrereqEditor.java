@@ -27,9 +27,11 @@ import javax.swing.JComboBox;
 /** An attribute prerequisite editor panel. */
 public class AttributePrereqEditor extends PrereqEditor {
 	@Localize("combined with {0}")
+	@Localize(locale = "de", value = "addiert mit {0}")
 	@Localize(locale = "ru", value = "в сочетании с {0}")
 	private static String		COMBINED_WITH;
 	@Localize("which ")
+	@Localize(locale = "de", value = "die ")
 	@Localize(locale = "ru", value = "который")
 	private static String		WHICH;
 

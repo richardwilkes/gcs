@@ -119,48 +119,63 @@ import javax.swing.event.ChangeListener;
 /** The character sheet. */
 public class CharacterSheet extends JPanel implements ChangeListener, Scrollable, BatchNotifierTarget, PageOwner, PrintProxy, ActionListener, Runnable, DropTargetListener {
 	@Localize("Page {0} of {1}")
+	@Localize(locale = "de", value = "Seite {0} von {1}")
 	@Localize(locale = "ru", value = "Стр. {0} из {1}")
 	private static String		PAGE_NUMBER;
 	@Localize("Visit us at %s")
+	@Localize(locale = "de", value = "Besucht uns auf %s")
 	@Localize(locale = "ru", value = "Посетите нас на %s")
 	private static String		ADVERTISEMENT;
 	@Localize("Melee Weapons")
+	@Localize(locale = "de", value = "Nahkampfwaffen")
 	@Localize(locale = "ru", value = "Контактные орудия")
 	private static String		MELEE_WEAPONS;
 	@Localize("Ranged Weapons")
+	@Localize(locale = "de", value = "Fernkampfwaffen")
 	@Localize(locale = "ru", value = "Дистанционные орудия")
 	private static String		RANGED_WEAPONS;
 	@Localize("Advantages, Disadvantages & Quirks")
+	@Localize(locale = "de", value = "Vorteile, Nachteile und Marotten")
 	@Localize(locale = "ru", value = "Преимущества, недостатки и причуды")
 	private static String		ADVANTAGES;
 	@Localize("Skills")
+	@Localize(locale = "de", value = "Fähigkeiten")
 	@Localize(locale = "ru", value = "Умения")
 	private static String		SKILLS;
 	@Localize("Spells")
+	@Localize(locale = "de", value = "Zauber")
 	@Localize(locale = "ru", value = "Заклинания")
 	private static String		SPELLS;
 	@Localize("Equipment")
+	@Localize(locale = "de", value = "Ausrüstung")
 	@Localize(locale = "ru", value = "Снаряжение")
 	private static String		EQUIPMENT;
 	@Localize("{0} (continued)")
+	@Localize(locale = "de", value = "{0} (fortgesetzt)")
 	@Localize(locale = "ru", value = "{0} (продолжается)")
 	private static String		CONTINUED;
 	@Localize("Natural")
+	@Localize(locale = "de", value = "Angeboren")
 	@Localize(locale = "ru", value = "Природное")
 	private static String		NATURAL;
 	@Localize("Punch")
+	@Localize(locale = "de", value = "Schlag")
 	@Localize(locale = "ru", value = "Удар")
 	private static String		PUNCH;
 	@Localize("Kick")
+	@Localize(locale = "de", value = "Tritt")
 	@Localize(locale = "ru", value = "Пинок")
 	private static String		KICK;
 	@Localize("Kick w/Boots")
+	@Localize(locale = "de", value = "Tritt mit Schuh")
 	@Localize(locale = "ru", value = "Пинок (ботинком)")
 	private static String		BOOTS;
 	@Localize("Unidentified key: '%s'")
+	@Localize(locale = "de", value = "Unbekannter Schlüssel: '%s'")
 	@Localize(locale = "ru", value = "Неопознанный ключ: '%s'")
 	private static String		UNIDENTIFIED_KEY;
 	@Localize("Notes")
+	@Localize(locale = "de", value = "Notizen")
 	@Localize(locale = "ru", value = "Заметка")
 	private static String		NOTES;
 

@@ -23,6 +23,7 @@ import java.awt.event.KeyEvent;
 /** Provides the "Decrement" command. */
 public class DecrementCommand extends Command {
 	@Localize("Decrement")
+	@Localize(locale = "de", value = "Verringern")
 	@Localize(locale = "ru", value = "Уменьшить")
 	private static String DECREMENT;
 

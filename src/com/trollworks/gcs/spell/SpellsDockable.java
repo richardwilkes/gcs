@@ -19,6 +19,7 @@ import com.trollworks.toolkit.utility.Localization;
 /** A list of spells from a library. */
 public class SpellsDockable extends LibraryDockable {
 	@Localize("Untitled Spells")
+	@Localize(locale = "de", value = "Unbenannte Zauber-Liste")
 	@Localize(locale = "ru", value = "Безымянный список заклинаний")
 	private static String	UNTITLED;
 

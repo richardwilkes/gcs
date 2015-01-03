@@ -31,26 +31,34 @@ import javax.swing.JComponent;
 /** A prerequisite list editor panel. */
 public class ListPrereqEditor extends PrereqEditor {
 	@Localize("Requires all of:")
+	@Localize(locale = "de", value = "Benötigt alle von:")
 	@Localize(locale = "ru", value = "Требует всё из:")
 	private static String		REQUIRES_ALL;
 	@Localize("Requires at least one of:")
+	@Localize(locale = "de", value = "Benötigt mindestens einen von:")
 	@Localize(locale = "ru", value = "Требует одно из:")
 	private static String		REQUIRES_ANY;
 	@Localize("Add a prerequisite to this list")
+	@Localize(locale = "de", value = "Füge eine Bedingung zu dieser Liste hinzu")
 	@Localize(locale = "ru", value = "Добавить требование в этот список")
 	private static String		ADD_PREREQ_TOOLTIP;
 	@Localize("Add a prerequisite list to this list")
+	@Localize(locale = "de", value = "Füge eine Bedingungs-Liste zu dieser Liste hinzu")
 	@Localize(locale = "ru", value = "Добавить список требований в этот список")
 	private static String		ADD_PREREQ_LIST_TOOLTIP;
 	@Localize(" ")
+	@Localize(locale = "de", value = " ")
 	private static String		NO_TL_PREREQ;
 	@Localize("When the Character's TL is")
+	@Localize(locale = "de", value = "Wenn der TL des Charakters ist")
 	@Localize(locale = "ru", value = "Когда ТУ персонажа")
 	private static String		TL_IS;
 	@Localize("When the Character's TL is at least")
+	@Localize(locale = "de", value = "Wenn der TL des Charakters ist mindestens")
 	@Localize(locale = "ru", value = "Когда ТУ персонажа по крайней мере")
 	private static String		TL_IS_AT_LEAST;
 	@Localize("When the Character's TL is at most")
+	@Localize(locale = "de", value = "Wenn der TL des Charakters ist höchstens")
 	@Localize(locale = "ru", value = "Когда ТУ персонажа не более")
 	private static String		TL_IS_AT_MOST;
 

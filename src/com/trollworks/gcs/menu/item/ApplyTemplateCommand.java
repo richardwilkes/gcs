@@ -28,9 +28,11 @@ import java.util.ArrayList;
 /** Provides the "Apply Template To Sheet" command. */
 public class ApplyTemplateCommand extends Command {
 	@Localize("Apply Template To Character Sheet")
+	@Localize(locale = "de", value = "Wende Vorlage auf Charakterblatt an")
 	@Localize(locale = "ru", value = "Применить шаблон к листу персонажа")
 	private static String						APPLY_TEMPLATE_TO_SHEET;
 	@Localize("Apply Template")
+	@Localize(locale = "de", value = "Vorlage anwenden")
 	@Localize(locale = "ru", value = "Применить шаблон")
 	private static String						UNDO;
 

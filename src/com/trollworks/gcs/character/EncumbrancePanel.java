@@ -29,35 +29,46 @@ import javax.swing.SwingConstants;
 /** The character encumbrance panel. */
 public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 	@Localize("Encumbrance, Move & Dodge")
+	@Localize(locale = "de", value = "Belastung, Bewegung & Ausweichen")
 	@Localize(locale = "ru", value = "Нагрузка, движение и уклонение")
 	private static String		ENCUMBRANCE_MOVE_DODGE;
 	@Localize("Level")
+	@Localize(locale = "de", value = "Stufe")
 	@Localize(locale = "ru", value = "Уровень")
 	private static String		ENCUMBRANCE_LEVEL;
 	@Localize("Max Load")
+	@Localize(locale = "de", value = "Max. Gew.")
 	@Localize(locale = "ru", value = "Макс нагрузка")
 	private static String		MAX_CARRY;
 	@Localize("Move")
+	@Localize(locale = "de", value = "Bew.")
 	@Localize(locale = "ru", value = "Движ.")
 	private static String		MOVE;
 	@Localize("Dodge")
+	@Localize(locale = "de", value = "Ausw.")
 	@Localize(locale = "ru", value = "Укл.")
 	private static String		DODGE;
 	@Localize("The encumbrance level")
+	@Localize(locale = "de", value = "Die Belastungsstufe")
 	@Localize(locale = "ru", value = "Уровень нагрузки")
 	private static String		ENCUMBRANCE_TOOLTIP;
 	@Localize("The maximum load a character can carry and still remain within a specific encumbrance level")
+	@Localize(locale = "de", value = "Das maximale Gewicht, das ein Charakter tragen und immer noch in einer bestimmten Belastungsstufe bleiben kann")
 	@Localize(locale = "ru", value = "Максимальная нагрузка, которую персонаж может нести, \nоставаясь в пределах указанного уровня нагрузки")
 	private static String		MAX_CARRY_TOOLTIP;
 	@Localize("The character's ground movement rate for a specific encumbrance level")
+	@Localize(locale = "de", value = "Die Bewegungswert eines Charakters am Boden für eine bestimmte Belastungsstufe")
 	@Localize(locale = "ru", value = "Единицы движения персонажа при указанном уровне нагрузки")
 	private static String		MOVE_TOOLTIP;
 	@Localize("The character's dodge for a specific encumbrance level")
+	@Localize(locale = "de", value = "Der Ausweichen-Wert eines Charakters für eine bestimmte Belastungsstufe")
 	@Localize(locale = "ru", value = "Уклонение персонажа для указанного уровня нагрузки")
 	private static String		DODGE_TOOLTIP;
 	@Localize("{0} ({1})")
+	@Localize(locale = "de", value = "{0} ({1})")
 	static String				ENCUMBRANCE_FORMAT;
 	@Localize("\u2022 {0} ({1})")
+	@Localize(locale = "de", value = "\u2022 {0} ({1})")
 	static String				CURRENT_ENCUMBRANCE_FORMAT;
 
 	static {

@@ -21,6 +21,7 @@ import com.trollworks.toolkit.ui.widget.BandedPanel;
 /** Displays and edits {@link Prereq} objects. */
 public class PrereqsPanel extends BandedPanel {
 	@Localize("Prerequisites")
+	@Localize(locale = "de", value = "Bedingungen")
 	@Localize(locale = "ru", value = "Требования")
 	private static String PREREQUISITES;
 

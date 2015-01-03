@@ -35,6 +35,7 @@ import javax.swing.undo.CannotUndoException;
 /** An undo for the entire row, with the exception of its children. */
 public class RowUndo extends AbstractUndoableEdit {
 	@Localize("{0} Changes")
+	@Localize(locale = "de", value = "{0} Änderungen")
 	@Localize(locale = "ru", value = "{0} изменений")
 	private static String UNDO_FORMAT;
 

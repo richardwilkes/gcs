@@ -282,33 +282,43 @@ public enum AdvantageColumn {
 	};
 
 	@Localize("Advantages & Disadvantages")
+	@Localize(locale = "de", value = "Vorteile & Nachteile")
 	@Localize(locale = "ru", value = "Преимущества и недостатки")
 	static String	DESCRIPTION_TITLE;
 	@Localize("The name, level and notes describing an advantage")
+	@Localize(locale = "de", value = "Der Name, Stufe und Anmerkungen, die den Vorteil beschreiben")
 	@Localize(locale = "ru", value = "Название, уровень и заметки преимущества")
 	static String	DESCRIPTION_TOOLTIP;
 	@Localize("Pts")
+	@Localize(locale = "de", value = "Pkt")
 	@Localize(locale = "ru", value = "Очк")
 	static String	POINTS_TITLE;
 	@Localize("The points spent in the advantage")
+	@Localize(locale = "de", value = "Die für den Vorteil aufgewendeten Punkte")
 	@Localize(locale = "ru", value = "Потраченые очки на преимущество")
 	static String	POINTS_TOOLTIP;
 	@Localize("Type")
+	@Localize(locale = "de", value = "Typ")
 	@Localize(locale = "ru", value = "Тип")
 	static String	TYPE_TITLE;
 	@Localize("The type of advantage")
+	@Localize(locale = "de", value = "Der Typ des Vorteils")
 	@Localize(locale = "ru", value = "Тип преимущества")
 	static String	TYPE_TOOLTIP;
 	@Localize("Category")
+	@Localize(locale = "de", value = "Kategorie")
 	@Localize(locale = "ru", value = "Категория")
 	static String	CATEGORY_TITLE;
 	@Localize("The category or categories the advantage belongs to")
+	@Localize(locale = "de", value = "Die Kategorie oder Kategorien, denen dieser Vorteil angehört")
 	@Localize(locale = "ru", value = "Категория или категории, к которым относится преимущество")
 	static String	CATEGORY_TOOLTIP;
 	@Localize("Ref")
+	@Localize(locale = "de", value = "Ref")
 	@Localize(locale = "ru", value = "Ссыл")
 	static String	REFERENCE_TITLE;
 	@Localize("A reference to the book and page this advantage appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Vorteil beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
 	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая преимущество\n (например, B22 - книга \"Базовые правила\", страница 22)")
 	static String	REFERENCE_TOOLTIP;
 

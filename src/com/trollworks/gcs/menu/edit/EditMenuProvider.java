@@ -36,6 +36,7 @@ import javax.swing.JMenu;
 /** Provides the standard "Edit" menu. */
 public class EditMenuProvider implements MenuProvider {
 	@Localize("Edit")
+	@Localize(locale = "de", value = "Bearbeiten")
 	@Localize(locale = "ru", value = "Правка")
 	private static String		EDIT;
 

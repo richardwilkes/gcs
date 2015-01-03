@@ -40,9 +40,11 @@ import javax.swing.ScrollPaneConstants;
 /** Editor for {@link ModifierList}s. */
 public class ModifierListEditor extends ActionPanel implements ActionListener {
 	@Localize("Modifiers")
+	@Localize(locale = "de", value = "Modifikatoren")
 	@Localize(locale = "ru", value = "Модификаторы")
 	private static String	MODIFIERS;
 	@Localize("Add a modifier")
+	@Localize(locale = "de", value = "Einen Modifikator hinzufügen.")
 	@Localize(locale = "ru", value = "Добавить модификатор")
 	private static String	ADD_TOOLTIP;
 

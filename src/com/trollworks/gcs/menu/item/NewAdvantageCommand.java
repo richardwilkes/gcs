@@ -27,9 +27,11 @@ import java.awt.event.KeyEvent;
 /** Provides the "New Advantage" command. */
 public class NewAdvantageCommand extends Command {
 	@Localize("New Advantage")
+	@Localize(locale = "de", value = "Neuer Vorteil")
 	@Localize(locale = "ru", value = "Новое преимущество")
 	private static String					ADVANTAGE;
 	@Localize("New Advantage Container")
+	@Localize(locale = "de", value = "Neuer Vorteils-Container")
 	@Localize(locale = "ru", value = "Новый контейнер преимущества")
 	private static String					ADVANTAGE_CONTAINER;
 

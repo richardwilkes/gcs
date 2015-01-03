@@ -61,12 +61,15 @@ public enum EquipmentState {
 	};
 
 	@Localize("Equipped")
+	@Localize(locale = "de", value = "Ausgerüstet")
 	@Localize(locale = "ru", value = "Экипирован")
 	static String	EQUIPPED_TITLE;
 	@Localize("Carried")
+	@Localize(locale = "de", value = "Mitgeführt")
 	@Localize(locale = "ru", value = "Носимый")
 	static String	CARRIED_TITLE;
 	@Localize("Not Carried")
+	@Localize(locale = "de", value = "Nicht mitgeführt")
 	@Localize(locale = "ru", value = "Не носимый")
 	static String	NOT_CARRIED_TITLE;
 

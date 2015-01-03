@@ -32,24 +32,31 @@ import javax.swing.JMenuItem;
 /** Provides the standard "Help" menu. */
 public class HelpMenuProvider implements MenuProvider {
 	@Localize("Help")
+	@Localize(locale = "de", value = "Hilfe")
 	@Localize(locale = "ru", value = "Справка")
 	private static String		HELP;
 	@Localize("Release Notes")
+	@Localize(locale = "de", value = "Hinweise zur Veröffentlichung")
 	@Localize(locale = "ru", value = "Примечания к выпуску")
 	private static String		RELEASE_NOTES;
 	@Localize("Bug Reports")
+	@Localize(locale = "de", value = "Fehlerberichte")
 	@Localize(locale = "ru", value = "Отчет об ошибках")
 	private static String		BUGS;
 	@Localize("Feature Requests")
+	@Localize(locale = "de", value = "Programmwünsche")
 	@Localize(locale = "ru", value = "Заявки на добавление новых функций")
 	private static String		FEATURES;
 	@Localize("License")
+	@Localize(locale = "de", value = "Lizenz")
 	@Localize(locale = "ru", value = "Лицензия")
 	private static String		LICENSE;
 	@Localize("Web Site")
+	@Localize(locale = "de", value = "Webseite")
 	@Localize(locale = "ru", value = "Сайт")
 	private static String		WEB_SITE;
 	@Localize("Mailing Lists")
+	@Localize(locale = "de", value = "Mailinglisten")
 	@Localize(locale = "ru", value = "Списки рассылки")
 	private static String		MAILING_LISTS;
 

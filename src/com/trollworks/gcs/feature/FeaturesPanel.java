@@ -24,6 +24,7 @@ import java.util.List;
 /** Displays and edits {@link Feature} objects. */
 public class FeaturesPanel extends BandedPanel {
 	@Localize("Features")
+	@Localize(locale = "de", value = "Eigenschaften")
 	@Localize(locale = "ru", value = "Особенности")
 	private static String FEATURES;
 

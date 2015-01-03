@@ -30,9 +30,11 @@ import java.util.ArrayList;
 // RAW: This should be reimplemented in terms of the Duplicatable interface
 public class DuplicateCommand extends Command {
 	@Localize("Duplicate")
+	@Localize(locale = "de", value = "Duplizieren")
 	@Localize(locale = "ru", value = "Дублировать")
 	private static String					DUPLICATE;
 	@Localize("Duplicate Rows")
+	@Localize(locale = "de", value = "Zeile Duplizieren")
 	@Localize(locale = "ru", value = "Дублировать строки")
 	private static String					DUPLICATE_UNDO;
 

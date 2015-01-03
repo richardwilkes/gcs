@@ -28,15 +28,19 @@ import java.util.List;
 /** An editor for melee weapon statistics. */
 public class MeleeWeaponEditor extends WeaponEditor {
 	@Localize("Melee Weapon")
+	@Localize(locale = "de", value = "Nahkampfwaffe")
 	@Localize(locale = "ru", value = "Контактное оружие")
 	private static String MELEE_WEAPON;
 	@Localize("Reach")
+	@Localize(locale = "de", value = "Reichweite")
 	@Localize(locale = "ru", value = "Досягаемость")
 	private static String REACH;
 	@Localize("Parry Modifier")
+	@Localize(locale = "de", value = "Paradewert")
 	@Localize(locale = "ru", value = "Модификатор парирования")
 	private static String PARRY;
 	@Localize("Block Modifier")
+	@Localize(locale = "de", value = "Abblockwert")
 	@Localize(locale = "ru", value = "Модификатор блока")
 	private static String BLOCK;
 

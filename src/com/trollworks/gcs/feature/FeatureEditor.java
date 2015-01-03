@@ -36,33 +36,43 @@ import javax.swing.text.DefaultFormatterFactory;
 /** A generic feature editor panel. */
 public abstract class FeatureEditor extends EditorPanel {
 	@Localize("Add a feature")
+	@Localize(locale = "de", value = "Eine Eigenschaft hinzufügen")
 	@Localize(locale = "ru", value = "Добавить особенность")
 	private static String			ADD_FEATURE_TOOLTIP;
 	@Localize("Remove this feature")
+	@Localize(locale = "de", value = "Diese Eigenschaft entfernen")
 	@Localize(locale = "ru", value = "Убрать эту особенность")
 	private static String			REMOVE_FEATURE_TOOLTIP;
 	@Localize("Gives an attribute bonus of")
+	@Localize(locale = "de", value = "Gibt einen Attributs-Bonus von")
 	@Localize(locale = "ru", value = "Даёт премию атрибуту")
 	private static String			ATTRIBUTE_BONUS;
 	@Localize("Reduces the attribute cost of")
+	@Localize(locale = "de", value = "Reduziert die Attributskosten von")
 	@Localize(locale = "ru", value = "Снижает стоимость атрибута")
 	private static String			COST_REDUCTION;
 	@Localize("Gives a DR bonus of")
+	@Localize(locale = "de", value = "Gibt einen SR-Bonus von")
 	@Localize(locale = "ru", value = "Даёт премию СП")
 	private static String			DR_BONUS;
 	@Localize("Gives a skill level bonus of")
+	@Localize(locale = "de", value = "Gibt einen Fertigkeitswert-Bonus von")
 	@Localize(locale = "ru", value = "Даёт премию к уровню умения")
 	private static String			SKILL_BONUS;
 	@Localize("Gives a spell level bonus of")
+	@Localize(locale = "de", value = "Gibt für Zauber einen Fertigkeitswert-Bonus von")
 	@Localize(locale = "ru", value = "Даёт премию у уровню заклинания")
 	private static String			SPELL_BONUS;
 	@Localize("Gives a weapon damage bonus of")
+	@Localize(locale = "de", value = "Gibt einen Waffen-Schaden-Bonus von")
 	@Localize(locale = "ru", value = "Даёт премию к урону от оружия")
 	private static String			WEAPON_BONUS;
 	@Localize("per level")
+	@Localize(locale = "de", value = "je Stufe")
 	@Localize(locale = "ru", value = "за уровень")
 	private static String			PER_LEVEL;
 	@Localize("per die")
+	@Localize(locale = "de", value = "je Würfel")
 	@Localize(locale = "ru", value = "за кубик")
 	private static String			PER_DIE;
 

@@ -32,6 +32,7 @@ import java.util.HashSet;
  */
 public abstract class NameLevelPrereq extends HasPrereq {
 	@Localize(" and level {0}\n")
+	@Localize(locale = "de", value = " und Stufe {0}")
 	@Localize(locale = "ru", value = " и уровень {0}\n ")
 	static String				LEVEL_PART;
 

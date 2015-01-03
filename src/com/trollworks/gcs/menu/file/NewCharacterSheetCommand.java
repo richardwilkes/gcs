@@ -24,6 +24,7 @@ import java.awt.event.KeyEvent;
 /** Provides the "New Character Sheet" command. */
 public class NewCharacterSheetCommand extends Command {
 	@Localize("New Character Sheet")
+	@Localize(locale = "de", value = "Neues Charakterblatt")
 	@Localize(locale = "ru", value = "Новый лист персонажа")
 	private static String							NEW_CHARACTER_SHEET;
 

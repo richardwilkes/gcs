@@ -38,9 +38,11 @@ import java.util.List;
 /** An outline specifically for spells. */
 public class SpellOutline extends ListOutline implements Incrementable {
 	@Localize("Increment Points")
+	@Localize(locale = "de", value = "Punkte erhöhen")
 	@Localize(locale = "ru", value = "Увеличить очки")
 	private static String INCREMENT;
 	@Localize("Decrement Points")
+	@Localize(locale = "de", value = "Punkte verringern")
 	@Localize(locale = "ru", value = "Уменьшить очки")
 	private static String DECREMENT;
 

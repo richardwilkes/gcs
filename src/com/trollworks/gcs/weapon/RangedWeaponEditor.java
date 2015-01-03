@@ -28,24 +28,31 @@ import java.util.List;
 /** An editor for ranged weapon statistics. */
 public class RangedWeaponEditor extends WeaponEditor {
 	@Localize("Ranged Weapon")
+	@Localize(locale = "de", value = "Fernkampfwaffe")
 	@Localize(locale = "ru", value = "Дистанционное оружие")
 	private static String RANGED_WEAPON;
 	@Localize("Accuracy")
+	@Localize(locale = "de", value = "Genauigkeit")
 	@Localize(locale = "ru", value = "Точность")
 	private static String ACCURACY;
 	@Localize("Range")
+	@Localize(locale = "de", value = "Reichweite")
 	@Localize(locale = "ru", value = "Дальность")
 	private static String RANGE;
 	@Localize("Rate of Fire")
+	@Localize(locale = "de", value = "Schussrate")
 	@Localize(locale = "ru", value = "Скорострельность")
 	private static String RATE_OF_FIRE;
 	@Localize("Shots")
+	@Localize(locale = "de", value = "Schüsse")
 	@Localize(locale = "ru", value = "Боезапас")
 	private static String SHOTS;
 	@Localize("Bulk")
+	@Localize(locale = "de", value = "Handlichkeit")
 	@Localize(locale = "ru", value = "Размер")
 	private static String BULK;
 	@Localize("Recoil")
+	@Localize(locale = "de", value = "Rückstoß")
 	@Localize(locale = "ru", value = "Отдача")
 	private static String RECOIL;
 

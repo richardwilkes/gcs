@@ -41,20 +41,26 @@ import java.util.List;
 /** A GURPS Spell. */
 public class Spell extends ListRow {
 	@Localize("Spell")
+	@Localize(locale = "de", value = "Zauber")
 	@Localize(locale = "ru", value = "Заклинание")
 	private static String			DEFAULT_NAME;
 	@Localize("Arcane")
+	@Localize(locale = "de", value = "Arkan")
 	@Localize(locale = "ru", value = "Тайный")
 	private static String			DEFAULT_POWER_SOURCE;
 	@Localize("Regular")
+	@Localize(locale = "de", value = "Regulär")
 	@Localize(locale = "ru", value = "Обычный")
 	private static String			DEFAULT_SPELL_CLASS;
 	@Localize("1")
+	@Localize(locale = "de", value = "1")
 	private static String			DEFAULT_CASTING_COST;
 	@Localize("1 sec")
+	@Localize(locale = "de", value = "1 Sek.")
 	@Localize(locale = "ru", value = "1 сек")
 	private static String			DEFAULT_CASTING_TIME;
 	@Localize("Instant")
+	@Localize(locale = "de", value = "Sofort")
 	@Localize(locale = "ru", value = "Мгновенное")
 	private static String			DEFAULT_DURATION;
 

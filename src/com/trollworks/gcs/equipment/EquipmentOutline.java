@@ -36,9 +36,11 @@ import java.util.List;
 /** An outline specifically for equipment. */
 public class EquipmentOutline extends ListOutline implements Incrementable {
 	@Localize("Increment Quantity")
+	@Localize(locale = "de", value = "Anzahl erhöhen")
 	@Localize(locale = "ru", value = "Увеличить количество")
 	private static String	INCREMENT;
 	@Localize("Decrement Quantity")
+	@Localize(locale = "de", value = "Anzahl verringen")
 	@Localize(locale = "ru", value = "Уменьшить количество")
 	private static String	DECREMENT;
 

@@ -57,18 +57,23 @@ import javax.swing.border.EmptyBorder;
 /** The template sheet. */
 public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTarget, DropTargetListener, ActionListener {
 	@Localize("Advantages, Disadvantages & Quirks")
+	@Localize(locale = "de", value = "Vorteile, Nachteile & Marotten")
 	@Localize(locale = "ru", value = "Преимущества, недостатки и причуды")
 	private static String				ADVANTAGES;
 	@Localize("Skills")
+	@Localize(locale = "de", value = "Fertigkeiten")
 	@Localize(locale = "ru", value = "Умения")
 	private static String				SKILLS;
 	@Localize("Spells")
+	@Localize(locale = "de", value = "Zauber")
 	@Localize(locale = "ru", value = "Заклинания")
 	private static String				SPELLS;
 	@Localize("Equipment")
+	@Localize(locale = "de", value = "Ausrüstung")
 	@Localize(locale = "ru", value = "Снаряжение")
 	private static String				EQUIPMENT;
 	@Localize("Notes")
+	@Localize(locale = "de", value = "Notizen")
 	@Localize(locale = "ru", value = "Заметка")
 	private static String				NOTES;
 

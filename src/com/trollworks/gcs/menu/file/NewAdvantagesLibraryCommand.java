@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 /** Provides the "New Advantages Library" command. */
 public class NewAdvantagesLibraryCommand extends Command {
 	@Localize("New Advantages Library")
+	@Localize(locale = "de", value = "Neue Vorteils-Liste")
 	@Localize(locale = "ru", value = "Новая библиотека преимуществ")
 	private static String							TITLE;
 

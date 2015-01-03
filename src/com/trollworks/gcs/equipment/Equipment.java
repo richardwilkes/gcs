@@ -43,6 +43,7 @@ import java.util.List;
 /** A piece of equipment. */
 public class Equipment extends ListRow {
 	@Localize("Equipment")
+	@Localize(locale = "de", value = "Ausrüstung")
 	@Localize(locale = "ru", value = "Снаряжение")
 	private static String			DEFAULT_NAME;
 

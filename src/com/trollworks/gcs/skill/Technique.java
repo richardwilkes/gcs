@@ -33,12 +33,15 @@ import java.util.HashSet;
 /** A GURPS Technique. */
 public class Technique extends Skill {
 	@Localize("Technique")
+	@Localize(locale = "de", value = "Technik")
 	@Localize(locale = "ru", value = "Техника")
 	private static String TECHNIQUE_DEFAULT_NAME;
 	@Localize("{0}Requires a skill named {1}\n")
+	@Localize(locale = "de", value = "{0}Benötigt eine Fertigkeit namens {1}")
 	@Localize(locale = "ru", value = "{0}Требует умение {1}\n")
 	private static String REQUIRES_SKILL;
 	@Localize("{0}Requires at least 1 point in the skill named {1}\n")
+	@Localize(locale = "de", value = "{0}Benötigt mindestens einen Punkt in der Fertigkeit namens {1}")
 	@Localize(locale = "ru", value = "{0}Требуется хотя бы 1 очко в умении {1}\n")
 	private static String REQUIRES_POINTS;
 

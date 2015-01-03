@@ -156,60 +156,79 @@ public enum BonusAttributeType {
 	};
 
 	@Localize("to ST")
+	@Localize(locale = "de", value = "ST")
 	@Localize(locale = "ru", value = "СЛ")
 	static String	ST_TITLE;
 	@Localize("to DX")
+	@Localize(locale = "de", value = "GE")
 	@Localize(locale = "ru", value = "ЛВ")
 	static String	DX_TITLE;
 	@Localize("to IQ")
+	@Localize(locale = "de", value = "IQ")
 	@Localize(locale = "ru", value = "ИН")
 	static String	IQ_TITLE;
 	@Localize("to HT")
+	@Localize(locale = "de", value = "KO")
 	@Localize(locale = "ru", value = "ЗД")
 	static String	HT_TITLE;
 	@Localize("to will")
+	@Localize(locale = "de", value = "Wille")
 	@Localize(locale = "ru", value = "воле")
 	static String	WILL_TITLE;
 	@Localize("to fright checks")
+	@Localize(locale = "de", value = "Schreckproben")
 	@Localize(locale = "ru", value = "проверкам страха")
 	static String	FRIGHT_CHECK_TITLE;
 	@Localize("to perception")
+	@Localize(locale = "de", value = "Wahrnehmung")
 	@Localize(locale = "ru", value = "восприятию")
 	static String	PERCEPTION_TITLE;
 	@Localize("to vision")
+	@Localize(locale = "de", value = "Sehen")
 	@Localize(locale = "ru", value = "зрению")
 	static String	VISION_TITLE;
 	@Localize("to hearing")
+	@Localize(locale = "de", value = "Hören")
 	@Localize(locale = "ru", value = "слуху")
 	static String	HEARING_TITLE;
 	@Localize("to taste & smell")
+	@Localize(locale = "de", value = "Schmecken und Riechen")
 	@Localize(locale = "ru", value = "вкусу и запаху")
 	static String	TASTE_SMELL_TITLE;
 	@Localize("to touch")
+	@Localize(locale = "de", value = "Fühlen")
 	@Localize(locale = "ru", value = "осязанию")
 	static String	TOUCH_TITLE;
 	@Localize("to dodge")
+	@Localize(locale = "de", value = "Ausweichen")
 	@Localize(locale = "ru", value = "уклонению")
 	static String	DODGE_TITLE;
 	@Localize("to parry")
+	@Localize(locale = "de", value = "Parieren")
 	@Localize(locale = "ru", value = "парированию")
 	static String	PARRY_TITLE;
 	@Localize("to block")
+	@Localize(locale = "de", value = "Abblocken")
 	@Localize(locale = "ru", value = "блоку")
 	static String	BLOCK_TITLE;
 	@Localize("to basic speed")
+	@Localize(locale = "de", value = "Grundgeschwindigkeit")
 	@Localize(locale = "ru", value = "базовой скорости")
 	static String	SPEED_TITLE;
 	@Localize("to basic move")
+	@Localize(locale = "de", value = "Grundbewegung")
 	@Localize(locale = "ru", value = "базовому движению")
 	static String	MOVE_TITLE;
 	@Localize("to FP")
+	@Localize(locale = "de", value = "EP")
 	@Localize(locale = "ru", value = "ЕУ")
 	static String	FP_TITLE;
 	@Localize("to HP")
+	@Localize(locale = "de", value = "TP")
 	@Localize(locale = "ru", value = "ЕЖ")
 	static String	HP_TITLE;
 	@Localize("to size modifier")
+	@Localize(locale = "de", value = "Größenmodifikator")
 	@Localize(locale = "ru", value = "модификатору размера")
 	static String	SM_TITLE;
 

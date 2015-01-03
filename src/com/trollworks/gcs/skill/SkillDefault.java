@@ -25,9 +25,11 @@ import java.util.HashSet;
 /** Describes a skill default. */
 public class SkillDefault {
 	@Localize(" Parry")
+	@Localize(locale = "de", value = " Parieren")
 	@Localize(locale = "ru", value = " Парирование")
 	private static String		PARRY;
 	@Localize(" Block")
+	@Localize(locale = "de", value = " Abblocken")
 	@Localize(locale = "ru", value = " Блок")
 	private static String		BLOCK;
 

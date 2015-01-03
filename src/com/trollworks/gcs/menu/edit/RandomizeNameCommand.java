@@ -24,12 +24,15 @@ import java.text.MessageFormat;
 /** Provides the "Generate Random Name" command. */
 public class RandomizeNameCommand extends Command {
 	@Localize("Male")
+	@Localize(locale = "de", value = "männlichen")
 	@Localize(locale = "ru", value = "муж.")
 	private static String						MALE;
 	@Localize("Female")
+	@Localize(locale = "de", value = "weiblichen")
 	@Localize(locale = "ru", value = "жен.")
 	private static String						FEMALE;
 	@Localize("Generate Random {0} Name")
+	@Localize(locale = "de", value = "Erstelle zufälligen {0} Namen")
 	@Localize(locale = "ru", value = "Создать случайное {0} имя")
 	private static String						TITLE;
 

@@ -24,6 +24,7 @@ import java.awt.event.KeyEvent;
 /** Provides the "Open Detail Editor" command. */
 public class OpenEditorCommand extends Command {
 	@Localize("Open Detail Editor")
+	@Localize(locale = "de", value = "Öffne Detail-Editor")
 	@Localize(locale = "ru", value = "Открыть расширенный редактор")
 	private static String OPEN_EDITOR;
 

@@ -24,6 +24,7 @@ import java.awt.event.KeyEvent;
 /** Provides the "Copy To Character Sheet" command. */
 public class CopyToSheetCommand extends Command {
 	@Localize("Copy To Character Sheet")
+	@Localize(locale = "de", value = "Kopiere zum Charakterblatt")
 	@Localize(locale = "ru", value = "Копировать в лист персонажа")
 	private static String					COPY_TO_SHEET;
 

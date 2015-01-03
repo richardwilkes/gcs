@@ -23,6 +23,7 @@ import com.trollworks.toolkit.ui.layout.FlexSpacer;
 /** A contained weight prerequisite editor panel. */
 public class ContainedWeightPrereqEditor extends PrereqEditor {
 	@Localize("which ")
+	@Localize(locale = "de", value = "die ")
 	@Localize(locale = "ru", value = "который")
 	private static String WHICH;
 

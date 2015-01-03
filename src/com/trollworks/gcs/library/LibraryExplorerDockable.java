@@ -73,12 +73,15 @@ import javax.swing.event.DocumentListener;
 /** A list of available library files. */
 public class LibraryExplorerDockable extends Dockable implements DocumentListener, SearchTarget, ListCollectionListener, FieldAccessor, IconAccessor, Openable {
 	@Localize("Library Explorer")
+	@Localize(locale = "de", value = "Listen-Bibliothek")
 	@Localize(locale = "ru", value = "Библиотека")
 	private static String	TITLE;
 	@Localize("Enter text here to narrow the list to only those rows containing matching items")
+	@Localize(locale = "de", value = "Hier Text eingeben, um eine Liste der passenden Einträge anzuzeigen")
 	@Localize(locale = "ru", value = "Введите текст здесь, чтобы сузить список до содержащих подходящие элементы")
 	private static String	SEARCH_FIELD_TOOLTIP;
 	@Localize("Opens/closes all hierarchical rows")
+	@Localize(locale = "de", value = "Öffnet / Schließt alle Untereinträge")
 	@Localize(locale = "ru", value = "Развернуть/свернуть все вложенные строки")
 	private static String	TOGGLE_ROWS_OPEN_TOOLTIP;
 

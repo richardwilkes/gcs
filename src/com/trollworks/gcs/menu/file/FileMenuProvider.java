@@ -36,6 +36,7 @@ import javax.swing.JMenu;
 /** Provides the standard "File" menu. */
 public class FileMenuProvider implements MenuProvider {
 	@Localize("File")
+	@Localize(locale = "de", value = "Datei")
 	@Localize(locale = "ru", value = "Файл")
 	private static String		FILE;
 

@@ -27,9 +27,11 @@ import java.awt.event.KeyEvent;
 /** Provides the "New Spell" command. */
 public class NewSpellCommand extends Command {
 	@Localize("New Spell")
+	@Localize(locale = "de", value = "Neuer Zauber")
 	@Localize(locale = "ru", value = "Новое заклинание")
 	private static String				SPELL;
 	@Localize("New Spell Container")
+	@Localize(locale = "de", value = "Neuer Zauber-Container")
 	@Localize(locale = "ru", value = "Новый контейнер заклинаний")
 	private static String				SPELL_CONTAINER;
 
