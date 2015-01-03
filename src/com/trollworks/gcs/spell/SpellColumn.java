@@ -409,7 +409,7 @@ public enum SpellColumn {
 	@Localize(locale = "de", value = "Zeit")
 	@Localize(locale = "ru", value = "Время")
 	static String	TIME_TITLE;
-	@Localize("THe time required to cast the spell and its duration")
+	@Localize("The time required to cast the spell and its duration")
 	@Localize(locale = "de", value = "Die benötigte Zeit, um den Zauber zu wirken und seine Dauer")
 	@Localize(locale = "ru", value = "Необходимое время для сотворения заклинания и его длительность")
 	static String	TIME_TOOLTIP;

@@ -44,10 +44,6 @@ public class SkillDefaultEditor extends EditorPanel {
 	@Localize(locale = "de", value = "Diesen Grundwert entfernen")
 	@Localize(locale = "ru", value = "Удалить это строку")
 	private static String			REMOVE_DEFAULT;
-	@Localize("or")
-	@Localize(locale = "de", value = "oder")
-	@Localize(locale = "ru", value = "или")
-	private static String			OR;
 	@Localize("Optional Specialization")
 	@Localize(locale = "de", value = "Optionale Spezialisierung")
 	@Localize(locale = "ru", value = "Необязательная специализация")

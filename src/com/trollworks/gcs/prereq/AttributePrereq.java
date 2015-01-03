@@ -27,9 +27,9 @@ import java.text.MessageFormat;
 
 /** A Attribute prerequisite. */
 public class AttributePrereq extends HasPrereq {
-	@Localize("{0}{1} {2} which {3}\\n")
+	@Localize("{0}{1} {2} which {3}")
 	@Localize(locale = "de", value = "{0}{1} {2} die {3}")
-	@Localize(locale = "ru", value = "{0}{1} {2} который {3}\\n")
+	@Localize(locale = "ru", value = "{0}{1} {2} который {3}")
 	private static String						DESCRIPTION;
 	@Localize("{0}+{1}")
 	@Localize(locale = "de", value = "{0}+{1}")
