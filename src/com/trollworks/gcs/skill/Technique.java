@@ -247,10 +247,10 @@ public class Technique extends Skill {
 	 */
 	public boolean satisfied(StringBuilder builder, String prefix) {
 		if (mDefault.getType().isSkillBased()) {
-			Skill skill = getCharacter().getBestSkillNamed(mDefault.getName(), mDefault.getSpecialization(), true, new HashSet<String>());
+			Skill skill = getCharacter().getBestSkillNamed(mDefault.getName(), mDefault.getSpecialization(), false, new HashSet<String>());
 			boolean satisfied = skill != null && skill.getPoints() > 0;
 			if (!satisfied && builder != null) {
-				if (skill != null) {
+				if (skill == null) {
 					builder.append(MessageFormat.format(REQUIRES_SKILL, prefix, mDefault.getFullName()));
 				} else {
 					builder.append(MessageFormat.format(REQUIRES_POINTS, prefix, mDefault.getFullName()));
