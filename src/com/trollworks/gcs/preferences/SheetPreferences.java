@@ -169,6 +169,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	@Localize(locale = "de", value = "Die Gesamtpunktzahl des Charakters enthält die noch nicht ausgegebenen Punkte")
 	@Localize(locale = "ru", value = "Показывать в общих очках персонажа неизрасходованные (заработанные)")
 	private static String				TOTAL_POINTS_INCLUDES_UNSPENT_POINTS;
+	@Localize("Use GURPS Metric rules for height, weight, encumbrance and lifting things")
+	@Localize(locale = "de", value = "Benutze GURPS Metrisch-Regeln für Höhe, Gewicht, Belastung und Heben von Gegenständen")
+	private static String				USE_METRIC_RULES;
 
 	static {
 		Localization.initialize();
@@ -200,9 +203,13 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	public static final String			WEIGHT_UNITS_PREF_KEY				= Preferences.getModuleKey(MODULE, WEIGHT_UNITS_KEY);
 	private static final WeightUnits	DEFAULT_WEIGHT_UNITS				= WeightUnits.LB;
 	private static final String			TOTAL_POINTS_DISPLAY_KEY			= "TotalPointsIncludesUnspentPoints";								//$NON-NLS-1$
-	/** The optional dice rules preference key. */
+	/** The total points includes unspent points preference key. */
 	public static final String			TOTAL_POINTS_DISPLAY_PREF_KEY		= Preferences.getModuleKey(MODULE, TOTAL_POINTS_DISPLAY_KEY);
 	private static final boolean		DEFAULT_TOTAL_POINTS_DISPLAY		= true;
+	private static final String			GURPS_METRIC_RULES_KEY				= "UseGurpsMetricRules";											//$NON-NLS-1$
+	/** The GURPS Metric preference key. */
+	public static final String			GURPS_METRIC_RULES_PREF_KEY			= Preferences.getModuleKey(MODULE, GURPS_METRIC_RULES_KEY);
+	private static final boolean		DEFAULT_GURPS_METRIC_RULES			= true;
 	private static final int			DEFAULT_PNG_RESOLUTION				= 200;
 	private static final String			PNG_RESOLUTION_KEY					= "PNGResolution";													//$NON-NLS-1$
 	private static final int[]			DPI									= { 72, 96, 144, 150, 200, 300 };
@@ -225,6 +232,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private JCheckBox					mUseOptionalIQRules;
 	private JCheckBox					mUseOptionalModifierRules;
 	private JCheckBox					mIncludeUnspentPointsInTotal;
+	private JCheckBox					mUseGurpsMetricRules;
 	private JCheckBox					mAutoName;
 	private JCheckBox					mUseNativePrinter;
 
@@ -268,6 +276,11 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	 */
 	public static boolean shouldIncludeUnspentPointsInTotalPointDisplay() {
 		return Preferences.getInstance().getBooleanValue(MODULE, TOTAL_POINTS_DISPLAY_KEY, DEFAULT_TOTAL_POINTS_DISPLAY);
+	}
+
+	/** @return Whether the GURPS Metrics rules are used for weight and height conversion. */
+	public static boolean areGurpsMetricRulesUsed() {
+		return Preferences.getInstance().getBooleanValue(MODULE, GURPS_METRIC_RULES_KEY, DEFAULT_GURPS_METRIC_RULES);
 	}
 
 	/** @return Whether a new character should be automatically named. */
@@ -366,6 +379,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 		mIncludeUnspentPointsInTotal = createCheckBox(TOTAL_POINTS_INCLUDES_UNSPENT_POINTS, null, shouldIncludeUnspentPointsInTotalPointDisplay());
 		column.add(mIncludeUnspentPointsInTotal);
+
+		mUseGurpsMetricRules = createCheckBox(USE_METRIC_RULES, null, areGurpsMetricRulesUsed());
+		column.add(mUseGurpsMetricRules);
 
 		row = new FlexRow();
 		mUseHTMLTemplateOverride = createCheckBox(HTML_TEMPLATE_OVERRIDE, HTML_TEMPLATE_OVERRIDE_TOOLTIP, isHTMLTemplateOverridden());
@@ -529,6 +545,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		mUseOptionalIQRules.setSelected(DEFAULT_OPTIONAL_IQ_RULES);
 		mUseOptionalModifierRules.setSelected(DEFAULT_OPTIONAL_MODIFIER_RULES);
 		mIncludeUnspentPointsInTotal.setSelected(DEFAULT_TOTAL_POINTS_DISPLAY);
+		mUseGurpsMetricRules.setSelected(DEFAULT_GURPS_METRIC_RULES);
 		mUseNativePrinter.setSelected(false);
 	}
 
@@ -592,6 +609,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 			Preferences.getInstance().setValue(MODULE, OPTIONAL_MODIFIER_RULES_KEY, mUseOptionalModifierRules.isSelected());
 		} else if (source == mIncludeUnspentPointsInTotal) {
 			Preferences.getInstance().setValue(MODULE, TOTAL_POINTS_DISPLAY_KEY, mIncludeUnspentPointsInTotal.isSelected());
+		} else if (source == mUseGurpsMetricRules) {
+			Preferences.getInstance().setValue(MODULE, GURPS_METRIC_RULES_KEY, mUseGurpsMetricRules.isSelected());
 		} else if (source == mAutoName) {
 			Preferences.getInstance().setValue(MODULE, AUTO_NAME_KEY, mAutoName.isSelected());
 		} else if (source == mUseNativePrinter) {
