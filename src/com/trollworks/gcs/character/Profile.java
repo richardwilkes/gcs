@@ -1072,12 +1072,18 @@ public class Profile {
 		} else {
 			base = 74;
 		}
-		base += RANDOM.nextInt(11);
+		if (SheetPreferences.areGurpsMetricRulesUsed()) {
+			base = (int) Math.round(LengthUnits.CM.convert(LengthUnits.FT_IN, base));
+			base += RANDOM.nextInt(16);
+		} else {
+			base += RANDOM.nextInt(11);
+		}
 		if (sm != 0) {
 			base = (int) Math.max(Math.round(base * Math.pow(10.0, sm / 6.0)), 1);
 		}
+		LengthUnits calcUnits = SheetPreferences.areGurpsMetricRulesUsed() ? LengthUnits.CM : LengthUnits.FT_IN;
 		LengthUnits desiredUnits = SheetPreferences.getLengthUnits();
-		return new LengthValue(desiredUnits.convert(LengthUnits.FT_IN, base), desiredUnits);
+		return new LengthValue(desiredUnits.convert(calcUnits, base), desiredUnits);
 	}
 
 	/**
@@ -1106,13 +1112,18 @@ public class Profile {
 			base = 170;
 			range = 101;
 		}
+		if (SheetPreferences.areGurpsMetricRulesUsed()) {
+			base = (int) Math.round(WeightUnits.KG.convert(WeightUnits.LB, base));
+			range = (int) Math.round(WeightUnits.KG.convert(WeightUnits.LB, range - 1)) + 1;
+		}
 		base += RANDOM.nextInt(range);
 		if (sm != 0) {
 			base = (int) Math.round(base * Math.pow(1000.0, sm / 6.0));
 		}
 		base = (int) Math.max(Math.round(base * multiplier), 1);
+		WeightUnits calcUnits = SheetPreferences.areGurpsMetricRulesUsed() ? WeightUnits.KG : WeightUnits.LB;
 		WeightUnits desiredUnits = SheetPreferences.getWeightUnits();
-		return new WeightValue(desiredUnits.convert(WeightUnits.LB, base), desiredUnits);
+		return new WeightValue(desiredUnits.convert(calcUnits, base), desiredUnits);
 	}
 
 	/** @return The default player name. */
