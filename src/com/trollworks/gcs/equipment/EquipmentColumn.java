@@ -15,6 +15,7 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
+import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
@@ -26,6 +27,8 @@ import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.Numbers;
+import com.trollworks.toolkit.utility.units.WeightUnits;
+import com.trollworks.toolkit.utility.units.WeightValue;
 
 import java.text.MessageFormat;
 
@@ -270,7 +273,7 @@ public enum EquipmentColumn {
 
 		@Override
 		public String getDataAsText(Equipment equipment) {
-			return equipment.getWeight().toString();
+			return getDisplayWeight(equipment.getWeight());
 		}
 	},
 	/** The value. */
@@ -334,7 +337,7 @@ public enum EquipmentColumn {
 
 		@Override
 		public String getDataAsText(Equipment equipment) {
-			return equipment.getExtendedWeight().toString();
+			return getDisplayWeight(equipment.getExtendedWeight());
 		}
 	},
 	/** The category. */
@@ -546,5 +549,19 @@ public enum EquipmentColumn {
 				model.addColumn(column);
 			}
 		}
+	}
+
+	public static String getDisplayWeight(WeightValue weight) {
+		WeightUnits defaultWeightUnits = SheetPreferences.getWeightUnits();
+		if (SheetPreferences.areGurpsMetricRulesUsed()) {
+			if (defaultWeightUnits.isMetric()) {
+				weight = GURPSCharacter.convertToGurpsMetric(weight);
+			} else {
+				weight = GURPSCharacter.convertFromGurpsMetric(weight);
+			}
+		} else {
+			weight = new WeightValue(weight, defaultWeightUnits);
+		}
+		return weight.toString();
 	}
 }

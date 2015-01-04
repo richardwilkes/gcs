@@ -1143,12 +1143,24 @@ public class GURPSCharacter extends DataFile {
 	}
 
 	private WeightValue getBasicLift(WeightUnits desiredUnits) {
+		WeightUnits units;
+		double divisor;
+		double roundAt;
+		if (SheetPreferences.areGurpsMetricRulesUsed()) {
+			units = WeightUnits.KG;
+			divisor = 10;
+			roundAt = 5;
+		} else {
+			units = WeightUnits.LB;
+			divisor = 5;
+			roundAt = 10;
+		}
 		int strength = getStrength() + mLiftingStrengthBonus;
-		double value = strength * strength / 5.0;
-		if (value >= 10.0) {
+		double value = strength * strength / divisor;
+		if (value >= roundAt) {
 			value = Math.round(value);
 		}
-		return new WeightValue(desiredUnits.convert(WeightUnits.LB, value), desiredUnits);
+		return new WeightValue(desiredUnits.convert(units, value), desiredUnits);
 	}
 
 	private WeightValue getMultipleOfBasicLift(double multiple) {
@@ -1192,10 +1204,11 @@ public class GURPSCharacter extends DataFile {
 	 * @return The maximum amount the character can carry for the specified encumbrance level.
 	 */
 	public WeightValue getMaximumCarry(Encumbrance encumbrance) {
-		WeightValue lift = getBasicLift(WeightUnits.LB);
+		WeightUnits calcUnits = SheetPreferences.areGurpsMetricRulesUsed() ? WeightUnits.KG : WeightUnits.LB;
+		WeightValue lift = getBasicLift(calcUnits);
 		lift.setValue(Math.floor(lift.getValue() * encumbrance.getWeightMultiplier() * 10.0) / 10.0);
 		WeightUnits desiredUnits = SheetPreferences.getWeightUnits();
-		return new WeightValue(desiredUnits.convert(WeightUnits.LB, lift.getValue()), desiredUnits);
+		return new WeightValue(desiredUnits.convert(calcUnits, lift.getValue()), desiredUnits);
 	}
 
 	/**
@@ -1403,6 +1416,48 @@ public class GURPSCharacter extends DataFile {
 	}
 
 	/**
+	 * Convert a metric {@link WeightValue} by GURPS Metric rules into an imperial one. If an
+	 * imperial {@link WeightValue} is passed as an argument, it will be returned unchanged.
+	 *
+	 * @param value The {@link WeightValue} to be converted by GURPS Metric rules.
+	 * @return The converted imperial {@link WeightValue}.
+	 */
+	public static WeightValue convertFromGurpsMetric(WeightValue value) {
+		switch (value.getUnits()) {
+			case G:
+				return new WeightValue(value.getValue() / 30, WeightUnits.OZ);
+			case KG:
+				return new WeightValue(value.getValue() * 2, WeightUnits.LB);
+			case T:
+				return new WeightValue(value.getValue(), WeightUnits.LT);
+			default:
+				return value;
+		}
+	}
+
+	/**
+	 * Convert an imperial {@link WeightValue} by GURPS Metric rules into a metric one. If a metric
+	 * {@link WeightValue} is passed as an argument, it will be returned unchanged.
+	 *
+	 * @param value The {@link WeightValue} to be converted by GURPS Metric rules.
+	 * @return The converted metric {@link WeightValue}.
+	 */
+	public static WeightValue convertToGurpsMetric(WeightValue value) {
+		switch (value.getUnits()) {
+			case LB:
+				return new WeightValue(value.getValue() / 2, WeightUnits.KG);
+			case LT:
+				return new WeightValue(value.getValue(), WeightUnits.T);
+			case OZ:
+				return new WeightValue(value.getValue() * 30, WeightUnits.G);
+			case TN:
+				return new WeightValue(value.getValue(), WeightUnits.T);
+			default:
+				return value;
+		}
+	}
+
+	/**
 	 * Calculate the total weight and wealth carried.
 	 *
 	 * @param notify Whether to send out notifications if the resulting values are different from
@@ -1417,6 +1472,13 @@ public class GURPSCharacter extends DataFile {
 			int quantity = equipment.getQuantity();
 			if (equipment.isCarried()) {
 				WeightValue weight = new WeightValue(equipment.getWeight());
+				if (SheetPreferences.areGurpsMetricRulesUsed()) {
+					if (SheetPreferences.getWeightUnits().isMetric()) {
+						weight = GURPSCharacter.convertToGurpsMetric(weight);
+					} else {
+						weight = GURPSCharacter.convertFromGurpsMetric(weight);
+					}
+				}
 				weight.setValue(weight.getValue() * quantity);
 				mCachedWeightCarried.add(weight);
 			}
