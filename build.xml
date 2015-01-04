@@ -33,7 +33,7 @@
 	<property if:true="${platform.mac}" name="app.signature" value="RWGS"/>
 	<property name="src" value="src"/>
 	<property name="lib" value="libraries"/>
-	<property name="toolkit" value="toolkit-4.0.1.jar"/>
+	<property name="toolkit" value="toolkit-4.0.2.jar"/>
 	<property name="toolkit_lib" value="../toolkit/libraries"/>
 	<property name="toolkit_path" value="${toolkit_lib}/${toolkit}"/>
 	<property name="apple_stubs" value="apple_stubs.jar"/>
@@ -48,7 +48,7 @@
 	<property name="min_jdk" value="1.8"/>
 	<property name="app_name" value="GURPS Character Sheet"/>
 	<property name="copyright_owner" value="Richard A. Wilkes"/>
-	<property name="primary_version" value="4.0.1"/>
+	<property name="primary_version" value="4.0.2"/>
 	<property name="dist_name" value="GCS-${primary_version}"/>
 	<property name="dist_root" value="${dist.build}/${dist_name}"/>
 	<property name="build_app_bundle" value="${dist_root}/${app_name}.app/Contents"/>
