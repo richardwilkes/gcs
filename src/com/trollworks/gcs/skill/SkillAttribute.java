@@ -92,21 +92,27 @@ public enum SkillAttribute {
 
 	@Localize("ST")
 	@Localize(locale = "de", value = "ST")
+	@Localize(locale = "ru", value = "СЛ")
 	static String	ST_TITLE;
 	@Localize("DX")
 	@Localize(locale = "de", value = "GE")
+	@Localize(locale = "ru", value = "ЛВ")
 	static String	DX_TITLE;
 	@Localize("IQ")
 	@Localize(locale = "de", value = "IQ")
+	@Localize(locale = "ru", value = "ИН")
 	static String	IQ_TITLE;
 	@Localize("HT")
 	@Localize(locale = "de", value = "KO")
+	@Localize(locale = "ru", value = "ЗД")
 	static String	HT_TITLE;
 	@Localize("Will")
 	@Localize(locale = "de", value = "Wille")
+	@Localize(locale = "ru", value = "Воля")
 	static String	WILL_TITLE;
 	@Localize("Per")
 	@Localize(locale = "de", value = "WN")
+	@Localize(locale = "ru", value = "Восп")
 	static String	PER_TITLE;
 
 	static {

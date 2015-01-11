@@ -38,7 +38,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 	private static String		ENCUMBRANCE_LEVEL;
 	@Localize("Max Load")
 	@Localize(locale = "de", value = "Max. Gew.")
-	@Localize(locale = "ru", value = "Макс нагрузка")
+	@Localize(locale = "ru", value = "Мак.нагруз.")
 	private static String		MAX_CARRY;
 	@Localize("Move")
 	@Localize(locale = "de", value = "Bew.")

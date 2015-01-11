@@ -84,6 +84,7 @@ public enum NumericCompareType {
 	static String	AT_MOST_TITLE;
 	@Localize("{0}exactly {1}")
 	@Localize(locale = "de", value = "{0}genau {1}")
+	@Localize(locale = "ru", value = "{0}точно {1}")
 	static String	IS_FORMAT;
 	@Localize("{0}at least {1}")
 	@Localize(locale = "de", value = "{0}mindestens {1}")

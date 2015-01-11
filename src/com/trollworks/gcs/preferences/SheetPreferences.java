@@ -171,6 +171,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private static String				TOTAL_POINTS_INCLUDES_UNSPENT_POINTS;
 	@Localize("Use GURPS Metric rules for height, weight, encumbrance and lifting things")
 	@Localize(locale = "de", value = "Benutze GURPS Metrisch-Regeln für Höhe, Gewicht, Belastung und Heben von Gegenständen")
+	@Localize(locale = "ru", value = "Использовать метрическую систему по правилам GURPS для роста, веса, нагрузки и грузоподъёмности")
 	private static String				USE_METRIC_RULES;
 
 	static {

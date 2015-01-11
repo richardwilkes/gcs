@@ -62,6 +62,7 @@ public enum EquipmentState {
 
 	@Localize("E")
 	@Localize(locale = "de", value = "A")
+	@Localize(locale = "ru", value = "Э")
 	static String	EQUIPPED_SHORT;
 	@Localize("Equipped")
 	@Localize(locale = "de", value = "Ausgerüstet")
@@ -69,6 +70,7 @@ public enum EquipmentState {
 	static String	EQUIPPED_TITLE;
 	@Localize("C")
 	@Localize(locale = "de", value = "M")
+	@Localize(locale = "ru", value = "Н")
 	static String	CARRIED_SHORT;
 	@Localize("Carried")
 	@Localize(locale = "de", value = "Mitgeführt")

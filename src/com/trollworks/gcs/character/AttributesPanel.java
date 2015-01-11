@@ -50,7 +50,7 @@ public class AttributesPanel extends DropPanel {
 	private static String	DX_TOOLTIP;
 	@Localize("Intelligence (IQ):")
 	@Localize(locale = "de", value = "Intelligenz (IQ):")
-	@Localize(locale = "ru", value = "Интел-кт (ИН):")
+	@Localize(locale = "ru", value = "Интеллект (ИН):")
 	private static String	IQ;
 	@Localize("<html><body><b>{0} points</b> have been spent to modify <b>Intelligence</b></body></html>")
 	@Localize(locale = "de", value = "<html><body><b>{0} Punkte</b> wurden ausgegeben, um die <b>Intelligenz</b> zu verändern</body></html>")
