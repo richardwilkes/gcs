@@ -1146,7 +1146,7 @@ public class GURPSCharacter extends DataFile {
 		WeightUnits units;
 		double divisor;
 		double roundAt;
-		if (SheetPreferences.areGurpsMetricRulesUsed()) {
+		if (SheetPreferences.areGurpsMetricRulesUsed() && SheetPreferences.getWeightUnits().isMetric()) {
 			units = WeightUnits.KG;
 			divisor = 10;
 			roundAt = 5;
@@ -1204,7 +1204,7 @@ public class GURPSCharacter extends DataFile {
 	 * @return The maximum amount the character can carry for the specified encumbrance level.
 	 */
 	public WeightValue getMaximumCarry(Encumbrance encumbrance) {
-		WeightUnits calcUnits = SheetPreferences.areGurpsMetricRulesUsed() ? WeightUnits.KG : WeightUnits.LB;
+		WeightUnits calcUnits = SheetPreferences.areGurpsMetricRulesUsed() && SheetPreferences.getWeightUnits().isMetric() ? WeightUnits.KG : WeightUnits.LB;
 		WeightValue lift = getBasicLift(calcUnits);
 		lift.setValue(Math.floor(lift.getValue() * encumbrance.getWeightMultiplier() * 10.0) / 10.0);
 		WeightUnits desiredUnits = SheetPreferences.getWeightUnits();
