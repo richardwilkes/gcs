@@ -11483,12 +11483,12 @@
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
-					<name compare="contains">native</name>
-					<notes compare="is anything"></notes>
+					<name compare="starts with">Language:</name>
+					<notes compare="contains">Written (native)</notes>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
-					<name compare="contains">accented</name>
-					<notes compare="is anything"></notes>
+					<name compare="starts with">Language:</name>
+					<notes compare="contains">Written (accented)</notes>
 				</advantage_prereq>
 			</prereq_list>
 			<spell_prereq has="yes">
