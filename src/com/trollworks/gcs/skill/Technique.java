@@ -327,7 +327,7 @@ public class Technique extends Skill {
 	}
 
 	@Override
-	public String getDifficultyAsText() {
+	public String getDifficultyAsText(boolean localized) {
 		return getDifficulty().toString();
 	}
 
