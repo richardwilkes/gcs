@@ -179,7 +179,7 @@
 			<category>Advantage</category>
 		</categories>
 		<attribute_bonus>
-			<attribute>taste_smell</attribute>
+			<attribute>taste smell</attribute>
 			<amount per_level="yes">1</amount>
 		</attribute_bonus>
 	</advantage>
@@ -763,7 +763,7 @@
 		<modifier version="1" enabled="no">
 			<name>Only one arm</name>
 			<cost type="points">-4</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 			<reference>B40</reference>
 			<notes>@Which@</notes>
 		</modifier>
@@ -792,14 +792,14 @@
 		<modifier version="1" enabled="no">
 			<name>Only one arm</name>
 			<cost type="points">-2</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 			<reference>B40</reference>
 			<notes>@Which@</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Three arms</name>
 			<cost type="points">3</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 			<reference>B40</reference>
 		</modifier>
 		<modifier version="1" enabled="no">
@@ -2142,7 +2142,7 @@
 			<amount>1</amount>
 		</attribute_bonus>
 		<attribute_bonus>
-			<attribute>fright_check</attribute>
+			<attribute>fright check</attribute>
 			<amount>2</amount>
 		</attribute_bonus>
 		<prereq_list all="yes">
@@ -2181,13 +2181,13 @@
 		<modifier version="1" enabled="no">
 			<name>Controls</name>
 			<cost type="points">-25</cost>
-			<affects>base_only</affects>
+			<affects>base only</affects>
 			<reference>B43</reference>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Dedicated Controls</name>
 			<cost type="points">-40</cost>
-			<affects>base_only</affects>
+			<affects>base only</affects>
 			<reference>B43</reference>
 		</modifier>
 		<reference>B43</reference>
@@ -2219,7 +2219,7 @@
 		<name>Compulsive Generosity</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
-		<cr adj="minor_cost_of_living_increase">12</cr>
+		<cr adj="minor cost of living increase">12</cr>
 		<reference>B128</reference>
 		<categories>
 			<category>Disadvantage</category>
@@ -2245,7 +2245,7 @@
 		<name>Compulsive Spending</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
-		<cr adj="major_cost_of_living_increase">12</cr>
+		<cr adj="major cost of living increase">12</cr>
 		<reference>B129</reference>
 		<categories>
 			<category>Disadvantage</category>
@@ -2387,7 +2387,7 @@
 		<name>Cowardice</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
-		<cr adj="fright_check_penalty">12</cr>
+		<cr adj="fright check penalty">12</cr>
 		<reference>B129</reference>
 		<categories>
 			<category>Disadvantage</category>
@@ -2469,8 +2469,15 @@
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
 		<modifier version="1" enabled="no">
-			<name>Ablative</name>
-			<cost type="percentage">-80</cost>
+			<name>Force Field</name>
+			<cost type="percentage">20</cost>
+			<affects>total</affects>
+			<reference>B47</reference>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Hardened</name>
+			<cost type="percentage">20</cost>
+			<levels>1</levels>
 			<affects>total</affects>
 			<reference>B47</reference>
 		</modifier>
@@ -2483,31 +2490,30 @@
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Absorption</name>
-			<cost type="percentage">100</cost>
-			<affects>total</affects>
-			<reference>B46</reference>
-			<notes>Enhances any trait</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Absorption</name>
 			<cost type="percentage">80</cost>
 			<affects>total</affects>
 			<reference>B46</reference>
 			<notes>Healing only</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
-			<name>Bane</name>
-			<cost type="percentage">-15</cost>
+			<name>Absorption</name>
+			<cost type="percentage">100</cost>
 			<affects>total</affects>
-			<reference>H14</reference>
-			<notes>@Very Common@</notes>
+			<reference>B46</reference>
+			<notes>Enhances any trait</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Reflection</name>
+			<cost type="percentage">100</cost>
+			<affects>total</affects>
+			<reference>B47</reference>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Bane</name>
-			<cost type="percentage">-10</cost>
+			<cost type="points">-1</cost>
 			<affects>total</affects>
 			<reference>H14</reference>
-			<notes>@Common@</notes>
+			<notes>@Rare@</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Bane</name>
@@ -2518,23 +2524,17 @@
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Bane</name>
-			<cost type="points">-1</cost>
+			<cost type="percentage">-10</cost>
 			<affects>total</affects>
 			<reference>H14</reference>
-			<notes>@Rare@</notes>
+			<notes>@Common@</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
-			<name>Can't wear armor</name>
-			<cost type="percentage">-40</cost>
+			<name>Bane</name>
+			<cost type="percentage">-15</cost>
 			<affects>total</affects>
-			<reference>B47</reference>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Directional</name>
-			<cost type="percentage">-40</cost>
-			<affects>total</affects>
-			<reference>B47</reference>
-			<notes>@Direction: Back, Right, Left, Top or Underside@</notes>
+			<reference>H14</reference>
+			<notes>@Very Common@</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Directional</name>
@@ -2550,11 +2550,30 @@
 			<reference>B47</reference>
 		</modifier>
 		<modifier version="1" enabled="no">
-			<name>Hardened</name>
-			<cost type="percentage">20</cost>
-			<levels>1</levels>
+			<name>Limited</name>
+			<cost type="percentage">-20</cost>
+			<affects>total</affects>
+			<reference>B46</reference>
+			<notes>@Very Common Attack Form@</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Semi-Ablative</name>
+			<cost type="percentage">-20</cost>
 			<affects>total</affects>
 			<reference>B47</reference>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Can't wear armor</name>
+			<cost type="percentage">-40</cost>
+			<affects>total</affects>
+			<reference>B47</reference>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Directional</name>
+			<cost type="percentage">-40</cost>
+			<affects>total</affects>
+			<reference>B47</reference>
+			<notes>@Direction: Back, Right, Left, Top or Underside@</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Limited</name>
@@ -2564,11 +2583,23 @@
 			<notes>@Common Attack Form@</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
+			<name>Tough Skin</name>
+			<cost type="percentage">-40</cost>
+			<affects>total</affects>
+			<notes>Effects that just require skin contact or a scratch ignore this DR</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
 			<name>Limited</name>
 			<cost type="percentage">-60</cost>
 			<affects>total</affects>
 			<reference>B46</reference>
 			<notes>@Occasional Attack Form@</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Ablative</name>
+			<cost type="percentage">-80</cost>
+			<affects>total</affects>
+			<reference>B47</reference>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Limited</name>
@@ -2577,37 +2608,12 @@
 			<reference>B46</reference>
 			<notes>@Rare Attack Form@</notes>
 		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Limited</name>
-			<cost type="percentage">-20</cost>
-			<affects>total</affects>
-			<reference>B46</reference>
-			<notes>@Very Common Attack Form@</notes>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Reflection</name>
-			<cost type="percentage">100</cost>
-			<affects>total</affects>
-			<reference>B47</reference>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Semi-Ablative</name>
-			<cost type="percentage">-20</cost>
-			<affects>total</affects>
-			<reference>B47</reference>
-		</modifier>
-		<modifier version="1" enabled="no">
-			<name>Force Field</name>
-			<cost type="percentage">20</cost>
-			<affects>total</affects>
-			<reference>B47</reference>
-		</modifier>
 		<reference>B47</reference>
 		<categories>
 			<category>Advantage</category>
 		</categories>
 		<dr_bonus>
-			<location>full_body</location>
+			<location>full body</location>
 			<amount per_level="yes">1</amount>
 		</dr_bonus>
 	</advantage>
@@ -4534,7 +4540,7 @@
 			<amount>3</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
-			<attribute_prereq has="yes" which="ht" compare="at_most">15</attribute_prereq>
+			<attribute_prereq has="yes" which="ht" compare="at most">15</attribute_prereq>
 		</prereq_list>
 	</advantage>
 	<advantage version="2">
@@ -5365,7 +5371,7 @@
 			<category>Disadvantage</category>
 		</categories>
 		<prereq_list all="yes">
-			<attribute_prereq has="yes" which="ht" compare="at_most">10</attribute_prereq>
+			<attribute_prereq has="yes" which="ht" compare="at most">10</attribute_prereq>
 		</prereq_list>
 	</advantage>
 	<advantage version="2">
@@ -8675,7 +8681,7 @@
 			<category>Disadvantage</category>
 		</categories>
 		<prereq_list all="yes">
-			<attribute_prereq has="yes" which="dx" compare="at_most">13</attribute_prereq>
+			<attribute_prereq has="yes" which="dx" compare="at most">13</attribute_prereq>
 		</prereq_list>
 	</advantage>
 	<advantage version="2">
@@ -8969,7 +8975,7 @@
 			<category>Advantage</category>
 		</categories>
 		<attribute_bonus>
-			<attribute limitation="lifting_only">st</attribute>
+			<attribute limitation="lifting only">st</attribute>
 			<amount per_level="yes">1</amount>
 		</attribute_bonus>
 	</advantage>
@@ -9011,7 +9017,7 @@
 		<name>Loner</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
-		<cr adj="reaction_penalty">12</cr>
+		<cr adj="reaction penalty">12</cr>
 		<reference>B142</reference>
 		<categories>
 			<category>Disadvantage</category>
@@ -9358,43 +9364,43 @@
 		<modifier version="1" enabled="no">
 			<name>Dance</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Dark-Aspected</name>
 			<cost type="percentage">-50</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Day-Aspected</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Musical</name>
 			<cost type="percentage">-50</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Night-Aspected</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>One College</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 			<notes>@College@</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Solitary</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Song</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>B66</reference>
 		<categories>
@@ -9418,43 +9424,43 @@
 		<modifier version="1" enabled="no">
 			<name>Dance</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Dark-Aspected</name>
 			<cost type="percentage">-50</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Day-Aspected</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Musical</name>
 			<cost type="percentage">-50</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Night-Aspected</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1">
 			<name>One College</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 			<notes>@College@</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Solitary</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Song</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>B66</reference>
 		<categories>
@@ -12187,13 +12193,13 @@
 		<modifier version="1" enabled="no">
 			<name>Replaces Status</name>
 			<cost type="points">5</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 			<reference>B29</reference>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Courtesy</name>
 			<cost type="points">-4</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 			<reference>B29</reference>
 		</modifier>
 		<reference>B29</reference>
@@ -12211,7 +12217,7 @@
 			<category>Advantage</category>
 		</categories>
 		<prereq_list all="yes">
-			<attribute_prereq has="yes" which="ht" compare="at_least">10</attribute_prereq>
+			<attribute_prereq has="yes" which="ht" compare="at least">10</attribute_prereq>
 		</prereq_list>
 	</advantage>
 	<advantage version="2">
@@ -12223,7 +12229,7 @@
 			<category>Advantage</category>
 		</categories>
 		<prereq_list all="yes">
-			<attribute_prereq has="yes" which="ht" compare="at_least">12</attribute_prereq>
+			<attribute_prereq has="yes" which="ht" compare="at least">12</attribute_prereq>
 		</prereq_list>
 	</advantage>
 	<advantage version="2">
@@ -13591,7 +13597,7 @@
 			<amount>-2</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
-			<attribute_prereq has="yes" which="ht" compare="at_most">14</attribute_prereq>
+			<attribute_prereq has="yes" which="ht" compare="at most">14</attribute_prereq>
 		</prereq_list>
 	</advantage>
 	<advantage version="2">
@@ -14534,7 +14540,7 @@
 			<category>Advantage</category>
 		</categories>
 		<attribute_bonus>
-			<attribute limitation="striking_only">st</attribute>
+			<attribute limitation="striking only">st</attribute>
 			<amount per_level="yes">1</amount>
 		</attribute_bonus>
 	</advantage>
@@ -14846,7 +14852,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">0</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>B89</reference>
 		<categories>
@@ -14959,7 +14965,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">0</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>B89</reference>
 		<categories>
@@ -15047,7 +15053,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">0</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>B89</reference>
 		<categories>
@@ -15099,7 +15105,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>B90,PU3:6</reference>
 		<categories>
@@ -15247,7 +15253,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">-1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>B90,PU3:11</reference>
 		<categories>
@@ -15318,7 +15324,7 @@
 			<advantage_prereq has="no">
 				<name compare="is">Talent (Healer)</name>
 				<notes compare="contains">Modern</notes>
-				<level compare="at_least">1</level>
+				<level compare="at least">1</level>
 			</advantage_prereq>
 		</prereq_list>
 	</advantage>
@@ -15342,7 +15348,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>B90,PU3:11</reference>
 		<notes>Modern</notes>
@@ -15409,7 +15415,7 @@
 			<advantage_prereq has="no">
 				<name compare="is">Talent (Healer)</name>
 				<notes compare="does not contain">Modern</notes>
-				<level compare="at_least">1</level>
+				<level compare="at least">1</level>
 			</advantage_prereq>
 		</prereq_list>
 	</advantage>
@@ -15433,7 +15439,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">-2</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>B90,PU3:12</reference>
 		<categories>
@@ -15549,7 +15555,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">-3</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>B90,PU3:14</reference>
 		<categories>
@@ -15612,7 +15618,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">-2</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>B90,PU3:15</reference>
 		<categories>
@@ -16664,7 +16670,7 @@
 			<amount>5</amount>
 		</skill_bonus>
 		<prereq_list all="yes">
-			<attribute_prereq has="yes" which="ht" compare="at_most">13</attribute_prereq>
+			<attribute_prereq has="yes" which="ht" compare="at most">13</attribute_prereq>
 		</prereq_list>
 	</advantage>
 	<advantage version="2">
@@ -17462,7 +17468,7 @@
 		<name>Xenophilia</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
-		<cr adj="fright_check_bonus">12</cr>
+		<cr adj="fright check bonus">12</cr>
 		<reference>B162</reference>
 		<categories>
 			<category>Disadvantage</category>
