@@ -43,6 +43,7 @@ import com.trollworks.toolkit.utility.units.LengthUnits;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.StringTokenizer;
 
 /** The main entry point for the character sheet. */
@@ -174,6 +175,10 @@ public class GCS {
 	private static String				TEMPLATE_USED;
 
 	static {
+		String lang = System.getenv("GCS_LANGUAGE"); //$NON-NLS-1$
+		if (lang != null) {
+			Locale.setDefault(new Locale(lang));
+		}
 		Localization.initialize();
 	}
 
