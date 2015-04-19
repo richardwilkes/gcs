@@ -1737,13 +1737,13 @@
 		<weapon_bonus>
 			<name compare="is">Boxing</name>
 			<specialization compare="is anything"></specialization>
-			<level compare="at_least">1</level>
+			<level compare="at least">1</level>
 			<amount per_level="yes">1</amount>
 		</weapon_bonus>
 		<weapon_bonus>
 			<name compare="is">Boxing</name>
 			<specialization compare="is anything"></specialization>
-			<level compare="at_least">2</level>
+			<level compare="at least">2</level>
 			<amount per_level="yes">1</amount>
 		</weapon_bonus>
 	</skill>
@@ -1787,7 +1787,7 @@
 		<weapon_bonus>
 			<name compare="is">Brawling</name>
 			<specialization compare="is anything"></specialization>
-			<level compare="at_least">2</level>
+			<level compare="at least">2</level>
 			<amount per_level="yes">1</amount>
 		</weapon_bonus>
 	</skill>
@@ -1885,17 +1885,17 @@
 			<skill_prereq has="yes">
 				<name compare="is">suggest</name>
 				<specialization compare="is"></specialization>
-				<level compare="at_least">12</level>
+				<level compare="at least">12</level>
 			</skill_prereq>
 			<skill_prereq has="yes">
 				<name compare="is">public speaking</name>
 				<specialization compare="is"></specialization>
-				<level compare="at_least">12</level>
+				<level compare="at least">12</level>
 			</skill_prereq>
 			<advantage_prereq has="yes">
 				<name compare="is">charisma</name>
 				<notes compare="is anything"></notes>
-				<level compare="at_least">1</level>
+				<level compare="at least">1</level>
 			</advantage_prereq>
 		</prereq_list>
 	</skill>
@@ -4598,7 +4598,7 @@
 			<category>Engineer</category>
 		</categories>
 		<prereq_list all="yes">
-			<when_tl compare="at_least">5</when_tl>
+			<when_tl compare="at least">5</when_tl>
 			<skill_prereq has="yes">
 				<name compare="is">mathematics</name>
 				<specialization compare="is">applied</specialization>
@@ -4623,7 +4623,7 @@
 			<category>Engineer</category>
 		</categories>
 		<prereq_list all="yes">
-			<when_tl compare="at_least">5</when_tl>
+			<when_tl compare="at least">5</when_tl>
 			<skill_prereq has="yes">
 				<name compare="is">mathematics</name>
 				<specialization compare="is">applied</specialization>
@@ -4648,7 +4648,7 @@
 			<category>Engineer</category>
 		</categories>
 		<prereq_list all="yes">
-			<when_tl compare="at_least">5</when_tl>
+			<when_tl compare="at least">5</when_tl>
 			<skill_prereq has="yes">
 				<name compare="is">mathematics</name>
 				<specialization compare="is">applied</specialization>
@@ -4673,7 +4673,7 @@
 			<category>Engineer</category>
 		</categories>
 		<prereq_list all="yes">
-			<when_tl compare="at_least">5</when_tl>
+			<when_tl compare="at least">5</when_tl>
 			<skill_prereq has="yes">
 				<name compare="is">mathematics</name>
 				<specialization compare="is">applied</specialization>
@@ -4697,7 +4697,7 @@
 			<category>Engineer</category>
 		</categories>
 		<prereq_list all="yes">
-			<when_tl compare="at_least">5</when_tl>
+			<when_tl compare="at least">5</when_tl>
 			<skill_prereq has="yes">
 				<name compare="is">mathematics</name>
 				<specialization compare="is">applied</specialization>
@@ -4722,7 +4722,7 @@
 			<category>Engineer</category>
 		</categories>
 		<prereq_list all="yes">
-			<when_tl compare="at_least">5</when_tl>
+			<when_tl compare="at least">5</when_tl>
 			<skill_prereq has="yes">
 				<name compare="is">mathematics</name>
 				<specialization compare="is">applied</specialization>
@@ -4747,7 +4747,7 @@
 			<category>Engineer</category>
 		</categories>
 		<prereq_list all="yes">
-			<when_tl compare="at_least">5</when_tl>
+			<when_tl compare="at least">5</when_tl>
 			<skill_prereq has="yes">
 				<name compare="is">mathematics</name>
 				<specialization compare="is">applied</specialization>
@@ -4771,7 +4771,7 @@
 			<category>Engineer</category>
 		</categories>
 		<prereq_list all="yes">
-			<when_tl compare="at_least">5</when_tl>
+			<when_tl compare="at least">5</when_tl>
 			<skill_prereq has="yes">
 				<name compare="is">mathematics</name>
 				<specialization compare="is">applied</specialization>
@@ -4796,7 +4796,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<prereq_list all="yes">
-				<when_tl compare="at_least">5</when_tl>
+				<when_tl compare="at least">5</when_tl>
 				<skill_prereq has="yes">
 					<name compare="is">mathematics</name>
 					<specialization compare="is">applied</specialization>
@@ -4836,7 +4836,7 @@
 			<category>Engineer</category>
 		</categories>
 		<prereq_list all="yes">
-			<when_tl compare="at_least">5</when_tl>
+			<when_tl compare="at least">5</when_tl>
 			<skill_prereq has="yes">
 				<name compare="is">mathematics</name>
 				<specialization compare="is">applied</specialization>
@@ -4861,7 +4861,7 @@
 			<category>Engineer</category>
 		</categories>
 		<prereq_list all="yes">
-			<when_tl compare="at_least">5</when_tl>
+			<when_tl compare="at least">5</when_tl>
 			<skill_prereq has="yes">
 				<name compare="is">mathematics</name>
 				<specialization compare="is">applied</specialization>
@@ -4891,7 +4891,7 @@
 			<category>Engineer</category>
 		</categories>
 		<prereq_list all="yes">
-			<when_tl compare="at_least">5</when_tl>
+			<when_tl compare="at least">5</when_tl>
 			<skill_prereq has="yes">
 				<name compare="is">mathematics</name>
 				<specialization compare="is">applied</specialization>
@@ -4917,7 +4917,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<prereq_list all="yes">
-				<when_tl compare="at_least">5</when_tl>
+				<when_tl compare="at least">5</when_tl>
 				<skill_prereq has="yes">
 					<name compare="is">mathematics</name>
 					<specialization compare="is">applied</specialization>
@@ -4947,7 +4947,7 @@
 			<category>Engineer</category>
 		</categories>
 		<prereq_list all="yes">
-			<when_tl compare="at_least">5</when_tl>
+			<when_tl compare="at least">5</when_tl>
 			<skill_prereq has="yes">
 				<name compare="is">mathematics</name>
 				<specialization compare="is">applied</specialization>
@@ -4972,7 +4972,7 @@
 			<category>Engineer</category>
 		</categories>
 		<prereq_list all="yes">
-			<when_tl compare="at_least">5</when_tl>
+			<when_tl compare="at least">5</when_tl>
 			<skill_prereq has="yes">
 				<name compare="is">mathematics</name>
 				<specialization compare="is">applied</specialization>
@@ -4997,7 +4997,7 @@
 			<category>Engineer</category>
 		</categories>
 		<prereq_list all="yes">
-			<when_tl compare="at_least">5</when_tl>
+			<when_tl compare="at least">5</when_tl>
 			<skill_prereq has="yes">
 				<name compare="is">mathematics</name>
 				<specialization compare="is">applied</specialization>
@@ -5022,7 +5022,7 @@
 			<category>Engineer</category>
 		</categories>
 		<prereq_list all="yes">
-			<when_tl compare="at_least">5</when_tl>
+			<when_tl compare="at least">5</when_tl>
 			<skill_prereq has="yes">
 				<name compare="is">mathematics</name>
 				<specialization compare="is">applied</specialization>
@@ -5047,7 +5047,7 @@
 			<category>Engineer</category>
 		</categories>
 		<prereq_list all="yes">
-			<when_tl compare="at_least">5</when_tl>
+			<when_tl compare="at least">5</when_tl>
 			<skill_prereq has="yes">
 				<name compare="is">mathematics</name>
 				<specialization compare="is">applied</specialization>
@@ -5073,7 +5073,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<prereq_list all="yes">
-				<when_tl compare="at_least">5</when_tl>
+				<when_tl compare="at least">5</when_tl>
 				<skill_prereq has="yes">
 					<name compare="is">mathematics</name>
 					<specialization compare="is">applied</specialization>
@@ -5103,12 +5103,12 @@
 			<advantage_prereq has="yes">
 				<name compare="is">charisma</name>
 				<notes compare="is anything"></notes>
-				<level compare="at_least">1</level>
+				<level compare="at least">1</level>
 			</advantage_prereq>
 			<skill_prereq has="yes">
 				<name compare="is">public speaking</name>
 				<specialization compare="is"></specialization>
-				<level compare="at_least">12</level>
+				<level compare="at least">12</level>
 			</skill_prereq>
 		</prereq_list>
 	</skill>
@@ -5423,7 +5423,7 @@
 			<category>Technical</category>
 		</categories>
 		<prereq_list all="yes">
-			<attribute_prereq has="yes" which="dx" compare="at_least">12</attribute_prereq>
+			<attribute_prereq has="yes" which="dx" compare="at least">12</attribute_prereq>
 		</prereq_list>
 		<default>
 			<type>IQ</type>
@@ -8256,12 +8256,12 @@
 			<skill_prereq has="yes">
 				<name compare="is">stealth</name>
 				<specialization compare="is"></specialization>
-				<level compare="at_least">14</level>
+				<level compare="at least">14</level>
 			</skill_prereq>
 			<skill_prereq has="yes">
 				<name compare="is">hypnotism</name>
 				<specialization compare="is"></specialization>
-				<level compare="at_least">14</level>
+				<level compare="at least">14</level>
 			</skill_prereq>
 			<advantage_prereq has="yes">
 				<name compare="is">trained by a master</name>
@@ -8374,13 +8374,13 @@
 		<weapon_bonus>
 			<name compare="is">Karate</name>
 			<specialization compare="is anything"></specialization>
-			<level compare="at_least">0</level>
+			<level compare="at least">0</level>
 			<amount per_level="yes">1</amount>
 		</weapon_bonus>
 		<weapon_bonus>
 			<name compare="is">Karate</name>
 			<specialization compare="is anything"></specialization>
-			<level compare="at_least">1</level>
+			<level compare="at least">1</level>
 			<amount per_level="yes">1</amount>
 		</weapon_bonus>
 	</skill>
@@ -8672,12 +8672,12 @@
 			<skill_prereq has="yes">
 				<name compare="is">stealth</name>
 				<specialization compare="is"></specialization>
-				<level compare="at_least">14</level>
+				<level compare="at least">14</level>
 			</skill_prereq>
 			<skill_prereq has="yes">
 				<name compare="is">acrobatics</name>
 				<specialization compare="is"></specialization>
-				<level compare="at_least">14</level>
+				<level compare="at least">14</level>
 			</skill_prereq>
 		</prereq_list>
 	</skill>
@@ -10848,18 +10848,18 @@
 				<skill_prereq has="yes">
 					<name compare="is">singing</name>
 					<specialization compare="is anything"></specialization>
-					<level compare="at_least">12</level>
+					<level compare="at least">12</level>
 				</skill_prereq>
 				<skill_prereq has="yes">
 					<name compare="starts with">musical instrument</name>
 					<specialization compare="is anything"></specialization>
-					<level compare="at_least">12</level>
+					<level compare="at least">12</level>
 				</skill_prereq>
 			</prereq_list>
 			<advantage_prereq has="yes">
 				<name compare="is">Talent (Musical Ability)</name>
 				<notes compare="is anything"></notes>
-				<level compare="at_least">1</level>
+				<level compare="at least">1</level>
 			</advantage_prereq>
 		</prereq_list>
 	</skill>
@@ -11579,12 +11579,12 @@
 			<advantage_prereq has="yes">
 				<name compare="is">charisma</name>
 				<notes compare="is anything"></notes>
-				<level compare="at_least">1</level>
+				<level compare="at least">1</level>
 			</advantage_prereq>
 			<skill_prereq has="yes">
 				<name compare="is">public speaking</name>
 				<specialization compare="is"></specialization>
-				<level compare="at_least">12</level>
+				<level compare="at least">12</level>
 			</skill_prereq>
 		</prereq_list>
 	</skill>
@@ -11603,7 +11603,7 @@
 		<prereq_list all="yes">
 			<skill_prereq has="yes">
 				<name compare="is">naturalist</name>
-				<specialization compare="is"></specialization>
+				<specialization compare="is anything"></specialization>
 			</skill_prereq>
 		</prereq_list>
 		<default>
@@ -11722,7 +11722,7 @@
 			<category>Natural Science</category>
 		</categories>
 		<prereq_list all="yes">
-			<when_tl compare="at_least">5</when_tl>
+			<when_tl compare="at least">5</when_tl>
 			<skill_prereq has="yes">
 				<name compare="is">mathematics</name>
 				<specialization compare="is">applied</specialization>
@@ -12473,7 +12473,7 @@
 			<skill_prereq has="yes">
 				<name compare="is">pressure points</name>
 				<specialization compare="is"></specialization>
-				<level compare="at_least">16</level>
+				<level compare="at least">16</level>
 			</skill_prereq>
 			<advantage_prereq has="yes">
 				<name compare="is">trained by a master</name>
@@ -12686,7 +12686,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<prereq_list all="yes">
-				<when_tl compare="at_least">8</when_tl>
+				<when_tl compare="at least">8</when_tl>
 				<skill_prereq has="yes">
 					<name compare="is">Computer Operation</name>
 					<specialization compare="is anything"></specialization>
@@ -14232,17 +14232,17 @@
 			<skill_prereq has="yes">
 				<name compare="is">persuade</name>
 				<specialization compare="is"></specialization>
-				<level compare="at_least">12</level>
+				<level compare="at least">12</level>
 			</skill_prereq>
 			<skill_prereq has="yes">
 				<name compare="is">public speaking</name>
 				<specialization compare="is"></specialization>
-				<level compare="at_least">12</level>
+				<level compare="at least">12</level>
 			</skill_prereq>
 			<advantage_prereq has="yes">
 				<name compare="is">charisma</name>
 				<notes compare="is anything"></notes>
-				<level compare="at_least">1</level>
+				<level compare="at least">1</level>
 			</advantage_prereq>
 		</prereq_list>
 	</skill>
@@ -16247,7 +16247,7 @@
 			<skill_prereq has="yes">
 				<name compare="is">bow</name>
 				<specialization compare="is"></specialization>
-				<level compare="at_least">18</level>
+				<level compare="at least">18</level>
 			</skill_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
