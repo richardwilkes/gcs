@@ -12595,7 +12595,7 @@
 		<default>
 			<type>Skill</type>
 			<name>Performance</name>
-			<modifier>-5</modifier>
+			<modifier>-2</modifier>
 		</default>
 		<default>
 			<type>Skill</type>
