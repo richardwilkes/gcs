@@ -1820,7 +1820,7 @@ public class GURPSCharacter extends DataFile {
 				}
 				return;
 			} else if (type == AdvantageContainerType.RACE) {
-				mCachedRacePoints = advantage.getAdjustedPoints();
+				mCachedRacePoints += advantage.getAdjustedPoints();
 				return;
 			}
 		}
