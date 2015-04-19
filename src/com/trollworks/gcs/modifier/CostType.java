@@ -40,6 +40,8 @@ public enum CostType {
 
 	@Localize("%")
 	@Localize(locale = "de", value = "%")
+	@Localize(locale = "ru", value = "%")
+	@Localize(locale = "es", value = "%")
 	static String	PERCENTAGE_TITLE;
 	@Localize("points")
 	@Localize(locale = "de", value = "Punkte")
@@ -48,6 +50,8 @@ public enum CostType {
 	static String	POINTS_TITLE;
 	@Localize("\u00d7")
 	@Localize(locale = "de", value = "\u00d7")
+	@Localize(locale = "ru", value = "\u00d7")
+	@Localize(locale = "es", value = "\u00d7")
 	static String	MULTIPLIER_TITLE;
 
 	static {
