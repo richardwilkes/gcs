@@ -20897,23 +20897,23 @@
 			<category>Water</category>
 		</categories>
 		<prereq_list all="yes">
-			<spell_prereq has="yes">
-				<college compare="is">water</college>
-			</spell_prereq>
-			<spell_prereq has="yes">
-				<name compare="is">create well</name>
-				<quantity compare="at least">5</quantity>
-			</spell_prereq>
 			<prereq_list all="no">
-				<spell_prereq has="yes">
-					<name compare="is">earth</name>
-					<quantity compare="at least">4</quantity>
-				</spell_prereq>
 				<spell_prereq has="yes">
 					<college compare="is">fire</college>
 					<quantity compare="at least">4</quantity>
 				</spell_prereq>
+				<spell_prereq has="yes">
+					<college compare="is">earth</college>
+					<quantity compare="at least">4</quantity>
+				</spell_prereq>
 			</prereq_list>
+			<spell_prereq has="yes">
+				<college compare="is">water</college>
+				<quantity compare="at least">6</quantity>
+			</spell_prereq>
+			<spell_prereq has="yes">
+				<name compare="is">create spring</name>
+			</spell_prereq>
 		</prereq_list>
 	</spell>
 	<spell version="2">
