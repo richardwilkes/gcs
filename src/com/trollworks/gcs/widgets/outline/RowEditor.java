@@ -41,26 +41,32 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 	@Localize("Edit {0}")
 	@Localize(locale = "de", value = "Bearbeite {0}")
 	@Localize(locale = "ru", value = "Изменить {0}")
+	@Localize(locale = "es", value = "Editar {0}")
 	private static String						WINDOW_TITLE;
 	@Localize("Cancel Remaining")
 	@Localize(locale = "de", value = "Alles Abbrechen")
 	@Localize(locale = "ru", value = "Пропустить остальные")
+	@Localize(locale = "es", value = "Cancelar lo restante")
 	private static String						CANCEL_REST;
 	@Localize("Cancel")
 	@Localize(locale = "de", value = "Abbrechen")
 	@Localize(locale = "ru", value = "Отмена")
+	@Localize(locale = "es", value = "Cancelar")
 	private static String						CANCEL;
 	@Localize("Apply")
 	@Localize(locale = "de", value = "Anwenden")
 	@Localize(locale = "ru", value = "Применить")
+	@Localize(locale = "es", value = "Aplicar")
 	private static String						APPLY;
 	@Localize("1 item remaining to be edited.")
 	@Localize(locale = "de", value = "1 weiteres Element zu bearbeiten.")
 	@Localize(locale = "ru", value = "осталось отредактировать 1 элемент.")
+	@Localize(locale = "es", value = "Queda un elemento pendiente de editar")
 	private static String						ONE_REMAINING;
 	@Localize("{0} items remaining to be edited.")
 	@Localize(locale = "de", value = "{0} weitere Elemente zu bearbeiten.")
 	@Localize(locale = "ru", value = "{0} элементов осталось отредактировать.")
+	@Localize(locale = "es", value = "Quedan {0} elementos pendientes de editar")
 	private static String						REMAINING;
 
 	static {

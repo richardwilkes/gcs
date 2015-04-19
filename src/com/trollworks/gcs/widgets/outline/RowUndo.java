@@ -35,6 +35,7 @@ public class RowUndo extends AbstractUndoableEdit {
 	@Localize("{0} Changes")
 	@Localize(locale = "de", value = "{0} Änderungen")
 	@Localize(locale = "ru", value = "{0} изменений")
+	@Localize(locale = "es", value = "{0} Cambios")
 	private static String	UNDO_FORMAT;
 
 	static {

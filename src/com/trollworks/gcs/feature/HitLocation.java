@@ -118,54 +118,67 @@ public enum HitLocation {
 	@Localize("to the skull")
 	@Localize(locale = "de", value = "auf den Schädel")
 	@Localize(locale = "ru", value = "черепу")
+	@Localize(locale = "es", value = "en el cráneo")
 	static String	SKULL_TITLE;
 	@Localize("to the eyes")
 	@Localize(locale = "de", value = "auf die Augen")
 	@Localize(locale = "ru", value = "глазам")
+	@Localize(locale = "es", value = "en los ojos")
 	static String	EYES_TITLE;
 	@Localize("to the face")
 	@Localize(locale = "de", value = "auf das Gesicht")
 	@Localize(locale = "ru", value = "лицу")
+	@Localize(locale = "es", value = "en la cara")
 	static String	FACE_TITLE;
 	@Localize("to the neck")
 	@Localize(locale = "de", value = "auf den Hals")
 	@Localize(locale = "ru", value = "шее")
+	@Localize(locale = "es", value = "en el cuello")
 	static String	NECK_TITLE;
 	@Localize("to the torso")
 	@Localize(locale = "de", value = "auf den Torso")
 	@Localize(locale = "ru", value = "туловищу")
+	@Localize(locale = "es", value = "en el torso")
 	static String	TORSO_TITLE;
 	@Localize("to the vitals")
 	@Localize(locale = "de", value = "auf die Organe")
 	@Localize(locale = "ru", value = "жизненно-важным органам")
+	@Localize(locale = "es", value = "en los órganos vitales")
 	static String	VITALS_TITLE;
 	@Localize("to the groin")
 	@Localize(locale = "de", value = "auf die Leiste")
 	@Localize(locale = "ru", value = "паху")
+	@Localize(locale = "es", value = "en las ingles")
 	static String	GROIN_TITLE;
 	@Localize("to the arms")
 	@Localize(locale = "de", value = "auf die Arme")
 	@Localize(locale = "ru", value = "рукам")
+	@Localize(locale = "es", value = "en los brazos")
 	static String	ARMS_TITLE;
 	@Localize("to the hands")
 	@Localize(locale = "de", value = "auf die Hände")
 	@Localize(locale = "ru", value = "рукам")
+	@Localize(locale = "es", value = "en las manos")
 	static String	HANDS_TITLE;
 	@Localize("to the legs")
 	@Localize(locale = "de", value = "auf die Beine")
 	@Localize(locale = "ru", value = "ногам")
+	@Localize(locale = "es", value = "en las piernas")
 	static String	LEGS_TITLE;
 	@Localize("to the feet")
 	@Localize(locale = "de", value = "auf die Füße")
 	@Localize(locale = "ru", value = "стопам")
+	@Localize(locale = "es", value = "en los pies")
 	static String	FEET_TITLE;
 	@Localize("to the full body")
 	@Localize(locale = "de", value = "auf den gesamten Körper")
 	@Localize(locale = "ru", value = "всему телу")
+	@Localize(locale = "es", value = "en todo el cuerpo")
 	static String	FULL_BODY_TITLE;
 	@Localize("to the full body except the eyes")
 	@Localize(locale = "de", value = "auf den gesamten Körper ohne Augen")
 	@Localize(locale = "ru", value = "всему телу, кроме глаз")
+	@Localize(locale = "es", value = "en todo el cuerpo salvo en los ojos")
 	static String	FULL_BODY_EXCEPT_EYES_TITLE;
 
 	static {

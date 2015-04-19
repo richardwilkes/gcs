@@ -37,6 +37,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 	@Localize("Remove Rows")
 	@Localize(locale = "de", value = "Zeilen entfernen")
 	@Localize(locale = "ru", value = "Удалить строки")
+	@Localize(locale = "es", value = "Eliminar Filas")
 	private static String	CLEAR_UNDO;
 
 	static {

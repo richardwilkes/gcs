@@ -51,98 +51,121 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 	@Localize("A reference to the book and page this equipment appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
 	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der diese Ausrüstung beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
 	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая снаряжение\n (например B22 - книга \"Базовые правила\", страница 22)")
+	@Localize(locale = "es", value = "Referencia al libro y página donde se menciona el equipo\n (p.e. B22 se refiere al \"Manual Básico\", página 22).")
 	private static String				REFERENCE_TOOLTIP;
 	@Localize("The value of one of these pieces of equipment")
 	@Localize(locale = "de", value = "Der Wert eines einzelnen Ausrüstungsgegenstandes")
 	@Localize(locale = "ru", value = "Цена снаряжения")
+	@Localize(locale = "es", value = "Valor unitario de cada pieza de equipo.")
 	private static String				VALUE_TOOLTIP;
 	@Localize("The value of all of these pieces of equipment,\nplus the value of any contained equipment")
 	@Localize(locale = "de", value = "Der Wert aller dieser Ausrüstungsgegenstände\nund der Wert der darin enthaltenen Ausrüstung")
 	@Localize(locale = "ru", value = "Цена всего снаряжения,\nплюс цена любого входящего в него снаряжения")
+	@Localize(locale = "es", value = "Valor de todas las piezas de equipo,\n más el valor de lo que contengan.")
 	private static String				EXT_VALUE_TOOLTIP;
 	@Localize("Name")
 	@Localize(locale = "de", value = "Name")
 	@Localize(locale = "ru", value = "Название")
+	@Localize(locale = "es", value = "Nombre")
 	private static String				NAME;
 	@Localize("The name/description of the equipment, without any notes")
 	@Localize(locale = "de", value = "Der Name des Ausrüstungsgegenstands, ohne Anmerkungen")
 	@Localize(locale = "ru", value = "Название/описание снаряжения без заметок")
+	@Localize(locale = "es", value = "Nombre/descripción del equipo, sin notas.")
 	private static String				NAME_TOOLTIP;
 	@Localize("The name field may not be empty")
 	@Localize(locale = "de", value = "Der Name darf nicht leer sein")
 	@Localize(locale = "ru", value = "Поле \"Название\" не может быть пустым")
+	@Localize(locale = "es", value = "El nombre no puede estar en blanco")
 	private static String				NAME_CANNOT_BE_EMPTY;
 	@Localize("Tech Level")
 	@Localize(locale = "de", value = "Techlevel")
 	@Localize(locale = "ru", value = "Технологический уровень")
+	@Localize(locale = "es", value = "Nivel Tecnológico")
 	private static String				EDITOR_TECH_LEVEL;
 	@Localize("The first Tech Level this equipment is available at")
 	@Localize(locale = "de", value = "Der Techlevel, ab dem diese Ausrüstung zur Verfügung steht")
 	@Localize(locale = "ru", value = "Первый тех. уровень этого снаряжения доступен с")
+	@Localize(locale = "es", value = "Nivel Tecnológico a partir del cual el equipo está disponible.")
 	private static String				EDITOR_TECH_LEVEL_TOOLTIP;
 	@Localize("Legality Class")
 	@Localize(locale = "de", value = "Legalitätsklasse")
 	@Localize(locale = "ru", value = "Клас легальности")
+	@Localize(locale = "es", value = "Nivel Legal")
 	private static String				EDITOR_LEGALITY_CLASS;
 	@Localize("The legality class of this equipment")
 	@Localize(locale = "de", value = "Die Legalitätsklasse des Ausrüstungsgegenstandes")
 	@Localize(locale = "ru", value = "Класс легальности снаряжения")
+	@Localize(locale = "es", value = "Nivel legal del equipo")
 	private static String				EDITOR_LEGALITY_CLASS_TOOLTIP;
 	@Localize("Quantity")
 	@Localize(locale = "de", value = "Anzahl")
 	@Localize(locale = "ru", value = "Количество")
+	@Localize(locale = "es", value = "Cantidad")
 	private static String				EDITOR_QUANTITY;
 	@Localize("The number of this equipment present")
-	@Localize(locale = "de", value = "")
 	@Localize(locale = "ru", value = "Количество этого снаряжения")
+	@Localize(locale = "es", value = "Cantidad de equipo presente")
 	private static String				EDITOR_QUANTITY_TOOLTIP;
 	@Localize("Value")
 	@Localize(locale = "de", value = "Wert")
 	@Localize(locale = "ru", value = "Цена")
+	@Localize(locale = "es", value = "Valor")
 	private static String				EDITOR_VALUE;
 	@Localize("Extended Value")
 	@Localize(locale = "de", value = "Gesamtwert")
 	@Localize(locale = "ru", value = "Полная цена")
+	@Localize(locale = "es", value = "Valor ampliado")
 	private static String				EDITOR_EXTENDED_VALUE;
 	@Localize("Weight")
 	@Localize(locale = "de", value = "Gewicht")
 	@Localize(locale = "ru", value = "Вес")
+	@Localize(locale = "es", value = "Peso")
 	private static String				EDITOR_WEIGHT;
 	@Localize("The weight of one of these pieces of equipment")
 	@Localize(locale = "de", value = "Das Gewicht eines einzelnen Ausrüstungsgegenstandes")
 	@Localize(locale = "ru", value = "Вес снаряжения")
+	@Localize(locale = "es", value = "Peso unitario de una pieza de equipo")
 	private static String				EDITOR_WEIGHT_TOOLTIP;
 	@Localize("Extended Weight")
 	@Localize(locale = "de", value = "Gesamtgewicht")
 	@Localize(locale = "ru", value = "Полный вес")
+	@Localize(locale = "es", value = "Peso ampliado")
 	private static String				EDITOR_EXTENDED_WEIGHT;
 	@Localize("The total weight of this quantity of equipment, plus everything contained by it")
 	@Localize(locale = "de", value = "Das Gewicht aller dieser Ausrüstungsgegenstände\nund das Gewicht der darin enthaltenen Ausrüstung")
 	@Localize(locale = "ru", value = "Общий вес имеющегося снаряжения и его содержимого")
+	@Localize(locale = "es", value = "Peso total de todo el equipo, más el peso de lo que contengan")
 	private static String				EDITOR_EXTENDED_WEIGHT_TOOLTIP;
 	@Localize("Categories")
 	@Localize(locale = "de", value = "Kategorien")
 	@Localize(locale = "ru", value = "Категории")
+	@Localize(locale = "es", value = "Categorías")
 	private static String				CATEGORIES;
 	@Localize("The category or categories the equipment belongs to (separate multiple categories with a comma)")
 	@Localize(locale = "de", value = "Die Kategorie oder Kategorien, denen diese Ausrüstung angehört (trenne mehrere Kategorien mit einem Komma)")
 	@Localize(locale = "ru", value = "Категория или категории снаряжения, к которым оно принадлежит (несколько категорий разделяются точкой с запятой)")
+	@Localize(locale = "es", value = "Categoría o categorías a las que pertenece el equipo (múltiples categorías separadas con comas)")
 	private static String				CATEGORIES_TOOLTIP;
 	@Localize("Notes")
 	@Localize(locale = "de", value = "Anmerkungen")
 	@Localize(locale = "ru", value = "Заметка")
+	@Localize(locale = "es", value = "Notas")
 	private static String				NOTES;
 	@Localize("Any notes that you would like to show up in the list along with this equipment")
 	@Localize(locale = "de", value = "Anmerkungen, die in der Liste neben der Ausrüstung erscheinen sollen")
 	@Localize(locale = "ru", value = "Заметки, которые показываются в списке рядом с снаряжением")
+	@Localize(locale = "es", value = "Cualquier nota que te gustaría mostar en la lista de equipo")
 	private static String				NOTES_TOOLTIP;
 	@Localize("Page Reference")
 	@Localize(locale = "de", value = "Seitenangabe")
 	@Localize(locale = "ru", value = "Ссылка на страницу")
+	@Localize(locale = "es", value = "Página de referencia")
 	private static String				EDITOR_REFERENCE;
 	@Localize("Items that are not equipped do not apply any features they may\nnormally contribute to the character.")
 	@Localize(locale = "de", value = "Gegenstände, die nicht ausgerüstet sind, haben keine Auswirkungen auf den Charakter.")
 	@Localize(locale = "ru", value = "Не экипированные предметы не добавляют свойств, которые обычно\n может использовать персонаж.")
+	@Localize(locale = "es", value = "Los objetos no equipados no aplican sus características como harían normalmente al personaje.")
 	private static String				STATE_TOOLTIP;
 
 	static {

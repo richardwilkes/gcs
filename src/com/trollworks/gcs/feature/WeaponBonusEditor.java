@@ -27,14 +27,17 @@ public class WeaponBonusEditor extends FeatureEditor {
 	@Localize("to weapons whose required skill name ")
 	@Localize(locale = "de", value = "auf Waffen, deren benötigte Fertigkeit ")
 	@Localize(locale = "ru", value = "оружию, которое требует умения с названием ")
+	@Localize(locale = "es", value = "para armas cuyo nombre de habilidad requerida sea")
 	private static String	WEAPON_SKILL;
 	@Localize("and relative skill level ")
 	@Localize(locale = "de", value = "sowie relativer Fertigkeitswert ")
 	@Localize(locale = "ru", value = "и относительный уровень умения ")
+	@Localize(locale = "es", value = "y nivel de habilidad relativo ")
 	private static String	RELATIVE_SKILL_LEVEL;
 	@Localize("and specialization ")
 	@Localize(locale = "de", value = "und Spezialisierung ")
 	@Localize(locale = "ru", value = "и специализация ")
+	@Localize(locale = "es", value = "y especialización ")
 	private static String	SPECIALIZATION;
 
 	static {

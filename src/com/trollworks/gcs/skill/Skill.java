@@ -45,6 +45,7 @@ public class Skill extends ListRow {
 	@Localize("Skill")
 	@Localize(locale = "de", value = "Fertigkeit")
 	@Localize(locale = "ru", value = "Умение")
+	@Localize(locale = "es", value = "Habilidad")
 	static String					DEFAULT_NAME;
 
 	static {
@@ -748,7 +749,8 @@ public class Skill extends ListRow {
 				HashSet<String> excludes = new HashSet<>();
 				excludes.add(exclude);
 				for (SkillDefault skillDefault : defaults) {
-					// For skill-based defaults, prune out any that already use a default that we are involved with
+					// For skill-based defaults, prune out any that already use a default that we
+					// are involved with
 					if (!isInDefaultChain(this, skillDefault, new HashSet<>())) {
 						int level = skillDefault.getType().getSkillLevel(character, skillDefault, excludes);
 						if (level > best) {

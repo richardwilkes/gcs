@@ -28,18 +28,22 @@ public class MeleeWeaponEditor extends WeaponEditor {
 	@Localize("Melee Weapon")
 	@Localize(locale = "de", value = "Nahkampfwaffe")
 	@Localize(locale = "ru", value = "Контактное оружие")
+	@Localize(locale = "es", value = "Arma de cuerpo a cuerpo")
 	private static String	MELEE_WEAPON;
 	@Localize("Reach")
 	@Localize(locale = "de", value = "Reichweite")
 	@Localize(locale = "ru", value = "Досягаемость")
+	@Localize(locale = "es", value = "Alcance")
 	private static String	REACH;
 	@Localize("Parry Modifier")
 	@Localize(locale = "de", value = "Paradewert")
 	@Localize(locale = "ru", value = "Модификатор парирования")
+	@Localize(locale = "es", value = "Modificador de parada")
 	private static String	PARRY;
 	@Localize("Block Modifier")
 	@Localize(locale = "de", value = "Abblockwert")
 	@Localize(locale = "ru", value = "Модификатор блока")
+	@Localize(locale = "es", value = "Modificador de bloqueo")
 	private static String	BLOCK;
 
 	static {

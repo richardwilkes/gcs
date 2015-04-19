@@ -44,6 +44,7 @@ public enum CostType {
 	@Localize("points")
 	@Localize(locale = "de", value = "Punkte")
 	@Localize(locale = "ru", value = "очки")
+	@Localize(locale = "es", value = "puntos")
 	static String	POINTS_TITLE;
 	@Localize("\u00d7")
 	@Localize(locale = "de", value = "\u00d7")

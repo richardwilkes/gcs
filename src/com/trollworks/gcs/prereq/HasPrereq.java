@@ -21,10 +21,12 @@ public abstract class HasPrereq extends Prereq {
 	@Localize("Has")
 	@Localize(locale = "de", value = "Hat")
 	@Localize(locale = "ru", value = "Имеет")
+	@Localize(locale = "es", value = "Tiene")
 	static String					HAS;
 	@Localize("Does not have")
 	@Localize(locale = "de", value = "Hat nicht")
 	@Localize(locale = "ru", value = "Не имеет")
+	@Localize(locale = "es", value = "No tiene")
 	static String					DOES_NOT_HAVE;
 
 	static {

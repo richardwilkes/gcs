@@ -38,6 +38,7 @@ public class EditMenuProvider implements MenuProvider {
 	@Localize("Edit")
 	@Localize(locale = "de", value = "Bearbeiten")
 	@Localize(locale = "ru", value = "Правка")
+	@Localize(locale = "es", value = "Editar")
 	private static String		EDIT;
 
 	static {

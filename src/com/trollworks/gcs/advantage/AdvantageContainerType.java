@@ -58,6 +58,7 @@ public enum AdvantageContainerType {
 	@Localize("Group")
 	@Localize(locale = "de", value = "Gruppe")
 	@Localize(locale = "ru", value = "Группа")
+	@Localize(locale = "es", value = "Grupo")
 	static String	GROUP_TITLE;
 	@Localize("Meta-Trait")
 	@Localize(locale = "de", value = "Meta-Eigenschaft")
@@ -66,10 +67,12 @@ public enum AdvantageContainerType {
 	@Localize("Race")
 	@Localize(locale = "de", value = "Rasse")
 	@Localize(locale = "ru", value = "Раса")
+	@Localize(locale = "es", value = "Raza")
 	static String	RACE_TITLE;
 	@Localize("Alternative Abilities")
 	@Localize(locale = "de", value = "Alternative Fähigkeiten")
 	@Localize(locale = "ru", value = "Альтернативные способности")
+	@Localize(locale = "es", value = "Habilidades Alternativas")
 	static String	ALTERNATIVE_ABILITIES_TITLE;
 
 	static {

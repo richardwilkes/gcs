@@ -41,10 +41,12 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 	@Localize("The number of matches found")
 	@Localize(locale = "de", value = "Die Anzahl der Suchergebnisse.")
 	@Localize(locale = "ru", value = "Количество найденных соответствий")
+	@Localize(locale = "es", value = "Número de coincidencias encontradas")
 	private static String	MSG_HIT_TOOLTIP;
 	@Localize("Enter text here and press RETURN to select all matching items")
 	@Localize(locale = "de", value = "Suchtext hier eingeben und ENTER drücken, um alle Suchergebnisse auszuwählen.")
 	@Localize(locale = "ru", value = "Введите здесь текст и нажмите ВВОД, чтобы выбрать все подходящие элементы")
+	@Localize(locale = "es", value = "Introduce aquí el texto y pulsa INTRO para selecionar todos elementos que coincidentes")
 	private static String	MSG_SEARCH_FIELD_TOOLTIP;
 	private SearchTarget	mTarget;
 	private JLabel			mHits;

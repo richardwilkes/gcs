@@ -28,6 +28,7 @@ public class ItemMenuProvider implements MenuProvider {
 	@Localize("Item")
 	@Localize(locale = "de", value = "Element")
 	@Localize(locale = "ru", value = "Элемент")
+	@Localize(locale = "es", value = "Elemento")
 	private static String		ITEM;
 
 	static {

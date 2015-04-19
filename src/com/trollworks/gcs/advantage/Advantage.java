@@ -46,6 +46,7 @@ public class Advantage extends ListRow {
 	@Localize("Advantage")
 	@Localize(locale = "de", value = "Vorteil")
 	@Localize(locale = "ru", value = "Преимущество")
+	@Localize(locale = "es", value = "Ventaja")
 	private static String				DEFAULT_NAME;
 
 	static {

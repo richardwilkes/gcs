@@ -34,30 +34,37 @@ public class HelpMenuProvider implements MenuProvider {
 	@Localize("Help")
 	@Localize(locale = "de", value = "Hilfe")
 	@Localize(locale = "ru", value = "Справка")
+	@Localize(locale = "es", value = "Ayuda")
 	private static String		HELP;
 	@Localize("Release Notes")
 	@Localize(locale = "de", value = "Hinweise zur Veröffentlichung")
 	@Localize(locale = "ru", value = "Примечания к выпуску")
+	@Localize(locale = "es", value = "Notas de la versión")
 	private static String		RELEASE_NOTES;
 	@Localize("Bug Reports")
 	@Localize(locale = "de", value = "Fehlerberichte")
 	@Localize(locale = "ru", value = "Отчет об ошибках")
+	@Localize(locale = "es", value = "Reportar errores")
 	private static String		BUGS;
 	@Localize("Feature Requests")
 	@Localize(locale = "de", value = "Programmwünsche")
 	@Localize(locale = "ru", value = "Заявки на добавление новых функций")
+	@Localize(locale = "es", value = "Solicitar mejoras")
 	private static String		FEATURES;
 	@Localize("License")
 	@Localize(locale = "de", value = "Lizenz")
 	@Localize(locale = "ru", value = "Лицензия")
+	@Localize(locale = "es", value = "Licencia")
 	private static String		LICENSE;
 	@Localize("Web Site")
 	@Localize(locale = "de", value = "Webseite")
 	@Localize(locale = "ru", value = "Сайт")
+	@Localize(locale = "es", value = "Sitio Web")
 	private static String		WEB_SITE;
 	@Localize("Mailing Lists")
 	@Localize(locale = "de", value = "Mailinglisten")
 	@Localize(locale = "ru", value = "Списки рассылки")
+	@Localize(locale = "es", value = "Listas de correo")
 	private static String		MAILING_LISTS;
 
 	static {

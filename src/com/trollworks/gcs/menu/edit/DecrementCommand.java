@@ -25,6 +25,7 @@ public class DecrementCommand extends Command {
 	@Localize("Decrement")
 	@Localize(locale = "de", value = "Verringern")
 	@Localize(locale = "ru", value = "Уменьшить")
+	@Localize(locale = "es", value = "Disminuir")
 	private static String					DECREMENT;
 
 	static {

@@ -128,38 +128,47 @@ public enum StringCompareType {
 	@Localize("is anything")
 	@Localize(locale = "de", value = "beliebig ist")
 	@Localize(locale = "ru", value = "люб(ое,ая)")
+	@Localize(locale = "es", value = "es cualquiera")
 	static String	IS_ANYTHING_TITLE;
 	@Localize("is")
 	@Localize(locale = "de", value = "lautet")
 	@Localize(locale = "ru", value = " ")
+	@Localize(locale = "es", value = "es")
 	static String	IS_TITLE;
 	@Localize("is not")
 	@Localize(locale = "de", value = "nicht lautet")
 	@Localize(locale = "ru", value = "не")
+	@Localize(locale = "es", value = "no es")
 	static String	IS_NOT_TITLE;
 	@Localize("contains")
 	@Localize(locale = "de", value = "enthält")
 	@Localize(locale = "ru", value = "содержит")
+	@Localize(locale = "es", value = "contiene")
 	static String	CONTAINS_TITLE;
 	@Localize("does not contain")
 	@Localize(locale = "de", value = "nicht enthält")
 	@Localize(locale = "ru", value = "не содержит")
+	@Localize(locale = "es", value = "no contiene")
 	static String	DOES_NOT_CONTAIN_TITLE;
 	@Localize("starts with")
 	@Localize(locale = "de", value = "beginnt mit")
 	@Localize(locale = "ru", value = "начинается с")
+	@Localize(locale = "es", value = "empieza por")
 	static String	STARTS_WITH_TITLE;
 	@Localize("does not start with")
 	@Localize(locale = "de", value = "nicht beginnt mit")
 	@Localize(locale = "ru", value = "не начинается с")
+	@Localize(locale = "es", value = "no empieza por")
 	static String	DOES_NOT_START_WITH_TITLE;
 	@Localize("ends with")
 	@Localize(locale = "de", value = "endet auf")
 	@Localize(locale = "ru", value = "заканчивается на")
+	@Localize(locale = "es", value = "termina por")
 	static String	ENDS_WITH_TITLE;
 	@Localize("does not end with")
 	@Localize(locale = "de", value = "nicht endet auf")
 	@Localize(locale = "ru", value = "не заканчивается на")
+	@Localize(locale = "es", value = "no termina por")
 	static String	DOES_NOT_END_WITH_TITLE;
 
 	static {
@@ -182,7 +191,7 @@ public enum StringCompareType {
 	/**
 	 * Performs a comparison.
 	 *
-	 * @param qualifier The qualifier to use in conjuction with this {@link StringCompareType}.
+	 * @param qualifier The qualifier to use in conjunction with this {@link StringCompareType}.
 	 * @param data The data to check.
 	 * @return Whether the data matches the criteria or not.
 	 */

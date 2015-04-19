@@ -56,6 +56,7 @@ public enum Affects {
 	@Localize("to cost")
 	@Localize(locale = "de", value = "der Kosten")
 	@Localize(locale = "ru", value = "стоимости")
+	@Localize(locale = "es", value = "al coste")
 	static String	TOTAL_TITLE;
 	@Localize("")
 	@Localize(locale = "de", value = "")
@@ -63,18 +64,22 @@ public enum Affects {
 	@Localize("to base cost only")
 	@Localize(locale = "de", value = "der Grundkosten")
 	@Localize(locale = "ru", value = "только базовой стоимости")
+	@Localize(locale = "es", value = "sólo al coste básico")
 	static String	BASE_ONLY_TITLE;
 	@Localize("(base only)")
 	@Localize(locale = "de", value = "(Grundkosten)")
 	@Localize(locale = "ru", value = "(только база)")
+	@Localize(locale = "es", value = "(Sólo a la base)")
 	static String	BASE_ONLY_SHORT;
 	@Localize("to leveled cost only")
 	@Localize(locale = "de", value = "der Stufenkosten")
 	@Localize(locale = "ru", value = "только к стоимости уровня")
+	@Localize(locale = "es", value = "sólo al coste por nivel")
 	static String	LEVELS_ONLY_TITLE;
 	@Localize("(levels only)")
 	@Localize(locale = "de", value = "(Stufenkosten)")
 	@Localize(locale = "ru", value = "(только уровни)")
+	@Localize(locale = "es", value = "(Sólo niveles)")
 	static String	LEVELS_ONLY_SHORT;
 
 	static {

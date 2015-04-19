@@ -27,10 +27,12 @@ public class SkillDefault {
 	@Localize(" Parry")
 	@Localize(locale = "de", value = " Parieren")
 	@Localize(locale = "ru", value = " Парирование")
+	@Localize(locale = "es", value = " Parada")
 	private static String		PARRY;
 	@Localize(" Block")
 	@Localize(locale = "de", value = " Abblocken")
 	@Localize(locale = "ru", value = " Блок")
+	@Localize(locale = "es", value = " Bloqueo")
 	private static String		BLOCK;
 
 	static {

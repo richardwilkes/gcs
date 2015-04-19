@@ -38,10 +38,12 @@ public class EquipmentOutline extends ListOutline implements Incrementable {
 	@Localize("Increment Quantity")
 	@Localize(locale = "de", value = "Anzahl erhöhen")
 	@Localize(locale = "ru", value = "Увеличить количество")
+	@Localize(locale = "es", value = "Aumentar cantidad")
 	private static String	INCREMENT;
 	@Localize("Decrement Quantity")
 	@Localize(locale = "de", value = "Anzahl verringen")
 	@Localize(locale = "ru", value = "Уменьшить количество")
+	@Localize(locale = "es", value = "Disminuir cantidad")
 	private static String	DECREMENT;
 
 	static {

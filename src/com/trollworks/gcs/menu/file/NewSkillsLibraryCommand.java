@@ -25,6 +25,7 @@ public class NewSkillsLibraryCommand extends Command {
 	@Localize("New Skills Library")
 	@Localize(locale = "de", value = "Neue Fertigkeiten-Liste")
 	@Localize(locale = "ru", value = "Новая библиотека умений")
+	@Localize(locale = "es", value = "Nueva Librería de Habilidades")
 	private static String						TITLE;
 
 	static {

@@ -42,10 +42,12 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 	@Localize("Modifiers")
 	@Localize(locale = "de", value = "Modifikatoren")
 	@Localize(locale = "ru", value = "Модификаторы")
+	@Localize(locale = "es", value = "Modificadores")
 	private static String	MODIFIERS;
 	@Localize("Add a modifier")
 	@Localize(locale = "de", value = "Einen Modifikator hinzufügen.")
 	@Localize(locale = "ru", value = "Добавить модификатор")
+	@Localize(locale = "es", value = "Añadir un modificador")
 	private static String	ADD_TOOLTIP;
 
 	static {

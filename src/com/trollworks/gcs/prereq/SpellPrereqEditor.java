@@ -28,18 +28,22 @@ public class SpellPrereqEditor extends PrereqEditor {
 	@Localize("whose name")
 	@Localize(locale = "de", value = "deren/dessen Name")
 	@Localize(locale = "ru", value = "чьё название")
+	@Localize(locale = "es", value = "cuyo nombre es ")
 	private static String			WHOSE_SPELL_NAME;
 	@Localize("of any kind")
 	@Localize(locale = "de", value = "jeglicher Art")
 	@Localize(locale = "ru", value = "любого вида")
+	@Localize(locale = "es", value = "de cualquier tipo")
 	private static String			ANY;
 	@Localize("whose college name")
 	@Localize(locale = "de", value = "deren/dessen Schule")
 	@Localize(locale = "ru", value = "чьё название школы")
+	@Localize(locale = "es", value = "cuya escuela se llama ")
 	private static String			COLLEGE;
 	@Localize("from different colleges")
 	@Localize(locale = "de", value = "von unterschiedlichen Schulen")
 	@Localize(locale = "ru", value = "из разных школ")
+	@Localize(locale = "es", value = "de diferentes escuelas")
 	private static String			COLLEGE_COUNT;
 
 	static {

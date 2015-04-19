@@ -29,10 +29,12 @@ public class NewSpellCommand extends Command {
 	@Localize("New Spell")
 	@Localize(locale = "de", value = "Neuer Zauber")
 	@Localize(locale = "ru", value = "Новое заклинание")
+	@Localize(locale = "es", value = "Nuevo Sortilegio")
 	private static String				SPELL;
 	@Localize("New Spell Container")
 	@Localize(locale = "de", value = "Neuer Zauber-Container")
 	@Localize(locale = "ru", value = "Новый контейнер заклинаний")
+	@Localize(locale = "es", value = "Nuevo Contenedor de Sortilegios")
 	private static String				SPELL_CONTAINER;
 
 	static {

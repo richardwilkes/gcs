@@ -22,18 +22,22 @@ public class PlayerInfoPanel extends DropPanel {
 	@Localize("Player Information")
 	@Localize(locale = "de", value = "Spielerinformation")
 	@Localize(locale = "ru", value = "Информация об игроке")
+	@Localize(locale = "es", value = "Información del Juagador")
 	private static String	PLAYER_INFO;
 	@Localize("Player:")
 	@Localize(locale = "de", value = "Spieler:")
 	@Localize(locale = "ru", value = "Игрок:")
+	@Localize(locale = "es", value = "Jugador:")
 	private static String	PLAYER_NAME;
 	@Localize("Campaign:")
 	@Localize(locale = "de", value = "Kampagne:")
 	@Localize(locale = "ru", value = "Компания:")
+	@Localize(locale = "es", value = "Campaña:")
 	private static String	CAMPAIGN;
 	@Localize("Created On:")
 	@Localize(locale = "de", value = "Erstellt am:")
 	@Localize(locale = "ru", value = "Создан:")
+	@Localize(locale = "es", value = "Creado el:")
 	private static String	CREATED_ON;
 
 	static {

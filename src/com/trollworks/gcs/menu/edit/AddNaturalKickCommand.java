@@ -24,6 +24,7 @@ public class AddNaturalKickCommand extends Command {
 	@Localize("Include Kick In Weapons")
 	@Localize(locale = "de", value = "Führe Tritt als Waffe auf")
 	@Localize(locale = "ru", value = "Отображать пинок в оружии")
+	@Localize(locale = "es", value = "Incluir patada descalzo entre las Armas")
 	private static String						ADD_NATURAL_KICK;
 
 	static {

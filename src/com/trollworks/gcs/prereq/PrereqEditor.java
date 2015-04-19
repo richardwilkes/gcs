@@ -31,38 +31,47 @@ public abstract class PrereqEditor extends EditorPanel {
 	@Localize("Remove this prerequisite")
 	@Localize(locale = "de", value = "Diese Bedingung entfernen")
 	@Localize(locale = "ru", value = "Удалить это требование")
+	@Localize(locale = "es", value = "Eliminar este prerrequisito")
 	private static String			REMOVE_PREREQ_TOOLTIP;
 	@Localize("Remove this prerequisite list")
 	@Localize(locale = "de", value = "Diese Bedingungsliste entfernen")
 	@Localize(locale = "ru", value = "Удалить этот список требований")
+	@Localize(locale = "es", value = "Eliminar esta lista de prerrequisitos")
 	private static String			REMOVE_PREREQ_LIST_TOOLTIP;
 	@Localize("has")
 	@Localize(locale = "de", value = "hat")
 	@Localize(locale = "ru", value = "имеет")
+	@Localize(locale = "es", value = "tiene")
 	private static String			HAS;
 	@Localize("doesn't have")
 	@Localize(locale = "de", value = "hat nicht")
 	@Localize(locale = "ru", value = "не имеет")
+	@Localize(locale = "es", value = "no tiene")
 	private static String			DOES_NOT_HAVE;
 	@Localize("advantage")
 	@Localize(locale = "de", value = "Vorteil")
 	@Localize(locale = "ru", value = "преимущество")
+	@Localize(locale = "es", value = "ventaja")
 	private static String			ADVANTAGE;
 	@Localize("attribute")
 	@Localize(locale = "de", value = "Attribut")
 	@Localize(locale = "ru", value = "атрибут")
+	@Localize(locale = "es", value = "atributo")
 	private static String			ATTRIBUTE;
 	@Localize("contained weight")
 	@Localize(locale = "de", value = "Zuladung")
 	@Localize(locale = "ru", value = "содержит вес")
+	@Localize(locale = "es", value = "peso del contenido")
 	private static String			CONTAINED_WEIGHT;
 	@Localize("skill")
 	@Localize(locale = "de", value = "Fertigkeit")
 	@Localize(locale = "ru", value = "умение")
+	@Localize(locale = "es", value = "habilidad")
 	private static String			SKILL;
 	@Localize("spell(s)")
 	@Localize(locale = "de", value = "Zauber")
 	@Localize(locale = "ru", value = "заклинание(я)")
+	@Localize(locale = "es", value = "sortilegio(s)")
 	private static String			SPELL;
 
 	static {

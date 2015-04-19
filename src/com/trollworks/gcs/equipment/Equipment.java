@@ -45,6 +45,7 @@ public class Equipment extends ListRow {
 	@Localize("Equipment")
 	@Localize(locale = "de", value = "Ausrüstung")
 	@Localize(locale = "ru", value = "Снаряжение")
+	@Localize(locale = "es", value = "Equipo")
 	private static String			DEFAULT_NAME;
 
 	static {

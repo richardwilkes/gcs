@@ -50,22 +50,27 @@ public enum Encumbrance {
 	@Localize("None")
 	@Localize(locale = "de", value = "Keine")
 	@Localize(locale = "ru", value = "Нет")
+	@Localize(locale = "es", value = "Ninguno")
 	protected static String	NONE_TITLE;
 	@Localize("Light")
 	@Localize(locale = "de", value = "Leicht")
 	@Localize(locale = "ru", value = "Лёгкая")
+	@Localize(locale = "es", value = "Ligero")
 	protected static String	LIGHT_TITLE;
 	@Localize("Medium")
 	@Localize(locale = "de", value = "Mittel")
 	@Localize(locale = "ru", value = "Средние")
+	@Localize(locale = "es", value = "Medio")
 	protected static String	MEDIUM_TITLE;
 	@Localize("Heavy")
 	@Localize(locale = "de", value = "Schwer")
 	@Localize(locale = "ru", value = "Тяжелый")
+	@Localize(locale = "es", value = "Pesado")
 	protected static String	HEAVY_TITLE;
 	@Localize("X-Heavy")
 	@Localize(locale = "de", value = "Extrem")
 	@Localize(locale = "ru", value = "Сверхтяж")
+	@Localize(locale = "es", value = "Superpesado")
 	protected static String	EXTRA_HEAVY_TITLE;
 
 	static {

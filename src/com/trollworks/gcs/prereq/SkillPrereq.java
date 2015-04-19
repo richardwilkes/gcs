@@ -11,18 +11,16 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
-
-
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.utility.Localization;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -34,19 +32,23 @@ public class SkillPrereq extends NameLevelPrereq {
 	@Localize("{0}{1} a skill whose name {2}")
 	@Localize(locale = "de", value = "{0}{1} eine Fertigkeit, deren Name {2}")
 	@Localize(locale = "ru", value = "{0}{1} умение с названием {2}")
-	private static String SKILL_NAME_PART;
+	@Localize(locale = "es", value = "{0}{1} una habilidad cuyo nombre es {2}")
+	private static String		SKILL_NAME_PART;
 	@Localize(", specialization {0},")
 	@Localize(locale = "de", value = ", Spezialisierung {0},")
 	@Localize(locale = "ru", value = ", специализация {0},")
-	private static String SPECIALIZATION_PART;
+	@Localize(locale = "es", value = ", especialización {0},")
+	private static String		SPECIALIZATION_PART;
 	@Localize(" and level {0}")
 	@Localize(locale = "de", value = " und Fertigkeitswert {0}")
 	@Localize(locale = "ru", value = " и уровень {0}\n ")
-	private static String LEVEL_PART;
+	@Localize(locale = "es", value = " y nivel {0}")
+	private static String		LEVEL_PART;
 	@Localize(" level {0} and tech level matches\n")
 	@Localize(locale = "de", value = " Fertigkeitswert {0} und Techlevel stimmt überein")
 	@Localize(locale = "ru", value = " уровень {0} и ТУ совпадают\n")
-	private static String LEVEL_AND_TL_PART;
+	@Localize(locale = "es", value = " nivel {0} y nivel tecnológico coincidente\n")
+	private static String		LEVEL_AND_TL_PART;
 
 	static {
 		Localization.initialize();
@@ -59,7 +61,7 @@ public class SkillPrereq extends NameLevelPrereq {
 
 	/**
 	 * Creates a new prerequisite.
-	 * 
+	 *
 	 * @param parent The owning prerequisite list, if any.
 	 */
 	public SkillPrereq(PrereqList parent) {
@@ -69,7 +71,7 @@ public class SkillPrereq extends NameLevelPrereq {
 
 	/**
 	 * Loads a prerequisite.
-	 * 
+	 *
 	 * @param parent The owning prerequisite list, if any.
 	 * @param reader The XML reader to load from.
 	 */

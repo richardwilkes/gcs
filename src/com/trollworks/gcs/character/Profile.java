@@ -48,198 +48,247 @@ public class Profile {
 	private static String			HAIR_FORMAT;
 	@Localize("MMMM d")
 	@Localize(locale = "de", value = "d. MMM.")
+	@Localize(locale = "es", value = "d. MMMM")
 	private static String			BIRTHDAY_FORMAT;
 	@Localize("Brown")
 	@Localize(locale = "de", value = "Braun")
 	@Localize(locale = "ru", value = "Коричнев(ые,ая)")
+	@Localize(locale = "es", value = "Castaño")
 	private static String			BROWN;
 	@Localize("Black")
 	@Localize(locale = "de", value = "Schwarz")
 	@Localize(locale = "ru", value = "Чёрный")
+	@Localize(locale = "es", value = "Moreno")
 	private static String			BLACK;
 	@Localize("Blond")
 	@Localize(locale = "de", value = "Blond")
 	@Localize(locale = "ru", value = "Белокурые")
+	@Localize(locale = "es", value = "Rubio")
 	private static String			BLOND;
 	@Localize("Redhead")
 	@Localize(locale = "de", value = "Rot")
 	@Localize(locale = "ru", value = "Рыжые")
+	@Localize(locale = "es", value = "Pelirojo")
 	private static String			REDHEAD;
 	@Localize("Bald")
 	@Localize(locale = "de", value = "Glatze")
 	@Localize(locale = "ru", value = "Лысый")
+	@Localize(locale = "es", value = "Calvo")
 	private static String			BALD;
 	@Localize("Straight")
 	@Localize(locale = "de", value = "glatt")
 	@Localize(locale = "ru", value = "Прямые")
+	@Localize(locale = "es", value = "Liso")
 	private static String			STRAIGHT;
 	@Localize("Curly")
 	@Localize(locale = "de", value = "lockig")
 	@Localize(locale = "ru", value = "Вьющиеся")
+	@Localize(locale = "es", value = "Rizado")
 	private static String			CURLY;
 	@Localize("Wavy")
 	@Localize(locale = "de", value = "gewellt")
 	@Localize(locale = "ru", value = "Волнистые")
+	@Localize(locale = "es", value = "Ondulado")
 	private static String			WAVY;
 	@Localize("Short")
 	@Localize(locale = "de", value = "kurz")
 	@Localize(locale = "ru", value = "Короткие")
+	@Localize(locale = "es", value = "Corto")
 	private static String			SHORT;
 	@Localize("Medium")
 	@Localize(locale = "de", value = "mittel")
 	@Localize(locale = "ru", value = "Средние")
+	@Localize(locale = "es", value = "Medio")
 	private static String			MEDIUM;
 	@Localize("Long")
 	@Localize(locale = "de", value = "lang")
 	@Localize(locale = "ru", value = "Длинные")
+	@Localize(locale = "es", value = "Largo")
 	private static String			LONG;
 	@Localize("Blue")
 	@Localize(locale = "de", value = "Blau")
 	@Localize(locale = "ru", value = "Синие")
+	@Localize(locale = "es", value = "Azul")
 	private static String			BLUE;
 	@Localize("Green")
 	@Localize(locale = "de", value = "Grün")
 	@Localize(locale = "ru", value = "Зелёные")
+	@Localize(locale = "es", value = "Verde")
 	private static String			GREEN;
 	@Localize("Grey")
 	@Localize(locale = "de", value = "Grau")
 	@Localize(locale = "ru", value = "Серые")
+	@Localize(locale = "es", value = "Gris")
 	private static String			GREY;
 	@Localize("Violet")
 	@Localize(locale = "de", value = "Violett")
 	@Localize(locale = "ru", value = "Фиолетовые")
+	@Localize(locale = "es", value = "Violeta")
 	private static String			VIOLET;
 	@Localize("Freckled")
 	@Localize(locale = "de", value = "Sommersprossen")
 	@Localize(locale = "ru", value = "Веснушчатая")
+	@Localize(locale = "es", value = "Pecoso")
 	private static String			FRECKLED;
 	@Localize("Tan")
 	@Localize(locale = "de", value = "Gebräunt")
 	@Localize(locale = "ru", value = "Загорелая")
+	@Localize(locale = "es", value = "Bronceado")
 	private static String			TAN;
 	@Localize("Light Tan")
 	@Localize(locale = "de", value = "Leicht gebräunt")
 	@Localize(locale = "ru", value = "Слегка загорелая")
+	@Localize(locale = "es", value = "Ligeramente bronceado")
 	private static String			LIGHT_TAN;
 	@Localize("Dark Tan")
 	@Localize(locale = "de", value = "Stark gebräunt")
 	@Localize(locale = "ru", value = "Сильно-загорелая")
+	@Localize(locale = "es", value = "Muy bronceado")
 	private static String			DARK_TAN;
 	@Localize("Light Brown")
 	@Localize(locale = "de", value = "Hellbraun")
 	@Localize(locale = "ru", value = "Светло-коричневая")
+	@Localize(locale = "es", value = "ligeramente bronceado")
 	private static String			LIGHT_BROWN;
 	@Localize("Dark Brown")
 	@Localize(locale = "de", value = "Dunkelbraun")
 	@Localize(locale = "ru", value = "Тёмно-коричневая")
+	@Localize(locale = "es", value = "Muy bronceado")
 	private static String			DARK_BROWN;
 	@Localize("Pale")
 	@Localize(locale = "de", value = "Bleich")
 	@Localize(locale = "ru", value = "Бледная")
+	@Localize(locale = "es", value = "Pálido")
 	private static String			PALE;
 	@Localize("Right")
 	@Localize(locale = "de", value = "Rechts")
 	@Localize(locale = "ru", value = "Правая")
+	@Localize(locale = "es", value = "Diestro")
 	private static String			RIGHT;
 	@Localize("Left")
 	@Localize(locale = "de", value = "Links")
 	@Localize(locale = "ru", value = "Левая")
+	@Localize(locale = "es", value = "Zurdo")
 	private static String			LEFT;
 	@Localize("Male")
 	@Localize(locale = "de", value = "Männlich")
 	@Localize(locale = "ru", value = "муж.")
+	@Localize(locale = "es", value = "Varón")
 	private static String			MALE;
 	@Localize("Female")
 	@Localize(locale = "de", value = "Weiblich")
 	@Localize(locale = "ru", value = "жен.")
+	@Localize(locale = "es", value = "Hembra")
 	private static String			FEMALE;
 	@Localize("Human")
 	@Localize(locale = "de", value = "Mensch")
 	@Localize(locale = "ru", value = "Человек")
+	@Localize(locale = "es", value = "Humano")
 	private static String			DEFAULT_RACE;
 	@Localize("Name Change")
 	@Localize(locale = "de", value = "Namen ändern")
 	@Localize(locale = "ru", value = "Изменить имя")
+	@Localize(locale = "es", value = "Cambiar nombre")
 	private static String			NAME_UNDO;
 	@Localize("Title Change")
 	@Localize(locale = "de", value = "Titel ändern")
 	@Localize(locale = "ru", value = "Изменить статус")
+	@Localize(locale = "es", value = "Cambiar título")
 	private static String			TITLE_UNDO;
 	@Localize("Age Change")
 	@Localize(locale = "de", value = "Alter ändern")
 	@Localize(locale = "ru", value = "Изменить возраст")
+	@Localize(locale = "es", value = "Cambiar edad")
 	private static String			AGE_UNDO;
 	@Localize("Birthday Change")
 	@Localize(locale = "de", value = "Geburtstag ändern")
 	@Localize(locale = "ru", value = "Смена дня рождения")
+	@Localize(locale = "es", value = "Cambiar cumpleaños")
 	private static String			BIRTHDAY_UNDO;
 	@Localize("Eye Color Change")
 	@Localize(locale = "de", value = "Augenfarbe ändern")
 	@Localize(locale = "ru", value = "Изменить цвет глаз")
+	@Localize(locale = "es", value = "Cambiae el color de los ojos")
 	private static String			EYE_COLOR_UNDO;
 	@Localize("Hair Change")
 	@Localize(locale = "de", value = "Haar ändern")
 	@Localize(locale = "ru", value = "Изменить причёску")
+	@Localize(locale = "es", value = "Cambiar pelo")
 	private static String			HAIR_UNDO;
 	@Localize("Skin Color Change")
 	@Localize(locale = "de", value = "Hautfarbe ändern")
 	@Localize(locale = "ru", value = "Изменить цвет кожи")
+	@Localize(locale = "es", value = "Cambiar color de la piel")
 	private static String			SKIN_COLOR_UNDO;
 	@Localize("Handedness Change")
 	@Localize(locale = "de", value = "Händigkeit ändern")
 	@Localize(locale = "ru", value = "Смена основной руки")
+	@Localize(locale = "es", value = "Cambiar Mano dominante")
 	private static String			HANDEDNESS_UNDO;
 	@Localize("Height Change")
 	@Localize(locale = "de", value = "Höhe ändern")
 	@Localize(locale = "ru", value = "Изменить рост")
+	@Localize(locale = "es", value = "Cambiar Altura")
 	private static String			HEIGHT_UNDO;
 	@Localize("Weight Change")
 	@Localize(locale = "de", value = "Gewicht ändern")
 	@Localize(locale = "ru", value = "Изменить вес")
+	@Localize(locale = "es", value = "Cambiar Peso")
 	private static String			WEIGHT_UNDO;
 	@Localize("Gender Change")
 	@Localize(locale = "de", value = "Geschlecht ändern")
 	@Localize(locale = "ru", value = "Изменить пол")
+	@Localize(locale = "es", value = "Cambiar género")
 	private static String			GENDER_UNDO;
 	@Localize("Race Change")
 	@Localize(locale = "de", value = "Rasse ändern")
 	@Localize(locale = "ru", value = "Смена расы")
+	@Localize(locale = "es", value = "Cambiar raza")
 	private static String			RACE_UNDO;
 	@Localize("Religion Change")
 	@Localize(locale = "de", value = "Religion ändern")
 	@Localize(locale = "ru", value = "Изменить религию")
+	@Localize(locale = "es", value = "Cambiar Religión")
 	private static String			RELIGION_UNDO;
 	@Localize("Player Name Change")
 	@Localize(locale = "de", value = "Spielernamen ändern")
 	@Localize(locale = "ru", value = "Изменить имя игрока")
+	@Localize(locale = "es", value = "Cambiar Nombre del Jugador")
 	private static String			PLAYER_NAME_UNDO;
 	@Localize("Campaign Change")
 	@Localize(locale = "de", value = "Kampagne ändern")
 	@Localize(locale = "ru", value = "Изменить компанию")
+	@Localize(locale = "es", value = "Cambiar Nombre de Camapaña")
 	private static String			CAMPAIGN_UNDO;
 	@Localize("Size Modifier Change")
 	@Localize(locale = "de", value = "Größenmodifikator ändern")
 	@Localize(locale = "ru", value = "Изменить модификатор размера")
+	@Localize(locale = "es", value = "Cambiar Modificador por talla")
 	private static String			SIZE_MODIFIER_UNDO;
 	@Localize("Tech Level Change")
 	@Localize(locale = "de", value = "Techlevel ändern")
 	@Localize(locale = "ru", value = "Смена технологического уровня")
+	@Localize(locale = "es", value = "Cambiar Nivel Tecnológico")
 	private static String			TECH_LEVEL_UNDO;
 	@Localize("Portrait Change")
 	@Localize(locale = "de", value = "Portrait ändern")
 	@Localize(locale = "ru", value = "Смена изображения")
+	@Localize(locale = "es", value = "Cambiar Retrato")
 	private static String			PORTRAIT_UNDO;
 	@Localize("The portrait is a PNG file encoded as Base64.")
 	@Localize(locale = "de", value = "Das Portrait ist eine Base64-kodierte PNG-Datei.")
 	@Localize(locale = "ru", value = "Изображение представляет собой файл PNG (закодирован в Base64).")
+	@Localize(locale = "es", value = "El retrato es un archivo PNG codificado como Base64 ")
 	private static String			PORTRAIT_COMMENT;
 	@Localize("Could not write portrait.")
 	@Localize(locale = "de", value = "Kann Portrait nicht schreiben.")
 	@Localize(locale = "ru", value = "Не удалось записать изображение.")
+	@Localize(locale = "es", value = "No se puede escribir el retrato")
 	private static String			PORTRAIT_WRITE_ERROR;
 	@Localize("Notes Change")
 	@Localize(locale = "de", value = "Notizen ändern")
 	@Localize(locale = "ru", value = "Смена заметки")
+	@Localize(locale = "es", value = "Cambiar Notas")
 	private static String			NOTES_UNDO;
 
 	static {

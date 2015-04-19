@@ -26,10 +26,12 @@ public class SkillBonusEditor extends FeatureEditor {
 	@Localize("to skills whose name ")
 	@Localize(locale = "de", value = "auf Fertigkeiten, deren Namen ")
 	@Localize(locale = "ru", value = "умение с названием ")
+	@Localize(locale = "es", value = "a la habilidad cuyo nombre sea ")
 	private static String	SKILL_NAME;
 	@Localize("and specialization ")
 	@Localize(locale = "de", value = "und Spezialisierung ")
 	@Localize(locale = "ru", value = "и специализация ")
+	@Localize(locale = "es", value = "y especialización ")
 	private static String	SPECIALIZATION;
 
 	static {

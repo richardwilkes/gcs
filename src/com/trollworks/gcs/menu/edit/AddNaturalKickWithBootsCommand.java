@@ -24,6 +24,7 @@ public class AddNaturalKickWithBootsCommand extends Command {
 	@Localize("Include Kick w/Boots In Weapons")
 	@Localize(locale = "de", value = "Führe Tritt mit Schuh als Waffe auf")
 	@Localize(locale = "ru", value = "Отображать пинок (в ботинке) в оружии")
+	@Localize(locale = "es", value = "Incluir Pata con Botas entre las Armas")
 	private static String								ADD_NATURAL_KICK_WITH_BOOTS;
 
 	static {

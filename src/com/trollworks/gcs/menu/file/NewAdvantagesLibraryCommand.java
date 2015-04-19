@@ -25,6 +25,7 @@ public class NewAdvantagesLibraryCommand extends Command {
 	@Localize("New Advantages Library")
 	@Localize(locale = "de", value = "Neue Vorteils-Liste")
 	@Localize(locale = "ru", value = "Новая библиотека преимуществ")
+	@Localize(locale = "es", value = "Librería de nuevas Ventajas")
 	private static String							TITLE;
 
 	static {

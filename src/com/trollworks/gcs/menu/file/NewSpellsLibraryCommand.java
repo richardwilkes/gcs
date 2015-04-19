@@ -25,6 +25,7 @@ public class NewSpellsLibraryCommand extends Command {
 	@Localize("New Spells Library")
 	@Localize(locale = "de", value = "Neue Zauber-Liste")
 	@Localize(locale = "ru", value = "Новая библиотека заклинаний")
+	@Localize(locale = "es", value = "Nueva Librería de Sortilegios")
 	private static String						TITLE;
 
 	static {

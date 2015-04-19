@@ -196,54 +196,67 @@ public enum SelfControlRollAdjustments {
 	@Localize("None")
 	@Localize(locale = "de", value = "Keine Besonderheit")
 	@Localize(locale = "ru", value = "Нет")
+	@Localize(locale = "es", value = "Ninguna")
 	static String	NONE_TITLE;
 	@Localize("Includes an Action Penalty for Failure")
 	@Localize(locale = "de", value = "Beinhaltet einen Aktions-Malus wenn nicht geschafft")
 	@Localize(locale = "ru", value = "Включает штрафы действий при провале")
+	@Localize(locale = "es", value = "Incluye una Penalización a la Acción por Fallo")
 	static String	ACTION_PENALTY_TITLE;
 	@Localize("{0} Action Penalty")
 	@Localize(locale = "de", value = "{0} Aktions-Malus")
 	@Localize(locale = "ru", value = "{0} штраф действия")
+	@Localize(locale = "es", value = "{0} Penalización a la Acción")
 	static String	ACTION_PENALTY_DESCRIPTION;
 	@Localize("Includes a Reaction Penalty for Failure")
 	@Localize(locale = "de", value = "Beinhaltet einen Reaktions-Malus wenn nicht geschafft")
 	@Localize(locale = "ru", value = "Включает штрафы реакции при провале")
+	@Localize(locale = "es", value = "Incluye una Penalización a la Reacción por Fallo")
 	static String	REACTION_PENALTY_TITLE;
 	@Localize("{0} Reaction Penalty")
 	@Localize(locale = "de", value = "{0} Reaktions-Malus")
 	@Localize(locale = "ru", value = "{0} штраф реакции")
+	@Localize(locale = "es", value = "{0} penalización a la Reacción")
 	static String	REACTION_PENALTY_DESCRIPTION;
 	@Localize("Includes Fright Check Penalty")
 	@Localize(locale = "de", value = "Beinhaltet Schreckproben-Malus")
 	@Localize(locale = "ru", value = "Включает штраф броска страха")
+	@Localize(locale = "es", value = "Incluye la Penalización por chequeo de Miedo")
 	static String	FRIGHT_CHECK_PENALTY_TITLE;
 	@Localize("{0} Fright Check Penalty")
 	@Localize(locale = "de", value = "{0} Schreckproben-Malus")
 	@Localize(locale = "ru", value = "{0} штраф проверки страха")
+	@Localize(locale = "es", value = "Penalización por chequeo de Miedo")
 	static String	FRIGHT_CHECK_PENALTY_DESCRIPTION;
 	@Localize("Includes Fright Check Bonus")
 	@Localize(locale = "de", value = "Beinhaltet Schreckproben-Bonus")
 	@Localize(locale = "ru", value = "Включает премию броска страха")
+	@Localize(locale = "es", value = "Incluye una Bonificación por chequeo de Miedo")
 	static String	FRIGHT_CHECK_BONUS_TITLE;
 	@Localize("{0} Fright Check Bonus")
 	@Localize(locale = "de", value = "{0} Schreckproben-Bonus")
 	@Localize(locale = "ru", value = "{0} премия проверки страха")
+	@Localize(locale = "es", value = "Bonificación por chequeo de Miedo")
 	static String	FRIGHT_CHECK_BONUS_DESCRIPTION;
 	@Localize("Includes a Minor Cost of Living Increase")
 	@Localize(locale = "de", value = "Beinhaltet eine geringe Erhöhung der Lebenshaltungskosten")
 	@Localize(locale = "ru", value = "Включает малое возрастание расходов на жизнь")
+	@Localize(locale = "es", value = "Incluye un Incremento por Menor Coste de Vida")
 	static String	MINOR_COST_OF_LIVING_INCREASE_TITLE;
 	@Localize("{0}% Cost of Living Increase")
 	@Localize(locale = "de", value = "{0}% höhere Lebenshaltungskosten")
 	@Localize(locale = "ru", value = "{0}% возрастания расходов на жизнь")
+	@Localize(locale = "es", value = "{0}% Incremento del Coste de Vida")
 	static String	MINOR_COST_OF_LIVING_INCREASE_DESCRIPTION;
 	@Localize("Includes a Major Cost of Living Increase and Merchant Skill Penalty")
 	@Localize(locale = "de", value = "Beinhaltet eine deutliche Erhöhung der Lebenshaltungskosten und einen Malus der Händler-Fertigkeit")
 	@Localize(locale = "ru", value = "Включает большое возрастание расходов на жизнь и штраф на торговое дело")
+	@Localize(locale = "es", value = "Incluye un Incremento por Mayor Coste de Vida y una Penalización por la habilidad de Mercader")
 	static String	MAJOR_COST_OF_LIVING_INCREASE_TITLE;
 	@Localize("{0}% Cost of Living Increase")
 	@Localize(locale = "de", value = "{0}% höhere Lebenshaltungskosten")
 	@Localize(locale = "ru", value = "{0}% возрастания расходов на жизнь")
+	@Localize(locale = "es", value = "{0}% Incremento del Coste de Vida")
 	static String	MAJOR_COST_OF_LIVING_INCREASE_DESCRIPTION;
 
 	static {

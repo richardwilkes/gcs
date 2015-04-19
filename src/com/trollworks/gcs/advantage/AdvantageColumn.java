@@ -284,42 +284,52 @@ public enum AdvantageColumn {
 	@Localize("Advantages & Disadvantages")
 	@Localize(locale = "de", value = "Vorteile & Nachteile")
 	@Localize(locale = "ru", value = "Преимущества и недостатки")
+	@Localize(locale = "es", value = "Ventajas y Desventajas")
 	static String	DESCRIPTION_TITLE;
 	@Localize("The name, level and notes describing an advantage")
 	@Localize(locale = "de", value = "Der Name, Stufe und Anmerkungen, die den Vorteil beschreiben")
 	@Localize(locale = "ru", value = "Название, уровень и заметки преимущества")
+	@Localize(locale = "es", value = "Nombre, nivel y notas describiendo la ventaja")
 	static String	DESCRIPTION_TOOLTIP;
 	@Localize("Pts")
 	@Localize(locale = "de", value = "Pkt")
 	@Localize(locale = "ru", value = "Очк")
+	@Localize(locale = "es", value = "Ptos")
 	static String	POINTS_TITLE;
 	@Localize("The points spent in the advantage")
 	@Localize(locale = "de", value = "Die für den Vorteil aufgewendeten Punkte")
 	@Localize(locale = "ru", value = "Потраченые очки на преимущество")
+	@Localize(locale = "es", value = "Coste en puntos de la ventaja")
 	static String	POINTS_TOOLTIP;
 	@Localize("Type")
 	@Localize(locale = "de", value = "Typ")
 	@Localize(locale = "ru", value = "Тип")
+	@Localize(locale = "es", value = "Tipo")
 	static String	TYPE_TITLE;
 	@Localize("The type of advantage")
 	@Localize(locale = "de", value = "Der Typ des Vorteils")
 	@Localize(locale = "ru", value = "Тип преимущества")
+	@Localize(locale = "es", value = "Tipo de ventaja")
 	static String	TYPE_TOOLTIP;
 	@Localize("Category")
 	@Localize(locale = "de", value = "Kategorie")
 	@Localize(locale = "ru", value = "Категория")
+	@Localize(locale = "es", value = "Categoría")
 	static String	CATEGORY_TITLE;
 	@Localize("The category or categories the advantage belongs to")
 	@Localize(locale = "de", value = "Die Kategorie oder Kategorien, denen dieser Vorteil angehört")
 	@Localize(locale = "ru", value = "Категория или категории, к которым относится преимущество")
+	@Localize(locale = "es", value = "Categoría o categorías a las que pertenece la ventaja")
 	static String	CATEGORY_TOOLTIP;
 	@Localize("Ref")
 	@Localize(locale = "de", value = "Ref")
 	@Localize(locale = "ru", value = "Ссыл")
+	@Localize(locale = "es", value = "Ref")
 	static String	REFERENCE_TITLE;
 	@Localize("A reference to the book and page this advantage appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
 	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Vorteil beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
 	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая преимущество\n (например, B22 - книга \"Базовые правила\", страница 22)")
+	@Localize(locale = "es", value = "Referencia al libro y página en donde aparece la ventaja\n(p.e. B22 se refiere al \"Manual Básico\", página 22)")
 	static String	REFERENCE_TOOLTIP;
 
 	static {

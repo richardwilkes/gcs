@@ -23,6 +23,7 @@ public class JumpToSearchCommand extends Command {
 	@Localize("Jump To Search")
 	@Localize(locale = "de", value = "Springe zur Suche")
 	@Localize(locale = "ru", value = "Перейти к поиску")
+	@Localize(locale = "es", value = "Pasar a Buscar")
 	private static String					JUMP_TO_SEARCH;
 
 	static {

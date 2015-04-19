@@ -57,10 +57,12 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
 	@Localize("Untitled Template")
 	@Localize(locale = "de", value = "Unbenannte Vorlage")
 	@Localize(locale = "ru", value = "Безымянный шаблон")
+	@Localize(locale = "es", value = "Plantilla sin título")
 	private static String			UNTITLED;
 	@Localize("Add Rows")
 	@Localize(locale = "de", value = "Zeilen hinzufügen")
 	@Localize(locale = "ru", value = "Добавить строки")
+	@Localize(locale = "es", value = "Añadir filas")
 	private static String			ADD_ROWS;
 
 	static {

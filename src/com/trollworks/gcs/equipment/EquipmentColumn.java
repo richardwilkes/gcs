@@ -408,44 +408,55 @@ public enum EquipmentColumn {
 	@Localize("Equipment")
 	@Localize(locale = "de", value = "Ausrüstung")
 	@Localize(locale = "ru", value = "Снаряжение")
+	@Localize(locale = "es", value = "Equipo")
 	static String	DESCRIPTION_TITLE;
 	@Localize("The name and notes describing a piece of equipment")
 	@Localize(locale = "de", value = "Der Name und Anmerkungen, die den Ausrüstungsgegenstand beschreiben")
 	@Localize(locale = "ru", value = "Название и заметки, описывающие снаряжения")
+	@Localize(locale = "es", value = "Nombre y notas describiendo la pieza de equipo")
 	static String	DESCRIPTION_TOOLTIP;
 	@Localize("Equipment ({0}; ${1})")
 	@Localize(locale = "de", value = "Ausrüstung ({0}; {1}$)")
 	@Localize(locale = "ru", value = "Снаряжение ({0}; ${1})")
+	@Localize(locale = "es", value = "Equipo ({0}; {1}$)")
 	static String	DESCRIPTION_TOTALS;
 	@Localize("?")
 	@Localize(locale = "de", value = "?")
+	@Localize(locale = "es", value = "?")
 	static String	STATE_TITLE;
 	@Localize("Whether this piece of equipment is carried & equipped (E), just\ncarried (C), or not carried (-). Items that are not equipped do\nnot apply any features they may normally contribute to the\ncharacter.")
 	@Localize(locale = "de", value = "Ob dieser Ausrüstungsgegenstand ausgerüstet (A), mitgeführt (M)\noder nicht mitgeführt (-) ist. Gegenstände, die nicht ausgerüstet sind, haben keine Auswirkungen auf den Charakter.")
 	@Localize(locale = "ru", value = "Предмет снаряжения носим и экипирован (E), только носим (C), \nили не переносим (-). Не экипированные предметы \nне добавляют никаких свойств, которыми может воспользоваться персонаж.")
+	@Localize(locale = "es", value = "Indica si la pieza de equipo se porta y equipa (E), sólo se\n porta (P), o no se porta (-). Los objetos no equipados\n no aplican sus características como harían normalmente al personaje.")
 	static String	STATE_TOOLTIP;
 	@Localize("TL")
 	@Localize(locale = "de", value = "TL")
 	@Localize(locale = "ru", value = "ТУ")
+	@Localize(locale = "es", value = "NT")
 	static String	TECH_LEVEL_TITLE;
 	@Localize("The tech level of this piece of equipment")
 	@Localize(locale = "de", value = "Der Techlevel des Ausrüstungsgegenstandes")
 	@Localize(locale = "ru", value = "Технологический уровень снаряжения")
+	@Localize(locale = "es", value = "Nivel tecnológico de la pieza de equipo")
 	static String	TECH_LEVEL_TOOLTIP;
 	@Localize("LC")
 	@Localize(locale = "de", value = "LK")
 	@Localize(locale = "ru", value = "КЛ")
+	@Localize(locale = "es", value = "NL")
 	static String	LEGALITY_CLASS_TITLE;
 	@Localize("The legality class of this piece of equipment")
 	@Localize(locale = "de", value = "Die Legalitätsklasse des Ausrüstungsgegenstandes")
 	@Localize(locale = "ru", value = "Класс легальности снаряжения")
+	@Localize(locale = "es", value = "Nivel legal de la pieza de equipo")
 	static String	LEGALITY_CLASS_TOOLTIP;
 	@Localize("#")
 	@Localize(locale = "de", value = "#")
+	@Localize(locale = "es", value = "#")
 	static String	QUANTITY_TITLE;
 	@Localize("The quantity of this piece of equipment")
 	@Localize(locale = "de", value = "Die Anzahl der Ausrüstungsgegenstände")
 	@Localize(locale = "ru", value = "Количество предметов снаряжения")
+	@Localize(locale = "es", value = "Cantidad de piezas de equipo")
 	static String	QUANTITY_TOOLTIP;
 	@Localize("$")
 	@Localize(locale = "de", value = "$")
@@ -453,44 +464,55 @@ public enum EquipmentColumn {
 	@Localize("The value of one of these pieces of equipment")
 	@Localize(locale = "de", value = "Der Wert eines einzelnen Ausrüstungsgegenstandes")
 	@Localize(locale = "ru", value = "Цена снаряжения")
+	@Localize(locale = "es", value = "Valor unitario")
 	static String	VALUE_TOOLTIP;
 	@Localize("W")
 	@Localize(locale = "de", value = "Gew.")
 	@Localize(locale = "ru", value = "В")
+	@Localize(locale = "es", value = "P")
 	static String	WEIGHT_TITLE;
 	@Localize("The weight of one of these pieces of equipment")
 	@Localize(locale = "de", value = "Das Gewicht eines einzelnen Ausrüstungsgegenstandes")
 	@Localize(locale = "ru", value = "Вес снаряжения")
+	@Localize(locale = "es", value = "Peso unitario")
 	static String	WEIGHT_TOOLTIP;
 	@Localize("\u2211 $")
 	@Localize(locale = "de", value = "\u2211 $")
+	@Localize(locale = "es", value = "\u2211 $")
 	static String	EXT_VALUE_TITLE;
 	@Localize("The value of all of these pieces of equipment,\nplus the value of any contained equipment")
 	@Localize(locale = "de", value = "Der Wert aller dieser Ausrüstungsgegenstände\nund der Wert der darin enthaltenen Ausrüstung")
 	@Localize(locale = "ru", value = "Цена всего снаряжения,\nплюс цена любого входящего в него снаряжения")
+	@Localize(locale = "es", value = "Valor de todas las piezas del equipo\n más el valor de lo que contengan")
 	static String	EXT_VALUE_TOOLTIP;
 	@Localize("\u2211 W")
 	@Localize(locale = "de", value = "\u2211 Gew.")
+	@Localize(locale = "es", value = "\u2211 Peso")
 	static String	EXT_WEIGHT_TITLE;
 	@Localize("The weight of all of these pieces of equipment\n, plus the weight of any contained equipment")
 	@Localize(locale = "de", value = "Das Gewicht aller dieser Ausrüstungsgegenstände\nund das Gewicht der darin enthaltenen Ausrüstung")
 	@Localize(locale = "ru", value = "Вес всего снаряжения,\nплюс вес любого входящего в него снаряжения")
+	@Localize(locale = "es", value = "Peso de todas las piezas del equipo\n más el peso de lo que contegan")
 	static String	EXT_WEIGHT_TOOLTIP;
 	@Localize("Category")
 	@Localize(locale = "de", value = "Kategorie")
 	@Localize(locale = "ru", value = "Категория")
+	@Localize(locale = "es", value = "Categoría")
 	static String	CATEGORY_TITLE;
 	@Localize("The category or categories the equipment belongs to")
 	@Localize(locale = "de", value = "Die Kategorie oder Kategorien, denen diese Ausrüstung angehört")
 	@Localize(locale = "ru", value = "Категория или категории снаряжения, к которым оно принадлежит")
+	@Localize(locale = "es", value = "Categoría o categorías a las que pertenece el equipo")
 	static String	CATEGORY_TOOLTIP;
 	@Localize("Ref")
 	@Localize(locale = "de", value = "Ref.")
 	@Localize(locale = "ru", value = "Ссыл")
+	@Localize(locale = "es", value = "Ref.")
 	static String	REFERENCE_TITLE;
 	@Localize("A reference to the book and page this equipment appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
 	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der diese Ausrüstung beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
 	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая снаряжение\n (например B22 - книга \"Базовые правила\", страница 22)")
+	@Localize(locale = "es", value = "Referencia al libro y página donde se menciona el equipo\n(p.e. B22 se refiere al \"Manual Básico\", página 22).")
 	static String	REFERENCE_TOOLTIP;
 
 	static {

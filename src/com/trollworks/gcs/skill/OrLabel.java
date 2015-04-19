@@ -27,6 +27,7 @@ public class OrLabel extends JLabel {
 	@Localize("or")
 	@Localize(locale = "de", value = "oder")
 	@Localize(locale = "ru", value = "или")
+	@Localize(locale = "es", value = "o")
 	private static String	OR;
 
 	static {

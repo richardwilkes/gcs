@@ -44,26 +44,32 @@ public class Namer extends JPanel {
 	@Localize("Name {0}")
 	@Localize(locale = "de", value = "Benenne {0}")
 	@Localize(locale = "ru", value = "Имя {0}")
+	@Localize(locale = "es", value = "Nombre {0}")
 	private static String			NAME_TITLE;
 	@Localize("1 item remaining to be named.")
 	@Localize(locale = "de", value = "1 weiteres Element zu benennen.")
 	@Localize(locale = "ru", value = "осталось назвать 1 элемент.")
+	@Localize(locale = "es", value = "Queda un elemento pendiente de nombrar")
 	private static String			ONE_REMAINING;
 	@Localize("{0} items remaining to be named.")
 	@Localize(locale = "de", value = "{0} weitere Elemente zu benennen.")
 	@Localize(locale = "ru", value = "{0} элементов осталось назвать.")
+	@Localize(locale = "es", value = "Quedan {0} elementos pendientes de nombrar")
 	private static String			REMAINING;
 	@Localize("Apply")
 	@Localize(locale = "de", value = "Anwenden")
 	@Localize(locale = "ru", value = "Применить")
+	@Localize(locale = "es", value = "Aplicar")
 	private static String			APPLY;
 	@Localize("Cancel")
 	@Localize(locale = "de", value = "Abbrechen")
 	@Localize(locale = "ru", value = "Отмена")
+	@Localize(locale = "es", value = "Cancelar")
 	private static String			CANCEL;
 	@Localize("Cancel Remaining")
 	@Localize(locale = "de", value = "Alles Abbrechen")
 	@Localize(locale = "ru", value = "Пропустить остальные")
+	@Localize(locale = "es", value = "Cancelar lo restante")
 	private static String			CANCEL_REST;
 
 	static {

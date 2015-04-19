@@ -44,18 +44,22 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 	@Localize("Select A Portrait")
 	@Localize(locale = "de", value = "Wähle ein Charakterild")
 	@Localize(locale = "ru", value = "Выберите изображение")
+	@Localize(locale = "es", value = "Selecciona un retrato")
 	private static String	SELECT_PORTRAIT;
 	@Localize("Portrait")
 	@Localize(locale = "de", value = "Charakterbild")
 	@Localize(locale = "ru", value = "Изображение")
+	@Localize(locale = "es", value = "Retrato")
 	private static String	PORTRAIT;
 	@Localize("<html><body><b>Double-click</b> to set a character portrait.<br><br>The dimensions of the chosen picture should be in a ratio of<br><b>3 pixels wide for every 4 pixels tall</b> to scale without distortion.<br><br>Dimensions of <b>{0}x{1}</b> are ideal.</body></html>")
 	@Localize(locale = "de", value = "<html><body><b>Doppelklicken</b>, um ein Charakterbild anzugeben.<br><br>Das gewählte Bild sollte ein <b>Seitenverhältnis von 3:4</b><br> aufweisen, um unverzerrt dargestellt zu werden.<br><br>Eine Größe von <b>{0}x{1} Pixel</b> ist ideal.</body></html>")
 	@Localize(locale = "ru", value = "<html><body><b>Дважды щёлкните</b> чтобы изменить изображение персонажа.<br><br>Для масштабирования без искажений, размер картинки должен быть<br>в пропорции <b>3 пикселя в ширину на 4 пикселя в высоту</b>.<br><br>Размер <b>{0}x{1}</b> будет идеальным.</body></html>")
+	@Localize(locale = "es", value = "<html><body><b>Dobleclic</b> para establecer el retarto del personaje.<br><br>Las dimensiones de la imagen seleccionada deben mantener un ratio de<br><b>3 pixels de ancho por cada 4 pixels de alto</b> para mostrarse sin distorsión.<br><br> <b>{0}x{1}</b> es la dimensión ideal.</body></html>")
 	private static String	PORTRAIT_TOOLTIP;
 	@Localize("Unable to load\n{0}.")
 	@Localize(locale = "de", value = "Kann Datei {0} nicht laden.")
 	@Localize(locale = "ru", value = "Невозможно загрузить\n{0}.")
+	@Localize(locale = "es", value = "No puede cargarse\n{0}.")
 	private static String	BAD_IMAGE;
 
 	static {

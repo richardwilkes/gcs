@@ -209,38 +209,47 @@ public enum SkillDefaultType {
 	@Localize("ST")
 	@Localize(locale = "de", value = "ST")
 	@Localize(locale = "ru", value = "СЛ")
+	@Localize(locale = "es", value = "FZ")
 	static String	ST_TITLE;
 	@Localize("DX")
 	@Localize(locale = "de", value = "GE")
 	@Localize(locale = "ru", value = "ЛВ")
+	@Localize(locale = "es", value = "DS")
 	static String	DX_TITLE;
 	@Localize("IQ")
 	@Localize(locale = "de", value = "IQ")
 	@Localize(locale = "ru", value = "ИН")
+	@Localize(locale = "es", value = "CI")
 	static String	IQ_TITLE;
 	@Localize("HT")
 	@Localize(locale = "de", value = "KO")
 	@Localize(locale = "ru", value = "ЗД")
+	@Localize(locale = "es", value = "SL")
 	static String	HT_TITLE;
 	@Localize("Will")
 	@Localize(locale = "de", value = "Wille")
 	@Localize(locale = "ru", value = "Воля")
+	@Localize(locale = "es", value = "Vol")
 	static String	WILL_TITLE;
 	@Localize("Perception")
 	@Localize(locale = "de", value = "Wahrnehmung")
 	@Localize(locale = "ru", value = "Восприятие")
+	@Localize(locale = "es", value = "Percepción")
 	static String	PER_TITLE;
 	@Localize("Skill named")
 	@Localize(locale = "de", value = "Fertigkeit namens")
 	@Localize(locale = "ru", value = "Название умения")
+	@Localize(locale = "es", value = "Habilidad llamada")
 	static String	SKILL_NAMED;
 	@Localize("Parrying skill named")
 	@Localize(locale = "de", value = "Parieren-Fertigkeit namens")
 	@Localize(locale = "ru", value = "Название умения парирования")
+	@Localize(locale = "es", value = "Habilidad de parada llamada")
 	static String	PARRY_SKILL_NAMED;
 	@Localize("Blocking skill named")
 	@Localize(locale = "de", value = "Abblocken-Fertigkeit namens")
 	@Localize(locale = "ru", value = "Название умения блока")
+	@Localize(locale = "es", value = "Habilidad de bloqueo llamada")
 	static String	BLOCK_SKILL_NAMED;
 
 	static {

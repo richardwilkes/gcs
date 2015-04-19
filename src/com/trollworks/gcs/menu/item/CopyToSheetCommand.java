@@ -26,6 +26,7 @@ public class CopyToSheetCommand extends Command {
 	@Localize("Copy To Character Sheet")
 	@Localize(locale = "de", value = "Kopiere zum Charakterblatt")
 	@Localize(locale = "ru", value = "Копировать в лист персонажа")
+	@Localize(locale = "es", value = "Copiar a la hoja de personaje")
 	private static String					COPY_TO_SHEET;
 
 	static {

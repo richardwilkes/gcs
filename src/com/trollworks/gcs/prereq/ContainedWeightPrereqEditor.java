@@ -23,6 +23,7 @@ public class ContainedWeightPrereqEditor extends PrereqEditor {
 	@Localize("which ")
 	@Localize(locale = "de", value = "die ")
 	@Localize(locale = "ru", value = "который")
+	@Localize(locale = "es", value = "el cual ")
 	private static String	WHICH;
 
 	static {

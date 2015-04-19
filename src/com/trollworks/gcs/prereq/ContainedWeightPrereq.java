@@ -32,6 +32,7 @@ public class ContainedWeightPrereq extends HasPrereq {
 	@Localize("{0}{1} a contained weight which {2}\n")
 	@Localize(locale = "de", value = "{0}{1} eine Zuladung die {2}")
 	@Localize(locale = "ru", value = "{0}{1} имеет вес равный {2}\n")
+	@Localize(locale = "es", value = "{0}{1} contiene un peso de {2}\n")
 	private static String		CONTAINED_WEIGHT;
 
 	static {

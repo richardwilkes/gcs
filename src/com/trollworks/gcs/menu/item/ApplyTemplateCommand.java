@@ -30,10 +30,12 @@ public class ApplyTemplateCommand extends Command {
 	@Localize("Apply Template To Character Sheet")
 	@Localize(locale = "de", value = "Wende Vorlage auf Charakterblatt an")
 	@Localize(locale = "ru", value = "Применить шаблон к листу персонажа")
+	@Localize(locale = "es", value = "Aplicar nueva plantilla de hoja de personaje")
 	private static String						APPLY_TEMPLATE_TO_SHEET;
 	@Localize("Apply Template")
 	@Localize(locale = "de", value = "Vorlage anwenden")
 	@Localize(locale = "ru", value = "Применить шаблон")
+	@Localize(locale = "es", value = "Aplicar plantilla")
 	private static String						UNDO;
 
 	static {

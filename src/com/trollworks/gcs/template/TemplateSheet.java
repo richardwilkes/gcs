@@ -59,22 +59,27 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 	@Localize("Advantages, Disadvantages & Quirks")
 	@Localize(locale = "de", value = "Vorteile, Nachteile & Marotten")
 	@Localize(locale = "ru", value = "Преимущества, недостатки и причуды")
+	@Localize(locale = "es", value = "Ventajas, Desventajas y Singularidades")
 	private static String				ADVANTAGES;
 	@Localize("Skills")
 	@Localize(locale = "de", value = "Fertigkeiten")
 	@Localize(locale = "ru", value = "Умения")
+	@Localize(locale = "es", value = "Habilidades")
 	private static String				SKILLS;
 	@Localize("Spells")
 	@Localize(locale = "de", value = "Zauber")
 	@Localize(locale = "ru", value = "Заклинания")
+	@Localize(locale = "es", value = "Sortilegios")
 	private static String				SPELLS;
 	@Localize("Equipment")
 	@Localize(locale = "de", value = "Ausrüstung")
 	@Localize(locale = "ru", value = "Снаряжение")
+	@Localize(locale = "es", value = "Equipo")
 	private static String				EQUIPMENT;
 	@Localize("Notes")
 	@Localize(locale = "de", value = "Notizen")
 	@Localize(locale = "ru", value = "Заметка")
+	@Localize(locale = "es", value = "Notas")
 	private static String				NOTES;
 
 	static {

@@ -26,6 +26,7 @@ public class OpenEditorCommand extends Command {
 	@Localize("Open Detail Editor")
 	@Localize(locale = "de", value = "Öffne Detail-Editor")
 	@Localize(locale = "ru", value = "Открыть расширенный редактор")
+	@Localize(locale = "es", value = "Abrir editor de detalles")
 	private static String					OPEN_EDITOR;
 
 	static {

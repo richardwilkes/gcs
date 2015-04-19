@@ -44,10 +44,12 @@ public enum AttributeBonusLimitation {
 	@Localize("for striking only")
 	@Localize(locale = "de", value = "nur für Schläge")
 	@Localize(locale = "ru", value = "только вплотную")
+	@Localize(locale = "es", value = "Sólo para golpear")
 	static String	STRIKING_ONLY_TITLE;
 	@Localize("for lifting only")
 	@Localize(locale = "de", value = "nur für Heben")
 	@Localize(locale = "ru", value = "только для подъема")
+	@Localize(locale = "es", value = "sólo para levantar")
 	static String	LIFTING_ONLY_TITLE;
 
 	static {

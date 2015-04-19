@@ -58,22 +58,27 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 	@Localize("Untitled Sheet")
 	@Localize(locale = "de", value = "Unbenanntes Charakterblatt")
 	@Localize(locale = "ru", value = "Лист без названия")
+	@Localize(locale = "es", value = "Hoja sin título")
 	private static String			UNTITLED;
 	@Localize("An error occurred while trying to save the sheet as a PNG.")
 	@Localize(locale = "de", value = "Ein Fehler ist beim Exportieren des Charakterblatts als PNG aufgetreten.")
 	@Localize(locale = "ru", value = "Произошла ошибка при попытке сохранить лист как PNG.")
+	@Localize(locale = "es", value = "ha ocurrido un error al intentar salvar la hoja como archivo PNG")
 	private static String			SAVE_AS_PNG_ERROR;
 	@Localize("An error occurred while trying to save the sheet as a PDF.")
 	@Localize(locale = "de", value = "Ein Fehler ist beim Exportieren des Charakterblatts als PDF aufgetreten.")
 	@Localize(locale = "ru", value = "Произошла ошибка при попытке сохранить лист в формате PDF.")
+	@Localize(locale = "es", value = "Ha ocurrido un error al intentar salvar la hoja como archivo PDF")
 	private static String			SAVE_AS_PDF_ERROR;
 	@Localize("An error occurred while trying to save the sheet as HTML.")
 	@Localize(locale = "de", value = "Ein Fehler ist beim Exportieren des Charakterblatts als HTML aufgetreten.")
 	@Localize(locale = "ru", value = "Произошла ошибка при попытке сохранить лист в формате HTML.")
+	@Localize(locale = "es", value = "Ha ocurrido un error al intentar salvar la hoja como archivo HTML")
 	private static String			SAVE_AS_HTML_ERROR;
 	@Localize("Add Rows")
 	@Localize(locale = "de", value = "Zeilen hinzufügen")
 	@Localize(locale = "ru", value = "Добавить строки")
+	@Localize(locale = "es", value = "Añadir filas")
 	private static String			ADD_ROWS;
 
 	static {

@@ -37,10 +37,12 @@ public class TextEditor extends JDialog implements ActionListener, WindowFocusLi
 	@Localize("Cancel")
 	@Localize(locale = "de", value = "Abbrechen")
 	@Localize(locale = "ru", value = "Отмена")
+	@Localize(locale = "es", value = "Cancelar")
 	private static String	CANCEL;
 	@Localize("Set")
 	@Localize(locale = "de", value = "Ok")
 	@Localize(locale = "ru", value = "Принять")
+	@Localize(locale = "es", value = "Aceptar")
 	private static String	SET;
 
 	static {

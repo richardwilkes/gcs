@@ -26,10 +26,12 @@ public class AndOrLabel extends JLabel {
 	@Localize("and")
 	@Localize(locale = "de", value = "und")
 	@Localize(locale = "ru", value = "и")
+	@Localize(locale = "es", value = "y")
 	private static String	AND;
 	@Localize("or")
 	@Localize(locale = "de", value = "oder")
 	@Localize(locale = "ru", value = "или")
+	@Localize(locale = "es", value = "o")
 	private static String	OR;
 
 	static {

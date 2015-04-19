@@ -38,42 +38,52 @@ public abstract class FeatureEditor extends EditorPanel {
 	@Localize("Add a feature")
 	@Localize(locale = "de", value = "Eine Eigenschaft hinzufügen")
 	@Localize(locale = "ru", value = "Добавить особенность")
+	@Localize(locale = "es", value = "Añade una característica")
 	private static String			ADD_FEATURE_TOOLTIP;
 	@Localize("Remove this feature")
 	@Localize(locale = "de", value = "Diese Eigenschaft entfernen")
 	@Localize(locale = "ru", value = "Убрать эту особенность")
+	@Localize(locale = "es", value = "Eliminar esta característica")
 	private static String			REMOVE_FEATURE_TOOLTIP;
 	@Localize("Gives an attribute bonus of")
 	@Localize(locale = "de", value = "Gibt einen Attributs-Bonus von")
 	@Localize(locale = "ru", value = "Даёт премию атрибуту")
+	@Localize(locale = "es", value = "Da una bonificación al atributo de")
 	private static String			ATTRIBUTE_BONUS;
 	@Localize("Reduces the attribute cost of")
 	@Localize(locale = "de", value = "Reduziert die Attributskosten von")
 	@Localize(locale = "ru", value = "Снижает стоимость атрибута")
+	@Localize(locale = "es", value = "Reduce el coste del atributo en ")
 	private static String			COST_REDUCTION;
 	@Localize("Gives a DR bonus of")
 	@Localize(locale = "de", value = "Gibt einen SR-Bonus von")
 	@Localize(locale = "ru", value = "Даёт премию СП")
+	@Localize(locale = "es", value = "Da una bonificación a RD de ")
 	private static String			DR_BONUS;
 	@Localize("Gives a skill level bonus of")
 	@Localize(locale = "de", value = "Gibt einen Fertigkeitswert-Bonus von")
 	@Localize(locale = "ru", value = "Даёт премию к уровню умения")
+	@Localize(locale = "es", value = "Da una bonificación a la habilidad de")
 	private static String			SKILL_BONUS;
 	@Localize("Gives a spell level bonus of")
 	@Localize(locale = "de", value = "Gibt für Zauber einen Fertigkeitswert-Bonus von")
 	@Localize(locale = "ru", value = "Даёт премию у уровню заклинания")
+	@Localize(locale = "es", value = "Da una bonificación al sortilegio de")
 	private static String			SPELL_BONUS;
 	@Localize("Gives a weapon damage bonus of")
 	@Localize(locale = "de", value = "Gibt einen Waffen-Schaden-Bonus von")
 	@Localize(locale = "ru", value = "Даёт премию к урону от оружия")
+	@Localize(locale = "es", value = "Da una bonificación al daño de")
 	private static String			WEAPON_BONUS;
 	@Localize("per level")
 	@Localize(locale = "de", value = "je Stufe")
 	@Localize(locale = "ru", value = "за уровень")
+	@Localize(locale = "es", value = "por nivel")
 	private static String			PER_LEVEL;
 	@Localize("per die")
 	@Localize(locale = "de", value = "je Würfel")
 	@Localize(locale = "ru", value = "за кубик")
+	@Localize(locale = "es", value = "por dado")
 	private static String			PER_DIE;
 
 	static {

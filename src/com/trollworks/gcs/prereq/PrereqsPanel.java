@@ -21,6 +21,7 @@ public class PrereqsPanel extends BandedPanel {
 	@Localize("Prerequisites")
 	@Localize(locale = "de", value = "Bedingungen")
 	@Localize(locale = "ru", value = "Требования")
+	@Localize(locale = "es", value = "Prerrequisitos")
 	private static String	PREREQUISITES;
 
 	static {

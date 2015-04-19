@@ -38,10 +38,12 @@ public class SpellOutline extends ListOutline implements Incrementable {
 	@Localize("Increment Points")
 	@Localize(locale = "de", value = "Punkte erhöhen")
 	@Localize(locale = "ru", value = "Увеличить очки")
+	@Localize(locale = "es", value = "Incrementar Puntos")
 	private static String	INCREMENT;
 	@Localize("Decrement Points")
 	@Localize(locale = "de", value = "Punkte verringern")
 	@Localize(locale = "ru", value = "Уменьшить очки")
+	@Localize(locale = "es", value = "Disminuir Puntos")
 	private static String	DECREMENT;
 
 	static {

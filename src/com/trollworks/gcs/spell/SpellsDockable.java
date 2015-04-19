@@ -21,6 +21,7 @@ public class SpellsDockable extends LibraryDockable {
 	@Localize("Untitled Spells")
 	@Localize(locale = "de", value = "Unbenannte Zauber-Liste")
 	@Localize(locale = "ru", value = "Безымянный список заклинаний")
+	@Localize(locale = "es", value = "Sortilegios Sin Nombre")
 	private static String	UNTITLED;
 
 	static {

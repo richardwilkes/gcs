@@ -32,6 +32,7 @@ public class LibraryFile extends DataFile {
 	@Localize("The file \"{0}\" was imported into a data library.\nThe original file has not been modified.")
 	@Localize(locale = "de", value = "Die Datei \"{0}\" wurde in eine Datenbibliothek importiert.\nDie Originaldatei wurde nicht verändert.")
 	@Localize(locale = "ru", value = "Файл \"{0}\" был импортирован в библиотеку данных.\nИсходный файл не был изменен.")
+	@Localize(locale = "es", value = "El archivo \"{0}\" se importó a la librería de datos.\nEl archivo original no se ha modificado.")
 	static String				WARNING;
 
 	static {

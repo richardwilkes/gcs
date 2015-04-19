@@ -48,6 +48,7 @@ public class Template extends DataFile implements StateEditable {
 	@Localize("Notes Change")
 	@Localize(locale = "de", value = "Notizen ändern")
 	@Localize(locale = "ru", value = "Смена заметки")
+	@Localize(locale = "es", value = "Modificar Notas")
 	private static String		NOTES_UNDO;
 
 	static {

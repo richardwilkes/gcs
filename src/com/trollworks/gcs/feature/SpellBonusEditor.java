@@ -30,18 +30,22 @@ public class SpellBonusEditor extends FeatureEditor {
 	@Localize("to all colleges")
 	@Localize(locale = "de", value = "auf alle Schulen")
 	@Localize(locale = "ru", value = "всем школам")
+	@Localize(locale = "es", value = "a todos los Colegios")
 	private static String		ALL_COLLEGES;
 	@Localize("to the college whose name")
 	@Localize(locale = "de", value = "auf die Schule, deren Namen")
 	@Localize(locale = "ru", value = "школе с названием")
+	@Localize(locale = "es", value = "al Colegio cuyo nombre sea ")
 	private static String		ONE_COLLEGE;
 	@Localize("to the spell whose name")
 	@Localize(locale = "de", value = "auf den Zauber, deren Namen")
 	@Localize(locale = "ru", value = "заклинанию с названием")
+	@Localize(locale = "es", value = "al sortilegio cuyo nombre sea")
 	private static String		SPELL_NAME;
 	@Localize("to the power source whose name")
 	@Localize(locale = "de", value = "auf die Energiequelle, deren Namen")
 	@Localize(locale = "ru", value = "источнику силы, чьё название")
+	@Localize(locale = "es", value = "a la fuente de poder cuyo nombre sea")
 	private static String		POWER_SOURCE_NAME;
 
 	static {

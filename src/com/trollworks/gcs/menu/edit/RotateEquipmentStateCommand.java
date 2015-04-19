@@ -33,6 +33,7 @@ public class RotateEquipmentStateCommand extends Command {
 	@Localize("Rotate Equipment State")
 	@Localize(locale = "de", value = "Ausrüstungszustand wechseln")
 	@Localize(locale = "ru", value = "Смена статуса снаряжения")
+	@Localize(locale = "es", value = "Rotar el estado del Equipo")
 	private static String							TITLE;
 
 	static {

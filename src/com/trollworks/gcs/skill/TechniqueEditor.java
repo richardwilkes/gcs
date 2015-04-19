@@ -51,98 +51,122 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 	@Localize("Name")
 	@Localize(locale = "de", value = "Name")
 	@Localize(locale = "ru", value = "Название")
+	@Localize(locale = "es", value = "Nombre")
 	private static String		NAME;
 	@Localize("Notes")
 	@Localize(locale = "de", value = "Anmerkungen")
 	@Localize(locale = "ru", value = "Заметка")
+	@Localize(locale = "es", value = "Notas")
 	private static String		NOTES;
 	@Localize("Page Reference")
 	@Localize(locale = "de", value = "Seitenangabe")
 	@Localize(locale = "ru", value = "Ссылка на страницу")
+	@Localize(locale = "es", value = "Página de referencia")
 	private static String		EDITOR_REFERENCE;
 	@Localize("Points")
 	@Localize(locale = "de", value = "Punkte")
 	@Localize(locale = "ru", value = "Очки")
+	@Localize(locale = "es", value = "Puntos")
 	private static String		EDITOR_POINTS;
 	@Localize("Level")
 	@Localize(locale = "de", value = "Fertigkeitswert")
 	@Localize(locale = "ru", value = "Уровень")
+	@Localize(locale = "es", value = "Nivel")
 	private static String		EDITOR_LEVEL;
 	@Localize("The skill level and relative skill level to roll against")
 	@Localize(locale = "de", value = "Der Fertigkeitswert und relativer Fertigkeitswert, gegen die gewürfelt werden muss")
 	@Localize(locale = "ru", value = "Уровень умения и относительный уровень умения для повторного броска")
+	@Localize(locale = "es", value = "Nivel y nivel relativo de la habilidad a superar con la tirada")
 	private static String		EDITOR_LEVEL_TOOLTIP;
 	@Localize("Difficulty")
 	@Localize(locale = "de", value = "Schwierigkeit")
 	@Localize(locale = "ru", value = "Сложность")
+	@Localize(locale = "es", value = "Dificultad")
 	private static String		EDITOR_DIFFICULTY;
 	@Localize("The base name of the technique, without any notes or specialty information")
 	@Localize(locale = "de", value = "Der Name der Technik ohne Anmerkungen oder Spezialisierung")
 	@Localize(locale = "ru", value = "Базовое название техники, без заметок или информации по специализации")
+	@Localize(locale = "es", value = "Nombre de la técnica, sin notas ni otra información")
 	private static String		TECHNIQUE_NAME_TOOLTIP;
 	@Localize("The name field may not be empty")
 	@Localize(locale = "de", value = "Der Name darf nicht leer sein")
 	@Localize(locale = "ru", value = "Поле \"Название\" не может быть пустым")
+	@Localize(locale = "es", value = "El nombre no puede estar en blanco")
 	private static String		TECHNIQUE_NAME_CANNOT_BE_EMPTY;
 	@Localize("Any notes that you would like to show up in the list along with this technique")
 	@Localize(locale = "de", value = "Anmerkungen, die in der Liste neben der Technik erscheinen sollen")
 	@Localize(locale = "ru", value = "Заметки, которые показываются в списке рядом с техникой")
+	@Localize(locale = "es", value = "Cualquier nota que te gustaría que se mostrara junto a la técnica")
 	private static String		TECHNIQUE_NOTES_TOOLTIP;
 	@Localize("The difficulty of learning this technique")
 	@Localize(locale = "de", value = "Die Schwierigkeit dieser Fertikgeit")
 	@Localize(locale = "ru", value = "Сложность изучения техники")
+	@Localize(locale = "es", value = "Dificultad de aprendizaje de la técnica")
 	private static String		TECHNIQUE_DIFFICULTY_TOOLTIP;
 	@Localize("The relative difficulty of learning this technique")
 	@Localize(locale = "de", value = "Die relative Schwierigkeit dieser Fertigkeit")
 	@Localize(locale = "ru", value = "Относительная сложность изучения техники")
+	@Localize(locale = "es", value = "Dificultad relativa de aprendizaje de la técnica")
 	private static String		TECHNIQUE_DIFFICULTY_POPUP_TOOLTIP;
 	@Localize("The number of points spent on this technique")
 	@Localize(locale = "de", value = "Die Punkte, die für diese Fertigkeit aufgewendet wurden")
 	@Localize(locale = "ru", value = "Потрачено на технику количество очков")
+	@Localize(locale = "es", value = "Puntos consumidos en la técnica")
 	private static String		TECHNIQUE_POINTS_TOOLTIP;
 	@Localize("A reference to the book and page this technique appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
 	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der diese Technik beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
 	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая технику\n (например B22 - книга \"Базовые правила\", страница 22)")
+	@Localize(locale = "es", value = "Referencia al libro y página en donde se menciona la técnica (p.e. B22 se refiere al \"Manual Básico\", página 22)")
 	private static String		TECHNIQUE_REFERENCE_TOOLTIP;
 	@Localize("Defaults To")
 	@Localize(locale = "de", value = "Grundwert auf")
 	@Localize(locale = "ru", value = "По умолчанию к")
+	@Localize(locale = "es", value = "Por defecto")
 	private static String		DEFAULTS_TO;
 	@Localize("The name of the skill this technique defaults from")
 	@Localize(locale = "de", value = "Der Name der Fertigkeit, von welcher diese Technik ihren Grundwert bezieht")
 	@Localize(locale = "ru", value = "Название умения, для которой предназначена техника")
+	@Localize(locale = "es", value = "Nombre de la habilidad por defecto para esta técnica ")
 	private static String		DEFAULTS_TO_TOOLTIP;
 	@Localize("The default name field may not be empty")
 	@Localize(locale = "de", value = "Der Grundwert darf nicht leer sein")
+	@Localize(locale = "es", value = "El nombre por defecto no puede estar en blanco")
 	@Localize(locale = "ru", value = "Поле \"Название по умолчанию\" не может быть пустым")
 	private static String		DEFAULT_NAME_CANNOT_BE_EMPTY;
 	@Localize("The specialization of the skill, if any, this technique defaults from")
 	@Localize(locale = "de", value = "Die Spezialisierung für diese Fertigkeit, wenn eine genommen wurde, von welcher diese Technik ihren Grundwert bezieht")
 	@Localize(locale = "ru", value = "Специализация умения, если есть, для которой предназначена техника")
+	@Localize(locale = "es", value = "Especialización de Habilidad, si la hay, esta técnica toma su valor por defecto de")
 	private static String		DEFAULT_SPECIALIZATION_TOOLTIP;
 	@Localize("The amount to adjust the default skill level by")
 	@Localize(locale = "de", value = "Um wieviel der Fertigkeitswert des Grundwerts angepasst wird")
 	@Localize(locale = "ru", value = "Значение уровня умения по умолчанию")
+	@Localize(locale = "es", value = "Cantidad hasta la que puede ajustarse el nivel de la habilidad por defecto")
 	private static String		DEFAULT_MODIFIER_TOOLTIP;
 	@Localize("Cannot exceed default skill level by more than")
 	@Localize(locale = "de", value = "Kann den Fertigkeitswert des Grundwerts nicht übersteigen um mehr als")
 	@Localize(locale = "ru", value = "Не может превышать уровень умения по умолчанию, больше чем на")
+	@Localize(locale = "es", value = "No puede exceder el nivel de la habilidad por defecto en más de")
 	private static String		LIMIT;
 	@Localize("Whether to limit the maximum level that can be achieved or not")
 	@Localize(locale = "de", value = "Ob der Fertigkeitswert der Technik eine Obergrenze hat")
 	@Localize(locale = "ru", value = "Ограничить максимальный достижимый уровень")
+	@Localize(locale = "es", value = "Si se ha alcanzado o no el máximo nivel al que puede llegar")
 	private static String		LIMIT_TOOLTIP;
 	@Localize("The maximum amount above the default skill level that this technique can be raised")
 	@Localize(locale = "de", value = "Die maximale Erhöhung über den Fertigkeitswert des Grundwerts.")
 	@Localize(locale = "ru", value = "Максимальное значение выше уровня умения по умолчанию, при котором эта техника может быть использована")
+	@Localize(locale = "es", value = "Cantidad máxima sobre la habilidad por defecto que puede alcanzar esta técnica")
 	private static String		LIMIT_AMOUNT_TOOLTIP;
 	@Localize("Categories")
 	@Localize(locale = "de", value = "Kategorie")
 	@Localize(locale = "ru", value = "Категории")
+	@Localize(locale = "es", value = "Categoría")
 	private static String		CATEGORIES;
 	@Localize("The category or categories the technique belongs to (separate multiple categories with a comma)")
 	@Localize(locale = "de", value = "Die Kategorie oder Kategorien, denen diese Fertigkeit angehört (trenne mehrere Kategorien mit einem Komma)")
 	@Localize(locale = "ru", value = "Категория или категории, к которым относится техника (перечислить через запятую)")
+	@Localize(locale = "es", value = "Categoría o categorías a las que pertenece la técnica (separa categorías multiples con una coma)")
 	private static String		CATEGORIES_TOOLTIP;
 
 	static {

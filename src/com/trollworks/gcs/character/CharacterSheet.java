@@ -121,62 +121,77 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	@Localize("Page {0} of {1}")
 	@Localize(locale = "de", value = "Seite {0} von {1}")
 	@Localize(locale = "ru", value = "Стр. {0} из {1}")
+	@Localize(locale = "es", value = "Página {0} de {1}")
 	private static String		PAGE_NUMBER;
 	@Localize("Visit us at %s")
 	@Localize(locale = "de", value = "Besucht uns auf %s")
 	@Localize(locale = "ru", value = "Посетите нас на %s")
+	@Localize(locale = "es", value = "Visitanos en %s")
 	private static String		ADVERTISEMENT;
 	@Localize("Melee Weapons")
 	@Localize(locale = "de", value = "Nahkampfwaffen")
 	@Localize(locale = "ru", value = "Контактные орудия")
+	@Localize(locale = "es", value = "Armas de cuerpo a cuerpo")
 	private static String		MELEE_WEAPONS;
 	@Localize("Ranged Weapons")
 	@Localize(locale = "de", value = "Fernkampfwaffen")
 	@Localize(locale = "ru", value = "Дистанционные орудия")
+	@Localize(locale = "es", value = "Armas de distancia")
 	private static String		RANGED_WEAPONS;
 	@Localize("Advantages, Disadvantages & Quirks")
 	@Localize(locale = "de", value = "Vorteile, Nachteile und Marotten")
 	@Localize(locale = "ru", value = "Преимущества, недостатки и причуды")
+	@Localize(locale = "es", value = "Ventajas, Desventajas y Singularidades")
 	private static String		ADVANTAGES;
 	@Localize("Skills")
 	@Localize(locale = "de", value = "Fähigkeiten")
 	@Localize(locale = "ru", value = "Умения")
+	@Localize(locale = "es", value = "Habilidades")
 	private static String		SKILLS;
 	@Localize("Spells")
 	@Localize(locale = "de", value = "Zauber")
 	@Localize(locale = "ru", value = "Заклинания")
+	@Localize(locale = "es", value = "Sortilegios")
 	private static String		SPELLS;
 	@Localize("Equipment")
 	@Localize(locale = "de", value = "Ausrüstung")
 	@Localize(locale = "ru", value = "Снаряжение")
+	@Localize(locale = "es", value = "Equuipo")
 	private static String		EQUIPMENT;
 	@Localize("{0} (continued)")
 	@Localize(locale = "de", value = "{0} (fortgesetzt)")
 	@Localize(locale = "ru", value = "{0} (продолжается)")
+	@Localize(locale = "es", value = "{0} (continua)")
 	private static String		CONTINUED;
 	@Localize("Natural")
 	@Localize(locale = "de", value = "Angeboren")
 	@Localize(locale = "ru", value = "Природное")
+	@Localize(locale = "es", value = "Natural")
 	private static String		NATURAL;
 	@Localize("Punch")
 	@Localize(locale = "de", value = "Schlag")
 	@Localize(locale = "ru", value = "Удар")
+	@Localize(locale = "es", value = "Puñetazo")
 	private static String		PUNCH;
 	@Localize("Kick")
 	@Localize(locale = "de", value = "Tritt")
 	@Localize(locale = "ru", value = "Пинок")
+	@Localize(locale = "es", value = "Patada")
 	private static String		KICK;
 	@Localize("Kick w/Boots")
 	@Localize(locale = "de", value = "Tritt mit Schuh")
 	@Localize(locale = "ru", value = "Пинок (ботинком)")
+	@Localize(locale = "es", value = "Patada con botas")
 	private static String		BOOTS;
 	@Localize("Unidentified key: '%s'")
 	@Localize(locale = "de", value = "Unbekannter Schlüssel: '%s'")
 	@Localize(locale = "ru", value = "Неопознанный ключ: '%s'")
+	@Localize(locale = "es", value = "Clave no identificada: '%s'")
 	private static String		UNIDENTIFIED_KEY;
 	@Localize("Notes")
 	@Localize(locale = "de", value = "Notizen")
 	@Localize(locale = "ru", value = "Заметка")
+	@Localize(locale = "es", value = "Notas")
 	private static String		NOTES;
 
 	static {
@@ -1055,31 +1070,32 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			if (templateUsed != null) {
 				templateUsed.append(PathUtils.getFullPath(template));
 			}
-			try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(template)));
-				BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
-				while (in.read(buffer) != -1) {
-					char ch = buffer[0];
-					if (lookForKeyMarker) {
-						if (ch == '@') {
-							lookForKeyMarker = false;
-							in.mark(1);
+			try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(template)))) {
+				try (BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
+					while (in.read(buffer) != -1) {
+						char ch = buffer[0];
+						if (lookForKeyMarker) {
+							if (ch == '@') {
+								lookForKeyMarker = false;
+								in.mark(1);
+							} else {
+								out.append(ch);
+							}
 						} else {
-							out.append(ch);
-						}
-					} else {
-						if (ch == '_' || Character.isLetterOrDigit(ch)) {
-							keyBuffer.append(ch);
-							in.mark(1);
-						} else {
-							in.reset();
-							emitHTMLKey(in, out, keyBuffer.toString(), file);
-							keyBuffer.setLength(0);
-							lookForKeyMarker = true;
+							if (ch == '_' || Character.isLetterOrDigit(ch)) {
+								keyBuffer.append(ch);
+								in.mark(1);
+							} else {
+								in.reset();
+								emitHTMLKey(in, out, keyBuffer.toString(), file);
+								keyBuffer.setLength(0);
+								lookForKeyMarker = true;
+							}
 						}
 					}
-				}
-				if (keyBuffer.length() != 0) {
-					emitHTMLKey(in, out, keyBuffer.toString(), file);
+					if (keyBuffer.length() != 0) {
+						emitHTMLKey(in, out, keyBuffer.toString(), file);
+					}
 				}
 			}
 			return true;

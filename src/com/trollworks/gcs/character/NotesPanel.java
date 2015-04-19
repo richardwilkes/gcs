@@ -39,14 +39,17 @@ public class NotesPanel extends ActionPanel {
 	@Localize("Notes")
 	@Localize(locale = "de", value = "Notizen")
 	@Localize(locale = "ru", value = "Заметка")
+	@Localize(locale = "es", value = "Notas")
 	private static String		NOTES;
 	@Localize("Double-click to edit")
 	@Localize(locale = "de", value = "Doppelklicken, um zu bearbeiten")
 	@Localize(locale = "ru", value = "Дважды щёлкните для редактирования")
+	@Localize(locale = "es", value = "Dobleclic para editar")
 	private static String		NOTES_TOOLTIP;
 	@Localize("Notes (continued)")
 	@Localize(locale = "de", value = "Notizen (Fortsetzung)")
 	@Localize(locale = "ru", value = "Заметка (продолжение)")
+	@Localize(locale = "es", value = "Notas (continuación)")
 	private static String		NOTES_CONTINUED;
 
 	static {
