@@ -1376,14 +1376,14 @@
 			<cost type="points">-10</cost>
 			<affects>total</affects>
 			<reference>B126</reference>
-			<notes>-3 to DX, IQ, and self-control rolls</notes>
+			<notes>-4 to DX, IQ, and self-control rolls</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Agonizing</name>
 			<cost type="points">-15</cost>
 			<affects>total</affects>
 			<reference>B126</reference>
-			<notes>-4 to DX, IQ, and self-control rolls</notes>
+			<notes>-6 to DX, IQ, and self-control rolls</notes>
 		</modifier>
 		<reference>B126</reference>
 		<notes>-2 to DX, IQ and self-control rolls</notes>
