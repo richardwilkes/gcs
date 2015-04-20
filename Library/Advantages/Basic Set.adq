@@ -12457,7 +12457,7 @@
 			<category>Disadvantage</category>
 		</categories>
 	</advantage>
-	<advantage version="2">
+	<advantage version="2" round_down="yes">
 		<name>Reputation</name>
 		<type>Social</type>
 		<levels>1</levels>
@@ -12508,7 +12508,7 @@
 			<category>Disadvantage</category>
 		</categories>
 	</advantage>
-	<advantage version="2">
+	<advantage version="2" round_down="yes">
 		<name>Reputation</name>
 		<type>Social</type>
 		<levels>1</levels>
