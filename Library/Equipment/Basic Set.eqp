@@ -7843,6 +7843,7 @@
 		<melee_weapon>
 			<damage>thr cr</damage>
 			<strength>0</strength>
+			<usage>Shield Bash</usage>
 			<reach>1</reach>
 			<parry>No</parry>
 			<block>+0</block>
@@ -7896,6 +7897,7 @@
 		<melee_weapon>
 			<damage>thr +1 cr</damage>
 			<strength>0</strength>
+			<usage>Shield Bash</usage>
 			<reach>1</reach>
 			<parry>No</parry>
 			<block>+0</block>
@@ -8816,6 +8818,7 @@
 		<melee_weapon>
 			<damage>thr cr</damage>
 			<strength>0</strength>
+			<usage>Shield Bash</usage>
 			<reach>1</reach>
 			<parry>No</parry>
 			<block>+0</block>
@@ -8869,6 +8872,7 @@
 		<melee_weapon>
 			<damage>thr+1 cr</damage>
 			<strength>0</strength>
+			<usage>Shield Bash</usage>
 			<reach>1</reach>
 			<parry>No</parry>
 			<block>+0</block>
@@ -9625,6 +9629,7 @@
 		<melee_weapon>
 			<damage>thr cr</damage>
 			<strength>0</strength>
+			<usage>Shield Bash</usage>
 			<reach>1</reach>
 			<parry>No</parry>
 			<block>+0</block>
@@ -9678,6 +9683,7 @@
 		<melee_weapon>
 			<damage>thr+1 cr</damage>
 			<strength>0</strength>
+			<usage>Shield Bash</usage>
 			<reach>1</reach>
 			<parry>No</parry>
 			<block>+0</block>
@@ -13912,6 +13918,7 @@
 		<melee_weapon>
 			<damage>thr cr</damage>
 			<strength>0</strength>
+			<usage>Shield Bash</usage>
 			<reach>1</reach>
 			<parry>No</parry>
 			<block>+0</block>
@@ -13965,6 +13972,7 @@
 		<melee_weapon>
 			<damage>thr+1 cr</damage>
 			<strength>0</strength>
+			<usage>Shield Bash</usage>
 			<reach>1</reach>
 			<parry>No</parry>
 			<block>+0</block>
