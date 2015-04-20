@@ -71,6 +71,7 @@ public class Advantage extends ListRow {
 	private static final String			TYPE_SOCIAL					= "Social";										//$NON-NLS-1$
 	private static final String			TYPE_EXOTIC					= "Exotic";										//$NON-NLS-1$
 	private static final String			TYPE_SUPERNATURAL			= "Supernatural";									//$NON-NLS-1$
+	private static final String			ATTR_ROUND_COST_DOWN		= "round_down";									//$NON-NLS-1$
 	/** The prefix used in front of all IDs for the advantages. */
 	public static final String			PREFIX						= GURPSCharacter.CHARACTER_PREFIX + "advantage.";	//$NON-NLS-1$
 	/** The field ID for type changes. */
@@ -83,6 +84,8 @@ public class Advantage extends ListRow {
 	public static final String			ID_CR						= PREFIX + "CR";									//$NON-NLS-1$
 	/** The field ID for level changes. */
 	public static final String			ID_LEVELS					= PREFIX + "Levels";								//$NON-NLS-1$
+	/** The field ID for round cost down changes. */
+	public static final String			ID_ROUND_COST_DOWN			= PREFIX + "RoundCostDown";						//$NON-NLS-1$
 	/** The field ID for point changes. */
 	public static final String			ID_POINTS					= PREFIX + "Points";								//$NON-NLS-1$
 	/** The field ID for page reference changes. */
@@ -117,6 +120,7 @@ public class Advantage extends ListRow {
 	private AdvantageContainerType		mContainerType;
 	private ArrayList<WeaponStats>		mWeapons;
 	private ArrayList<Modifier>			mModifiers;
+	private boolean						mRoundCostDown;
 
 	/**
 	 * Creates a new advantage.
@@ -153,6 +157,7 @@ public class Advantage extends ListRow {
 		mLevels = advantage.mLevels;
 		mPoints = advantage.mPoints;
 		mPointsPerLevel = advantage.mPointsPerLevel;
+		mRoundCostDown = advantage.mRoundCostDown;
 		mReference = advantage.mReference;
 		mContainerType = advantage.mContainerType;
 		mWeapons = new ArrayList<>(advantage.mWeapons.size());
@@ -195,7 +200,7 @@ public class Advantage extends ListRow {
 		}
 		if (obj instanceof Advantage && super.isEquivalentTo(obj)) {
 			Advantage row = (Advantage) obj;
-			if (mType == row.mType && mLevels == row.mLevels && mPoints == row.mPoints && mPointsPerLevel == row.mPointsPerLevel && mContainerType == row.mContainerType && mCR == row.mCR && mCRAdj == row.mCRAdj && mName.equals(row.mName) && mReference.equals(row.mReference)) {
+			if (mType == row.mType && mLevels == row.mLevels && mPoints == row.mPoints && mPointsPerLevel == row.mPointsPerLevel && mRoundCostDown == row.mRoundCostDown && mContainerType == row.mContainerType && mCR == row.mCR && mCRAdj == row.mCRAdj && mName.equals(row.mName) && mReference.equals(row.mReference)) {
 				if (mWeapons.equals(row.mWeapons)) {
 					return mModifiers.equals(row.mModifiers);
 				}
@@ -226,6 +231,7 @@ public class Advantage extends ListRow {
 		mContainerType = AdvantageContainerType.GROUP;
 		mPoints = 0;
 		mPointsPerLevel = 0;
+		mRoundCostDown = false;
 		mOldPointsString = null;
 		mWeapons = new ArrayList<>();
 		mModifiers = new ArrayList<>();
@@ -234,6 +240,7 @@ public class Advantage extends ListRow {
 	@Override
 	protected void loadAttributes(XMLReader reader, LoadState state) {
 		super.loadAttributes(reader, state);
+		mRoundCostDown = reader.isAttributeSet(ATTR_ROUND_COST_DOWN);
 		if (canHaveChildren()) {
 			mContainerType = Enums.extract(reader.getAttribute(TAG_TYPE), AdvantageContainerType.values(), AdvantageContainerType.GROUP);
 		}
@@ -328,6 +335,9 @@ public class Advantage extends ListRow {
 	@Override
 	protected void saveAttributes(XMLWriter out, boolean forUndo) {
 		super.saveAttributes(out, forUndo);
+		if (mRoundCostDown) {
+			out.writeAttribute(ATTR_ROUND_COST_DOWN, mRoundCostDown);
+		}
 		if (canHaveChildren() && mContainerType != AdvantageContainerType.GROUP) {
 			out.writeAttribute(TAG_TYPE, Enums.toId(mContainerType));
 		}
@@ -497,7 +507,7 @@ public class Advantage extends ListRow {
 					if (!found && max == value) {
 						found = true;
 					} else {
-						points += (int) Math.ceil(calculateModifierPoints(value, 20));
+						points += applyRounding(calculateModifierPoints(value, 20), mRoundCostDown);
 					}
 				}
 			} else {
@@ -507,7 +517,11 @@ public class Advantage extends ListRow {
 			}
 			return points;
 		}
-		return getAdjustedPoints(mPoints, mLevels, mPointsPerLevel, mCR, getAllModifiers());
+		return getAdjustedPoints(mPoints, mLevels, mPointsPerLevel, mCR, getAllModifiers(), mRoundCostDown);
+	}
+
+	private static int applyRounding(double value, boolean roundCostDown) {
+		return (int) (roundCostDown ? Math.floor(value) : Math.ceil(value));
 	}
 
 	/**
@@ -516,9 +530,11 @@ public class Advantage extends ListRow {
 	 * @param pointsPerLevel The point cost per level.
 	 * @param cr The {@link SelfControlRoll} to apply.
 	 * @param modifiers The {@link Modifier}s to apply.
+	 * @param roundCostDown Whether the point cost should be rounded down rather than up, as is
+	 *            normal for most GURPS rules.
 	 * @return The total points, taking levels and modifiers into account.
 	 */
-	public static int getAdjustedPoints(int basePoints, int levels, int pointsPerLevel, SelfControlRoll cr, Collection<Modifier> modifiers) {
+	public static int getAdjustedPoints(int basePoints, int levels, int pointsPerLevel, SelfControlRoll cr, Collection<Modifier> modifiers, boolean roundCostDown) {
 		int baseEnh = 0;
 		int levelEnh = 0;
 		int baseLim = 0;
@@ -607,7 +623,7 @@ public class Advantage extends ListRow {
 			modifiedBasePoints += leveledPoints;
 		}
 
-		return (int) Math.ceil(modifiedBasePoints * multiplier);
+		return applyRounding(modifiedBasePoints * multiplier, roundCostDown);
 	}
 
 	private static double modifyPoints(double points, int modifier) {
@@ -667,6 +683,28 @@ public class Advantage extends ListRow {
 		if (!mReference.equals(reference)) {
 			mReference = reference;
 			notifySingle(ID_REFERENCE);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * @return Whether the point cost should be rounded down rather than up, as is normal for most
+	 *         GURPS rules.
+	 */
+	public boolean shouldRoundCostDown() {
+		return mRoundCostDown;
+	}
+
+	/**
+	 * @param shouldRoundDown Whether the point cost should be rounded down rather than up, as is
+	 *            normal for most GURPS rules.
+	 * @return Whether it was modified.
+	 */
+	public boolean setShouldRoundCostDown(boolean shouldRoundDown) {
+		if (mRoundCostDown != shouldRoundDown) {
+			mRoundCostDown = shouldRoundDown;
+			notifySingle(ID_ROUND_COST_DOWN);
 			return true;
 		}
 		return false;

@@ -285,7 +285,7 @@ public class Template extends DataFile implements StateEditable {
 	@Override
 	public void notify(String type, Object data) {
 		super.notify(type, data);
-		if (Advantage.ID_POINTS.equals(type) || Advantage.ID_LEVELS.equals(type) || Advantage.ID_LIST_CHANGED.equals(type)) {
+		if (Advantage.ID_POINTS.equals(type) || Advantage.ID_ROUND_COST_DOWN.equals(type) || Advantage.ID_LEVELS.equals(type) || Advantage.ID_LIST_CHANGED.equals(type)) {
 			mNeedAdvantagesPointCalculation = true;
 		}
 		if (Skill.ID_POINTS.equals(type) || Skill.ID_LIST_CHANGED.equals(type)) {

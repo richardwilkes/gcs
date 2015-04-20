@@ -68,6 +68,10 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	@Localize(locale = "ru", value = "Название преимущества без заметок")
 	@Localize(locale = "es", value = "Nombre de la ventaja, sin anotaciones")
 	private static String							NAME_TOOLTIP;
+	@Localize("Round Down")
+	private static String							SHOULD_ROUND_COST_DOWN_TITLE;
+	@Localize("Round point costs down if selected, round them up if not (most things in GURPS round up)")
+	private static String							SHOULD_ROUND_COST_DOWN_TOOLTIP;
 	@Localize("The name field may not be empty")
 	@Localize(locale = "de", value = "Der Name darf nicht leer sein")
 	@Localize(locale = "ru", value = "Поле \"Название\" не может быть пустым")
@@ -214,6 +218,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	}
 
 	private EditorField								mNameField;
+	private JCheckBox								mShouldRoundCostDown;
 	private JComboBox<String>						mLevelTypeCombo;
 	private EditorField								mBasePointsField;
 	private EditorField								mLevelField;
@@ -294,6 +299,15 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 			mLevelPointsField = createField(-9999, 9999, mLastPointsPerLevel, LEVEL_POINTS_TOOLTIP);
 			row.add(createLabel(LEVEL_POINTS, mLevelPointsField));
 			row.add(mLevelPointsField);
+
+			mShouldRoundCostDown = new JCheckBox(SHOULD_ROUND_COST_DOWN_TITLE);
+			mShouldRoundCostDown.setSelected(advantage.shouldRoundCostDown());
+			mShouldRoundCostDown.setToolTipText(SHOULD_ROUND_COST_DOWN_TOOLTIP);
+			mShouldRoundCostDown.setEnabled(mIsEditable);
+			mShouldRoundCostDown.addActionListener(this);
+			UIUtilities.setOnlySize(mShouldRoundCostDown, mShouldRoundCostDown.getPreferredSize());
+			add(mShouldRoundCostDown);
+			row.add(mShouldRoundCostDown);
 
 			row.add(new FlexSpacer(0, 0, true, false));
 
@@ -500,6 +514,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 				type |= Advantage.TYPE_MASK_SUPERNATURAL;
 			}
 			modified |= mRow.setType(type);
+			modified |= mRow.setShouldRoundCostDown(shouldRoundCostDown());
 			modified |= mRow.setPoints(getBasePoints());
 			if (isLeveled()) {
 				modified |= mRow.setPointsPerLevel(getPointsPerLevel());
@@ -547,7 +562,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		Object src = event.getSource();
 		if (src == mLevelTypeCombo) {
 			levelTypeChanged();
-		} else if (src == mModifiers) {
+		} else if (src == mModifiers || src == mShouldRoundCostDown) {
 			updatePoints();
 		} else if (src == mCRCombo) {
 			SelfControlRoll cr = getCR();
@@ -606,13 +621,17 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		if (mModifiers == null) {
 			return 0;
 		}
-		return Advantage.getAdjustedPoints(getBasePoints(), isLeveled() ? getLevels() : 0, getPointsPerLevel(), getCR(), mModifiers.getAllModifiers());
+		return Advantage.getAdjustedPoints(getBasePoints(), isLeveled() ? getLevels() : 0, getPointsPerLevel(), getCR(), mModifiers.getAllModifiers(), shouldRoundCostDown());
 	}
 
 	private void updatePoints() {
 		if (mPointsField != null) {
 			mPointsField.setValue(new Integer(getPoints()));
 		}
+	}
+
+	private boolean shouldRoundCostDown() {
+		return mShouldRoundCostDown.isSelected();
 	}
 
 	@Override
