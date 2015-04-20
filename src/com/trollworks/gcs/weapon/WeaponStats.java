@@ -238,7 +238,7 @@ public abstract class WeaponStats {
 	private String resolveDamage(String damage, HashSet<WeaponBonus> bonuses) {
 		int maxST = getMinStrengthValue() * 3;
 		GURPSCharacter character = (GURPSCharacter) mOwner.getDataFile();
-		int st = character.getStrength();
+		int st = character.getStrength() + character.getStrikingStrengthBonus();
 		Dice dice;
 		String savedDamage;
 
@@ -246,13 +246,13 @@ public abstract class WeaponStats {
 			st = maxST;
 		}
 
-		dice = GURPSCharacter.getSwing(st + character.getStrikingStrengthBonus());
+		dice = GURPSCharacter.getSwing(st);
 		do {
 			savedDamage = damage;
 			damage = resolveDamage(damage, "sw", dice); //$NON-NLS-1$
 		} while (!savedDamage.equals(damage));
 
-		dice = GURPSCharacter.getThrust(st + character.getStrikingStrengthBonus());
+		dice = GURPSCharacter.getThrust(st);
 		do {
 			savedDamage = damage;
 			damage = resolveDamage(damage, "thr", dice); //$NON-NLS-1$
@@ -424,19 +424,15 @@ public abstract class WeaponStats {
 
 	private int getSkillLevel(GURPSCharacter character) {
 		int best = Integer.MIN_VALUE;
-
 		for (SkillDefault skillDefault : getDefaults()) {
 			SkillDefaultType type = skillDefault.getType();
 			int level = type.getSkillLevelFast(character, skillDefault, new HashSet<String>());
-
 			if (level > best) {
 				best = level;
 			}
 		}
-
 		if (best != Integer.MIN_VALUE) {
-			int minST = getMinStrengthValue() - character.getStrength();
-
+			int minST = getMinStrengthValue() - (character.getStrength() + character.getStrikingStrengthBonus());
 			if (minST > 0) {
 				best -= minST;
 				if (best < 0) {
