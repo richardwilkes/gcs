@@ -141,7 +141,7 @@
 				<category>Advantage</category>
 			</categories>
 			<dr_bonus>
-				<location>full_body_except_eyes</location>
+				<location>full body except eyes</location>
 				<amount per_level="yes">1</amount>
 			</dr_bonus>
 		</advantage>
@@ -215,20 +215,13 @@
 			<reference>BS192</reference>
 		</advantage>
 	</advantage_list>
-	<notes>  Gnomes are smaller and slighter than dwarves, and the men habitually
-wear their beards trimmed short. Their love of nature is equal to that of
-the elves, if different in style.
-  As a rather marginal race with many bigger neighbors, gnomes have
-developed a subtle talent for dealing with people while seeming innocuous.
-They get along well with the other Elder Folk except for orcs, have few
-conflicts with humans, and often treat halflings as kin. They like herding, the
-rustic life, and good craftsmanship.
-  They are solid, centered, and matter-of-fact. While few become important
-in the world, they can make startlingly good professional diplomats and
-negotiators.
-  Gnomes are 1 1/4 feet shorter than human average for their ST, and
-weigh 25 lbs. more than the appropriate weight for that height.
-  Most gnomes have at least one of the advantages Artificer, Sensitive,
-Smooth Operator, or Versatile. In some locales they have Social Regard
-(Good Neighbor), typically at level 2.</notes>
+	<notes>Gnomes are smaller and slighter than dwarves, and the men habitually wear their beards trimmed short. Their love of nature is equal to that of the elves, if different in style.
+
+As a rather marginal race with many bigger neighbors, gnomes have developed a subtle talent for dealing with people while seeming innocuous. They get along well with the other Elder Folk except for orcs, have few conflicts with humans, and often treat halflings as kin. They like herding, the rustic life, and good craftsmanship.
+
+They are solid, centered, and matter-of-fact. While few become important in the world, they can make startlingly good professional diplomats and negotiators.
+
+Gnomes are 1 1/4 feet shorter than human average for their ST, and weigh 25 lbs. more than the appropriate weight for that height.
+
+Most gnomes have at least one of the advantages Artificer, Sensitive, Smooth Operator, or Versatile. In some locales they have Social Regard (Good Neighbor), typically at level 2.</notes>
 </template>

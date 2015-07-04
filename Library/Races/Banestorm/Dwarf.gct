@@ -373,6 +373,9 @@
 				<type>Physical</type>
 				<levels>1</levels>
 				<points_per_level>2</points_per_level>
+				<categories>
+					<category>Race</category>
+				</categories>
 				<skill_bonus>
 					<name compare="is">Axe/Mace</name>
 					<specialization compare="is anything"></specialization>
@@ -384,6 +387,9 @@
 				<type>Physical</type>
 				<levels>1</levels>
 				<points_per_level>2</points_per_level>
+				<categories>
+					<category>Race</category>
+				</categories>
 				<skill_bonus>
 					<name compare="is">Merchant</name>
 					<specialization compare="is anything"></specialization>

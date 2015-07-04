@@ -159,7 +159,7 @@
 				<category>Advantage</category>
 			</categories>
 			<dr_bonus>
-				<location>full_body_except_eyes</location>
+				<location>full body except eyes</location>
 				<amount per_level="yes">1</amount>
 			</dr_bonus>
 		</advantage>
@@ -389,23 +389,10 @@
 			<type>Physical</type>
 		</advantage>
 	</advantage_list>
-	<notes>  The bizarre insect men live solely underground, near the border
-between Zarak and the Great Desert. To date, only a few dwarves know
-they are more than just large bugs. The Zarakun of Ginnrel consider
-them a major threat and are trying to wipe them out. Doing so, however,
-is proving difficult.
-  Insect men are probably native to Gabrook, though no one is certain.
-They could just be a mutation of Yrth insects, affected by the intense
-magical &#8220;fallout&#8221; from the Banestorm in this area. This would explain
-why they only began appearing in the past decade. They are currently
-TL2; they&#8217;ve apparently learned a lot from their enemies in a short time.
-Insect men are roughly the same size and shape as humans. They
-have hard, chitinous, bronze-colored skin, faceted black eyes, and long
-antennae. Like ants, they have different castes. Insect men proper are the
-intelligent guides for the colony; the taller, brawnier, four-armed insect
-warriors are servants and fighters. Both types are sexless; breeding is
-done by the queen and her consorts, neither of which are intelligent.
-  Many insect men and warriors have the quirk Secretive, and for some
-it is outright Paranoia. Very few lack any of the racial disadvantages;
-GMs should emphasize the resulting weird behavior.</notes>
+	<notes>The bizarre insect men live solely underground, near the border between Zarak and the Great Desert. To date, only a few dwarves know they are more than just large bugs. The Zarakun of Ginnrel consider them a major threat and are trying to wipe them out. Doing so, however, is proving difficult.
+
+Insect men are probably native to Gabrook, though no one is certain. They could just be a mutation of Yrth insects, affected by the intense magical &#8220;fallout&#8221; from the Banestorm in this area. This would explain
+why they only began appearing in the past decade. They are currently TL2; they&#8217;ve apparently learned a lot from their enemies in a short time. Insect men are roughly the same size and shape as humans. They have hard, chitinous, bronze-colored skin, faceted black eyes, and long antennae. Like ants, they have different castes. Insect men proper are the intelligent guides for the colony; the taller, brawnier, four-armed insect warriors are servants and fighters. Both types are sexless; breeding is done by the queen and her consorts, neither of which are intelligent.
+
+Many insect men and warriors have the quirk Secretive, and for some it is outright Paranoia. Very few lack any of the racial disadvantages; GMs should emphasize the resulting weird behavior.</notes>
 </template>

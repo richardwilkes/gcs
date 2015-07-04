@@ -72,7 +72,7 @@
 				<category>Advantage</category>
 			</categories>
 			<attribute_bonus>
-				<attribute>taste_smell</attribute>
+				<attribute>taste smell</attribute>
 				<amount per_level="yes">1</amount>
 			</attribute_bonus>
 		</advantage>
@@ -192,7 +192,7 @@
 				<category>Advantage</category>
 			</categories>
 			<dr_bonus>
-				<location>full_body_except_eyes</location>
+				<location>full body except eyes</location>
 				<amount per_level="yes">1</amount>
 			</dr_bonus>
 		</advantage>
@@ -272,21 +272,10 @@
 			</categories>
 		</advantage>
 	</advantage_list>
-	<notes>  Ogres stand 7 to 8 feet tall; they are half a ton or more of pure muscle.
-Most are just lone wanderers, haunting the wilderness and eating whatever
-they can kill. Unlike, say, minotaurs, ogres have no particular innate 
-hostility to other races. In the wild, they will react normally to chance 
-encounters unless they are hungry. However, few people wait to see if an 
-ogre wants to be friends. Ogre personalities are as one would expect from
-large, stupid humans; some are sullen, some just want to be liked. Most 
-enjoy fighting.
-  To figure height, take ST before the +10 racial modifier, and increase 
-it by 60%. Average weight is 5 times that of a human of the same 
-(pre-modifier) ST.
-  Some ogres are smarter or more social than the norm, and a minority 
-understand that eating other people is frowned upon. Unfortunately, many of
-them have a lot more mental disadvantages than listed here, including
-everything from Bad Temper to Sadism. A tiny number are much smarter than 
-the norm; these ogre geniuses are likely to have Magery instead of Magic 
-Resistance.</notes>
+	<notes>Ogres stand 7 to 8 feet tall; they are half a ton or more of pure muscle. Most are just lone wanderers, haunting the wilderness and eating whatever
+they can kill. Unlike, say, minotaurs, ogres have no particular innate hostility to other races. In the wild, they will react normally to chance encounters unless they are hungry. However, few people wait to see if an ogre wants to be friends. Ogre personalities are as one would expect from large, stupid humans; some are sullen, some just want to be liked. Most enjoy fighting.
+
+To figure height, take ST before the +10 racial modifier, and increase it by 60%. Average weight is 5 times that of a human of the same (pre-modifier) ST.
+
+Some ogres are smarter or more social than the norm, and a minority understand that eating other people is frowned upon. Unfortunately, many of them have a lot more mental disadvantages than listed here, including everything from Bad Temper to Sadism. A tiny number are much smarter than the norm; these ogre geniuses are likely to have Magery instead of Magic Resistance.</notes>
 </template>

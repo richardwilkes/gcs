@@ -251,7 +251,7 @@
 				<category>Advantage</category>
 			</categories>
 			<dr_bonus>
-				<location>full_body_except_eyes</location>
+				<location>full body except eyes</location>
 				<amount per_level="yes">1</amount>
 			</dr_bonus>
 		</advantage>
@@ -376,7 +376,7 @@
 				<category>Advantage</category>
 			</categories>
 			<dr_bonus>
-				<location>full_body_except_eyes</location>
+				<location>full body except eyes</location>
 				<amount per_level="yes">1</amount>
 			</dr_bonus>
 		</advantage>
@@ -517,7 +517,7 @@
 			<name>Loner</name>
 			<type>Mental</type>
 			<base_points>-5</base_points>
-			<cr adj="reaction_penalty">12</cr>
+			<cr adj="reaction penalty">12</cr>
 			<reference>B142</reference>
 			<categories>
 				<category>Disadvantage</category>
@@ -557,30 +557,16 @@
 			<weapon_bonus>
 				<name compare="is">Brawling</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">2</level>
+				<level compare="at least">2</level>
 				<amount per_level="yes">1</amount>
 			</weapon_bonus>
 		</skill>
 	</skill_list>
-	<notes>  Minotaurs tend to be solitary and aggressive and 
-will eat just about anything, up to and including
-people.
-  They like battle and slaughter; their weapon of 
-choice is a large axe, or a branch used as a club.
-They rarely use armor, unless they have looted it
-from a human victim. The few that enter civilized
-territory do so in order to find jobs as guards, 
-bullies, or soldiers.
-  Minotaurs stand 3&#8221; taller than humans of
-similar ST, and have the weight appropriate for 
-their height.
-  Those minotaurs that manage to make their way
-in human lands often lack Intolerance, Loner, and
-the habit of snacking on thinking beings. Berserk
-and Bloodlust, however, seem to be genetic. Some
-minotaurs have much higher levels of Magic 
-Resistance; minotaur mages are entirely unknown.
-Note that minotaurs lack Social Stigma (Barbarian),
-as the stigma they suffer is entirely due to their
-other assorted disadvantages.</notes>
+	<notes>Minotaurs tend to be solitary and aggressive and will eat just about anything, up to and including people.
+
+They like battle and slaughter; their weapon of choice is a large axe, or a branch used as a club. They rarely use armor, unless they have looted it from a human victim. The few that enter civilized territory do so in order to find jobs as guards, bullies, or soldiers.
+
+Minotaurs stand 3&#8221; taller than humans of similar ST, and have the weight appropriate for their height.
+
+Those minotaurs that manage to make their way in human lands often lack Intolerance, Loner, and the habit of snacking on thinking beings. Berserk and Bloodlust, however, seem to be genetic. Some minotaurs have much higher levels of Magic Resistance; minotaur mages are entirely unknown. Note that minotaurs lack Social Stigma (Barbarian), as the stigma they suffer is entirely due to their other assorted disadvantages.</notes>
 </template>

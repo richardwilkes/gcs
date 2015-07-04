@@ -150,31 +150,16 @@
 			<weapon_bonus>
 				<name compare="is">Brawling</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">2</level>
+				<level compare="at least">2</level>
 				<amount per_level="yes">1</amount>
 			</weapon_bonus>
 		</skill>
 	</skill_list>
-	<notes>  Orcs are squat, hairy humanoids with small eyes and
-broad mouths dominated by enlarged canines; most
-other races regard them as ugly. Most orcs are 
-brutal and treacherous, and respect only force; 
-whether living as primitive savages or disciplined
-legionaries, the strongest and most ruthless among 
-them will usually lead. They enjoy revelry, the 
-spoils of war, and dominating those weaker than
-themselves.
-  Orcs return other races&#8217; hostility with interest. 
-Many will gladly sacrifice their own lives for a 
-chance to take a dwarf or elf with them.
-  Height is 2&#8221; less than normal for ST. Weight is 
-10 lbs. over human average for their height.
-  Individual orcs, even whole tribes, often have 
-the advantages Acute Vision, Combat Reflexes, 
-High Pain Threshold, Night Vision, or Rapid
-Healing. Common disadvantages include Bad Temper,
-Berserk, Gluttony, Greed, Sadism, and Unattractive
-Appearance (though some orcs manage rugged good
-looks). However, civilized orcs do not usually have
-Intolerance and may even lack Bully.</notes>
+	<notes>Orcs are squat, hairy humanoids with small eyes and broad mouths dominated by enlarged canines; most other races regard them as ugly. Most orcs are brutal and treacherous, and respect only force; whether living as primitive savages or disciplined legionaries, the strongest and most ruthless among them will usually lead. They enjoy revelry, the spoils of war, and dominating those weaker than themselves.
+
+Orcs return other races&#8217; hostility with interest. Many will gladly sacrifice their own lives for a chance to take a dwarf or elf with them.
+
+Height is 2&#8221; less than normal for ST. Weight is 10 lbs. over human average for their height.
+
+Individual orcs, even whole tribes, often have the advantages Acute Vision, Combat Reflexes, High Pain Threshold, Night Vision, or Rapid Healing. Common disadvantages include Bad Temper, Berserk, Gluttony, Greed, Sadism, and Unattractive Appearance (though some orcs manage rugged good looks). However, civilized orcs do not usually have Intolerance and may even lack Bully.</notes>
 </template>

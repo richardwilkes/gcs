@@ -82,21 +82,12 @@
 			<weapon_bonus>
 				<name compare="is">Brawling</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">2</level>
+				<level compare="at least">2</level>
 				<amount per_level="yes">1</amount>
 			</weapon_bonus>
 		</skill>
 	</skill_list>
-	<notes>  These ancestral kinfolk of the goblins are large, brutish, and savage.
-In the wilderness, a typical hobgoblin owns nothing but a weapon (stolen
-or handmade) and some rags or ratty furs. They are brutal and direct but
-not as cruel or malicious as orcs. They speak either a human language or a
-pidgin version of the old goblin tongue. They have simple tastes. They
-like food and loot, and dislike anyone outside their immediate band.
-  Hobgoblins often have a tough time hanging on to wealth; many are
-Poor or worse, and very few have Miserliness. Some have more mental
-disadvantages, possibly including Intolerance. However, some have a
-higher IQ and lack Bad Temper or Stubbornness; they can be quite
-reasonable individuals, and often rise to positions of power within 
-their band.</notes>
+	<notes>These ancestral kinfolk of the goblins are large, brutish, and savage. In the wilderness, a typical hobgoblin owns nothing but a weapon (stolen or handmade) and some rags or ratty furs. They are brutal and direct but not as cruel or malicious as orcs. They speak either a human language or a pidgin version of the old goblin tongue. They have simple tastes. They like food and loot, and dislike anyone outside their immediate band.
+
+Hobgoblins often have a tough time hanging on to wealth; many are Poor or worse, and very few have Miserliness. Some have more mental disadvantages, possibly including Intolerance. However, some have a higher IQ and lack Bad Temper or Stubbornness; they can be quite reasonable individuals, and often rise to positions of power within their band.</notes>
 </template>

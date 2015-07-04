@@ -176,7 +176,7 @@
 				<category>Advantage</category>
 			</categories>
 			<dr_bonus>
-				<location>full_body_except_eyes</location>
+				<location>full body except eyes</location>
 				<amount per_level="yes">1</amount>
 			</dr_bonus>
 		</advantage>
@@ -471,31 +471,13 @@
 			</default>
 		</skill>
 	</skill_list>
-	<notes>  In appearance, reptile men are large, bipedal lizards.
-They come in many colors, and their shimmering scales
-grant them surprising beauty. However, their teeth, 
-claws, and alien nature make them fearsome. They are
-decidedly carnivorous.
-  They prefer hot, open plains and savannahs like the
-world they came from, Gabrook. Reptile men tend to be 
-very suspicious of other races and prefer to keep to 
-themselves. The languages of most other races, 
-including all those native to Yrth, Earth, and Loren&#8217;dil,
-are difficult for them to master; they always speak them
-with an accent.
-  Reptile Men enjoy hunting, combat, and lying in the 
-sun. They get along well with dragons, but relationships
-with other races are strained. Horses unused to them 
-find them terrifying; riders must make a Riding roll
-to keep their mounts from shying and throwing them when 
-they first encounter a reptile man.
-  Reptile men have normal height for their ST, and weigh
-30 lbs. more than humans of the same height.
-  Some reptile men, particularly in the Great Desert, 
-have the disadvantage Odious Racial Habit (Eats other
-sapients) [-15]; they are responsible for much of the 
-social stigma the race as a whole bears. Very few ever
-get over their Shyness. Common advantages and disadvantages
-among reptile men include Hard to Kill, Hard to Subdue, 
-Honesty, Selfish, and Stubbornness.</notes>
+	<notes>In appearance, reptile men are large, bipedal lizards. They come in many colors, and their shimmering scales grant them surprising beauty. However, their teeth, claws, and alien nature make them fearsome. They are decidedly carnivorous.
+
+They prefer hot, open plains and savannahs like the world they came from, Gabrook. Reptile men tend to be very suspicious of other races and prefer to keep to themselves. The languages of most other races, including all those native to Yrth, Earth, and Loren&#8217;dil, are difficult for them to master; they always speak them with an accent.
+
+Reptile Men enjoy hunting, combat, and lying in the sun. They get along well with dragons, but relationships with other races are strained. Horses unused to them find them terrifying; riders must make a Riding roll to keep their mounts from shying and throwing them when they first encounter a reptile man.
+
+Reptile men have normal height for their ST, and weigh 30 lbs. more than humans of the same height.
+
+Some reptile men, particularly in the Great Desert, have the disadvantage Odious Racial Habit (Eats other sapients) [-15]; they are responsible for much of the  social stigma the race as a whole bears. Very few ever get over their Shyness. Common advantages and disadvantages among reptile men include Hard to Kill, Hard to Subdue, Honesty, Selfish, and Stubbornness.</notes>
 </template>

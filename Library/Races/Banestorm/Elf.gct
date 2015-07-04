@@ -163,43 +163,43 @@
 				<modifier version="1" enabled="no">
 					<name>Dance</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Dark-Aspected</name>
 					<cost type="percentage">-50</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Day-Aspected</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Musical</name>
 					<cost type="percentage">-50</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Night-Aspected</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>One College</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 					<notes>@College@</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Solitary</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Song</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<reference>B66</reference>
 				<categories>
@@ -327,11 +327,9 @@
 	</advantage_list>
 	<notes>Elves are slender humanoids with pointed ears. Their skin can be any color found in humans. Hair is usually gold, silver, black, or red, and eyes are usually gold, green, or blue.
 
-Most humans believe elves are literally immortal; in fact, there are few active elves over 700. Some become hermits, others seek out one adventure after another until they fall, and many simply seem to vanish. On the other hand, some elves, especially wizards, have remained active for thousands of years, and take careful precautions to 
-protect their long lives.
+Most humans believe elves are literally immortal; in fact, there are few active elves over 700. Some become hermits, others seek out one adventure after another until they fall, and many simply seem to vanish. On the other hand, some elves, especially wizards, have remained active for thousands of years, and take careful precautions to protect their long lives.
 
-Elven societies are egalitarian, with work split as equally as possible between male and female. They multiply slowly at best; children are rare, and seem to belong to the community as a whole. Some elves bond with a single mate for life; others are polygamous. They value creativity in all 
-its forms: music, poetry, dancing, and storytelling. Individual status usually depends solely on age, although a talented bard or artist, or one who is well attuned to nature, will gain a wide reputation.
+Elven societies are egalitarian, with work split as equally as possible between male and female. They multiply slowly at best; children are rare, and seem to belong to the community as a whole. Some elves bond with a single mate for life; others are polygamous. They value creativity in all its forms: music, poetry, dancing, and storytelling. Individual status usually depends solely on age, although a talented bard or artist, or one who is well attuned to nature, will gain a wide reputation.
 
 Elves get along very poorly with dwarves and worse with orcs. They are friendly with gnomes and halflings, and most elves agree that many humans are civilized. (The dark elves are intolerant of all other races; see BA191.) Elves are incensed by needless harm to trees or animals. It is a point of honor among elves to always behave with elegance and style. Many people think this is snooty, and they&#8217;re not always entirely wrong.</notes>
 </template>
