@@ -86,7 +86,8 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		Localization.initialize();
 	}
 
-	private static final EmptyBorder	NORMAL_BORDER	= new EmptyBorder(5, 5, 5, 5);
+	private static final EmptyBorder	NORMAL_BORDER		= new EmptyBorder(5, 5, 5, 5);
+	private static final int			NOTES_WRAP_WIDTH	= 520;
 	private Template					mTemplate;
 	private boolean						mBatchMode;
 	private AdvantageOutline			mAdvantageOutline;
@@ -117,6 +118,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		mSpellOutline = new SpellOutline(mTemplate);
 		mEquipmentOutline = new EquipmentOutline(mTemplate);
 		mNotesPanel = new NotesPanel(template.getNotes(), false);
+		mNotesPanel.setWrapWidth(NOTES_WRAP_WIDTH);
 		add(new TemplateOutlinePanel(mAdvantageOutline, ADVANTAGES));
 		add(new TemplateOutlinePanel(mSkillOutline, SKILLS));
 		add(new TemplateOutlinePanel(mSpellOutline, SPELLS));
@@ -143,10 +145,10 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 			adjustSize();
 		} else if (NotesPanel.CMD_EDIT_NOTES.equals(command)) {
 			String notes = TextEditor.edit(NOTES, mTemplate.getNotes());
-
 			if (notes != null) {
 				mTemplate.setNotes(notes);
 				mNotesPanel.setNotes(notes);
+				mNotesPanel.setWrapWidth(NOTES_WRAP_WIDTH);
 			}
 		}
 	}
