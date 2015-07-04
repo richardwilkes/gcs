@@ -640,6 +640,11 @@
 			<type>IQ</type>
 			<modifier>-6</modifier>
 		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<modifier>-6</modifier>
+		</default>
 	</skill>
 	<skill version="2">
 		<name>Artist</name>
@@ -652,6 +657,35 @@
 		</categories>
 		<default>
 			<type>IQ</type>
+			<modifier>-6</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Calligraphy</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Drawing</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Illumination</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Painting</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
 			<modifier>-6</modifier>
 		</default>
 	</skill>
@@ -668,6 +702,35 @@
 			<type>IQ</type>
 			<modifier>-6</modifier>
 		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Drawing</specialization>
+			<modifier>-2</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Illumination</specialization>
+			<modifier>-2</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Painting</specialization>
+			<modifier>-2</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Body Art</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<modifier>-6</modifier>
+		</default>
 	</skill>
 	<skill version="2">
 		<name>Artist</name>
@@ -680,6 +743,35 @@
 		</categories>
 		<default>
 			<type>IQ</type>
+			<modifier>-6</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Calligraphy</specialization>
+			<modifier>-2</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Illumination</specialization>
+			<modifier>-2</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Painting</specialization>
+			<modifier>-2</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Body Art</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
 			<modifier>-6</modifier>
 		</default>
 	</skill>
@@ -696,6 +788,35 @@
 			<type>IQ</type>
 			<modifier>-6</modifier>
 		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Calligraphy</specialization>
+			<modifier>-2</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Drawing</specialization>
+			<modifier>-2</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Painting</specialization>
+			<modifier>-2</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Body Art</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<modifier>-6</modifier>
+		</default>
 	</skill>
 	<skill version="2">
 		<name>Artist</name>
@@ -708,6 +829,11 @@
 		</categories>
 		<default>
 			<type>IQ</type>
+			<modifier>-6</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
 			<modifier>-6</modifier>
 		</default>
 	</skill>
@@ -729,6 +855,23 @@
 			<name>Architecture</name>
 			<modifier>-3</modifier>
 		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Scene Design</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Woodworking</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<modifier>-6</modifier>
+		</default>
 	</skill>
 	<skill version="2">
 		<name>Artist</name>
@@ -741,6 +884,35 @@
 		</categories>
 		<default>
 			<type>IQ</type>
+			<modifier>-6</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Calligraphy</specialization>
+			<modifier>-2</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Drawing</specialization>
+			<modifier>-2</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Illumination</specialization>
+			<modifier>-2</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Body Art</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artsit</name>
 			<modifier>-6</modifier>
 		</default>
 	</skill>
@@ -756,6 +928,11 @@
 		</categories>
 		<default>
 			<type>IQ</type>
+			<modifier>-6</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
 			<modifier>-6</modifier>
 		</default>
 	</skill>
@@ -777,6 +954,23 @@
 			<name>Architecture</name>
 			<modifier>-3</modifier>
 		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Interior Decorating</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Woodworking</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<modifier>-6</modifier>
+		</default>
 	</skill>
 	<skill version="2">
 		<name>Artist</name>
@@ -790,6 +984,11 @@
 		</categories>
 		<default>
 			<type>IQ</type>
+			<modifier>-6</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
 			<modifier>-6</modifier>
 		</default>
 	</skill>
@@ -811,6 +1010,23 @@
 			<type>Skill</type>
 			<name>Carpentry</name>
 			<modifier>-3</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Interior Decorating</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<specialization>Scene Design</specialization>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Artist</name>
+			<modifier>-6</modifier>
 		</default>
 	</skill>
 	<skill version="2">
