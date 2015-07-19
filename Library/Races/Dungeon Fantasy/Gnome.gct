@@ -79,7 +79,7 @@
 				</modifier>
 				<modifier version="1">
 					<name>Poison</name>
-					<cost type="points">10</cost>
+					<cost type="points">15</cost>
 					<affects>total</affects>
 					<reference>B81</reference>
 				</modifier>
@@ -112,7 +112,7 @@
 			<advantage version="2">
 				<name>Talent (Widget-Worker)</name>
 				<type>Mental</type>
-				<levels>1</levels>
+				<levels>2</levels>
 				<points_per_level>5</points_per_level>
 				<reference>DF3:10</reference>
 				<categories>
@@ -143,6 +143,16 @@
 					<specialization compare="is anything"></specialization>
 					<amount per_level="yes">1</amount>
 				</skill_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Curious</name>
+				<type>Mental</type>
+				<base_points>-5</base_points>
+				<cr>12</cr>
+				<reference>B129</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
 			</advantage>
 		</advantage_container>
 	</advantage_list>
