@@ -8948,7 +8948,7 @@
 	</advantage>
 	<advantage version="2">
 		<name>Lifting ST</name>
-		<type>Physical</type>
+		<type>Physical, Exotic</type>
 		<levels>1</levels>
 		<points_per_level>3</points_per_level>
 		<modifier version="1" enabled="no">
