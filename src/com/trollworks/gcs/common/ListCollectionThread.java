@@ -15,8 +15,8 @@ import com.trollworks.toolkit.collections.Stack;
 import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.utility.FileType;
-import com.trollworks.toolkit.utility.NumericComparator;
 import com.trollworks.toolkit.utility.PathUtils;
+import com.trollworks.toolkit.utility.text.NumericComparator;
 
 import java.awt.EventQueue;
 import java.io.IOException;

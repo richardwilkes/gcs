@@ -18,7 +18,7 @@ import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.text.TextUtility;
+import com.trollworks.toolkit.utility.text.Text;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -133,7 +133,7 @@ public class ModifierEnabler extends JPanel {
 
 	private static Container createTop(Advantage advantage, int remaining) {
 		JPanel top = new JPanel(new ColumnLayout());
-		JLabel label = new JLabel(TextUtility.truncateIfNecessary(advantage.toString(), 80, SwingConstants.RIGHT), SwingConstants.LEFT);
+		JLabel label = new JLabel(Text.truncateIfNecessary(advantage.toString(), 80, SwingConstants.RIGHT), SwingConstants.LEFT);
 
 		top.setBorder(new EmptyBorder(0, 0, 15, 0));
 		if (remaining > 0) {

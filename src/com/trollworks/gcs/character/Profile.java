@@ -23,7 +23,7 @@ import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.Preferences;
-import com.trollworks.toolkit.utility.text.TextUtility;
+import com.trollworks.toolkit.utility.text.Text;
 import com.trollworks.toolkit.utility.units.LengthUnits;
 import com.trollworks.toolkit.utility.units.LengthValue;
 import com.trollworks.toolkit.utility.units.WeightUnits;
@@ -441,7 +441,7 @@ public class Profile {
 		} else if (TAG_NAME.equals(tag)) {
 			mName = reader.readText();
 		} else if (TAG_NOTES.equals(tag)) {
-			mNotes = TextUtility.standardizeLineEndings(reader.readText());
+			mNotes = Text.standardizeLineEndings(reader.readText());
 		} else if (TAG_TITLE.equals(tag)) {
 			mTitle = reader.readText();
 		} else if (TAG_AGE.equals(tag)) {

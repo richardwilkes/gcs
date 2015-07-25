@@ -604,7 +604,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		} else if (mTechLevel.getDocument() == document) {
 			Profile.setDefaultTechLevel(mTechLevel.getText());
 		} else if (mInitialPoints.getDocument() == document) {
-			Preferences.getInstance().setValue(MODULE, INITIAL_POINTS_KEY, Numbers.getLocalizedInteger(mInitialPoints.getText(), 0));
+			Preferences.getInstance().setValue(MODULE, INITIAL_POINTS_KEY, Numbers.extractInteger(mInitialPoints.getText(), 0, true));
 		} else if (mHTMLTemplatePath.getDocument() == document) {
 			Preferences.getInstance().setValue(MODULE, HTML_TEMPLATE_OVERRIDE_KEY, mHTMLTemplatePath.getText());
 		}

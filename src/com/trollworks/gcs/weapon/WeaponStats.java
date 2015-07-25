@@ -297,7 +297,7 @@ public abstract class WeaponStats {
 						modifier = -modifier;
 					}
 					last = tmp;
-					dice = (Dice) dice.clone();
+					dice = dice.clone();
 					dice.add(modifier);
 				}
 				if (last < max - 1 && damage.charAt(last) == ':') {
@@ -322,7 +322,7 @@ public abstract class WeaponStats {
 							if (ch == '-') {
 								perDie = -perDie;
 							}
-							dice = (Dice) dice.clone();
+							dice = dice.clone();
 							dice.add(perDie * dice.getDieCount());
 						}
 					}
@@ -459,7 +459,7 @@ public abstract class WeaponStats {
 				break;
 			}
 		}
-		return started ? Numbers.getInteger(builder.toString(), -1) : -1;
+		return started ? Numbers.extractInteger(builder.toString(), -1, false) : -1;
 	}
 
 	/** @return The usage. */

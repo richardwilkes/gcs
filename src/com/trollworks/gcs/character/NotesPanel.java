@@ -18,7 +18,7 @@ import com.trollworks.toolkit.ui.TextDrawing;
 import com.trollworks.toolkit.ui.border.BoxedDropShadowBorder;
 import com.trollworks.toolkit.ui.widget.ActionPanel;
 import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.text.TextUtility;
+import com.trollworks.toolkit.utility.text.Text;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -77,7 +77,7 @@ public class NotesPanel extends ActionPanel {
 		setForeground(Color.BLACK);
 		setActionCommand(CMD_EDIT_NOTES);
 		setToolTipText(NOTES_TOOLTIP);
-		mNotes = TextUtility.standardizeLineEndings(notes);
+		mNotes = Text.standardizeLineEndings(notes);
 		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent event) {

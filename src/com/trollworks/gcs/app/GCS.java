@@ -366,8 +366,8 @@ public class GCS {
 				index = argument.indexOf('X');
 			}
 			if (index != -1) {
-				double width = Numbers.getLocalizedDouble(argument.substring(0, index), -1.0);
-				double height = Numbers.getLocalizedDouble(argument.substring(index + 1), -1.0);
+				double width = Numbers.extractDouble(argument.substring(0, index), -1.0, true);
+				double height = Numbers.extractDouble(argument.substring(index + 1), -1.0, true);
 
 				if (width > 0.0 && height > 0.0) {
 					return new double[] { width, height };
@@ -388,7 +388,7 @@ public class GCS {
 				String token = tokenizer.nextToken();
 
 				if (index < 4) {
-					values[index] = Numbers.getLocalizedDouble(token, -1.0);
+					values[index] = Numbers.extractDouble(token, -1.0, true);
 					if (values[index] < 0.0) {
 						System.out.println(INVALID_PAPER_MARGINS);
 						return null;

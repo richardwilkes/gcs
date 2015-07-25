@@ -26,7 +26,7 @@ import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.NumberFilter;
 import com.trollworks.toolkit.utility.text.Numbers;
-import com.trollworks.toolkit.utility.text.TextUtility;
+import com.trollworks.toolkit.utility.text.Text;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -301,7 +301,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 	}
 
 	private JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
-		JTextField field = new JTextField(maxChars > 0 ? TextUtility.makeFiller(maxChars, 'M') : text);
+		JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
 
 		if (maxChars > 0) {
 			UIUtilities.setOnlySize(field, field.getPreferredSize());
@@ -433,7 +433,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 	}
 
 	private int getSkillPoints() {
-		return Numbers.getLocalizedInteger(mPointsField.getText(), 0);
+		return Numbers.extractInteger(mPointsField.getText(), 0, true);
 	}
 
 	private int getEncumbrancePenaltyMultiplier() {

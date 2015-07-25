@@ -17,7 +17,7 @@ import com.trollworks.toolkit.ui.widget.outline.Cell;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.Row;
-import com.trollworks.toolkit.utility.NumericComparator;
+import com.trollworks.toolkit.utility.text.NumericComparator;
 
 import java.awt.Color;
 import java.awt.Cursor;

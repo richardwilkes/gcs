@@ -1215,7 +1215,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
 				String parry = weapon.getResolvedParry().trim();
 				if (parry.length() > 0 && !"No".equals(parry)) { //$NON-NLS-1$
-					int value = Numbers.getInteger(parry, 0);
+					int value = Numbers.extractInteger(parry, 0, false);
 					if (value > bestValue) {
 						bestValue = value;
 						best = parry;
@@ -1230,7 +1230,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
 				String block = weapon.getResolvedBlock().trim();
 				if (block.length() > 0 && !"No".equals(block)) { //$NON-NLS-1$
-					int value = Numbers.getInteger(block, 0);
+					int value = Numbers.extractInteger(block, 0, false);
 					if (value > bestValue) {
 						bestValue = value;
 						best = block;
@@ -1577,7 +1577,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				out.write(style.toString());
 			}
 		} else if (key.startsWith("DEPTHx")) { //$NON-NLS-1$
-			int amt = Numbers.getInteger(key.substring(6), 1);
+			int amt = Numbers.extractInteger(key.substring(6), 1, false);
 			out.write("" + amt * row.getDepth()); //$NON-NLS-1$
 		} else if (key.equals("SATISFIED")) { //$NON-NLS-1$
 			out.write(row.isSatisfied() ? "Y" : "N"); //$NON-NLS-1$ //$NON-NLS-2$

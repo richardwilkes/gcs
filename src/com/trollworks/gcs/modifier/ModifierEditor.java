@@ -21,7 +21,7 @@ import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.NumberFilter;
 import com.trollworks.toolkit.utility.text.Numbers;
-import com.trollworks.toolkit.utility.text.TextUtility;
+import com.trollworks.toolkit.utility.text.Text;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -251,7 +251,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 	}
 
 	private JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
-		JTextField field = new JTextField(maxChars > 0 ? TextUtility.makeFiller(maxChars, 'M') : text);
+		JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
 
 		if (maxChars > 0) {
 			UIUtilities.setOnlySize(field, field.getPreferredSize());
@@ -276,7 +276,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 
 	@SuppressWarnings("unused")
 	private JTextField createNumberField(Container labelParent, Container fieldParent, String title, boolean allowSign, int value, String tooltip, int maxDigits) {
-		JTextField field = new JTextField(TextUtility.makeFiller(maxDigits, '9') + TextUtility.makeFiller(maxDigits / 3, ',') + (allowSign ? "-" : EMPTY)); //$NON-NLS-1$
+		JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + (allowSign ? "-" : EMPTY)); //$NON-NLS-1$
 
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
 		field.setText(Numbers.format(value));
@@ -291,7 +291,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 
 	@SuppressWarnings("unused")
 	private JTextField createNumberField(Container labelParent, Container fieldParent, String title, double value, String tooltip, int maxDigits) {
-		JTextField field = new JTextField(TextUtility.makeFiller(maxDigits, '9') + TextUtility.makeFiller(maxDigits / 3, ',') + '.');
+		JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + '.');
 
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
 		field.setText(Numbers.format(value));
@@ -352,7 +352,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		if (hasLevels) {
 			mLevelField.setText(Numbers.format(mLastLevel));
 		} else {
-			mLastLevel = Numbers.getLocalizedInteger(mLevelField.getText(), 0);
+			mLastLevel = Numbers.extractInteger(mLevelField.getText(), 0, true);
 			mLevelField.setText(EMPTY);
 		}
 		mLevelField.setEnabled(hasLevels);
@@ -364,10 +364,10 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 	private void updateCostField() {
 		if (getCostType() == CostType.MULTIPLIER) {
 			new NumberFilter(mCostField, true, false, true, 5);
-			mCostField.setText(Numbers.format(Math.abs(Numbers.getLocalizedDouble(mCostField.getText(), 0))));
+			mCostField.setText(Numbers.format(Math.abs(Numbers.extractDouble(mCostField.getText(), 0, true))));
 		} else {
 			new NumberFilter(mCostField, false, true, true, 5);
-			mCostField.setText(Numbers.formatWithForcedSign(Numbers.getLocalizedInteger(mCostField.getText(), 0)));
+			mCostField.setText(Numbers.formatWithForcedSign(Numbers.extractInteger(mCostField.getText(), 0, true)));
 		}
 	}
 
@@ -405,15 +405,15 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 	}
 
 	private int getCost() {
-		return Numbers.getLocalizedInteger(mCostField.getText(), 0);
+		return Numbers.extractInteger(mCostField.getText(), 0, true);
 	}
 
 	private double getCostMultiplier() {
-		return Numbers.getLocalizedDouble(mCostField.getText(), 0);
+		return Numbers.extractDouble(mCostField.getText(), 0, true);
 	}
 
 	private int getLevels() {
-		return Numbers.getLocalizedInteger(mLevelField.getText(), 0);
+		return Numbers.extractInteger(mLevelField.getText(), 0, true);
 	}
 
 	@Override

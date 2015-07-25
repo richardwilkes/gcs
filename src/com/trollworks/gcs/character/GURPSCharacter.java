@@ -466,9 +466,9 @@ public class GURPSCharacter extends DataFile {
 				if (Profile.TAG_ROOT.equals(name)) {
 					mDescription.load(reader);
 				} else if (TAG_CREATED_DATE.equals(name)) {
-					mCreatedOn = Numbers.getDate(reader.readText());
+					mCreatedOn = Numbers.extractDate(reader.readText());
 				} else if (TAG_MODIFIED_DATE.equals(name)) {
-					mLastModified = Numbers.getDateTime(reader.readText());
+					mLastModified = Numbers.extractDateTime(reader.readText());
 				} else if (BonusAttributeType.HP.getXMLTag().equals(name)) {
 					mHitPoints = reader.readInteger(0);
 				} else if (TAG_CURRENT_HP.equals(name)) {
@@ -953,7 +953,7 @@ public class GURPSCharacter extends DataFile {
 	 * @param date The new created on date.
 	 */
 	public void setCreatedOn(String date) {
-		setCreatedOn(Numbers.getDate(date));
+		setCreatedOn(Numbers.extractDate(date));
 	}
 
 	private void updateSkills() {

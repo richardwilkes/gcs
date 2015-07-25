@@ -153,7 +153,7 @@ public enum SelfControlRoll {
 	 * @return The actual {@link SelfControlRoll}.
 	 */
 	public static final SelfControlRoll get(String tagValue) {
-		int value = Numbers.getInteger(tagValue, Integer.MAX_VALUE);
+		int value = Numbers.extractInteger(tagValue, Integer.MAX_VALUE, false);
 		for (SelfControlRoll cr : values()) {
 			if (cr.getCR() == value) {
 				return cr;

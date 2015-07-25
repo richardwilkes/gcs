@@ -14,7 +14,7 @@ package com.trollworks.gcs.weapon;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
-import com.trollworks.toolkit.utility.text.TextUtility;
+import com.trollworks.toolkit.utility.text.Text;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -84,7 +84,7 @@ public class OldWeapon {
 	}
 
 	private static String[] extract(XMLReader reader) throws IOException {
-		return TextUtility.extractLines(reader.readText().trim(), 0).toArray(new String[0]);
+		return Text.extractLines(reader.readText().trim(), 0).toArray(new String[0]);
 	}
 
 	/**

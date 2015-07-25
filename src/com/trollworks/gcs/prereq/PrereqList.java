@@ -236,7 +236,7 @@ public class PrereqList extends Prereq {
 	@Override
 	public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
 		if (isWhenTLEnabled(mWhenTLCriteria)) {
-			if (!mWhenTLCriteria.matches(Numbers.getInteger(character.getDescription().getTechLevel(), 0))) {
+			if (!mWhenTLCriteria.matches(Numbers.extractInteger(character.getDescription().getTechLevel(), 0, false))) {
 				return true;
 			}
 		}

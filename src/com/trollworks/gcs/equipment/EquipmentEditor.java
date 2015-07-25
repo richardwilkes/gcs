@@ -24,7 +24,7 @@ import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.NumberFilter;
 import com.trollworks.toolkit.utility.text.Numbers;
-import com.trollworks.toolkit.utility.text.TextUtility;
+import com.trollworks.toolkit.utility.text.Text;
 import com.trollworks.toolkit.utility.units.WeightValue;
 
 import java.awt.Component;
@@ -313,7 +313,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 	}
 
 	private JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
-		JTextField field = new JTextField(maxChars > 0 ? TextUtility.makeFiller(maxChars, 'M') : text);
+		JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
 		if (maxChars > 0) {
 			UIUtilities.setOnlySize(field, field.getPreferredSize());
 			field.setText(text);
@@ -328,7 +328,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
 	@SuppressWarnings("unused")
 	private JTextField createIntegerNumberField(Container labelParent, Container fieldParent, String title, int value, String tooltip, int maxDigits) {
-		JTextField field = new JTextField(TextUtility.makeFiller(maxDigits, '9') + TextUtility.makeFiller(maxDigits / 3, ','));
+		JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ','));
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
 		field.setText(Numbers.format(value));
 		field.setToolTipText(tooltip);
@@ -343,7 +343,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
 	@SuppressWarnings("unused")
 	private JTextField createNumberField(Container labelParent, Container fieldParent, String title, double value, String tooltip, int maxDigits) {
-		JTextField field = new JTextField(TextUtility.makeFiller(maxDigits, '9') + TextUtility.makeFiller(maxDigits / 3, ',') + "."); //$NON-NLS-1$
+		JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + "."); //$NON-NLS-1$
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
 		field.setText(Numbers.format(value));
 		field.setToolTipText(tooltip);
@@ -357,7 +357,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 	}
 
 	private JTextField createWeightField(Container labelParent, Container fieldParent, String title, WeightValue value, String tooltip, int maxDigits) {
-		JTextField field = new JTextField(TextUtility.makeFiller(maxDigits, '9') + TextUtility.makeFiller(maxDigits / 3, ',') + "."); //$NON-NLS-1$
+		JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + "."); //$NON-NLS-1$
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
 		field.setText(value.toString());
 		field.setToolTipText(tooltip);
@@ -376,7 +376,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		modified |= mRow.setTechLevel(mTechLevelField.getText());
 		modified |= mRow.setLegalityClass(mLegalityClassField.getText());
 		modified |= mRow.setQuantity(getQty());
-		modified |= mRow.setValue(Numbers.getLocalizedDouble(mValueField.getText(), 0.0));
+		modified |= mRow.setValue(Numbers.extractDouble(mValueField.getText(), 0.0, true));
 		modified |= mRow.setWeight(WeightValue.extract(mWeightField.getText(), true));
 		if (showEquipmentState()) {
 			modified |= mRow.setState((EquipmentState) mStateCombo.getSelectedItem());
@@ -411,7 +411,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
 	private int getQty() {
 		if (mQtyField != null) {
-			return Numbers.getLocalizedInteger(mQtyField.getText(), 0);
+			return Numbers.extractInteger(mQtyField.getText(), 0, true);
 		}
 		return 1;
 	}
@@ -423,7 +423,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		if (qty < 1) {
 			value = 0;
 		} else {
-			value = qty * Numbers.getLocalizedDouble(mValueField.getText(), 0.0) + mContainedValue;
+			value = qty * Numbers.extractDouble(mValueField.getText(), 0.0, true) + mContainedValue;
 		}
 		mExtValueField.setText(Numbers.format(value));
 	}

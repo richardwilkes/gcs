@@ -25,7 +25,7 @@ import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.NumberFilter;
 import com.trollworks.toolkit.utility.text.Numbers;
-import com.trollworks.toolkit.utility.text.TextUtility;
+import com.trollworks.toolkit.utility.text.Text;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -344,7 +344,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 	}
 
 	private JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
-		JTextField field = new JTextField(maxChars > 0 ? TextUtility.makeFiller(maxChars, 'M') : text);
+		JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
 
 		if (maxChars > 0) {
 			UIUtilities.setOnlySize(field, field.getPreferredSize());
@@ -422,15 +422,15 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 	}
 
 	private int getPoints() {
-		return Numbers.getLocalizedInteger(mPointsField.getText(), 0);
+		return Numbers.extractInteger(mPointsField.getText(), 0, true);
 	}
 
 	private int getDefaultModifier() {
-		return Numbers.getLocalizedInteger(mDefaultModifierField.getText(), 0);
+		return Numbers.extractInteger(mDefaultModifierField.getText(), 0, true);
 	}
 
 	private int getLimitModifier() {
-		return Numbers.getLocalizedInteger(mLimitField.getText(), 0);
+		return Numbers.extractInteger(mLimitField.getText(), 0, true);
 	}
 
 	@Override

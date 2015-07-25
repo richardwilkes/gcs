@@ -22,7 +22,7 @@ import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.layout.LayoutSize;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.text.TextUtility;
+import com.trollworks.toolkit.utility.text.Text;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -139,7 +139,7 @@ public class Namer extends JPanel {
 			add(label);
 			column.add(label);
 		}
-		label = new JLabel(TextUtility.truncateIfNecessary(row.toString(), 80, SwingConstants.RIGHT), SwingConstants.CENTER);
+		label = new JLabel(Text.truncateIfNecessary(row.toString(), 80, SwingConstants.RIGHT), SwingConstants.CENTER);
 		Dimension size = label.getMaximumSize();
 		size.width = LayoutSize.MAXIMUM_SIZE;
 		size.height += 4;
