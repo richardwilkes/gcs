@@ -20,6 +20,7 @@ import com.trollworks.toolkit.ui.menu.MenuProvider;
 import com.trollworks.toolkit.ui.menu.edit.CopyCommand;
 import com.trollworks.toolkit.ui.menu.edit.CutCommand;
 import com.trollworks.toolkit.ui.menu.edit.DeleteCommand;
+import com.trollworks.toolkit.ui.menu.edit.JumpToSearchCommand;
 import com.trollworks.toolkit.ui.menu.edit.PasteCommand;
 import com.trollworks.toolkit.ui.menu.edit.PreferencesCommand;
 import com.trollworks.toolkit.ui.menu.edit.RedoCommand;

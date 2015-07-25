@@ -13,9 +13,9 @@ package com.trollworks.gcs.common;
 
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
-import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
+import com.trollworks.toolkit.ui.menu.edit.JumpToSearchTarget;
 import com.trollworks.toolkit.ui.menu.file.SignificantFrame;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.ui.widget.BaseWindow;
