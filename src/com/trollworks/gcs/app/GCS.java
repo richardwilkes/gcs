@@ -214,7 +214,7 @@ public class GCS {
 			System.out.println(MessageFormat.format(FINISHED, timing));
 			System.exit(0);
 		} else {
-			LaunchProxy.configure(cmdLine.getArgumentsAsFiles().toArray(new File[0]));
+			LaunchProxy.configure(cmdLine.getArgumentsAsFiles());
 			if (GraphicsUtilities.areGraphicsSafeToUse()) {
 				initialize();
 				GCSApp.INSTANCE.startup(cmdLine);
