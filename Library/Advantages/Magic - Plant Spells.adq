@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<advantage_list unique_id="ic3r8ev9:pixw3fwotfxj" version="1">
+	<advantage version="2">
+		<name>Detect Plant Sapience</name>
+		<type>Mental</type>
+		<base_points>1</base_points>
+		<reference>MPS8</reference>
+		<notes>Maximum level is 5</notes>
+		<categories>
+			<category>Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Druid's Tight Grasp</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>MPS8</reference>
+		<notes>Maximum level is 5</notes>
+		<categories>
+			<category>Perk</category>
+		</categories>
+		<spell_bonus>
+			<spell_name compare="is">Capturing Vines</spell_name>
+			<amount per_level="yes">1</amount>
+		</spell_bonus>
+		<spell_bonus>
+			<spell_name compare="is">Grasping Branch</spell_name>
+			<amount per_level="yes">1</amount>
+		</spell_bonus>
+		<spell_bonus>
+			<spell_name compare="is">Undergrowth Ambush</spell_name>
+			<amount per_level="yes">1</amount>
+		</spell_bonus>
+	</advantage>
+	<advantage version="2">
+		<name>Environment Awareness</name>
+		<type>Mental, Supernatural</type>
+		<modifier version="1" enabled="no">
+			<name>jungle</name>
+			<cost type="points">1</cost>
+			<affects>total</affects>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>plains</name>
+			<cost type="points">1</cost>
+			<affects>total</affects>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>swampland</name>
+			<cost type="points">1</cost>
+			<affects>total</affects>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>woodlands</name>
+			<cost type="points">1</cost>
+			<affects>total</affects>
+		</modifier>
+		<reference>MPS8</reference>
+		<categories>
+			<category>Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Fresh Cudgel</name>
+		<type>Physical, Supernatural</type>
+		<base_points>1</base_points>
+		<reference>MPS8</reference>
+		<categories>
+			<category>Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Little Green Digit</name>
+		<type></type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>MPS8</reference>
+		<categories>
+			<category>Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Plant-Form Rest</name>
+		<type>Mental, Exotic</type>
+		<base_points>1</base_points>
+		<reference>MPS8</reference>
+		<categories>
+			<category>Perk</category>
+		</categories>
+		<prereq_list all="yes">
+			<spell_prereq has="yes">
+				<name compare="is">Recover Energy</name>
+			</spell_prereq>
+		</prereq_list>
+	</advantage>
+	<advantage version="2">
+		<name>Sympathetic Species @Species@</name>
+		<type>Mental, Social</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>MPS8</reference>
+		<notes>Maximum level is 3</notes>
+		<categories>
+			<category>Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Tree-Tickler</name>
+		<type>Physical, Supernatural</type>
+		<base_points>1</base_points>
+		<reference>MPS8</reference>
+		<categories>
+			<category>Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Unusual Background</name>
+		<type>Mental</type>
+		<base_points>5</base_points>
+		<reference>MPS9</reference>
+		<notes>(Trained by an Archdruid)</notes>
+		<categories>
+			<category>Advantage</category>
+		</categories>
+		<prereq_list all="yes">
+			<skill_prereq has="yes">
+				<name compare="is">Hidden Lore</name>
+				<specialization compare="is">Druidic</specialization>
+			</skill_prereq>
+			<spell_prereq has="yes">
+				<college compare="is">Plant</college>
+				<quantity compare="at least">5</quantity>
+			</spell_prereq>
+		</prereq_list>
+	</advantage>
+</advantage_list>
