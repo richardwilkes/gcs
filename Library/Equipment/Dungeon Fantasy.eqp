@@ -207,13 +207,13 @@
 		<legality_class>4</legality_class>
 		<value>100</value>
 		<weight>10 lb</weight>
-		<reference>B288</reference>
-		<notes>100 lb</notes>
+		<reference>DF1:23</reference>
+		<notes>Holds 100 lbs of gear</notes>
 		<categories>
-			<category>Basic</category>
+			<category>Camping and Survival Gear</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">100 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">100 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -222,13 +222,13 @@
 		<legality_class>4</legality_class>
 		<value>60</value>
 		<weight>3 lb</weight>
-		<reference>B288</reference>
-		<notes>40 lb</notes>
+		<reference>DF1:23</reference>
+		<notes>Holds 40 lbs of gear</notes>
 		<categories>
-			<category>Basic</category>
+			<category>Camping and Survival Gear</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">40 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">40 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -274,10 +274,13 @@
 		<value>60</value>
 		<weight>1 lb</weight>
 		<reference>DF1:25</reference>
-		<notes>6 lb thrown weapons. Ready/Fast-Draw.</notes>
+		<notes>6 lb thrown weapons; Wearer can reach with Ready or Fast-Draw</notes>
 		<categories>
 			<category>Combat Accessories</category>
 		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at most">6 lb</contained_weight_prereq>
+		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
 		<description>Barrel</description>
@@ -290,7 +293,7 @@
 			<category>Containers</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">8 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">40 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -325,9 +328,9 @@
 		<legality_class>4</legality_class>
 		<value>20</value>
 		<weight>4 lb</weight>
-		<reference>B288</reference>
+		<reference>DF1:23</reference>
 		<categories>
-			<category>Basic</category>
+			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -357,7 +360,7 @@
 			<category>Containers</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">8 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">2 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -371,7 +374,7 @@
 			<category>Containers</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">8 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -397,7 +400,7 @@
 			<category>Containers</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">8 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">8 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -467,12 +470,12 @@
 		<value>10</value>
 		<weight>3 lb</weight>
 		<reference>DF1:23</reference>
-		<notes>1 qt liquid</notes>
+		<notes>Holds 1 qt of liquid</notes>
 		<categories>
-			<category>Basic</category>
+			<category>Camping and Survival Gear</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">2 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">2 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -486,7 +489,7 @@
 			<category>Containers</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">8 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">400 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -496,7 +499,7 @@
 		<value>400</value>
 		<weight>4 lb</weight>
 		<reference>DF1:25</reference>
-		<notes>Strap on. Eliminate penalty for scaling.</notes>
+		<notes>Strap on for feet and hands; eliminate penalty for scaling.</notes>
 		<categories>
 			<category>Covert Ops and Security Gear</category>
 		</categories>
@@ -649,6 +652,7 @@
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
+		<notes>Treat as Mace, -1 to Skill</notes>
 		<categories>
 			<category>Tools</category>
 		</categories>
@@ -698,6 +702,9 @@
 		<categories>
 			<category>Adventure-Wear</category>
 		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at most">20 lb</contained_weight_prereq>
+		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -847,9 +854,9 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>0.01 lb</weight>
-		<reference>B288</reference>
+		<reference>DF1:23</reference>
 		<categories>
-			<category>Basic</category>
+			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -885,7 +892,7 @@
 		<value>100</value>
 		<weight>0.5 lb</weight>
 		<reference>DF1:25</reference>
-		<notes>360 lb</notes>
+		<notes>supports 360 lbs</notes>
 		<categories>
 			<category>Covert Ops and Security Gear</category>
 		</categories>
@@ -938,7 +945,7 @@
 		<reference>DF1:23</reference>
 		<notes>Basic EQ for Cooking/Survival for 3-8 people</notes>
 		<categories>
-			<category>Basic</category>
+			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -971,7 +978,7 @@
 		<legality_class>4</legality_class>
 		<value>40</value>
 		<weight>2 lb</weight>
-		<reference>B271</reference>
+		<reference>DF1:24</reference>
 		<melee_weapon>
 			<damage>sw cut</damage>
 			<strength>8</strength>
@@ -1019,9 +1026,8 @@
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
+		<notes>-1 to Skill to attack</notes>
 		<categories>
-			<category>Melee Weapon</category>
-			<category>Missile Weapon</category>
 			<category>Tools</category>
 		</categories>
 	</equipment>
@@ -1061,7 +1067,7 @@
 			<category>Combat Accessories</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">2 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">2 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -1075,7 +1081,7 @@
 			<category>Combat Accessories</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">2 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">5 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -1209,7 +1215,7 @@
 		<legality_class>4</legality_class>
 		<value>20</value>
 		<weight>2 lb</weight>
-		<reference>B288</reference>
+		<reference>DF1:24</reference>
 		<notes>Uses 1 pint of oil per 24 hours,  2 yd</notes>
 		<categories>
 			<category>Light Sources</category>
@@ -1283,6 +1289,9 @@
 		<categories>
 			<category>Medical Gear</category>
 		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at most">200 lb</contained_weight_prereq>
+		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -1435,6 +1444,7 @@
 				<modifier>0</modifier>
 			</default>
 		</ranged_weapon>
+		<notes>-1 to Skill to attack</notes>
 		<categories>
 			<category>Tools</category>
 		</categories>
@@ -1655,7 +1665,7 @@
 		<legality_class>4</legality_class>
 		<value>2</value>
 		<weight>1 lb</weight>
-		<reference>B288</reference>
+		<reference>DF1:24</reference>
 		<categories>
 			<category>Light Sources</category>
 		</categories>
@@ -1777,7 +1787,7 @@
 		<reference>DF1:23</reference>
 		<notes>Basic EQ for individual Survival</notes>
 		<categories>
-			<category>Basic</category>
+			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -1787,7 +1797,7 @@
 		<legality_class>4</legality_class>
 		<value>70</value>
 		<weight>3 lb</weight>
-		<reference>B271</reference>
+		<reference>DF1:24</reference>
 		<melee_weapon>
 			<damage>sw+1 imp</damage>
 			<strength>10</strength>
@@ -1815,9 +1825,8 @@
 				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
-		<notes>May get stuck. Improves digging speed</notes>
+		<notes>May get stuck. Improves digging speed; -1 to Skill to attack</notes>
 		<categories>
-			<category>Melee Weapon</category>
 			<category>Tools</category>
 		</categories>
 	</equipment>
@@ -1877,6 +1886,9 @@
 		<categories>
 			<category>Adventure-Wear</category>
 		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at most">8 lb</contained_weight_prereq>
+		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
 		<description>Pouch</description>
@@ -1887,10 +1899,10 @@
 		<reference>DF1:23</reference>
 		<notes>3 lb small items</notes>
 		<categories>
-			<category>Basic</category>
+			<category>Camping and Survival Gear</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">3 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">3 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -1903,6 +1915,9 @@
 		<categories>
 			<category>Adventure-Wear</category>
 		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at most">40 lb</contained_weight_prereq>
+		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -1939,7 +1954,7 @@
 			<category>Containers</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">8 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">40 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -2011,7 +2026,7 @@
 			<category>Combat Accessories</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">2 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1.2 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -2068,7 +2083,7 @@
 		<weight>8 lb</weight>
 		<reference>DF1:23</reference>
 		<categories>
-			<category>Basic</category>
+			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -2139,10 +2154,10 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>5 lb</weight>
-		<reference>B288</reference>
+		<reference>DF1:23</reference>
 		<notes>Includes ropes; no poles needed</notes>
 		<categories>
-			<category>Basic</category>
+			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -2152,10 +2167,10 @@
 		<legality_class>4</legality_class>
 		<value>80</value>
 		<weight>12 lb</weight>
-		<reference>B288</reference>
+		<reference>DF1:23</reference>
 		<notes>Includes ropes; requires one 6' pole</notes>
 		<categories>
-			<category>Basic</category>
+			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -2165,10 +2180,10 @@
 		<legality_class>4</legality_class>
 		<value>150</value>
 		<weight>30 lb</weight>
-		<reference>B288</reference>
+		<reference>DF1:23</reference>
 		<notes>Includes ropes; requires two 6' poles</notes>
 		<categories>
-			<category>Basic</category>
+			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -2178,10 +2193,10 @@
 		<legality_class>4</legality_class>
 		<value>300</value>
 		<weight>100 lb</weight>
-		<reference>B288</reference>
+		<reference>DF1:23</reference>
 		<notes>Includes ropes; requires 12 6' poles, 4 10' poles</notes>
 		<categories>
-			<category>Basic</category>
+			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -2308,15 +2323,15 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Traveler's Rations</description>
+		<description>Rations</description>
 		<tech_level>0</tech_level>
 		<legality_class>4</legality_class>
 		<value>2</value>
 		<weight>0.5 lb</weight>
-		<reference>B288</reference>
+		<reference>DF1:23</reference>
 		<notes>One meal</notes>
 		<categories>
-			<category>Basic</category>
+			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -2343,7 +2358,7 @@
 			<category>Containers</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">8 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">0.5 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -2390,6 +2405,9 @@
 		<categories>
 			<category>Tools</category>
 		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at most">350 lb</contained_weight_prereq>
+		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -2420,13 +2438,13 @@
 		<legality_class>4</legality_class>
 		<value>10</value>
 		<weight>0.25 lb</weight>
-		<reference>B288</reference>
+		<reference>DF1:23</reference>
 		<notes>1 gal liquid</notes>
 		<categories>
-			<category>Basic</category>
+			<category>Camping and Survival Gear</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">8 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">8 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -2448,7 +2466,7 @@
 		<legality_class>4</legality_class>
 		<value>40</value>
 		<weight>4 lb</weight>
-		<reference>B273</reference>
+		<reference>LT1:30</reference>
 		<melee_weapon>
 			<damage>sw+2 cr</damage>
 			<strength>7&#8224;</strength>
@@ -2514,7 +2532,7 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>1 lb</weight>
-		<reference>B273</reference>
+		<reference>LT1:30</reference>
 		<melee_weapon>
 			<damage>sw cr</damage>
 			<strength>6</strength>
@@ -2659,4 +2677,30 @@
 			<category>Musical Instruments</category>
 		</categories>
 	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sundial, Miniature</description>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>1 lb</weight>
+		<reference>DF1:23</reference>
+		<notes>allows Navigation at only -1 for equipment, only in sunlight</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Strongbox, Iron</description>
+		<legality_class>4</legality_class>
+		<value>250</value>
+		<weight>15 lb</weight>
+		<reference>DF1:23</reference>
+		<notes>Holds 40 lbs of coins or other small items; DR12, HP10</notes>
+		<categories>
+			<category>Containers</category>
+		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at most">40 lb</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
 </equipment_list>
