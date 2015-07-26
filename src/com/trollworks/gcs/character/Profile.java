@@ -1121,7 +1121,8 @@ public class Profile {
 		} else {
 			base = 74;
 		}
-		if (SheetPreferences.areGurpsMetricRulesUsed()) {
+		boolean useMetric = SheetPreferences.getWeightUnits().isMetric();
+		if (useMetric) {
 			base = (int) Math.round(LengthUnits.CM.convert(LengthUnits.FT_IN, base));
 			base += RANDOM.nextInt(16);
 		} else {
@@ -1130,7 +1131,7 @@ public class Profile {
 		if (sm != 0) {
 			base = (int) Math.max(Math.round(base * Math.pow(10.0, sm / 6.0)), 1);
 		}
-		LengthUnits calcUnits = SheetPreferences.areGurpsMetricRulesUsed() ? LengthUnits.CM : LengthUnits.FT_IN;
+		LengthUnits calcUnits = useMetric ? LengthUnits.CM : LengthUnits.FT_IN;
 		LengthUnits desiredUnits = SheetPreferences.getLengthUnits();
 		return new LengthValue(desiredUnits.convert(calcUnits, base), desiredUnits);
 	}
@@ -1161,7 +1162,8 @@ public class Profile {
 			base = 170;
 			range = 101;
 		}
-		if (SheetPreferences.areGurpsMetricRulesUsed()) {
+		boolean useMetric = SheetPreferences.getWeightUnits().isMetric();
+		if (useMetric) {
 			base = (int) Math.round(WeightUnits.KG.convert(WeightUnits.LB, base));
 			range = (int) Math.round(WeightUnits.KG.convert(WeightUnits.LB, range - 1)) + 1;
 		}
@@ -1170,7 +1172,7 @@ public class Profile {
 			base = (int) Math.round(base * Math.pow(1000.0, sm / 6.0));
 		}
 		base = (int) Math.max(Math.round(base * multiplier), 1);
-		WeightUnits calcUnits = SheetPreferences.areGurpsMetricRulesUsed() ? WeightUnits.KG : WeightUnits.LB;
+		WeightUnits calcUnits = useMetric ? WeightUnits.KG : WeightUnits.LB;
 		WeightUnits desiredUnits = SheetPreferences.getWeightUnits();
 		return new WeightValue(desiredUnits.convert(calcUnits, base), desiredUnits);
 	}
