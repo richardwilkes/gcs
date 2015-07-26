@@ -93,8 +93,8 @@ public class HelpMenuProvider implements MenuProvider {
 		menu.addSeparator();
 		menu.add(new JMenuItem(new OpenURICommand(WEB_SITE, GCSApp.WEB_SITE)));
 		menu.add(new JMenuItem(new OpenURICommand(MAILING_LISTS, GCSApp.WEB_SITE + "/mailing_lists.php"))); //$NON-NLS-1$
-		menu.add(new JMenuItem(new OpenURICommand(FEATURES, "http://sourceforge.net/p/gcs-java/feature-requests"))); //$NON-NLS-1$
-		menu.add(new JMenuItem(new OpenURICommand(BUGS, "http://sourceforge.net/p/gcs-java/bugs"))); //$NON-NLS-1$
+		menu.add(new JMenuItem(new OpenURICommand(FEATURES, "https://gurpscharactersheet.atlassian.net/issues/?filter=10000"))); //$NON-NLS-1$
+		menu.add(new JMenuItem(new OpenURICommand(BUGS, "https://gurpscharactersheet.atlassian.net/issues/?filter=10001"))); //$NON-NLS-1$
 		DynamicMenuEnabler.add(menu);
 		return menu;
 	}
