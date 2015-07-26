@@ -22,12 +22,12 @@
 			<skill_prereq has="yes">
 				<name compare="is">Musical Instrument</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">14</level>
+				<level compare="at least">14</level>
 			</skill_prereq>
 			<skill_prereq has="yes">
 				<name compare="is">Singing</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">14</level>
+				<level compare="at least">14</level>
 			</skill_prereq>
 		</prereq_list>
 	</advantage>
@@ -66,12 +66,12 @@
 			<skill_prereq has="yes">
 				<name compare="is">Musical Instrument</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">14</level>
+				<level compare="at least">14</level>
 			</skill_prereq>
 			<skill_prereq has="yes">
 				<name compare="is">Singing</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">14</level>
+				<level compare="at least">14</level>
 			</skill_prereq>
 		</prereq_list>
 	</advantage>
@@ -203,43 +203,43 @@
 		<modifier version="1" enabled="no">
 			<name>Dance</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Dark-Aspected</name>
 			<cost type="percentage">-50</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Day-Aspected</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Musical</name>
 			<cost type="percentage">-50</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Night-Aspected</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>One College</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 			<notes>@College@</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Solitary</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Song</name>
 			<cost type="percentage">-40</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>B66</reference>
 		<categories>
@@ -433,7 +433,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">5</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>DF1,PU3:7</reference>
 		<categories>
@@ -561,7 +561,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>DF11,PU3:8</reference>
 		<categories>
@@ -613,7 +613,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>DF11,PU3:8</reference>
 		<categories>
@@ -729,7 +729,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>DF3,PU3:10</reference>
 		<categories>
@@ -926,7 +926,7 @@
 		<modifier version="1" enabled="no">
 			<name>Power Talent</name>
 			<cost type="points">5</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 			<reference>DF12</reference>
 		</modifier>
 		<reference>DF12,PU3:7</reference>
@@ -980,7 +980,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">0</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>DF3,PU3:14</reference>
 		<categories>
@@ -1039,7 +1039,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>DF14,PU3:15</reference>
 		<categories>
@@ -1102,7 +1102,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">-1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>DF11,PU3:14</reference>
 		<categories>
@@ -1184,7 +1184,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>DF11,PU3:15</reference>
 		<categories>
@@ -1300,7 +1300,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>DF11,PU3:16</reference>
 		<categories>
@@ -1422,4 +1422,15 @@
 			<category>Advantage</category>
 		</categories>
 	</advantage_container>
+	<advantage version="2">
+		<name>Weapon Bond</name>
+		<type>Physical</type>
+		<base_points>1</base_points>
+		<reference>DF1:14</reference>
+		<notes>+1 to effective skill when using @a specific weapon@</notes>
+		<categories>
+			<category>Advantage</category>
+			<category>Perk</category>
+		</categories>
+	</advantage>
 </advantage_list>
