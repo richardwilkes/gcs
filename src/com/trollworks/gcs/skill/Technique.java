@@ -388,4 +388,15 @@ public class Technique extends Skill {
 		super.applyNameableKeys(map);
 		mDefault.applyNameableKeys(map);
 	}
+
+	@Override
+	public String getModifierNotes() {
+		StringBuilder buffer = new StringBuilder(super.getModifierNotes());
+		if (buffer.length() > 0) {
+			buffer.append(' ');
+		}
+		buffer.append(DEFAULTED_FROM);
+		buffer.append(mDefault);
+		return buffer.toString();
+	}
 }

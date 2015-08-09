@@ -47,6 +47,11 @@ public class Skill extends ListRow {
 	@Localize(locale = "ru", value = "Умение")
 	@Localize(locale = "es", value = "Habilidad")
 	static String					DEFAULT_NAME;
+	@Localize("Default: ")
+	@Localize(locale = "de", value = "Grundwert: ")
+	@Localize(locale = "ru", value = "По умолчанию: ")
+	@Localize(locale = "es", value = "Valore por defecto: ")
+	static String					DEFAULTED_FROM;
 
 	static {
 		Localization.initialize();
@@ -641,6 +646,28 @@ public class Skill extends ListRow {
 			}
 		}
 		return builder.toString();
+	}
+
+	@Override
+	public String getModifierNotes() {
+		StringBuilder buffer = new StringBuilder(super.getModifierNotes());
+		if (mDefaultedFrom != null) {
+			if (mDefaultedFrom.getType().isSkillBased()) {
+				GURPSCharacter character = getCharacter();
+				if (character != null) {
+					Skill skill = character.getBestSkillNamed(mDefaultedFrom.getName(), mDefaultedFrom.getSpecialization(), true, new HashSet<>());
+					if (skill != null) {
+						if (buffer.length() > 0) {
+							buffer.append(' ');
+						}
+						buffer.append(DEFAULTED_FROM);
+						buffer.append(skill);
+						buffer.append(mDefaultedFrom.getModifierAsString());
+					}
+				}
+			}
+		}
+		return buffer.toString();
 	}
 
 	@Override

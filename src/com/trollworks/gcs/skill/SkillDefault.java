@@ -272,15 +272,15 @@ public class SkillDefault {
 
 	@Override
 	public String toString() {
-		StringBuilder buffer = new StringBuilder();
-		buffer.append(getFullName());
+		return getFullName() + getModifierAsString();
+	}
+
+	public String getModifierAsString() {
 		if (mModifier > 0) {
-			buffer.append(" + "); //$NON-NLS-1$
-			buffer.append(mModifier);
+			return " + " + mModifier; //$NON-NLS-1$
 		} else if (mModifier < 0) {
-			buffer.append(" - "); //$NON-NLS-1$
-			buffer.append(-mModifier);
+			return " - " + -mModifier; //$NON-NLS-1$
 		}
-		return buffer.toString();
+		return ""; //$NON-NLS-1$
 	}
 }
