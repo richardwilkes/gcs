@@ -154,6 +154,81 @@ public class SkillOutline extends ListOutline implements Incrementable {
 		}
 	}
 
+	/**
+	 * Returns {@code true} if all selected skills can switch defaults.
+	 *
+	 * @return {@code true} if all selected skills can switch defaults.
+	 * @see Skill#canSwapDefaults(Skill)
+	 */
+	public boolean canSwapDefaults() {
+		for (Skill skill : new FilteredIterator<>(getModel().getSelectionAsList(), Skill.class)) {
+			if (skill.canHaveChildren() || !skill.canSwapDefaults(skill.getDefaultSkill()) && findBestSwappableSkill(skill) == null) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Switches Defaults for selected Skills.
+	 */
+	@SuppressWarnings("unused")
+	public void swapDefaults() {
+		ArrayList<RowUndo> undos = new ArrayList<>();
+		for (Skill skill : new FilteredIterator<>(getModel().getSelectionAsList(), Skill.class)) {
+			if (!skill.canHaveChildren()) {
+				if (skill.canSwapDefaults(skill.getDefaultSkill())) {
+					swapDeafaults(undos, skill);
+				} else {
+					swapDeafaults(undos, findBestSwappableSkill(skill));
+				}
+			}
+		}
+		if (!undos.isEmpty()) {
+			repaintSelection();
+			new MultipleRowUndo(undos);
+		}
+	}
+
+	/**
+	 * Swaps {@code skill} default with its current default.
+	 *
+	 * @param undos Undos that are created
+	 * @param skill Skill to have its default swapped.
+	 */
+	private static void swapDeafaults(ArrayList<RowUndo> undos, Skill skill) {
+		if (skill != null) {
+			RowUndo undo1 = new RowUndo(skill);
+			RowUndo undo2 = new RowUndo(skill.getDefaultSkill());
+			skill.swapDefault();
+			if (undo1.finish()) {
+				undos.add(undo1);
+			}
+			if (undo2.finish()) {
+				undos.add(undo2);
+			}
+		}
+	}
+
+	/**
+	 * Finds the best skill to swap its default with. The resulting skill must default to
+	 * {@code skill} and must be swappable with {@code skill}.
+	 *
+	 * @param skillToSwapWith Skill to find a partner for.
+	 * @return best skill to swap its default with.
+	 */
+	private Skill findBestSwappableSkill(Skill skillToSwapWith) {
+		Skill result = null;
+		for (Skill skill : new FilteredIterator<>(getModel().getRows(), Skill.class)) {
+			if (skillToSwapWith.equals(skill.getDefaultSkill()) && skill.canSwapDefaults(skillToSwapWith)) {
+				if (result == null || result.getLevel() < skill.getLevel()) {
+					result = skill;
+				}
+			}
+		}
+		return result;
+	}
+
 	@Override
 	protected boolean isRowDragAcceptable(DropTargetDragEvent dtde, Row[] rows) {
 		return !getModel().isLocked() && rows.length > 0 && rows[0] instanceof Skill;
@@ -185,4 +260,5 @@ public class SkillOutline extends ListOutline implements Incrementable {
 			EventQueue.invokeLater(new RowPostProcessor(this, process));
 		}
 	}
+
 }

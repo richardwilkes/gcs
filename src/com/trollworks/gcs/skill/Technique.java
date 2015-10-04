@@ -102,7 +102,7 @@ public class Technique extends Skill {
 	private static int getBaseLevel(GURPSCharacter character, SkillDefault def) {
 		SkillDefaultType type = def.getType();
 		if (type == SkillDefaultType.Skill) {
-			Skill skill = character != null ? character.getBestSkillNamed(def.getName(), def.getSpecialization(), false, new HashSet<String>()) : null;
+			Skill skill = getBaseSkill(character, def);
 			return skill != null ? skill.getLevel() : Integer.MIN_VALUE;
 		}
 		// Take the modifier back out, as we wanted the base, not the final value.
@@ -398,5 +398,21 @@ public class Technique extends Skill {
 		buffer.append(DEFAULTED_FROM);
 		buffer.append(mDefault);
 		return buffer.toString();
+	}
+
+	@Override
+	public Skill getDefaultSkill() {
+		return getBaseSkill(getCharacter(), mDefault);
+	}
+
+	@Override
+	public int swapDefault() {
+		// Do nothing: Default is fixed
+		return 0;
+	}
+
+	@Override
+	public boolean canSwapDefaults(Skill skill) {
+		return false;
 	}
 }

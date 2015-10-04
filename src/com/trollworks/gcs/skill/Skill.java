@@ -651,22 +651,16 @@ public class Skill extends ListRow {
 	@Override
 	public String getModifierNotes() {
 		StringBuilder buffer = new StringBuilder(super.getModifierNotes());
-		if (mDefaultedFrom != null) {
-			if (mDefaultedFrom.getType().isSkillBased()) {
-				GURPSCharacter character = getCharacter();
-				if (character != null) {
-					Skill skill = character.getBestSkillNamed(mDefaultedFrom.getName(), mDefaultedFrom.getSpecialization(), true, new HashSet<>());
-					if (skill != null) {
-						if (buffer.length() > 0) {
-							buffer.append(' ');
-						}
-						buffer.append(DEFAULTED_FROM);
-						buffer.append(skill);
-						buffer.append(mDefaultedFrom.getModifierAsString());
-					}
-				}
+		Skill skill = getDefaultSkill();
+		if (skill != null) {
+			if (buffer.length() > 0) {
+				buffer.append(' ');
 			}
+			buffer.append(DEFAULTED_FROM);
+			buffer.append(skill);
+			buffer.append(mDefaultedFrom.getModifierAsString());
 		}
+
 		return buffer.toString();
 	}
 
@@ -707,13 +701,7 @@ public class Skill extends ListRow {
 			}
 
 			if (points > 0) {
-				if (points == 1) {
-					// relativeLevel is preset to this point value
-				} else if (points < 4) {
-					relativeLevel++;
-				} else {
-					relativeLevel += 1 + points / 4;
-				}
+				relativeLevel = calculateRelativeLevel(points, relativeLevel);
 			} else if (mDefaultedFrom != null && mDefaultedFrom.getPoints() < 0) {
 				relativeLevel = mDefaultedFrom.getAdjLevel() - level;
 			} else {
@@ -740,8 +728,77 @@ public class Skill extends ListRow {
 		return new SkillLevel(level, relativeLevel);
 	}
 
+	/**
+	 * Tries to switch defaults with its current default keeping skill level, by adding and freeing
+	 * points as necessary. Freed points are kept in former default skill, added points are taken
+	 * from unspent points.
+	 *
+	 * @return extra points spent to keep minimum levels.
+	 */
+	public int swapDefault() {
+		int extraPointsSpent = 0;
+		Skill baseSkill = getDefaultSkill();
+		if (baseSkill != null) {
+			// Find alternative default
+			mDefaultedFrom = getBestDefaultWithPoints(mDefaultedFrom);
+
+			startNotify();
+			baseSkill.updateLevel(true);
+			updateLevel(true);
+			notify(ID_NAME, this);
+			baseSkill.notify(ID_NAME, baseSkill);
+			endNotify();
+		}
+		return extraPointsSpent;
+	}
+
+	/**
+	 * Returns {@code true} if default can be swapped with {@code skill}.
+	 *
+	 * @param skill Skill to check.
+	 * @return {@code true} if default can be swapped with {@code skill}.
+	 */
+	public boolean canSwapDefaults(Skill skill) {
+		boolean result = false;
+		if (mDefaultedFrom != null && getPoints() > 0) {
+			if (skill != null && skill.hasDefaultTo(this)) {
+				result = true;
+			}
+		}
+		return result;
+	}
+
+	private boolean hasDefaultTo(Skill skill) {
+		boolean result = false;
+		for (SkillDefault skillDefault : getDefaults()) {
+			boolean skillBased = skillDefault.getType().isSkillBased();
+			boolean nameMatches = skillDefault.getName().equals(skill.getName());
+			boolean specializationMatches = skillDefault.getSpecialization() == null || skillDefault.getSpecialization().isEmpty() || skillDefault.getSpecialization().equals(skill.getSpecialization());
+			if (skillBased && nameMatches && specializationMatches) {
+				result = true;
+				break;
+			}
+		}
+		return result;
+	}
+
+	private static int calculateRelativeLevel(int points, int relativeLevel) {
+		if (points == 1) {
+			// relativeLevel is preset to this point value
+		} else if (points < 4) {
+			relativeLevel++;
+		} else {
+			relativeLevel += 1 + points / 4;
+		}
+		return relativeLevel;
+	}
+
 	private SkillDefault getBestDefaultWithPoints() {
-		SkillDefault best = getBestDefault();
+		return getBestDefaultWithPoints(null);
+	}
+
+	private SkillDefault getBestDefaultWithPoints(SkillDefault excludedDefault) {
+		SkillDefault best = getBestDefault(excludedDefault);
 		if (best != null) {
 			GURPSCharacter character = getCharacter();
 			int baseLine = getAttribute().getBaseSkillLevel(character) + getDifficulty().getBaseRelativeLevel();
@@ -765,7 +822,7 @@ public class Skill extends ListRow {
 		return best;
 	}
 
-	private SkillDefault getBestDefault() {
+	private SkillDefault getBestDefault(SkillDefault excludedDefault) {
 		GURPSCharacter character = getCharacter();
 		if (character != null) {
 			Collection<SkillDefault> defaults = getDefaults();
@@ -778,7 +835,7 @@ public class Skill extends ListRow {
 				for (SkillDefault skillDefault : defaults) {
 					// For skill-based defaults, prune out any that already use a default that we
 					// are involved with
-					if (!isInDefaultChain(this, skillDefault, new HashSet<>())) {
+					if (!skillDefault.equals(excludedDefault) && !isInDefaultChain(this, skillDefault, new HashSet<>())) {
 						int level = skillDefault.getType().getSkillLevel(character, skillDefault, excludes);
 						if (level > best) {
 							best = level;
@@ -841,5 +898,28 @@ public class Skill extends ListRow {
 	@Override
 	protected String getCategoryID() {
 		return ID_CATEGORY;
+	}
+
+	/**
+	 * Returns the skill defaulted to.
+	 *
+	 * @param character Character
+	 * @param skillDefault Skill default
+	 * @return Returns the skill defaulted to.
+	 */
+	protected static Skill getBaseSkill(GURPSCharacter character, SkillDefault skillDefault) {
+		if (character != null && skillDefault != null && skillDefault.getType().isSkillBased()) {
+			return character.getBestSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, new HashSet<String>());
+		}
+		return null;
+	}
+
+	/**
+	 * Skill the skill currently Defaults to.
+	 *
+	 * @return Skill the skill currently Defaults to.
+	 */
+	public Skill getDefaultSkill() {
+		return getBaseSkill(getCharacter(), mDefaultedFrom);
 	}
 }

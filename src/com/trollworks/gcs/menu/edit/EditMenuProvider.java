@@ -69,6 +69,7 @@ public class EditMenuProvider implements MenuProvider {
 		cmds.add(AddNaturalPunchCommand.INSTANCE);
 		cmds.add(AddNaturalKickCommand.INSTANCE);
 		cmds.add(AddNaturalKickWithBootsCommand.INSTANCE);
+		cmds.add(SwapDefaultsCommand.INSTANCE);
 		if (!Platform.isMacintosh()) {
 			cmds.add(PreferencesCommand.INSTANCE);
 		}
@@ -92,6 +93,7 @@ public class EditMenuProvider implements MenuProvider {
 		menu.add(new DynamicMenuItem(IncrementCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(DecrementCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(RotateEquipmentStateCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(SwapDefaultsCommand.INSTANCE));
 		menu.addSeparator();
 		menu.add(new DynamicMenuItem(JumpToSearchCommand.INSTANCE));
 		menu.addSeparator();
