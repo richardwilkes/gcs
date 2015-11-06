@@ -5420,7 +5420,7 @@
 	</advantage>
 	<advantage version="2">
 		<name>Hidebound</name>
-		<type>Physical</type>
+		<type>Mental</type>
 		<base_points>-5</base_points>
 		<reference>B138</reference>
 		<categories>
