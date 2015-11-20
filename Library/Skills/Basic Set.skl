@@ -1129,6 +1129,36 @@
 		</default>
 	</skill>
 	<skill version="2">
+		<name>Battlesuit</name>
+		<tech_level/>
+		<difficulty>DX/A</difficulty>
+		<points>1</points>
+		<reference>B192</reference>
+		<categories>
+			<category>Military</category>
+			<category>Technical</category>
+		</categories>
+		<default>
+			<type>DX</type>
+			<modifier>-5</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Diving Suit</name>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Vacc Suit</name>
+			<modifier>-2</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>NBC Suit</name>
+			<modifier>-2</modifier>
+		</default>
+	</skill>
+	<skill version="2">
 		<name>Beam Weapons</name>
 		<specialization>@Weapon class@</specialization>
 		<tech_level/>
@@ -11452,6 +11482,21 @@
 			<type>DX</type>
 			<modifier>-5</modifier>
 		</default>
+		<default>
+			<type>Skill</type>
+			<name>Battlesuit</name>
+			<modifier>-2</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Diving Suit</name>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Vacc Suit</name>
+			<modifier>-2</modifier>
+		</default>
 	</skill>
 	<technique version="2" limit="3">
 		<name>Neck Snap</name>
@@ -16223,6 +16268,25 @@
 		<categories>
 			<category>Technical</category>
 		</categories>
+		<default>
+			<type>DX</type>
+			<modifier>-5</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Diving Suit</name>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>NBC Suit</name>
+			<modifier>-2</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Battlesuit</name>
+			<modifier>-2</modifier>
+		</default>
 	</skill>
 	<skill version="2">
 		<name>Ventriloquism</name>
