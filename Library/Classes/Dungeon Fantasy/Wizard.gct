@@ -3,7 +3,7 @@
 	<advantage_list>
 		<advantage_container version="2" open="yes">
 			<name>Wizard</name>
-			<advantage_container version="2" open="yes">
+			<advantage_container version="2" open="no">
 				<name>Attributes</name>
 				<advantage version="2">
 					<name>Increased Dexterity</name>
@@ -56,7 +56,7 @@
 					</attribute_bonus>
 				</advantage>
 			</advantage_container>
-			<advantage_container version="2" open="yes">
+			<advantage_container version="2" open="no">
 				<name>Secondary Characteristics</name>
 				<advantage version="2">
 					<name>Decreased Perception</name>
@@ -84,7 +84,7 @@
 					</attribute_bonus>
 				</advantage>
 			</advantage_container>
-			<advantage_container version="2" open="yes">
+			<advantage_container version="2" open="no">
 				<name>Class Advantages</name>
 				<advantage version="2">
 					<name>Magery</name>
@@ -95,43 +95,43 @@
 					<modifier version="1" enabled="no">
 						<name>Dance</name>
 						<cost type="percentage">-40</cost>
-						<affects>levels_only</affects>
+						<affects>levels only</affects>
 					</modifier>
 					<modifier version="1" enabled="no">
 						<name>Dark-Aspected</name>
 						<cost type="percentage">-50</cost>
-						<affects>levels_only</affects>
+						<affects>levels only</affects>
 					</modifier>
 					<modifier version="1" enabled="no">
 						<name>Day-Aspected</name>
 						<cost type="percentage">-40</cost>
-						<affects>levels_only</affects>
+						<affects>levels only</affects>
 					</modifier>
 					<modifier version="1" enabled="no">
 						<name>Musical</name>
 						<cost type="percentage">-50</cost>
-						<affects>levels_only</affects>
+						<affects>levels only</affects>
 					</modifier>
 					<modifier version="1" enabled="no">
 						<name>Night-Aspected</name>
 						<cost type="percentage">-40</cost>
-						<affects>levels_only</affects>
+						<affects>levels only</affects>
 					</modifier>
 					<modifier version="1" enabled="no">
 						<name>One College</name>
 						<cost type="percentage">-40</cost>
-						<affects>levels_only</affects>
+						<affects>levels only</affects>
 						<notes>@College@</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
 						<name>Solitary</name>
 						<cost type="percentage">-40</cost>
-						<affects>levels_only</affects>
+						<affects>levels only</affects>
 					</modifier>
 					<modifier version="1" enabled="no">
 						<name>Song</name>
 						<cost type="percentage">-40</cost>
-						<affects>levels_only</affects>
+						<affects>levels only</affects>
 					</modifier>
 					<reference>B66</reference>
 					<categories>
@@ -146,7 +146,7 @@
 						<amount per_level="yes">1</amount>
 					</skill_bonus>
 				</advantage>
-				<advantage_container version="2" open="yes">
+				<advantage_container version="2" open="no">
 					<name>30 points from</name>
 					<modifier version="1">
 						<name>Modifier</name>
@@ -482,9 +482,9 @@
 					</advantage>
 				</advantage_container>
 			</advantage_container>
-			<advantage_container version="2" open="yes">
+			<advantage_container version="2" open="no">
 				<name>Class Disadvantages</name>
-				<advantage_container version="2" open="yes">
+				<advantage_container version="2" open="no">
 					<name>-15 Points from</name>
 					<advantage version="2">
 						<name>Weirdness Magnet</name>
@@ -565,7 +565,7 @@
 							<amount>-2</amount>
 						</skill_bonus>
 						<prereq_list all="yes">
-							<attribute_prereq has="yes" which="ht" compare="at_most">14</attribute_prereq>
+							<attribute_prereq has="yes" which="ht" compare="at most">14</attribute_prereq>
 						</prereq_list>
 					</advantage>
 					<advantage version="2">
@@ -608,7 +608,7 @@
 						</categories>
 					</advantage>
 				</advantage_container>
-				<advantage_container version="2" open="yes">
+				<advantage_container version="2" open="no">
 					<name>-20 Points from</name>
 					<advantage version="2">
 						<name>The previous disadvantages</name>
@@ -720,7 +720,7 @@
 						<name>Loner</name>
 						<type>Mental</type>
 						<base_points>-5</base_points>
-						<cr adj="reaction_penalty">12</cr>
+						<cr adj="reaction penalty">12</cr>
 						<reference>B142</reference>
 						<categories>
 							<category>Disadvantage</category>
@@ -735,7 +735,7 @@
 							<category>Disadvantage</category>
 						</categories>
 						<prereq_list all="yes">
-							<attribute_prereq has="yes" which="dx" compare="at_most">13</attribute_prereq>
+							<attribute_prereq has="yes" which="dx" compare="at most">13</attribute_prereq>
 						</prereq_list>
 					</advantage>
 					<advantage version="2">
@@ -747,7 +747,7 @@
 							<category>Disadvantage</category>
 						</categories>
 						<prereq_list all="yes">
-							<attribute_prereq has="yes" which="dx" compare="at_most">13</attribute_prereq>
+							<attribute_prereq has="yes" which="dx" compare="at most">13</attribute_prereq>
 						</prereq_list>
 					</advantage>
 					<advantage version="2">
@@ -767,7 +767,7 @@
 						<name>Cowardice</name>
 						<type>Mental</type>
 						<base_points>-10</base_points>
-						<cr adj="fright_check_penalty">12</cr>
+						<cr adj="fright check penalty">12</cr>
 						<reference>B129</reference>
 						<categories>
 							<category>Disadvantage</category>
@@ -822,7 +822,7 @@
 	<skill_list>
 		<skill_container version="2" open="yes">
 			<name>Wizard</name>
-			<skill_container version="2" open="yes">
+			<skill_container version="2" open="no">
 				<name>Primary Skills</name>
 				<skill version="2">
 					<name>Alchemy</name>
@@ -835,7 +835,7 @@
 						<category>Occult/Magical</category>
 					</categories>
 				</skill>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>One of</name>
 					<skill version="2">
 						<name>Hidden Lore</name>
@@ -896,7 +896,7 @@
 					</default>
 				</skill>
 			</skill_container>
-			<skill_container version="2" open="yes">
+			<skill_container version="2" open="no">
 				<name>Secondary Skills</name>
 				<skill version="2">
 					<name>Hazardous Materials</name>
@@ -985,7 +985,7 @@
 						<modifier>-5</modifier>
 					</default>
 				</skill>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>One of</name>
 					<skill version="2">
 						<name>Staff</name>
@@ -1070,7 +1070,7 @@
 						</skill>
 					</skill_container>
 				</skill_container>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>One of</name>
 					<skill version="2">
 						<name>Innate Attack</name>
@@ -1148,9 +1148,9 @@
 					</skill>
 				</skill_container>
 			</skill_container>
-			<skill_container version="2" open="yes">
+			<skill_container version="2" open="no">
 				<name>Background Skills</name>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>Nine of</name>
 					<skill version="2">
 						<name>Fast-Draw</name>
@@ -1439,7 +1439,7 @@
 			<name>Wizard</name>
 			<spell_container version="2" open="yes">
 				<name>One of</name>
-				<spell_container version="2" open="yes">
+				<spell_container version="2" open="no">
 					<name>Illusionist</name>
 					<spell version="2">
 						<name>Apportation</name>
@@ -1458,12 +1458,12 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (movement)</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 							</prereq_list>
 						</prereq_list>
@@ -1666,7 +1666,7 @@
 							<category>Mind Control</category>
 						</categories>
 						<prereq_list all="yes">
-							<attribute_prereq has="yes" which="iq" compare="at_least">12</attribute_prereq>
+							<attribute_prereq has="yes" which="iq" compare="at least">12</attribute_prereq>
 						</prereq_list>
 					</spell>
 					<spell version="2">
@@ -1820,7 +1820,7 @@
 						<prereq_list all="yes">
 							<spell_prereq has="yes">
 								<college compare="is">light</college>
-								<quantity compare="at_least">6</quantity>
+								<quantity compare="at least">6</quantity>
 							</spell_prereq>
 							<spell_prereq has="yes">
 								<name compare="is">blur</name>
@@ -1877,7 +1877,7 @@
 							<spell_prereq has="yes">
 								<name compare="is">daze</name>
 							</spell_prereq>
-							<attribute_prereq has="yes" which="iq" compare="at_least">13</attribute_prereq>
+							<attribute_prereq has="yes" which="iq" compare="at least">13</attribute_prereq>
 						</prereq_list>
 					</spell>
 					<spell version="2">
@@ -1920,12 +1920,12 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (illusion &amp; creation)</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 							</prereq_list>
 						</prereq_list>
@@ -1948,12 +1948,12 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (illusion &amp; creation)</notes>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
@@ -2004,7 +2004,7 @@
 								<name compare="starts with">blind</name>
 								<notes compare="is anything"></notes>
 							</advantage_prereq>
-							<attribute_prereq has="yes" which="iq" compare="at_least">11</attribute_prereq>
+							<attribute_prereq has="yes" which="iq" compare="at least">11</attribute_prereq>
 						</prereq_list>
 					</spell>
 					<spell version="2">
@@ -2060,7 +2060,7 @@
 						</prereq_list>
 					</spell>
 				</spell_container>
-				<spell_container version="2" open="yes">
+				<spell_container version="2" open="no">
 					<name>Necromancer</name>
 					<spell version="2">
 						<name>Agonize</name>
@@ -2080,12 +2080,12 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (body control)</notes>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
@@ -2130,17 +2130,17 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (body control)</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
 								<college compare="contains">body control</college>
-								<quantity compare="at_least">4</quantity>
+								<quantity compare="at least">4</quantity>
 							</spell_prereq>
 							<spell_prereq has="yes">
 								<name compare="is">spasm</name>
@@ -2334,12 +2334,12 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (healing)</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 							</prereq_list>
 							<advantage_prereq has="yes">
@@ -2423,17 +2423,17 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (body control)</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
 								<college compare="contains">body control</college>
-								<quantity compare="at_least">4</quantity>
+								<quantity compare="at least">4</quantity>
 							</spell_prereq>
 							<spell_prereq has="yes">
 								<name compare="is">clumsiness</name>
@@ -2458,12 +2458,12 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (necromancy)</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
@@ -2517,12 +2517,12 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (necromancy)</notes>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
@@ -2551,12 +2551,12 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (body control)</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
@@ -2603,7 +2603,7 @@
 						<prereq_list all="yes">
 							<spell_prereq has="yes">
 								<college compare="contains">necromancy</college>
-								<quantity compare="at_least">4</quantity>
+								<quantity compare="at least">4</quantity>
 							</spell_prereq>
 						</prereq_list>
 					</spell>
@@ -2704,12 +2704,12 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (necromancy)</notes>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 								</advantage_prereq>
 							</prereq_list>
 						</prereq_list>
@@ -2771,12 +2771,12 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (body control)</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
@@ -2826,10 +2826,10 @@
 						</prereq_list>
 					</spell>
 				</spell_container>
-				<spell_container version="2" open="yes">
+				<spell_container version="2" open="no">
 					<name>Choose 30 Spells</name>
 				</spell_container>
-				<spell_container version="2" open="yes">
+				<spell_container version="2" open="no">
 					<name>Artillery Mage</name>
 					<spell version="2" very_hard="yes">
 						<name>Breathe Fire</name>
@@ -2865,12 +2865,12 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (fire)</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
@@ -2924,17 +2924,17 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (fire)</notes>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
 								<college compare="contains">fire</college>
-								<quantity compare="at_least">5</quantity>
+								<quantity compare="at least">5</quantity>
 							</spell_prereq>
 							<spell_prereq has="yes">
 								<name compare="is">heat</name>
@@ -3047,12 +3047,12 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (fire)</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
@@ -3174,12 +3174,12 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (fire)</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
@@ -3266,12 +3266,12 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (fire)</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
@@ -3321,12 +3321,12 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (fire)</notes>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
@@ -3404,17 +3404,17 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (weather)</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
 								<college compare="contains">air</college>
-								<quantity compare="at_least">6</quantity>
+								<quantity compare="at least">6</quantity>
 							</spell_prereq>
 						</prereq_list>
 					</spell>
@@ -3456,12 +3456,12 @@
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="does not contain">one college</notes>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 								</advantage_prereq>
 								<advantage_prereq has="yes">
 									<name compare="is">magery</name>
 									<notes compare="contains">one college (fire)</notes>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
@@ -3678,4 +3678,409 @@
 			</spell_container>
 		</spell_container>
 	</spell_list>
+	<equipment_list>
+		<equipment_container version="3" open="no">
+			<description>Fighting Wizard</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>DF13:28</reference>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Boots</description>
+				<tech_level>2</tech_level>
+				<legality_class>-</legality_class>
+				<value>80</value>
+				<weight>3 lb</weight>
+				<reference>B284</reference>
+				<categories>
+					<category>Footwear</category>
+				</categories>
+				<dr_bonus>
+					<location>feet</location>
+					<amount>2</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Clothing, Ordinary, Freeman (Status 0)</description>
+				<tech_level>0</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<weight>2 lb</weight>
+				<reference>LT98</reference>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Heavy Leather Sleeves</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>2 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Limb Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>arms</location>
+					<amount>2</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Leather Armor</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>100</value>
+				<weight>10 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Body Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>torso</location>
+					<amount>2</amount>
+				</dr_bonus>
+				<dr_bonus>
+					<location>groin</location>
+					<amount>2</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Leather Cap</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>32</value>
+				<reference>B284</reference>
+				<categories>
+					<category>Headgear</category>
+				</categories>
+				<dr_bonus>
+					<location>skull</location>
+					<amount>1</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Leather Pants</description>
+				<tech_level>1</tech_level>
+				<legality_class>-</legality_class>
+				<value>40</value>
+				<weight>3 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Limb Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>groin</location>
+					<amount>1</amount>
+				</dr_bonus>
+				<dr_bonus>
+					<location>legs</location>
+					<amount>1</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Light Buckler</description>
+				<tech_level>-</tech_level>
+				<legality_class>4</legality_class>
+				<value>25</value>
+				<weight>2 lb</weight>
+				<reference>B287</reference>
+				<melee_weapon>
+					<damage>thr cr</damage>
+					<strength>0</strength>
+					<reach>1</reach>
+					<parry>No</parry>
+					<block>+0</block>
+					<default>
+						<type>DX</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<specialization>Shield</specialization>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<specialization>Force Shield</specialization>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<specialization>Buckler</specialization>
+						<modifier>0</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Shield</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dodge</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>parry</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>block</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Paut</description>
+				<legality_class>4</legality_class>
+				<value>135</value>
+				<weight>0.5 lb</weight>
+				<reference>DF1:29</reference>
+				<notes>Potion. 4 FP (Magic).</notes>
+				<categories>
+					<category>Concoctions</category>
+					<category>Concoctions:Potions</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Smallsword</description>
+				<tech_level>4</tech_level>
+				<legality_class>4</legality_class>
+				<value>400</value>
+				<weight>1.5 lb</weight>
+				<reference>LT61</reference>
+				<melee_weapon>
+					<damage>thr+1 imp</damage>
+					<strength>5</strength>
+					<usage>Thrust</usage>
+					<reach>1</reach>
+					<parry>0F</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Main-Gauche</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Rapier</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>-4</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="no">
+			<description>Scholarly Wizard</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>DF13:28</reference>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Cloth Armor</description>
+				<tech_level>1</tech_level>
+				<legality_class>-</legality_class>
+				<value>30</value>
+				<weight>6 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Body Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>groin</location>
+					<amount>1</amount>
+				</dr_bonus>
+				<dr_bonus>
+					<location>torso</location>
+					<amount>1</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Clothing, Ordinary, Freeman (Status 0)</description>
+				<tech_level>0</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<weight>2 lb</weight>
+				<reference>LT98</reference>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>2</quantity>
+				<description>Paut</description>
+				<legality_class>4</legality_class>
+				<value>135</value>
+				<weight>0.5 lb</weight>
+				<reference>DF1:29</reference>
+				<notes>Potion. 4 FP (Magic).</notes>
+				<categories>
+					<category>Concoctions</category>
+					<category>Concoctions:Potions</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Quarterstaff, Fine, Decorated, Enchanted</description>
+				<tech_level>0</tech_level>
+				<legality_class>4</legality_class>
+				<value>530</value>
+				<weight>4 lb</weight>
+				<reference>LT61</reference>
+				<melee_weapon>
+					<damage>sw+2 cr</damage>
+					<strength>7&#8224;</strength>
+					<usage>Swung</usage>
+					<reach>1,2</reach>
+					<parry>+2</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Staff</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Polearm</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Spear</name>
+						<modifier>-2</modifier>
+					</default>
+				</melee_weapon>
+				<melee_weapon>
+					<damage>thr+2 cr</damage>
+					<strength>7&#8224;</strength>
+					<usage>Thrust</usage>
+					<reach>1,2</reach>
+					<parry>+2</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Staff</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Polearm</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Spear</name>
+						<modifier>-2</modifier>
+					</default>
+				</melee_weapon>
+				<melee_weapon>
+					<damage>sw+2 cr</damage>
+					<strength>9&#8224;</strength>
+					<usage>Sword Swing</usage>
+					<reach>1,2</reach>
+					<parry>0</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Two-Handed Sword</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Force Sword</name>
+						<modifier>-4</modifier>
+					</default>
+				</melee_weapon>
+				<melee_weapon>
+					<damage>thr+1 cr</damage>
+					<strength>9&#8224;</strength>
+					<usage>Sword Thrust</usage>
+					<reach>2</reach>
+					<parry>0</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Two-Handed Sword</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Force Sword</name>
+						<modifier>-4</modifier>
+					</default>
+				</melee_weapon>
+				<notes>Provides 6FP as a power item and has Staff spell</notes>
+				<categories>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Scribe's Kit</description>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>2 lb</weight>
+				<reference>DF1:24</reference>
+				<categories>
+					<category>Writing Equipment</category>
+				</categories>
+			</equipment>
+		</equipment_container>
+	</equipment_list>
 </template>

@@ -4,7 +4,7 @@
 		<advantage_container version="2" open="yes" type="race">
 			<name>Swashbuckler</name>
 			<reference>DF1:11</reference>
-			<advantage_container version="2" open="yes">
+			<advantage_container version="2" open="no">
 				<name>Attributes</name>
 				<advantage version="2">
 					<name>Increased Strength</name>
@@ -108,7 +108,7 @@
 						<amount>1</amount>
 					</attribute_bonus>
 					<attribute_bonus>
-						<attribute>fright_check</attribute>
+						<attribute>fright check</attribute>
 						<amount>2</amount>
 					</attribute_bonus>
 				</advantage>
@@ -215,7 +215,7 @@
 						<category>Perk</category>
 					</categories>
 				</advantage>
-				<advantage_container version="2" open="yes" type="race">
+				<advantage_container version="2" open="no" type="race">
 					<name>60 Points chosen from:</name>
 					<advantage version="2">
 						<name>Increased Strength</name>
@@ -620,7 +620,7 @@
 							<category>Advantage</category>
 						</categories>
 						<attribute_bonus>
-							<attribute limitation="striking_only">st</attribute>
+							<attribute limitation="striking only">st</attribute>
 							<amount per_level="yes">1</amount>
 						</attribute_bonus>
 					</advantage>
@@ -631,7 +631,7 @@
 			</advantage_container>
 			<advantage_container version="2" open="yes">
 				<name>Class Disadvantages</name>
-				<advantage_container version="2" open="yes" type="race">
+				<advantage_container version="2" open="no" type="race">
 					<name>-15 Points chosen from:</name>
 					<advantage version="2">
 						<name>Code of Honor (Gentleman's)</name>
@@ -777,7 +777,7 @@
 						</categories>
 					</advantage>
 				</advantage_container>
-				<advantage_container version="2" open="yes" type="race">
+				<advantage_container version="2" open="no" type="race">
 					<name>-15 Points Chosen From:</name>
 					<advantage version="2">
 						<name>Impulsiveness</name>
@@ -820,7 +820,7 @@
 						</categories>
 					</advantage>
 				</advantage_container>
-				<advantage_container version="2" open="yes" type="race">
+				<advantage_container version="2" open="no" type="race">
 					<name>-20 Points Chosen From:</name>
 					<advantage version="2">
 						<name>Chummy</name>
@@ -856,7 +856,7 @@
 						<name>Compulsive Spending</name>
 						<type>Mental</type>
 						<base_points>-5</base_points>
-						<cr adj="major_cost_of_living_increase">12</cr>
+						<cr adj="major cost of living increase">12</cr>
 						<reference>B129</reference>
 						<categories>
 							<category>Disadvantage</category>
@@ -969,7 +969,7 @@
 	<skill_list>
 		<skill_container version="2" open="yes">
 			<name>Swashbuckler</name>
-			<skill_container version="2" open="yes">
+			<skill_container version="2" open="no">
 				<name>Primary Skills</name>
 				<skill version="2">
 					<name>Acrobatics</name>
@@ -1015,7 +1015,7 @@
 						<category>Athletic</category>
 					</categories>
 				</skill>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>Choose One Melee Package</name>
 					<skill_container version="2" open="yes">
 						<name>Melee 3</name>
@@ -1795,7 +1795,7 @@
 						</skill_container>
 					</skill_container>
 				</skill_container>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>Chose one</name>
 					<skill version="2">
 						<name>Throwing</name>
@@ -1834,9 +1834,9 @@
 					</skill>
 				</skill_container>
 			</skill_container>
-			<skill_container version="2" open="yes">
+			<skill_container version="2" open="no">
 				<name>Secondary Skills</name>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>One of</name>
 					<skill version="2">
 						<name>Brawling</name>
@@ -1850,7 +1850,7 @@
 						<weapon_bonus>
 							<name compare="is">Brawling</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">2</level>
+							<level compare="at least">2</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 					</skill>
@@ -1866,13 +1866,13 @@
 						<weapon_bonus>
 							<name compare="is">Boxing</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">1</level>
+							<level compare="at least">1</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 						<weapon_bonus>
 							<name compare="is">Boxing</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">2</level>
+							<level compare="at least">2</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 					</skill>
@@ -1888,7 +1888,7 @@
 					</categories>
 				</skill>
 			</skill_container>
-			<skill_container version="2" open="yes">
+			<skill_container version="2" open="no">
 				<name>Background Skills</name>
 				<skill version="2">
 					<name>Carousing</name>
@@ -1924,7 +1924,7 @@
 						<modifier>-5</modifier>
 					</default>
 				</skill>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>Choose Seven</name>
 					<skill version="2">
 						<name>Climbing</name>
@@ -2146,7 +2146,7 @@
 						</default>
 					</skill>
 				</skill_container>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>One of</name>
 					<skill version="2">
 						<name>Savoir-Faire</name>
@@ -2189,4 +2189,907 @@
 			</skill_container>
 		</skill_container>
 	</skill_list>
+	<equipment_list>
+		<equipment_container version="3" open="no">
+			<description>Bladed Ruffian</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>DF13:26</reference>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Boots</description>
+				<tech_level>2</tech_level>
+				<legality_class>-</legality_class>
+				<value>80</value>
+				<weight>3 lb</weight>
+				<reference>B284</reference>
+				<categories>
+					<category>Footwear</category>
+				</categories>
+				<dr_bonus>
+					<location>feet</location>
+					<amount>2</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Clothing, Ordinary, Freeman (Status 0)</description>
+				<tech_level>0</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<weight>2 lb</weight>
+				<reference>LT98</reference>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Hat, Wide</description>
+				<legality_class>4</legality_class>
+				<value>18</value>
+				<weight>0.3 lb</weight>
+				<reference>DF8:17</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Leather Jacket</description>
+				<tech_level>1</tech_level>
+				<legality_class>-</legality_class>
+				<value>50</value>
+				<weight>4 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Body Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>torso</location>
+					<amount>1</amount>
+				</dr_bonus>
+				<dr_bonus>
+					<location>arms</location>
+					<amount>1</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Leather Pants</description>
+				<tech_level>1</tech_level>
+				<legality_class>-</legality_class>
+				<value>40</value>
+				<weight>3 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Limb Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>groin</location>
+					<amount>1</amount>
+				</dr_bonus>
+				<dr_bonus>
+					<location>legs</location>
+					<amount>1</amount>
+				</dr_bonus>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="no">
+			<description>Gentleman Adventurer</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>DF13:26</reference>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Boots, fine</description>
+				<tech_level>2</tech_level>
+				<legality_class>-</legality_class>
+				<value>240</value>
+				<weight>3 lb</weight>
+				<reference>B284</reference>
+				<categories>
+					<category>Footwear</category>
+				</categories>
+				<dr_bonus>
+					<location>feet</location>
+					<amount>2</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Cloth Armor</description>
+				<tech_level>1</tech_level>
+				<legality_class>-</legality_class>
+				<value>30</value>
+				<weight>6 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Body Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>groin</location>
+					<amount>1</amount>
+				</dr_bonus>
+				<dr_bonus>
+					<location>torso</location>
+					<amount>1</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Clothing, Ordinary, Freeman (Status 0), of fine material</description>
+				<tech_level>0</tech_level>
+				<legality_class>4</legality_class>
+				<value>360</value>
+				<weight>2 lb</weight>
+				<reference>LT98</reference>
+				<notes>+2 to Merchant skill for Influence rolls</notes>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Hat, Wide, of fine material</description>
+				<legality_class>4</legality_class>
+				<value>54</value>
+				<weight>0.3 lb</weight>
+				<reference>DF8:17</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Heavy Leather Leggings</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>60</value>
+				<weight>4 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Limb Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>legs</location>
+					<amount>2</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Heavy Leather Sleeves</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>2 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Limb Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>arms</location>
+					<amount>2</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Steel Breastplate</description>
+				<tech_level>3</tech_level>
+				<legality_class>3</legality_class>
+				<value>500</value>
+				<weight>18 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Body Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>torso</location>
+					<amount>5</amount>
+				</dr_bonus>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="no">
+			<description>Rapier-and-Buckler Swashbuckler</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>DF13:27</reference>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Light Buckler</description>
+				<tech_level>-</tech_level>
+				<legality_class>4</legality_class>
+				<value>25</value>
+				<weight>2 lb</weight>
+				<reference>B287</reference>
+				<melee_weapon>
+					<damage>thr cr</damage>
+					<strength>0</strength>
+					<reach>1</reach>
+					<parry>No</parry>
+					<block>+0</block>
+					<default>
+						<type>DX</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<specialization>Shield</specialization>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<specialization>Force Shield</specialization>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<specialization>Buckler</specialization>
+						<modifier>0</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Shield</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dodge</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>parry</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>block</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Rapier</description>
+				<tech_level>4</tech_level>
+				<legality_class>4</legality_class>
+				<value>500</value>
+				<weight>2.75 lb</weight>
+				<reference>LT61</reference>
+				<melee_weapon>
+					<damage>thr+1 imp</damage>
+					<strength>9</strength>
+					<usage>Thrust</usage>
+					<reach>1,2</reach>
+					<parry>0F</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Rapier</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Main-Gauche</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>-3</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="no">
+			<description>Shortsword-and-Maine-Gauche Swashbuckler</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>DF13:27</reference>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Main-Gauche</description>
+				<tech_level>4</tech_level>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>1.25 lb</weight>
+				<reference>LT59</reference>
+				<melee_weapon>
+					<damage>sw-3 cut</damage>
+					<strength>6</strength>
+					<usage>Swung</usage>
+					<reach>C,1</reach>
+					<parry>0</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Knife</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Force Sword</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Main-Gauche</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Jitte/Sai</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Rapier</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>-3</modifier>
+					</default>
+				</melee_weapon>
+				<melee_weapon>
+					<damage>thr imp</damage>
+					<strength>6</strength>
+					<usage>Thrust</usage>
+					<reach>C</reach>
+					<parry>0</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Knife</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Force Sword</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Main-Gauche</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Jitte/Sai</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Rapier</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>-3</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Melee Weapon</category>
+				</categories>
+				<dr_bonus>
+					<location>hands</location>
+					<amount>4</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Shortsword</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>400</value>
+				<weight>2 lb</weight>
+				<reference>LT61</reference>
+				<melee_weapon>
+					<damage>sw cut</damage>
+					<strength>8</strength>
+					<usage>Swung</usage>
+					<reach>1</reach>
+					<parry>0</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Force Sword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Jitte/Sai</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Knife</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Tonfa</name>
+						<modifier>-3</modifier>
+					</default>
+				</melee_weapon>
+				<melee_weapon>
+					<damage>thr+1 imp</damage>
+					<strength>8</strength>
+					<usage>Thrust</usage>
+					<reach>1</reach>
+					<parry>0</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Force Sword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Jitte/Sai</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Knife</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Tonfa</name>
+						<modifier>-3</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="no">
+			<description>Smallsword-and-Cloak Swashbuckler</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>DF13:27</reference>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Heavy Cloak</description>
+				<tech_level>1</tech_level>
+				<legality_class>-</legality_class>
+				<value>50</value>
+				<weight>5 lb</weight>
+				<reference>B287</reference>
+				<melee_weapon>
+					<damage>-</damage>
+					<strength>-</strength>
+					<reach>-</reach>
+					<parry>No</parry>
+					<block>+0</block>
+					<default>
+						<type>Block</type>
+						<name>Cloak</name>
+						<modifier>0</modifier>
+					</default>
+				</melee_weapon>
+				<ranged_weapon>
+					<damage>Special</damage>
+					<strength>8</strength>
+					<usage>Thrown</usage>
+					<accuracy>+1</accuracy>
+					<range>2</range>
+					<rate_of_fire>1</rate_of_fire>
+					<shots>T(1)</shots>
+					<bulk>-6</bulk>
+					<default>
+						<type>Skill</type>
+						<name>Cloak</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Net</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+				</ranged_weapon>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dodge</attribute>
+					<amount>2</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>parry</attribute>
+					<amount>2</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>block</attribute>
+					<amount>2</amount>
+				</attribute_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Smallsword</description>
+				<tech_level>4</tech_level>
+				<legality_class>4</legality_class>
+				<value>400</value>
+				<weight>1.5 lb</weight>
+				<reference>LT61</reference>
+				<melee_weapon>
+					<damage>thr+1 imp</damage>
+					<strength>5</strength>
+					<usage>Thrust</usage>
+					<reach>1</reach>
+					<parry>0F</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Main-Gauche</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Rapier</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>-4</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="no">
+			<description>Saber</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>DF13:27</reference>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Large Knife</description>
+				<tech_level>0</tech_level>
+				<legality_class>4</legality_class>
+				<value>40</value>
+				<weight>1 lb</weight>
+				<reference>LT58</reference>
+				<melee_weapon>
+					<damage>sw-2 cut</damage>
+					<strength>6</strength>
+					<usage>Swung</usage>
+					<reach>C,1</reach>
+					<parry>-1</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Force Sword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Jitte/Sai</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Knife</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Tonfa</name>
+						<modifier>-3</modifier>
+					</default>
+				</melee_weapon>
+				<melee_weapon>
+					<damage>thr imp</damage>
+					<strength>6</strength>
+					<usage>Thrust</usage>
+					<reach>C</reach>
+					<parry>-1</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Force Sword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Jitte/Sai</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Knife</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Tonfa</name>
+						<modifier>-3</modifier>
+					</default>
+				</melee_weapon>
+				<ranged_weapon>
+					<damage>thr imp</damage>
+					<strength>6</strength>
+					<usage>Thrown</usage>
+					<accuracy>0</accuracy>
+					<range>x0.8/x1.5</range>
+					<rate_of_fire>1</rate_of_fire>
+					<shots>T(1)</shots>
+					<bulk>-2</bulk>
+					<default>
+						<type>DX</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Thrown Weapon</name>
+						<specialization>Knife</specialization>
+						<modifier>0</modifier>
+					</default>
+				</ranged_weapon>
+				<categories>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Saber</description>
+				<tech_level>4</tech_level>
+				<legality_class>4</legality_class>
+				<value>700</value>
+				<weight>2 lb</weight>
+				<reference>LT61</reference>
+				<melee_weapon>
+					<damage>sw-1 cut</damage>
+					<strength>8</strength>
+					<usage>Swung</usage>
+					<reach>1</reach>
+					<parry>0F</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Main-Gauche</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Rapier</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>-3</modifier>
+					</default>
+				</melee_weapon>
+				<melee_weapon>
+					<damage>thr+1 imp</damage>
+					<strength>8</strength>
+					<usage>Thrust</usage>
+					<reach>1</reach>
+					<parry>0F</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Main-Gauche</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<modifier>0</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+		</equipment_container>
+	</equipment_list>
+	<notes>For the Swashbuckler loadout, choose Bladed Ruffian or Gentleman Adventurer, then add a Weapon lens.  Several loadout combinations require points in Signature Gear or traded for cash.  See DF13:26 for more information.  </notes>
 </template>

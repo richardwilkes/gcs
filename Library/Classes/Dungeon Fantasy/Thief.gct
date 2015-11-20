@@ -3,7 +3,7 @@
 	<advantage_list>
 		<advantage_container version="2" open="yes">
 			<name>Thief</name>
-			<advantage_container version="2" open="yes">
+			<advantage_container version="2" open="no">
 				<name>Attributes</name>
 				<advantage version="2">
 					<name>Increased Dexterity</name>
@@ -90,7 +90,7 @@
 					</attribute_bonus>
 				</advantage>
 			</advantage_container>
-			<advantage_container version="2" open="yes">
+			<advantage_container version="2" open="no">
 				<name>Secondary Characteristic</name>
 				<advantage version="2">
 					<name>Increased Perception</name>
@@ -138,9 +138,9 @@
 					</attribute_bonus>
 				</advantage>
 			</advantage_container>
-			<advantage_container version="2" open="yes">
+			<advantage_container version="2" open="no">
 				<name>Class Disadvantages</name>
-				<advantage_container version="2" open="yes">
+				<advantage_container version="2" open="no">
 					<name>One of</name>
 					<advantage version="2">
 						<name>Greed</name>
@@ -173,7 +173,7 @@
 						</categories>
 					</advantage>
 				</advantage_container>
-				<advantage_container version="2" open="yes">
+				<advantage_container version="2" open="no">
 					<name>Another on of</name>
 					<advantage version="2">
 						<name>Callous</name>
@@ -214,7 +214,7 @@
 						</categories>
 					</advantage>
 				</advantage_container>
-				<advantage_container version="2" open="yes">
+				<advantage_container version="2" open="no">
 					<name>-20 Points from</name>
 					<advantage version="2">
 						<name>Bad Temper</name>
@@ -270,7 +270,7 @@
 						<name>Compulsive Spending</name>
 						<type>Mental</type>
 						<base_points>-5</base_points>
-						<cr adj="major_cost_of_living_increase">12</cr>
+						<cr adj="major cost of living increase">12</cr>
 						<reference>B129</reference>
 						<categories>
 							<category>Disadvantage</category>
@@ -286,7 +286,7 @@
 						<name>Cowardice</name>
 						<type>Mental</type>
 						<base_points>-10</base_points>
-						<cr adj="fright_check_penalty">12</cr>
+						<cr adj="fright check penalty">12</cr>
 						<reference>B129</reference>
 						<categories>
 							<category>Disadvantage</category>
@@ -315,7 +315,7 @@
 						<name>Loner</name>
 						<type>Mental</type>
 						<base_points>-5</base_points>
-						<cr adj="reaction_penalty">12</cr>
+						<cr adj="reaction penalty">12</cr>
 						<reference>B142</reference>
 						<categories>
 							<category>Disadvantage</category>
@@ -414,7 +414,7 @@
 							<amount>-2</amount>
 						</skill_bonus>
 						<prereq_list all="yes">
-							<attribute_prereq has="yes" which="ht" compare="at_most">14</attribute_prereq>
+							<attribute_prereq has="yes" which="ht" compare="at most">14</attribute_prereq>
 						</prereq_list>
 					</advantage>
 					<advantage version="2">
@@ -429,7 +429,7 @@
 					</advantage>
 				</advantage_container>
 			</advantage_container>
-			<advantage_container version="2" open="yes">
+			<advantage_container version="2" open="no">
 				<name>Class Advantages</name>
 				<advantage version="2">
 					<name>Flexibility</name>
@@ -544,7 +544,7 @@
 						<amount>1</amount>
 					</skill_bonus>
 				</advantage>
-				<advantage_container version="2" open="yes">
+				<advantage_container version="2" open="no">
 					<name>Choose 30 points from</name>
 					<advantage version="2">
 						<name>Increased Dexterity</name>
@@ -683,7 +683,7 @@
 							<amount>1</amount>
 						</attribute_bonus>
 						<attribute_bonus>
-							<attribute>fright_check</attribute>
+							<attribute>fright check</attribute>
 							<amount>2</amount>
 						</attribute_bonus>
 					</advantage>
@@ -966,7 +966,7 @@
 							<category>Advantage</category>
 						</categories>
 						<attribute_bonus>
-							<attribute limitation="striking_only">st</attribute>
+							<attribute limitation="striking only">st</attribute>
 							<amount per_level="yes">1</amount>
 						</attribute_bonus>
 					</advantage>
@@ -997,7 +997,7 @@
 	<skill_list>
 		<skill_container version="2" open="yes">
 			<name>Thief</name>
-			<skill_container version="2" open="yes">
+			<skill_container version="2" open="no">
 				<name>Primary Skills</name>
 				<skill version="2">
 					<name>Climbing</name>
@@ -1144,7 +1144,7 @@
 					</default>
 				</skill>
 			</skill_container>
-			<skill_container version="2" open="yes">
+			<skill_container version="2" open="no">
 				<name>Secondary Skills</name>
 				<skill version="2">
 					<name>Acrobatics</name>
@@ -1293,7 +1293,7 @@
 						<modifier>-5</modifier>
 					</default>
 				</skill>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>One ranged</name>
 					<skill version="2">
 						<name>Bow</name>
@@ -1373,7 +1373,7 @@
 						</default>
 					</skill>
 				</skill_container>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>One defense or raise melee by 1 point</name>
 					<skill version="2">
 						<name>Main-Gauche</name>
@@ -1460,7 +1460,7 @@
 						</default>
 					</skill>
 				</skill_container>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>One melee</name>
 					<skill version="2">
 						<name>Rapier</name>
@@ -1620,7 +1620,7 @@
 					</skill>
 				</skill_container>
 			</skill_container>
-			<skill_container version="2" open="yes">
+			<skill_container version="2" open="no">
 				<name>Background Skills</name>
 				<skill version="2">
 					<name>Brawling</name>
@@ -1634,7 +1634,7 @@
 					<weapon_bonus>
 						<name compare="is">Brawling</name>
 						<specialization compare="is anything"></specialization>
-						<level compare="at_least">2</level>
+						<level compare="at least">2</level>
 						<amount per_level="yes">1</amount>
 					</weapon_bonus>
 				</skill>
@@ -1672,7 +1672,7 @@
 						<modifier>-5</modifier>
 					</default>
 				</skill>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>7 points spent on previous or</name>
 					<skill version="2">
 						<name>Cartography</name>
@@ -2036,4 +2036,1058 @@
 			</skill_container>
 		</skill_container>
 	</skill_list>
+	<equipment_list>
+		<equipment_container version="3" open="no">
+			<description>Basic Thief</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>DF13:27</reference>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Clothing, Ordinary, Freeman (Status 0)</description>
+				<tech_level>0</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<weight>2 lb</weight>
+				<reference>LT98</reference>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Heavy Leather Leggings</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>60</value>
+				<weight>4 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Limb Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>legs</location>
+					<amount>2</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Heavy Leather Sleeves</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>2 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Limb Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>arms</location>
+					<amount>2</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Leather Armor</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>100</value>
+				<weight>10 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Body Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>torso</location>
+					<amount>2</amount>
+				</dr_bonus>
+				<dr_bonus>
+					<location>groin</location>
+					<amount>2</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Light Buckler</description>
+				<tech_level>-</tech_level>
+				<legality_class>4</legality_class>
+				<value>25</value>
+				<weight>2 lb</weight>
+				<reference>B287</reference>
+				<melee_weapon>
+					<damage>thr cr</damage>
+					<strength>0</strength>
+					<reach>1</reach>
+					<parry>No</parry>
+					<block>+0</block>
+					<default>
+						<type>DX</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<specialization>Shield</specialization>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<specialization>Force Shield</specialization>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<specialization>Buckler</specialization>
+						<modifier>0</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Shield</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dodge</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>parry</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>block</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Lockpicks</description>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>0.1 lb</weight>
+				<reference>DF1:25</reference>
+				<notes>Basic EQ for Lockpicking</notes>
+				<categories>
+					<category>Covert Ops and Security Gear</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>2</quantity>
+				<description>Luminous Dust</description>
+				<legality_class>4</legality_class>
+				<value>20</value>
+				<weight>0.5 lb</weight>
+				<reference>DF8:37</reference>
+				<notes>+1 to find hidden doors</notes>
+				<categories>
+					<category>Concoction</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Monster Drool</description>
+				<legality_class>4</legality_class>
+				<value>20</value>
+				<weight>0.5 lb</weight>
+				<reference>DF1:29</reference>
+				<notes>Utility. Immediate roll HT or take 2 injury.</notes>
+				<categories>
+					<category>Concoctions</category>
+					<category>Concoctions:Poisons</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Shoes</description>
+				<tech_level>1</tech_level>
+				<legality_class>-</legality_class>
+				<value>40</value>
+				<weight>2 lb</weight>
+				<reference>B284</reference>
+				<categories>
+					<category>Footwear</category>
+				</categories>
+				<dr_bonus>
+					<location>feet</location>
+					<amount>1</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Shortsword</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>400</value>
+				<weight>2 lb</weight>
+				<reference>LT61</reference>
+				<melee_weapon>
+					<damage>sw cut</damage>
+					<strength>8</strength>
+					<usage>Swung</usage>
+					<reach>1</reach>
+					<parry>0</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Force Sword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Jitte/Sai</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Knife</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Tonfa</name>
+						<modifier>-3</modifier>
+					</default>
+				</melee_weapon>
+				<melee_weapon>
+					<damage>thr+1 imp</damage>
+					<strength>8</strength>
+					<usage>Thrust</usage>
+					<reach>1</reach>
+					<parry>0</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Force Sword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Jitte/Sai</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Knife</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Tonfa</name>
+						<modifier>-3</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Spy's Horn</description>
+				<legality_class>4</legality_class>
+				<value>100</value>
+				<weight>2 lb</weight>
+				<reference>DF1:26</reference>
+				<notes>Listen through doors etc at penalty of (DR+HP)/5</notes>
+				<categories>
+					<category>Covert Ops and Security Gear</category>
+				</categories>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="no">
+			<description>Burglar</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>DF13:27</reference>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Burglar Bar</description>
+				<legality_class>4</legality_class>
+				<value>20</value>
+				<weight>2 lb</weight>
+				<reference>DF8:25</reference>
+				<notes>+1 to Traps for disarming</notes>
+				<categories>
+					<category>Accoutrements</category>
+					<category>Thief/Spy</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Clothing, Ordinary, Freeman (Status 0)</description>
+				<tech_level>0</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<weight>2 lb</weight>
+				<reference>LT98</reference>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Grapnel</description>
+				<tech_level>5</tech_level>
+				<legality_class>4</legality_class>
+				<value>20</value>
+				<weight>2 lb</weight>
+				<reference>B288</reference>
+				<notes>Supports 300 lbs; throw to STx2 yards</notes>
+				<categories>
+					<category>Camping and Survival Gear</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Light Buckler</description>
+				<tech_level>-</tech_level>
+				<legality_class>4</legality_class>
+				<value>25</value>
+				<weight>2 lb</weight>
+				<reference>B287</reference>
+				<melee_weapon>
+					<damage>thr cr</damage>
+					<strength>0</strength>
+					<reach>1</reach>
+					<parry>No</parry>
+					<block>+0</block>
+					<default>
+						<type>DX</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<specialization>Shield</specialization>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<specialization>Force Shield</specialization>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<specialization>Buckler</specialization>
+						<modifier>0</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Shield</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dodge</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>parry</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>block</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Lockpicks, Good</description>
+				<legality_class>4</legality_class>
+				<value>250</value>
+				<weight>0.5 lb</weight>
+				<reference>DF1:25</reference>
+				<notes>+1 to Lockpicking</notes>
+				<categories>
+					<category>Covert Ops and Security Gear</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>2</quantity>
+				<description>Luminous Dust</description>
+				<legality_class>4</legality_class>
+				<value>20</value>
+				<weight>0.5 lb</weight>
+				<reference>DF8:37</reference>
+				<notes>+1 to find hidden doors</notes>
+				<categories>
+					<category>Concoction</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Thieves' Mail Shirt</description>
+				<tech_level>2</tech_level>
+				<legality_class>4</legality_class>
+				<value>150</value>
+				<weight>16 lb</weight>
+				<reference>B283, DF1:27</reference>
+				<notes>Ignore weight for encumbrance purposes for Climbing and Stealth</notes>
+				<categories>
+					<category>Body Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>torso</location>
+					<amount>4</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Trap-Finder's Kit, Good</description>
+				<legality_class>4</legality_class>
+				<value>250</value>
+				<weight>2 lb</weight>
+				<reference>DF4:12</reference>
+				<notes>+1 to Traps</notes>
+				<categories>
+					<category>Tools</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Shortsword</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>400</value>
+				<weight>2 lb</weight>
+				<reference>LT61</reference>
+				<melee_weapon>
+					<damage>sw cut</damage>
+					<strength>8</strength>
+					<usage>Swung</usage>
+					<reach>1</reach>
+					<parry>0</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Force Sword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Jitte/Sai</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Knife</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Tonfa</name>
+						<modifier>-3</modifier>
+					</default>
+				</melee_weapon>
+				<melee_weapon>
+					<damage>thr+1 imp</damage>
+					<strength>8</strength>
+					<usage>Thrust</usage>
+					<reach>1</reach>
+					<parry>0</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Force Sword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Jitte/Sai</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Knife</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Tonfa</name>
+						<modifier>-3</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="no">
+			<description>Assassin</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>DF13:28</reference>
+			<equipment version="3">
+				<quantity>4</quantity>
+				<description>Anti-Toxin (@Poison@)</description>
+				<legality_class>4</legality_class>
+				<value>20</value>
+				<weight>0.5 lb</weight>
+				<reference>DF1:28</reference>
+				<notes>Herbal remedy. 1d min to take effect.</notes>
+				<categories>
+					<category>Concoctions</category>
+					<category>Concoctions:Natural Preparations</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Clothing, Ordinary, Freeman (Status 0)</description>
+				<tech_level>0</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<weight>2 lb</weight>
+				<reference>LT98</reference>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>4</quantity>
+				<description>Dagger</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>20</value>
+				<weight>0.25 lb</weight>
+				<reference>LT56</reference>
+				<melee_weapon>
+					<damage>thr-1 imp</damage>
+					<strength>5</strength>
+					<usage>Thrust</usage>
+					<reach>C</reach>
+					<parry>-1</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Force Sword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Jitte/Sai</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Knife</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Tonfa</name>
+						<modifier>-3</modifier>
+					</default>
+				</melee_weapon>
+				<ranged_weapon>
+					<damage>thr-1 imp</damage>
+					<strength>5</strength>
+					<usage>Thrown</usage>
+					<accuracy>0</accuracy>
+					<range>x0.5/x1</range>
+					<rate_of_fire>1</rate_of_fire>
+					<shots>T(1)</shots>
+					<bulk>-1</bulk>
+					<default>
+						<type>DX</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Thrown Weapon</name>
+						<specialization>Knife</specialization>
+						<modifier>0</modifier>
+					</default>
+				</ranged_weapon>
+				<categories>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Garrote</description>
+				<tech_level>0</tech_level>
+				<legality_class>4</legality_class>
+				<value>2</value>
+				<reference>LT56</reference>
+				<melee_weapon>
+					<damage>see B405</damage>
+					<usage>Garrote</usage>
+					<reach>C</reach>
+					<parry>No</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Garrote</name>
+						<modifier>0</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Heavy Cloak, @Environment@ Camouflage</description>
+				<tech_level>1</tech_level>
+				<legality_class>-</legality_class>
+				<value>150</value>
+				<weight>5 lb</weight>
+				<reference>B287, DF13:25</reference>
+				<melee_weapon>
+					<damage>-</damage>
+					<strength>-</strength>
+					<reach>-</reach>
+					<parry>No</parry>
+					<block>+0</block>
+					<default>
+						<type>Block</type>
+						<name>Cloak</name>
+						<modifier>0</modifier>
+					</default>
+				</melee_weapon>
+				<ranged_weapon>
+					<damage>Special</damage>
+					<strength>8</strength>
+					<usage>Thrown</usage>
+					<accuracy>+1</accuracy>
+					<range>2</range>
+					<rate_of_fire>1</rate_of_fire>
+					<shots>T(1)</shots>
+					<bulk>-6</bulk>
+					<default>
+						<type>Skill</type>
+						<name>Cloak</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Net</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+				</ranged_weapon>
+				<notes>+1 to Stealth vs Vision in specified environment</notes>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dodge</attribute>
+					<amount>2</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>parry</attribute>
+					<amount>2</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>block</attribute>
+					<amount>2</amount>
+				</attribute_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Heavy Leather Leggings</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>60</value>
+				<weight>4 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Limb Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>legs</location>
+					<amount>2</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Heavy Leather Sleeves</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>2 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Limb Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>arms</location>
+					<amount>2</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Leather Armor</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>100</value>
+				<weight>10 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Body Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>torso</location>
+					<amount>2</amount>
+				</dr_bonus>
+				<dr_bonus>
+					<location>groin</location>
+					<amount>2</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Lockpicks</description>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>0.1 lb</weight>
+				<reference>DF1:25</reference>
+				<notes>Basic EQ for Lockpicking</notes>
+				<categories>
+					<category>Covert Ops and Security Gear</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>2</quantity>
+				<description>Monster Drool</description>
+				<legality_class>4</legality_class>
+				<value>20</value>
+				<weight>0.5 lb</weight>
+				<reference>DF1:29</reference>
+				<notes>Utility. Immediate roll HT or take 2 injury.</notes>
+				<categories>
+					<category>Concoctions</category>
+					<category>Concoctions:Poisons</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>2</quantity>
+				<description>Nageteppo, Flash</description>
+				<legality_class>4</legality_class>
+				<value>40</value>
+				<weight>0.2 lb</weight>
+				<reference>DF1:25</reference>
+				<notes>HT aff, 10 yd radius, vision based. Blindness, HT each turn to recover.</notes>
+				<categories>
+					<category>Covert Ops and Security Gear</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>2</quantity>
+				<description>Nageteppo, Smoke</description>
+				<legality_class>4</legality_class>
+				<value>40</value>
+				<weight>0.2 lb</weight>
+				<reference>DF1:25</reference>
+				<notes>Obscure (Vision) 10, 2 yd radius.  5 sec.</notes>
+				<categories>
+					<category>Covert Ops and Security Gear</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Oozing Doom</description>
+				<legality_class>4</legality_class>
+				<value>100</value>
+				<weight>1 lb</weight>
+				<reference>DF1:29</reference>
+				<ranged_weapon>
+					<damage>2d inj, 1d on HT roll</damage>
+					<usage>Grenade</usage>
+					<accuracy>0</accuracy>
+					<range>&#215;2</range>
+					<bulk>-2</bulk>
+					<default>
+						<type>Skill</type>
+						<name>Throwing</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>DX</type>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Dropping</name>
+						<modifier>-4</modifier>
+					</default>
+				</ranged_weapon>
+				<notes>Grenade. Contact Agent. DR sec to penetrate.</notes>
+				<categories>
+					<category>Concoctions</category>
+					<category>Concoctions:Poisons</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Pistol Crossbow</description>
+				<tech_level>3</tech_level>
+				<legality_class>4</legality_class>
+				<value>150</value>
+				<weight>4 lb</weight>
+				<reference>LT72</reference>
+				<ranged_weapon>
+					<damage>thr+2 imp</damage>
+					<strength>7</strength>
+					<usage>Fire Bolt</usage>
+					<accuracy>1</accuracy>
+					<range>x15/x20</range>
+					<rate_of_fire>1</rate_of_fire>
+					<shots>1(4)</shots>
+					<bulk>-4</bulk>
+					<default>
+						<type>DX</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Crossbow</name>
+						<modifier>0</modifier>
+					</default>
+				</ranged_weapon>
+				<notes>Requires two hands to ready, but only one hand to attack.</notes>
+				<categories>
+					<category>Missile Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Shoes</description>
+				<tech_level>1</tech_level>
+				<legality_class>-</legality_class>
+				<value>40</value>
+				<weight>2 lb</weight>
+				<reference>B284</reference>
+				<categories>
+					<category>Footwear</category>
+				</categories>
+				<dr_bonus>
+					<location>feet</location>
+					<amount>1</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment_container version="3" open="yes">
+				<description>Shoulder Quiver</description>
+				<tech_level>0</tech_level>
+				<legality_class>4</legality_class>
+				<value>10</value>
+				<weight>0.5 lb</weight>
+				<reference>B289</reference>
+				<notes>Holds 12 arrows or bolts</notes>
+				<categories>
+					<category>Weapon and Combat Accessories</category>
+				</categories>
+				<equipment version="3">
+					<quantity>12</quantity>
+					<description>Crossbow Bolt</description>
+					<tech_level>2</tech_level>
+					<legality_class>4</legality_class>
+					<value>2</value>
+					<weight>0.06 lb</weight>
+					<reference>B276</reference>
+					<categories>
+						<category>Ammunition</category>
+						<category>Missile Weapon</category>
+					</categories>
+				</equipment>
+			</equipment_container>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Heavy Cloak, @Environment@ Camouflage</description>
+				<tech_level>1</tech_level>
+				<legality_class>-</legality_class>
+				<value>150</value>
+				<weight>5 lb</weight>
+				<reference>B287, DF13:25</reference>
+				<melee_weapon>
+					<damage>-</damage>
+					<strength>-</strength>
+					<reach>-</reach>
+					<parry>No</parry>
+					<block>+0</block>
+					<default>
+						<type>Block</type>
+						<name>Cloak</name>
+						<modifier>0</modifier>
+					</default>
+				</melee_weapon>
+				<ranged_weapon>
+					<damage>Special</damage>
+					<strength>8</strength>
+					<usage>Thrown</usage>
+					<accuracy>+1</accuracy>
+					<range>2</range>
+					<rate_of_fire>1</rate_of_fire>
+					<shots>T(1)</shots>
+					<bulk>-6</bulk>
+					<default>
+						<type>Skill</type>
+						<name>Cloak</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Net</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+				</ranged_weapon>
+				<notes>+1 to Stealth vs Vision in specified environment</notes>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dodge</attribute>
+					<amount>2</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>parry</attribute>
+					<amount>2</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>block</attribute>
+					<amount>2</amount>
+				</attribute_bonus>
+			</equipment>
+		</equipment_container>
+	</equipment_list>
 </template>

@@ -4,7 +4,7 @@
 		<advantage_container version="2" open="yes" type="race">
 			<name>Bard</name>
 			<reference>DF1:5</reference>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="no" type="meta trait">
 				<name>Attributes</name>
 				<advantage version="2">
 					<name>Increased Dexterity</name>
@@ -91,14 +91,14 @@
 					</attribute_bonus>
 				</advantage>
 			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="no" type="meta trait">
 				<name>Secondary Characteristics</name>
 			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Class Advantages</name>
 				<advantage_container version="2" open="yes" type="race">
 					<name>50 Points chosen from:</name>
-					<advantage_container version="2" open="yes" type="metatrait">
+					<advantage_container version="2" open="no" type="meta trait">
 						<name>Bard-Song</name>
 						<modifier version="1">
 							<name>Power Modifier</name>
@@ -460,7 +460,7 @@
 							</categories>
 						</advantage>
 					</advantage_container>
-					<advantage_container version="2" open="yes">
+					<advantage_container version="2" open="no">
 						<name>Or:</name>
 						<advantage version="2">
 							<name>Acute Hearing</name>
@@ -586,12 +586,12 @@
 								<skill_prereq has="yes">
 									<name compare="is">Musical Instrument</name>
 									<specialization compare="is anything"></specialization>
-									<level compare="at_least">14</level>
+									<level compare="at least">14</level>
 								</skill_prereq>
 								<skill_prereq has="yes">
 									<name compare="is">Singing</name>
 									<specialization compare="is anything"></specialization>
-									<level compare="at_least">14</level>
+									<level compare="at least">14</level>
 								</skill_prereq>
 							</prereq_list>
 						</advantage>
@@ -1075,12 +1075,12 @@
 						<skill_prereq has="yes">
 							<name compare="is">Musical Instrument</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">14</level>
+							<level compare="at least">14</level>
 						</skill_prereq>
 						<skill_prereq has="yes">
 							<name compare="is">Singing</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">14</level>
+							<level compare="at least">14</level>
 						</skill_prereq>
 					</prereq_list>
 				</advantage>
@@ -1215,11 +1215,11 @@
 					</skill_bonus>
 				</advantage>
 			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Class Disadvantages</name>
-				<advantage_container version="2" open="yes" type="metatrait">
+				<advantage_container version="2" open="no" type="meta trait">
 					<name>-15 Points chosen from:</name>
-					<advantage_container version="2" open="yes">
+					<advantage_container version="2" open="no">
 						<name>Choose 1 From</name>
 						<advantage version="2">
 							<name>Chummy</name>
@@ -1276,14 +1276,14 @@
 						<name>Xenophilia</name>
 						<type>Mental</type>
 						<base_points>-10</base_points>
-						<cr adj="fright_check_bonus">12</cr>
+						<cr adj="fright check bonus">12</cr>
 						<reference>B162</reference>
 						<categories>
 							<category>Disadvantage</category>
 						</categories>
 					</advantage>
 				</advantage_container>
-				<advantage_container version="2" open="yes" type="metatrait">
+				<advantage_container version="2" open="no" type="meta trait">
 					<name>-15 Points Chosen From:</name>
 					<advantage version="2">
 						<name>Curious</name>
@@ -1326,7 +1326,7 @@
 						</categories>
 					</advantage>
 				</advantage_container>
-				<advantage_container version="2" open="yes" type="metatrait">
+				<advantage_container version="2" open="no" type="meta trait">
 					<name>-20 Points Chosen From:</name>
 					<advantage version="2">
 						<name>Code of Honor (Gentleman's)</name>
@@ -1516,7 +1516,7 @@
 						<modifier>-4</modifier>
 					</default>
 				</skill>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>Choose One Melee</name>
 					<skill version="2">
 						<name>Rapier</name>
@@ -1675,7 +1675,7 @@
 						</default>
 					</skill>
 				</skill_container>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>Choose One Defense</name>
 					<skill version="2">
 						<name>Cloak</name>
@@ -1762,7 +1762,7 @@
 						</default>
 					</skill>
 				</skill_container>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>Choose One Ranged</name>
 					<skill version="2">
 						<name>Bow</name>
@@ -1815,7 +1815,7 @@
 					</skill>
 				</skill_container>
 			</skill_container>
-			<skill_container version="2" open="yes">
+			<skill_container version="2" open="no">
 				<name>Secondary Skills</name>
 				<skill version="2">
 					<name>Fast-Draw</name>
@@ -2092,7 +2092,7 @@
 						<modifier>-5</modifier>
 					</default>
 				</skill>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>Six of:</name>
 					<skill version="2">
 						<name>Acrobatics</name>
@@ -2342,7 +2342,7 @@
 			</skill_container>
 			<skill_container version="2" open="yes">
 				<name>Special Skills and Spells</name>
-				<skill_container version="2" open="yes">
+				<skill_container version="2" open="no">
 					<name>20 Points on:</name>
 					<skill version="2">
 						<name>Captivate</name>
@@ -2356,17 +2356,17 @@
 							<skill_prereq has="yes">
 								<name compare="is">suggest</name>
 								<specialization compare="is"></specialization>
-								<level compare="at_least">12</level>
+								<level compare="at least">12</level>
 							</skill_prereq>
 							<skill_prereq has="yes">
 								<name compare="is">public speaking</name>
 								<specialization compare="is"></specialization>
-								<level compare="at_least">12</level>
+								<level compare="at least">12</level>
 							</skill_prereq>
 							<advantage_prereq has="yes">
 								<name compare="is">charisma</name>
 								<notes compare="is anything"></notes>
-								<level compare="at_least">1</level>
+								<level compare="at least">1</level>
 							</advantage_prereq>
 						</prereq_list>
 					</skill>
@@ -2392,18 +2392,18 @@
 								<skill_prereq has="yes">
 									<name compare="is">singing</name>
 									<specialization compare="is"></specialization>
-									<level compare="at_least">12</level>
+									<level compare="at least">12</level>
 								</skill_prereq>
 								<skill_prereq has="yes">
 									<name compare="starts with">musical instrument</name>
 									<specialization compare="is"></specialization>
-									<level compare="at_least">12</level>
+									<level compare="at least">12</level>
 								</skill_prereq>
 							</prereq_list>
 							<advantage_prereq has="yes">
 								<name compare="is">musical ability</name>
 								<notes compare="is anything"></notes>
-								<level compare="at_least">1</level>
+								<level compare="at least">1</level>
 							</advantage_prereq>
 						</prereq_list>
 					</skill>
@@ -2419,12 +2419,12 @@
 							<advantage_prereq has="yes">
 								<name compare="is">charisma</name>
 								<notes compare="is anything"></notes>
-								<level compare="at_least">1</level>
+								<level compare="at least">1</level>
 							</advantage_prereq>
 							<skill_prereq has="yes">
 								<name compare="is">public speaking</name>
 								<specialization compare="is"></specialization>
-								<level compare="at_least">12</level>
+								<level compare="at least">12</level>
 							</skill_prereq>
 						</prereq_list>
 					</skill>
@@ -2440,17 +2440,17 @@
 							<skill_prereq has="yes">
 								<name compare="is">persuade</name>
 								<specialization compare="is"></specialization>
-								<level compare="at_least">12</level>
+								<level compare="at least">12</level>
 							</skill_prereq>
 							<skill_prereq has="yes">
 								<name compare="is">public speaking</name>
 								<specialization compare="is"></specialization>
-								<level compare="at_least">12</level>
+								<level compare="at least">12</level>
 							</skill_prereq>
 							<advantage_prereq has="yes">
 								<name compare="is">charisma</name>
 								<notes compare="is anything"></notes>
-								<level compare="at_least">1</level>
+								<level compare="at least">1</level>
 							</advantage_prereq>
 						</prereq_list>
 					</skill>
@@ -2471,4 +2471,674 @@
 			</skill_container>
 		</skill_container>
 	</skill_list>
+	<equipment_list>
+		<equipment_container version="3" open="no">
+			<description>Wandering Minstrel</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>DF13:9</reference>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Cloth Sleeves</description>
+				<tech_level>1</tech_level>
+				<legality_class>-</legality_class>
+				<value>20</value>
+				<weight>2 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Limb Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>arms</location>
+					<amount>1</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Clothing, Ordinary, Freeman (Status 0)</description>
+				<tech_level>0</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<weight>2 lb</weight>
+				<reference>LT98</reference>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Hat, Small</description>
+				<legality_class>4</legality_class>
+				<value>12</value>
+				<weight>0.2 lb</weight>
+				<reference>DF8:17</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Leather Jacket</description>
+				<tech_level>1</tech_level>
+				<legality_class>-</legality_class>
+				<value>50</value>
+				<weight>4 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Body Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>torso</location>
+					<amount>1</amount>
+				</dr_bonus>
+				<dr_bonus>
+					<location>arms</location>
+					<amount>1</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Leather Pants</description>
+				<tech_level>1</tech_level>
+				<legality_class>-</legality_class>
+				<value>40</value>
+				<weight>3 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Limb Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>groin</location>
+					<amount>1</amount>
+				</dr_bonus>
+				<dr_bonus>
+					<location>legs</location>
+					<amount>1</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Short Bow</description>
+				<tech_level>0</tech_level>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>1.5 lb</weight>
+				<reference>LT72</reference>
+				<ranged_weapon>
+					<damage>thr imp</damage>
+					<strength>7&#8224;</strength>
+					<usage>Shoot</usage>
+					<accuracy>1</accuracy>
+					<range>x15/x20</range>
+					<rate_of_fire>1</rate_of_fire>
+					<shots>1(2)</shots>
+					<bulk>-6</bulk>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Bow</name>
+						<modifier>0</modifier>
+					</default>
+				</ranged_weapon>
+				<categories>
+					<category>Missile Weapon</category>
+				</categories>
+			</equipment>
+			<equipment_container version="3" open="yes">
+				<description>Shoulder Quiver</description>
+				<tech_level>0</tech_level>
+				<legality_class>4</legality_class>
+				<value>10</value>
+				<weight>0.5 lb</weight>
+				<reference>B289</reference>
+				<notes>Holds 12 arrows or bolts</notes>
+				<categories>
+					<category>Weapon and Combat Accessories</category>
+				</categories>
+				<equipment version="3">
+					<quantity>12</quantity>
+					<description>Arrow</description>
+					<tech_level>0</tech_level>
+					<legality_class>4</legality_class>
+					<value>2</value>
+					<weight>0.1 lb</weight>
+					<reference>B276</reference>
+					<categories>
+						<category>Missile Weapon</category>
+					</categories>
+				</equipment>
+			</equipment_container>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>@Woodwind@</description>
+				<legality_class>4</legality_class>
+				<value>40</value>
+				<weight>1 lb</weight>
+				<reference>DF1:24</reference>
+				<notes>Two-handed. Speech impossible.</notes>
+				<categories>
+					<category>Musical Instruments</category>
+				</categories>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="no">
+			<description>Courtly Bard</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>DF13:10</reference>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Boots, trimmed with fur</description>
+				<tech_level>2</tech_level>
+				<legality_class>-</legality_class>
+				<value>320</value>
+				<weight>3 lb</weight>
+				<reference>B284</reference>
+				<categories>
+					<category>Footwear</category>
+				</categories>
+				<dr_bonus>
+					<location>feet</location>
+					<amount>2</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Cloth Sleeves</description>
+				<tech_level>1</tech_level>
+				<legality_class>-</legality_class>
+				<value>20</value>
+				<weight>2 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Limb Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>arms</location>
+					<amount>1</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Hat, Wide, trimmed with lace</description>
+				<legality_class>4</legality_class>
+				<value>81</value>
+				<weight>0.3 lb</weight>
+				<reference>DF8:17</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Hose, Regular, dyed @an unremarkable color@</description>
+				<legality_class>4</legality_class>
+				<value>180</value>
+				<weight>0.6 lb</weight>
+				<reference>DF8:17</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Leather Armor</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>100</value>
+				<weight>10 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Body Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>torso</location>
+					<amount>2</amount>
+				</dr_bonus>
+				<dr_bonus>
+					<location>groin</location>
+					<amount>2</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Leather Pants</description>
+				<tech_level>1</tech_level>
+				<legality_class>-</legality_class>
+				<value>40</value>
+				<weight>3 lb</weight>
+				<reference>B283</reference>
+				<categories>
+					<category>Limb Armor</category>
+				</categories>
+				<dr_bonus>
+					<location>groin</location>
+					<amount>1</amount>
+				</dr_bonus>
+				<dr_bonus>
+					<location>legs</location>
+					<amount>1</amount>
+				</dr_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Light Cloak, with extensive embroidery</description>
+				<tech_level>1</tech_level>
+				<legality_class>-</legality_class>
+				<value>120</value>
+				<weight>2 lb</weight>
+				<reference>B287</reference>
+				<melee_weapon>
+					<damage>-</damage>
+					<strength>-</strength>
+					<reach>-</reach>
+					<parry>No</parry>
+					<block>+0</block>
+					<default>
+						<type>Block</type>
+						<name>Cloak</name>
+						<modifier>0</modifier>
+					</default>
+				</melee_weapon>
+				<ranged_weapon>
+					<damage>Special</damage>
+					<strength>5</strength>
+					<usage>Thrown</usage>
+					<accuracy>+1</accuracy>
+					<range>2</range>
+					<rate_of_fire>1</rate_of_fire>
+					<shots>T(1)</shots>
+					<bulk>-4</bulk>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Cloak</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Net</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<modifier>-4</modifier>
+					</default>
+				</ranged_weapon>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dodge</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>parry</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>block</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>One-Handed Concertina</description>
+				<legality_class>4</legality_class>
+				<value>200</value>
+				<weight>0.5 lb</weight>
+				<reference>DF8:22</reference>
+				<notes>-1 to Bard-Song rolls</notes>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Regular Bow</description>
+				<tech_level>0</tech_level>
+				<legality_class>4</legality_class>
+				<value>100</value>
+				<weight>2 lb</weight>
+				<reference>LT72</reference>
+				<ranged_weapon>
+					<damage>thr+1 imp</damage>
+					<strength>10&#8224;</strength>
+					<usage>Shoot</usage>
+					<accuracy>2</accuracy>
+					<range>x15/x20</range>
+					<rate_of_fire>1</rate_of_fire>
+					<shots>1(2)</shots>
+					<bulk>-7</bulk>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Bow</name>
+						<modifier>0</modifier>
+					</default>
+				</ranged_weapon>
+				<categories>
+					<category>Missile Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>@Stringed@</description>
+				<legality_class>4</legality_class>
+				<value>150</value>
+				<weight>5 lb</weight>
+				<reference>DF1:24</reference>
+				<notes>Two-handed.</notes>
+				<categories>
+					<category>Musical Instruments</category>
+				</categories>
+			</equipment>
+			<equipment_container version="3" open="yes">
+				<description>Hip Quiver</description>
+				<tech_level>0</tech_level>
+				<legality_class>4</legality_class>
+				<value>15</value>
+				<weight>1 lb</weight>
+				<reference>B289</reference>
+				<notes>Holds 20 arrows or bolts</notes>
+				<categories>
+					<category>Weapon and Combat Accessories</category>
+				</categories>
+				<equipment version="3">
+					<quantity>20</quantity>
+					<description>Arrow</description>
+					<tech_level>0</tech_level>
+					<legality_class>4</legality_class>
+					<value>2</value>
+					<weight>0.1 lb</weight>
+					<reference>B276</reference>
+					<categories>
+						<category>Missile Weapon</category>
+					</categories>
+				</equipment>
+			</equipment_container>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Shirt, trimmed with lace</description>
+				<legality_class>4</legality_class>
+				<value>216</value>
+				<weight>0.8 lb</weight>
+				<reference>DF8:17</reference>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="no">
+			<description>Sword-and-Cloak Bard</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>DF13:10</reference>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Heavy Cloak</description>
+				<tech_level>1</tech_level>
+				<legality_class>-</legality_class>
+				<value>50</value>
+				<weight>5 lb</weight>
+				<reference>B287</reference>
+				<melee_weapon>
+					<damage>-</damage>
+					<strength>-</strength>
+					<reach>-</reach>
+					<parry>No</parry>
+					<block>+0</block>
+					<default>
+						<type>Block</type>
+						<name>Cloak</name>
+						<modifier>0</modifier>
+					</default>
+				</melee_weapon>
+				<ranged_weapon>
+					<damage>Special</damage>
+					<strength>8</strength>
+					<usage>Thrown</usage>
+					<accuracy>+1</accuracy>
+					<range>2</range>
+					<rate_of_fire>1</rate_of_fire>
+					<shots>T(1)</shots>
+					<bulk>-6</bulk>
+					<default>
+						<type>Skill</type>
+						<name>Cloak</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Net</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+				</ranged_weapon>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dodge</attribute>
+					<amount>2</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>parry</attribute>
+					<amount>2</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>block</attribute>
+					<amount>2</amount>
+				</attribute_bonus>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Smallsword</description>
+				<tech_level>4</tech_level>
+				<legality_class>4</legality_class>
+				<value>400</value>
+				<weight>1.5 lb</weight>
+				<reference>LT61</reference>
+				<melee_weapon>
+					<damage>thr+1 imp</damage>
+					<strength>5</strength>
+					<usage>Thrust</usage>
+					<reach>1</reach>
+					<parry>0F</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Main-Gauche</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Rapier</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>-4</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="no">
+			<description>Sword-and-Shield</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>DF13:10</reference>
+			<notes>Costlier (consider Signature Gear for saber, if not the musical instrument) and heavier.</notes>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Saber</description>
+				<tech_level>4</tech_level>
+				<legality_class>4</legality_class>
+				<value>700</value>
+				<weight>2 lb</weight>
+				<reference>LT61</reference>
+				<melee_weapon>
+					<damage>sw-1 cut</damage>
+					<strength>8</strength>
+					<usage>Swung</usage>
+					<reach>1</reach>
+					<parry>0F</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Main-Gauche</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Rapier</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>-3</modifier>
+					</default>
+				</melee_weapon>
+				<melee_weapon>
+					<damage>thr+1 imp</damage>
+					<strength>8</strength>
+					<usage>Thrust</usage>
+					<reach>1</reach>
+					<parry>0F</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Saber</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Main-Gauche</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Smallsword</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<modifier>0</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Small Buckler</description>
+				<tech_level>-</tech_level>
+				<legality_class>4</legality_class>
+				<value>40</value>
+				<weight>8 lb</weight>
+				<reference>B287</reference>
+				<melee_weapon>
+					<damage>thr cr</damage>
+					<strength>0</strength>
+					<reach>1</reach>
+					<parry>No</parry>
+					<block>+0</block>
+					<default>
+						<type>DX</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<specialization>Shield</specialization>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<specialization>Force Shield</specialization>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<specialization>Buckler</specialization>
+						<modifier>0</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Shield</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dodge</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>parry</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>block</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+			</equipment>
+		</equipment_container>
+	</equipment_list>
+	<notes>For the Bard Loadout, select either Wandering Minstrel or Courtly Bard, then add a weapon lens.</notes>
 </template>
