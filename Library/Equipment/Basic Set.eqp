@@ -39,6 +39,19 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Arrow, Bodkin</description>
+		<tech_level>3</tech_level>
+		<legality_class>4</legality_class>
+		<value>2</value>
+		<weight>0.1 lb</weight>
+		<reference>B277</reference>
+    <notes>Changes damage to piercing with armor divisor of (2).</notes>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Assault Boots</description>
 		<tech_level>9</tech_level>
 		<legality_class>4</legality_class>
