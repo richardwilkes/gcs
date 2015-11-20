@@ -1281,7 +1281,19 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		} else if (key.equals("SHIFT_SLIGHTLY")) { //$NON-NLS-1$
 			writeXMLText(out, mCharacter.getShiftSlightly().toString());
 		} else if (key.startsWith("ADVANTAGES_LOOP_START")) { //$NON-NLS-1$
-			processAdvantagesLoop(out, extractUpToMarker(in, "ADVANTAGES_LOOP_END")); //$NON-NLS-1$
+			processAdvantagesLoop(out, extractUpToMarker(in, "ADVANTAGES_LOOP_END"), AdvantagesLoopType.ALL); //$NON-NLS-1$
+		} else if (key.startsWith("ADVANTAGES_ONLY_LOOP_START")) { //$NON-NLS-1$
+			processAdvantagesLoop(out, extractUpToMarker(in, "ADVANTAGES_ONLY_LOOP_END"), AdvantagesLoopType.ADS); //$NON-NLS-1$
+		} else if (key.startsWith("DISADVANTAGES_LOOP_START")) { //$NON-NLS-1$
+			processAdvantagesLoop(out, extractUpToMarker(in, "DISADVANTAGES_LOOP_END"), AdvantagesLoopType.DISADS); //$NON-NLS-1$
+		} else if (key.startsWith("QUIRKS_LOOP_START")) { //$NON-NLS-1$
+			processAdvantagesLoop(out, extractUpToMarker(in, "QUIRKS_LOOP_END"), AdvantagesLoopType.QUIRKS); //$NON-NLS-1$
+		} else if (key.startsWith("PERKS_LOOP_START")) { //$NON-NLS-1$
+			processAdvantagesLoop(out, extractUpToMarker(in, "PERKS_LOOP_END"), AdvantagesLoopType.PERKS); //$NON-NLS-1$
+		} else if (key.startsWith("LANGUAGES_LOOP_START")) { //$NON-NLS-1$
+			processAdvantagesLoop(out, extractUpToMarker(in, "LANGUAGES_LOOP_END"), AdvantagesLoopType.LANGUAGES); //$NON-NLS-1$
+		} else if (key.startsWith("CULTURAL_FAMILIARITIES_LOOP_START")) { //$NON-NLS-1$
+			processAdvantagesLoop(out, extractUpToMarker(in, "CULTURAL_FAMILIARITIES_LOOP_END"), AdvantagesLoopType.CULTURAL_FAMILIARITIES); //$NON-NLS-1$
 		} else if (key.startsWith("SKILLS_LOOP_START")) { //$NON-NLS-1$
 			processSkillsLoop(out, extractUpToMarker(in, "SKILLS_LOOP_END")); //$NON-NLS-1$
 		} else if (key.startsWith("SPELLS_LOOP_START")) { //$NON-NLS-1$
@@ -1425,47 +1437,96 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		}
 	}
 
-	private void processAdvantagesLoop(BufferedWriter out, String contents) throws IOException {
+	private enum AdvantagesLoopType {
+		ALL {
+			@Override
+			public boolean shouldInclude(Advantage advantage) {
+				return true;
+			}
+		},
+		ADS {
+			@Override
+			public boolean shouldInclude(Advantage advantage) {
+				return advantage.getAdjustedPoints() > 1;
+			}
+		},
+		DISADS {
+			@Override
+			public boolean shouldInclude(Advantage advantage) {
+				return advantage.getAdjustedPoints() < -1;
+			}
+		},
+		PERKS {
+			@Override
+			public boolean shouldInclude(Advantage advantage) {
+				return advantage.getAdjustedPoints() == 1;
+			}
+		},
+		QUIRKS {
+			@Override
+			public boolean shouldInclude(Advantage advantage) {
+				return advantage.getAdjustedPoints() == -1;
+			}
+		},
+		LANGUAGES {
+			@Override
+			public boolean shouldInclude(Advantage advantage) {
+				return advantage.getCategories().contains("Language"); //$NON-NLS-1$
+			}
+		},
+		CULTURAL_FAMILIARITIES {
+			@Override
+			public boolean shouldInclude(Advantage advantage) {
+				return advantage.getName().startsWith("Cultural Familiarity ("); //$NON-NLS-1$
+			}
+		};
+
+		public abstract boolean shouldInclude(Advantage advantage);
+	}
+
+	private void processAdvantagesLoop(BufferedWriter out, String contents, AdvantagesLoopType loopType) throws IOException {
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
 		boolean lookForKeyMarker = true;
 		int counter = 0;
 		boolean odd = true;
 		for (Advantage advantage : mCharacter.getAdvantagesIterator()) {
-			counter++;
-			for (int i = 0; i < length; i++) {
-				char ch = contents.charAt(i);
-				if (lookForKeyMarker) {
-					if (ch == '@') {
-						lookForKeyMarker = false;
+			if (loopType.shouldInclude(advantage)) {
+				counter++;
+				for (int i = 0; i < length; i++) {
+					char ch = contents.charAt(i);
+					if (lookForKeyMarker) {
+						if (ch == '@') {
+							lookForKeyMarker = false;
+						} else {
+							out.append(ch);
+						}
 					} else {
-						out.append(ch);
-					}
-				} else {
-					if (ch == '_' || Character.isLetterOrDigit(ch)) {
-						keyBuffer.append(ch);
-					} else {
-						String key = keyBuffer.toString();
-						i--;
-						keyBuffer.setLength(0);
-						lookForKeyMarker = true;
-						if (!processStyleIndentWarning(key, out, advantage, odd)) {
-							if (!processDescription(key, out, advantage)) {
-								if (key.equals("POINTS")) { //$NON-NLS-1$
-									writeXMLText(out, AdvantageColumn.POINTS.getDataAsText(advantage));
-								} else if (key.equals("REF")) { //$NON-NLS-1$
-									writeXMLText(out, AdvantageColumn.REFERENCE.getDataAsText(advantage));
-								} else if (key.equals("ID")) { //$NON-NLS-1$
-									writeXMLText(out, Integer.toString(counter));
-								} else {
-									writeXMLText(out, UNIDENTIFIED_KEY);
+						if (ch == '_' || Character.isLetterOrDigit(ch)) {
+							keyBuffer.append(ch);
+						} else {
+							String key = keyBuffer.toString();
+							i--;
+							keyBuffer.setLength(0);
+							lookForKeyMarker = true;
+							if (!processStyleIndentWarning(key, out, advantage, odd)) {
+								if (!processDescription(key, out, advantage)) {
+									if (key.equals("POINTS")) { //$NON-NLS-1$
+										writeXMLText(out, AdvantageColumn.POINTS.getDataAsText(advantage));
+									} else if (key.equals("REF")) { //$NON-NLS-1$
+										writeXMLText(out, AdvantageColumn.REFERENCE.getDataAsText(advantage));
+									} else if (key.equals("ID")) { //$NON-NLS-1$
+										writeXMLText(out, Integer.toString(counter));
+									} else {
+										writeXMLText(out, UNIDENTIFIED_KEY);
+									}
 								}
 							}
 						}
 					}
 				}
+				odd = !odd;
 			}
-			odd = !odd;
 		}
 	}
 
