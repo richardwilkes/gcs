@@ -1,0 +1,2377 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="ih2s1rvi:-1c0rektea8bxf" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes">
+			<name>Class Advantages</name>
+			<advantage version="2">
+				<name>G-Experience</name>
+				<type>Mental</type>
+				<levels>1</levels>
+				<points_per_level>1</points_per_level>
+				<reference>B57</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Rank</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>5</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>Replaces Status</name>
+					<cost type="points">5</cost>
+					<affects>levels only</affects>
+					<reference>B29</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Courtesy</name>
+					<cost type="points">-4</cost>
+					<affects>levels only</affects>
+					<reference>B29</reference>
+				</modifier>
+				<reference>B29</reference>
+				<notes>Military: </notes>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+		<advantage_container version="2" open="yes">
+			<name>Class Disadvantages</name>
+			<advantage version="2">
+				<name>Sense of Duty</name>
+				<type>Mental</type>
+				<modifier version="1">
+					<name>Friends and Companions</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Small Group@</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Individual@</name>
+					<cost type="points">-2</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Large Group@</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Entire Race@</name>
+					<cost type="points">-15</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Every Living Being</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<reference>B153</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+	<skill_list>
+		<skill version="2">
+			<name>Free Fall</name>
+			<difficulty>DX/A</difficulty>
+			<points>2</points>
+			<reference>B197</reference>
+			<categories>
+				<category>Athletic</category>
+			</categories>
+			<default>
+				<type>HT</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Spacer</name>
+			<tech_level/>
+			<difficulty>IQ/E</difficulty>
+			<points>2</points>
+			<reference>B185</reference>
+			<categories>
+				<category>Vehicle</category>
+			</categories>
+			<default>
+				<type>IQ</type>
+				<modifier>-4</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Vacc Suit</name>
+			<tech_level/>
+			<difficulty>DX/A</difficulty>
+			<points>4</points>
+			<reference>B192</reference>
+			<categories>
+				<category>Technical</category>
+			</categories>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Diving Suit</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>NBC Suit</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Battlesuit</name>
+				<modifier>-2</modifier>
+			</default>
+		</skill>
+		<skill_container version="2" open="yes">
+			<name>6 Points in:</name>
+			<skill version="2">
+				<name>Astronomy</name>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B179</reference>
+				<categories>
+					<category>Natural Science</category>
+				</categories>
+				<prereq_list all="yes">
+					<skill_prereq has="yes">
+						<name compare="is">mathematics</name>
+						<specialization compare="is">applied</specialization>
+					</skill_prereq>
+				</prereq_list>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Biology</name>
+				<specialization>Biochemistry</specialization>
+				<tech_level/>
+				<difficulty>IQ/VH</difficulty>
+				<points>1</points>
+				<reference>B180</reference>
+				<categories>
+					<category>Natural Science</category>
+					<category>Plant</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Naturalist</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Biology</name>
+				<specialization>Botany</specialization>
+				<tech_level/>
+				<difficulty>IQ/VH</difficulty>
+				<points>1</points>
+				<reference>B180</reference>
+				<categories>
+					<category>Natural Science</category>
+					<category>Plant</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Naturalist</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Biology</name>
+				<specialization>Earthlike</specialization>
+				<tech_level/>
+				<difficulty>IQ/VH</difficulty>
+				<points>1</points>
+				<reference>B180</reference>
+				<categories>
+					<category>Natural Science</category>
+					<category>Plant</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Naturalist</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Biology</name>
+				<specialization>Ecology</specialization>
+				<tech_level/>
+				<difficulty>IQ/VH</difficulty>
+				<points>1</points>
+				<reference>B180</reference>
+				<categories>
+					<category>Natural Science</category>
+					<category>Plant</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Naturalist</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Biology</name>
+				<specialization>Gas Giants</specialization>
+				<tech_level/>
+				<difficulty>IQ/VH</difficulty>
+				<points>1</points>
+				<reference>B180</reference>
+				<categories>
+					<category>Natural Science</category>
+					<category>Plant</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Naturalist</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Biology</name>
+				<specialization>Genetics</specialization>
+				<tech_level/>
+				<difficulty>IQ/VH</difficulty>
+				<points>1</points>
+				<reference>B180</reference>
+				<categories>
+					<category>Natural Science</category>
+					<category>Plant</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Naturalist</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Biology</name>
+				<specialization>Hostile Terrestrial</specialization>
+				<tech_level/>
+				<difficulty>IQ/VH</difficulty>
+				<points>1</points>
+				<reference>B180</reference>
+				<categories>
+					<category>Natural Science</category>
+					<category>Plant</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Naturalist</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Biology</name>
+				<specialization>Ice Dwarfs</specialization>
+				<tech_level/>
+				<difficulty>IQ/VH</difficulty>
+				<points>1</points>
+				<reference>B180</reference>
+				<categories>
+					<category>Natural Science</category>
+					<category>Plant</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Naturalist</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Biology</name>
+				<specialization>Ice Worlds</specialization>
+				<tech_level/>
+				<difficulty>IQ/VH</difficulty>
+				<points>1</points>
+				<reference>B180</reference>
+				<categories>
+					<category>Natural Science</category>
+					<category>Plant</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Naturalist</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Biology</name>
+				<specialization>Marine Biology</specialization>
+				<tech_level/>
+				<difficulty>IQ/VH</difficulty>
+				<points>1</points>
+				<reference>B180</reference>
+				<categories>
+					<category>Natural Science</category>
+					<category>Plant</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Naturalist</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Biology</name>
+				<specialization>Microbiology</specialization>
+				<tech_level/>
+				<difficulty>IQ/VH</difficulty>
+				<points>1</points>
+				<reference>B180</reference>
+				<categories>
+					<category>Natural Science</category>
+					<category>Plant</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Naturalist</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Biology</name>
+				<specialization>Rock Worlds</specialization>
+				<tech_level/>
+				<difficulty>IQ/VH</difficulty>
+				<points>1</points>
+				<reference>B180</reference>
+				<categories>
+					<category>Natural Science</category>
+					<category>Plant</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Naturalist</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Biology</name>
+				<specialization>Zoology</specialization>
+				<tech_level/>
+				<difficulty>IQ/VH</difficulty>
+				<points>1</points>
+				<reference>B180</reference>
+				<categories>
+					<category>Natural Science</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Naturalist</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Chemistry</name>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>2</points>
+				<reference>B183</reference>
+				<categories>
+					<category>Natural Science</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Alchemy</name>
+					<modifier>-3</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Computer Operation</name>
+				<tech_level/>
+				<difficulty>IQ/E</difficulty>
+				<points>1</points>
+				<reference>B184</reference>
+				<categories>
+					<category>Everyman</category>
+					<category>Scholarly</category>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Computer Programming</name>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>4</points>
+				<reference>B184</reference>
+				<categories>
+					<category>Design/Invention</category>
+				</categories>
+			</skill>
+			<skill version="2">
+				<name>Diagnosis</name>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>2</points>
+				<reference>B187</reference>
+				<categories>
+					<category>Medical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>First Aid</name>
+					<modifier>-8</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Physician</name>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Veterinary</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Engineer</name>
+				<specialization>Automobiles</specialization>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Design/Invention</category>
+					<category>Engineer</category>
+				</categories>
+				<prereq_list all="yes">
+					<when_tl compare="at least">5</when_tl>
+					<skill_prereq has="yes">
+						<name compare="is">mathematics</name>
+						<specialization compare="is">applied</specialization>
+					</skill_prereq>
+				</prereq_list>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<specialization>Automobiles</specialization>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Engineer</name>
+				<specialization>Civil</specialization>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Design/Invention</category>
+					<category>Engineer</category>
+				</categories>
+				<prereq_list all="yes">
+					<when_tl compare="at least">5</when_tl>
+					<skill_prereq has="yes">
+						<name compare="is">mathematics</name>
+						<specialization compare="is">applied</specialization>
+					</skill_prereq>
+				</prereq_list>
+				<default>
+					<type>Skill</type>
+					<name>Architecture</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Engineer</name>
+				<specialization>Combat</specialization>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Design/Invention</category>
+					<category>Engineer</category>
+				</categories>
+				<prereq_list all="yes">
+					<when_tl compare="at least">5</when_tl>
+					<skill_prereq has="yes">
+						<name compare="is">mathematics</name>
+						<specialization compare="is">applied</specialization>
+					</skill_prereq>
+				</prereq_list>
+				<default>
+					<type>Skill</type>
+					<name>Explosives</name>
+					<specialization>Demolition</specialization>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Engineer</name>
+				<specialization>Electrical</specialization>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Design/Invention</category>
+					<category>Engineer</category>
+				</categories>
+				<prereq_list all="yes">
+					<when_tl compare="at least">5</when_tl>
+					<skill_prereq has="yes">
+						<name compare="is">mathematics</name>
+						<specialization compare="is">applied</specialization>
+					</skill_prereq>
+				</prereq_list>
+				<default>
+					<type>Skill</type>
+					<name>Electrician</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Engineer</name>
+				<specialization>Electronics</specialization>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Design/Invention</category>
+					<category>Engineer</category>
+				</categories>
+				<prereq_list all="yes">
+					<when_tl compare="at least">5</when_tl>
+					<skill_prereq has="yes">
+						<name compare="is">mathematics</name>
+						<specialization compare="is">applied</specialization>
+					</skill_prereq>
+				</prereq_list>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Engineer</name>
+				<specialization>Materials</specialization>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Design/Invention</category>
+					<category>Engineer</category>
+				</categories>
+				<prereq_list all="yes">
+					<prereq_list all="yes">
+						<when_tl compare="at least">5</when_tl>
+						<skill_prereq has="yes">
+							<name compare="is">mathematics</name>
+							<specialization compare="is">applied</specialization>
+						</skill_prereq>
+					</prereq_list>
+					<prereq_list all="no">
+						<skill_prereq has="yes">
+							<name compare="is">metallurgy</name>
+							<specialization compare="is"></specialization>
+						</skill_prereq>
+						<skill_prereq has="yes">
+							<name compare="is">chemistry</name>
+							<specialization compare="is"></specialization>
+						</skill_prereq>
+					</prereq_list>
+				</prereq_list>
+				<default>
+					<type>Skill</type>
+					<name>Chemistry</name>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Metallurgy</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Engineer</name>
+				<specialization>Microtechnology</specialization>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Design/Invention</category>
+					<category>Engineer</category>
+				</categories>
+				<prereq_list all="yes">
+					<when_tl compare="at least">5</when_tl>
+					<skill_prereq has="yes">
+						<name compare="is">mathematics</name>
+						<specialization compare="is">applied</specialization>
+					</skill_prereq>
+				</prereq_list>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<specialization>Micromachines</specialization>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Engineer</name>
+				<specialization>Mining</specialization>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Design/Invention</category>
+					<category>Engineer</category>
+				</categories>
+				<prereq_list all="yes">
+					<when_tl compare="at least">5</when_tl>
+					<skill_prereq has="yes">
+						<name compare="is">mathematics</name>
+						<specialization compare="is">applied</specialization>
+					</skill_prereq>
+				</prereq_list>
+				<default>
+					<type>Skill</type>
+					<name>Explosives</name>
+					<specialization>Demolition</specialization>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Geology</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Engineer</name>
+				<specialization>Robotics</specialization>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Design/Invention</category>
+					<category>Engineer</category>
+				</categories>
+				<prereq_list all="yes">
+					<when_tl compare="at least">5</when_tl>
+					<skill_prereq has="yes">
+						<name compare="is">mathematics</name>
+						<specialization compare="is">applied</specialization>
+					</skill_prereq>
+				</prereq_list>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<specialization>Robotics</specialization>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Engineer</name>
+				<specialization>Ships</specialization>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Design/Invention</category>
+					<category>Engineer</category>
+				</categories>
+				<prereq_list all="yes">
+					<when_tl compare="at least">5</when_tl>
+					<skill_prereq has="yes">
+						<name compare="is">mathematics</name>
+						<specialization compare="is">applied</specialization>
+					</skill_prereq>
+				</prereq_list>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<specialization>Ships</specialization>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Engineer</name>
+				<specialization>Small Arms</specialization>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Design/Invention</category>
+					<category>Engineer</category>
+				</categories>
+				<prereq_list all="yes">
+					<when_tl compare="at least">5</when_tl>
+					<skill_prereq has="yes">
+						<name compare="is">mathematics</name>
+						<specialization compare="is">applied</specialization>
+					</skill_prereq>
+				</prereq_list>
+				<default>
+					<type>Skill</type>
+					<name>Armoury</name>
+					<specialization>Small Arms</specialization>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Engineer</name>
+				<specialization>Starships</specialization>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Design/Invention</category>
+					<category>Engineer</category>
+				</categories>
+				<prereq_list all="yes">
+					<when_tl compare="at least">5</when_tl>
+					<skill_prereq has="yes">
+						<name compare="is">mathematics</name>
+						<specialization compare="is">applied</specialization>
+					</skill_prereq>
+				</prereq_list>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<specialization>Starships</specialization>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Farming</name>
+				<tech_level/>
+				<difficulty>DX/A</difficulty>
+				<points>2</points>
+				<reference>B194</reference>
+				<categories>
+					<category>Plant</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Biology</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Gardening</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>First Aid</name>
+				<tech_level/>
+				<difficulty>IQ/E</difficulty>
+				<points>1</points>
+				<reference>B195</reference>
+				<categories>
+					<category>Everyman</category>
+					<category>Medical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Esoteric Medicine</name>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Physician</name>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Veterinary</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Geology</name>
+				<specialization>Earthlike</specialization>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>2</points>
+				<reference>B198</reference>
+				<categories>
+					<category>Natural Science</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Geography</name>
+					<specialization>Physical, Earthlike</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Prospecting</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Geology</name>
+				<specialization>Rock Worlds</specialization>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>2</points>
+				<reference>B198</reference>
+				<categories>
+					<category>Natural Science</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Geography</name>
+					<specialization>Physical, Rock Worlds</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Prospecting</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mathematics</name>
+				<specialization>Applied</specialization>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>2</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Natural Science</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Physics</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Aerospace</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Aerospace</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Communications</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<specialization>Communications</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Media</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Arts/Entertainment</category>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<specialization>Media</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Medical</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Medical</category>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<specialization>Medical</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Scientific</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<specialization>Scientific</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Security</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Criminal/Street</category>
+					<category>Spy</category>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<specialization>Security</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Sensors</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<specialization>Sensors</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Sonar</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<specialization>Sonar</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Surveillance</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Police</category>
+					<category>Spy</category>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<specialization>Surveillance</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Automobile</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Automobile</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Construction Equipment</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Construction Equipment</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Diesel Engine</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Diesel Engine</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Fission Reactor</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Fission Reactor</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Flight Pack</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Flight Pack</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Fuel Cell</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Fuel Cell</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Fusion Reactor</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Fusion Reactor</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Gasoline Engine</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Gasoline Engine</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Heavy Airplane</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Heavy Airplane</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Heavy Wheeled</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Heavy Wheeled</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>High-Performance Spacecraft</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>High-Performance Spacecraft</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Light Airplane</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Light Airplane</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Lighter-Than-Air</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Lighter-Than-Air</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Low-G Wings</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Low-G Wings</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Low-Performance Spacecraft</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Low-Performance Spacecraft</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Motorcycle</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Motorcycle</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Robotics</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Robotics</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Rockets</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Rockets</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>0</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Navigation</name>
+				<specialization>Space</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>4</points>
+				<reference>B211</reference>
+				<categories>
+					<category>Outdoor/Exploration</category>
+					<category>Technical</category>
+					<category>Vehicle</category>
+				</categories>
+				<default>
+					<type>Skill</type>
+					<name>Astronomy</name>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mathematics</name>
+					<specialization>Applied</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Navigation</name>
+					<specialization>Hyperspace</specialization>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Physician</name>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>4</points>
+				<reference>B213</reference>
+				<categories>
+					<category>Medical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-7</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>First Aid</name>
+					<modifier>-11</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Veterinary</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Physics</name>
+				<tech_level/>
+				<difficulty>IQ/VH</difficulty>
+				<points>1</points>
+				<reference>B213</reference>
+				<categories>
+					<category>Natural Science</category>
+				</categories>
+				<prereq_list all="yes">
+					<when_tl compare="at least">5</when_tl>
+					<skill_prereq has="yes">
+						<name compare="is">mathematics</name>
+						<specialization compare="is">applied</specialization>
+					</skill_prereq>
+				</prereq_list>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Physiology</name>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>2</points>
+				<reference>B213</reference>
+				<categories>
+					<category>Medical</category>
+					<category>Natural Science</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Diagnosis</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Physician</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Surgery</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Piloting</name>
+				<specialization>Aerospace</specialization>
+				<tech_level/>
+				<difficulty>DX/A</difficulty>
+				<points>4</points>
+				<reference>B214</reference>
+				<categories>
+					<category>Vehicle</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<specialization>High-Performance Airplane</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Piloting</name>
+				<specialization>Flight Pack</specialization>
+				<tech_level/>
+				<difficulty>DX/A</difficulty>
+				<points>4</points>
+				<reference>B214</reference>
+				<categories>
+					<category>Vehicle</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<specialization>Vertol</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Piloting</name>
+				<specialization>Heavy Airplane</specialization>
+				<tech_level/>
+				<difficulty>DX/A</difficulty>
+				<points>4</points>
+				<reference>B214</reference>
+				<categories>
+					<category>Vehicle</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<specialization>High-Performance Airplane</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<specialization>Light Airplane</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Piloting</name>
+				<specialization>Helicopter</specialization>
+				<tech_level/>
+				<difficulty>DX/A</difficulty>
+				<points>4</points>
+				<reference>B214</reference>
+				<categories>
+					<category>Vehicle</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<specialization>Autogyro</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<specialization>Vertol</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Piloting</name>
+				<specialization>High-Performance Airplane</specialization>
+				<tech_level/>
+				<difficulty>DX/A</difficulty>
+				<points>4</points>
+				<reference>B214</reference>
+				<categories>
+					<category>Vehicle</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<specialization>Aerospace</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<specialization>Heavy Airplane</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<specialization>Light Airplane</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Piloting</name>
+				<specialization>High-Performance Spaecraft</specialization>
+				<tech_level/>
+				<difficulty>DX/A</difficulty>
+				<points>4</points>
+				<reference>B214</reference>
+				<categories>
+					<category>Vehicle</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<specialization>Aerospace</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<specialization>Low-Performance Spacecraft</specialization>
+					<modifier>-2</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Piloting</name>
+				<specialization>Light Airplane</specialization>
+				<tech_level/>
+				<difficulty>DX/A</difficulty>
+				<points>4</points>
+				<reference>B214</reference>
+				<categories>
+					<category>Vehicle</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<specialization>Glider</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<specialization>Heavy Airplane</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<specialization>High-Performance Airplane</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<specialization>Ultralight</specialization>
+					<modifier>-2</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Piloting</name>
+				<specialization>Lighter-Than-Air</specialization>
+				<tech_level/>
+				<difficulty>DX/A</difficulty>
+				<points>4</points>
+				<reference>B214</reference>
+				<categories>
+					<category>Vehicle</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Piloting</name>
+				<specialization>Low-Performance Spacecraft</specialization>
+				<tech_level/>
+				<difficulty>DX/A</difficulty>
+				<points>4</points>
+				<reference>B214</reference>
+				<categories>
+					<category>Vehicle</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<specialization>Aerospace</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Piloting</name>
+					<specialization>High-Performance Spacecraft</specialization>
+					<modifier>-2</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Prospecting</name>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B216</reference>
+				<categories>
+					<category>Outdoor/Exploration</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Geology</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Psychology</name>
+				<difficulty>IQ/H</difficulty>
+				<points>4</points>
+				<reference>B216</reference>
+				<categories>
+					<category>Social Sciences/Humanities</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Sociology</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Research</name>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>4</points>
+				<reference>B217</reference>
+				<categories>
+					<category>Scholarly</category>
+					<category>Spy</category>
+				</categories>
+				<prereq_list all="yes">
+					<prereq_list all="yes">
+						<when_tl compare="at least">8</when_tl>
+						<skill_prereq has="yes">
+							<name compare="is">Computer Operation</name>
+							<specialization compare="is anything"></specialization>
+						</skill_prereq>
+					</prereq_list>
+					<prereq_list all="no">
+						<advantage_prereq has="yes">
+							<name compare="starts with">Language</name>
+							<notes compare="contains">Written (Native</notes>
+						</advantage_prereq>
+						<advantage_prereq has="yes">
+							<name compare="starts with">Language</name>
+							<notes compare="contains">Written (Accented)</notes>
+						</advantage_prereq>
+						<advantage_prereq has="yes">
+							<name compare="starts with">Language</name>
+							<notes compare="contains">Written (Broken)</notes>
+						</advantage_prereq>
+					</prereq_list>
+				</prereq_list>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Writing</name>
+					<modifier>-3</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Surgery</name>
+				<tech_level/>
+				<difficulty>IQ/VH</difficulty>
+				<points>2</points>
+				<reference>B223</reference>
+				<categories>
+					<category>Medical</category>
+				</categories>
+				<prereq_list all="no">
+					<skill_prereq has="yes">
+						<name compare="is">first aid</name>
+						<specialization compare="is"></specialization>
+					</skill_prereq>
+					<skill_prereq has="yes">
+						<name compare="is">physician</name>
+						<specialization compare="is"></specialization>
+					</skill_prereq>
+				</prereq_list>
+				<default>
+					<type>Skill</type>
+					<name>First Aid</name>
+					<modifier>-12</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Physician</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Physiology</name>
+					<modifier>-8</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Veterinary</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Survival</name>
+				<specialization>local terrain</specialization>
+				<difficulty>Per/A</difficulty>
+				<points>1</points>
+				<reference>B223</reference>
+				<categories>
+					<category>Outdoor/Exploration</category>
+				</categories>
+				<default>
+					<type>Per</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Naturalist</name>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Survival</name>
+					<specialization>Bank</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Survival</name>
+					<specialization>Deep Ocean Vent</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Survival</name>
+					<specialization>Fresh-Water Lake</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Survival</name>
+					<specialization>Open Ocean</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Survival</name>
+					<specialization>Reef</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Survival</name>
+					<specialization>River/Stream</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Survival</name>
+					<specialization>Tropical Lagoon</specialization>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+		</skill_container>
+	</skill_list>
+</template>

@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="ih2s1rvi:-1c0rektea8bxf" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes">
+			<name>Class Advantages</name>
+			<advantage version="2">
+				<name>Resistant</name>
+				<type>Physical</type>
+				<modifier version="1" enabled="no">
+					<name>@Very Common: Metabolic Hazards, etc.@</name>
+					<cost type="points">30</cost>
+					<affects>total</affects>
+					<reference>B80</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Sickness</name>
+					<cost type="points">15</cost>
+					<affects>total</affects>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Occasional: Disease, Ingested Poison, etc.@</name>
+					<cost type="points">10</cost>
+					<affects>total</affects>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.@</name>
+					<cost type="points">5</cost>
+					<affects>total</affects>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Immunity</name>
+					<cost type="multiplier">1</cost>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>+8 to all HT rolls to resist</name>
+					<cost type="multiplier">0.5</cost>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1">
+					<name>+3 to all HT rolls to resist</name>
+					<cost type="multiplier">0.33</cost>
+					<reference>B81</reference>
+				</modifier>
+				<reference>B81</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+		<advantage_container version="2" open="yes">
+			<name>Class Disadvantages</name>
+			<advantage version="2">
+				<name>Sense of Duty</name>
+				<type>Mental</type>
+				<modifier version="1" enabled="no">
+					<name>Friends and Companions</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Family</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Individual@</name>
+					<cost type="points">-2</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Large Group@</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Entire Race@</name>
+					<cost type="points">-15</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Every Living Being</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<reference>B153</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+	<skill_list>
+		<skill version="2">
+			<name>Computer Operation</name>
+			<tech_level/>
+			<difficulty>IQ/E</difficulty>
+			<points>2</points>
+			<reference>B184</reference>
+			<categories>
+				<category>Everyman</category>
+				<category>Scholarly</category>
+				<category>Technical</category>
+			</categories>
+			<default>
+				<type>IQ</type>
+				<modifier>-4</modifier>
+			</default>
+		</skill>
+		<skill_container version="2" open="yes">
+			<name>Choose One from:</name>
+			<skill version="2">
+				<name>Driving</name>
+				<specialization>Motorcycle</specialization>
+				<tech_level/>
+				<difficulty>DX/A</difficulty>
+				<points>1</points>
+				<reference>B188</reference>
+				<categories>
+					<category>Vehicle</category>
+				</categories>
+				<default>
+					<type>DX</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Bicycling</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Driving</name>
+				<specialization>Heavy Wheeled</specialization>
+				<tech_level/>
+				<difficulty>DX/A</difficulty>
+				<points>1</points>
+				<reference>B188</reference>
+				<categories>
+					<category>Vehicle</category>
+				</categories>
+				<default>
+					<type>DX</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Driving</name>
+					<specialization>Automobile</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Driving</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Driving</name>
+				<specialization>Automobile</specialization>
+				<tech_level/>
+				<difficulty>DX/A</difficulty>
+				<points>1</points>
+				<reference>B188</reference>
+				<categories>
+					<category>Vehicle</category>
+				</categories>
+				<default>
+					<type>DX</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Driving</name>
+					<specialization>Heavy Wheeled</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Driving</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Choose One from:</name>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Robotics</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Robotics</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Professional Skill</name>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B215</reference>
+				<categories>
+					<category>Knowledge</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Professional Skill</name>
+				<difficulty>DX/A</difficulty>
+				<points>2</points>
+				<reference>B215</reference>
+				<categories>
+					<category>Knowledge</category>
+				</categories>
+				<default>
+					<type>DX</type>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+		</skill_container>
+	</skill_list>
+</template>

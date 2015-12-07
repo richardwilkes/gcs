@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<skill_list unique_id="ih11lhvj:1n160pnot1s6z" version="1">
+	<skill version="2">
+		<name>Expert Skill</name>
+		<specialization>Robotics</specialization>
+		<difficulty>IQ/H</difficulty>
+		<points>1</points>
+		<reference>RSWL8</reference>
+		<categories>
+			<category>Knowledge</category>
+			<category>Scholarly</category>
+			<category>Technical</category>
+		</categories>
+	</skill>
+	<skill version="2">
+		<name>Medicine!</name>
+		<difficulty>IQ/W</difficulty>
+		<points>1</points>
+		<reference>RSWL20</reference>
+	</skill>
+</skill_list>

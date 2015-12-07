@@ -2608,6 +2608,12 @@
 			<reference>B46</reference>
 			<notes>@Rare Attack Form@</notes>
 		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Laminate</name>
+			<cost type="percentage">10</cost>
+			<affects>total</affects>
+			<reference>RSWL18</reference>
+		</modifier>
 		<reference>B47</reference>
 		<categories>
 			<category>Advantage</category>
@@ -4480,6 +4486,12 @@
 			<affects>total</affects>
 			<reference>B55</reference>
 			<notes>@Illegal, rare or expensive body@</notes>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Brain Pod</name>
+			<cost type="percentage">-20</cost>
+			<affects>total</affects>
+			<reference>RSWL19</reference>
 		</modifier>
 		<reference>B55</reference>
 		<categories>
@@ -11239,6 +11251,12 @@
 		<name>Pacifism: Cannot Harm Innocents</name>
 		<type>Mental</type>
 		<base_points>-10</base_points>
+		<modifier version="1" enabled="no">
+			<name>Species-Specific</name>
+			<cost type="percentage">-80</cost>
+			<affects>total</affects>
+			<reference>UT32</reference>
+		</modifier>
 		<reference>B148</reference>
 		<categories>
 			<category>Disadvantage</category>
@@ -11248,6 +11266,12 @@
 		<name>Pacifism: Cannot Kill</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
+		<modifier version="1" enabled="no">
+			<name>Species-Specific</name>
+			<cost type="percentage">-80</cost>
+			<affects>total</affects>
+			<reference>UT32</reference>
+		</modifier>
 		<reference>B148</reference>
 		<categories>
 			<category>Disadvantage</category>
@@ -11257,6 +11281,12 @@
 		<name>Pacifism: Reluctant Killer</name>
 		<type>Mental</type>
 		<base_points>-5</base_points>
+		<modifier version="1" enabled="no">
+			<name>Species-Specific</name>
+			<cost type="percentage">-80</cost>
+			<affects>total</affects>
+			<reference>UT32</reference>
+		</modifier>
 		<reference>B148</reference>
 		<categories>
 			<category>Disadvantage</category>
@@ -11266,6 +11296,12 @@
 		<name>Pacifism: Self-Defense Only</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
+		<modifier version="1" enabled="no">
+			<name>Species-Specific</name>
+			<cost type="percentage">-80</cost>
+			<affects>total</affects>
+			<reference>UT32</reference>
+		</modifier>
 		<reference>B148</reference>
 		<categories>
 			<category>Disadvantage</category>
@@ -11275,6 +11311,12 @@
 		<name>Pacifism: Total Nonviolence</name>
 		<type>Mental</type>
 		<base_points>-30</base_points>
+		<modifier version="1" enabled="no">
+			<name>Species-Specific</name>
+			<cost type="percentage">-80</cost>
+			<affects>total</affects>
+			<reference>UT32</reference>
+		</modifier>
 		<reference>B148</reference>
 		<categories>
 			<category>Disadvantage</category>
@@ -15969,6 +16011,12 @@
 			<affects>total</affects>
 			<reference>P82</reference>
 		</modifier>
+		<modifier version="1" enabled="no">
+			<name>Cable Jack</name>
+			<cost type="points">5</cost>
+			<affects>total</affects>
+			<reference>UT31</reference>
+		</modifier>
 		<reference>B91</reference>
 		<categories>
 			<category>Advantage</category>
@@ -16400,6 +16448,12 @@
 			<cost type="percentage">20</cost>
 			<affects>total</affects>
 			<reference>B95</reference>
+		</modifier>
+		<modifier version="1" enabled="no">
+			<name>IQ Only</name>
+			<cost type="percentage">-75</cost>
+			<affects>total</affects>
+			<reference>RSWL24</reference>
 		</modifier>
 		<reference>B95</reference>
 		<categories>

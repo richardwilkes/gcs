@@ -1,0 +1,1435 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="ih2s1rvi:-1c0rektea8bxf" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes">
+			<name>Class Advantages</name>
+			<advantage_container version="2" open="yes">
+				<name>20 Points in:</name>
+				<advantage version="2">
+					<name>Absolute Direction</name>
+					<type>Mental/Physical</type>
+					<base_points>5</base_points>
+					<modifier version="1" enabled="no">
+						<name>Requires signal</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B34</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>3D Spatial Sense</name>
+						<cost type="points">5</cost>
+						<affects>total</affects>
+						<reference>B34</reference>
+						<skill_bonus>
+							<name compare="starts with">piloting</name>
+							<specialization compare="is anything"></specialization>
+							<amount>1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">aerobatics</name>
+							<specialization compare="is anything"></specialization>
+							<amount>2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">free fall</name>
+							<specialization compare="is anything"></specialization>
+							<amount>2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">navigation</name>
+							<specialization compare="is">hyperspace</specialization>
+							<amount>2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">navigation</name>
+							<specialization compare="is">space</specialization>
+							<amount>2</amount>
+						</skill_bonus>
+					</modifier>
+					<reference>B34</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+					<skill_bonus>
+						<name compare="is">body sense</name>
+						<specialization compare="is anything"></specialization>
+						<amount>3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">navigation</name>
+						<specialization compare="is">air</specialization>
+						<amount>3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">navigation</name>
+						<specialization compare="is">land</specialization>
+						<amount>3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">navigation</name>
+						<specialization compare="is">sea</specialization>
+						<amount>3</amount>
+					</skill_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Absolute Direction</name>
+					<type>Mental/Physical</type>
+					<base_points>5</base_points>
+					<modifier version="1" enabled="no">
+						<name>Requires signal</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B34</reference>
+					</modifier>
+					<modifier version="1">
+						<name>3D Spatial Sense</name>
+						<cost type="points">5</cost>
+						<affects>total</affects>
+						<reference>B34</reference>
+						<skill_bonus>
+							<name compare="starts with">piloting</name>
+							<specialization compare="is anything"></specialization>
+							<amount>1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">aerobatics</name>
+							<specialization compare="is anything"></specialization>
+							<amount>2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">free fall</name>
+							<specialization compare="is anything"></specialization>
+							<amount>2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">navigation</name>
+							<specialization compare="is">hyperspace</specialization>
+							<amount>2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">navigation</name>
+							<specialization compare="is">space</specialization>
+							<amount>2</amount>
+						</skill_bonus>
+					</modifier>
+					<reference>B34</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+					<skill_bonus>
+						<name compare="is">body sense</name>
+						<specialization compare="is anything"></specialization>
+						<amount>3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">navigation</name>
+						<specialization compare="is">air</specialization>
+						<amount>3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">navigation</name>
+						<specialization compare="is">land</specialization>
+						<amount>3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">navigation</name>
+						<specialization compare="is">sea</specialization>
+						<amount>3</amount>
+					</skill_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Danger Sense</name>
+					<type>Mental</type>
+					<base_points>15</base_points>
+					<reference>B47</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Flexibility</name>
+					<type>Physical</type>
+					<base_points>5</base_points>
+					<reference>B56</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+					<skill_bonus>
+						<name compare="is">climbing</name>
+						<specialization compare="is anything"></specialization>
+						<amount>3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">escape</name>
+						<specialization compare="is anything"></specialization>
+						<amount>3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">erotic art</name>
+						<specialization compare="is anything"></specialization>
+						<amount>3</amount>
+					</skill_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>High Pain Threshold</name>
+					<type>Physical</type>
+					<base_points>10</base_points>
+					<reference>B59</reference>
+					<notes>Never suffer shock penalties when injured; +3 on all HT rolls to avoid knockdown and stunning; +3 to resist torture</notes>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+			</advantage_container>
+		</advantage_container>
+		<advantage_container version="2" open="yes">
+			<name>Class Disadvantages</name>
+			<advantage version="2">
+				<name>Duty (New Delhi AI)</name>
+				<type>Social</type>
+				<modifier version="1" enabled="no">
+					<name>FR: 6</name>
+					<cost type="points">-2</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>FR: 9</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>FR: 12</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1">
+					<name>FR: 15</name>
+					<cost type="points">-15</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Extremely Hazardous</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1">
+					<name>Involuntary</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Nonhazardous</name>
+					<cost type="points">5</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B133</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Gullibility</name>
+				<type>Mental</type>
+				<base_points>-10</base_points>
+				<cr>12</cr>
+				<reference>B137</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">merchant</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-3</amount>
+				</skill_bonus>
+				<prereq_list all="yes">
+					<skill_prereq has="no">
+						<name compare="is">detect lies</name>
+						<specialization compare="is anything"></specialization>
+					</skill_prereq>
+				</prereq_list>
+			</advantage>
+			<advantage version="2">
+				<name>Wealth</name>
+				<type>Social</type>
+				<modifier version="1">
+					<name>Dead Broke</name>
+					<cost type="points">-25</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is $0</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Poor</name>
+					<cost type="points">-15</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 1/5 average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Struggling</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 1/2 average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Average</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Comfortable</name>
+					<cost type="points">10</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 2x average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Wealthy</name>
+					<cost type="points">20</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 5x average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Wealthy</name>
+					<cost type="points">30</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 20x average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Filthy Rich</name>
+					<cost type="points">50</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 100x average</notes>
+				</modifier>
+				<reference>B25</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+	<skill_list>
+		<skill version="2">
+			<name>Free Fall</name>
+			<difficulty>DX/A</difficulty>
+			<points>4</points>
+			<reference>B197</reference>
+			<categories>
+				<category>Athletic</category>
+			</categories>
+			<default>
+				<type>HT</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Spacer</name>
+			<tech_level/>
+			<difficulty>IQ/E</difficulty>
+			<points>4</points>
+			<reference>B185</reference>
+			<categories>
+				<category>Vehicle</category>
+			</categories>
+			<default>
+				<type>IQ</type>
+				<modifier>-4</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Vacc Suit</name>
+			<tech_level/>
+			<difficulty>DX/A</difficulty>
+			<points>4</points>
+			<reference>B192</reference>
+			<categories>
+				<category>Technical</category>
+			</categories>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Diving Suit</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>NBC Suit</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Battlesuit</name>
+				<modifier>-2</modifier>
+			</default>
+		</skill>
+		<skill_container version="2" open="yes">
+			<name>8 Points in:</name>
+			<skill version="2">
+				<name>Electrician</name>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electrical</specialization>
+					<modifier>-3</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Communications</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<specialization>Communications</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Media</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Arts/Entertainment</category>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<specialization>Media</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Medical</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Medical</category>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<specialization>Medical</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Scientific</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<specialization>Scientific</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Security</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Criminal/Street</category>
+					<category>Spy</category>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<specialization>Security</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Sensors</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<specialization>Sensors</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Sonar</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<specialization>Sonar</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Surveillance</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Police</category>
+					<category>Spy</category>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<specialization>Surveillance</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Repair</name>
+				<specialization>Communications</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<specialization>Communications</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Repair</name>
+				<specialization>Computer</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Computer Operation</name>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Repair</name>
+				<specialization>Media</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<specialization>Media</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Repair</name>
+				<specialization>Medical</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<specialization>Medical</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Repair</name>
+				<specialization>Scientific</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<specialization>Scientific</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Repair</name>
+				<specialization>Security</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<specialization>Security</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Repair</name>
+				<specialization>Sensors</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<specialization>Sensors</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Repair</name>
+				<specialization>Sonar</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<specialization>Sonar</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Electronics Repair</name>
+				<specialization>Surveillance</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B190</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<specialization>Surveillance</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Machinist</name>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B206</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Aerospace</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Aerospace</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Automobile</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Automobile</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Construction Equipment</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Construction Equipment</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Diesel Engine</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Diesel Engine</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Fission Reactor</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Fission Reactor</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Flight Pack</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Flight Pack</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Fuel Cell</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Fuel Cell</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Fusion Reactor</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Fusion Reactor</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Gasoline Engine</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Gasoline Engine</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Heavy Wheeled</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Heavy Wheeled</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>High-Performance Spacecraft</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>High-Performance Spacecraft</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Low-Performance Spacecraft</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Low-Performance Spacecraft</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Motorcycle</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Motorcycle</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Robotics</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Robotics</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Mechanic</name>
+				<specialization>Rockets</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B207</reference>
+				<categories>
+					<category>Repair/Maintainance</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Rockets</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Machinist</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mechanic</name>
+					<modifier>0</modifier>
+				</default>
+			</skill>
+		</skill_container>
+	</skill_list>
+</template>

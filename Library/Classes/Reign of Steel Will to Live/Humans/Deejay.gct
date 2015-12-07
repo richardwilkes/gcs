@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="ih2opr6d:1f8ae9dmm0ks8" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes">
+			<name>Class Advantages</name>
+			<advantage version="2">
+				<name>Charisma</name>
+				<type>Mental</type>
+				<levels>3</levels>
+				<points_per_level>5</points_per_level>
+				<reference>B41</reference>
+				<notes>+1/level to Influence rolls</notes>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">fortune-telling</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">leadership</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">panhandling</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">public speaking</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2" round_down="yes">
+				<name>Reputation (Source of news)</name>
+				<type>Social</type>
+				<levels>1</levels>
+				<points_per_level>5</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>People Affected</name>
+					<cost type="multiplier">1</cost>
+					<reference>B27</reference>
+					<notes>Almost everyone</notes>
+				</modifier>
+				<modifier version="1">
+					<name>People Affected</name>
+					<cost type="multiplier">0.67</cost>
+					<reference>B27</reference>
+					<notes>All humans in broadcast range</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>People Affected</name>
+					<cost type="multiplier">0.5</cost>
+					<reference>B27</reference>
+					<notes>@Large class of people@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>People Affected</name>
+					<cost type="multiplier">0.33</cost>
+					<reference>B27</reference>
+					<notes>@Small class of people@</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Recognized all the time</name>
+					<cost type="multiplier">1</cost>
+					<reference>B28</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Recognized sometimes</name>
+					<cost type="multiplier">0.5</cost>
+					<reference>B28</reference>
+					<notes>10-</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Recognized occasionally</name>
+					<cost type="multiplier">0.33</cost>
+					<reference>B28</reference>
+					<notes>7-</notes>
+				</modifier>
+				<reference>B26</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Voice</name>
+				<type>Physical</type>
+				<base_points>10</base_points>
+				<reference>B97</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">diplomacy</name>
+					<specialization compare="is anything"></specialization>
+					<amount>2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">fast-talk</name>
+					<specialization compare="is anything"></specialization>
+					<amount>2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="starts with">mimicry</name>
+					<specialization compare="is anything"></specialization>
+					<amount>2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">performance</name>
+					<specialization compare="is anything"></specialization>
+					<amount>2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">politics</name>
+					<specialization compare="is anything"></specialization>
+					<amount>2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">public speaking</name>
+					<specialization compare="is anything"></specialization>
+					<amount>2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">sex appeal</name>
+					<specialization compare="is anything"></specialization>
+					<amount>2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">singing</name>
+					<specialization compare="is anything"></specialization>
+					<amount>2</amount>
+				</skill_bonus>
+			</advantage>
+		</advantage_container>
+		<advantage_container version="2" open="yes">
+			<name>Class Disadvantages</name>
+			<advantage version="2">
+				<name>Enemy (Local Overseer)</name>
+				<type>Social</type>
+				<modifier version="1" enabled="no">
+					<name>Weak Individual</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+					<notes>50% of your starting points</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Equal Individual</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+					<notes>100% of your starting points</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Powerful Individual</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+					<notes>&gt;150% of your starting points</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Weak Group</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Medium Group</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Appears almost all the time</name>
+					<cost type="multiplier">3</cost>
+					<reference>B36</reference>
+					<notes>15-</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Appears quite often</name>
+					<cost type="multiplier">2</cost>
+					<reference>B36</reference>
+					<notes>12-</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Appears fairly often</name>
+					<cost type="multiplier">1</cost>
+					<reference>B36</reference>
+					<notes>9-</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Appears quite rarely</name>
+					<cost type="multiplier">0.5</cost>
+					<reference>B36</reference>
+					<notes>6-</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Large/Powerful Group</name>
+					<cost type="points">-30</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Utterly Formidable Group</name>
+					<cost type="points">-40</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Unknown</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Evil Twin</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Evil Twin</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+					<notes>More skilled or extra abilities</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Evil Twin</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+					<notes>More skilled and extra abilities</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Watcher</name>
+					<cost type="multiplier">0.25</cost>
+					<reference>B135</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Rival</name>
+					<cost type="multiplier">0.5</cost>
+					<reference>B135</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Hunter</name>
+					<cost type="multiplier">1</cost>
+					<reference>B135</reference>
+				</modifier>
+				<reference>B135</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Social Stigma (Outlaw)</name>
+				<type>Social</type>
+				<base_points>-15</base_points>
+				<reference>RSWL8</reference>
+				<notes>Reaction -3 from robots, +3 from humans from the same subculture</notes>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+	<skill_list>
+		<skill version="2">
+			<name>Camouflage</name>
+			<difficulty>IQ/E</difficulty>
+			<points>1</points>
+			<reference>B183</reference>
+			<categories>
+				<category>Military</category>
+				<category>Outdoor/Exploration</category>
+			</categories>
+			<default>
+				<type>IQ</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Survival</name>
+				<modifier>-2</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Electronics Operation</name>
+			<specialization>Communications</specialization>
+			<tech_level/>
+			<difficulty>IQ/A</difficulty>
+			<points>4</points>
+			<reference>B189</reference>
+			<categories>
+				<category>Technical</category>
+			</categories>
+			<default>
+				<type>IQ</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Electronics Operation</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Electronics Repair</name>
+				<specialization>Communications</specialization>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Engineer</name>
+				<specialization>Electronics</specialization>
+				<modifier>-5</modifier>
+			</default>
+		</skill>
+		<skill_container version="2" open="yes">
+			<name>10 Points in:</name>
+			<skill version="2">
+				<name>Electronics Operation</name>
+				<specialization>Media</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B189</reference>
+				<categories>
+					<category>Arts/Entertainment</category>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Repair</name>
+					<specialization>Media</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Electronics</specialization>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Electronics Operation</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Intelligence Analysis</name>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B201</reference>
+				<categories>
+					<category>Military</category>
+					<category>Police</category>
+					<category>Spy</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Strategy</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Performance</name>
+				<difficulty>IQ/A</difficulty>
+				<points>4</points>
+				<reference>B212</reference>
+				<categories>
+					<category>Arts/Entertainment</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Acting</name>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Public Speaking</name>
+					<modifier>-2</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Public Speaking</name>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B216</reference>
+				<categories>
+					<category>Business</category>
+					<category>Scholarly</category>
+					<category>Social</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Acting</name>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Performance</name>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Politics</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Singing</name>
+				<difficulty>HT/E</difficulty>
+				<points>1</points>
+				<reference>B220</reference>
+				<categories>
+					<category>Arts/Entertainment</category>
+				</categories>
+				<default>
+					<type>HT</type>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Teaching</name>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B224</reference>
+				<categories>
+					<category>Scholarly</category>
+					<category>Social</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+		</skill_container>
+	</skill_list>
+</template>

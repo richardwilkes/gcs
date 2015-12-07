@@ -1,0 +1,626 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="ih2nf2xa:1aalnvaqsonmx" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes">
+			<name>Class Advantages</name>
+			<advantage version="2">
+				<name>Alternate Identity</name>
+				<type>Social</type>
+				<base_points>5</base_points>
+				<modifier version="1">
+					<name>Illegal</name>
+					<cost type="points">10</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B39</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Wealth</name>
+				<type>Social</type>
+				<modifier version="1" enabled="no">
+					<name>Dead Broke</name>
+					<cost type="points">-25</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is $0</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Poor</name>
+					<cost type="points">-15</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 1/5 average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Struggling</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 1/2 average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Average</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Comfortable</name>
+					<cost type="points">10</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 2x average</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Wealthy</name>
+					<cost type="points">20</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 5x average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Wealthy</name>
+					<cost type="points">30</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 20x average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Filthy Rich</name>
+					<cost type="points">50</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 100x average</notes>
+				</modifier>
+				<reference>B25</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+		<advantage_container version="2" open="yes">
+			<name>Class Disadvantages</name>
+			<advantage version="2">
+				<name>Enemy (FBI)</name>
+				<type>Social</type>
+				<modifier version="1" enabled="no">
+					<name>Weak Individual</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+					<notes>50% of your starting points</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Equal Individual</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+					<notes>100% of your starting points</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Powerful Individual</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+					<notes>&gt;150% of your starting points</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Weak Group</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Medium Group</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Appears almost all the time</name>
+					<cost type="multiplier">3</cost>
+					<reference>B36</reference>
+					<notes>15-</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Appears quite often</name>
+					<cost type="multiplier">2</cost>
+					<reference>B36</reference>
+					<notes>12-</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Appears fairly often</name>
+					<cost type="multiplier">1</cost>
+					<reference>B36</reference>
+					<notes>9-</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Appears quite rarely</name>
+					<cost type="multiplier">0.5</cost>
+					<reference>B36</reference>
+					<notes>6-</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Large/Powerful Group</name>
+					<cost type="points">-30</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Utterly Formidable Group</name>
+					<cost type="points">-40</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Unknown</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Evil Twin</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Evil Twin</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+					<notes>More skilled or extra abilities</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Evil Twin</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B135</reference>
+					<notes>More skilled and extra abilities</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Watcher</name>
+					<cost type="multiplier">0.25</cost>
+					<reference>B135</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Rival</name>
+					<cost type="multiplier">0.5</cost>
+					<reference>B135</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Hunter</name>
+					<cost type="multiplier">1</cost>
+					<reference>B135</reference>
+				</modifier>
+				<reference>B135</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Secret (Resistance operative)</name>
+				<type>Social</type>
+				<modifier version="1" enabled="no">
+					<name>Serious Embarrassment</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B152</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Utter Rejection</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B152</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Imprisonment</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+					<reference>B152</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Possible Death</name>
+					<cost type="points">-30</cost>
+					<affects>total</affects>
+					<reference>B152</reference>
+				</modifier>
+				<reference>B152</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+	<skill_list>
+		<skill version="2">
+			<name>Electronics Operation</name>
+			<specialization>Security</specialization>
+			<tech_level/>
+			<difficulty>IQ/A</difficulty>
+			<points>2</points>
+			<reference>B189</reference>
+			<categories>
+				<category>Criminal/Street</category>
+				<category>Spy</category>
+				<category>Technical</category>
+			</categories>
+			<default>
+				<type>IQ</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Electronics Operation</name>
+				<specialization>Security</specialization>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Engineer</name>
+				<specialization>Electronics</specialization>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Electronics Operation</name>
+				<modifier>-4</modifier>
+			</default>
+		</skill>
+		<skill_container version="2" open="yes">
+			<name>Choose one:</name>
+			<skill version="2">
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<tech_level/>
+				<difficulty>DX/E</difficulty>
+				<points>1</points>
+				<reference>B198</reference>
+				<categories>
+					<category>Combat/Weapon</category>
+					<category>Ranged Combat</category>
+				</categories>
+				<default>
+					<type>DX</type>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Grenade Launcher</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Gyroc</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Light Anti-Armor Weapon</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Light Machine Gun</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Musket</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Beam Weapons</name>
+					<specialization>Pistol</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Rifle</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Shotgun</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Submachine Gun</specialization>
+					<modifier>-2</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<tech_level/>
+				<difficulty>DX/E</difficulty>
+				<points>1</points>
+				<reference>B198</reference>
+				<categories>
+					<category>Combat/Weapon</category>
+					<category>Ranged Combat</category>
+				</categories>
+				<default>
+					<type>DX</type>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Grenade Launcher</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Gyroc</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Light Anti-Armor Weapon</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Light Machine Gun</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Musket</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Pistol</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Rifle</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Submachine Gun</specialization>
+					<modifier>-2</modifier>
+				</default>
+			</skill>
+		</skill_container>
+		<skill version="2">
+			<name>Merchant</name>
+			<difficulty>IQ/A</difficulty>
+			<points>4</points>
+			<reference>B209</reference>
+			<categories>
+				<category>Business</category>
+				<category>Social</category>
+			</categories>
+			<default>
+				<type>IQ</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Finance</name>
+				<modifier>-6</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Market Analysis</name>
+				<modifier>-4</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Streetwise</name>
+			<difficulty>IQ/A</difficulty>
+			<points>2</points>
+			<reference>B223</reference>
+			<categories>
+				<category>Criminal/Street</category>
+				<category>Police</category>
+				<category>Social</category>
+			</categories>
+			<default>
+				<type>IQ</type>
+				<modifier>-5</modifier>
+			</default>
+		</skill>
+		<skill_container version="2" open="yes">
+			<name>12 Points in:</name>
+			<skill version="2">
+				<name>Carousing</name>
+				<difficulty>HT/E</difficulty>
+				<points>1</points>
+				<reference>B183</reference>
+				<categories>
+					<category>Criminal/Street</category>
+					<category>Social</category>
+				</categories>
+				<default>
+					<type>HT</type>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Computer Operation</name>
+				<tech_level/>
+				<difficulty>IQ/E</difficulty>
+				<points>2</points>
+				<reference>B184</reference>
+				<categories>
+					<category>Everyman</category>
+					<category>Scholarly</category>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Computer Programming</name>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>4</points>
+				<reference>B184</reference>
+				<categories>
+					<category>Design/Invention</category>
+				</categories>
+			</skill>
+			<skill version="2">
+				<name>Driving</name>
+				<specialization>Automobile</specialization>
+				<tech_level/>
+				<difficulty>DX/A</difficulty>
+				<points>1</points>
+				<reference>B188</reference>
+				<categories>
+					<category>Vehicle</category>
+				</categories>
+				<default>
+					<type>DX</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Driving</name>
+					<specialization>Heavy Wheeled</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Driving</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Driving</name>
+				<specialization>Heavy Wheeled</specialization>
+				<tech_level/>
+				<difficulty>DX/A</difficulty>
+				<points>1</points>
+				<reference>B188</reference>
+				<categories>
+					<category>Vehicle</category>
+				</categories>
+				<default>
+					<type>DX</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Driving</name>
+					<specialization>Automobile</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Driving</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Forgery</name>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>2</points>
+				<reference>B196</reference>
+				<categories>
+					<category>Criminal/Street</category>
+					<category>Spy</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Counterfeiting</name>
+					<modifier>-2</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Gambling</name>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B197</reference>
+				<categories>
+					<category>Criminal/Street</category>
+					<category>Social</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Mathematics</name>
+					<specialization>Statistics</specialization>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Holdout</name>
+				<difficulty>IQ/A</difficulty>
+				<points>4</points>
+				<reference>B200</reference>
+				<categories>
+					<category>Criminal/Street</category>
+					<category>Spy</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Sleight of Hand</name>
+					<modifier>-3</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Sex Appeal</name>
+				<difficulty>HT/A</difficulty>
+				<points>2</points>
+				<reference>B219</reference>
+				<categories>
+					<category>Social</category>
+				</categories>
+				<default>
+					<type>HT</type>
+					<modifier>-3</modifier>
+				</default>
+			</skill>
+		</skill_container>
+	</skill_list>
+</template>
