@@ -12,6 +12,7 @@
 package com.trollworks.gcs.widgets.outline;
 
 import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.toolkit.ui.Colors;
 import com.trollworks.toolkit.ui.TextDrawing;
 import com.trollworks.toolkit.ui.widget.outline.Cell;
 import com.trollworks.toolkit.ui.widget.outline.Column;
@@ -139,7 +140,7 @@ public class MultiCell implements Cell {
 	@SuppressWarnings("static-method")
 	public Color getColor(boolean selected, boolean active, Row row, Column column) {
 		if (((ListRow) row).isSatisfied()) {
-			return Outline.getListForeground(selected, active);
+			return Colors.getListForeground(selected, active);
 		}
 		return Color.RED;
 	}

@@ -12,6 +12,7 @@
 package com.trollworks.gcs.weapon;
 
 import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.toolkit.ui.Colors;
 import com.trollworks.toolkit.ui.TextDrawing;
 import com.trollworks.toolkit.ui.widget.outline.Cell;
 import com.trollworks.toolkit.ui.widget.outline.Column;
@@ -61,7 +62,7 @@ public class WeaponDescriptionCell implements Cell {
 		Font font = UIManager.getFont(GCSFonts.KEY_FIELD);
 		int pos;
 
-		gc.setColor(Outline.getListForeground(selected, active));
+		gc.setColor(Colors.getListForeground(selected, active));
 		gc.setFont(font);
 		pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP);
 		if (notes.trim().length() > 0) {
