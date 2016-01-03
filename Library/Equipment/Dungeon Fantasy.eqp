@@ -1572,7 +1572,7 @@
 		<quantity>1</quantity>
 		<description>Moly Amulet</description>
 		<legality_class>4</legality_class>
-		<value>28720</value>
+		<value>23600</value>
 		<weight>0.25 lb</weight>
 		<reference>DF1:30</reference>
 		<notes>Alchemical. +5 Magic resistance. -5 to Wizard spells.</notes>
