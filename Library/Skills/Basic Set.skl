@@ -266,10 +266,349 @@
 	</skill>
 	<skill version="2">
 		<name>Area Knowledge</name>
-		<specialization>@Specialty@</specialization>
+		<specialization>@Barony, County, Duchy, or Small Nation@</specialization>
 		<difficulty>IQ/E</difficulty>
 		<points>1</points>
 		<reference>B176</reference>
+		<notes>General nature of its settlements and towns, political allegiances, leaders, and most citizens of Status 5+</notes>
+		<categories>
+			<category>Everyman</category>
+			<category>Knowledge</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Geography</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Area Knowledge</name>
+		<specialization>@Barony, County, Duchy, or Small Nation@; Lived there</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>B176</reference>
+		<notes>General nature of its settlements and towns, political allegiances, leaders, and most citizens of Status 5+</notes>
+		<categories>
+			<category>Everyman</category>
+			<category>Knowledge</category>
+		</categories>
+		<default>
+			<type>IQ</type>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Geography</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Area Knowledge</name>
+		<specialization>@City@</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>B176</reference>
+		<notes>All important businesses, streets, citizens, leaders, etc.</notes>
+		<categories>
+			<category>Everyman</category>
+			<category>Knowledge</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Geography</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Area Knowledge</name>
+		<specialization>@City@; Lived there</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>B176</reference>
+		<notes>All important businesses, streets, citizens, leaders, etc.</notes>
+		<categories>
+			<category>Everyman</category>
+			<category>Knowledge</category>
+		</categories>
+		<default>
+			<type>IQ</type>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Geography</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Area Knowledge</name>
+		<specialization>@Galaxy@</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>B176</reference>
+		<notes>Location of the capitals of interplanetary states and the homeworlds of major races; general awareness of all major races; knowledge of individuals of Status 8; general understanding of relations between interplanetary states</notes>
+		<categories>
+			<category>Everyman</category>
+			<category>Knowledge</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Geography</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Area Knowledge</name>
+		<specialization>@Galaxy@; Lived there</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>B176</reference>
+		<notes>Location of the capitals of interplanetary states and the homeworlds of major races; general awareness of all major races; knowledge of individuals of Status 8; general understanding of relations between interplanetary states</notes>
+		<categories>
+			<category>Everyman</category>
+			<category>Knowledge</category>
+		</categories>
+		<default>
+			<type>IQ</type>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Geography</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Area Knowledge</name>
+		<specialization>@Interplanetary State@</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>B176</reference>
+		<notes>Location of major planets; familiarity with all known races (but not necessarily expertise); knowledge of people of Status 7+; general understanding of the economic and political situation</notes>
+		<categories>
+			<category>Everyman</category>
+			<category>Knowledge</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Geography</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Area Knowledge</name>
+		<specialization>@Interplanetary State@; Lived there</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>B176</reference>
+		<notes>Location of major planets; familiarity with all known races (but not necessarily expertise); knowledge of people of Status 7+; general understanding of the economic and political situation</notes>
+		<categories>
+			<category>Everyman</category>
+			<category>Knowledge</category>
+		</categories>
+		<default>
+			<type>IQ</type>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Geography</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Area Knowledge</name>
+		<specialization>@Large Nation@</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>B176</reference>
+		<notes>Location of its major cities and important sites; awareness of its major customs, ethnic groups, and languages (but not necessarily expertise); names of folk of Status 6+; and a general understanding of the economic and political situation</notes>
+		<categories>
+			<category>Everyman</category>
+			<category>Knowledge</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Geography</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Area Knowledge</name>
+		<specialization>@Large Nation@; Lived there</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>B176</reference>
+		<notes>Location of its major cities and important sites; awareness of its major customs, ethnic groups, and languages (but not necessarily expertise); names of folk of Status 6+; and a general understanding of the economic and political situation</notes>
+		<categories>
+			<category>Everyman</category>
+			<category>Knowledge</category>
+		</categories>
+		<default>
+			<type>IQ</type>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Geography</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Area Knowledge</name>
+		<specialization>@Planet@</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>B176</reference>
+		<notes>Location of its major cities and important sites; awareness of its major customs, ethnic groups, and languages (but not necessarily expertise); names of folk of Status 7+; and a general understanding of the economic and political situation</notes>
+		<categories>
+			<category>Everyman</category>
+			<category>Knowledge</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Geography</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Area Knowledge</name>
+		<specialization>@Planet@; Lived there</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>B176</reference>
+		<notes>Location of its major cities and important sites; awareness of its major customs, ethnic groups, and languages (but not necessarily expertise); names of folk of Status 7+; and a general understanding of the economic and political situation</notes>
+		<categories>
+			<category>Everyman</category>
+			<category>Knowledge</category>
+		</categories>
+		<default>
+			<type>IQ</type>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Geography</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Area Knowledge</name>
+		<specialization>@Rural Area@</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>B176</reference>
+		<notes>The inhabitants, trails, streams, hiding places, ambush sites, flora, and fauna of a few hundred acres</notes>
+		<categories>
+			<category>Everyman</category>
+			<category>Knowledge</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Geography</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Area Knowledge</name>
+		<specialization>@Rural Area@; Lived there</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>B176</reference>
+		<notes>The inhabitants, trails, streams, hiding places, ambush sites, flora, and fauna of a few hundred acres</notes>
+		<categories>
+			<category>Everyman</category>
+			<category>Knowledge</category>
+		</categories>
+		<default>
+			<type>IQ</type>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Geography</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Area Knowledge</name>
+		<specialization>@Urban Neighborhood@</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>B176</reference>
+		<notes>The residents and buildings of a few city blocks</notes>
+		<categories>
+			<category>Everyman</category>
+			<category>Knowledge</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Geography</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Area Knowledge</name>
+		<specialization>@Urban Neighborhood@; Lived there</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>B176</reference>
+		<notes>The residents and buildings of a few city blocks</notes>
+		<categories>
+			<category>Everyman</category>
+			<category>Knowledge</category>
+		</categories>
+		<default>
+			<type>IQ</type>
+			<modifier>-4</modifier>
+		</default>
+		<default>
+			<type>Skill</type>
+			<name>Geography</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Area Knowledge</name>
+		<specialization>@Village or Town@</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>B176</reference>
+		<notes>All important citizens and businesses, and most unimportant ones; all public buildings and most houses</notes>
+		<categories>
+			<category>Everyman</category>
+			<category>Knowledge</category>
+		</categories>
+		<default>
+			<type>Skill</type>
+			<name>Geography</name>
+			<specialization>@Specialty@</specialization>
+			<modifier>-3</modifier>
+		</default>
+	</skill>
+	<skill version="2">
+		<name>Area Knowledge</name>
+		<specialization>@Village or Town@; Lived there</specialization>
+		<difficulty>IQ/E</difficulty>
+		<points>1</points>
+		<reference>B176</reference>
+		<notes>All important citizens and businesses, and most unimportant ones; all public buildings and most houses</notes>
 		<categories>
 			<category>Everyman</category>
 			<category>Knowledge</category>
