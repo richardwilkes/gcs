@@ -45,7 +45,7 @@
 		<value>2</value>
 		<weight>0.1 lb</weight>
 		<reference>B277</reference>
-    <notes>Changes damage to piercing with armor divisor of (2).</notes>
+		<notes>Changes damage to piercing with armor divisor of (2).</notes>
 		<categories>
 			<category>Missile Weapon</category>
 		</categories>
@@ -4351,15 +4351,58 @@
 		<value>20</value>
 		<weight>3 lb</weight>
 		<reference>B289</reference>
-		<notes>Treat as a small mace in combat, but at -1 to skill</notes>
+		<melee_weapon>
+			<damage>sw+2 cr</damage>
+			<strength>10</strength>
+			<usage>Swung</usage>
+			<reach>1</reach>
+			<parry>0U</parry>
+			<block>No</block>
+			<default>
+				<type>DX</type>
+				<modifier>-6</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Axe/Mace</name>
+				<modifier>-1</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Flail</name>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Axe/Mace</name>
+				<modifier>-4</modifier>
+			</default>
+		</melee_weapon>
+		<ranged_weapon>
+			<damage>sw+2 cr</damage>
+			<strength>10</strength>
+			<usage>Thrown</usage>
+			<accuracy>1</accuracy>
+			<range>x1/x1.5</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>T(1)</shots>
+			<bulk>-3</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Thrown Weapon</name>
+				<specialization>Axe/Mace</specialization>
+				<modifier>-1</modifier>
+			</default>
+		</ranged_weapon>
 		<categories>
+			<category>Melee Weapon</category>
+			<category>Missile Weapon</category>
 			<category>Tools</category>
 		</categories>
-		<skill_bonus>
-			<name compare="is">Axe/Mace</name>
-			<specialization compare="is anything"></specialization>
-			<amount>-1</amount>
-		</skill_bonus>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
