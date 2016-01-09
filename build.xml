@@ -42,6 +42,12 @@
 	<property name="trove_path" value="${toolkit_lib}/trove-3.0.3.jar"/>
 	<property name="iText" value="iText-2.1.7.jar"/>
 	<property name="iText_path" value="${lib}/${iText}"/>
+	<property name="commons_logging" value="commons-logging-1.2.jar"/>
+	<property name="commons_logging_path" value="${lib}/${commons_logging}"/>
+	<property name="fontbox" value="fontbox-2.0.0-RC2.jar"/>
+	<property name="fontbox_path" value="${lib}/${fontbox}"/>
+	<property name="pdfbox" value="pdfbox-2.0.0-RC2.jar"/>
+	<property name="pdfbox_path" value="${lib}/${pdfbox}"/>
 	<property name="build_root" value="ant_build"/>
 	<property name="gcs_build" value="${build_root}/${app}"/>
 	<property name="dist.build" value="${build_root}/dist"/>
@@ -79,6 +85,9 @@
 			<classpath>
 				<pathelement location="${toolkit_path}"/>
 				<pathelement location="${trove_path}"/>
+				<pathelement location="${commons_logging_path}"/>
+				<pathelement location="${fontbox_path}"/>
+				<pathelement location="${pdfbox_path}"/>
 				<pathelement location="${iText_path}"/>
 				<pathelement location="${apple_stubs_path}"/>
 			</classpath>
@@ -94,7 +103,7 @@
 		<!-- Create the jar file. -->
 		<jar destfile="${lib}/${app}-${primary_version}.jar" basedir="${gcs_build}" duplicate="fail">
 			<manifest>
-				<attribute name="Class-Path" value="${toolkit} ${trove} ${iText} ${apple_stubs}"/>
+				<attribute name="Class-Path" value="${toolkit} ${trove} ${commons_logging} ${fontbox} ${pdfbox} ${iText} ${apple_stubs}"/>
 				<attribute name="Main-Class" value="com.trollworks.gcs.app.GCS"/>
 				<attribute name="bundle-name" value="${app_name}"/>
 				<attribute name="bundle-version" value="${version}"/>
@@ -139,6 +148,9 @@
 		<copy file="${lib}/${app}-${primary_version}.jar" todir="${app.jars}"/>
 		<copy file="${toolkit_path}" todir="${app.jars}"/>
 		<copy file="${trove_path}" todir="${app.jars}"/>
+		<copy file="${commons_logging_path}" todir="${app.jars}"/>
+		<copy file="${fontbox_path}" todir="${app.jars}"/>
+		<copy file="${pdfbox_path}" todir="${app.jars}"/>
 		<copy file="${iText_path}" todir="${app.jars}"/>
 		<copy file="${apple_stubs_path}" todir="${app.jars}"/>
 

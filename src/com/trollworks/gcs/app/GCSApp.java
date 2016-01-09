@@ -17,6 +17,7 @@ import com.trollworks.gcs.menu.HelpMenuProvider;
 import com.trollworks.gcs.menu.edit.EditMenuProvider;
 import com.trollworks.gcs.menu.file.FileMenuProvider;
 import com.trollworks.gcs.menu.item.ItemMenuProvider;
+import com.trollworks.gcs.preferences.ReferenceLookupPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.UpdateChecker;
@@ -37,7 +38,7 @@ import java.util.HashMap;
 public class GCSApp extends App {
 	/** The one and only instance of this class. */
 	public static final GCSApp	INSTANCE	= new GCSApp();
-	public static final String	WEB_SITE	= "http://gurpscharactersheet.com"; //$NON-NLS-1$
+	public static final String	WEB_SITE	= "http://gurpscharactersheet.com";	 //$NON-NLS-1$
 
 	private GCSApp() {
 		super();
@@ -66,6 +67,7 @@ public class GCSApp extends App {
 		PreferencesWindow.addCategory(SheetPreferences::new);
 		PreferencesWindow.addCategory(FontPreferences::new);
 		PreferencesWindow.addCategory(MenuKeyPreferences::new);
+		PreferencesWindow.addCategory(ReferenceLookupPreferences::new);
 	}
 
 	@Override

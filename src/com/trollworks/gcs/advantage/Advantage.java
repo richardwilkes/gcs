@@ -14,6 +14,7 @@ package com.trollworks.gcs.advantage;
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.common.HasSourceReference;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.preferences.SheetPreferences;
@@ -42,12 +43,12 @@ import java.util.HashSet;
 import java.util.List;
 
 /** A GURPS Advantage. */
-public class Advantage extends ListRow {
+public class Advantage extends ListRow implements HasSourceReference {
 	@Localize("Advantage")
 	@Localize(locale = "de", value = "Vorteil")
 	@Localize(locale = "ru", value = "Преимущество")
 	@Localize(locale = "es", value = "Ventaja")
-	private static String				DEFAULT_NAME;
+	private static String DEFAULT_NAME;
 
 	static {
 		Localization.initialize();
@@ -55,49 +56,49 @@ public class Advantage extends ListRow {
 
 	private static final int			CURRENT_VERSION				= 2;
 	/** The XML tag used for items. */
-	public static final String			TAG_ADVANTAGE				= "advantage";										//$NON-NLS-1$
+	public static final String			TAG_ADVANTAGE				= "advantage";																														//$NON-NLS-1$
 	/** The XML tag used for containers. */
-	public static final String			TAG_ADVANTAGE_CONTAINER		= "advantage_container";							//$NON-NLS-1$
-	private static final String			TAG_REFERENCE				= "reference";										//$NON-NLS-1$
-	private static final String			TAG_OLD_POINTS				= "points";										//$NON-NLS-1$
-	private static final String			TAG_BASE_POINTS				= "base_points";									//$NON-NLS-1$
-	private static final String			TAG_POINTS_PER_LEVEL		= "points_per_level";								//$NON-NLS-1$
-	private static final String			TAG_LEVELS					= "levels";										//$NON-NLS-1$
-	private static final String			TAG_TYPE					= "type";											//$NON-NLS-1$
-	private static final String			TAG_NAME					= "name";											//$NON-NLS-1$
-	private static final String			TAG_CR						= "cr";											//$NON-NLS-1$
-	private static final String			TYPE_MENTAL					= "Mental";										//$NON-NLS-1$
-	private static final String			TYPE_PHYSICAL				= "Physical";										//$NON-NLS-1$
-	private static final String			TYPE_SOCIAL					= "Social";										//$NON-NLS-1$
-	private static final String			TYPE_EXOTIC					= "Exotic";										//$NON-NLS-1$
-	private static final String			TYPE_SUPERNATURAL			= "Supernatural";									//$NON-NLS-1$
-	private static final String			ATTR_ROUND_COST_DOWN		= "round_down";									//$NON-NLS-1$
+	public static final String			TAG_ADVANTAGE_CONTAINER		= "advantage_container";																					//$NON-NLS-1$
+	private static final String			TAG_REFERENCE				= "reference";																														//$NON-NLS-1$
+	private static final String			TAG_OLD_POINTS				= "points";																																//$NON-NLS-1$
+	private static final String			TAG_BASE_POINTS				= "base_points";																											//$NON-NLS-1$
+	private static final String			TAG_POINTS_PER_LEVEL		= "points_per_level";																								//$NON-NLS-1$
+	private static final String			TAG_LEVELS					= "levels";																																//$NON-NLS-1$
+	private static final String			TAG_TYPE					= "type";																																	//$NON-NLS-1$
+	private static final String			TAG_NAME					= "name";																																	//$NON-NLS-1$
+	private static final String			TAG_CR						= "cr";																																			//$NON-NLS-1$
+	private static final String			TYPE_MENTAL					= "Mental";																																//$NON-NLS-1$
+	private static final String			TYPE_PHYSICAL				= "Physical";																														//$NON-NLS-1$
+	private static final String			TYPE_SOCIAL					= "Social";																																//$NON-NLS-1$
+	private static final String			TYPE_EXOTIC					= "Exotic";																																//$NON-NLS-1$
+	private static final String			TYPE_SUPERNATURAL			= "Supernatural";																											//$NON-NLS-1$
+	private static final String			ATTR_ROUND_COST_DOWN		= "round_down";																													//$NON-NLS-1$
 	/** The prefix used in front of all IDs for the advantages. */
-	public static final String			PREFIX						= GURPSCharacter.CHARACTER_PREFIX + "advantage.";	//$NON-NLS-1$
+	public static final String			PREFIX						= GURPSCharacter.CHARACTER_PREFIX + "advantage.";			//$NON-NLS-1$
 	/** The field ID for type changes. */
-	public static final String			ID_TYPE						= PREFIX + "Type";									//$NON-NLS-1$
+	public static final String			ID_TYPE						= PREFIX + "Type";																											//$NON-NLS-1$
 	/** The field ID for container type changes. */
-	public static final String			ID_CONTAINER_TYPE			= PREFIX + "ContainerType";						//$NON-NLS-1$
+	public static final String			ID_CONTAINER_TYPE			= PREFIX + "ContainerType";																				//$NON-NLS-1$
 	/** The field ID for name changes. */
-	public static final String			ID_NAME						= PREFIX + "Name";									//$NON-NLS-1$
+	public static final String			ID_NAME						= PREFIX + "Name";																											//$NON-NLS-1$
 	/** The field ID for CR changes. */
-	public static final String			ID_CR						= PREFIX + "CR";									//$NON-NLS-1$
+	public static final String			ID_CR						= PREFIX + "CR";																											//$NON-NLS-1$
 	/** The field ID for level changes. */
-	public static final String			ID_LEVELS					= PREFIX + "Levels";								//$NON-NLS-1$
+	public static final String			ID_LEVELS					= PREFIX + "Levels";																								//$NON-NLS-1$
 	/** The field ID for round cost down changes. */
-	public static final String			ID_ROUND_COST_DOWN			= PREFIX + "RoundCostDown";						//$NON-NLS-1$
+	public static final String			ID_ROUND_COST_DOWN			= PREFIX + "RoundCostDown";																				//$NON-NLS-1$
 	/** The field ID for point changes. */
-	public static final String			ID_POINTS					= PREFIX + "Points";								//$NON-NLS-1$
+	public static final String			ID_POINTS					= PREFIX + "Points";																								//$NON-NLS-1$
 	/** The field ID for page reference changes. */
-	public static final String			ID_REFERENCE				= PREFIX + "Reference";							//$NON-NLS-1$
+	public static final String			ID_REFERENCE				= PREFIX + "Reference";																							//$NON-NLS-1$
 	/** The field ID for when the categories change. */
-	public static final String			ID_CATEGORY					= PREFIX + "Category";								//$NON-NLS-1$
+	public static final String			ID_CATEGORY					= PREFIX + "Category";																								//$NON-NLS-1$
 	/** The field ID for when the row hierarchy changes. */
-	public static final String			ID_LIST_CHANGED				= PREFIX + "ListChanged";							//$NON-NLS-1$
+	public static final String			ID_LIST_CHANGED				= PREFIX + "ListChanged";																					//$NON-NLS-1$
 	/** The field ID for when the advantage becomes or stops being a weapon. */
-	public static final String			ID_WEAPON_STATUS_CHANGED	= PREFIX + "WeaponStatus";							//$NON-NLS-1$
+	public static final String			ID_WEAPON_STATUS_CHANGED	= PREFIX + "WeaponStatus";																					//$NON-NLS-1$
 	/** The field ID for when the advantage gets Modifiers. */
-	public static final String			ID_MODIFIER_STATUS_CHANGED	= PREFIX + "Modifier";								//$NON-NLS-1$
+	public static final String			ID_MODIFIER_STATUS_CHANGED	= PREFIX + "Modifier";																								//$NON-NLS-1$
 	/** The type mask for mental advantages. */
 	public static final int				TYPE_MASK_MENTAL			= 1 << 0;
 	/** The type mask for physical advantages. */
@@ -670,15 +671,12 @@ public class Advantage extends ListRow {
 		return false;
 	}
 
-	/** @return The page reference. */
+	@Override
 	public String getReference() {
 		return mReference;
 	}
 
-	/**
-	 * @param reference The page reference to set.
-	 * @return Whether it was changed.
-	 */
+	@Override
 	public boolean setReference(String reference) {
 		if (!mReference.equals(reference)) {
 			mReference = reference;
@@ -896,7 +894,7 @@ public class Advantage extends ListRow {
 		return false;
 	}
 
-	private static final String	MODIFIER_SEPARATOR	= "; "; //$NON-NLS-1$
+	private static final String MODIFIER_SEPARATOR = "; "; //$NON-NLS-1$
 
 	@Override
 	public String getModifierNotes() {

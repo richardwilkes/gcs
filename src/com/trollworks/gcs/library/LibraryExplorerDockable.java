@@ -20,6 +20,7 @@ import com.trollworks.gcs.common.ListCollectionThread;
 import com.trollworks.gcs.common.Workspace;
 import com.trollworks.gcs.equipment.EquipmentDockable;
 import com.trollworks.gcs.equipment.EquipmentList;
+import com.trollworks.gcs.pdfview.PdfDockable;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.SkillsDockable;
 import com.trollworks.gcs.spell.SpellList;
@@ -92,10 +93,10 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 		Localization.initialize();
 	}
 
-	private Toolbar			mToolbar;
-	private Search			mSearch;
-	private TreePanel		mTreePanel;
-	private Notifier		mNotifier;
+	private Toolbar		mToolbar;
+	private Search		mSearch;
+	private TreePanel	mTreePanel;
+	private Notifier	mNotifier;
 
 	public static LibraryExplorerDockable get() {
 		for (Dockable dockable : Workspace.get().getDock().getDockables()) {
@@ -275,26 +276,27 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 		}
 	}
 
-	public FileProxy open(Path path) {
-		FileProxy proxy = null;
-		// See if it is already open
+	public Dockable getDockableFor(Path path) {
 		for (Dockable dockable : getDockContainer().getDock().getDockables()) {
 			if (dockable instanceof FileProxy) {
-				proxy = (FileProxy) dockable;
-				File file = proxy.getBackingFile();
+				File file = ((FileProxy) dockable).getBackingFile();
 				if (file != null) {
 					try {
 						if (Files.isSameFile(path, file.toPath())) {
-							dockable.getDockContainer().setCurrentDockable(dockable);
-							break;
+							return dockable;
 						}
 					} catch (IOException ioe) {
 						Log.error(ioe);
 					}
 				}
-				proxy = null;
 			}
 		}
+		return null;
+	}
+
+	public FileProxy open(Path path) {
+		// See if it is already open
+		FileProxy proxy = (FileProxy) getDockableFor(path);
 		if (proxy == null) {
 			// If it wasn't, load it and put it into the dock
 			try {
@@ -320,6 +322,9 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 					case Template.EXTENSION:
 						proxy = dockTemplate(new TemplateDockable(new Template(path.toFile())));
 						break;
+					case PdfDockable.EXTENSION:
+						proxy = dockPdf(new PdfDockable(path.toFile(), 1));
+						break;
 					default:
 						break;
 				}
@@ -327,6 +332,9 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 				StdFileDialog.showCannotOpenMsg(this, PathUtils.getLeafName(path, true), throwable);
 				proxy = null;
 			}
+		} else {
+			Dockable dockable = (Dockable) proxy;
+			dockable.getDockContainer().setCurrentDockable(dockable);
 		}
 		if (proxy != null) {
 			File file = proxy.getBackingFile();
@@ -493,6 +501,47 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 			dock.dock(template, this, DockLocation.EAST);
 		}
 		return template;
+	}
+
+	/**
+	 * @param pdf The {@link PdfDockable} to dock.
+	 * @return The {@link PdfDockable} that was passed in.
+	 */
+	public PdfDockable dockPdf(PdfDockable pdf) {
+		// Order of docking:
+		// 1. Stack with another pdf
+		// 2. Dock to the right of a sheet
+		// 2. Dock to the left of a library or template
+		// 3. Dock to the right of the library explorer
+		Dockable sheet = null;
+		Dockable other = null;
+		Dock dock = getDockContainer().getDock();
+		for (Dockable dockable : dock.getDockables()) {
+			if (dockable instanceof PdfDockable) {
+				dockable.getDockContainer().stack(pdf);
+				return pdf;
+			}
+			if (sheet == null && dockable instanceof SheetDockable) {
+				sheet = dockable;
+			}
+			if (other == null && (dockable instanceof TemplateDockable || dockable instanceof LibraryDockable)) {
+				other = dockable;
+			}
+		}
+		if (sheet != null) {
+			dock.dock(pdf, sheet, DockLocation.EAST);
+		} else if (other != null) {
+			DockContainer dc = other.getDockContainer();
+			DockLayout layout = dc.getDock().getLayout().findLayout(dc);
+			if (layout.isVertical()) {
+				dock.dock(pdf, layout, DockLocation.WEST);
+			} else {
+				dock.dock(pdf, other, DockLocation.WEST);
+			}
+		} else {
+			dock.dock(pdf, this, DockLocation.EAST);
+		}
+		return pdf;
 	}
 
 	@Override

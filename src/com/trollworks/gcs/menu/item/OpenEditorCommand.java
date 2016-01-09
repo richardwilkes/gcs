@@ -27,14 +27,14 @@ public class OpenEditorCommand extends Command {
 	@Localize(locale = "de", value = "Öffne Detail-Editor")
 	@Localize(locale = "ru", value = "Открыть расширенный редактор")
 	@Localize(locale = "es", value = "Abrir editor de detalles")
-	private static String					OPEN_EDITOR;
+	private static String OPEN_EDITOR;
 
 	static {
 		Localization.initialize();
 	}
 
 	/** The action command this command will issue. */
-	public static final String				CMD_OPEN_EDITOR	= "OpeNEditor";			//$NON-NLS-1$
+	public static final String				CMD_OPEN_EDITOR	= "OpenEditor";							//$NON-NLS-1$
 
 	/** The singleton {@link OpenEditorCommand}. */
 	public static final OpenEditorCommand	INSTANCE		= new OpenEditorCommand();

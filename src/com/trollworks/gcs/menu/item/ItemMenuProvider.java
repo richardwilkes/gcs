@@ -29,18 +29,19 @@ public class ItemMenuProvider implements MenuProvider {
 	@Localize(locale = "de", value = "Element")
 	@Localize(locale = "ru", value = "Элемент")
 	@Localize(locale = "es", value = "Elemento")
-	private static String		ITEM;
+	private static String ITEM;
 
 	static {
 		Localization.initialize();
 	}
 
-	public static final String	NAME	= "Item";	//$NON-NLS-1$
+	public static final String NAME = "Item";	//$NON-NLS-1$
 
 	@Override
 	public Set<Command> getModifiableCommands() {
 		Set<Command> cmds = new HashSet<>();
 		cmds.add(OpenEditorCommand.INSTANCE);
+		cmds.add(OpenPageReferenceCommand.INSTANCE);
 		cmds.add(CopyToSheetCommand.INSTANCE);
 		cmds.add(CopyToTemplateCommand.INSTANCE);
 		cmds.add(ApplyTemplateCommand.INSTANCE);
@@ -61,6 +62,7 @@ public class ItemMenuProvider implements MenuProvider {
 		JMenu menu = new JMenu(ITEM);
 		menu.setName(NAME);
 		menu.add(new DynamicMenuItem(OpenEditorCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(OpenPageReferenceCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(CopyToSheetCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(CopyToTemplateCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(ApplyTemplateCommand.INSTANCE));

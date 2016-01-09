@@ -9,7 +9,7 @@ C		Copy
 D		New ADQ
 E		New Carried Equipment
 F		New Equipment
-G
+G		Open Page Reference
 H
 I		Open Detail Editor
 J		Jump to Find Field
