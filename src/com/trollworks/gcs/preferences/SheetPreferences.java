@@ -27,6 +27,7 @@ import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.StdFileDialog;
 import com.trollworks.toolkit.utility.Dice;
+import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.Preferences;
@@ -42,6 +43,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -50,6 +53,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.Document;
 
 /** The sheet preferences panel. */
@@ -203,6 +207,12 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	@Localize(locale = "ru", value = "Использовать метрическую систему по правилам GURPS для роста, веса, нагрузки и грузоподъёмности")
 	@Localize(locale = "es", value = "Usar las reglas de métrica de GURPS para altura, peso, carga y levantar objetos")
 	private static String	USE_METRIC_RULES;
+	@Localize("All Readable Image Files")
+	private static String	ALL_READABLE_IMAGE_FILES;
+	@Localize("JPEG Files")
+	private static String	JPEG_FILES;
+	@Localize("GIF Files")
+	private static String	GIF_FILES;
 
 	static {
 		Localization.initialize();
@@ -534,11 +544,20 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		return field;
 	}
 
+	public static File choosePortrait() {
+		List<FileNameExtensionFilter> filters = new ArrayList<>();
+		filters.add(new FileNameExtensionFilter(ALL_READABLE_IMAGE_FILES, FileType.PNG_EXTENSION, FileType.JPEG_EXTENSION, "jpeg", FileType.GIF_EXTENSION)); //$NON-NLS-1$
+		filters.add(FileType.getPngFilter());
+		filters.add(FileType.getJpegFilter());
+		filters.add(FileType.getGifFilter());
+		return StdFileDialog.showOpenDialog(null, SELECT_PORTRAIT, filters);
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		Object source = event.getSource();
 		if (source == mPortrait) {
-			File file = StdFileDialog.choose(this, true, SELECT_PORTRAIT, null, null, "png", "jpg", "gif", "jpeg"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+			File file = choosePortrait();
 			if (file != null) {
 				setPortrait(PathUtils.getFullPath(file));
 			}
@@ -549,7 +568,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		} else if (source == mWeightUnitsCombo) {
 			Preferences.getInstance().setValue(MODULE, WEIGHT_UNITS_KEY, Enums.toId(WeightUnits.values()[mWeightUnitsCombo.getSelectedIndex()]));
 		} else if (source == mHTMLTemplatePicker) {
-			File file = StdFileDialog.choose(this, true, SELECT_HTML_TEMPLATE, null, null, "html", "htm"); //$NON-NLS-1$ //$NON-NLS-2$
+			File file = StdFileDialog.showOpenDialog(this, SELECT_HTML_TEMPLATE, FileType.getHtmlFilter());
 			if (file != null) {
 				mHTMLTemplatePath.setText(PathUtils.getFullPath(file));
 			}

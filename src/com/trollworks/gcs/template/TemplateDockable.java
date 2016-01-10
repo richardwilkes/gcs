@@ -33,6 +33,7 @@ import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.ui.widget.search.Search;
 import com.trollworks.toolkit.ui.widget.search.SearchTarget;
+import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.PrintProxy;
@@ -143,8 +144,8 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
 	}
 
 	@Override
-	public String[] getAllowedExtensions() {
-		return new String[] { Template.EXTENSION };
+	public FileType[] getAllowedFileTypes() {
+		return new FileType[] { FileType.getByExtension(Template.EXTENSION) };
 	}
 
 	@Override

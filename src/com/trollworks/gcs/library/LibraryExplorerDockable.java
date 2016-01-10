@@ -51,6 +51,7 @@ import com.trollworks.toolkit.ui.widget.tree.TreeRoot;
 import com.trollworks.toolkit.ui.widget.tree.TreeRow;
 import com.trollworks.toolkit.ui.widget.tree.TreeRowViewIterator;
 import com.trollworks.toolkit.utility.FileProxy;
+import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.notification.Notifier;
@@ -322,7 +323,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 					case Template.EXTENSION:
 						proxy = dockTemplate(new TemplateDockable(new Template(path.toFile())));
 						break;
-					case PdfDockable.EXTENSION:
+					case FileType.PDF_EXTENSION:
 						proxy = dockPdf(new PdfDockable(path.toFile(), 1));
 						break;
 					default:

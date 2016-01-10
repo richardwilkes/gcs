@@ -18,6 +18,7 @@ import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
+import com.trollworks.toolkit.utility.FileType;
 
 import java.io.IOException;
 
@@ -41,8 +42,8 @@ public class AdvantageList extends ListFile {
 	}
 
 	@Override
-	public String getExtension() {
-		return EXTENSION;
+	public FileType getFileType() {
+		return FileType.getByExtension(EXTENSION);
 	}
 
 	@Override

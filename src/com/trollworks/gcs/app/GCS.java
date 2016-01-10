@@ -24,7 +24,6 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.Fonts;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
-import com.trollworks.toolkit.ui.menu.file.ExportToCommand;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.utility.BundleInfo;
 import com.trollworks.toolkit.utility.Dice;
@@ -182,10 +181,10 @@ public class GCS {
 		Localization.initialize();
 	}
 
-	private static final CmdLineOption	PDF_OPTION				= new CmdLineOption(PDF_OPTION_DESCRIPTION, null, "pdf");									//$NON-NLS-1$
-	private static final CmdLineOption	HTML_OPTION				= new CmdLineOption(HTML_OPTION_DESCRIPTION, null, "html");									//$NON-NLS-1$
+	private static final CmdLineOption	PDF_OPTION				= new CmdLineOption(PDF_OPTION_DESCRIPTION, null, FileType.PDF_EXTENSION);
+	private static final CmdLineOption	HTML_OPTION				= new CmdLineOption(HTML_OPTION_DESCRIPTION, null, FileType.HTML_EXTENSION);
 	private static final CmdLineOption	HTML_TEMPLATE_OPTION	= new CmdLineOption(HTML_TEMPLATE_OPTION_DESCRIPTION, HTML_TEMPLATE_ARG, "html_template");	//$NON-NLS-1$
-	private static final CmdLineOption	PNG_OPTION				= new CmdLineOption(PNG_OPTION_DESCRIPTION, null, "png");									//$NON-NLS-1$
+	private static final CmdLineOption	PNG_OPTION				= new CmdLineOption(PNG_OPTION_DESCRIPTION, null, FileType.PNG_EXTENSION);
 	private static final CmdLineOption	SIZE_OPTION				= new CmdLineOption(SIZE_OPTION_DESCRIPTION, "SIZE", "paper");								//$NON-NLS-1$ //$NON-NLS-2$
 	private static final CmdLineOption	MARGIN_OPTION			= new CmdLineOption(MARGIN_OPTION_DESCRIPTION, "MARGINS", "margins");						//$NON-NLS-1$ //$NON-NLS-2$
 	private static final String			REFERENCE_URL			= "http://gcs.trollworks.com";																//$NON-NLS-1$
@@ -248,6 +247,10 @@ public class GCS {
 		FileType.register(Template.EXTENSION, GCSImages.getTemplateDocumentIcons(), TEMPLATE_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true);
 		// For legacy
 		FileType.register(LibraryFile.EXTENSION, GCSImages.getAdvantagesDocumentIcons(), LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true);
+
+		FileType.registerPdf(fileProxyCreator, true);
+		FileType.registerHtml(null, false);
+		FileType.registerPng(null, false);
 	}
 
 	private static int convert(CmdLine cmdLine) {
@@ -300,7 +303,7 @@ public class GCS {
 
 							System.out.print(CREATING_HTML);
 							System.out.flush();
-							output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), ExportToCommand.HTML_EXTENSION));
+							output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), FileType.HTML_EXTENSION));
 							timing.reset();
 							success = sheet.saveAsHTML(output, htmlTemplate, builder);
 							System.out.println(timing);
@@ -313,7 +316,7 @@ public class GCS {
 						if (pdf) {
 							System.out.print(CREATING_PDF);
 							System.out.flush();
-							output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), ExportToCommand.PDF_EXTENSION));
+							output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), FileType.PDF_EXTENSION));
 							timing.reset();
 							success = sheet.saveAsPDF(output);
 							System.out.println(timing);
@@ -327,7 +330,7 @@ public class GCS {
 
 							System.out.print(CREATING_PNG);
 							System.out.flush();
-							output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), ExportToCommand.PNG_EXTENSION));
+							output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), FileType.PNG_EXTENSION));
 							timing.reset();
 							success = sheet.saveAsPNG(output, result);
 							System.out.println(timing);

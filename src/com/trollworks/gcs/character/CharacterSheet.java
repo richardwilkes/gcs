@@ -48,7 +48,6 @@ import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
-import com.trollworks.toolkit.ui.menu.file.ExportToCommand;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.Wrapper;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
@@ -61,6 +60,7 @@ import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.ui.widget.outline.RowSelection;
 import com.trollworks.toolkit.utility.BundleInfo;
+import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.Preferences;
@@ -1108,7 +1108,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		Profile description = mCharacter.getDescription();
 
 		if (key.equals("PORTRAIT")) { //$NON-NLS-1$
-			String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base.getName(), false), ExportToCommand.PNG_EXTENSION);
+			String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base.getName(), false), FileType.PNG_EXTENSION);
 			StdImage.writePNG(new File(base.getParentFile(), fileName), description.getPortrait(true), 150);
 			writeXMLData(out, fileName);
 		} else if (key.equals("NAME")) { //$NON-NLS-1$
@@ -1928,7 +1928,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				print(gc, format, pageNum++);
 				setPrinting(false);
 				gc.dispose();
-				pngFile = new File(file, PathUtils.enforceExtension(name + (pageNum > 1 ? " " + pageNum : ""), ExportToCommand.PNG_EXTENSION)); //$NON-NLS-1$ //$NON-NLS-2$
+				pngFile = new File(file, PathUtils.enforceExtension(name + (pageNum > 1 ? " " + pageNum : ""), FileType.PNG_EXTENSION)); //$NON-NLS-1$ //$NON-NLS-2$
 				if (!StdImage.writePNG(pngFile, buffer, dpi)) {
 					throw new IOException();
 				}

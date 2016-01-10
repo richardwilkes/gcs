@@ -47,6 +47,7 @@ import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.utility.Dice;
+import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.undo.StdUndoManager;
@@ -438,8 +439,8 @@ public class GURPSCharacter extends DataFile {
 	}
 
 	@Override
-	public String getExtension() {
-		return EXTENSION;
+	public FileType getFileType() {
+		return FileType.getByExtension(EXTENSION);
 	}
 
 	@Override

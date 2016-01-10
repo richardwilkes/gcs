@@ -12,13 +12,13 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.border.BoxedDropShadowBorder;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.print.PrintUtilities;
-import com.trollworks.toolkit.ui.widget.StdFileDialog;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
@@ -93,7 +93,7 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 
 	/** Allows the user to choose a portrait for their character. */
 	public void choosePortrait() {
-		File file = StdFileDialog.choose(this, true, SELECT_PORTRAIT, null, null, "png", "jpg", "gif", "jpeg"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		File file = SheetPreferences.choosePortrait();
 		if (file != null) {
 			try {
 				mCharacter.getDescription().setPortrait(StdImage.loadImage(file));

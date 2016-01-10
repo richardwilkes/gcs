@@ -141,9 +141,9 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 			PDFRenderer renderer = new PDFRenderer(mPdf);
 			try {
 				mImg = renderer.renderImageWithDPI(mPageIndex, SCALES[mScaleIndex] * Toolkit.getDefaultToolkit().getScreenResolution() * (GraphicsUtilities.isRetinaDisplay((Graphics2D) g) ? 2 : 1));
-			} catch (Exception exception) {
+			} catch (Throwable throwable) {
 				mImg = null;
-				Log.error(exception);
+				Log.error(throwable);
 			}
 			mNeedLoad = false;
 		}

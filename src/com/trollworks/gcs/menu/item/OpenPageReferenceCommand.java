@@ -22,6 +22,7 @@ import com.trollworks.toolkit.ui.widget.StdFileDialog;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
+import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Component;
@@ -30,12 +31,16 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.nio.file.Path;
 
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 /** Provides the "Open Page Reference" command. */
 public class OpenPageReferenceCommand extends Command {
 	@Localize("Open Page Reference")
 	private static String	OPEN_PAGE_REFERENCE;
 	@Localize("Locate the PDF file for the prefix \"%s\"")
 	private static String	LOCATE_PDF;
+	@Localize("PDF File")
+	private static String	PDF_FILE;
 
 	static {
 		Localization.initialize();
@@ -76,7 +81,7 @@ public class OpenPageReferenceCommand extends Command {
 					int page = Integer.parseInt(reference.substring(i));
 					File file = ReferenceLookupPreferences.getPdfLocation(id);
 					if (file == null) {
-						file = StdFileDialog.choose(null, true, String.format(LOCATE_PDF, id), null, null, "pdf"); //$NON-NLS-1$
+						file = StdFileDialog.showOpenDialog(getFocusOwner(), String.format(LOCATE_PDF, id), new FileNameExtensionFilter(PDF_FILE, FileType.PDF_EXTENSION));
 						if (file != null) {
 							ReferenceLookupPreferences.setPdfLocation(id, file);
 						}

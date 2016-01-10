@@ -21,6 +21,7 @@ import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImage;
+import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.text.Text;
@@ -510,7 +511,7 @@ public class Profile {
 		if (mCustomPortrait && mPortrait != null) {
 			try {
 				try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-					ImageIO.write(mPortrait, "png", baos); //$NON-NLS-1$
+					ImageIO.write(mPortrait, FileType.PNG_EXTENSION, baos);
 					out.writeComment(PORTRAIT_COMMENT);
 					out.startSimpleTagEOL(TAG_PORTRAIT);
 					out.println(Base64.getMimeEncoder().encodeToString(baos.toByteArray()));

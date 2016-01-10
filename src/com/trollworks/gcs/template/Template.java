@@ -33,6 +33,7 @@ import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
+import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.Localization;
 
 import java.io.File;
@@ -117,8 +118,8 @@ public class Template extends DataFile implements StateEditable {
 	}
 
 	@Override
-	public String getExtension() {
-		return EXTENSION;
+	public FileType getFileType() {
+		return FileType.getByExtension(EXTENSION);
 	}
 
 	@Override

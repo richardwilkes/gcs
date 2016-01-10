@@ -18,6 +18,7 @@ import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
+import com.trollworks.toolkit.utility.FileType;
 
 import java.io.IOException;
 
@@ -63,7 +64,7 @@ public class ModifierList extends ListFile {
 
 	@Override
 	// Not used
-	public String getExtension() {
+	public FileType getFileType() {
 		return null;
 	}
 

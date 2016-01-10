@@ -26,6 +26,7 @@ import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowFilter;
+import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PrintProxy;
 import com.trollworks.toolkit.utility.notification.BatchNotifierTarget;
@@ -120,8 +121,8 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 	}
 
 	@Override
-	public String[] getAllowedExtensions() {
-		return new String[] { getDataFile().getExtension() };
+	public FileType[] getAllowedFileTypes() {
+		return new FileType[] { getDataFile().getFileType() };
 	}
 
 	@Override

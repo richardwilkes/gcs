@@ -17,7 +17,6 @@ import com.trollworks.toolkit.ui.menu.DynamicMenuEnabler;
 import com.trollworks.toolkit.ui.menu.DynamicMenuItem;
 import com.trollworks.toolkit.ui.menu.MenuProvider;
 import com.trollworks.toolkit.ui.menu.file.CloseCommand;
-import com.trollworks.toolkit.ui.menu.file.ExportToCommand;
 import com.trollworks.toolkit.ui.menu.file.OpenCommand;
 import com.trollworks.toolkit.ui.menu.file.PageSetupCommand;
 import com.trollworks.toolkit.ui.menu.file.PrintCommand;
@@ -60,9 +59,6 @@ public class FileMenuProvider implements MenuProvider {
 		cmds.add(CloseCommand.INSTANCE);
 		cmds.add(SaveCommand.INSTANCE);
 		cmds.add(SaveAsCommand.INSTANCE);
-		cmds.add(ExportToCommand.EXPORT_TO_HTML);
-		cmds.add(ExportToCommand.EXPORT_TO_PDF);
-		cmds.add(ExportToCommand.EXPORT_TO_PNG);
 		cmds.add(PageSetupCommand.INSTANCE);
 		cmds.add(PrintCommand.INSTANCE);
 		if (!Platform.isMacintosh()) {
@@ -88,10 +84,6 @@ public class FileMenuProvider implements MenuProvider {
 		menu.addSeparator();
 		menu.add(new DynamicMenuItem(SaveCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(SaveAsCommand.INSTANCE));
-		menu.addSeparator();
-		menu.add(new DynamicMenuItem(ExportToCommand.EXPORT_TO_HTML));
-		menu.add(new DynamicMenuItem(ExportToCommand.EXPORT_TO_PDF));
-		menu.add(new DynamicMenuItem(ExportToCommand.EXPORT_TO_PNG));
 		menu.addSeparator();
 		menu.add(new DynamicMenuItem(PageSetupCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(PrintCommand.INSTANCE));

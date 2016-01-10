@@ -24,7 +24,6 @@ import com.trollworks.gcs.widgets.outline.RowPostProcessor;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.menu.RetargetableFocus;
-import com.trollworks.toolkit.ui.menu.file.ExportToCommand;
 import com.trollworks.toolkit.ui.widget.Toolbar;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.ui.widget.dock.Dock;
@@ -34,6 +33,7 @@ import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.ui.widget.search.Search;
 import com.trollworks.toolkit.ui.widget.search.SearchTarget;
+import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.PrintProxy;
@@ -164,8 +164,8 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 	}
 
 	@Override
-	public String[] getAllowedExtensions() {
-		return new String[] { GURPSCharacter.EXTENSION, ExportToCommand.PDF_EXTENSION, ExportToCommand.HTML_EXTENSION, ExportToCommand.PNG_EXTENSION };
+	public FileType[] getAllowedFileTypes() {
+		return new FileType[] { FileType.getByExtension(GURPSCharacter.EXTENSION), FileType.getByExtension(FileType.PDF_EXTENSION), FileType.getByExtension(FileType.HTML_EXTENSION), FileType.getByExtension(FileType.PNG_EXTENSION) };
 	}
 
 	@Override
@@ -181,17 +181,17 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 	public File[] saveTo(File file) {
 		ArrayList<File> result = new ArrayList<>();
 		String extension = PathUtils.getExtension(file.getName());
-		if (ExportToCommand.HTML_EXTENSION.equals(extension)) {
+		if (FileType.HTML_EXTENSION.equals(extension)) {
 			if (mSheet.saveAsHTML(file, null, null)) {
 				result.add(file);
 			} else {
 				WindowUtils.showError(this, SAVE_AS_HTML_ERROR);
 			}
-		} else if (ExportToCommand.PNG_EXTENSION.equals(extension)) {
+		} else if (FileType.PNG_EXTENSION.equals(extension)) {
 			if (!mSheet.saveAsPNG(file, result)) {
 				WindowUtils.showError(this, SAVE_AS_PNG_ERROR);
 			}
-		} else if (ExportToCommand.PDF_EXTENSION.equals(extension)) {
+		} else if (FileType.PDF_EXTENSION.equals(extension)) {
 			if (mSheet.saveAsPDF(file)) {
 				result.add(file);
 			} else {

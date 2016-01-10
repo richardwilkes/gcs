@@ -36,6 +36,7 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 
+import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
 /** Provides the ability to view a PDF. */
@@ -55,8 +56,6 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 		Localization.initialize();
 	}
 
-	/** The extension for PDFs. */
-	public static final String	EXTENSION			= "pdf";	//$NON-NLS-1$
 	private static final String	UNKNOWN_LOCATION	= "-/-";	//$NON-NLS-1$
 	private File				mFile;
 	private PDDocument			mPdf;
@@ -74,7 +73,7 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 		super(new BorderLayout());
 		mFile = pdf;
 		try {
-			mPdf = PDDocument.load(pdf);
+			mPdf = PDDocument.load(pdf, MemoryUsageSetting.setupMixed(50 * 1024 * 1024));
 		} catch (Exception exception) {
 			Log.error(exception);
 		}

@@ -19,6 +19,7 @@ import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.ui.menu.edit.Undoable;
 import com.trollworks.toolkit.ui.widget.DataModifiedListener;
+import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.UniqueID;
 import com.trollworks.toolkit.utility.VersionException;
@@ -178,8 +179,8 @@ public abstract class DataFile implements Undoable {
 		return getXMLTagName().equals(name);
 	}
 
-	/** @return The extension used for data files of this type. */
-	public abstract String getExtension();
+	/** @return The {@link FileType}. */
+	public abstract FileType getFileType();
 
 	/** @return The icons representing this file, at various resolutions. */
 	public abstract StdImageSet getFileIcons();
