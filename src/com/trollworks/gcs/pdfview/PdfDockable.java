@@ -16,6 +16,7 @@ import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.menu.file.CloseHandler;
+import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.ui.widget.KeyStrokeDisplay;
 import com.trollworks.toolkit.ui.widget.Toolbar;
@@ -25,9 +26,12 @@ import com.trollworks.toolkit.utility.FileProxy;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.PrintProxy;
+import com.trollworks.toolkit.utility.text.IntegerFormatter;
 
 import java.awt.BorderLayout;
 import java.awt.Window;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 
@@ -35,6 +39,8 @@ import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
+import javax.swing.text.DefaultFormatterFactory;
 
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -56,24 +62,26 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 		Localization.initialize();
 	}
 
-	private static final String	UNKNOWN_LOCATION	= "-/-";	//$NON-NLS-1$
-	private File				mFile;
-	private PDDocument			mPdf;
-	private Toolbar				mToolbar;
-	private PdfPanel			mPanel;
-	private IconButton			mZoomInButton;
-	private IconButton			mZoomOutButton;
-	private IconButton			mActualSizeButton;
-	private JLabel				mZoomStatus;
-	private JLabel				mPageStatus;
-	private IconButton			mPreviousPageButton;
-	private IconButton			mNextPageButton;
+	private File			mFile;
+	private PDDocument		mPdf;
+	private Toolbar			mToolbar;
+	protected PdfPanel		mPanel;
+	private IconButton		mZoomInButton;
+	private IconButton		mZoomOutButton;
+	private IconButton		mActualSizeButton;
+	private JLabel			mZoomStatus;
+	protected EditorField	mPageField;
+	private JLabel			mPageStatus;
+	private IconButton		mPreviousPageButton;
+	private IconButton		mNextPageButton;
 
 	public PdfDockable(File pdf, int page) {
 		super(new BorderLayout());
 		mFile = pdf;
+		int pageCount = 9999;
 		try {
 			mPdf = PDDocument.load(pdf, MemoryUsageSetting.setupMixed(50 * 1024 * 1024));
+			pageCount = mPdf.getNumberOfPages();
 		} catch (Exception exception) {
 			Log.error(exception);
 		}
@@ -88,8 +96,20 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 		mZoomStatus = new JLabel("100%"); //$NON-NLS-1$
 		mToolbar.add(mZoomStatus);
 
-		mPageStatus = new JLabel(UNKNOWN_LOCATION);
-		mToolbar.add(mPageStatus, Toolbar.LAYOUT_EXTRA_BEFORE);
+		mPageField = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(1, pageCount, false)), event -> {
+			if (mPanel != null) {
+				int pageIndex = ((Integer) mPageField.getValue()).intValue() - 1;
+				int newPageIndex = mPanel.goToPageIndex(pageIndex);
+				if (pageIndex != newPageIndex) {
+					mPageField.setValue(Integer.valueOf(newPageIndex + 1));
+				} else {
+					mPanel.requestFocusInWindow();
+				}
+			}
+		} , SwingConstants.RIGHT, Integer.valueOf(page), Integer.valueOf(9999), null);
+		mToolbar.add(mPageField, Toolbar.LAYOUT_EXTRA_BEFORE);
+		mPageStatus = new JLabel("/ -"); //$NON-NLS-1$
+		mToolbar.add(mPageStatus);
 		mPreviousPageButton = new IconButton(StdImage.get("PageUp"), formatWithKey(PREVIOUS_PAGE, KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0)), () -> mPanel.previousPage()); //$NON-NLS-1$
 		mToolbar.add(mPreviousPageButton);
 		mNextPageButton = new IconButton(StdImage.get("PageDown"), formatWithKey(NEXT_PAGE, KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0)), () -> mPanel.nextPage()); //$NON-NLS-1$
@@ -98,6 +118,15 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 		add(mToolbar, BorderLayout.NORTH);
 		mPanel = new PdfPanel(this, mPdf, page);
 		add(new JScrollPane(mPanel), BorderLayout.CENTER);
+
+		mPageField.setFocusable(false);
+		mPanel.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusGained(FocusEvent event) {
+				mPanel.removeFocusListener(this);
+				mPageField.setFocusable(true);
+			}
+		});
 	}
 
 	private static String formatWithKey(String title, KeyStroke key) {
@@ -128,12 +157,8 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 	private boolean updatePageInfo(int page, int pageCount) {
 		mPreviousPageButton.setEnabled(page > 0);
 		mNextPageButton.setEnabled(page < pageCount - 1);
-		String text;
-		if (page >= 0 && page < pageCount) {
-			text = page + 1 + "/" + pageCount; //$NON-NLS-1$
-		} else {
-			text = UNKNOWN_LOCATION;
-		}
+		mPageField.setValue(Integer.valueOf(page + 1));
+		String text = "/ " + (pageCount > 0 ? Integer.valueOf(pageCount) : "-"); //$NON-NLS-1$ //$NON-NLS-2$
 		if (!text.equals(mPageStatus.getText())) {
 			mPageStatus.setText(text);
 			return true;

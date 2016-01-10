@@ -78,6 +78,15 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 		}
 	}
 
+	public int goToPageIndex(int pageIndex) {
+		if (mPdf != null && mPageIndex != pageIndex && pageIndex >= 0 && pageIndex < mPdf.getNumberOfPages()) {
+			mPageIndex = pageIndex;
+			mPage = -1;
+			markPageForLoading();
+		}
+		return mPageIndex;
+	}
+
 	public void previousPage() {
 		if (mPdf != null && mPageIndex > 0) {
 			mPageIndex--;
