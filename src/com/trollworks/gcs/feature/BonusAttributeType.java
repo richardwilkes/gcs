@@ -255,7 +255,7 @@ public enum BonusAttributeType {
 		Localization.initialize();
 	}
 
-	private String	mTag;
+	private String mTag;
 
 	private BonusAttributeType() {
 		mTag = name();

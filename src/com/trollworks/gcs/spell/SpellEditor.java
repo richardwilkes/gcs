@@ -55,187 +55,187 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 	@Localize(locale = "de", value = "Name")
 	@Localize(locale = "ru", value = "Название")
 	@Localize(locale = "es", value = "Nombre")
-	private static String		NAME;
+	private static String	NAME;
 	@Localize("The name of the spell, without any notes")
 	@Localize(locale = "de", value = "Der Name des Zaubers ohne Anmerkungen")
 	@Localize(locale = "ru", value = "Название заклинания без заметок")
 	@Localize(locale = "es", value = "Nombre del sortilegio, sin notas ni otra información")
-	private static String		NAME_TOOLTIP;
+	private static String	NAME_TOOLTIP;
 	@Localize("The name field may not be empty")
 	@Localize(locale = "de", value = "Der Name darf nicht leer sein")
 	@Localize(locale = "ru", value = "Поле \"Название\" не может быть пустым")
 	@Localize(locale = "es", value = "El nombre no puede estar en blanco")
-	private static String		NAME_CANNOT_BE_EMPTY;
+	private static String	NAME_CANNOT_BE_EMPTY;
 	@Localize("Tech Level")
 	@Localize(locale = "de", value = "Techlevel")
 	@Localize(locale = "ru", value = "Технологический уровень")
 	@Localize(locale = "es", value = "Nivel Tecnológico")
-	private static String		TECH_LEVEL;
+	private static String	TECH_LEVEL;
 	@Localize("Whether this spell requires tech level specialization,\nand, if so, at what tech level it was learned")
 	@Localize(locale = "de", value = "Ob dieser Zauber auf einen bestimmten Techlevel spezialisiert ist\nund wenn, mit welchem Techlevel er gelernt wurde")
 	@Localize(locale = "ru", value = "Для заклинания необходима специализация с технологическим уровнем \nс указанием уровня изучения")
 	@Localize(locale = "es", value = "Si el sortilegio requiere especialización por nivel tecnológico, este es para el que se ha aprendido")
-	private static String		TECH_LEVEL_TOOLTIP;
+	private static String	TECH_LEVEL_TOOLTIP;
 	@Localize("Tech Level Required")
 	@Localize(locale = "de", value = "Techlevel benötigt")
 	@Localize(locale = "ru", value = "Необходимый технологический уровень")
 	@Localize(locale = "es", value = "Nivel tecnologíco requerido")
-	private static String		TECH_LEVEL_REQUIRED;
+	private static String	TECH_LEVEL_REQUIRED;
 	@Localize("Whether this spell requires tech level specialization")
 	@Localize(locale = "de", value = "Ob dieser Zauber auf einen bestimmten Techlevel spezialisiert ist")
 	@Localize(locale = "ru", value = "Для заклинания необходима специализация с технологическим уровнем")
 	@Localize(locale = "es", value = "Este sortilegio requiere especializarse por nivel tecnológico")
-	private static String		TECH_LEVEL_REQUIRED_TOOLTIP;
+	private static String	TECH_LEVEL_REQUIRED_TOOLTIP;
 	@Localize("College")
 	@Localize(locale = "de", value = "Schule")
 	@Localize(locale = "ru", value = "Школа")
 	@Localize(locale = "es", value = "Escuela")
-	private static String		COLLEGE;
+	private static String	COLLEGE;
 	@Localize("The college the spell belongs to")
 	@Localize(locale = "de", value = "Die Schule, die dieser Zauber angehört")
 	@Localize(locale = "ru", value = "Школа, к которой относится заклинание")
 	@Localize(locale = "es", value = "Escuela a la que pertenece el sortilegio")
-	private static String		COLLEGE_TOOLTIP;
+	private static String	COLLEGE_TOOLTIP;
 	@Localize("Power Source")
 	@Localize(locale = "de", value = "Energiequelle")
 	@Localize(locale = "ru", value = "Источник силы")
 	@Localize(locale = "es", value = "Fuente de Poder")
-	private static String		POWER_SOURCE;
+	private static String	POWER_SOURCE;
 	@Localize("The source of power for the spell")
 	@Localize(locale = "de", value = "Die Quelle der Energie für den Zauber")
 	@Localize(locale = "ru", value = "Источник силы для заклинания")
 	@Localize(locale = "es", value = "Fuente de Poder para el sortilegio")
-	private static String		POWER_SOURCE_TOOLTIP;
+	private static String	POWER_SOURCE_TOOLTIP;
 	@Localize("Class")
 	@Localize(locale = "de", value = "Klasse")
 	@Localize(locale = "ru", value = "Класс")
 	@Localize(locale = "es", value = "Tipo")
-	private static String		CLASS;
+	private static String	CLASS;
 	@Localize("The class of spell (Area, Missile, etc.)")
 	@Localize(locale = "de", value = "Die Klasse des Zaubers (Gebiet, Geschoss, usw.)")
 	@Localize(locale = "ru", value = "Класс заклинания (областные, метательные и т.д.)")
 	@Localize(locale = "es", value = "Tipo de sortilegio (Área, Proyectil, etc.)")
-	private static String		CLASS_ONLY_TOOLTIP;
+	private static String	CLASS_ONLY_TOOLTIP;
 	@Localize("The class field may not be empty")
 	@Localize(locale = "de", value = "Die Klasse darf nicht leer sein")
 	@Localize(locale = "ru", value = "Поле \"Класс\" не может быть пустым")
 	@Localize(locale = "es", value = "El tipo no puede estar en blanco")
-	private static String		CLASS_CANNOT_BE_EMPTY;
+	private static String	CLASS_CANNOT_BE_EMPTY;
 	@Localize("Casting Cost")
 	@Localize(locale = "de", value = "Zauberkosten")
 	@Localize(locale = "ru", value = "Стоимость заклинания")
 	@Localize(locale = "es", value = "Coste de lanzamiento")
-	private static String		CASTING_COST;
+	private static String	CASTING_COST;
 	@Localize("The casting cost of the spell")
 	@Localize(locale = "de", value = "Die Kosten, um den Zauber zu wirken")
 	@Localize(locale = "ru", value = "Стоимость сотворения заклинания")
 	@Localize(locale = "es", value = "Coste de lanzar el sertilegio")
-	private static String		CASTING_COST_TOOLTIP;
+	private static String	CASTING_COST_TOOLTIP;
 	@Localize("The casting cost field may not be empty")
 	@Localize(locale = "de", value = "Die Zauberkosten dürfen nicht leer sein")
 	@Localize(locale = "ru", value = "Поле \"Мана-Стоимость\" не может быть пустым")
 	@Localize(locale = "es", value = "El coste de mantenimiento no puede estar en blanco")
-	private static String		CASTING_COST_CANNOT_BE_EMPTY;
+	private static String	CASTING_COST_CANNOT_BE_EMPTY;
 	@Localize("Maintenance Cost")
 	@Localize(locale = "de", value = "Erhaltungskosten")
 	@Localize(locale = "ru", value = "Стоимость обслуживания")
 	@Localize(locale = "es", value = "Coste de mantenimiento")
-	private static String		MAINTENANCE_COST;
+	private static String	MAINTENANCE_COST;
 	@Localize("The cost to maintain a spell after its initial duration")
 	@Localize(locale = "de", value = "Die Kosten, um den Zauber aufrecht zu erhalten")
 	@Localize(locale = "ru", value = "Стоимость поддержки заклинания свыше исходной длительности")
 	@Localize(locale = "es", value = "Coste para manterner el sortilegio superada la duración inicial")
-	private static String		MAINTENANCE_COST_TOOLTIP;
+	private static String	MAINTENANCE_COST_TOOLTIP;
 	@Localize("Casting Time")
 	@Localize(locale = "de", value = "Zauberzeit")
 	@Localize(locale = "ru", value = "Время сотворения")
 	@Localize(locale = "es", value = "Tiempo para lanzar")
-	private static String		CASTING_TIME;
+	private static String	CASTING_TIME;
 	@Localize("The casting time of the spell")
 	@Localize(locale = "de", value = "Die Zeit, um den Zauber zu wirken")
 	@Localize(locale = "ru", value = "Время сотворения заклинания")
 	@Localize(locale = "es", value = "Tiempo necesario para lanzar el sortilegi")
-	private static String		CASTING_TIME_TOOLTIP;
+	private static String	CASTING_TIME_TOOLTIP;
 	@Localize("The casting time field may not be empty")
 	@Localize(locale = "de", value = "Die Zauberzeit darf nicht leer sein")
 	@Localize(locale = "ru", value = "Поле \"Время сотворения\" не может быть пустым")
 	@Localize(locale = "es", value = "El tiempo necesario para lanzar el sotilegio no puede estar en blanco")
-	private static String		CASTING_TIME_CANNOT_BE_EMPTY;
+	private static String	CASTING_TIME_CANNOT_BE_EMPTY;
 	@Localize("Duration")
 	@Localize(locale = "de", value = "Dauer")
 	@Localize(locale = "ru", value = "Длительность")
 	@Localize(locale = "es", value = "Duración")
-	private static String		DURATION;
+	private static String	DURATION;
 	@Localize("The duration of the spell once its cast")
 	@Localize(locale = "de", value = "Die Dauer des Zaubers, nachdem er gewirkt wurde")
 	@Localize(locale = "ru", value = "Длительность заклинания после сотворения")
 	@Localize(locale = "es", value = "Duración del sortilegio una vez lanzado")
-	private static String		DURATION_TOOLTIP;
+	private static String	DURATION_TOOLTIP;
 	@Localize("The duration field may not be empty")
 	@Localize(locale = "de", value = "Die Dauer darf nicht leer sein")
 	@Localize(locale = "ru", value = "Поле \"Длительность\" не может быть пустым")
 	@Localize(locale = "es", value = "La duración no puede estar en blanco")
-	private static String		DURATION_CANNOT_BE_EMPTY;
+	private static String	DURATION_CANNOT_BE_EMPTY;
 	@Localize("Categories")
 	@Localize(locale = "de", value = "Kategorie")
 	@Localize(locale = "ru", value = "Категории")
 	@Localize(locale = "es", value = "Categorías")
-	private static String		CATEGORIES;
+	private static String	CATEGORIES;
 	@Localize("The category or categories the spell belongs to (separate multiple categories with a comma)")
 	@Localize(locale = "de", value = "Die Kategorie oder Kategorien, denen dieser Zauber angehört (trenne mehrere Kategorien mit einem Komma)")
 	@Localize(locale = "ru", value = "Категория или категории, к которым относится заклинание (перечислить через запятую)")
 	@Localize(locale = "es", value = "Categoría o categorías a las que pertenece el sortilegio (separa categorías multiples con una coma)")
-	private static String		CATEGORIES_TOOLTIP;
+	private static String	CATEGORIES_TOOLTIP;
 	@Localize("Notes")
 	@Localize(locale = "de", value = "Anmerkungen")
 	@Localize(locale = "ru", value = "Заметка")
 	@Localize(locale = "es", value = "Notas")
-	private static String		NOTES;
+	private static String	NOTES;
 	@Localize("Any notes that you would like to show up in the list along with this spell")
 	@Localize(locale = "de", value = "Anmerkungen, die in der Liste neben dem Zauber erscheinen sollen")
 	@Localize(locale = "ru", value = "Заметки, которые показываются в списке рядом с заклинанием")
 	@Localize(locale = "es", value = "Cualquier nota que te gustaría que se mostrara junto al sortilegio")
-	private static String		NOTES_TOOLTIP;
+	private static String	NOTES_TOOLTIP;
 	@Localize("Points")
 	@Localize(locale = "de", value = "Punkte")
 	@Localize(locale = "ru", value = "Очки")
 	@Localize(locale = "es", value = "Puntos")
-	private static String		EDITOR_POINTS;
+	private static String	EDITOR_POINTS;
 	@Localize("The number of points spent on this spell")
 	@Localize(locale = "de", value = "Die Punkte, die für diesen Zauber aufgewendet wurden")
 	@Localize(locale = "ru", value = "Потрачено на заклинание количество очков")
 	@Localize(locale = "es", value = "Puntos consumidos en el sortilegio")
-	private static String		EDITOR_POINTS_TOOLTIP;
+	private static String	EDITOR_POINTS_TOOLTIP;
 	@Localize("Level")
 	@Localize(locale = "de", value = "Fertigkeitswert")
 	@Localize(locale = "ru", value = "Уровень")
 	@Localize(locale = "es", value = "Nivel")
-	private static String		EDITOR_LEVEL;
+	private static String	EDITOR_LEVEL;
 	@Localize("The spell level and relative spell level to roll against")
 	@Localize(locale = "de", value = "Der Fertigkeitswert und relativer Fertigkeitswert des Zaubers, gegen die gewürfelt werden muss")
 	@Localize(locale = "ru", value = "Уровень заклинания и относительный уровень заклинания для повторного броска")
 	@Localize(locale = "es", value = "Nivel y nivel relativo del sortilegio a superar con la tirada")
-	private static String		EDITOR_LEVEL_TOOLTIP;
+	private static String	EDITOR_LEVEL_TOOLTIP;
 	@Localize("Difficulty")
 	@Localize(locale = "de", value = "Schwierigkeit")
 	@Localize(locale = "ru", value = "Сложность")
 	@Localize(locale = "es", value = "Dificultad")
-	private static String		DIFFICULTY;
+	private static String	DIFFICULTY;
 	@Localize("The difficulty of the spell")
 	@Localize(locale = "de", value = "Die Schwierigkeit des Zaubers")
 	@Localize(locale = "ru", value = "Сложность заклинания")
 	@Localize(locale = "es", value = "Dificultad del sortilegio")
-	private static String		DIFFICULTY_TOOLTIP;
+	private static String	DIFFICULTY_TOOLTIP;
 	@Localize("Page Reference")
 	@Localize(locale = "de", value = "Seitenangabe")
 	@Localize(locale = "ru", value = "Ссылка на страницу")
 	@Localize(locale = "es", value = "Página de referencia")
-	private static String		EDITOR_REFERENCE;
+	private static String	EDITOR_REFERENCE;
 	@Localize("A reference to the book and page this spell appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
 	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Zauber beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
 	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая заклинание\n (например B22 - книга \"Базовые правила\", страница 22)")
 	@Localize(locale = "es", value = "Referencia al libro y página en donde se menciona el sortilegio (p.e. B22 se refiere al \"Manual Básico\", página 22)")
-	private static String		REFERENCE_TOOLTIP;
+	private static String	REFERENCE_TOOLTIP;
 
 	static {
 		Localization.initialize();

@@ -23,7 +23,7 @@ public class AttributeBonus extends Bonus {
 	/** The XML tag. */
 	public static final String			TAG_ROOT				= "attribute_bonus";	//$NON-NLS-1$
 	private static final String			TAG_ATTRIBUTE			= "attribute";			//$NON-NLS-1$
-	private static final String			ATTRIBUTE_LIMITATION	= "limitation";		//$NON-NLS-1$
+	private static final String			ATTRIBUTE_LIMITATION	= "limitation";			//$NON-NLS-1$
 	private BonusAttributeType			mAttribute;
 	private AttributeBonusLimitation	mLimitation;
 

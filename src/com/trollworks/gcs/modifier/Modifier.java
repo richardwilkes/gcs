@@ -35,17 +35,17 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 	@Localize(locale = "de", value = "Modifikator")
 	@Localize(locale = "ru", value = "Модификатор")
 	@Localize(locale = "es", value = "Modificador")
-	private static String			DEFAULT_NAME;
+	private static String	DEFAULT_NAME;
 	@Localize("Enhancement/Limitation")
 	@Localize(locale = "de", value = "Verbesserung / Einschränkung")
 	@Localize(locale = "ru", value = "Улучшение/ограничение")
 	@Localize(locale = "es", value = "Mejora/Limitación")
-	private static String			MODIFIER_TYPE;
+	private static String	MODIFIER_TYPE;
 	@Localize("** From container - not modifiable here **")
 	@Localize(locale = "de", value = "** Aus dem Container \u2013 hier nicht veränderbar **")
 	@Localize(locale = "ru", value = "** Из контейнера – не меняйте здесь **")
 	@Localize(locale = "es", value = "** Desde el contenedor - No modificable desde aquí **")
-	private static String			READ_ONLY;
+	private static String	READ_ONLY;
 
 	static {
 		Localization.initialize();
@@ -61,7 +61,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 	/** The attribute for the cost type. */
 	public static final String		ATTRIBUTE_COST_TYPE	= "type";								//$NON-NLS-1$
 	/** The tag for the cost per level. */
-	public static final String		TAG_LEVELS			= "levels";							//$NON-NLS-1$
+	public static final String		TAG_LEVELS			= "levels";								//$NON-NLS-1$
 	/** The tag for how the cost is affected. */
 	public static final String		TAG_AFFECTS			= "affects";							//$NON-NLS-1$
 	/** The tag for the page reference. */

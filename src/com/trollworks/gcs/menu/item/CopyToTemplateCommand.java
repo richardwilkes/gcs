@@ -27,14 +27,14 @@ public class CopyToTemplateCommand extends Command {
 	@Localize(locale = "de", value = "Kopiere zur Vorlage")
 	@Localize(locale = "ru", value = "Копировать в шаблон")
 	@Localize(locale = "es", value = "Copiar a la plantilla")
-	private static String						COPY_TO_TEMPLATE;
+	private static String COPY_TO_TEMPLATE;
 
 	static {
 		Localization.initialize();
 	}
 
 	/** The action command this command will issue. */
-	public static final String					CMD_COPY_TO_TEMPLATE	= "CopyToTemplate";			//$NON-NLS-1$
+	public static final String					CMD_COPY_TO_TEMPLATE	= "CopyToTemplate";				//$NON-NLS-1$
 	/** The singleton {@link CopyToTemplateCommand}. */
 	public static final CopyToTemplateCommand	INSTANCE				= new CopyToTemplateCommand();
 

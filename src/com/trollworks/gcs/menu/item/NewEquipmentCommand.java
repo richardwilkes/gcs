@@ -30,12 +30,12 @@ public class NewEquipmentCommand extends Command {
 	@Localize(locale = "de", value = "Neue Ausrüstung")
 	@Localize(locale = "ru", value = "Новое снаряжение")
 	@Localize(locale = "es", value = "Nuevo Equipo")
-	private static String					EQUIPMENT;
+	private static String	EQUIPMENT;
 	@Localize("New Equipment Container")
 	@Localize(locale = "de", value = "Neuer Ausrüstungs-Container")
 	@Localize(locale = "ru", value = "Новый контейнер снаряжения")
 	@Localize(locale = "es", value = "Nuevo contenedor de Equipo")
-	private static String					EQUIPMENT_CONTAINER;
+	private static String	EQUIPMENT_CONTAINER;
 
 	static {
 		Localization.initialize();

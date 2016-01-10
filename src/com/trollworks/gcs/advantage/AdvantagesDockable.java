@@ -22,7 +22,7 @@ public class AdvantagesDockable extends LibraryDockable {
 	@Localize(locale = "de", value = "Unbenannte Vorteils-Liste")
 	@Localize(locale = "ru", value = "Безымянный список преимуществ")
 	@Localize(locale = "es", value = "Ventajas sin título")
-	private static String	UNTITLED;
+	private static String UNTITLED;
 
 	static {
 		Localization.initialize();

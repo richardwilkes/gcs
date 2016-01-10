@@ -29,7 +29,7 @@ public class CostReductionEditor extends FeatureEditor {
 	@Localize(locale = "de", value = "um {0}%")
 	@Localize(locale = "ru", value = "на {0}% ")
 	@Localize(locale = "es", value = "en {0}%")
-	private static String		BY;
+	private static String BY;
 
 	static {
 		Localization.initialize();

@@ -29,7 +29,7 @@ public class AttributeBonusEditor extends FeatureEditor {
 	@Localize("to ")
 	@Localize(locale = "de", value = "auf ")
 	@Localize(locale = "es", value = "a ")
-	private static String		TO;
+	private static String TO;
 
 	static {
 		Localization.initialize();

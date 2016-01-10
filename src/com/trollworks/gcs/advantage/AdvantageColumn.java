@@ -117,7 +117,7 @@ public enum AdvantageColumn {
 	},
 	/** The type. */
 	TYPE {
-		private HashMap<Integer, StdImage>	mMap;
+		private HashMap<Integer, StdImage> mMap;
 
 		@Override
 		public String toString() {

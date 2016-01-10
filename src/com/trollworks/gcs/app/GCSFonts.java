@@ -23,37 +23,37 @@ public class GCSFonts {
 	@Localize(locale = "de", value = "Überschriften")
 	@Localize(locale = "ru", value = "Заголовки")
 	@Localize(locale = "es", value = "Etiquetas")
-	private static String		LABELS_FONT;
+	private static String	LABELS_FONT;
 	@Localize("Fields")
 	@Localize(locale = "de", value = "Elemente")
 	@Localize(locale = "ru", value = "Поля")
 	@Localize(locale = "es", value = "Campos")
-	private static String		FIELDS_FONT;
+	private static String	FIELDS_FONT;
 	@Localize("Field Notes")
 	@Localize(locale = "de", value = "Anmerkungen zu Elementen")
 	@Localize(locale = "ru", value = "Заметки на полях")
 	@Localize(locale = "es", value = "Anotaciones del Campo")
-	private static String		FIELD_NOTES_FONT;
+	private static String	FIELD_NOTES_FONT;
 	@Localize("Technique Fields")
 	@Localize(locale = "de", value = "Technik-Elemente")
 	@Localize(locale = "ru", value = "Области техники")
 	@Localize(locale = "es", value = "Campos técnicos")
-	private static String		TECHNIQUE_FIELDS_FONT;
+	private static String	TECHNIQUE_FIELDS_FONT;
 	@Localize("Primary Footer")
 	@Localize(locale = "de", value = "Erste Fußzeile")
 	@Localize(locale = "ru", value = "Основной колонтитул")
 	@Localize(locale = "es", value = "Pie de página principal")
-	private static String		PRIMARY_FOOTER_FONT;
+	private static String	PRIMARY_FOOTER_FONT;
 	@Localize("Secondary Footer")
 	@Localize(locale = "de", value = "Zweite Fußzeile")
 	@Localize(locale = "ru", value = "Дополнительный колонтитул")
 	@Localize(locale = "es", value = "Pie de página secundario")
-	private static String		SECONDARY_FOOTER_FONT;
+	private static String	SECONDARY_FOOTER_FONT;
 	@Localize("Notes")
 	@Localize(locale = "de", value = "Notizen")
 	@Localize(locale = "ru", value = "Заметка")
 	@Localize(locale = "es", value = "Notas")
-	private static String		NOTES_FONT;
+	private static String	NOTES_FONT;
 
 	static {
 		Localization.initialize();
@@ -64,9 +64,9 @@ public class GCSFonts {
 	/** The field font. */
 	public static final String	KEY_FIELD				= "trollworks.field";				//$NON-NLS-1$
 	/** The field notes font. */
-	public static final String	KEY_FIELD_NOTES			= "trollworks.field.notes";		//$NON-NLS-1$
+	public static final String	KEY_FIELD_NOTES			= "trollworks.field.notes";			//$NON-NLS-1$
 	/** The technique field font. */
-	public static final String	KEY_TECHNIQUE_FIELD		= "trollworks.field.technique";	//$NON-NLS-1$
+	public static final String	KEY_TECHNIQUE_FIELD		= "trollworks.field.technique";		//$NON-NLS-1$
 	/** The primary footer font. */
 	public static final String	KEY_PRIMARY_FOOTER		= "trollworks.footer.primary";		//$NON-NLS-1$
 	/** The secondary footer font. */

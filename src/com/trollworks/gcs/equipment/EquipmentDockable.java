@@ -22,7 +22,7 @@ public class EquipmentDockable extends LibraryDockable {
 	@Localize(locale = "de", value = "Unbenannte Ausrüstungs-Liste")
 	@Localize(locale = "ru", value = "Безымянное снаряжение")
 	@Localize(locale = "es", value = "Equipo sin nombrar")
-	private static String	UNTITLED;
+	private static String UNTITLED;
 
 	static {
 		Localization.initialize();

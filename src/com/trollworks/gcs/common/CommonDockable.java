@@ -37,14 +37,14 @@ public abstract class CommonDockable extends Dockable implements CloseHandler, S
 	@Localize(locale = "de", value = "Ein Fehler ist beim Speichern der Datei aufgetreten.")
 	@Localize(locale = "ru", value = "Произошла ошибка при попытке сохранить файл.")
 	@Localize(locale = "es", value = "Ha ocurrido un error mientras se intentaba guardar el archivo.")
-	private static String	SAVE_ERROR;
+	private static String SAVE_ERROR;
 
 	static {
 		Localization.initialize();
 	}
 
-	private DataFile		mDataFile;
-	private String			mUntitledName;
+	private DataFile	mDataFile;
+	private String		mUntitledName;
 
 	/**
 	 * Creates a new {@link CommonDockable}.

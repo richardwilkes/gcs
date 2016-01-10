@@ -65,12 +65,12 @@ public class RangedWeaponEditor extends WeaponEditor {
 		Localization.initialize();
 	}
 
-	private EditorField		mAccuracy;
-	private EditorField		mRange;
-	private EditorField		mRateOfFire;
-	private EditorField		mShots;
-	private EditorField		mBulk;
-	private EditorField		mRecoil;
+	private EditorField	mAccuracy;
+	private EditorField	mRange;
+	private EditorField	mRateOfFire;
+	private EditorField	mShots;
+	private EditorField	mBulk;
+	private EditorField	mRecoil;
 
 	/**
 	 * Creates a new ranged weapon editor for the specified row.

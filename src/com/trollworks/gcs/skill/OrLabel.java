@@ -28,13 +28,13 @@ public class OrLabel extends JLabel {
 	@Localize(locale = "de", value = "oder")
 	@Localize(locale = "ru", value = "или")
 	@Localize(locale = "es", value = "o")
-	private static String	OR;
+	private static String OR;
 
 	static {
 		Localization.initialize();
 	}
 
-	private Component		mOwner;
+	private Component mOwner;
 
 	/**
 	 * Creates a new {@link OrLabel}.

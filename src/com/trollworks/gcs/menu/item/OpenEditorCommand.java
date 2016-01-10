@@ -34,7 +34,7 @@ public class OpenEditorCommand extends Command {
 	}
 
 	/** The action command this command will issue. */
-	public static final String				CMD_OPEN_EDITOR	= "OpenEditor";							//$NON-NLS-1$
+	public static final String				CMD_OPEN_EDITOR	= "OpenEditor";				//$NON-NLS-1$
 
 	/** The singleton {@link OpenEditorCommand}. */
 	public static final OpenEditorCommand	INSTANCE		= new OpenEditorCommand();

@@ -26,14 +26,14 @@ public class NewSpellsLibraryCommand extends Command {
 	@Localize(locale = "de", value = "Neue Zauber-Liste")
 	@Localize(locale = "ru", value = "Новая библиотека заклинаний")
 	@Localize(locale = "es", value = "Nueva Librería de Sortilegios")
-	private static String						TITLE;
+	private static String TITLE;
 
 	static {
 		Localization.initialize();
 	}
 
 	/** The action command this command will issue. */
-	public static final String					CMD_NEW_LIBRARY	= "NewSpellsLibrary";				//$NON-NLS-1$
+	public static final String					CMD_NEW_LIBRARY	= "NewSpellsLibrary";			//$NON-NLS-1$
 
 	/** The singleton {@link NewSpellsLibraryCommand}. */
 	public static final NewSpellsLibraryCommand	INSTANCE		= new NewSpellsLibraryCommand();

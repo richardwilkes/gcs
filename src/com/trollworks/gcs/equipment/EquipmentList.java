@@ -26,7 +26,7 @@ public class EquipmentList extends ListFile {
 	/** The current version. */
 	public static final int		CURRENT_VERSION	= 1;
 	/** The XML tag for {@link EquipmentList}s. */
-	public static final String	TAG_ROOT		= "equipment_list"; //$NON-NLS-1$
+	public static final String	TAG_ROOT		= "equipment_list";	//$NON-NLS-1$
 	/** The extension for {@link EquipmentList}s. */
 	public static final String	EXTENSION		= "eqp";			//$NON-NLS-1$
 

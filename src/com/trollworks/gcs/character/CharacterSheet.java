@@ -122,84 +122,84 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	@Localize(locale = "de", value = "Seite {0} von {1}")
 	@Localize(locale = "ru", value = "Стр. {0} из {1}")
 	@Localize(locale = "es", value = "Página {0} de {1}")
-	private static String		PAGE_NUMBER;
+	private static String	PAGE_NUMBER;
 	@Localize("Visit us at %s")
 	@Localize(locale = "de", value = "Besucht uns auf %s")
 	@Localize(locale = "ru", value = "Посетите нас на %s")
 	@Localize(locale = "es", value = "Visitanos en %s")
-	private static String		ADVERTISEMENT;
+	private static String	ADVERTISEMENT;
 	@Localize("Melee Weapons")
 	@Localize(locale = "de", value = "Nahkampfwaffen")
 	@Localize(locale = "ru", value = "Контактные орудия")
 	@Localize(locale = "es", value = "Armas de cuerpo a cuerpo")
-	private static String		MELEE_WEAPONS;
+	private static String	MELEE_WEAPONS;
 	@Localize("Ranged Weapons")
 	@Localize(locale = "de", value = "Fernkampfwaffen")
 	@Localize(locale = "ru", value = "Дистанционные орудия")
 	@Localize(locale = "es", value = "Armas de distancia")
-	private static String		RANGED_WEAPONS;
+	private static String	RANGED_WEAPONS;
 	@Localize("Advantages, Disadvantages & Quirks")
 	@Localize(locale = "de", value = "Vorteile, Nachteile und Marotten")
 	@Localize(locale = "ru", value = "Преимущества, недостатки и причуды")
 	@Localize(locale = "es", value = "Ventajas, Desventajas y Singularidades")
-	private static String		ADVANTAGES;
+	private static String	ADVANTAGES;
 	@Localize("Skills")
 	@Localize(locale = "de", value = "Fähigkeiten")
 	@Localize(locale = "ru", value = "Умения")
 	@Localize(locale = "es", value = "Habilidades")
-	private static String		SKILLS;
+	private static String	SKILLS;
 	@Localize("Spells")
 	@Localize(locale = "de", value = "Zauber")
 	@Localize(locale = "ru", value = "Заклинания")
 	@Localize(locale = "es", value = "Sortilegios")
-	private static String		SPELLS;
+	private static String	SPELLS;
 	@Localize("Equipment")
 	@Localize(locale = "de", value = "Ausrüstung")
 	@Localize(locale = "ru", value = "Снаряжение")
 	@Localize(locale = "es", value = "Equuipo")
-	private static String		EQUIPMENT;
+	private static String	EQUIPMENT;
 	@Localize("{0} (continued)")
 	@Localize(locale = "de", value = "{0} (fortgesetzt)")
 	@Localize(locale = "ru", value = "{0} (продолжается)")
 	@Localize(locale = "es", value = "{0} (continua)")
-	private static String		CONTINUED;
+	private static String	CONTINUED;
 	@Localize("Natural")
 	@Localize(locale = "de", value = "Angeboren")
 	@Localize(locale = "ru", value = "Природное")
 	@Localize(locale = "es", value = "Natural")
-	private static String		NATURAL;
+	private static String	NATURAL;
 	@Localize("Punch")
 	@Localize(locale = "de", value = "Schlag")
 	@Localize(locale = "ru", value = "Удар")
 	@Localize(locale = "es", value = "Puñetazo")
-	private static String		PUNCH;
+	private static String	PUNCH;
 	@Localize("Kick")
 	@Localize(locale = "de", value = "Tritt")
 	@Localize(locale = "ru", value = "Пинок")
 	@Localize(locale = "es", value = "Patada")
-	private static String		KICK;
+	private static String	KICK;
 	@Localize("Kick w/Boots")
 	@Localize(locale = "de", value = "Tritt mit Schuh")
 	@Localize(locale = "ru", value = "Пинок (ботинком)")
 	@Localize(locale = "es", value = "Patada con botas")
-	private static String		BOOTS;
+	private static String	BOOTS;
 	@Localize("Unidentified key: '%s'")
 	@Localize(locale = "de", value = "Unbekannter Schlüssel: '%s'")
 	@Localize(locale = "ru", value = "Неопознанный ключ: '%s'")
 	@Localize(locale = "es", value = "Clave no identificada: '%s'")
-	private static String		UNIDENTIFIED_KEY;
+	private static String	UNIDENTIFIED_KEY;
 	@Localize("Notes")
 	@Localize(locale = "de", value = "Notizen")
 	@Localize(locale = "ru", value = "Заметка")
 	@Localize(locale = "es", value = "Notas")
-	private static String		NOTES;
+	private static String	NOTES;
 
 	static {
 		Localization.initialize();
 	}
 
-	private static final String	BOXING_SKILL_NAME	= "Boxing";	//$NON-NLS-1$
-	private static final String	KARATE_SKILL_NAME	= "Karate";	//$NON-NLS-1$
+	private static final String	BOXING_SKILL_NAME	= "Boxing";		//$NON-NLS-1$
+	private static final String	KARATE_SKILL_NAME	= "Karate";		//$NON-NLS-1$
 	private static final String	BRAWLING_SKILL_NAME	= "Brawling";	//$NON-NLS-1$
 	private GURPSCharacter		mCharacter;
 	private int					mLastPage;
@@ -1734,7 +1734,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 						keyBuffer.setLength(0);
 						lookForKeyMarker = true;
 						if (key.equals("EVEN_ODD")) { //$NON-NLS-1$
-							out.write(odd ? "odd" : "even"); //$NON-NLS-1$  //$NON-NLS-2$
+							out.write(odd ? "odd" : "even"); //$NON-NLS-1$ //$NON-NLS-2$
 						} else if (!processDescription(key, out, weapon)) {
 							if (key.equals("USAGE")) { //$NON-NLS-1$
 								writeXMLText(out, weapon.getUsage());

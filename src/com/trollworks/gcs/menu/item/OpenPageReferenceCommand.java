@@ -42,7 +42,7 @@ public class OpenPageReferenceCommand extends Command {
 	}
 
 	/** The action command this command will issue. */
-	public static final String						CMD_OPEN_PAGE_REFERENCE	= "OpenPageReference";																																																																																																																					//$NON-NLS-1$
+	public static final String						CMD_OPEN_PAGE_REFERENCE	= "OpenPageReference";				//$NON-NLS-1$
 
 	/** The singleton {@link OpenPageReferenceCommand}. */
 	public static final OpenPageReferenceCommand	INSTANCE				= new OpenPageReferenceCommand();

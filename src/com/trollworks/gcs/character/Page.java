@@ -27,7 +27,7 @@ import javax.swing.border.EmptyBorder;
 
 /** A printer page. */
 public class Page extends JPanel {
-	private PageOwner	mOwner;
+	private PageOwner mOwner;
 
 	/**
 	 * Creates a new page.

@@ -40,17 +40,17 @@ public class SkillDefaultEditor extends EditorPanel {
 	@Localize(locale = "de", value = "Grundwert hinzufügen")
 	@Localize(locale = "ru", value = "Добавить новую строку")
 	@Localize(locale = "es", value = "Añadir valor por defecto")
-	private static String			ADD_DEFAULT;
+	private static String	ADD_DEFAULT;
 	@Localize("Remove this default")
 	@Localize(locale = "de", value = "Diesen Grundwert entfernen")
 	@Localize(locale = "ru", value = "Удалить это строку")
 	@Localize(locale = "es", value = "Quitar valor por defecto")
-	private static String			REMOVE_DEFAULT;
+	private static String	REMOVE_DEFAULT;
 	@Localize("Optional Specialization")
 	@Localize(locale = "de", value = "Optionale Spezialisierung")
 	@Localize(locale = "ru", value = "Необязательная специализация")
 	@Localize(locale = "es", value = "Especialización opcional")
-	private static String			SPECIALIZATION_TOOLTIP;
+	private static String	SPECIALIZATION_TOOLTIP;
 
 	static {
 		Localization.initialize();

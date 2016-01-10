@@ -36,17 +36,17 @@ public class RowUndo extends AbstractUndoableEdit {
 	@Localize(locale = "de", value = "{0} Änderungen")
 	@Localize(locale = "ru", value = "{0} изменений")
 	@Localize(locale = "es", value = "{0} Cambios")
-	private static String	UNDO_FORMAT;
+	private static String UNDO_FORMAT;
 
 	static {
 		Localization.initialize();
 	}
 
-	private DataFile		mDataFile;
-	private ListRow			mRow;
-	private String			mName;
-	private byte[]			mBefore;
-	private byte[]			mAfter;
+	private DataFile	mDataFile;
+	private ListRow		mRow;
+	private String		mName;
+	private byte[]		mBefore;
+	private byte[]		mAfter;
 
 	/**
 	 * Creates a new {@link RowUndo}.

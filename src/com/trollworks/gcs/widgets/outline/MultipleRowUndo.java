@@ -19,7 +19,7 @@ import javax.swing.undo.CannotUndoException;
 
 /** An undo that contains one or more {@link RowUndo}s. */
 public class MultipleRowUndo extends AbstractUndoableEdit {
-	private RowUndo[]	mUndos;
+	private RowUndo[] mUndos;
 
 	/**
 	 * Creates a new {@link MultipleRowUndo}.

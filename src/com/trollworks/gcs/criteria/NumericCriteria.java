@@ -25,7 +25,7 @@ public abstract class NumericCriteria {
 	@Localize(locale = "de", value = "ist ")
 	@Localize(locale = "ru", value = "  ")
 	@Localize(locale = "es", value = "es ")
-	private static String		IS_PREFIX;
+	private static String IS_PREFIX;
 
 	static {
 		Localization.initialize();

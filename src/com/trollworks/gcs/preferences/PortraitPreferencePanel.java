@@ -49,7 +49,7 @@ public class PortraitPreferencePanel extends ActionPanel {
 		Localization.initialize();
 	}
 
-	private StdImage		mImage;
+	private StdImage mImage;
 
 	/**
 	 * Creates a new character portrait.

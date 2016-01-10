@@ -49,9 +49,9 @@ public class TextEditor extends JDialog implements ActionListener, WindowFocusLi
 		Localization.initialize();
 	}
 
-	private JTextArea		mEditor;
-	private JButton			mSetButton;
-	private boolean			mSet;
+	private JTextArea	mEditor;
+	private JButton		mSetButton;
+	private boolean		mSet;
 
 	/**
 	 * Puts up a modal text editor.

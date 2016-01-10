@@ -38,7 +38,7 @@ import java.util.HashMap;
 public class GCSApp extends App {
 	/** The one and only instance of this class. */
 	public static final GCSApp	INSTANCE	= new GCSApp();
-	public static final String	WEB_SITE	= "http://gurpscharactersheet.com";	 //$NON-NLS-1$
+	public static final String	WEB_SITE	= "http://gurpscharactersheet.com";	//$NON-NLS-1$
 
 	private GCSApp() {
 		super();

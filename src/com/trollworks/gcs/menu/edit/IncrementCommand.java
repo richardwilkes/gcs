@@ -26,7 +26,7 @@ public class IncrementCommand extends Command {
 	@Localize(locale = "de", value = "Erhöhen")
 	@Localize(locale = "ru", value = "Увеличить")
 	@Localize(locale = "es", value = "Incrementar")
-	private static String					INCREMENT;
+	private static String INCREMENT;
 
 	static {
 		Localization.initialize();

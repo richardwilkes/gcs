@@ -36,12 +36,12 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
 	@Localize(locale = "de", value = "Zufallswerte erzeugen")
 	@Localize(locale = "ru", value = "Сгенерировать")
 	@Localize(locale = "es", value = "Al azar")
-	private static String		RANDOMIZE;
+	private static String	RANDOMIZE;
 	@Localize("Description Randomization")
 	@Localize(locale = "de", value = "Zufällige Beschreibungen")
 	@Localize(locale = "ru", value = "Создать описание")
 	@Localize(locale = "es", value = "Descripción al azar")
-	private static String		UNDO_RANDOMIZE;
+	private static String	UNDO_RANDOMIZE;
 
 	static {
 		Localization.initialize();

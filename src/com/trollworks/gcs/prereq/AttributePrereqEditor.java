@@ -30,18 +30,18 @@ public class AttributePrereqEditor extends PrereqEditor {
 	@Localize(locale = "de", value = "addiert mit {0}")
 	@Localize(locale = "ru", value = "в сочетании с {0}")
 	@Localize(locale = "es", value = "combinada con {0}")
-	private static String		COMBINED_WITH;
+	private static String	COMBINED_WITH;
 	@Localize("which ")
 	@Localize(locale = "de", value = "die ")
 	@Localize(locale = "ru", value = "который ")
 	@Localize(locale = "es", value = "el cual ")
-	private static String		WHICH;
+	private static String	WHICH;
 
 	static {
 		Localization.initialize();
 	}
 
-	private static final String	CHANGE_TYPE			= "ChangeType";		//$NON-NLS-1$
+	private static final String	CHANGE_TYPE			= "ChangeType";			//$NON-NLS-1$
 	private static final String	CHANGE_SECOND_TYPE	= "ChangeSecondType";	//$NON-NLS-1$
 	private static final String	BLANK				= " ";					//$NON-NLS-1$
 

@@ -36,7 +36,7 @@ import java.util.List;
 
 /** The stats for a weapon. */
 public abstract class WeaponStats {
-	private static final String		TAG_DAMAGE		= "damage";									//$NON-NLS-1$
+	private static final String		TAG_DAMAGE		= "damage";										//$NON-NLS-1$
 	private static final String		TAG_STRENGTH	= "strength";									//$NON-NLS-1$
 	private static final String		TAG_USAGE		= "usage";										//$NON-NLS-1$
 	/** The prefix used in front of all IDs for weapons. */

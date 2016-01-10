@@ -66,7 +66,7 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 		Localization.initialize();
 	}
 
-	private GURPSCharacter	mCharacter;
+	private GURPSCharacter mCharacter;
 
 	/**
 	 * Creates a new character portrait.

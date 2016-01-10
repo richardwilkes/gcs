@@ -34,14 +34,14 @@ public class RotateEquipmentStateCommand extends Command {
 	@Localize(locale = "de", value = "Ausrüstungszustand wechseln")
 	@Localize(locale = "ru", value = "Смена статуса снаряжения")
 	@Localize(locale = "es", value = "Rotar el estado del Equipo")
-	private static String							TITLE;
+	private static String TITLE;
 
 	static {
 		Localization.initialize();
 	}
 
 	/** The action command this command will issue. */
-	public static final String						CMD_ROTATE_EQUIPMENT_STATE	= "RotateEquipmentState";				//$NON-NLS-1$
+	public static final String						CMD_ROTATE_EQUIPMENT_STATE	= "RotateEquipmentState";			//$NON-NLS-1$
 
 	/** The singleton {@link RotateEquipmentStateCommand}. */
 	public static final RotateEquipmentStateCommand	INSTANCE					= new RotateEquipmentStateCommand();

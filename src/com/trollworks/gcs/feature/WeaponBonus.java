@@ -29,7 +29,7 @@ public class WeaponBonus extends Bonus {
 	/** The XML tag. */
 	public static final String	TAG_ROOT			= "weapon_bonus";	//$NON-NLS-1$
 	private static final String	TAG_NAME			= "name";			//$NON-NLS-1$
-	private static final String	TAG_SPECIALIZATION	= "specialization"; //$NON-NLS-1$
+	private static final String	TAG_SPECIALIZATION	= "specialization";	//$NON-NLS-1$
 	private static final String	TAG_LEVEL			= "level";			//$NON-NLS-1$
 	private static final String	EMPTY				= "";				//$NON-NLS-1$
 	private StringCriteria		mNameCriteria;

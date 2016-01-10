@@ -77,7 +77,7 @@ public enum Encumbrance {
 		Localization.initialize();
 	}
 
-	private int				mMultiplier;
+	private int mMultiplier;
 
 	private Encumbrance(int multiplier) {
 		mMultiplier = multiplier;

@@ -33,17 +33,17 @@ public class AdvantagePrereq extends NameLevelPrereq {
 	@Localize(locale = "de", value = "{0}{1} einen Vorteil, dessen Name {2}")
 	@Localize(locale = "ru", value = "{0}{1}преимущество с названием {2}")
 	@Localize(locale = "es", value = "{0}{1} una Ventaja llamada {2}")
-	private static String		NAME_PART;
+	private static String	NAME_PART;
 	@Localize(", notes {0},")
 	@Localize(locale = "de", value = ", Notizen {0},")
 	@Localize(locale = "ru", value = ", заметок {0},")
 	@Localize(locale = "es", value = ", Notas {0},")
-	private static String		NOTES_PART;
+	private static String	NOTES_PART;
 	@Localize(" and level {0}")
 	@Localize(locale = "de", value = " und Stufe {0}")
 	@Localize(locale = "ru", value = " и уровень {0}\n ")
 	@Localize(locale = "es", value = " y Nivel {0}")
-	private static String		LEVEL_PART;
+	private static String	LEVEL_PART;
 
 	static {
 		Localization.initialize();

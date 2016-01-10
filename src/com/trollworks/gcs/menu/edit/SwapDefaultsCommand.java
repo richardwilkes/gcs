@@ -34,10 +34,10 @@ public class SwapDefaultsCommand extends Command {
 	}
 
 	/** The action command this command will issue. */
-	public static final String CMD_SWAP_DEFAULTS = "SwapDefaults";				//$NON-NLS-1$
+	public static final String				CMD_SWAP_DEFAULTS	= "SwapDefaults";			//$NON-NLS-1$
 
 	/** The singleton {@link SwapDefaultsCommand}. */
-	public static final SwapDefaultsCommand INSTANCE = new SwapDefaultsCommand();
+	public static final SwapDefaultsCommand	INSTANCE			= new SwapDefaultsCommand();
 
 	private SwapDefaultsCommand() {
 		super(SWAP_DEFAULTS, CMD_SWAP_DEFAULTS, KeyEvent.VK_X, Command.SHIFTED_COMMAND_MODIFIER);

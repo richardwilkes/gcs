@@ -27,7 +27,7 @@ public class SkillBonus extends Bonus {
 	/** The XML tag. */
 	public static final String	TAG_ROOT			= "skill_bonus";	//$NON-NLS-1$
 	private static final String	TAG_NAME			= "name";			//$NON-NLS-1$
-	private static final String	TAG_SPECIALIZATION	= "specialization"; //$NON-NLS-1$
+	private static final String	TAG_SPECIALIZATION	= "specialization";	//$NON-NLS-1$
 	private static final String	EMPTY				= "";				//$NON-NLS-1$
 	private StringCriteria		mNameCriteria;
 	private StringCriteria		mSpecializationCriteria;

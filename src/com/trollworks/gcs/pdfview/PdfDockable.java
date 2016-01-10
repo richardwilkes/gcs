@@ -56,8 +56,8 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 	}
 
 	/** The extension for PDFs. */
-	public static final String	EXTENSION			= "pdf";							//$NON-NLS-1$
-	private static final String	UNKNOWN_LOCATION	= "-/-"; //$NON-NLS-1$
+	public static final String	EXTENSION			= "pdf";	//$NON-NLS-1$
+	private static final String	UNKNOWN_LOCATION	= "-/-";	//$NON-NLS-1$
 	private File				mFile;
 	private PDDocument			mPdf;
 	private Toolbar				mToolbar;

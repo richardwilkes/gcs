@@ -38,15 +38,15 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 	@Localize(locale = "de", value = "Zeilen entfernen")
 	@Localize(locale = "ru", value = "Удалить строки")
 	@Localize(locale = "es", value = "Eliminar Filas")
-	private static String	CLEAR_UNDO;
+	private static String CLEAR_UNDO;
 
 	static {
 		Localization.initialize();
 	}
 
 	/** The owning data file. */
-	protected DataFile		mDataFile;
-	private String			mRowSetChangedID;
+	protected DataFile	mDataFile;
+	private String		mRowSetChangedID;
 
 	/**
 	 * Create a new outline.
@@ -201,7 +201,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 		}
 	}
 
-	private ArrayList<ListRow>	mRowsToEdit;
+	private ArrayList<ListRow> mRowsToEdit;
 
 	@Override
 	public void run() {

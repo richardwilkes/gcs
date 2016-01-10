@@ -45,7 +45,7 @@ public class ReferenceLookupPreferences extends PreferencePanel {
 		Localization.initialize();
 	}
 
-	private static final String	MODULE	= "PageReferences";																																//$NON-NLS-1$
+	private static final String	MODULE	= "PageReferences";	//$NON-NLS-1$
 	private BandedPanel			mPanel;
 
 	public static synchronized File getPdfLocation(String id) {

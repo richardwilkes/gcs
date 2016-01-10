@@ -31,10 +31,10 @@ public class AttributePrereq extends HasPrereq {
 	@Localize(locale = "de", value = "{0}{1} {2} die {3}")
 	@Localize(locale = "ru", value = "{0}{1} {2} который {3}")
 	@Localize(locale = "es", value = "{0}{1} {2} el cual {3}")
-	private static String						DESCRIPTION;
+	private static String	DESCRIPTION;
 	@Localize("{0}+{1}")
 	@Localize(locale = "de", value = "{0}+{1}")
-	private static String						COMBINED;
+	private static String	COMBINED;
 
 	static {
 		Localization.initialize();

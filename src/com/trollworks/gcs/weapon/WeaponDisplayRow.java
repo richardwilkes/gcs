@@ -17,7 +17,7 @@ import com.trollworks.toolkit.ui.widget.outline.Row;
 
 /** A non-editable row for displaying weapon information. */
 public class WeaponDisplayRow extends Row {
-	private WeaponStats	mWeapon;
+	private WeaponStats mWeapon;
 
 	/**
 	 * Creates a new weapon display row.

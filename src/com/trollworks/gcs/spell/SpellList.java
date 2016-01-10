@@ -26,7 +26,7 @@ public class SpellList extends ListFile {
 	/** The current version. */
 	public static final int		CURRENT_VERSION	= 1;
 	/** The XML tag for {@link SpellList}s. */
-	public static final String	TAG_ROOT		= "spell_list"; //$NON-NLS-1$
+	public static final String	TAG_ROOT		= "spell_list";	//$NON-NLS-1$
 	/** The extension for {@link SpellList}s. */
 	public static final String	EXTENSION		= "spl";		//$NON-NLS-1$
 

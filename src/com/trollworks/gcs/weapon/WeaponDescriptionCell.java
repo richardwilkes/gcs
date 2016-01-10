@@ -34,7 +34,7 @@ import javax.swing.UIManager;
  * information for a {@link WeaponDisplayRow}.
  */
 public class WeaponDescriptionCell implements Cell {
-	private static final int	H_MARGIN	= 2;
+	private static final int H_MARGIN = 2;
 
 	/**
 	 * @param row The row to use.

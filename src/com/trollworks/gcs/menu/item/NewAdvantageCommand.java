@@ -30,12 +30,12 @@ public class NewAdvantageCommand extends Command {
 	@Localize(locale = "de", value = "Neuer Vorteil")
 	@Localize(locale = "ru", value = "Новое преимущество")
 	@Localize(locale = "es", value = "Nueva Ventaja")
-	private static String					ADVANTAGE;
+	private static String	ADVANTAGE;
 	@Localize("New Advantage Container")
 	@Localize(locale = "de", value = "Neuer Vorteils-Container")
 	@Localize(locale = "ru", value = "Новый контейнер преимущества")
 	@Localize(locale = "es", value = "Nuevo Contenedor de Ventajas")
-	private static String					ADVANTAGE_CONTAINER;
+	private static String	ADVANTAGE_CONTAINER;
 
 	static {
 		Localization.initialize();

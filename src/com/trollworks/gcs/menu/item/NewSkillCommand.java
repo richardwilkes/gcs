@@ -31,17 +31,17 @@ public class NewSkillCommand extends Command {
 	@Localize(locale = "de", value = "Neue Fertigkeit")
 	@Localize(locale = "ru", value = "Новое умение")
 	@Localize(locale = "es", value = "Nueva habilidad")
-	private static String				SKILL;
+	private static String	SKILL;
 	@Localize("New Skill Container")
 	@Localize(locale = "de", value = "Neuer Fertigkeiten-Container")
 	@Localize(locale = "ru", value = "Новый контейнер умения")
 	@Localize(locale = "es", value = "Nuevo Contenedor de habilidades")
-	private static String				SKILL_CONTAINER;
+	private static String	SKILL_CONTAINER;
 	@Localize("New Technique")
 	@Localize(locale = "de", value = "Neue Technik")
 	@Localize(locale = "ru", value = "Новая техника")
 	@Localize(locale = "es", value = "Nueva Técnica")
-	private static String				TECHNIQUE;
+	private static String	TECHNIQUE;
 
 	static {
 		Localization.initialize();

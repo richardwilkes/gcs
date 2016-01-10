@@ -19,7 +19,7 @@ import java.awt.LayoutManager2;
 
 /** A layout for the character sheet that dynamically does n-up presentation. */
 class CharacterSheetLayout implements LayoutManager2 {
-	private static final int	MARGIN	= 1;
+	private static final int MARGIN = 1;
 
 	@Override
 	public Dimension minimumLayoutSize(Container target) {

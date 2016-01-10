@@ -33,12 +33,12 @@ public class DuplicateCommand extends Command {
 	@Localize(locale = "de", value = "Duplizieren")
 	@Localize(locale = "ru", value = "Дублировать")
 	@Localize(locale = "es", value = "Duplicar")
-	private static String					DUPLICATE;
+	private static String	DUPLICATE;
 	@Localize("Duplicate Rows")
 	@Localize(locale = "de", value = "Zeile Duplizieren")
 	@Localize(locale = "ru", value = "Дублировать строки")
 	@Localize(locale = "es", value = "Duplicar Filas")
-	private static String					DUPLICATE_UNDO;
+	private static String	DUPLICATE_UNDO;
 
 	static {
 		Localization.initialize();

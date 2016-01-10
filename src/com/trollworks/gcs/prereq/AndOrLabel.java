@@ -38,7 +38,7 @@ public class AndOrLabel extends JLabel {
 		Localization.initialize();
 	}
 
-	private Prereq			mOwner;
+	private Prereq mOwner;
 
 	/**
 	 * Creates a new {@link AndOrLabel}.

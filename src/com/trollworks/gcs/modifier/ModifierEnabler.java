@@ -46,32 +46,32 @@ public class ModifierEnabler extends JPanel {
 	@Localize(locale = "de", value = "Modifikatoren auswählen")
 	@Localize(locale = "ru", value = "Включить модификаторы")
 	@Localize(locale = "es", value = "Activar Modificadores")
-	private static String		MODIFIER_TITLE;
+	private static String	MODIFIER_TITLE;
 	@Localize("1 advantage remaining to be processed.")
 	@Localize(locale = "de", value = "1 weiterer Vorteil zu bearbeiten.")
 	@Localize(locale = "ru", value = "осталось обработать 1 преимущество.")
 	@Localize(locale = "es", value = "1 ventaja pendientede procesarse.")
-	private static String		MODIFIER_ONE_REMAINING;
+	private static String	MODIFIER_ONE_REMAINING;
 	@Localize("{0} advantages remaining to be processed.")
 	@Localize(locale = "de", value = "{0} weitere Vorteile zu bearbeiten.")
 	@Localize(locale = "ru", value = "{0} преимуществ(а) осталось обработать.")
 	@Localize(locale = "es", value = "{0} ventajas pendientes de procesarse.")
-	private static String		MODIFIER_REMAINING;
+	private static String	MODIFIER_REMAINING;
 	@Localize("Cancel Remaining")
 	@Localize(locale = "de", value = "Alles Abbrechen")
 	@Localize(locale = "ru", value = "Пропустить остальные")
 	@Localize(locale = "es", value = "Cancelar las restantes")
-	private static String		CANCEL_REST;
+	private static String	CANCEL_REST;
 	@Localize("Cancel")
 	@Localize(locale = "de", value = "Abbrechen")
 	@Localize(locale = "ru", value = "Отмена")
 	@Localize(locale = "es", value = "Cancelar")
-	private static String		CANCEL;
+	private static String	CANCEL;
 	@Localize("Apply")
 	@Localize(locale = "de", value = "Anwenden")
 	@Localize(locale = "ru", value = "Применить")
 	@Localize(locale = "es", value = "Aplicar")
-	private static String		APPLY;
+	private static String	APPLY;
 
 	static {
 		Localization.initialize();

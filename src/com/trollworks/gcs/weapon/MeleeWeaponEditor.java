@@ -50,9 +50,9 @@ public class MeleeWeaponEditor extends WeaponEditor {
 		Localization.initialize();
 	}
 
-	private EditorField		mReach;
-	private EditorField		mParry;
-	private EditorField		mBlock;
+	private EditorField	mReach;
+	private EditorField	mParry;
+	private EditorField	mBlock;
 
 	/**
 	 * Creates a new melee weapon editor for the specified row.

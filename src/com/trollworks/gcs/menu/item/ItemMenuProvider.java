@@ -35,7 +35,7 @@ public class ItemMenuProvider implements MenuProvider {
 		Localization.initialize();
 	}
 
-	public static final String NAME = "Item";	//$NON-NLS-1$
+	public static final String NAME = "Item"; //$NON-NLS-1$
 
 	@Override
 	public Set<Command> getModifiableCommands() {

@@ -49,7 +49,7 @@ public class Template extends DataFile implements StateEditable {
 	@Localize(locale = "de", value = "Notizen ändern")
 	@Localize(locale = "ru", value = "Смена заметки")
 	@Localize(locale = "es", value = "Modificar Notas")
-	private static String		NOTES_UNDO;
+	private static String NOTES_UNDO;
 
 	static {
 		Localization.initialize();
@@ -62,20 +62,22 @@ public class Template extends DataFile implements StateEditable {
 	private static final String	TAG_NOTES				= "notes";							//$NON-NLS-1$
 	/** The prefix for all template IDs. */
 	public static final String	TEMPLATE_PREFIX			= "gct.";							//$NON-NLS-1$
-	/** The prefix used to indicate a point value is requested from {@link #getValueForID(String)}. */
+	/**
+	 * The prefix used to indicate a point value is requested from {@link #getValueForID(String)}.
+	 */
 	public static final String	POINTS_PREFIX			= TEMPLATE_PREFIX + "points.";		//$NON-NLS-1$
 	/** The field ID for point total changes. */
 	public static final String	ID_TOTAL_POINTS			= POINTS_PREFIX + "Total";			//$NON-NLS-1$
 	/** The field ID for advantage point summary changes. */
-	public static final String	ID_ADVANTAGE_POINTS		= POINTS_PREFIX + "Advantages";	//$NON-NLS-1$
+	public static final String	ID_ADVANTAGE_POINTS		= POINTS_PREFIX + "Advantages";		//$NON-NLS-1$
 	/** The field ID for disadvantage point summary changes. */
 	public static final String	ID_DISADVANTAGE_POINTS	= POINTS_PREFIX + "Disadvantages";	//$NON-NLS-1$
 	/** The field ID for quirk point summary changes. */
-	public static final String	ID_QUIRK_POINTS			= POINTS_PREFIX + "Quirks";		//$NON-NLS-1$
+	public static final String	ID_QUIRK_POINTS			= POINTS_PREFIX + "Quirks";			//$NON-NLS-1$
 	/** The field ID for skill point summary changes. */
-	public static final String	ID_SKILL_POINTS			= POINTS_PREFIX + "Skills";		//$NON-NLS-1$
+	public static final String	ID_SKILL_POINTS			= POINTS_PREFIX + "Skills";			//$NON-NLS-1$
 	/** The field ID for spell point summary changes. */
-	public static final String	ID_SPELL_POINTS			= POINTS_PREFIX + "Spells";		//$NON-NLS-1$
+	public static final String	ID_SPELL_POINTS			= POINTS_PREFIX + "Spells";			//$NON-NLS-1$
 	/** The field ID for notes changes. */
 	public static final String	ID_NOTES				= TEMPLATE_PREFIX + "Notes";		//$NON-NLS-1$
 	private OutlineModel		mAdvantages;

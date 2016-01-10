@@ -69,97 +69,97 @@ public class GURPSCharacter extends DataFile {
 	@Localize(locale = "de", value = "Verändert um {0} am {1}.")
 	@Localize(locale = "ru", value = "Изменен в {0} {1}")
 	@Localize(locale = "es", value = "Modificado el {0} a las {1}")
-	private static String						LAST_MODIFIED;
+	private static String	LAST_MODIFIED;
 	@Localize("Created On Change")
 	@Localize(locale = "de", value = "Erstellt am ändern")
 	@Localize(locale = "ru", value = "Изменить дату создания")
 	@Localize(locale = "es", value = "Cambiar Fecha de creacción")
-	private static String						CREATED_ON_UNDO;
+	private static String	CREATED_ON_UNDO;
 	@Localize("Strength Change")
 	@Localize(locale = "de", value = "Stärke ändern")
 	@Localize(locale = "ru", value = "Изменить силу")
 	@Localize(locale = "es", value = "Cambiar Fuerza")
-	private static String						STRENGTH_UNDO;
+	private static String	STRENGTH_UNDO;
 	@Localize("Dexterity Change")
 	@Localize(locale = "de", value = "Geschick ändern")
 	@Localize(locale = "ru", value = "Изменить ловкость")
 	@Localize(locale = "es", value = "Cambiar Destreza")
-	private static String						DEXTERITY_UNDO;
+	private static String	DEXTERITY_UNDO;
 	@Localize("Intelligence Change")
 	@Localize(locale = "de", value = "Intelligenz ändern")
 	@Localize(locale = "ru", value = "Смена интеллекта")
 	@Localize(locale = "es", value = "Cambiar Inteligencia")
-	private static String						INTELLIGENCE_UNDO;
+	private static String	INTELLIGENCE_UNDO;
 	@Localize("Health Change")
 	@Localize(locale = "de", value = "Konstitution ändern")
 	@Localize(locale = "ru", value = "Смена уровня здоровья")
 	@Localize(locale = "es", value = "Cambiar Salud")
-	private static String						HEALTH_UNDO;
+	private static String	HEALTH_UNDO;
 	@Localize("Basic Speed Change")
 	@Localize(locale = "de", value = "Grundgeschwindigkeit ändern")
 	@Localize(locale = "ru", value = "Смена Базовой Скорости")
 	@Localize(locale = "es", value = "Cambiar Velocidad Básica")
-	private static String						BASIC_SPEED_UNDO;
+	private static String	BASIC_SPEED_UNDO;
 	@Localize("Basic Move Change")
 	@Localize(locale = "de", value = "Grundbewegung ändern")
 	@Localize(locale = "ru", value = "Смена Базового Движения")
 	@Localize(locale = "es", value = "Cambiar Movimiento Básico")
-	private static String						BASIC_MOVE_UNDO;
+	private static String	BASIC_MOVE_UNDO;
 	@Localize("Perception Change")
 	@Localize(locale = "de", value = "Wahrnehmung ändern")
 	@Localize(locale = "ru", value = "Смена восприятия")
 	@Localize(locale = "es", value = "Cambiar Percepción")
-	private static String						PERCEPTION_UNDO;
+	private static String	PERCEPTION_UNDO;
 	@Localize("Will Change")
 	@Localize(locale = "de", value = "Wille ändern")
 	@Localize(locale = "ru", value = "Изменить волю")
 	@Localize(locale = "es", value = "Cambiar Voluntad")
-	private static String						WILL_UNDO;
+	private static String	WILL_UNDO;
 	@Localize("Earned Points Change")
 	@Localize(locale = "de", value = "Verdiente Punkte ändern")
 	@Localize(locale = "ru", value = "Изменить заработаные очки")
 	@Localize(locale = "es", value = "Cambiar Puntos Obtenidos")
-	private static String						EARNED_POINTS_UNDO;
+	private static String	EARNED_POINTS_UNDO;
 	@Localize("Hit Points Change")
 	@Localize(locale = "de", value = "Normale Trefferpunkte ändern")
 	@Localize(locale = "ru", value = "Изменить единицы здоровья")
 	@Localize(locale = "es", value = "Cambiar Puntos de Vida")
-	private static String						HIT_POINTS_UNDO;
+	private static String	HIT_POINTS_UNDO;
 	@Localize("Current Hit Points Change")
 	@Localize(locale = "de", value = "Aktuelle Trefferpunkte ändern")
 	@Localize(locale = "ru", value = "Смена текущих очков (единиц) жизни")
 	@Localize(locale = "es", value = "Cambiar Puntos de Vida Actuales")
-	private static String						CURRENT_HIT_POINTS_UNDO;
+	private static String	CURRENT_HIT_POINTS_UNDO;
 	@Localize("Fatigue Points Change")
 	@Localize(locale = "de", value = "Normale Erschöpfungspunkte ändern")
 	@Localize(locale = "ru", value = "Изменить очки усталости")
 	@Localize(locale = "es", value = "Cambiar Puntos de Fatiga")
-	private static String						FATIGUE_POINTS_UNDO;
+	private static String	FATIGUE_POINTS_UNDO;
 	@Localize("Current Fatigue Points Change")
 	@Localize(locale = "de", value = "Aktuelle Erschöpfungspunkte ändern")
 	@Localize(locale = "ru", value = "Изменить текущие единицы усталости")
 	@Localize(locale = "es", value = "Cambiar Puntos de Fatiga Actuales")
-	private static String						CURRENT_FATIGUE_POINTS_UNDO;
+	private static String	CURRENT_FATIGUE_POINTS_UNDO;
 	@Localize("Include Punch In Weapons")
 	@Localize(locale = "de", value = "Schlag als Waffe aufführen")
 	@Localize(locale = "ru", value = "Отображать удар в оружии")
 	@Localize(locale = "es", value = "Incluir Puñetazo como Arma")
-	private static String						INCLUDE_PUNCH_UNDO;
+	private static String	INCLUDE_PUNCH_UNDO;
 	@Localize("Include Kick In Weapons")
 	@Localize(locale = "de", value = "Tritt als Waffe aufführen")
 	@Localize(locale = "ru", value = "Отображать пинок в оружии")
 	@Localize(locale = "es", value = "Incluir Patada como Arma")
-	private static String						INCLUDE_KICK_UNDO;
+	private static String	INCLUDE_KICK_UNDO;
 	@Localize("Include Kick w/Boots In Weapons")
 	@Localize(locale = "de", value = "Tritt mit Schuh als Waffe aufführen")
 	@Localize(locale = "ru", value = "Отображать пинок (в ботинке) в оружии")
 	@Localize(locale = "es", value = "Incluir Patada con botas como Arma")
-	private static String						INCLUDE_BOOTS_UNDO;
+	private static String	INCLUDE_BOOTS_UNDO;
 	@Localize("Unable to set a value for %s")
 	@Localize(locale = "de", value = "Kann keinen Wert für %s setzen")
 	@Localize(locale = "ru", value = "Невозможно установить значение для %s")
 	@Localize(locale = "es", value = "No puede establecerse un valor para %s")
-	private static String						UNABLE_TO_SET_VALUE;
+	private static String	UNABLE_TO_SET_VALUE;
 
 	static {
 		Localization.initialize();
@@ -172,9 +172,9 @@ public class GURPSCharacter extends DataFile {
 	private static final String					TAG_ROOT								= "character";													//$NON-NLS-1$
 	private static final String					TAG_CREATED_DATE						= "created_date";												//$NON-NLS-1$
 	private static final String					TAG_MODIFIED_DATE						= "modified_date";												//$NON-NLS-1$
-	private static final String					TAG_CURRENT_HP							= "current_hp";												//$NON-NLS-1$
-	private static final String					TAG_CURRENT_FP							= "current_fp";												//$NON-NLS-1$
-	private static final String					TAG_UNSPENT_POINTS						= "unspent_points";											//$NON-NLS-1$
+	private static final String					TAG_CURRENT_HP							= "current_hp";													//$NON-NLS-1$
+	private static final String					TAG_CURRENT_FP							= "current_fp";													//$NON-NLS-1$
+	private static final String					TAG_UNSPENT_POINTS						= "unspent_points";												//$NON-NLS-1$
 	private static final String					TAG_TOTAL_POINTS						= "total_points";												//$NON-NLS-1$
 	private static final String					TAG_INCLUDE_PUNCH						= "include_punch";												//$NON-NLS-1$
 	private static final String					TAG_INCLUDE_KICK						= "include_kick";												//$NON-NLS-1$
@@ -189,15 +189,15 @@ public class GURPSCharacter extends DataFile {
 	/** The field ID for include punch changes. */
 	public static final String					ID_INCLUDE_PUNCH						= CHARACTER_PREFIX + "IncludePunch";							//$NON-NLS-1$
 	/** The field ID for include kick changes. */
-	public static final String					ID_INCLUDE_KICK							= CHARACTER_PREFIX + "IncludeKickFeet";						//$NON-NLS-1$
+	public static final String					ID_INCLUDE_KICK							= CHARACTER_PREFIX + "IncludeKickFeet";							//$NON-NLS-1$
 	/** The field ID for include kick with boots changes. */
 	public static final String					ID_INCLUDE_BOOTS						= CHARACTER_PREFIX + "IncludeKickBoots";						//$NON-NLS-1$
 	/**
 	 * The prefix used to indicate a point value is requested from {@link #getValueForID(String)}.
 	 */
-	public static final String					POINTS_PREFIX							= CHARACTER_PREFIX + "points.";								//$NON-NLS-1$
+	public static final String					POINTS_PREFIX							= CHARACTER_PREFIX + "points.";									//$NON-NLS-1$
 	/** The prefix used in front of all IDs for basic attributes. */
-	public static final String					ATTRIBUTES_PREFIX						= CHARACTER_PREFIX + "ba.";									//$NON-NLS-1$
+	public static final String					ATTRIBUTES_PREFIX						= CHARACTER_PREFIX + "ba.";										//$NON-NLS-1$
 	/** The field ID for strength (ST) changes. */
 	public static final String					ID_STRENGTH								= ATTRIBUTES_PREFIX + BonusAttributeType.ST.name();
 	/** The field ID for lifting strength bonuses -- used by features. */
@@ -254,33 +254,33 @@ public class GURPSCharacter extends DataFile {
 	/** The field ID for shove and knock over changes. */
 	public static final String					ID_SHOVE_AND_KNOCK_OVER					= LIFT_PREFIX + "ShoveAndKnockOver";							//$NON-NLS-1$
 	/** The field ID for running shove and knock over changes. */
-	public static final String					ID_RUNNING_SHOVE_AND_KNOCK_OVER			= LIFT_PREFIX + "RunningShoveAndKnockOver";					//$NON-NLS-1$
+	public static final String					ID_RUNNING_SHOVE_AND_KNOCK_OVER			= LIFT_PREFIX + "RunningShoveAndKnockOver";						//$NON-NLS-1$
 	/** The field ID for carry on back changes. */
 	public static final String					ID_CARRY_ON_BACK						= LIFT_PREFIX + "CarryOnBack";									//$NON-NLS-1$
 	/** The field ID for carry on back changes. */
 	public static final String					ID_SHIFT_SLIGHTLY						= LIFT_PREFIX + "ShiftSlightly";								//$NON-NLS-1$
 	/** The prefix used in front of all IDs for point summaries. */
-	public static final String					POINT_SUMMARY_PREFIX					= CHARACTER_PREFIX + "ps.";									//$NON-NLS-1$
+	public static final String					POINT_SUMMARY_PREFIX					= CHARACTER_PREFIX + "ps.";										//$NON-NLS-1$
 	/** The field ID for point total changes. */
-	public static final String					ID_TOTAL_POINTS							= POINT_SUMMARY_PREFIX + "TotalPoints";						//$NON-NLS-1$
+	public static final String					ID_TOTAL_POINTS							= POINT_SUMMARY_PREFIX + "TotalPoints";							//$NON-NLS-1$
 	/** The field ID for attribute point summary changes. */
-	public static final String					ID_ATTRIBUTE_POINTS						= POINT_SUMMARY_PREFIX + "AttributePoints";					//$NON-NLS-1$
+	public static final String					ID_ATTRIBUTE_POINTS						= POINT_SUMMARY_PREFIX + "AttributePoints";						//$NON-NLS-1$
 	/** The field ID for advantage point summary changes. */
-	public static final String					ID_ADVANTAGE_POINTS						= POINT_SUMMARY_PREFIX + "AdvantagePoints";					//$NON-NLS-1$
+	public static final String					ID_ADVANTAGE_POINTS						= POINT_SUMMARY_PREFIX + "AdvantagePoints";						//$NON-NLS-1$
 	/** The field ID for disadvantage point summary changes. */
 	public static final String					ID_DISADVANTAGE_POINTS					= POINT_SUMMARY_PREFIX + "DisadvantagePoints";					//$NON-NLS-1$
 	/** The field ID for quirk point summary changes. */
-	public static final String					ID_QUIRK_POINTS							= POINT_SUMMARY_PREFIX + "QuirkPoints";						//$NON-NLS-1$
+	public static final String					ID_QUIRK_POINTS							= POINT_SUMMARY_PREFIX + "QuirkPoints";							//$NON-NLS-1$
 	/** The field ID for skill point summary changes. */
-	public static final String					ID_SKILL_POINTS							= POINT_SUMMARY_PREFIX + "SkillPoints";						//$NON-NLS-1$
+	public static final String					ID_SKILL_POINTS							= POINT_SUMMARY_PREFIX + "SkillPoints";							//$NON-NLS-1$
 	/** The field ID for spell point summary changes. */
-	public static final String					ID_SPELL_POINTS							= POINT_SUMMARY_PREFIX + "SpellPoints";						//$NON-NLS-1$
+	public static final String					ID_SPELL_POINTS							= POINT_SUMMARY_PREFIX + "SpellPoints";							//$NON-NLS-1$
 	/** The field ID for racial point summary changes. */
 	public static final String					ID_RACE_POINTS							= POINT_SUMMARY_PREFIX + "RacePoints";							//$NON-NLS-1$
 	/** The field ID for earned point changes. */
 	public static final String					ID_EARNED_POINTS						= POINT_SUMMARY_PREFIX + "EarnedPoints";						//$NON-NLS-1$
 	/** The prefix used in front of all IDs for basic damage. */
-	public static final String					BASIC_DAMAGE_PREFIX						= CHARACTER_PREFIX + "bd.";									//$NON-NLS-1$
+	public static final String					BASIC_DAMAGE_PREFIX						= CHARACTER_PREFIX + "bd.";										//$NON-NLS-1$
 	/** The field ID for basic thrust damage changes. */
 	public static final String					ID_BASIC_THRUST							= BASIC_DAMAGE_PREFIX + "Thrust";								//$NON-NLS-1$
 	/** The field ID for basic swing damage changes. */

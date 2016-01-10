@@ -23,7 +23,7 @@ import javax.swing.JComboBox;
 
 /** A DR bonus editor. */
 public class DRBonusEditor extends FeatureEditor {
-	private static final String	CHANGE_LOCATION	= "ChangeLocation"; //$NON-NLS-1$
+	private static final String CHANGE_LOCATION = "ChangeLocation"; //$NON-NLS-1$
 
 	/**
 	 * Create a new DR bonus editor.

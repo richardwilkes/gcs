@@ -35,32 +35,32 @@ public class SpellPrereq extends HasPrereq {
 	@Localize(locale = "de", value = "Zauber")
 	@Localize(locale = "ru", value = "заклинание")
 	@Localize(locale = "es", value = "sortilegio")
-	private static String		ONE_SPELL;
+	private static String	ONE_SPELL;
 	@Localize("spells")
 	@Localize(locale = "de", value = "Zauber")
 	@Localize(locale = "ru", value = "заклинания")
 	@Localize(locale = "es", value = "sortilegios")
-	private static String		MULTIPLE_SPELLS;
+	private static String	MULTIPLE_SPELLS;
 	@Localize("{0}{1} {2} {3} whose name {4}\n")
 	@Localize(locale = "de", value = "{0}{1} {2} {3}, deren/dessen Namen {4}\n")
 	@Localize(locale = "ru", value = "{0}{1} {2} {3} с названием {4}\n")
 	@Localize(locale = "es", value = "{0}{1} {2} {3}, cuyo nombre es {4}\n")
-	private static String		WHOSE_NAME;
+	private static String	WHOSE_NAME;
 	@Localize("{0}{1} {2} {3} of any kind\n")
 	@Localize(locale = "de", value = "{0}{1} {2} {3} jeglicher Art\n")
 	@Localize(locale = "ru", value = "{0}{1} {2} {3} любого вида\n ")
 	@Localize(locale = "es", value = "{0}{1} {2} {3} de cualquier tipo\n")
-	private static String		OF_ANY_KIND;
+	private static String	OF_ANY_KIND;
 	@Localize("{0}{1} {2} {3} whose college {4}\n")
 	@Localize(locale = "de", value = "{0}{1} {2} {3}, deren/dessen Schule {4}\n")
 	@Localize(locale = "ru", value = "{0}{1} {2} {3} со школой {4}\n")
 	@Localize(locale = "es", value = "{0}{1} {2} {3} cuya escuela se llama {4}\n")
-	private static String		WHOSE_COLLEGE;
+	private static String	WHOSE_COLLEGE;
 	@Localize("{0}{1} college count which {2}\n")
 	@Localize(locale = "de", value = "{0}{1} Zauber von {4} unterschiedlichen Schulen\n")
 	@Localize(locale = "ru", value = "{0}{1} заклинаний школы {2}\n")
 	@Localize(locale = "es", value = "{0}{1} Escuela que cuenta como {2}\n")
-	private static String		COLLEGE_COUNT;
+	private static String	COLLEGE_COUNT;
 
 	static {
 		Localization.initialize();

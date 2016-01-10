@@ -25,14 +25,14 @@ public class AddNaturalKickCommand extends Command {
 	@Localize(locale = "de", value = "Führe Tritt als Waffe auf")
 	@Localize(locale = "ru", value = "Отображать пинок в оружии")
 	@Localize(locale = "es", value = "Incluir patada descalzo entre las Armas")
-	private static String						ADD_NATURAL_KICK;
+	private static String ADD_NATURAL_KICK;
 
 	static {
 		Localization.initialize();
 	}
 
 	/** The action command this command will issue. */
-	public static final String					CMD_ADD_NATURAL_KICK	= "AddNaturalKick";			//$NON-NLS-1$
+	public static final String					CMD_ADD_NATURAL_KICK	= "AddNaturalKick";				//$NON-NLS-1$
 
 	/** The singleton {@link AddNaturalKickCommand}. */
 	public static final AddNaturalKickCommand	INSTANCE				= new AddNaturalKickCommand();

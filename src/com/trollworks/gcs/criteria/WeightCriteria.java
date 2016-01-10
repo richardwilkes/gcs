@@ -18,7 +18,7 @@ import java.io.IOException;
 
 /** Manages weight comparison criteria. */
 public class WeightCriteria extends NumericCriteria {
-	private WeightValue	mQualifier;
+	private WeightValue mQualifier;
 
 	/**
 	 * Creates a new double comparison.

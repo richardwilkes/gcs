@@ -54,10 +54,10 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 		Localization.initialize();
 	}
 
-	private DataFile		mOwner;
-	private Outline			mOutline;
-	IconButton				mAddButton;
-	boolean					mModified;
+	private DataFile	mOwner;
+	private Outline		mOutline;
+	IconButton			mAddButton;
+	boolean				mModified;
 
 	/**
 	 * @param advantage The {@link Advantage} to edit.

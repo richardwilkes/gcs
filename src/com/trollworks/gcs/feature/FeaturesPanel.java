@@ -25,7 +25,7 @@ public class FeaturesPanel extends BandedPanel {
 	@Localize(locale = "de", value = "Eigenschaften")
 	@Localize(locale = "ru", value = "Особенности")
 	@Localize(locale = "es", value = "Características")
-	private static String	FEATURES;
+	private static String FEATURES;
 
 	static {
 		Localization.initialize();

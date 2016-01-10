@@ -23,7 +23,7 @@ import java.util.TreeSet;
 
 /** A list of rows. */
 public abstract class ListFile extends DataFile {
-	private OutlineModel	mModel	= new OutlineModel();
+	private OutlineModel mModel = new OutlineModel();
 
 	@Override
 	protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {

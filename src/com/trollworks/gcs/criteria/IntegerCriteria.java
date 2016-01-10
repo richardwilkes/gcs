@@ -18,7 +18,7 @@ import java.io.IOException;
 
 /** Manages integer comparison criteria. */
 public class IntegerCriteria extends NumericCriteria {
-	private int	mQualifier;
+	private int mQualifier;
 
 	/**
 	 * Creates a new integer comparison.

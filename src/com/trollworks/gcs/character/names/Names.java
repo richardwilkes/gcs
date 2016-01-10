@@ -18,8 +18,10 @@ import java.util.Random;
 
 /** An abstract base class for name generation. */
 public abstract class Names {
-	/** A random number generator that can be shared amongst instances of the {@link Names} class. */
-	protected static final Random	RANDOM	= new Random();
+	/**
+	 * A random number generator that can be shared amongst instances of the {@link Names} class.
+	 */
+	protected static final Random RANDOM = new Random();
 
 	/** @return A newly generated male first name. */
 	public abstract String getMaleFirstName();

@@ -24,7 +24,7 @@ import java.util.HashMap;
 
 /** Helper for causing the row post-processing to occur. */
 public class RowPostProcessor implements Runnable {
-	private HashMap<Outline, ArrayList<ListRow>>	mMap;
+	private HashMap<Outline, ArrayList<ListRow>> mMap;
 
 	/**
 	 * Creates a new post processor for name substitution.

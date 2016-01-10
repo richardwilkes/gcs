@@ -28,12 +28,12 @@ public class SkillDefault {
 	@Localize(locale = "de", value = " Parieren")
 	@Localize(locale = "ru", value = " Парирование")
 	@Localize(locale = "es", value = " Parada")
-	private static String		PARRY;
+	private static String	PARRY;
 	@Localize(" Block")
 	@Localize(locale = "de", value = " Abblocken")
 	@Localize(locale = "ru", value = " Блок")
 	@Localize(locale = "es", value = " Bloqueo")
-	private static String		BLOCK;
+	private static String	BLOCK;
 
 	static {
 		Localization.initialize();
@@ -46,7 +46,7 @@ public class SkillDefault {
 	/** The tag used for the skill name. */
 	public static final String	TAG_NAME			= "name";			//$NON-NLS-1$
 	/** The tag used for the skill specialization. */
-	public static final String	TAG_SPECIALIZATION	= "specialization"; //$NON-NLS-1$
+	public static final String	TAG_SPECIALIZATION	= "specialization";	//$NON-NLS-1$
 	/** The tag used for the modifier. */
 	public static final String	TAG_MODIFIER		= "modifier";		//$NON-NLS-1$
 	private static final String	EMPTY				= "";				//$NON-NLS-1$

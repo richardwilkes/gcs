@@ -21,7 +21,7 @@ import java.util.HashSet;
 /** The abstract base class prerequisite criteria and prerequisite lists. */
 public abstract class Prereq {
 	/** The owning prerequisite list, if any. */
-	protected PrereqList	mParent;
+	protected PrereqList mParent;
 
 	/**
 	 * Creates a new prerequisite.

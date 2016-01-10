@@ -23,12 +23,12 @@ import java.io.IOException;
 /** The stats for a ranged weapon. */
 public class RangedWeaponStats extends WeaponStats {
 	/** The root XML tag. */
-	public static final String	TAG_ROOT			= "ranged_weapon";				//$NON-NLS-1$
-	private static final String	TAG_ACCURACY		= "accuracy";					//$NON-NLS-1$
-	private static final String	TAG_RANGE			= "range";						//$NON-NLS-1$
-	private static final String	TAG_RATE_OF_FIRE	= "rate_of_fire";				//$NON-NLS-1$
-	private static final String	TAG_SHOTS			= "shots";						//$NON-NLS-1$
-	private static final String	TAG_BULK			= "bulk";						//$NON-NLS-1$
+	public static final String	TAG_ROOT			= "ranged_weapon";			//$NON-NLS-1$
+	private static final String	TAG_ACCURACY		= "accuracy";				//$NON-NLS-1$
+	private static final String	TAG_RANGE			= "range";					//$NON-NLS-1$
+	private static final String	TAG_RATE_OF_FIRE	= "rate_of_fire";			//$NON-NLS-1$
+	private static final String	TAG_SHOTS			= "shots";					//$NON-NLS-1$
+	private static final String	TAG_BULK			= "bulk";					//$NON-NLS-1$
 	private static final String	TAG_RECOIL			= "recoil";					//$NON-NLS-1$
 	/** The field ID for accuracy changes. */
 	public static final String	ID_ACCURACY			= PREFIX + TAG_ACCURACY;

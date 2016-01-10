@@ -22,8 +22,8 @@ import java.util.ArrayList;
 /** Helper class to convert old weapon data into the new weapon data. */
 public class OldWeapon {
 	/** The root XML tag. */
-	public static final String	TAG_ROOT			= "weapon";		//$NON-NLS-1$
-	private static final String	TAG_DAMAGE			= "damage";		//$NON-NLS-1$
+	public static final String	TAG_ROOT			= "weapon";			//$NON-NLS-1$
+	private static final String	TAG_DAMAGE			= "damage";			//$NON-NLS-1$
 	private static final String	TAG_STRENGTH		= "strength";		//$NON-NLS-1$
 	private static final String	TAG_REACH			= "reach";			//$NON-NLS-1$
 	private static final String	TAG_PARRY			= "parry";			//$NON-NLS-1$
@@ -32,7 +32,7 @@ public class OldWeapon {
 	private static final String	TAG_RATE_OF_FIRE	= "rate_of_fire";	//$NON-NLS-1$
 	private static final String	TAG_SHOTS			= "shots";			//$NON-NLS-1$
 	private static final String	TAG_BULK			= "bulk";			//$NON-NLS-1$
-	private static final String	TAG_RECOIL			= "recoil";		//$NON-NLS-1$
+	private static final String	TAG_RECOIL			= "recoil";			//$NON-NLS-1$
 	private String[]			mDamage;
 	private String[]			mStrength;
 	private String[]			mAccuracy;

@@ -34,40 +34,40 @@ public class ListPrereqEditor extends PrereqEditor {
 	@Localize(locale = "de", value = "Benötigt alle von:")
 	@Localize(locale = "ru", value = "Требует всё из:")
 	@Localize(locale = "es", value = "Requiere todos los siguientes: ")
-	private static String		REQUIRES_ALL;
+	private static String	REQUIRES_ALL;
 	@Localize("Requires at least one of:")
 	@Localize(locale = "de", value = "Benötigt mindestens einen von:")
 	@Localize(locale = "ru", value = "Требует одно из:")
 	@Localize(locale = "es", value = "Requiere al menos uno de:")
-	private static String		REQUIRES_ANY;
+	private static String	REQUIRES_ANY;
 	@Localize("Add a prerequisite to this list")
 	@Localize(locale = "de", value = "Füge eine Bedingung zu dieser Liste hinzu")
 	@Localize(locale = "ru", value = "Добавить требование в этот список")
 	@Localize(locale = "es", value = "Añadiro un prerrequisito a esta lista")
-	private static String		ADD_PREREQ_TOOLTIP;
+	private static String	ADD_PREREQ_TOOLTIP;
 	@Localize("Add a prerequisite list to this list")
 	@Localize(locale = "de", value = "Füge eine Bedingungs-Liste zu dieser Liste hinzu")
 	@Localize(locale = "ru", value = "Добавить список требований в этот список")
 	@Localize(locale = "es", value = "Añadir una lista de prerrequisitos a esta lista")
-	private static String		ADD_PREREQ_LIST_TOOLTIP;
+	private static String	ADD_PREREQ_LIST_TOOLTIP;
 	@Localize(" ")
 	@Localize(locale = "de", value = " ")
-	private static String		NO_TL_PREREQ;
+	private static String	NO_TL_PREREQ;
 	@Localize("When the Character's TL is")
 	@Localize(locale = "de", value = "Wenn der TL des Charakters ist")
 	@Localize(locale = "ru", value = "Когда ТУ персонажа")
 	@Localize(locale = "es", value = "Cuando el NT del personaje es")
-	private static String		TL_IS;
+	private static String	TL_IS;
 	@Localize("When the Character's TL is at least")
 	@Localize(locale = "de", value = "Wenn der TL des Charakters ist mindestens")
 	@Localize(locale = "ru", value = "Когда ТУ персонажа по крайней мере")
 	@Localize(locale = "es", value = "Cuando el NT del personaje es al menos")
-	private static String		TL_IS_AT_LEAST;
+	private static String	TL_IS_AT_LEAST;
 	@Localize("When the Character's TL is at most")
 	@Localize(locale = "de", value = "Wenn der TL des Charakters ist höchstens")
 	@Localize(locale = "ru", value = "Когда ТУ персонажа не более")
 	@Localize(locale = "es", value = "Cuando el NT del personaje es como mucho")
-	private static String		TL_IS_AT_MOST;
+	private static String	TL_IS_AT_MOST;
 
 	static {
 		Localization.initialize();

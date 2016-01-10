@@ -17,7 +17,7 @@ import java.io.IOException;
 
 /** Manages double comparison criteria. */
 public class DoubleCriteria extends NumericCriteria {
-	private double	mQualifier;
+	private double mQualifier;
 
 	/**
 	 * Creates a new double comparison.

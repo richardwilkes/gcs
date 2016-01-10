@@ -26,7 +26,7 @@ import javax.swing.UIManager;
 
 /** Used to draw headers in the lists. */
 public class ListHeaderCell extends HeaderCell {
-	private boolean	mForSheet;
+	private boolean mForSheet;
 
 	/**
 	 * Create a new header cell.

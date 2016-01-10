@@ -27,7 +27,7 @@ public class Defaults extends BandedPanel implements ActionListener {
 	@Localize(locale = "de", value = "Grundwerte")
 	@Localize(locale = "ru", value = "По умолчанию")
 	@Localize(locale = "es", value = "Valores por defecto")
-	private static String	TITLE;
+	private static String TITLE;
 
 	static {
 		Localization.initialize();

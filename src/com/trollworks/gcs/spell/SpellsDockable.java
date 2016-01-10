@@ -22,7 +22,7 @@ public class SpellsDockable extends LibraryDockable {
 	@Localize(locale = "de", value = "Unbenannte Zauber-Liste")
 	@Localize(locale = "ru", value = "Безымянный список заклинаний")
 	@Localize(locale = "es", value = "Sortilegios Sin Nombre")
-	private static String	UNTITLED;
+	private static String UNTITLED;
 
 	static {
 		Localization.initialize();

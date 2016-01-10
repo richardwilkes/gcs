@@ -26,7 +26,7 @@ public class NewEquipmentLibraryCommand extends Command {
 	@Localize(locale = "de", value = "Neue Ausrüstungs-Liste")
 	@Localize(locale = "ru", value = "Новая библиотека снаряжений")
 	@Localize(locale = "es", value = "Nueva Librería de Equipo")
-	private static String							TITLE;
+	private static String TITLE;
 
 	static {
 		Localization.initialize();

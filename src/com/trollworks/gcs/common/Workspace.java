@@ -40,14 +40,14 @@ public class Workspace extends AppWindow implements SignificantFrame, JumpToSear
 	@Localize(locale = "de", value = "GURPS Charakter-Editor")
 	@Localize(locale = "ru", value = "GURPS рабочее пространство")
 	@Localize(locale = "es", value = "Editor de Personajes de GURPS")
-	private static String	TITLE;
+	private static String TITLE;
 
 	static {
 		Localization.initialize();
 	}
 
-	private Toolbar			mToolbar;
-	private Dock			mDock;
+	private Toolbar	mToolbar;
+	private Dock	mDock;
 
 	/** @return The {@link Workspace}. */
 	public static Workspace get() {

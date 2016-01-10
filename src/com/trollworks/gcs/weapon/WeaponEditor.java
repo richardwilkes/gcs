@@ -54,33 +54,33 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 	@Localize(locale = "de", value = "Nutzungsart")
 	@Localize(locale = "ru", value = "Применение")
 	@Localize(locale = "es", value = "Uso")
-	private static String					USAGE;
+	private static String	USAGE;
 	@Localize("Damage")
 	@Localize(locale = "de", value = "Schaden")
 	@Localize(locale = "ru", value = "Повреждения")
 	@Localize(locale = "es", value = "Daño")
-	private static String					DAMAGE;
+	private static String	DAMAGE;
 	@Localize("Minimum Strength")
 	@Localize(locale = "de", value = "Mindeststärke")
 	@Localize(locale = "ru", value = "Минимальная сила")
 	@Localize(locale = "es", value = "Mínimo en fuerza")
-	private static String					MINIMUM_STRENGTH;
+	private static String	MINIMUM_STRENGTH;
 	@Localize("Add an attack")
 	@Localize(locale = "de", value = "Angriff hinzufügen")
 	@Localize(locale = "ru", value = "Добавить атаку")
 	@Localize(locale = "es", value = "Añadir un ataque")
-	private static String					ADD_TOOLTIP;
+	private static String	ADD_TOOLTIP;
 	@Localize("Remove the selected attacks")
 	@Localize(locale = "de", value = "Ausgewählte Angriffe entfernen")
 	@Localize(locale = "ru", value = "Удалить выбранные атаки")
 	@Localize(locale = "es", value = "Eliminar los ataques seleccionados")
-	private static String					REMOVE_TOOLTIP;
+	private static String	REMOVE_TOOLTIP;
 
 	static {
 		Localization.initialize();
 	}
 
-	protected static final String			EMPTY	= "";		//$NON-NLS-1$
+	protected static final String			EMPTY	= "";	//$NON-NLS-1$
 	private ListRow							mOwner;
 	private WeaponOutline					mOutline;
 	private IconButton						mAddButton;

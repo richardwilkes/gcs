@@ -21,7 +21,7 @@ import java.util.HashMap;
  * the {@link HashedWeapon} is within the {@link HashMap}.
  */
 class HashedWeapon {
-	private WeaponStats	mWeapon;
+	private WeaponStats mWeapon;
 
 	/**
 	 * Creates a new hashed weapon.

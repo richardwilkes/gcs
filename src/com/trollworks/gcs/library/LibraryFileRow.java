@@ -20,7 +20,7 @@ import java.nio.file.Path;
 
 /** A {@link TreeRow} that represents a file in the library explorer. */
 public class LibraryFileRow extends TreeRow implements LibraryExplorerRow {
-	private Path	mPath;
+	private Path mPath;
 
 	/** @param path A {@link Path} to a library or template file. */
 	public LibraryFileRow(Path path) {

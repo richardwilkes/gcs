@@ -26,9 +26,9 @@ public class CostReduction implements Feature {
 	/** The possible {@link BonusAttributeType}s that can be affected. */
 	public static final BonusAttributeType[]	TYPES			= { BonusAttributeType.ST, BonusAttributeType.DX, BonusAttributeType.IQ, BonusAttributeType.HT };
 	/** The XML tag. */
-	public static final String					TAG_ROOT		= "cost_reduction";																				//$NON-NLS-1$
+	public static final String					TAG_ROOT		= "cost_reduction";																					//$NON-NLS-1$
 	private static final String					TAG_ATTRIBUTE	= "attribute";																						//$NON-NLS-1$
-	private static final String					TAG_PERCENTAGE	= "percentage";																					//$NON-NLS-1$
+	private static final String					TAG_PERCENTAGE	= "percentage";																						//$NON-NLS-1$
 	private BonusAttributeType					mAttribute;
 	private int									mPercentage;
 

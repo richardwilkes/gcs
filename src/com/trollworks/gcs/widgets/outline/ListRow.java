@@ -48,7 +48,7 @@ import java.util.TreeSet;
 public abstract class ListRow extends Row {
 	private static final String		ATTRIBUTE_OPEN	= "open";		//$NON-NLS-1$
 	private static final String		TAG_NOTES		= "notes";		//$NON-NLS-1$
-	private static final String		TAG_CATEGORIES	= "categories"; //$NON-NLS-1$
+	private static final String		TAG_CATEGORIES	= "categories";	//$NON-NLS-1$
 	private static final String		TAG_CATEGORY	= "category";	//$NON-NLS-1$
 	/** The data file the row is associated with. */
 	protected DataFile				mDataFile;
