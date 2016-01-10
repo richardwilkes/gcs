@@ -32,7 +32,10 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
 /** The page reference lookup preferences panel. */
 public class ReferenceLookupPreferences extends PreferencePanel {
@@ -45,7 +48,7 @@ public class ReferenceLookupPreferences extends PreferencePanel {
 		Localization.initialize();
 	}
 
-	private static final String	MODULE	= "PageReferences";	//$NON-NLS-1$
+	private static final String	MODULE		= "PageReferences";	//$NON-NLS-1$
 	private BandedPanel			mPanel;
 
 	public static synchronized File getPdfLocation(String id) {
@@ -100,7 +103,11 @@ public class ReferenceLookupPreferences extends PreferencePanel {
 				}
 			});
 			mPanel.add(button);
-			mPanel.add(new JLabel(id));
+			JLabel idLabel = new JLabel(id, SwingConstants.CENTER);
+			idLabel.setBorder(new CompoundBorder(new LineBorder(Color.BLACK), new EmptyBorder(1, 4, 1, 4)));
+			idLabel.setOpaque(true);
+			idLabel.setBackground(Color.YELLOW);
+			mPanel.add(idLabel);
 			mPanel.add(new JLabel(getPdfLocation(id).getAbsolutePath()));
 		}
 		mPanel.setSize(mPanel.getPreferredSize());
