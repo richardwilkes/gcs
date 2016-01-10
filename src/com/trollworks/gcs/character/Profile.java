@@ -45,327 +45,327 @@ import javax.imageio.ImageIO;
 public class Profile {
 	@Localize("{0}, {1}, {2}")
 	@Localize(locale = "de", value = "{0}, {1}, {2}")
-	private static String			HAIR_FORMAT;
+	private static String	HAIR_FORMAT;
 	@Localize("MMMM d")
 	@Localize(locale = "de", value = "d. MMM.")
 	@Localize(locale = "es", value = "d. MMMM")
-	private static String			BIRTHDAY_FORMAT;
+	private static String	BIRTHDAY_FORMAT;
 	@Localize("Brown")
 	@Localize(locale = "de", value = "Braun")
 	@Localize(locale = "ru", value = "Коричнев(ые,ая)")
 	@Localize(locale = "es", value = "Castaño")
-	private static String			BROWN;
+	private static String	BROWN;
 	@Localize("Black")
 	@Localize(locale = "de", value = "Schwarz")
 	@Localize(locale = "ru", value = "Чёрный")
 	@Localize(locale = "es", value = "Moreno")
-	private static String			BLACK;
+	private static String	BLACK;
 	@Localize("Blond")
 	@Localize(locale = "de", value = "Blond")
 	@Localize(locale = "ru", value = "Белокурые")
 	@Localize(locale = "es", value = "Rubio")
-	private static String			BLOND;
+	private static String	BLOND;
 	@Localize("Redhead")
 	@Localize(locale = "de", value = "Rot")
 	@Localize(locale = "ru", value = "Рыжые")
 	@Localize(locale = "es", value = "Pelirojo")
-	private static String			REDHEAD;
+	private static String	REDHEAD;
 	@Localize("Bald")
 	@Localize(locale = "de", value = "Glatze")
 	@Localize(locale = "ru", value = "Лысый")
 	@Localize(locale = "es", value = "Calvo")
-	private static String			BALD;
+	private static String	BALD;
 	@Localize("Straight")
 	@Localize(locale = "de", value = "glatt")
 	@Localize(locale = "ru", value = "Прямые")
 	@Localize(locale = "es", value = "Liso")
-	private static String			STRAIGHT;
+	private static String	STRAIGHT;
 	@Localize("Curly")
 	@Localize(locale = "de", value = "lockig")
 	@Localize(locale = "ru", value = "Вьющиеся")
 	@Localize(locale = "es", value = "Rizado")
-	private static String			CURLY;
+	private static String	CURLY;
 	@Localize("Wavy")
 	@Localize(locale = "de", value = "gewellt")
 	@Localize(locale = "ru", value = "Волнистые")
 	@Localize(locale = "es", value = "Ondulado")
-	private static String			WAVY;
+	private static String	WAVY;
 	@Localize("Short")
 	@Localize(locale = "de", value = "kurz")
 	@Localize(locale = "ru", value = "Короткие")
 	@Localize(locale = "es", value = "Corto")
-	private static String			SHORT;
+	private static String	SHORT;
 	@Localize("Medium")
 	@Localize(locale = "de", value = "mittel")
 	@Localize(locale = "ru", value = "Средние")
 	@Localize(locale = "es", value = "Medio")
-	private static String			MEDIUM;
+	private static String	MEDIUM;
 	@Localize("Long")
 	@Localize(locale = "de", value = "lang")
 	@Localize(locale = "ru", value = "Длинные")
 	@Localize(locale = "es", value = "Largo")
-	private static String			LONG;
+	private static String	LONG;
 	@Localize("Blue")
 	@Localize(locale = "de", value = "Blau")
 	@Localize(locale = "ru", value = "Синие")
 	@Localize(locale = "es", value = "Azul")
-	private static String			BLUE;
+	private static String	BLUE;
 	@Localize("Green")
 	@Localize(locale = "de", value = "Grün")
 	@Localize(locale = "ru", value = "Зелёные")
 	@Localize(locale = "es", value = "Verde")
-	private static String			GREEN;
+	private static String	GREEN;
 	@Localize("Grey")
 	@Localize(locale = "de", value = "Grau")
 	@Localize(locale = "ru", value = "Серые")
 	@Localize(locale = "es", value = "Gris")
-	private static String			GREY;
+	private static String	GREY;
 	@Localize("Violet")
 	@Localize(locale = "de", value = "Violett")
 	@Localize(locale = "ru", value = "Фиолетовые")
 	@Localize(locale = "es", value = "Violeta")
-	private static String			VIOLET;
+	private static String	VIOLET;
 	@Localize("Freckled")
 	@Localize(locale = "de", value = "Sommersprossen")
 	@Localize(locale = "ru", value = "Веснушчатая")
 	@Localize(locale = "es", value = "Pecoso")
-	private static String			FRECKLED;
+	private static String	FRECKLED;
 	@Localize("Tan")
 	@Localize(locale = "de", value = "Gebräunt")
 	@Localize(locale = "ru", value = "Загорелая")
 	@Localize(locale = "es", value = "Bronceado")
-	private static String			TAN;
+	private static String	TAN;
 	@Localize("Light Tan")
 	@Localize(locale = "de", value = "Leicht gebräunt")
 	@Localize(locale = "ru", value = "Слегка загорелая")
 	@Localize(locale = "es", value = "Ligeramente bronceado")
-	private static String			LIGHT_TAN;
+	private static String	LIGHT_TAN;
 	@Localize("Dark Tan")
 	@Localize(locale = "de", value = "Stark gebräunt")
 	@Localize(locale = "ru", value = "Сильно-загорелая")
 	@Localize(locale = "es", value = "Muy bronceado")
-	private static String			DARK_TAN;
+	private static String	DARK_TAN;
 	@Localize("Light Brown")
 	@Localize(locale = "de", value = "Hellbraun")
 	@Localize(locale = "ru", value = "Светло-коричневая")
 	@Localize(locale = "es", value = "ligeramente bronceado")
-	private static String			LIGHT_BROWN;
+	private static String	LIGHT_BROWN;
 	@Localize("Dark Brown")
 	@Localize(locale = "de", value = "Dunkelbraun")
 	@Localize(locale = "ru", value = "Тёмно-коричневая")
 	@Localize(locale = "es", value = "Muy bronceado")
-	private static String			DARK_BROWN;
+	private static String	DARK_BROWN;
 	@Localize("Pale")
 	@Localize(locale = "de", value = "Bleich")
 	@Localize(locale = "ru", value = "Бледная")
 	@Localize(locale = "es", value = "Pálido")
-	private static String			PALE;
+	private static String	PALE;
 	@Localize("Right")
 	@Localize(locale = "de", value = "Rechts")
 	@Localize(locale = "ru", value = "Правая")
 	@Localize(locale = "es", value = "Diestro")
-	private static String			RIGHT;
+	private static String	RIGHT;
 	@Localize("Left")
 	@Localize(locale = "de", value = "Links")
 	@Localize(locale = "ru", value = "Левая")
 	@Localize(locale = "es", value = "Zurdo")
-	private static String			LEFT;
+	private static String	LEFT;
 	@Localize("Male")
 	@Localize(locale = "de", value = "Männlich")
 	@Localize(locale = "ru", value = "муж.")
 	@Localize(locale = "es", value = "Varón")
-	private static String			MALE;
+	private static String	MALE;
 	@Localize("Female")
 	@Localize(locale = "de", value = "Weiblich")
 	@Localize(locale = "ru", value = "жен.")
 	@Localize(locale = "es", value = "Hembra")
-	private static String			FEMALE;
+	private static String	FEMALE;
 	@Localize("Human")
 	@Localize(locale = "de", value = "Mensch")
 	@Localize(locale = "ru", value = "Человек")
 	@Localize(locale = "es", value = "Humano")
-	private static String			DEFAULT_RACE;
+	private static String	DEFAULT_RACE;
 	@Localize("Name Change")
 	@Localize(locale = "de", value = "Namen ändern")
 	@Localize(locale = "ru", value = "Изменить имя")
 	@Localize(locale = "es", value = "Cambiar nombre")
-	private static String			NAME_UNDO;
+	private static String	NAME_UNDO;
 	@Localize("Title Change")
 	@Localize(locale = "de", value = "Titel ändern")
 	@Localize(locale = "ru", value = "Изменить статус")
 	@Localize(locale = "es", value = "Cambiar título")
-	private static String			TITLE_UNDO;
+	private static String	TITLE_UNDO;
 	@Localize("Age Change")
 	@Localize(locale = "de", value = "Alter ändern")
 	@Localize(locale = "ru", value = "Изменить возраст")
 	@Localize(locale = "es", value = "Cambiar edad")
-	private static String			AGE_UNDO;
+	private static String	AGE_UNDO;
 	@Localize("Birthday Change")
 	@Localize(locale = "de", value = "Geburtstag ändern")
 	@Localize(locale = "ru", value = "Смена дня рождения")
 	@Localize(locale = "es", value = "Cambiar cumpleaños")
-	private static String			BIRTHDAY_UNDO;
+	private static String	BIRTHDAY_UNDO;
 	@Localize("Eye Color Change")
 	@Localize(locale = "de", value = "Augenfarbe ändern")
 	@Localize(locale = "ru", value = "Изменить цвет глаз")
 	@Localize(locale = "es", value = "Cambiae el color de los ojos")
-	private static String			EYE_COLOR_UNDO;
+	private static String	EYE_COLOR_UNDO;
 	@Localize("Hair Change")
 	@Localize(locale = "de", value = "Haar ändern")
 	@Localize(locale = "ru", value = "Изменить причёску")
 	@Localize(locale = "es", value = "Cambiar pelo")
-	private static String			HAIR_UNDO;
+	private static String	HAIR_UNDO;
 	@Localize("Skin Color Change")
 	@Localize(locale = "de", value = "Hautfarbe ändern")
 	@Localize(locale = "ru", value = "Изменить цвет кожи")
 	@Localize(locale = "es", value = "Cambiar color de la piel")
-	private static String			SKIN_COLOR_UNDO;
+	private static String	SKIN_COLOR_UNDO;
 	@Localize("Handedness Change")
 	@Localize(locale = "de", value = "Händigkeit ändern")
 	@Localize(locale = "ru", value = "Смена основной руки")
 	@Localize(locale = "es", value = "Cambiar Mano dominante")
-	private static String			HANDEDNESS_UNDO;
+	private static String	HANDEDNESS_UNDO;
 	@Localize("Height Change")
 	@Localize(locale = "de", value = "Höhe ändern")
 	@Localize(locale = "ru", value = "Изменить рост")
 	@Localize(locale = "es", value = "Cambiar Altura")
-	private static String			HEIGHT_UNDO;
+	private static String	HEIGHT_UNDO;
 	@Localize("Weight Change")
 	@Localize(locale = "de", value = "Gewicht ändern")
 	@Localize(locale = "ru", value = "Изменить вес")
 	@Localize(locale = "es", value = "Cambiar Peso")
-	private static String			WEIGHT_UNDO;
+	private static String	WEIGHT_UNDO;
 	@Localize("Gender Change")
 	@Localize(locale = "de", value = "Geschlecht ändern")
 	@Localize(locale = "ru", value = "Изменить пол")
 	@Localize(locale = "es", value = "Cambiar género")
-	private static String			GENDER_UNDO;
+	private static String	GENDER_UNDO;
 	@Localize("Race Change")
 	@Localize(locale = "de", value = "Rasse ändern")
 	@Localize(locale = "ru", value = "Смена расы")
 	@Localize(locale = "es", value = "Cambiar raza")
-	private static String			RACE_UNDO;
+	private static String	RACE_UNDO;
 	@Localize("Religion Change")
 	@Localize(locale = "de", value = "Religion ändern")
 	@Localize(locale = "ru", value = "Изменить религию")
 	@Localize(locale = "es", value = "Cambiar Religión")
-	private static String			RELIGION_UNDO;
+	private static String	RELIGION_UNDO;
 	@Localize("Player Name Change")
 	@Localize(locale = "de", value = "Spielernamen ändern")
 	@Localize(locale = "ru", value = "Изменить имя игрока")
 	@Localize(locale = "es", value = "Cambiar Nombre del Jugador")
-	private static String			PLAYER_NAME_UNDO;
+	private static String	PLAYER_NAME_UNDO;
 	@Localize("Campaign Change")
 	@Localize(locale = "de", value = "Kampagne ändern")
 	@Localize(locale = "ru", value = "Изменить компанию")
 	@Localize(locale = "es", value = "Cambiar Nombre de Camapaña")
-	private static String			CAMPAIGN_UNDO;
+	private static String	CAMPAIGN_UNDO;
 	@Localize("Size Modifier Change")
 	@Localize(locale = "de", value = "Größenmodifikator ändern")
 	@Localize(locale = "ru", value = "Изменить модификатор размера")
 	@Localize(locale = "es", value = "Cambiar Modificador por talla")
-	private static String			SIZE_MODIFIER_UNDO;
+	private static String	SIZE_MODIFIER_UNDO;
 	@Localize("Tech Level Change")
 	@Localize(locale = "de", value = "Techlevel ändern")
 	@Localize(locale = "ru", value = "Смена технологического уровня")
 	@Localize(locale = "es", value = "Cambiar Nivel Tecnológico")
-	private static String			TECH_LEVEL_UNDO;
+	private static String	TECH_LEVEL_UNDO;
 	@Localize("Portrait Change")
 	@Localize(locale = "de", value = "Portrait ändern")
 	@Localize(locale = "ru", value = "Смена изображения")
 	@Localize(locale = "es", value = "Cambiar Retrato")
-	private static String			PORTRAIT_UNDO;
+	private static String	PORTRAIT_UNDO;
 	@Localize("The portrait is a PNG file encoded as Base64.")
 	@Localize(locale = "de", value = "Das Portrait ist eine Base64-kodierte PNG-Datei.")
 	@Localize(locale = "ru", value = "Изображение представляет собой файл PNG (закодирован в Base64).")
 	@Localize(locale = "es", value = "El retrato es un archivo PNG codificado como Base64 ")
-	private static String			PORTRAIT_COMMENT;
+	private static String	PORTRAIT_COMMENT;
 	@Localize("Could not write portrait.")
 	@Localize(locale = "de", value = "Kann Portrait nicht schreiben.")
 	@Localize(locale = "ru", value = "Не удалось записать изображение.")
 	@Localize(locale = "es", value = "No se puede escribir el retrato")
-	private static String			PORTRAIT_WRITE_ERROR;
+	private static String	PORTRAIT_WRITE_ERROR;
 	@Localize("Notes Change")
 	@Localize(locale = "de", value = "Notizen ändern")
 	@Localize(locale = "ru", value = "Смена заметки")
 	@Localize(locale = "es", value = "Cambiar Notas")
-	private static String			NOTES_UNDO;
+	private static String	NOTES_UNDO;
 
 	static {
 		Localization.initialize();
 	}
 
 	/** The root XML tag. */
-	public static final String		TAG_ROOT			= "profile";																					//$NON-NLS-1$
+	public static final String		TAG_ROOT			= "profile";																				//$NON-NLS-1$
 	/** The preferences module name. */
 	public static final String		MODULE				= "GURPSCharacter";																			//$NON-NLS-1$
 	/** The prefix used in front of all IDs for profile. */
-	public static final String		PROFILE_PREFIX		= GURPSCharacter.CHARACTER_PREFIX + "pi.";														//$NON-NLS-1$
+	public static final String		PROFILE_PREFIX		= GURPSCharacter.CHARACTER_PREFIX + "pi.";													//$NON-NLS-1$
 	/** The field ID for portrait changes. */
-	public static final String		ID_PORTRAIT			= PROFILE_PREFIX + "Portrait";																	//$NON-NLS-1$
+	public static final String		ID_PORTRAIT			= PROFILE_PREFIX + "Portrait";																//$NON-NLS-1$
 	/** The field ID for name changes. */
-	public static final String		ID_NAME				= PROFILE_PREFIX + "Name";																		//$NON-NLS-1$
+	public static final String		ID_NAME				= PROFILE_PREFIX + "Name";																	//$NON-NLS-1$
 	/** The field ID for notes changes. */
 	public static final String		ID_NOTES			= PROFILE_PREFIX + "Notes";																	//$NON-NLS-1$
 	/** The field ID for title changes. */
 	public static final String		ID_TITLE			= PROFILE_PREFIX + "Title";																	//$NON-NLS-1$
 	/** The field ID for age changes. */
-	public static final String		ID_AGE				= PROFILE_PREFIX + "Age";																		//$NON-NLS-1$
+	public static final String		ID_AGE				= PROFILE_PREFIX + "Age";																	//$NON-NLS-1$
 	/** The field ID for birthday changes. */
-	public static final String		ID_BIRTHDAY			= PROFILE_PREFIX + "Birthday";																	//$NON-NLS-1$
+	public static final String		ID_BIRTHDAY			= PROFILE_PREFIX + "Birthday";																//$NON-NLS-1$
 	/** The field ID for eye color changes. */
-	public static final String		ID_EYE_COLOR		= PROFILE_PREFIX + "EyeColor";																	//$NON-NLS-1$
+	public static final String		ID_EYE_COLOR		= PROFILE_PREFIX + "EyeColor";																//$NON-NLS-1$
 	/** The field ID for hair color changes. */
-	public static final String		ID_HAIR				= PROFILE_PREFIX + "Hair";																		//$NON-NLS-1$
+	public static final String		ID_HAIR				= PROFILE_PREFIX + "Hair";																	//$NON-NLS-1$
 	/** The field ID for skin color changes. */
 	public static final String		ID_SKIN_COLOR		= PROFILE_PREFIX + "SkinColor";																//$NON-NLS-1$
 	/** The field ID for handedness changes. */
-	public static final String		ID_HANDEDNESS		= PROFILE_PREFIX + "Handedness";																//$NON-NLS-1$
+	public static final String		ID_HANDEDNESS		= PROFILE_PREFIX + "Handedness";															//$NON-NLS-1$
 	/** The field ID for height changes. */
-	public static final String		ID_HEIGHT			= PROFILE_PREFIX + "Height";																	//$NON-NLS-1$
+	public static final String		ID_HEIGHT			= PROFILE_PREFIX + "Height";																//$NON-NLS-1$
 	/** The field ID for weight changes. */
-	public static final String		ID_WEIGHT			= PROFILE_PREFIX + "Weight";																	//$NON-NLS-1$
+	public static final String		ID_WEIGHT			= PROFILE_PREFIX + "Weight";																//$NON-NLS-1$
 	/** The field ID for gender changes. */
-	public static final String		ID_GENDER			= PROFILE_PREFIX + "Gender";																	//$NON-NLS-1$
+	public static final String		ID_GENDER			= PROFILE_PREFIX + "Gender";																//$NON-NLS-1$
 	/** The field ID for race changes. */
-	public static final String		ID_RACE				= PROFILE_PREFIX + "Race";																		//$NON-NLS-1$
+	public static final String		ID_RACE				= PROFILE_PREFIX + "Race";																	//$NON-NLS-1$
 	/** The field ID for religion changes. */
-	public static final String		ID_RELIGION			= PROFILE_PREFIX + "Religion";																	//$NON-NLS-1$
+	public static final String		ID_RELIGION			= PROFILE_PREFIX + "Religion";																//$NON-NLS-1$
 	/** The field ID for player name changes. */
-	public static final String		ID_PLAYER_NAME		= PROFILE_PREFIX + "PlayerName";																//$NON-NLS-1$
+	public static final String		ID_PLAYER_NAME		= PROFILE_PREFIX + "PlayerName";															//$NON-NLS-1$
 	/** The field ID for campaign changes. */
-	public static final String		ID_CAMPAIGN			= PROFILE_PREFIX + "Campaign";																	//$NON-NLS-1$
+	public static final String		ID_CAMPAIGN			= PROFILE_PREFIX + "Campaign";																//$NON-NLS-1$
 	/** The field ID for tech level changes. */
 	public static final String		ID_TECH_LEVEL		= PROFILE_PREFIX + "TechLevel";																//$NON-NLS-1$
 	/** The field ID for size modifier changes. */
 	public static final String		ID_SIZE_MODIFIER	= PROFILE_PREFIX + BonusAttributeType.SM.name();
 	/** The default portrait marker. */
-	public static final String		DEFAULT_PORTRAIT	= "!\000";																						//$NON-NLS-1$
+	public static final String		DEFAULT_PORTRAIT	= "!\000";																					//$NON-NLS-1$
 	/** The default Tech Level. */
-	public static final String		DEFAULT_TECH_LEVEL	= "4";																							//$NON-NLS-1$
+	public static final String		DEFAULT_TECH_LEVEL	= "3";																						//$NON-NLS-1$
 	/** The height, in 1/72nds of an inch, of the portrait. */
 	public static final int			PORTRAIT_HEIGHT		= 96;
 	/** The width, in 1/72nds of an inch, of the portrait. */
 	public static final int			PORTRAIT_WIDTH		= 3 * PORTRAIT_HEIGHT / 4;
-	private static final String		TAG_PLAYER_NAME		= "player_name";																				//$NON-NLS-1$
-	private static final String		TAG_CAMPAIGN		= "campaign";																					//$NON-NLS-1$
-	private static final String		TAG_NAME			= "name";																						//$NON-NLS-1$
-	private static final String		TAG_TITLE			= "title";																						//$NON-NLS-1$
-	private static final String		TAG_AGE				= "age";																						//$NON-NLS-1$
-	private static final String		TAG_BIRTHDAY		= "birthday";																					//$NON-NLS-1$
-	private static final String		TAG_EYES			= "eyes";																						//$NON-NLS-1$
-	private static final String		TAG_HAIR			= "hair";																						//$NON-NLS-1$
-	private static final String		TAG_SKIN			= "skin";																						//$NON-NLS-1$
+	private static final String		TAG_PLAYER_NAME		= "player_name";																			//$NON-NLS-1$
+	private static final String		TAG_CAMPAIGN		= "campaign";																				//$NON-NLS-1$
+	private static final String		TAG_NAME			= "name";																					//$NON-NLS-1$
+	private static final String		TAG_TITLE			= "title";																					//$NON-NLS-1$
+	private static final String		TAG_AGE				= "age";																					//$NON-NLS-1$
+	private static final String		TAG_BIRTHDAY		= "birthday";																				//$NON-NLS-1$
+	private static final String		TAG_EYES			= "eyes";																					//$NON-NLS-1$
+	private static final String		TAG_HAIR			= "hair";																					//$NON-NLS-1$
+	private static final String		TAG_SKIN			= "skin";																					//$NON-NLS-1$
 	private static final String		TAG_HANDEDNESS		= "handedness";																				//$NON-NLS-1$
 	private static final String		TAG_HEIGHT			= "height";																					//$NON-NLS-1$
 	private static final String		TAG_WEIGHT			= "weight";																					//$NON-NLS-1$
 	private static final String		TAG_GENDER			= "gender";																					//$NON-NLS-1$
-	private static final String		TAG_RACE			= "race";																						//$NON-NLS-1$
+	private static final String		TAG_RACE			= "race";																					//$NON-NLS-1$
 	private static final String		TAG_TECH_LEVEL		= "tech_level";																				//$NON-NLS-1$
-	private static final String		TAG_RELIGION		= "religion";																					//$NON-NLS-1$
-	private static final String		TAG_PORTRAIT		= "portrait";																					//$NON-NLS-1$
-	private static final String		TAG_NOTES			= "notes";																						//$NON-NLS-1$
-	private static final String		EMPTY				= "";																							//$NON-NLS-1$
+	private static final String		TAG_RELIGION		= "religion";																				//$NON-NLS-1$
+	private static final String		TAG_PORTRAIT		= "portrait";																				//$NON-NLS-1$
+	private static final String		TAG_NOTES			= "notes";																					//$NON-NLS-1$
+	private static final String		EMPTY				= "";																						//$NON-NLS-1$
 	private static final Random		RANDOM				= new Random();
 	private static final String[]	EYE_OPTIONS			= new String[] { BROWN, BROWN, BLUE, BLUE, GREEN, GREY, VIOLET };
 	private static final String[]	SKIN_OPTIONS		= new String[] { FRECKLED, TAN, LIGHT_TAN, DARK_TAN, BROWN, LIGHT_BROWN, DARK_BROWN, PALE };
