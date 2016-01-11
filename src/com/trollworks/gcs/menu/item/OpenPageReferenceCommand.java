@@ -14,7 +14,7 @@ package com.trollworks.gcs.menu.item;
 import com.trollworks.gcs.common.HasSourceReference;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.pdfview.PdfDockable;
-import com.trollworks.gcs.preferences.ReferenceLookupPreferences;
+import com.trollworks.gcs.pdfview.PdfRef;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.ReverseListIterator;
 import com.trollworks.toolkit.ui.Selection;
@@ -94,22 +94,23 @@ public class OpenPageReferenceCommand extends Command {
 			String id = reference.substring(0, i);
 			try {
 				int page = Integer.parseInt(reference.substring(i));
-				File file = ReferenceLookupPreferences.getPdfLocation(id);
-				if (file == null) {
-					file = StdFileDialog.showOpenDialog(getFocusOwner(), String.format(LOCATE_PDF, id), new FileNameExtensionFilter(PDF_FILE, FileType.PDF_EXTENSION));
+				PdfRef ref = PdfRef.lookup(id, true);
+				if (ref == null) {
+					File file = StdFileDialog.showOpenDialog(getFocusOwner(), String.format(LOCATE_PDF, id), new FileNameExtensionFilter(PDF_FILE, FileType.PDF_EXTENSION));
 					if (file != null) {
-						ReferenceLookupPreferences.setPdfLocation(id, file);
+						ref = new PdfRef(id, file, 0);
+						ref.save();
 					}
 				}
-				if (file != null) {
-					Path path = file.toPath();
+				if (ref != null) {
+					Path path = ref.getFile().toPath();
 					LibraryExplorerDockable library = LibraryExplorerDockable.get();
 					PdfDockable dockable = (PdfDockable) library.getDockableFor(path);
 					if (dockable != null) {
-						dockable.goToPage(page);
+						dockable.goToPage(ref, page);
 						dockable.getDockContainer().setCurrentDockable(dockable);
 					} else {
-						dockable = new PdfDockable(file, page);
+						dockable = new PdfDockable(ref, page);
 						library.dockPdf(dockable);
 						library.open(path);
 					}

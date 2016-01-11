@@ -21,6 +21,7 @@ import com.trollworks.gcs.common.Workspace;
 import com.trollworks.gcs.equipment.EquipmentDockable;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.pdfview.PdfDockable;
+import com.trollworks.gcs.pdfview.PdfRef;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.SkillsDockable;
 import com.trollworks.gcs.spell.SpellList;
@@ -324,7 +325,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 						proxy = dockTemplate(new TemplateDockable(new Template(path.toFile())));
 						break;
 					case FileType.PDF_EXTENSION:
-						proxy = dockPdf(new PdfDockable(path.toFile(), 1));
+						proxy = dockPdf(new PdfDockable(new PdfRef(null, path.toFile(), 0), 1));
 						break;
 					default:
 						break;

@@ -74,12 +74,12 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 	private IconButton	mPreviousPageButton;
 	private IconButton	mNextPageButton;
 
-	public PdfDockable(File pdf, int page) {
+	public PdfDockable(PdfRef pdfRef, int page) {
 		super(new BorderLayout());
-		mFile = pdf;
+		mFile = pdfRef.getFile();
 		int pageCount = 9999;
 		try {
-			mPdf = PDDocument.load(pdf, MemoryUsageSetting.setupMixed(50 * 1024 * 1024));
+			mPdf = PDDocument.load(pdfRef.getFile(), MemoryUsageSetting.setupMixed(50 * 1024 * 1024));
 			pageCount = mPdf.getNumberOfPages();
 		} catch (Exception exception) {
 			Log.error(exception);
@@ -115,7 +115,7 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 		mToolbar.add(mNextPageButton);
 
 		add(mToolbar, BorderLayout.NORTH);
-		mPanel = new PdfPanel(this, mPdf, page);
+		mPanel = new PdfPanel(this, mPdf, pdfRef, page);
 		add(new JScrollPane(mPanel), BorderLayout.CENTER);
 
 		setFocusCycleRoot(true);
@@ -159,8 +159,8 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 		return false;
 	}
 
-	public void goToPage(int page) {
-		mPanel.goToPage(page);
+	public void goToPage(PdfRef pdfRef, int page) {
+		mPanel.goToPage(pdfRef, page);
 	}
 
 	@Override

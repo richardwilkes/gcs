@@ -41,7 +41,6 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 	public static final float[]	SCALES		= { 0.33f, 0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f };
 	private PdfDockable			mOwner;
 	private PDDocument			mPdf;
-	private int					mPage;
 	private int					mPageIndex;
 	private int					mScaleIndex	= Arrays.binarySearch(SCALES, 1f);
 	private BufferedImage		mImg;
@@ -49,19 +48,18 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 	private int					mHeight;
 	private boolean				mNeedLoad;
 
-	public PdfPanel(PdfDockable owner, PDDocument pdf, int page) {
+	public PdfPanel(PdfDockable owner, PDDocument pdf, PdfRef pdfRef, int page) {
 		mOwner = owner;
 		mPdf = pdf;
-		mPage = page - 1;
 		setFocusable(true);
 		addMouseListener(this);
 		addKeyListener(this);
-		goToPage(page);
+		goToPage(pdfRef, page);
 	}
 
-	public void goToPage(int page) {
-		if (mPage != page && mPdf != null) {
-			mPage = page;
+	public void goToPage(PdfRef pdfRef, int page) {
+		if (mPdf != null) {
+			int lastPageIndex = mPageIndex;
 			mPageIndex = page;
 			try {
 				PDPageLabels pageLabels = mPdf.getDocumentCatalog().getPageLabels();
@@ -74,14 +72,16 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 			} catch (Exception exception) {
 				// Had no catalog... we will just use the original page number
 			}
-			markPageForLoading();
+			mPageIndex += pdfRef.getPageToIndexOffset();
+			if (mPageIndex != lastPageIndex) {
+				markPageForLoading();
+			}
 		}
 	}
 
 	public int goToPageIndex(int pageIndex) {
 		if (mPdf != null && mPageIndex != pageIndex && pageIndex >= 0 && pageIndex < mPdf.getNumberOfPages()) {
 			mPageIndex = pageIndex;
-			mPage = -1;
 			markPageForLoading();
 		}
 		return mPageIndex;
@@ -90,7 +90,6 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 	public void previousPage() {
 		if (mPdf != null && mPageIndex > 0) {
 			mPageIndex--;
-			mPage = -1;
 			markPageForLoading();
 		}
 	}
@@ -98,7 +97,6 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 	public void nextPage() {
 		if (mPdf != null && mPageIndex < mPdf.getNumberOfPages()) {
 			mPageIndex++;
-			mPage = -1;
 			markPageForLoading();
 		}
 	}

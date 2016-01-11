@@ -11,23 +11,21 @@
 
 package com.trollworks.gcs.preferences;
 
+import com.trollworks.gcs.pdfview.PdfRef;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.preferences.PreferencePanel;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
 import com.trollworks.toolkit.ui.widget.BandedPanel;
+import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.utility.Localization;
-import com.trollworks.toolkit.utility.Preferences;
+import com.trollworks.toolkit.utility.text.IntegerFormatter;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -36,6 +34,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.text.DefaultFormatterFactory;
 
 /** The page reference lookup preferences panel. */
 public class ReferenceLookupPreferences extends PreferencePanel {
@@ -43,33 +42,14 @@ public class ReferenceLookupPreferences extends PreferencePanel {
 	private static String	TITLE;
 	@Localize("Remove")
 	private static String	REMOVE;
+	@Localize("If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate.")
+	private static String	OFFSET_FIELD_TOOLTIP;
 
 	static {
 		Localization.initialize();
 	}
 
-	private static final String	MODULE		= "PageReferences";	//$NON-NLS-1$
-	private BandedPanel			mPanel;
-
-	public static synchronized File getPdfLocation(String id) {
-		String path = Preferences.getInstance().getStringValue(MODULE, id);
-		if (path != null) {
-			File file = new File(path);
-			if (file.exists()) {
-				return file;
-			}
-		}
-		return null;
-	}
-
-	public static synchronized void setPdfLocation(String id, File location) {
-		Preferences prefs = Preferences.getInstance();
-		if (location != null) {
-			prefs.setValue(MODULE, id, location.getAbsolutePath());
-		} else {
-			prefs.removePreference(MODULE, id);
-		}
-	}
+	private BandedPanel mPanel;
 
 	/**
 	 * Creates a new {@link ReferenceLookupPreferences}.
@@ -80,35 +60,37 @@ public class ReferenceLookupPreferences extends PreferencePanel {
 		super(TITLE, owner);
 		setLayout(new BorderLayout());
 		mPanel = new BandedPanel(TITLE);
-		mPanel.setLayout(new ColumnLayout(3, 5, 0));
+		mPanel.setLayout(new ColumnLayout(4, 5, 0));
 		mPanel.setBorder(new EmptyBorder(2, 5, 2, 5));
 		mPanel.setOpaque(true);
 		mPanel.setBackground(Color.WHITE);
-		List<String> ids = new ArrayList<>(Preferences.getInstance().getModuleKeys(MODULE));
-		Collections.sort(ids);
-		for (String id : ids) {
+		for (PdfRef ref : PdfRef.getKnown(false)) {
 			JButton button = new JButton(REMOVE);
 			UIUtilities.setOnlySize(button, button.getPreferredSize());
 			button.addActionListener(event -> {
-				setPdfLocation(id, null);
+				ref.remove();
 				Component[] children = mPanel.getComponents();
 				for (int i = 0; i < children.length; i++) {
 					if (children[i] == button) {
-						mPanel.remove(i + 2);
-						mPanel.remove(i + 1);
-						mPanel.remove(i);
+						for (int j = i + 4; --j >= i;) {
+							mPanel.remove(j);
+						}
 						mPanel.setSize(mPanel.getPreferredSize());
 						break;
 					}
 				}
 			});
 			mPanel.add(button);
-			JLabel idLabel = new JLabel(id, SwingConstants.CENTER);
+			JLabel idLabel = new JLabel(ref.getId(), SwingConstants.CENTER);
 			idLabel.setBorder(new CompoundBorder(new LineBorder(Color.BLACK), new EmptyBorder(1, 4, 1, 4)));
 			idLabel.setOpaque(true);
 			idLabel.setBackground(Color.YELLOW);
 			mPanel.add(idLabel);
-			mPanel.add(new JLabel(getPdfLocation(id).getAbsolutePath()));
+			EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-9999, 9999, true)), event -> {
+				ref.setPageToIndexOffset(((Integer) event.getNewValue()).intValue());
+			} , SwingConstants.RIGHT, Integer.valueOf(ref.getPageToIndexOffset()), Integer.valueOf(-9999), OFFSET_FIELD_TOOLTIP);
+			mPanel.add(field);
+			mPanel.add(new JLabel(ref.getFile().getAbsolutePath()));
 		}
 		mPanel.setSize(mPanel.getPreferredSize());
 		JScrollPane scroller = new JScrollPane(mPanel);
@@ -122,12 +104,12 @@ public class ReferenceLookupPreferences extends PreferencePanel {
 
 	@Override
 	public boolean isSetToDefaults() {
-		return Preferences.getInstance().getModuleKeys(MODULE).isEmpty();
+		return PdfRef.isSetToDefaults();
 	}
 
 	@Override
 	public void reset() {
-		Preferences.getInstance().removePreferences(MODULE);
+		PdfRef.reset();
 		mPanel.removeAll();
 		mPanel.setSize(mPanel.getPreferredSize());
 	}
