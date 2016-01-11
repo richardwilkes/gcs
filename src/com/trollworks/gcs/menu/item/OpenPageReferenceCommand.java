@@ -114,9 +114,14 @@ public class OpenPageReferenceCommand extends Command {
 				if (selection.getCount() == 1) {
 					Row row = model.getFirstSelectedRow();
 					if (row instanceof HasSourceReference) {
-						String[] refs = ((HasSourceReference) row).getReference().split(","); //$NON-NLS-1$
+						String[] refs = ((HasSourceReference) row).getReference().split("[,;]"); //$NON-NLS-1$
 						if (refs.length > 0) {
-							return refs[0].trim();
+							for (String one : refs) {
+								String trimmed = one.trim();
+								if (!trimmed.isEmpty()) {
+									return trimmed;
+								}
+							}
 						}
 					}
 				}
