@@ -16,6 +16,7 @@ import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.pdfview.PdfDockable;
 import com.trollworks.gcs.preferences.ReferenceLookupPreferences;
 import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.collections.ReverseListIterator;
 import com.trollworks.toolkit.ui.Selection;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.StdFileDialog;
@@ -30,6 +31,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -37,6 +40,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class OpenPageReferenceCommand extends Command {
 	@Localize("Open Page Reference")
 	private static String	OPEN_PAGE_REFERENCE;
+	@Localize("Open Each Page Reference")
+	private static String	OPEN_EACH_PAGE_REFERENCE;
 	@Localize("Locate the PDF file for the prefix \"%s\"")
 	private static String	LOCATE_PDF;
 	@Localize("PDF File")
@@ -46,66 +51,77 @@ public class OpenPageReferenceCommand extends Command {
 		Localization.initialize();
 	}
 
-	/** The action command this command will issue. */
-	public static final String						CMD_OPEN_PAGE_REFERENCE	= "OpenPageReference";				//$NON-NLS-1$
+	/** The singleton {@link OpenPageReferenceCommand} for opening a single page reference. */
+	public static final OpenPageReferenceCommand	OPEN_ONE_INSTANCE	= new OpenPageReferenceCommand(OPEN_PAGE_REFERENCE, "OpenPageReference", KeyEvent.VK_G, COMMAND_MODIFIER);						//$NON-NLS-1$
+	/** The singleton {@link OpenPageReferenceCommand} for opening all page references. */
+	public static final OpenPageReferenceCommand	OPEN_EACH_INSTANCE	= new OpenPageReferenceCommand(OPEN_EACH_PAGE_REFERENCE, "OpenEachPageReferences", KeyEvent.VK_G, SHIFTED_COMMAND_MODIFIER);	//$NON-NLS-1$
 
-	/** The singleton {@link OpenPageReferenceCommand}. */
-	public static final OpenPageReferenceCommand	INSTANCE				= new OpenPageReferenceCommand();
-
-	private OpenPageReferenceCommand() {
-		super(OPEN_PAGE_REFERENCE, CMD_OPEN_PAGE_REFERENCE, KeyEvent.VK_G);
+	private OpenPageReferenceCommand(String title, String cmd, int key, int modifiers) {
+		super(title, cmd, key, modifiers);
 	}
 
 	@Override
 	public void adjust() {
-		setEnabled(!getReference().trim().isEmpty());
+		setEnabled(!getReferences().isEmpty());
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
-		String reference = getReference();
-		if (!reference.isEmpty()) {
-			int i = reference.length() - 1;
-			while (i >= 0) {
-				char ch = reference.charAt(i);
-				if (ch >= '0' && ch <= '9') {
-					i--;
-				} else {
-					i++;
-					break;
-				}
-			}
-			if (i > 0) {
-				String id = reference.substring(0, i);
-				try {
-					int page = Integer.parseInt(reference.substring(i));
-					File file = ReferenceLookupPreferences.getPdfLocation(id);
-					if (file == null) {
-						file = StdFileDialog.showOpenDialog(getFocusOwner(), String.format(LOCATE_PDF, id), new FileNameExtensionFilter(PDF_FILE, FileType.PDF_EXTENSION));
-						if (file != null) {
-							ReferenceLookupPreferences.setPdfLocation(id, file);
-						}
-					}
-					if (file != null) {
-						Path path = file.toPath();
-						LibraryExplorerDockable library = LibraryExplorerDockable.get();
-						PdfDockable dockable = (PdfDockable) library.getDockableFor(path);
-						if (dockable != null) {
-							dockable.goToPage(page);
-						} else {
-							dockable = new PdfDockable(file, page);
-							library.dockPdf(dockable);
-							library.open(path);
-						}
-					}
-				} catch (NumberFormatException nfex) {
-					// Ignore
+		List<String> references = getReferences();
+		if (!references.isEmpty()) {
+			if (this == OPEN_ONE_INSTANCE) {
+				openReference(references.get(0));
+			} else {
+				for (String one : new ReverseListIterator<>(references)) {
+					openReference(one);
 				}
 			}
 		}
 	}
 
-	private static String getReference() {
+	public static void openReference(String reference) {
+		int i = reference.length() - 1;
+		while (i >= 0) {
+			char ch = reference.charAt(i);
+			if (ch >= '0' && ch <= '9') {
+				i--;
+			} else {
+				i++;
+				break;
+			}
+		}
+		if (i > 0) {
+			String id = reference.substring(0, i);
+			try {
+				int page = Integer.parseInt(reference.substring(i));
+				File file = ReferenceLookupPreferences.getPdfLocation(id);
+				if (file == null) {
+					file = StdFileDialog.showOpenDialog(getFocusOwner(), String.format(LOCATE_PDF, id), new FileNameExtensionFilter(PDF_FILE, FileType.PDF_EXTENSION));
+					if (file != null) {
+						ReferenceLookupPreferences.setPdfLocation(id, file);
+					}
+				}
+				if (file != null) {
+					Path path = file.toPath();
+					LibraryExplorerDockable library = LibraryExplorerDockable.get();
+					PdfDockable dockable = (PdfDockable) library.getDockableFor(path);
+					if (dockable != null) {
+						dockable.goToPage(page);
+						dockable.getDockContainer().setCurrentDockable(dockable);
+					} else {
+						dockable = new PdfDockable(file, page);
+						library.dockPdf(dockable);
+						library.open(path);
+					}
+				}
+			} catch (NumberFormatException nfex) {
+				// Ignore
+			}
+		}
+	}
+
+	private static List<String> getReferences() {
+		List<String> list = new ArrayList<>();
 		Component comp = getFocusOwner();
 		if (comp instanceof Outline) {
 			OutlineModel model = ((Outline) comp).getModel();
@@ -119,7 +135,7 @@ public class OpenPageReferenceCommand extends Command {
 							for (String one : refs) {
 								String trimmed = one.trim();
 								if (!trimmed.isEmpty()) {
-									return trimmed;
+									list.add(trimmed);
 								}
 							}
 						}
@@ -127,6 +143,6 @@ public class OpenPageReferenceCommand extends Command {
 				}
 			}
 		}
-		return ""; //$NON-NLS-1$
+		return list;
 	}
 }

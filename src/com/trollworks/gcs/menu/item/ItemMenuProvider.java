@@ -41,10 +41,11 @@ public class ItemMenuProvider implements MenuProvider {
 	public Set<Command> getModifiableCommands() {
 		Set<Command> cmds = new HashSet<>();
 		cmds.add(OpenEditorCommand.INSTANCE);
-		cmds.add(OpenPageReferenceCommand.INSTANCE);
 		cmds.add(CopyToSheetCommand.INSTANCE);
 		cmds.add(CopyToTemplateCommand.INSTANCE);
 		cmds.add(ApplyTemplateCommand.INSTANCE);
+		cmds.add(OpenPageReferenceCommand.OPEN_ONE_INSTANCE);
+		cmds.add(OpenPageReferenceCommand.OPEN_EACH_INSTANCE);
 		cmds.add(NewAdvantageCommand.INSTANCE);
 		cmds.add(NewAdvantageCommand.CONTAINER_INSTANCE);
 		cmds.add(NewSkillCommand.INSTANCE);
@@ -62,10 +63,12 @@ public class ItemMenuProvider implements MenuProvider {
 		JMenu menu = new JMenu(ITEM);
 		menu.setName(NAME);
 		menu.add(new DynamicMenuItem(OpenEditorCommand.INSTANCE));
-		menu.add(new DynamicMenuItem(OpenPageReferenceCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(CopyToSheetCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(CopyToTemplateCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(ApplyTemplateCommand.INSTANCE));
+		menu.addSeparator();
+		menu.add(new DynamicMenuItem(OpenPageReferenceCommand.OPEN_ONE_INSTANCE));
+		menu.add(new DynamicMenuItem(OpenPageReferenceCommand.OPEN_EACH_INSTANCE));
 		menu.addSeparator();
 		menu.add(new DynamicMenuItem(NewAdvantageCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(NewAdvantageCommand.CONTAINER_INSTANCE));

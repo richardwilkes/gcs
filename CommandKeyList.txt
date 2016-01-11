@@ -36,7 +36,7 @@ SHIFT+C Copy to Character Sheet
 SHIFT+D	New ADQ Container
 SHIFT+E	New Carried Equipment Container
 SHIFT+F	New Equipment Container
-SHIFT+G
+SHIFT+G Open Each Page Reference
 SHIFT+H
 SHIFT+I Randomize Name (Male)
 SHIFT+J

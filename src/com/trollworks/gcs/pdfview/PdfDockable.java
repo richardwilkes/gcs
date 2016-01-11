@@ -29,9 +29,8 @@ import com.trollworks.toolkit.utility.PrintProxy;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
 
 import java.awt.BorderLayout;
+import java.awt.DefaultFocusTraversalPolicy;
 import java.awt.Window;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 
@@ -62,18 +61,18 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 		Localization.initialize();
 	}
 
-	private File			mFile;
-	private PDDocument		mPdf;
-	private Toolbar			mToolbar;
-	protected PdfPanel		mPanel;
-	private IconButton		mZoomInButton;
-	private IconButton		mZoomOutButton;
-	private IconButton		mActualSizeButton;
-	private JLabel			mZoomStatus;
-	protected EditorField	mPageField;
-	private JLabel			mPageStatus;
-	private IconButton		mPreviousPageButton;
-	private IconButton		mNextPageButton;
+	private File		mFile;
+	private PDDocument	mPdf;
+	private Toolbar		mToolbar;
+	private PdfPanel	mPanel;
+	private IconButton	mZoomInButton;
+	private IconButton	mZoomOutButton;
+	private IconButton	mActualSizeButton;
+	private JLabel		mZoomStatus;
+	private EditorField	mPageField;
+	private JLabel		mPageStatus;
+	private IconButton	mPreviousPageButton;
+	private IconButton	mNextPageButton;
 
 	public PdfDockable(File pdf, int page) {
 		super(new BorderLayout());
@@ -119,14 +118,8 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 		mPanel = new PdfPanel(this, mPdf, page);
 		add(new JScrollPane(mPanel), BorderLayout.CENTER);
 
-		mPageField.setFocusable(false);
-		mPanel.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusGained(FocusEvent event) {
-				mPanel.removeFocusListener(this);
-				mPageField.setFocusable(true);
-			}
-		});
+		setFocusCycleRoot(true);
+		setFocusTraversalPolicy(new DefaultFocusTraversalPolicy());
 	}
 
 	private static String formatWithKey(String title, KeyStroke key) {
