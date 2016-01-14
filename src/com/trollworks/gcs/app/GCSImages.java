@@ -17,6 +17,7 @@ import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.template.Template;
+import com.trollworks.toolkit.ui.RetinaIcon;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.utility.BundleInfo;
@@ -37,53 +38,28 @@ public class GCSImages {
 	}
 
 	/** @return The exotic type icon. */
-	public static final StdImage getExoticTypeIcon() {
-		return StdImage.get("exotic_type");
-	}
-
-	/** @return The selected exotic type icon. */
-	public static final StdImage getExoticTypeSelectedIcon() {
-		return StdImage.get("exotic_type_selected");
+	public static final RetinaIcon getExoticTypeIcon() {
+		return new RetinaIcon("exotic_type");
 	}
 
 	/** @return The mental type icon. */
-	public static final StdImage getMentalTypeIcon() {
-		return StdImage.get("mental_type");
-	}
-
-	/** @return The selected mental type icon. */
-	public static final StdImage getMentalTypeSelectedIcon() {
-		return StdImage.get("mental_type_selected");
+	public static final RetinaIcon getMentalTypeIcon() {
+		return new RetinaIcon("mental_type");
 	}
 
 	/** @return The physical type icon. */
-	public static final StdImage getPhysicalTypeIcon() {
-		return StdImage.get("physical_type");
-	}
-
-	/** @return The selected physical type icon. */
-	public static final StdImage getPhysicalTypeSelectedIcon() {
-		return StdImage.get("physical_type_selected");
+	public static final RetinaIcon getPhysicalTypeIcon() {
+		return new RetinaIcon("physical_type");
 	}
 
 	/** @return The social type icon. */
-	public static final StdImage getSocialTypeIcon() {
-		return StdImage.get("social_type");
-	}
-
-	/** @return The selected social type icon. */
-	public static final StdImage getSocialTypeSelectedIcon() {
-		return StdImage.get("social_type_selected");
+	public static final RetinaIcon getSocialTypeIcon() {
+		return new RetinaIcon("social_type");
 	}
 
 	/** @return The supernatural type icon. */
-	public static final StdImage getSupernaturalTypeIcon() {
-		return StdImage.get("supernatural_type");
-	}
-
-	/** @return The selected supernatural type icon. */
-	public static final StdImage getSupernaturalTypeSelectedIcon() {
-		return StdImage.get("supernatural_type_selected");
+	public static final RetinaIcon getSupernaturalTypeIcon() {
+		return new RetinaIcon("supernatural_type");
 	}
 
 	/** @return The default portrait. */

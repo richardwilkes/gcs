@@ -21,18 +21,17 @@ import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.ui.image.StdImage;
+import com.trollworks.toolkit.ui.RetinaIcon;
 import com.trollworks.toolkit.ui.widget.outline.Cell;
 import com.trollworks.toolkit.ui.widget.outline.Column;
-import com.trollworks.toolkit.ui.widget.outline.ImageCell;
+import com.trollworks.toolkit.ui.widget.outline.IconsCell;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.Numbers;
 
-import java.awt.Graphics2D;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 
 import javax.swing.SwingConstants;
 
@@ -117,8 +116,6 @@ public enum AdvantageColumn {
 	},
 	/** The type. */
 	TYPE {
-		private HashMap<Integer, StdImage> mMap;
-
 		@Override
 		public String toString() {
 			return TYPE_TITLE;
@@ -131,7 +128,7 @@ public enum AdvantageColumn {
 
 		@Override
 		public Cell getCell() {
-			return new ImageCell(SwingConstants.CENTER, SwingConstants.TOP);
+			return new IconsCell(SwingConstants.CENTER, SwingConstants.TOP);
 		}
 
 		@Override
@@ -143,70 +140,26 @@ public enum AdvantageColumn {
 		public Object getData(Advantage advantage) {
 			if (!advantage.canHaveChildren()) {
 				int type = advantage.getType();
-				Integer typeObj;
-				StdImage img;
-
 				if (type == 0) {
 					return null;
 				}
-				if (mMap == null) {
-					mMap = new HashMap<>();
+				List<RetinaIcon> imgs = new ArrayList<>();
+				if ((type & Advantage.TYPE_MASK_MENTAL) != 0) {
+					imgs.add(GCSImages.getMentalTypeIcon());
 				}
-				typeObj = new Integer(advantage.getType());
-				img = mMap.get(typeObj);
-				if (img == null) {
-					ArrayList<StdImage> list = new ArrayList<>();
-
-					if ((type & Advantage.TYPE_MASK_MENTAL) != 0) {
-						list.add(GCSImages.getMentalTypeIcon());
-					}
-					if ((type & Advantage.TYPE_MASK_PHYSICAL) != 0) {
-						list.add(GCSImages.getPhysicalTypeIcon());
-					}
-					if ((type & Advantage.TYPE_MASK_SOCIAL) != 0) {
-						list.add(GCSImages.getSocialTypeIcon());
-					}
-					if ((type & Advantage.TYPE_MASK_EXOTIC) != 0) {
-						list.add(GCSImages.getExoticTypeIcon());
-					}
-					if ((type & Advantage.TYPE_MASK_SUPERNATURAL) != 0) {
-						list.add(GCSImages.getSupernaturalTypeIcon());
-					}
-
-					switch (list.size()) {
-						case 0:
-							break;
-						case 1:
-							img = list.get(0);
-							mMap.put(typeObj, img);
-							break;
-						default:
-							int height = 0;
-							int width = 0;
-							int x = 0;
-							Graphics2D g2d;
-
-							for (StdImage one : list) {
-								int tmp;
-
-								width += one.getWidth();
-								tmp = one.getHeight();
-								if (tmp > height) {
-									height = tmp;
-								}
-							}
-							img = StdImage.createTransparent(width, height);
-							g2d = img.getGraphics();
-							for (StdImage one : list) {
-								g2d.drawImage(one, x, (height - one.getHeight()) / 2, null);
-								x += one.getWidth();
-							}
-							g2d.dispose();
-							mMap.put(typeObj, img);
-							break;
-					}
+				if ((type & Advantage.TYPE_MASK_PHYSICAL) != 0) {
+					imgs.add(GCSImages.getPhysicalTypeIcon());
 				}
-				return img;
+				if ((type & Advantage.TYPE_MASK_SOCIAL) != 0) {
+					imgs.add(GCSImages.getSocialTypeIcon());
+				}
+				if ((type & Advantage.TYPE_MASK_EXOTIC) != 0) {
+					imgs.add(GCSImages.getExoticTypeIcon());
+				}
+				if ((type & Advantage.TYPE_MASK_SUPERNATURAL) != 0) {
+					imgs.add(GCSImages.getSupernaturalTypeIcon());
+				}
+				return imgs;
 			}
 			return null;
 		}
