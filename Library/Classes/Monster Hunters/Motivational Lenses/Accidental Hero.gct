@@ -190,7 +190,7 @@
 							<name>Origins Magnet</name>
 							<cost type="percentage">0</cost>
 							<affects>total</affects>
-							<reference>Sup32</reference>
+							<reference>SU32</reference>
 						</modifier>
 						<reference>B161</reference>
 						<categories>

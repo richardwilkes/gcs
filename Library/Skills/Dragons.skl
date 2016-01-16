@@ -4,7 +4,7 @@
 		<name>Biting Grapple</name>
 		<difficulty>A</difficulty>
 		<points>1</points>
-		<reference>Dgn78</reference>
+		<reference>DR78</reference>
 		<default>
 			<type>Skill</type>
 			<name>Brawling</name>
@@ -21,7 +21,7 @@
 		<name>Biting Grapple</name>
 		<difficulty>A</difficulty>
 		<points>1</points>
-		<reference>Dgn78</reference>
+		<reference>DR78</reference>
 		<default>
 			<type>DX</type>
 			<modifier>-3</modifier>
@@ -31,7 +31,7 @@
 		<name>Death from Above</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Dgn78</reference>
+		<reference>DR78</reference>
 		<default>
 			<type>Skill</type>
 			<name>Flight</name>
@@ -52,7 +52,7 @@
 		<name>Tail Strike</name>
 		<difficulty>A</difficulty>
 		<points>1</points>
-		<reference>Dgn78</reference>
+		<reference>DR78</reference>
 		<default>
 			<type>Skill</type>
 			<name>Brawling</name>
@@ -73,7 +73,7 @@
 		<name>Tail Strike</name>
 		<difficulty>A</difficulty>
 		<points>1</points>
-		<reference>Dgn78</reference>
+		<reference>DR78</reference>
 		<default>
 			<type>DX</type>
 			<modifier>-4</modifier>
@@ -89,7 +89,7 @@
 		<name>Tail Sweep</name>
 		<difficulty>A</difficulty>
 		<points>1</points>
-		<reference>Dgn78</reference>
+		<reference>DR78</reference>
 		<default>
 			<type>Skill</type>
 			<name>Tail Strike</name>
@@ -110,7 +110,7 @@
 		<name>Wing Bash</name>
 		<difficulty>A</difficulty>
 		<points>1</points>
-		<reference>Dgn78</reference>
+		<reference>DR78</reference>
 		<default>
 			<type>Skill</type>
 			<name>Brawling</name>
@@ -131,7 +131,7 @@
 		<name>Wing Bash</name>
 		<difficulty>A</difficulty>
 		<points>1</points>
-		<reference>Dgn78</reference>
+		<reference>DR78</reference>
 		<default>
 			<type>DX</type>
 			<modifier>-4</modifier>

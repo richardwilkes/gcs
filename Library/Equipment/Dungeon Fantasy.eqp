@@ -2466,7 +2466,7 @@
 		<legality_class>4</legality_class>
 		<value>40</value>
 		<weight>4 lb</weight>
-		<reference>LT1:30</reference>
+		<reference>LTC1:30</reference>
 		<melee_weapon>
 			<damage>sw+2 cr</damage>
 			<strength>7&#8224;</strength>
@@ -2532,7 +2532,7 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>1 lb</weight>
-		<reference>LT1:30</reference>
+		<reference>LTC1:30</reference>
 		<melee_weapon>
 			<damage>sw cr</damage>
 			<strength>6</strength>

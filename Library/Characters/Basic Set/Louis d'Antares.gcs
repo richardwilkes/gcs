@@ -1028,38 +1028,38 @@ w7f//PehBuh/BmBmC2khaCQAAAAASUVORK5CYII=
 					<name>Power Modifier</name>
 					<cost type="percentage">-10</cost>
 					<affects>total</affects>
-					<reference>PW26</reference>
+					<reference>P26</reference>
 					<notes>Divine</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Power Modifier</name>
 					<cost type="percentage">-10</cost>
 					<affects>total</affects>
-					<reference>PW27</reference>
+					<reference>P27</reference>
 					<notes>Magical</notes>
 				</modifier>
 				<modifier version="1">
 					<name>Power Modifier</name>
 					<cost type="percentage">-10</cost>
 					<affects>total</affects>
-					<reference>PW28</reference>
+					<reference>P28</reference>
 					<notes>Psionic</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Power Modifier</name>
 					<cost type="percentage">-25</cost>
 					<affects>total</affects>
-					<reference>PW28</reference>
+					<reference>P28</reference>
 					<notes>Spirit</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Power Modifier</name>
 					<cost type="percentage">-10</cost>
 					<affects>total</affects>
-					<reference>PW29</reference>
+					<reference>P29</reference>
 					<notes>Super</notes>
 				</modifier>
-				<reference>PW133</reference>
+				<reference>P133</reference>
 				<categories>
 					<category>Advantage</category>
 				</categories>

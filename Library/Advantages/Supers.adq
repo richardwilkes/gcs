@@ -6,52 +6,52 @@
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW26</reference>
+			<reference>P26</reference>
 			<notes>Biological</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW26</reference>
+			<reference>P26</reference>
 			<notes>Divine</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW27</reference>
+			<reference>P27</reference>
 			<notes>Magical</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-20</cost>
 			<affects>total</affects>
-			<reference>PW28</reference>
+			<reference>P28</reference>
 			<notes>Nature</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-25</cost>
 			<affects>total</affects>
-			<reference>PW28</reference>
+			<reference>P28</reference>
 			<notes>Spirit</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW29</reference>
+			<reference>P29</reference>
 			<notes>Super</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>Sup34</reference>
+			<reference>SU34</reference>
 			<notes>Mutant</notes>
 		</modifier>
-		<reference>Sup39</reference>
+		<reference>SU39</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Power</category>
@@ -62,7 +62,7 @@
 		<type>Mental</type>
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
-		<reference>Sup39</reference>
+		<reference>SU39</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Power</category>
@@ -72,7 +72,7 @@
 		<name>Burrower</name>
 		<type>Physical, Exotic</type>
 		<base_points>1</base_points>
-		<reference>Sup30</reference>
+		<reference>SU30</reference>
 		<notes>You can dig as if you had a shovel.</notes>
 		<categories>
 			<category>Perk</category>
@@ -82,7 +82,7 @@
 		<name>Climbing Line</name>
 		<type>Physical, Exotic</type>
 		<base_points>1</base_points>
-		<reference>Sup31</reference>
+		<reference>SU31</reference>
 		<notes>You can generate a climbing line at will.</notes>
 		<categories>
 			<category>Perk</category>
@@ -92,7 +92,7 @@
 		<name>Cloaked</name>
 		<type>Physical</type>
 		<base_points>1</base_points>
-		<reference>Sup30</reference>
+		<reference>SU30</reference>
 		<notes>Your cloak doesn't snag, tangle, or provide your opponents with something to grab.</notes>
 		<categories>
 			<category>Cinematic</category>
@@ -103,7 +103,7 @@
 		<name>Code of Honor (Comics Code)</name>
 		<type>Mental</type>
 		<base_points>-15</base_points>
-		<reference>Sup31</reference>
+		<reference>SU31</reference>
 		<categories>
 			<category>Disadvantage</category>
 		</categories>
@@ -113,7 +113,7 @@
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<cr>12</cr>
-		<reference>Sup32</reference>
+		<reference>SU32</reference>
 		<categories>
 			<category>Disadvantage</category>
 		</categories>
@@ -122,7 +122,7 @@
 		<name>Dual Identity</name>
 		<type>Mental</type>
 		<base_points>-1</base_points>
-		<reference>Sup33</reference>
+		<reference>SU33</reference>
 		<categories>
 			<category>Quirk</category>
 		</categories>
@@ -133,31 +133,31 @@
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW26</reference>
+			<reference>P26</reference>
 			<notes>Biological</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW29</reference>
+			<reference>P29</reference>
 			<notes>Super</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>Sup34</reference>
+			<reference>SU34</reference>
 			<notes>Mutant</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-15</cost>
 			<affects>total</affects>
-			<reference>Sup34</reference>
+			<reference>SU34</reference>
 			<notes>Nanotech</notes>
 		</modifier>
-		<reference>Sup39</reference>
+		<reference>SU39</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Power</category>
@@ -168,7 +168,7 @@
 		<type>Mental</type>
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
-		<reference>Sup39</reference>
+		<reference>SU39</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Power</category>
@@ -178,7 +178,7 @@
 		<name>Equipment Bond</name>
 		<type>Physical, Exotic</type>
 		<base_points>1</base_points>
-		<reference>Sup31</reference>
+		<reference>SU31</reference>
 		<notes>You have a tool particularly suited to you for +1 to skill rolls using it.</notes>
 		<categories>
 			<category>Perk</category>
@@ -188,7 +188,7 @@
 		<name>Forgetful</name>
 		<type>Mental</type>
 		<base_points>-1</base_points>
-		<reference>Sup33</reference>
+		<reference>SU33</reference>
 		<notes>You often forget about your powers and equipment.</notes>
 		<categories>
 			<category>Quirk</category>
@@ -198,7 +198,7 @@
 		<name>Generator</name>
 		<type>Physical, Exotic</type>
 		<base_points>1</base_points>
-		<reference>Sup31</reference>
+		<reference>SU31</reference>
 		<notes>You can produce a steady direct current.  Maximum: @Power@ Watts</notes>
 		<categories>
 			<category>Perk</category>
@@ -208,7 +208,7 @@
 		<name>Ignition</name>
 		<type>Physical, Exotic</type>
 		<base_points>1</base_points>
-		<reference>Sup31</reference>
+		<reference>SU31</reference>
 		<notes>You can ignite Highly Flammable or Super Flammable material.</notes>
 		<categories>
 			<category>Perk</category>
@@ -218,7 +218,7 @@
 		<name>Illumination</name>
 		<type>Physical, Exotic</type>
 		<base_points>1</base_points>
-		<reference>Sup31</reference>
+		<reference>SU31</reference>
 		<notes>You can produce light as if you had a flashlight.</notes>
 		<categories>
 			<category>Perk</category>
@@ -229,7 +229,7 @@
 		<type>Mental</type>
 		<base_points>-5</base_points>
 		<cr>12</cr>
-		<reference>Sup33</reference>
+		<reference>SU33</reference>
 		<categories>
 			<category>Disadvantage</category>
 		</categories>
@@ -238,7 +238,7 @@
 		<name>Masked</name>
 		<type>Physical</type>
 		<base_points>1</base_points>
-		<reference>Sup30</reference>
+		<reference>SU30</reference>
 		<notes>A domino mask, glasses, or similar disguise renders you totally unrecognizable to even your closest friends.</notes>
 		<categories>
 			<category>Cinematic</category>
@@ -251,7 +251,7 @@
 		<levels>1</levels>
 		<base_points>5</base_points>
 		<points_per_level>3</points_per_level>
-		<reference>Sup27</reference>
+		<reference>SU27</reference>
 		<categories>
 			<category>Advantage</category>
 		</categories>
@@ -262,7 +262,7 @@
 		<levels>1</levels>
 		<base_points>6</base_points>
 		<points_per_level>3</points_per_level>
-		<reference>Sup27</reference>
+		<reference>SU27</reference>
 		<notes>External</notes>
 		<categories>
 			<category>Advantage</category>
@@ -274,7 +274,7 @@
 		<levels>1</levels>
 		<base_points>6</base_points>
 		<points_per_level>4</points_per_level>
-		<reference>Sup27</reference>
+		<reference>SU27</reference>
 		<notes>Internal</notes>
 		<categories>
 			<category>Advantage</category>
@@ -284,7 +284,7 @@
 		<name>No Visible Damage</name>
 		<type>Physical, Exotic</type>
 		<base_points>1</base_points>
-		<reference>Sup31</reference>
+		<reference>SU31</reference>
 		<categories>
 			<category>Perk</category>
 		</categories>
@@ -299,7 +299,7 @@
 		<name>Nonprotective Clothing</name>
 		<type>Physical</type>
 		<base_points>1</base_points>
-		<reference>Sup30</reference>
+		<reference>SU30</reference>
 		<notes>You can wear clothing other than armour.</notes>
 		<categories>
 			<category>Cinematic</category>
@@ -310,7 +310,7 @@
 		<name>Perfume</name>
 		<type>Physical, Exotic</type>
 		<base_points>1</base_points>
-		<reference>Sup31</reference>
+		<reference>SU31</reference>
 		<notes>+1 to reactions where smell makes a difference.</notes>
 		<categories>
 			<category>Perk</category>
@@ -320,7 +320,7 @@
 		<name>Periscope</name>
 		<type>Physical, Exotic</type>
 		<base_points>1</base_points>
-		<reference>Sup31</reference>
+		<reference>SU31</reference>
 		<notes>Can't see directly ahead and must take aim maneuvers while using.</notes>
 		<categories>
 			<category>Perk</category>
@@ -332,45 +332,45 @@
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW27</reference>
+			<reference>P27</reference>
 			<notes>Magical</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW28</reference>
+			<reference>P28</reference>
 			<notes>Psionic</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-25</cost>
 			<affects>total</affects>
-			<reference>PW28</reference>
+			<reference>P28</reference>
 			<notes>Spirit</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW29</reference>
+			<reference>P29</reference>
 			<notes>Super</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>Sup34</reference>
+			<reference>SU34</reference>
 			<notes>Mutant</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-15</cost>
 			<affects>total</affects>
-			<reference>Sup34</reference>
+			<reference>SU34</reference>
 			<notes>Nanotech</notes>
 		</modifier>
-		<reference>Sup39</reference>
+		<reference>SU39</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Power</category>
@@ -381,7 +381,7 @@
 		<type>Mental</type>
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
-		<reference>Sup30</reference>
+		<reference>SU30</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Power</category>
@@ -393,52 +393,52 @@
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW26</reference>
+			<reference>P26</reference>
 			<notes>Biological</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW26</reference>
+			<reference>P26</reference>
 			<notes>Divine</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW27</reference>
+			<reference>P27</reference>
 			<notes>Magical</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-20</cost>
 			<affects>total</affects>
-			<reference>PW28</reference>
+			<reference>P28</reference>
 			<notes>Nature</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-25</cost>
 			<affects>total</affects>
-			<reference>PW28</reference>
+			<reference>P28</reference>
 			<notes>Spirit</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW29</reference>
+			<reference>P29</reference>
 			<notes>Super</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>Sup34</reference>
+			<reference>SU34</reference>
 			<notes>Mutant</notes>
 		</modifier>
-		<reference>Sup39</reference>
+		<reference>SU39</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Power</category>
@@ -449,7 +449,7 @@
 		<type>Mental</type>
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
-		<reference>Sup39</reference>
+		<reference>SU39</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Power</category>
@@ -459,7 +459,7 @@
 		<name>Skintight</name>
 		<type>Physical</type>
 		<base_points>1</base_points>
-		<reference>Sup30</reference>
+		<reference>SU30</reference>
 		<notes>Your costume can be worn under normal clothing without showing.</notes>
 		<categories>
 			<category>Cinematic</category>
@@ -470,7 +470,7 @@
 		<name>Social Stigma (Freak)</name>
 		<type>Social</type>
 		<base_points>-10</base_points>
-		<reference>Sup32</reference>
+		<reference>SU32</reference>
 		<notes>-2 Reaction</notes>
 		<categories>
 			<category>Disadvantage</category>
@@ -482,45 +482,45 @@
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW26</reference>
+			<reference>P26</reference>
 			<notes>Biological</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW26</reference>
+			<reference>P26</reference>
 			<notes>Divine</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW27</reference>
+			<reference>P27</reference>
 			<notes>Magical</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW29</reference>
+			<reference>P29</reference>
 			<notes>Super</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>Sup34</reference>
+			<reference>SU34</reference>
 			<notes>Mutant</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Power Modifier</name>
 			<cost type="percentage">-15</cost>
 			<affects>total</affects>
-			<reference>Sup34</reference>
+			<reference>SU34</reference>
 			<notes>Nanotech</notes>
 		</modifier>
-		<reference>Sup39</reference>
+		<reference>SU39</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Power</category>
@@ -531,7 +531,7 @@
 		<type>Mental</type>
 		<levels>1</levels>
 		<points_per_level>5</points_per_level>
-		<reference>Sup39</reference>
+		<reference>SU39</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Power</category>
@@ -541,7 +541,7 @@
 		<name>Striking Surface</name>
 		<type>Physical, Exotic</type>
 		<base_points>1</base_points>
-		<reference>Sup31</reference>
+		<reference>SU31</reference>
 		<notes>Punch and kick as if you had brass knuckles and boots.</notes>
 		<categories>
 			<category>Perk</category>
@@ -559,7 +559,7 @@
 		<type>Physical</type>
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
-		<reference>Sup30</reference>
+		<reference>SU30</reference>
 		<categories>
 			<category>Advantage</category>
 		</categories>
@@ -568,7 +568,7 @@
 		<name>Supersuit</name>
 		<type>Physical</type>
 		<base_points>1</base_points>
-		<reference>Sup30</reference>
+		<reference>SU30</reference>
 		<notes>Your costume works with and is not harmed by your powers.</notes>
 		<categories>
 			<category>Cinematic</category>
@@ -579,7 +579,7 @@
 		<name>Swinging</name>
 		<type>Physical, Exotic</type>
 		<base_points>1</base_points>
-		<reference>Sup31</reference>
+		<reference>SU31</reference>
 		<notes>Swing from vines, grappling lines, or the like without needing skill rolls.</notes>
 		<categories>
 			<category>Perk</category>
@@ -622,7 +622,7 @@
 		<name>Third Person</name>
 		<type>Mental</type>
 		<base_points>-1</base_points>
-		<reference>Sup33</reference>
+		<reference>SU33</reference>
 		<notes>You always refer to yourself by name.</notes>
 		<categories>
 			<category>Quirk</category>
@@ -636,9 +636,9 @@
 			<name>Externaly Boosted</name>
 			<cost type="percentage">-50</cost>
 			<affects>total</affects>
-			<reference>Sup30</reference>
+			<reference>SU30</reference>
 		</modifier>
-		<reference>Sup30</reference>
+		<reference>SU30</reference>
 		<categories>
 			<category>Advantage</category>
 		</categories>

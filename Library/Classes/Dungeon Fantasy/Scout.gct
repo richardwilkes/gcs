@@ -78,7 +78,7 @@
 						<name>Super-Effort</name>
 						<cost type="percentage">300</cost>
 						<affects>total</affects>
-						<reference>Sup24</reference>
+						<reference>SU24</reference>
 					</modifier>
 					<reference>B14</reference>
 					<categories>
@@ -289,7 +289,7 @@
 							<name>Super-Effort</name>
 							<cost type="percentage">300</cost>
 							<affects>total</affects>
-							<reference>Sup24</reference>
+							<reference>SU24</reference>
 						</modifier>
 						<reference>B14</reference>
 						<notes>maximum +2</notes>
@@ -593,7 +593,7 @@
 						<name>Weapon Bond</name>
 						<type>Mental</type>
 						<base_points>1</base_points>
-						<reference>HT250, MA52</reference>
+						<reference>HT250,MA52</reference>
 						<notes>You own a Weapon that is uniquely suited to you.</notes>
 						<categories>
 							<category>Perk</category>
@@ -2262,7 +2262,7 @@
 				<legality_class>-</legality_class>
 				<value>50</value>
 				<weight>5 lb</weight>
-				<reference>B287, DF13:25</reference>
+				<reference>B287,DF13:25</reference>
 				<melee_weapon>
 					<damage>-</damage>
 					<strength>-</strength>

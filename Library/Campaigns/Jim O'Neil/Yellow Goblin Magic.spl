@@ -2,7 +2,7 @@
 <spell_list unique_id="icutifeh:-11yw84yd05780" version="1">
 	<spell_container version="2" open="yes">
 		<name>Yellow Goblin Magic Spells</name>
-		<reference>Jim</reference>
+		<reference></reference>
 		<notes>1st Circle</notes>
 		<categories>
 			<category>Yellow Goblin Magic</category>
@@ -129,7 +129,7 @@
 	</spell_container>
 	<spell_container version="2" open="yes">
 		<name>Yellow Goblin Magic Spell</name>
-		<reference>Jim</reference>
+		<reference></reference>
 		<notes>2nd Circle</notes>
 		<categories>
 			<category>Yellow Goblin Magic</category>
@@ -370,7 +370,7 @@
 	</spell_container>
 	<spell_container version="2" open="yes">
 		<name>Yellow Goblin Magic Spell</name>
-		<reference>Jim</reference>
+		<reference></reference>
 		<notes>3rd Circle</notes>
 		<categories>
 			<category>Yellow Goblin Magic</category>

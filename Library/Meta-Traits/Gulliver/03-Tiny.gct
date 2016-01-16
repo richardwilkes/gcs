@@ -3,7 +3,7 @@
 	<advantage_list>
 		<advantage_container version="1" open="yes" type="metatrait">
 			<name>Size: Tiny</name>
-			<reference>GulM</reference>
+			<reference>GUL1</reference>
 			<advantage version="1">
 				<name>SM -</name>
 				<type>Physical</type>

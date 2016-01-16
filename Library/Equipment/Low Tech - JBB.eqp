@@ -2838,7 +2838,7 @@
 			<legality_class>4</legality_class>
 			<value>0.25</value>
 			<weight>0.004 lb</weight>
-			<reference>House</reference>
+			<reference></reference>
 			<notes>Equal to 1/4 of a silver penny</notes>
 			<categories>
 				<category>Money: GURPS House Rules Medieval Coins</category>
@@ -2850,7 +2850,7 @@
 			<legality_class>4</legality_class>
 			<value>2</value>
 			<weight>0.008 lb</weight>
-			<reference>House</reference>
+			<reference></reference>
 			<notes>2 Silver Pennies</notes>
 			<categories>
 				<category>Money: GURPS House Rules Medieval Coins</category>
@@ -2862,7 +2862,7 @@
 			<legality_class>4</legality_class>
 			<value>12</value>
 			<weight>0.048 lb</weight>
-			<reference>House</reference>
+			<reference></reference>
 			<notes>12 Silver Pennies</notes>
 			<categories>
 				<category>Money: GURPS House Rules Medieval Coins</category>
@@ -2874,7 +2874,7 @@
 			<legality_class>4</legality_class>
 			<value>240</value>
 			<weight>0.008 lb</weight>
-			<reference>House</reference>
+			<reference></reference>
 			<notes>240 Silver Pennies</notes>
 			<categories>
 				<category>Money: GURPS House Rules Medieval Coins</category>
@@ -2886,7 +2886,7 @@
 			<legality_class>4</legality_class>
 			<value>120</value>
 			<weight>0.004 lb</weight>
-			<reference>House</reference>
+			<reference></reference>
 			<notes>120 Silver Pennies</notes>
 			<categories>
 				<category>Money: GURPS House Rules Medieval Coins</category>
@@ -2898,7 +2898,7 @@
 			<legality_class>4</legality_class>
 			<value>4</value>
 			<weight>0.016 lb</weight>
-			<reference>House</reference>
+			<reference></reference>
 			<notes>4 Silver Pennies</notes>
 			<categories>
 				<category>Money: GURPS House Rules Medieval Coins</category>
@@ -2910,7 +2910,7 @@
 			<legality_class>4</legality_class>
 			<value>3</value>
 			<weight>0.012 lb</weight>
-			<reference>House</reference>
+			<reference></reference>
 			<notes>3 Silver Pennies</notes>
 			<categories>
 				<category>Money: GURPS House Rules Medieval Coins</category>
@@ -2922,7 +2922,7 @@
 			<legality_class>4</legality_class>
 			<value>0.25</value>
 			<weight>0.001 lb</weight>
-			<reference>House</reference>
+			<reference></reference>
 			<notes>1/4 of a silver penny</notes>
 			<categories>
 				<category>Money: GURPS House Rules Medieval Coins</category>
@@ -2934,7 +2934,7 @@
 			<legality_class>4</legality_class>
 			<value>1</value>
 			<weight>0.016 lb</weight>
-			<reference>House</reference>
+			<reference></reference>
 			<notes>Equal to 1 silver penny</notes>
 			<categories>
 				<category>Money: GURPS House Rules Medieval Coins</category>
@@ -2946,7 +2946,7 @@
 			<legality_class>4</legality_class>
 			<value>1</value>
 			<weight>0.004 lb</weight>
-			<reference>House</reference>
+			<reference></reference>
 			<notes>Base Currency</notes>
 			<categories>
 				<category>Money: GURPS House Rules Medieval Coins</category>
@@ -2990,7 +2990,7 @@
 			<legality_class>4</legality_class>
 			<value>0.25</value>
 			<weight>0.001 lb</weight>
-			<reference>House</reference>
+			<reference></reference>
 			<notes>1/4 of a copper penny (coin)</notes>
 			<categories>
 				<category>Money: House Rules Medieval Coins</category>
@@ -3002,7 +3002,7 @@
 			<legality_class>4</legality_class>
 			<value>40</value>
 			<weight>0.004 lb</weight>
-			<reference>House</reference>
+			<reference></reference>
 			<notes>1/2 of a gold coin</notes>
 			<categories>
 				<category>Money: House Rules Medieval Coins</category>
@@ -3025,7 +3025,7 @@
 			<legality_class>4</legality_class>
 			<value>1</value>
 			<weight>0.004 lb</weight>
-			<reference>House</reference>
+			<reference></reference>
 			<notes>1/4 of a silver penny (coin)</notes>
 			<categories>
 				<category>Money: House Rules Medieval Coins</category>
@@ -3037,7 +3037,7 @@
 			<legality_class>4</legality_class>
 			<value>20</value>
 			<weight>0.004 lb</weight>
-			<reference>House</reference>
+			<reference></reference>
 			<notes>1/4 of a gold coin</notes>
 			<categories>
 				<category>Money: House Rules Medieval Coins</category>
@@ -4172,7 +4172,7 @@
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
 		<value>0</value>
-		<reference>House</reference>
+		<reference></reference>
 		<categories>
 			<category>Weights and costs of contents</category>
 		</categories>
@@ -4597,7 +4597,7 @@
 							<legality_class>4</legality_class>
 							<value>0.25</value>
 							<weight>0.05 lb</weight>
-							<reference>P3-33:18</reference>
+							<reference></reference>
 							<notes>Urban price</notes>
 							<categories>
 								<category>Food</category>
@@ -5035,7 +5035,7 @@
 		<legality_class>4</legality_class>
 		<value>8</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:16</reference>
+		<reference></reference>
 		<notes>Urban slaughter price; discount by 50% on the hoof at source</notes>
 		<categories>
 			<category>Food</category>
@@ -5049,7 +5049,7 @@
 		<legality_class>4</legality_class>
 		<value>18</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:16</reference>
+		<reference></reference>
 		<notes>Major market price; discount by 50% on the hoof at source</notes>
 		<categories>
 			<category>Food</category>
@@ -5063,7 +5063,7 @@
 		<legality_class>4</legality_class>
 		<value>8</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:16</reference>
+		<reference></reference>
 		<notes>Urban market price; discount by 50% at dock</notes>
 		<categories>
 			<category>Food</category>
@@ -5077,7 +5077,7 @@
 		<legality_class>4</legality_class>
 		<value>18</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:16</reference>
+		<reference></reference>
 		<notes>Major market price; discount by 50% at source; markup by 100% at small markets.</notes>
 		<categories>
 			<category>Food</category>
@@ -5091,7 +5091,7 @@
 		<legality_class>4</legality_class>
 		<value>2</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:16</reference>
+		<reference></reference>
 		<notes>Urban market price; discount by 50% at mill; discount by 25% at minor markets</notes>
 		<categories>
 			<category>Food</category>
@@ -5105,7 +5105,7 @@
 		<legality_class>4</legality_class>
 		<value>4</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:16</reference>
+		<reference></reference>
 		<notes>Urban market price; discount; by 50% at mill; discount by 25% at minor markets</notes>
 		<categories>
 			<category>Food</category>
@@ -5119,7 +5119,7 @@
 		<legality_class>4</legality_class>
 		<value>25</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:16</reference>
+		<reference></reference>
 		<notes>Maor market price; discount by 80% at source; Markup by 200% in minor markets</notes>
 		<categories>
 			<category>Food</category>
@@ -5133,7 +5133,7 @@
 		<legality_class>4</legality_class>
 		<value>1</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:16</reference>
+		<reference></reference>
 		<notes>Major market price; discount by 50% at farm; discount by 25% at minor markets</notes>
 		<categories>
 			<category>Food</category>
@@ -5147,7 +5147,7 @@
 		<legality_class>4</legality_class>
 		<value>2</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:16</reference>
+		<reference></reference>
 		<notes>Urban price discount by 50% at farm</notes>
 		<categories>
 			<category>Food</category>
@@ -5161,7 +5161,7 @@
 		<legality_class>4</legality_class>
 		<value>2</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:16</reference>
+		<reference></reference>
 		<notes>Urban price; discount by 50% at farm</notes>
 		<categories>
 			<category>Food</category>
@@ -5175,7 +5175,7 @@
 		<legality_class>4</legality_class>
 		<value>4</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:16</reference>
+		<reference></reference>
 		<notes>Urban price; discount by 50% at farm</notes>
 		<categories>
 			<category>Food</category>
@@ -5189,7 +5189,7 @@
 		<legality_class>4</legality_class>
 		<value>10</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:16</reference>
+		<reference></reference>
 		<notes>Urban price; discount by 80% at source</notes>
 		<categories>
 			<category>Food</category>
@@ -5203,7 +5203,7 @@
 		<legality_class>4</legality_class>
 		<value>2</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:16</reference>
+		<reference></reference>
 		<notes>Major market price; discount by 50% at source; discount by 25% at minor markets.</notes>
 		<categories>
 			<category>Food</category>
@@ -5217,7 +5217,7 @@
 		<legality_class>4</legality_class>
 		<value>4</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:16</reference>
+		<reference></reference>
 		<notes>Major market price; discount by 50% at source</notes>
 		<categories>
 			<category>Food</category>
@@ -5231,7 +5231,7 @@
 		<legality_class>4</legality_class>
 		<value>0.25</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:16</reference>
+		<reference></reference>
 		<notes>Urban price; discount by 75% at source</notes>
 		<categories>
 			<category>Food</category>
@@ -9598,7 +9598,7 @@
 		<legality_class>-</legality_class>
 		<value>110</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:18</reference>
+		<reference></reference>
 		<notes>Urban price; discount by 50% at source</notes>
 		<categories>
 			<category>Food</category>
@@ -10174,7 +10174,7 @@
 		<legality_class>-</legality_class>
 		<value>11.25</value>
 		<weight>6 lb</weight>
-		<reference>P3-33:18</reference>
+		<reference></reference>
 		<notes>Urban price; discount by 50% at source</notes>
 		<categories>
 			<category>Food</category>
@@ -10188,7 +10188,7 @@
 		<legality_class>-</legality_class>
 		<value>0.25</value>
 		<weight>0.05 lb</weight>
-		<reference>P3-33:18</reference>
+		<reference></reference>
 		<notes>Urban price</notes>
 		<categories>
 			<category>Food</category>
@@ -10424,7 +10424,7 @@
 				<legality_class>-</legality_class>
 				<value>1</value>
 				<weight>1 lb</weight>
-				<reference>P3-33:16</reference>
+				<reference></reference>
 				<notes>Urban price; discount by 50% at farm</notes>
 				<categories>
 					<category>Food</category>
@@ -10453,7 +10453,7 @@
 				<legality_class>-</legality_class>
 				<value>110</value>
 				<weight>1 lb</weight>
-				<reference>P3-33:18</reference>
+				<reference></reference>
 				<notes>Urban price; discount by 50% at source</notes>
 				<categories>
 					<category>Food</category>
@@ -10483,7 +10483,7 @@
 				<legality_class>4</legality_class>
 				<value>1.5</value>
 				<weight>2 lb</weight>
-				<reference>P3-33:18</reference>
+				<reference></reference>
 				<notes>Urban price; discount by 50% at source</notes>
 				<categories>
 					<category>Food</category>
@@ -11149,7 +11149,7 @@
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
 		<value>5</value>
-		<reference>HR</reference>
+		<reference></reference>
 		<notes>Annual rent for a small cottage - may sustitute Duty for rent</notes>
 		<categories>
 			<category>Basic</category>
@@ -11164,7 +11164,7 @@
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
 		<value>10</value>
-		<reference>HR</reference>
+		<reference></reference>
 		<notes>Annual rent for a small town cottage</notes>
 		<categories>
 			<category>Basic</category>
@@ -11179,7 +11179,7 @@
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
 		<value>20</value>
-		<reference>HR</reference>
+		<reference></reference>
 		<notes>Annual rent for a town house with craftshop</notes>
 		<categories>
 			<category>Basic</category>
@@ -11195,7 +11195,7 @@
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
 		<value>40</value>
-		<reference>HR</reference>
+		<reference></reference>
 		<notes>Annual rent for a town house with craftshop and worker's quarters</notes>
 		<categories>
 			<category>Basic</category>
@@ -11211,7 +11211,7 @@
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
 		<value>120</value>
-		<reference>HR</reference>
+		<reference></reference>
 		<notes>Annual rent for a town house with craftshop and worker's quarters</notes>
 		<categories>
 			<category>Basic</category>
@@ -11227,7 +11227,7 @@
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
 		<value>45</value>
-		<reference>HR</reference>
+		<reference></reference>
 		<notes>Annual rent for a town house with counter and storerooms</notes>
 		<categories>
 			<category>Basic</category>
@@ -11243,7 +11243,7 @@
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
 		<value>360</value>
-		<reference>HR</reference>
+		<reference></reference>
 		<notes>Annual rent for a town house with counter and storerooms</notes>
 		<categories>
 			<category>Basic</category>
@@ -11259,7 +11259,7 @@
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
 		<value>900</value>
-		<reference>HR</reference>
+		<reference></reference>
 		<notes>Annual rent for a town house with store and outbuildings</notes>
 		<categories>
 			<category>Basic</category>
@@ -11275,7 +11275,7 @@
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
 		<value>60</value>
-		<reference>HR</reference>
+		<reference></reference>
 		<notes>Annual rent for a multi-story town house of solid construction</notes>
 		<categories>
 			<category>Basic</category>
@@ -11291,7 +11291,7 @@
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
 		<value>1800</value>
-		<reference>HR</reference>
+		<reference></reference>
 		<notes>Annual rent for a multi-story town house with courtyard</notes>
 		<categories>
 			<category>Basic</category>
@@ -11307,7 +11307,7 @@
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
 		<value>2700</value>
-		<reference>HR</reference>
+		<reference></reference>
 		<notes>Annual rent for a multi-story town house with fine appointments</notes>
 		<categories>
 			<category>Basic</category>
@@ -11323,7 +11323,7 @@
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
 		<value>25</value>
-		<reference>HR</reference>
+		<reference></reference>
 		<notes>Annual rent for a ground floor commerical space</notes>
 		<categories>
 			<category>Basic</category>
@@ -12424,7 +12424,7 @@
 		<legality_class>-</legality_class>
 		<value>25</value>
 		<weight>6 lb</weight>
-		<reference>TL30,B350</reference>
+		<reference>LT30,B350</reference>
 		<notes>1 x Base digging time</notes>
 		<categories>
 			<category>Cultivation</category>
@@ -12438,7 +12438,7 @@
 		<legality_class>-</legality_class>
 		<value>18</value>
 		<weight>5 lb</weight>
-		<reference>TL30,B350</reference>
+		<reference>LT30,B350</reference>
 		<notes>1.5 x Base digging time</notes>
 		<categories>
 			<category>Cultivation</category>
@@ -12452,7 +12452,7 @@
 		<legality_class>-</legality_class>
 		<value>12</value>
 		<weight>4 lb</weight>
-		<reference>TL30,B350</reference>
+		<reference>LT30,B350</reference>
 		<notes>2 x Base digging time</notes>
 		<categories>
 			<category>Cultivation</category>
@@ -13356,7 +13356,7 @@
 		<legality_class>4</legality_class>
 		<value>240</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:18</reference>
+		<reference></reference>
 		<notes> Status/CF: -1/0.5, 0/1, +1/+1, +2/+4, +3/+19, +4/+99 +5/+999</notes>
 		<categories>
 			<category>Food</category>
@@ -13477,7 +13477,7 @@
 				<legality_class>4</legality_class>
 				<value>0.25</value>
 				<weight>0.001 lb</weight>
-				<reference>House</reference>
+				<reference></reference>
 				<notes>1/4 of a copper penny (coin)</notes>
 				<categories>
 					<category>Money: House Rules Medieval Coins</category>
@@ -13643,7 +13643,7 @@
 				<legality_class>4</legality_class>
 				<value>0.25</value>
 				<weight>0.001 lb</weight>
-				<reference>House</reference>
+				<reference></reference>
 				<notes>1/4 of a copper penny (coin)</notes>
 				<categories>
 					<category>Money: House Rules Medieval Coins</category>
@@ -13732,7 +13732,7 @@
 				<legality_class>4</legality_class>
 				<value>0.25</value>
 				<weight>0.001 lb</weight>
-				<reference>House</reference>
+				<reference></reference>
 				<notes>1/4 of a copper penny (coin)</notes>
 				<categories>
 					<category>Money: House Rules Medieval Coins</category>
@@ -13842,7 +13842,7 @@
 		<legality_class>-</legality_class>
 		<value>14</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:18</reference>
+		<reference></reference>
 		<notes>Urban price; discount by 50% at source</notes>
 		<categories>
 			<category>Food</category>
@@ -14501,7 +14501,7 @@
 		<legality_class>4</legality_class>
 		<value>36</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:18</reference>
+		<reference></reference>
 		<notes>Urban price; discount by 50% at source</notes>
 		<categories>
 			<category>Food</category>
@@ -15789,7 +15789,7 @@
 		<legality_class>4</legality_class>
 		<value>5</value>
 		<weight>8 lb</weight>
-		<reference>P3-33:18</reference>
+		<reference></reference>
 		<notes>Urban price; discount by 50% at source</notes>
 		<categories>
 			<category>Food</category>
@@ -15803,7 +15803,7 @@
 		<legality_class>4</legality_class>
 		<value>1</value>
 		<weight>1 lb</weight>
-		<reference>P3-33:18</reference>
+		<reference></reference>
 		<notes>Urban price; discount by 50% at source</notes>
 		<categories>
 			<category>Food</category>
@@ -15817,7 +15817,7 @@
 		<legality_class>4</legality_class>
 		<value>1.5</value>
 		<weight>2 lb</weight>
-		<reference>P3-33:18</reference>
+		<reference></reference>
 		<notes>Urban price; discount by 50% at source</notes>
 		<categories>
 			<category>Food</category>

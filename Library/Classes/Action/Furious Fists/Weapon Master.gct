@@ -126,7 +126,7 @@
 								<name>Super-Effort</name>
 								<cost type="percentage">300</cost>
 								<affects>total</affects>
-								<reference>Sup24</reference>
+								<reference>SU24</reference>
 							</modifier>
 							<reference>B14</reference>
 							<categories>
@@ -768,7 +768,7 @@
 							<name>Super Effort</name>
 							<cost type="percentage">400</cost>
 							<affects>total</affects>
-							<reference>Sup24</reference>
+							<reference>SU24</reference>
 						</modifier>
 						<modifier version="1" enabled="no">
 							<name>One Attack Only</name>
@@ -999,7 +999,7 @@
 					<name>Weapon Bond (@Starting Weapon@)</name>
 					<type>Mental</type>
 					<base_points>1</base_points>
-					<reference>HT250, MA52</reference>
+					<reference>HT250,MA52</reference>
 					<notes>You own a Weapon that is uniquely suited to you.</notes>
 					<categories>
 						<category>Perk</category>
@@ -1103,7 +1103,7 @@
 						<name>Super-Effort</name>
 						<cost type="percentage">300</cost>
 						<affects>total</affects>
-						<reference>Sup24</reference>
+						<reference>SU24</reference>
 					</modifier>
 					<reference>B14</reference>
 					<categories>
@@ -1123,7 +1123,7 @@
 					<name>Code of Honor ("Fight fair!")</name>
 					<type>Mental</type>
 					<base_points>-5</base_points>
-					<reference>B127, ACT3:7</reference>
+					<reference>B127,ACT3:7</reference>
 					<categories>
 						<category>Disadvantage</category>
 					</categories>
@@ -1132,7 +1132,7 @@
 					<name>Code of Honor (Bushido)</name>
 					<type>Mental</type>
 					<base_points>-15</base_points>
-					<reference>B185, ACT3:8</reference>
+					<reference>B185,ACT3:8</reference>
 					<categories>
 						<category>Disadvantage</category>
 					</categories>
@@ -1356,7 +1356,7 @@
 						<name>Vow (Use only muscle-powered attacks)</name>
 						<type>Physical</type>
 						<base_points>-10</base_points>
-						<reference>B161, ACT3:8</reference>
+						<reference>B161,ACT3:8</reference>
 						<categories>
 							<category>Disadvantage</category>
 						</categories>
@@ -1488,7 +1488,7 @@
 					<name>Obsession</name>
 					<type>Physical</type>
 					<base_points>-5</base_points>
-					<reference>B146, ACT3:5</reference>
+					<reference>B146,ACT3:5</reference>
 					<notes>@Beat a specific rival@</notes>
 					<categories>
 						<category>Disadvantage</category>
@@ -1521,7 +1521,7 @@
 						<affects>total</affects>
 						<reference>B152</reference>
 					</modifier>
-					<reference>B152, ACT3:11</reference>
+					<reference>B152,ACT3:11</reference>
 					<categories>
 						<category>Disadvantage</category>
 					</categories>
@@ -1624,7 +1624,7 @@
 					<name>Focused Fury</name>
 					<type>Physical</type>
 					<base_points>1</base_points>
-					<reference>PU2:5, ACT3:15</reference>
+					<reference>PU2:5,ACT3:15</reference>
 					<notes>Combine Mighty Blows and All Out Attack</notes>
 					<categories>
 						<category>Cinematic</category>
@@ -1682,7 +1682,7 @@
 					<name>Weapon Bond (@Weapon@)</name>
 					<type>Mental</type>
 					<base_points>1</base_points>
-					<reference>HT250, MA52</reference>
+					<reference>HT250,MA52</reference>
 					<notes>You own a Weapon that is uniquely suited to you.</notes>
 					<categories>
 						<category>Perk</category>
@@ -2355,7 +2355,7 @@
 								<tech_level/>
 								<difficulty>IQ/E</difficulty>
 								<points>1</points>
-								<reference>Sup35</reference>
+								<reference>SU35</reference>
 								<categories>
 									<category>Everyman</category>
 									<category>Knowledge</category>
@@ -6161,7 +6161,7 @@
 						<name>Disarming</name>
 						<difficulty>H</difficulty>
 						<points>2</points>
-						<reference>B230, MA70</reference>
+						<reference>B230,MA70</reference>
 						<default>
 							<type>Skill</type>
 							<name>@Unarmed or Melee Weapon Skill@</name>
@@ -6183,7 +6183,7 @@
 						<name>Dual-Weapon Attack</name>
 						<difficulty>H</difficulty>
 						<points>2</points>
-						<reference>B230, MA83</reference>
+						<reference>B230,MA83</reference>
 						<default>
 							<type>Skill</type>
 							<name>Broadsword</name>
@@ -6199,7 +6199,7 @@
 						<name>Dual-Weapon Attack</name>
 						<difficulty>H</difficulty>
 						<points>2</points>
-						<reference>B230, MA83</reference>
+						<reference>B230,MA83</reference>
 						<default>
 							<type>Skill</type>
 							<name>Guns</name>
@@ -6216,7 +6216,7 @@
 						<name>Dual-Weapon Attack</name>
 						<difficulty>H</difficulty>
 						<points>2</points>
-						<reference>B230, MA83</reference>
+						<reference>B230,MA83</reference>
 						<default>
 							<type>Skill</type>
 							<name>Knife</name>
@@ -6232,7 +6232,7 @@
 						<name>Dual-Weapon Attack</name>
 						<difficulty>H</difficulty>
 						<points>2</points>
-						<reference>B230, MA83</reference>
+						<reference>B230,MA83</reference>
 						<default>
 							<type>Skill</type>
 							<name>Shortsword</name>
@@ -6292,7 +6292,7 @@
 						<name>Feint</name>
 						<difficulty>H</difficulty>
 						<points>2</points>
-						<reference>B231, MA73</reference>
+						<reference>B231,MA73</reference>
 						<default>
 							<type>Skill</type>
 							<name>@Unarmed or Melee Weapon Skill@</name>
@@ -6314,7 +6314,7 @@
 						<name>Kicking</name>
 						<difficulty>H</difficulty>
 						<points>2</points>
-						<reference>B231, MA75, ACT3:17</reference>
+						<reference>B231,MA75,ACT3:17</reference>
 						<default>
 							<type>Skill</type>
 							<name>Acrobatics</name>
@@ -6336,7 +6336,7 @@
 						<name>Kicking</name>
 						<difficulty>H</difficulty>
 						<points>2</points>
-						<reference>B231, MA75</reference>
+						<reference>B231,MA75</reference>
 						<default>
 							<type>Skill</type>
 							<name>Brawling</name>
@@ -6352,7 +6352,7 @@
 						<name>Kicking</name>
 						<difficulty>H</difficulty>
 						<points>2</points>
-						<reference>B231, MA75</reference>
+						<reference>B231,MA75</reference>
 						<default>
 							<type>Skill</type>
 							<name>Karate</name>
@@ -6368,7 +6368,7 @@
 						<name>Retain Weapon</name>
 						<difficulty>H</difficulty>
 						<points>2</points>
-						<reference>B232, MA78</reference>
+						<reference>B232,MA78</reference>
 						<default>
 							<type>Skill</type>
 							<name>@Melee Weapon Skill@</name>
@@ -6384,7 +6384,7 @@
 						<name>Roll with Blow</name>
 						<difficulty>H</difficulty>
 						<points>2</points>
-						<reference>MA87, ACT3:18</reference>
+						<reference>MA87,ACT3:18</reference>
 						<default>
 							<type>Skill</type>
 							<name>@Unarmed Combat Skill@</name>
@@ -6410,7 +6410,7 @@
 						<name>Roll with Blow</name>
 						<difficulty>H</difficulty>
 						<points>2</points>
-						<reference>MA87, ACT3:18</reference>
+						<reference>MA87,ACT3:18</reference>
 						<default>
 							<type>Skill</type>
 							<name>Acrobatics</name>
@@ -6436,7 +6436,7 @@
 						<name>Stamp Kick</name>
 						<difficulty>H</difficulty>
 						<points>2</points>
-						<reference>MA80, ACT3:19</reference>
+						<reference>MA80,ACT3:19</reference>
 						<default>
 							<type>Skill</type>
 							<name>Acrobatics</name>
@@ -7380,7 +7380,7 @@
 						<specialization>Melee Weapons</specialization>
 						<difficulty>IQ/A</difficulty>
 						<points>2</points>
-						<reference>B185, ACT3:11</reference>
+						<reference>B185,ACT3:11</reference>
 						<categories>
 							<category>Arts/Entertainment</category>
 							<category>Knowledge</category>

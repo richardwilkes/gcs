@@ -78,7 +78,7 @@
 						<name>Super-Effort</name>
 						<cost type="percentage">300</cost>
 						<affects>total</affects>
-						<reference>Sup24</reference>
+						<reference>SU24</reference>
 					</modifier>
 					<reference>B14</reference>
 					<categories>
@@ -104,7 +104,7 @@
 							<name>Power Modifier</name>
 							<cost type="percentage">-10</cost>
 							<affects>total</affects>
-							<reference>PW27</reference>
+							<reference>P27</reference>
 							<notes>Magical</notes>
 						</modifier>
 						<modifier version="1">

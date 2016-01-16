@@ -53,7 +53,7 @@
 		<name>Quick-Sheathe (@Weapon Skill@)</name>
 		<type>Mental</type>
 		<base_points>1</base_points>
-		<reference>HT249, MA51</reference>
+		<reference>HT249,MA51</reference>
 		<notes>Let you use Fast-Draw to save one second when sheating</notes>
 		<categories>
 			<category>Cinematic</category>
@@ -64,7 +64,7 @@
 		<name>Quick-Swap (@Skill@)</name>
 		<type>Mental</type>
 		<base_points>1</base_points>
-		<reference>HT249, MA51</reference>
+		<reference>HT249,MA51</reference>
 		<notes>Let you switch hands as a free action.</notes>
 		<categories>
 			<category>Cinematic</category>
@@ -75,7 +75,7 @@
 		<name>Sure Footed (@Surface Feature@)</name>
 		<type>Mental</type>
 		<base_points>1</base_points>
-		<reference>HT250, MA52</reference>
+		<reference>HT250,MA52</reference>
 		<notes>Let you ignore bad footing.</notes>
 		<categories>
 			<category>Perk</category>
@@ -528,7 +528,7 @@
 		<name>Weapon Bond</name>
 		<type>Mental</type>
 		<base_points>1</base_points>
-		<reference>HT250, MA52</reference>
+		<reference>HT250,MA52</reference>
 		<notes>You own a Weapon that is uniquely suited to you.</notes>
 		<categories>
 			<category>Perk</category>

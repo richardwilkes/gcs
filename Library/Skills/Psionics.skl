@@ -2,7 +2,7 @@
 <skill_list unique_id="hvpn5zip:-1lv0p72mj9nhb" version="1">
 	<skill_container version="2" open="yes">
 		<name>Anti-Psi</name>
-		<reference>Psi26</reference>
+		<reference>PSI26</reference>
 		<categories>
 			<category>Anti-Psi</category>
 			<category>Psionics</category>
@@ -11,7 +11,7 @@
 			<name>Cancellation</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi23</reference>
+			<reference>PSI23</reference>
 			<categories>
 				<category>Anti-Psi</category>
 				<category>Psionics</category>
@@ -43,7 +43,7 @@
 			<name>Crippling Attack</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi23</reference>
+			<reference>PSI23</reference>
 			<default>
 				<type>Skill</type>
 				<name>Cancellation</name>
@@ -59,7 +59,7 @@
 			<name>Exemption</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi25</reference>
+			<reference>PSI25</reference>
 			<default>
 				<type>Skill</type>
 				<name>Screaming</name>
@@ -75,7 +75,7 @@
 			<name>Expansion</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi24</reference>
+			<reference>PSI24</reference>
 			<default>
 				<type>Skill</type>
 				<name>Para-Invisibility</name>
@@ -91,7 +91,7 @@
 			<name>Expansion</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi24</reference>
+			<reference>PSI24</reference>
 			<default>
 				<type>Skill</type>
 				<name>Psionic Shield</name>
@@ -107,7 +107,7 @@
 			<name>Expansion</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi25</reference>
+			<reference>PSI25</reference>
 			<default>
 				<type>Skill</type>
 				<name>Psychic Armor</name>
@@ -123,7 +123,7 @@
 			<name>Expansion</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi25</reference>
+			<reference>PSI25</reference>
 			<default>
 				<type>Skill</type>
 				<name>Psychic Armor</name>
@@ -139,7 +139,7 @@
 			<name>Mind Trap</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi25</reference>
+			<reference>PSI25</reference>
 			<default>
 				<type>Skill</type>
 				<name>Psionic Shield</name>
@@ -155,7 +155,7 @@
 			<name>Para-Invisibility</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi23</reference>
+			<reference>PSI23</reference>
 			<categories>
 				<category>Anti-Psi</category>
 				<category>Psionics</category>
@@ -176,7 +176,7 @@
 			<name>Precision Attack</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi23</reference>
+			<reference>PSI23</reference>
 			<default>
 				<type>Skill</type>
 				<name>Cancellation</name>
@@ -192,7 +192,7 @@
 			<name>Projection</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi25</reference>
+			<reference>PSI25</reference>
 			<default>
 				<type>Skill</type>
 				<name>Screaming</name>
@@ -209,7 +209,7 @@
 			<specialization>@Psionic ability@</specialization>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi23</reference>
+			<reference>PSI23</reference>
 			<categories>
 				<category>Anti-Psi</category>
 				<category>Psionics</category>
@@ -233,7 +233,7 @@
 			<name>Psionic Resistance (All)</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi23</reference>
+			<reference>PSI23</reference>
 			<categories>
 				<category>Anti-Psi</category>
 				<category>Psionics</category>
@@ -257,7 +257,7 @@
 			<name>Psionic Shield</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi24</reference>
+			<reference>PSI24</reference>
 			<categories>
 				<category>Anti-Psi</category>
 				<category>Psionics</category>
@@ -278,7 +278,7 @@
 			<name>Psychic Armor</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi25</reference>
+			<reference>PSI25</reference>
 			<categories>
 				<category>Anti-Psi</category>
 				<category>Psionics</category>
@@ -299,7 +299,7 @@
 			<name>Reflective Shield</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi25</reference>
+			<reference>PSI25</reference>
 			<default>
 				<type>Skill</type>
 				<name>Psionic Shield</name>
@@ -315,7 +315,7 @@
 			<name>Screaming</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi25</reference>
+			<reference>PSI25</reference>
 			<categories>
 				<category>Anti-Psi</category>
 				<category>Psionics</category>
@@ -336,7 +336,7 @@
 			<name>Shared Sight</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi25</reference>
+			<reference>PSI25</reference>
 			<default>
 				<type>Skill</type>
 				<name>True Sight (Anti-Psi)</name>
@@ -352,7 +352,7 @@
 			<name>Tiring Scream</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi25</reference>
+			<reference>PSI25</reference>
 			<default>
 				<type>Skill</type>
 				<name>Screaming</name>
@@ -368,7 +368,7 @@
 			<name>True Sight (Anti-Psi)</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi25</reference>
+			<reference>PSI25</reference>
 			<categories>
 				<category>Anti-Psi</category>
 				<category>Psionics</category>
@@ -388,7 +388,7 @@
 	</skill_container>
 	<skill_container version="2" open="yes">
 		<name>Astral Projection</name>
-		<reference>Psi26</reference>
+		<reference>PSI26</reference>
 		<categories>
 			<category>Astral Projection</category>
 			<category>Psionics</category>
@@ -397,7 +397,7 @@
 			<name>Astral Armor</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi26</reference>
+			<reference>PSI26</reference>
 			<categories>
 				<category>Astral Projection</category>
 				<category>Psionics</category>
@@ -418,7 +418,7 @@
 			<name>Astral Crossing</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi29</reference>
+			<reference>PSI29</reference>
 			<default>
 				<type>Skill</type>
 				<name>Astral Travel</name>
@@ -434,7 +434,7 @@
 			<name>Astral Movement</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi26</reference>
+			<reference>PSI26</reference>
 			<categories>
 				<category>Astral Projection</category>
 				<category>Psionics</category>
@@ -455,7 +455,7 @@
 			<name>Astral Sight</name>
 			<difficulty>Per/H</difficulty>
 			<points>1</points>
-			<reference>Psi27</reference>
+			<reference>PSI27</reference>
 			<categories>
 				<category>Astral Projection</category>
 				<category>Psionics</category>
@@ -475,7 +475,7 @@
 			<name>Astral Sword</name>
 			<difficulty>DX/H</difficulty>
 			<points>1</points>
-			<reference>Psi28</reference>
+			<reference>PSI28</reference>
 			<categories>
 				<category>Astral Projection</category>
 				<category>Psionics</category>
@@ -501,7 +501,7 @@
 			<name>Astral Travel</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi28</reference>
+			<reference>PSI28</reference>
 			<categories>
 				<category>Astral Projection</category>
 				<category>Psionics</category>
@@ -521,7 +521,7 @@
 			<name>Barrier Breaking</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi29</reference>
+			<reference>PSI29</reference>
 			<default>
 				<type>Skill</type>
 				<name>Astral Travel</name>
@@ -537,7 +537,7 @@
 			<name>Cloaking</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi29</reference>
+			<reference>PSI29</reference>
 			<default>
 				<type>Skill</type>
 				<name>Astral Travel</name>
@@ -553,7 +553,7 @@
 			<name>Cross-World Communication</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi29</reference>
+			<reference>PSI29</reference>
 			<default>
 				<type>Skill</type>
 				<name>Astral Travel</name>
@@ -569,7 +569,7 @@
 			<name>Expansion</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi26</reference>
+			<reference>PSI26</reference>
 			<default>
 				<type>Skill</type>
 				<name>Astral Armor</name>
@@ -585,7 +585,7 @@
 			<name>Penetrate Disguise</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi28</reference>
+			<reference>PSI28</reference>
 			<default>
 				<type>Skill</type>
 				<name>Astral Sight</name>
@@ -601,7 +601,7 @@
 			<name>Penetrating Blow</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi28</reference>
+			<reference>PSI28</reference>
 			<default>
 				<type>Skill</type>
 				<name>Astral Sword</name>
@@ -617,7 +617,7 @@
 			<name>Piggyback</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi26</reference>
+			<reference>PSI26</reference>
 			<default>
 				<type>Skill</type>
 				<name>Astral Movement</name>
@@ -633,7 +633,7 @@
 			<name>Piggyback</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi29</reference>
+			<reference>PSI29</reference>
 			<default>
 				<type>Skill</type>
 				<name>Astral Travel</name>
@@ -649,7 +649,7 @@
 			<name>Spectral Dodge</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi27</reference>
+			<reference>PSI27</reference>
 			<default>
 				<type>Skill</type>
 				<name>Astral Movement</name>
@@ -664,7 +664,7 @@
 	</skill_container>
 	<skill_container version="2" open="yes">
 		<name>Ergokinesis</name>
-		<reference>Psi32</reference>
+		<reference>PSI32</reference>
 		<categories>
 			<category>Cyberpsi</category>
 			<category>Electrokinesis</category>
@@ -673,7 +673,7 @@
 		</categories>
 		<skill_container version="2" open="yes">
 			<name>Cyberpsi</name>
-			<reference>Psi30</reference>
+			<reference>PSI30</reference>
 			<categories>
 				<category>Cyberpsi</category>
 				<category>Ergokinesis</category>
@@ -683,7 +683,7 @@
 				<name>Adaptability</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi32</reference>
+				<reference>PSI32</reference>
 				<default>
 					<type>Skill</type>
 					<name>Netrunning</name>
@@ -700,7 +700,7 @@
 				<name>Binary Translation</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi30</reference>
+				<reference>PSI30</reference>
 				<default>
 					<type>Skill</type>
 					<name>Data Retrieval</name>
@@ -717,7 +717,7 @@
 				<name>Binary Translation</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi31</reference>
+				<reference>PSI31</reference>
 				<default>
 					<type>Skill</type>
 					<name>I/O Tap</name>
@@ -734,7 +734,7 @@
 				<name>Data Retrieval</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi30</reference>
+				<reference>PSI30</reference>
 				<categories>
 					<category>Cyberpsi</category>
 					<category>Ergokinesis</category>
@@ -755,7 +755,7 @@
 				<name>I/O Tap</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi30</reference>
+				<reference>PSI30</reference>
 				<categories>
 					<category>Cyberpsi</category>
 					<category>Ergokinesis</category>
@@ -776,7 +776,7 @@
 				<name>Mirror</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi30</reference>
+				<reference>PSI30</reference>
 				<default>
 					<type>Skill</type>
 					<name>Data Retrieval</name>
@@ -793,7 +793,7 @@
 				<name>Netrunning</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi31</reference>
+				<reference>PSI31</reference>
 				<categories>
 					<category>Cyberpsi</category>
 					<category>Ergokinesis</category>
@@ -814,7 +814,7 @@
 				<name>Remote Control</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi31</reference>
+				<reference>PSI31</reference>
 				<categories>
 					<category>Cyberpsi</category>
 					<category>Ergokinesis</category>
@@ -835,7 +835,7 @@
 				<name>Reprogramming</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi32</reference>
+				<reference>PSI32</reference>
 				<default>
 					<type>Skill</type>
 					<name>Remote Control</name>
@@ -852,7 +852,7 @@
 				<name>Secondary Senses</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi32</reference>
+				<reference>PSI32</reference>
 				<default>
 					<type>Skill</type>
 					<name>Netrunning</name>
@@ -869,7 +869,7 @@
 				<name>Wireless</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi32</reference>
+				<reference>PSI32</reference>
 				<default>
 					<type>Skill</type>
 					<name>Netrunning</name>
@@ -885,7 +885,7 @@
 		</skill_container>
 		<skill_container version="2" open="yes">
 			<name>Electrokinesis</name>
-			<reference>Psi32</reference>
+			<reference>PSI32</reference>
 			<categories>
 				<category>Electrokinesis</category>
 				<category>Ergokinesis</category>
@@ -895,7 +895,7 @@
 				<name>Blue Screen</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi32</reference>
+				<reference>PSI32</reference>
 				<default>
 					<type>Skill</type>
 					<name>Confuse</name>
@@ -912,7 +912,7 @@
 				<name>Confuse</name>
 				<difficulty>Will/H</difficulty>
 				<points>1</points>
-				<reference>Psi32</reference>
+				<reference>PSI32</reference>
 				<categories>
 					<category>Electrokinesis</category>
 					<category>Ergokinesis</category>
@@ -933,7 +933,7 @@
 				<name>Dampen</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi33</reference>
+				<reference>PSI33</reference>
 				<categories>
 					<category>Electrokinesis</category>
 					<category>Ergokinesis</category>
@@ -955,7 +955,7 @@
 				<name>Daze</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi33</reference>
+				<reference>PSI33</reference>
 				<default>
 					<type>Skill</type>
 					<name>Confuse</name>
@@ -972,7 +972,7 @@
 				<name>Deep Scan</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi33</reference>
+				<reference>PSI33</reference>
 				<default>
 					<type>Skill</type>
 					<name>Electric Vision</name>
@@ -989,7 +989,7 @@
 				<name>EK Shield</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi33</reference>
+				<reference>PSI33</reference>
 				<categories>
 					<category>Electrokinesis</category>
 					<category>Ergokinesis</category>
@@ -1011,7 +1011,7 @@
 				<name>Electric Vision</name>
 				<difficulty>Per/H</difficulty>
 				<points>1</points>
-				<reference>Psi33</reference>
+				<reference>PSI33</reference>
 				<categories>
 					<category>Electrokinesis</category>
 					<category>Ergokinesis</category>
@@ -1033,7 +1033,7 @@
 				<name>Expansion</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi33</reference>
+				<reference>PSI33</reference>
 				<default>
 					<type>Skill</type>
 					<name>EK Shield</name>
@@ -1050,7 +1050,7 @@
 				<name>Extended Arc @240&#176; or 360&#176;@&#176;</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi34</reference>
+				<reference>PSI34</reference>
 				<default>
 					<type>Skill</type>
 					<name>Radar Sense</name>
@@ -1067,7 +1067,7 @@
 				<name>Lightning</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi33</reference>
+				<reference>PSI33</reference>
 				<categories>
 					<category>Electrokinesis</category>
 					<category>Ergokinesis</category>
@@ -1089,7 +1089,7 @@
 				<name>Lock On</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi34</reference>
+				<reference>PSI34</reference>
 				<default>
 					<type>Skill</type>
 					<name>Radar Sense</name>
@@ -1106,7 +1106,7 @@
 				<name>Mass Surge</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi34</reference>
+				<reference>PSI34</reference>
 				<default>
 					<type>Skill</type>
 					<name>Surge</name>
@@ -1123,7 +1123,7 @@
 				<name>Particle Beam</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi34</reference>
+				<reference>PSI34</reference>
 				<default>
 					<type>Skill</type>
 					<name>Lightning</name>
@@ -1140,7 +1140,7 @@
 				<name>Projection</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi33</reference>
+				<reference>PSI33</reference>
 				<default>
 					<type>Skill</type>
 					<name>Dampen</name>
@@ -1157,7 +1157,7 @@
 				<name>Radar Sense</name>
 				<difficulty>Per/H</difficulty>
 				<points>1</points>
-				<reference>Psi34</reference>
+				<reference>PSI34</reference>
 				<categories>
 					<category>Electrokinesis</category>
 					<category>Ergokinesis</category>
@@ -1179,7 +1179,7 @@
 				<name>Suppression</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi33</reference>
+				<reference>PSI33</reference>
 				<default>
 					<type>Skill</type>
 					<name>EK Shield</name>
@@ -1196,7 +1196,7 @@
 				<name>Surge</name>
 				<difficulty>Will/H</difficulty>
 				<points>1</points>
-				<reference>Psi34</reference>
+				<reference>PSI34</reference>
 				<categories>
 					<category>Electrokinesis</category>
 					<category>Ergokinesis</category>
@@ -1218,7 +1218,7 @@
 				<name>Thunderbolt</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi34</reference>
+				<reference>PSI34</reference>
 				<default>
 					<type>Skill</type>
 					<name>Lightning</name>
@@ -1234,7 +1234,7 @@
 		</skill_container>
 		<skill_container version="2" open="yes">
 			<name>Photokinesis</name>
-			<reference>Psi34</reference>
+			<reference>PSI34</reference>
 			<categories>
 				<category>Photokinesis</category>
 				<category>Psionics</category>
@@ -1243,7 +1243,7 @@
 				<name>Broad Spectrum</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi36</reference>
+				<reference>PSI36</reference>
 				<default>
 					<type>Skill</type>
 					<name>Hologram</name>
@@ -1260,7 +1260,7 @@
 				<name>Broad Spectrum</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi36</reference>
+				<reference>PSI36</reference>
 				<default>
 					<type>Skill</type>
 					<name>Photorefraction</name>
@@ -1277,7 +1277,7 @@
 				<name>Expansion</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi36</reference>
+				<reference>PSI36</reference>
 				<default>
 					<type>Skill</type>
 					<name>Photorefraction</name>
@@ -1294,7 +1294,7 @@
 				<name>Flash</name>
 				<difficulty>Will/H</difficulty>
 				<points>1</points>
-				<reference>Psi35</reference>
+				<reference>PSI35</reference>
 				<categories>
 					<category>Ergokinesis</category>
 					<category>Photokinesis</category>
@@ -1316,7 +1316,7 @@
 				<name>Hologram</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi35</reference>
+				<reference>PSI35</reference>
 				<categories>
 					<category>Ergokinesis</category>
 					<category>Photokinesis</category>
@@ -1337,7 +1337,7 @@
 				<name>Increased Size</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi36</reference>
+				<reference>PSI36</reference>
 				<default>
 					<type>Skill</type>
 					<name>Hologram</name>
@@ -1354,7 +1354,7 @@
 				<name>Independent</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi36</reference>
+				<reference>PSI36</reference>
 				<default>
 					<type>Skill</type>
 					<name>Hologram</name>
@@ -1371,7 +1371,7 @@
 				<name>Overwhelm</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi35</reference>
+				<reference>PSI35</reference>
 				<default>
 					<type>Skill</type>
 					<name>Flash</name>
@@ -1388,7 +1388,7 @@
 				<name>Photorefraction</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi35</reference>
+				<reference>PSI35</reference>
 				<categories>
 					<category>Ergokinesis</category>
 					<category>Photokinesis</category>
@@ -1410,7 +1410,7 @@
 				<name>Reactive Use</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi36</reference>
+				<reference>PSI36</reference>
 				<default>
 					<type>Skill</type>
 					<name>Photorefraction</name>
@@ -1427,7 +1427,7 @@
 	</skill_container>
 	<skill_container version="2" open="yes">
 		<name>ESP</name>
-		<reference>Psi37</reference>
+		<reference>PSI37</reference>
 		<categories>
 			<category>ESP</category>
 			<category>Psionics</category>
@@ -1436,7 +1436,7 @@
 			<name>Channeling</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi43</reference>
+			<reference>PSI43</reference>
 			<default>
 				<type>Skill</type>
 				<name>Spirit Communication</name>
@@ -1452,7 +1452,7 @@
 			<name>Common Sense</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi43</reference>
+			<reference>PSI43</reference>
 			<categories>
 				<category>Divination</category>
 				<category>ESP</category>
@@ -1473,7 +1473,7 @@
 			<name>Conscious</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi43</reference>
+			<reference>PSI43</reference>
 			<default>
 				<type>Skill</type>
 				<name>Common Sense</name>
@@ -1489,7 +1489,7 @@
 			<name>Danger Sense</name>
 			<difficulty>Per/H</difficulty>
 			<points>1</points>
-			<reference>Psi43</reference>
+			<reference>PSI43</reference>
 			<categories>
 				<category>Divination</category>
 				<category>ESP</category>
@@ -1508,7 +1508,7 @@
 		</skill>
 		<skill_container version="2" open="yes">
 			<name>Divination</name>
-			<reference>Psi37</reference>
+			<reference>PSI37</reference>
 			<categories>
 				<category>Divination</category>
 				<category>ESP</category>
@@ -1519,7 +1519,7 @@
 				<specialization>Divination</specialization>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi37</reference>
+				<reference>PSI37</reference>
 				<categories>
 					<category>Divination</category>
 					<category>ESP</category>
@@ -1541,7 +1541,7 @@
 				<name>Directed</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi38</reference>
+				<reference>PSI38</reference>
 				<default>
 					<type>Skill</type>
 					<name>Prognostication</name>
@@ -1558,7 +1558,7 @@
 				<name>Distant Use</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi38</reference>
+				<reference>PSI38</reference>
 				<default>
 					<type>Skill</type>
 					<name>Retrocognition</name>
@@ -1575,7 +1575,7 @@
 				<name>Event Search</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi38</reference>
+				<reference>PSI38</reference>
 				<default>
 					<type>Skill</type>
 					<name>Retrocognition</name>
@@ -1592,7 +1592,7 @@
 				<name>Exclusion</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi41</reference>
+				<reference>PSI41</reference>
 				<default>
 					<type>Skill</type>
 					<name>Psi Sense</name>
@@ -1609,7 +1609,7 @@
 				<name>Increased Range</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi41</reference>
+				<reference>PSI41</reference>
 				<default>
 					<type>Skill</type>
 					<name>Psi Sense</name>
@@ -1626,7 +1626,7 @@
 				<name>Prognostication</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi37</reference>
+				<reference>PSI37</reference>
 				<categories>
 					<category>Divination</category>
 					<category>ESP</category>
@@ -1648,7 +1648,7 @@
 				<name>Psi Sense</name>
 				<difficulty>Per/H</difficulty>
 				<points>1</points>
-				<reference>Psi41</reference>
+				<reference>PSI41</reference>
 				<categories>
 					<category>Divination</category>
 					<category>ESP</category>
@@ -1673,7 +1673,7 @@
 				<name>Retrocognition</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi38</reference>
+				<reference>PSI38</reference>
 				<categories>
 					<category>Divination</category>
 					<category>ESP</category>
@@ -1698,7 +1698,7 @@
 				<name>Visions</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi37</reference>
+				<reference>PSI37</reference>
 				<categories>
 					<category>Divination</category>
 					<category>ESP</category>
@@ -1740,7 +1740,7 @@
 			<name>Exclusion</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi41</reference>
+			<reference>PSI41</reference>
 			<default>
 				<type>Skill</type>
 				<name>Psi Sense</name>
@@ -1757,7 +1757,7 @@
 			<name>Extended Range</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi42</reference>
+			<reference>PSI42</reference>
 			<default>
 				<type>Skill</type>
 				<name>Psidar</name>
@@ -1773,7 +1773,7 @@
 			<name>Illuminated</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi43</reference>
+			<reference>PSI43</reference>
 			<categories>
 				<category>Divination</category>
 				<category>ESP</category>
@@ -1794,7 +1794,7 @@
 			<name>Immersive</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi43</reference>
+			<reference>PSI43</reference>
 			<default>
 				<type>Skill</type>
 				<name>Racial Memory</name>
@@ -1810,7 +1810,7 @@
 			<name>Increased Range</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi41</reference>
+			<reference>PSI41</reference>
 			<default>
 				<type>Skill</type>
 				<name>Psi Sense</name>
@@ -1827,7 +1827,7 @@
 			<name>Oracle</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi43</reference>
+			<reference>PSI43</reference>
 			<categories>
 				<category>Divination</category>
 				<category>ESP</category>
@@ -1848,7 +1848,7 @@
 			<name>Pinpoint</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi43</reference>
+			<reference>PSI43</reference>
 			<default>
 				<type>Skill</type>
 				<name>Seekersense</name>
@@ -1864,7 +1864,7 @@
 			<name>Psidar</name>
 			<difficulty>Per/H</difficulty>
 			<points>1</points>
-			<reference>Psi41</reference>
+			<reference>PSI41</reference>
 			<categories>
 				<category>ESP</category>
 				<category>Psionics</category>
@@ -1885,7 +1885,7 @@
 			<name>Psychic Hunches</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi42</reference>
+			<reference>PSI42</reference>
 			<categories>
 				<category>Divination</category>
 				<category>ESP</category>
@@ -1906,7 +1906,7 @@
 			<name>Racial Memory</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi43</reference>
+			<reference>PSI43</reference>
 			<categories>
 				<category>Divination</category>
 				<category>ESP</category>
@@ -1926,7 +1926,7 @@
 		</skill>
 		<skill_container version="2" open="yes">
 			<name>Remote Senses</name>
-			<reference>Psi39</reference>
+			<reference>PSI39</reference>
 			<categories>
 				<category>ESP</category>
 				<category>Psionics</category>
@@ -1936,7 +1936,7 @@
 				<name>Audio</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi40</reference>
+				<reference>PSI40</reference>
 				<default>
 					<type>Skill</type>
 					<name>Clairvoyance</name>
@@ -1953,7 +1953,7 @@
 				<name>Awareness</name>
 				<difficulty>Per/H</difficulty>
 				<points>1</points>
-				<reference>Psi39</reference>
+				<reference>PSI39</reference>
 				<categories>
 					<category>ESP</category>
 					<category>Psionics</category>
@@ -1975,7 +1975,7 @@
 				<name>Blind Projection</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi40</reference>
+				<reference>PSI40</reference>
 				<default>
 					<type>Skill</type>
 					<name>Clairvoyance</name>
@@ -1992,7 +1992,7 @@
 				<name>Clairvoyance</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi40</reference>
+				<reference>PSI40</reference>
 				<categories>
 					<category>ESP</category>
 					<category>Psionics</category>
@@ -2024,7 +2024,7 @@
 				<name>Dark Vision</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi41</reference>
+				<reference>PSI41</reference>
 				<default>
 					<type>Skill</type>
 					<name>Clairvoyance</name>
@@ -2041,7 +2041,7 @@
 				<name>Deep Scan</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi40</reference>
+				<reference>PSI40</reference>
 				<default>
 					<type>Skill</type>
 					<name>Awareness</name>
@@ -2058,7 +2058,7 @@
 				<name>Extended Arc @240&#176; or 360&#176;@&#176;</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi40</reference>
+				<reference>PSI40</reference>
 				<default>
 					<type>Skill</type>
 					<name>Awareness</name>
@@ -2075,7 +2075,7 @@
 				<name>Fast Activation</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi41</reference>
+				<reference>PSI41</reference>
 				<default>
 					<type>Skill</type>
 					<name>Clairvoyance</name>
@@ -2092,7 +2092,7 @@
 				<name>Secondary Senses</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi41</reference>
+				<reference>PSI41</reference>
 				<default>
 					<type>Skill</type>
 					<name>Clairvoyance</name>
@@ -2109,7 +2109,7 @@
 				<name>Visual</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi40</reference>
+				<reference>PSI40</reference>
 				<default>
 					<type>Skill</type>
 					<name>Clairvoyance</name>
@@ -2127,7 +2127,7 @@
 			<name>Seekersense</name>
 			<difficulty>Per/H</difficulty>
 			<points>1</points>
-			<reference>Psi42</reference>
+			<reference>PSI42</reference>
 			<categories>
 				<category>ESP</category>
 				<category>Psionics</category>
@@ -2148,7 +2148,7 @@
 			<name>Shared Hunches</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi42</reference>
+			<reference>PSI42</reference>
 			<default>
 				<type>Skill</type>
 				<name>Psychic Hunches</name>
@@ -2164,7 +2164,7 @@
 			<name>Shared Sight</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi25</reference>
+			<reference>PSI25</reference>
 			<default>
 				<type>Skill</type>
 				<name>True Sight (ESP)</name>
@@ -2180,7 +2180,7 @@
 			<name>Spirit Communication</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi43</reference>
+			<reference>PSI43</reference>
 			<categories>
 				<category>ESP</category>
 				<category>Psionics</category>
@@ -2201,7 +2201,7 @@
 			<name>True Sight (ESP)</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi43</reference>
+			<reference>PSI43</reference>
 			<categories>
 				<category>ESP</category>
 				<category>Psionics</category>
@@ -2224,7 +2224,7 @@
 		<name>Hide Signature</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Psi41</reference>
+		<reference>PSI41</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Psionic Skill@</name>
@@ -2239,7 +2239,7 @@
 		<name>Jam</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Psi31</reference>
+		<reference>PSI31</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Psionic Skill@</name>
@@ -2254,7 +2254,7 @@
 		<name>Lethal Attack</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Psi31</reference>
+		<reference>PSI31</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Psionic Skill@</name>
@@ -2270,7 +2270,7 @@
 		<name>Omnicast</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Psi31</reference>
+		<reference>PSI31</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Psionic Skill@</name>
@@ -2286,7 +2286,7 @@
 		<name>Permanent Effect</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Psi31</reference>
+		<reference>PSI31</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Psionic Skill@</name>
@@ -2300,7 +2300,7 @@
 	</technique>
 	<skill_container version="2" open="yes">
 		<name>Probability Alteration</name>
-		<reference>Psi43</reference>
+		<reference>PSI43</reference>
 		<categories>
 			<category>Probability Alteration</category>
 			<category>Psionics</category>
@@ -2309,7 +2309,7 @@
 			<name>Adjustment</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi44</reference>
+			<reference>PSI44</reference>
 			<categories>
 				<category>Probability Alteration</category>
 				<category>Psionics</category>
@@ -2330,7 +2330,7 @@
 			<name>Coincidence</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi44</reference>
+			<reference>PSI44</reference>
 			<categories>
 				<category>Probability Alteration</category>
 				<category>Psionics</category>
@@ -2352,7 +2352,7 @@
 			<specialization>Probability Alteration</specialization>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi45</reference>
+			<reference>PSI45</reference>
 			<categories>
 				<category>Probability Alteration</category>
 				<category>Psionics</category>
@@ -2373,7 +2373,7 @@
 			<name>Curse</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi45</reference>
+			<reference>PSI45</reference>
 			<categories>
 				<category>Probability Alteration</category>
 				<category>Psionics</category>
@@ -2394,7 +2394,7 @@
 			<name>Delayed Effect</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi45</reference>
+			<reference>PSI45</reference>
 			<default>
 				<type>Skill</type>
 				<name>Curse</name>
@@ -2410,7 +2410,7 @@
 			<name>Faster Onset</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi46</reference>
+			<reference>PSI46</reference>
 			<default>
 				<type>Skill</type>
 				<name>Weather Control</name>
@@ -2426,7 +2426,7 @@
 			<name>Remove Curse</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi45</reference>
+			<reference>PSI45</reference>
 			<default>
 				<type>Skill</type>
 				<name>Curse</name>
@@ -2442,7 +2442,7 @@
 			<name>Second Chance</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi45</reference>
+			<reference>PSI45</reference>
 			<categories>
 				<category>Probability Alteration</category>
 				<category>Psionics</category>
@@ -2463,7 +2463,7 @@
 			<name>Transference</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi45</reference>
+			<reference>PSI45</reference>
 			<default>
 				<type>Skill</type>
 				<name>Second Chance</name>
@@ -2479,7 +2479,7 @@
 			<name>Unsupervised Change</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi46</reference>
+			<reference>PSI46</reference>
 			<default>
 				<type>Skill</type>
 				<name>Weather Control</name>
@@ -2495,7 +2495,7 @@
 			<name>Weather Control</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi45</reference>
+			<reference>PSI45</reference>
 			<categories>
 				<category>Probability Alteration</category>
 				<category>Psionics</category>
@@ -2515,7 +2515,7 @@
 	</skill_container>
 	<skill_container version="2" open="yes">
 		<name>Psychic Healing</name>
-		<reference>Psi46</reference>
+		<reference>PSI46</reference>
 		<categories>
 			<category>Psionics</category>
 			<category>Psychic Healing</category>
@@ -2524,7 +2524,7 @@
 			<name>Anesthetic</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi49</reference>
+			<reference>PSI49</reference>
 			<default>
 				<type>Skill</type>
 				<name>Sleep</name>
@@ -2540,7 +2540,7 @@
 			<name>Aura Reading</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi46</reference>
+			<reference>PSI46</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychic Healing</category>
@@ -2560,7 +2560,7 @@
 			<name>Cure</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi46</reference>
+			<reference>PSI46</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychic Healing</category>
@@ -2591,7 +2591,7 @@
 			<name>Cure Affliction</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi47</reference>
+			<reference>PSI47</reference>
 			<default>
 				<type>Skill</type>
 				<name>Cure</name>
@@ -2607,7 +2607,7 @@
 			<name>Deep Sleep</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi49</reference>
+			<reference>PSI49</reference>
 			<default>
 				<type>Skill</type>
 				<name>Sleep</name>
@@ -2623,7 +2623,7 @@
 			<name>Delayed Effect</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi47</reference>
+			<reference>PSI47</reference>
 			<default>
 				<type>Skill</type>
 				<name>Disease Shield</name>
@@ -2639,7 +2639,7 @@
 			<name>Disease Shield</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi48</reference>
+			<reference>PSI48</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychic Healing</category>
@@ -2660,7 +2660,7 @@
 			<name>Empathy</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi49</reference>
+			<reference>PSI49</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychic Healing</category>
@@ -2680,7 +2680,7 @@
 			<name>Heal Limb</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi47</reference>
+			<reference>PSI47</reference>
 			<default>
 				<type>Skill</type>
 				<name>Cure</name>
@@ -2696,7 +2696,7 @@
 			<name>Life Extension</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi46</reference>
+			<reference>PSI46</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychic Healing</category>
@@ -2717,7 +2717,7 @@
 			<name>Megadose</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi48</reference>
+			<reference>PSI48</reference>
 			<default>
 				<type>Skill</type>
 				<name>Life Extension</name>
@@ -2733,7 +2733,7 @@
 			<name>Metabolism Control</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi49</reference>
+			<reference>PSI49</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychic Healing</category>
@@ -2753,7 +2753,7 @@
 			<name>Restore Limb</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi47</reference>
+			<reference>PSI47</reference>
 			<default>
 				<type>Skill</type>
 				<name>Cure</name>
@@ -2769,7 +2769,7 @@
 			<name>Self-Healing</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi47</reference>
+			<reference>PSI47</reference>
 			<default>
 				<type>Skill</type>
 				<name>Cure</name>
@@ -2785,7 +2785,7 @@
 			<name>Sleep (Psychic Healing)</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi49</reference>
+			<reference>PSI49</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychic Healing</category>
@@ -2805,7 +2805,7 @@
 			<name>Xeno-Reading</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi46</reference>
+			<reference>PSI46</reference>
 			<default>
 				<type>Skill</type>
 				<name>Aura Reading</name>
@@ -2821,7 +2821,7 @@
 			<name>Xenohealing</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi47</reference>
+			<reference>PSI47</reference>
 			<default>
 				<type>Skill</type>
 				<name>Cure</name>
@@ -2836,7 +2836,7 @@
 	</skill_container>
 	<skill_container version="2" open="yes">
 		<name>Psychic Vampirism</name>
-		<reference>Psi49</reference>
+		<reference>PSI49</reference>
 		<categories>
 			<category>Psionics</category>
 			<category>Psychic Vampirism</category>
@@ -2845,7 +2845,7 @@
 			<name>Destabilizing</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi51</reference>
+			<reference>PSI51</reference>
 			<default>
 				<type>Skill</type>
 				<name>Steal Dreams</name>
@@ -2862,7 +2862,7 @@
 			<name>Destabilizing</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi51</reference>
+			<reference>PSI51</reference>
 			<default>
 				<type>Skill</type>
 				<name>Steal Dreams</name>
@@ -2879,7 +2879,7 @@
 			<name>Destabilizing</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi51</reference>
+			<reference>PSI51</reference>
 			<default>
 				<type>Skill</type>
 				<name>Steal Dreams</name>
@@ -2896,7 +2896,7 @@
 			<name>Destabilizing</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi51</reference>
+			<reference>PSI51</reference>
 			<default>
 				<type>Skill</type>
 				<name>Steal Dreams</name>
@@ -2913,7 +2913,7 @@
 			<name>Destabilizing</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi51</reference>
+			<reference>PSI51</reference>
 			<default>
 				<type>Skill</type>
 				<name>Steal Dreams</name>
@@ -2930,7 +2930,7 @@
 			<name>Destabilizing</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi51</reference>
+			<reference>PSI51</reference>
 			<default>
 				<type>Skill</type>
 				<name>Steal Dreams</name>
@@ -2947,7 +2947,7 @@
 			<name>Destabilizing</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi51</reference>
+			<reference>PSI51</reference>
 			<default>
 				<type>Skill</type>
 				<name>Steal Dreams</name>
@@ -2964,7 +2964,7 @@
 			<name>Detect Life</name>
 			<difficulty>Per/H</difficulty>
 			<points>1</points>
-			<reference>Psi52</reference>
+			<reference>PSI52</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychic Vampirism</category>
@@ -2984,7 +2984,7 @@
 			<name>Drain DX</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi50</reference>
+			<reference>PSI50</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychic Vampirism</category>
@@ -3005,7 +3005,7 @@
 			<name>Drain Emotion</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi50</reference>
+			<reference>PSI50</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychic Vampirism</category>
@@ -3026,7 +3026,7 @@
 			<name>Drain HT</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi50</reference>
+			<reference>PSI50</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychic Vampirism</category>
@@ -3047,7 +3047,7 @@
 			<name>Drain IQ</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi50</reference>
+			<reference>PSI50</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychic Vampirism</category>
@@ -3068,7 +3068,7 @@
 			<name>Drain ST</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi50</reference>
+			<reference>PSI50</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychic Vampirism</category>
@@ -3089,7 +3089,7 @@
 			<name>Far Draining</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi50</reference>
+			<reference>PSI50</reference>
 			<default>
 				<type>Skill</type>
 				<name>Drain DX</name>
@@ -3105,7 +3105,7 @@
 			<name>Far Draining</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi50</reference>
+			<reference>PSI50</reference>
 			<default>
 				<type>Skill</type>
 				<name>Drain HT</name>
@@ -3121,7 +3121,7 @@
 			<name>Far Draining</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi50</reference>
+			<reference>PSI50</reference>
 			<default>
 				<type>Skill</type>
 				<name>Drain IQ</name>
@@ -3137,7 +3137,7 @@
 			<name>Far Draining</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi50</reference>
+			<reference>PSI50</reference>
 			<default>
 				<type>Skill</type>
 				<name>Drain ST</name>
@@ -3153,7 +3153,7 @@
 			<name>Far Theft</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi50</reference>
+			<reference>PSI50</reference>
 			<default>
 				<type>Skill</type>
 				<name>Steal Energy</name>
@@ -3169,7 +3169,7 @@
 			<name>Improved Theft</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi52</reference>
+			<reference>PSI52</reference>
 			<default>
 				<type>Skill</type>
 				<name>Steal Power</name>
@@ -3185,7 +3185,7 @@
 			<name>Lasting Effect</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi50</reference>
+			<reference>PSI50</reference>
 			<default>
 				<type>Skill</type>
 				<name>Drain Emotion</name>
@@ -3201,7 +3201,7 @@
 			<name>Mass Drain</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi50</reference>
+			<reference>PSI50</reference>
 			<default>
 				<type>Skill</type>
 				<name>Drain Emotion</name>
@@ -3217,7 +3217,7 @@
 			<name>No Contact</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi52</reference>
+			<reference>PSI52</reference>
 			<default>
 				<type>Skill</type>
 				<name>Steal Life</name>
@@ -3233,7 +3233,7 @@
 			<name>Painful Draining</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi50</reference>
+			<reference>PSI50</reference>
 			<default>
 				<type>Skill</type>
 				<name>Drain DX</name>
@@ -3249,7 +3249,7 @@
 			<name>Painful Draining</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi50</reference>
+			<reference>PSI50</reference>
 			<default>
 				<type>Skill</type>
 				<name>Drain HT</name>
@@ -3265,7 +3265,7 @@
 			<name>Painful Draining</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi50</reference>
+			<reference>PSI50</reference>
 			<default>
 				<type>Skill</type>
 				<name>Drain IQ</name>
@@ -3281,7 +3281,7 @@
 			<name>Painful Draining</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi50</reference>
+			<reference>PSI50</reference>
 			<default>
 				<type>Skill</type>
 				<name>Drain ST</name>
@@ -3297,7 +3297,7 @@
 			<name>Precision</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi52</reference>
+			<reference>PSI52</reference>
 			<default>
 				<type>Skill</type>
 				<name>Steal Power</name>
@@ -3313,7 +3313,7 @@
 			<name>Steal Dreams</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi50</reference>
+			<reference>PSI50</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychic Vampirism</category>
@@ -3333,7 +3333,7 @@
 			<name>Steal Energy</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi51</reference>
+			<reference>PSI51</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychic Vampirism</category>
@@ -3353,7 +3353,7 @@
 			<name>Steal Life</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi52</reference>
+			<reference>PSI52</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychic Vampirism</category>
@@ -3374,7 +3374,7 @@
 			<name>Steal Power</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi52</reference>
+			<reference>PSI52</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychic Vampirism</category>
@@ -3394,7 +3394,7 @@
 	</skill_container>
 	<skill_container version="2" open="yes">
 		<name>Psychokinesis</name>
-		<reference>Psi53</reference>
+		<reference>PSI53</reference>
 		<categories>
 			<category>Psionics</category>
 			<category>Psychokinesis</category>
@@ -3403,7 +3403,7 @@
 			<name>Cryokinesis</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi55</reference>
+			<reference>PSI55</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychokinesis</category>
@@ -3425,7 +3425,7 @@
 			<name>Expanded Area</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi55</reference>
+			<reference>PSI55</reference>
 			<default>
 				<type>Skill</type>
 				<name>Cryokinesis</name>
@@ -3441,7 +3441,7 @@
 			<name>Expanded Area</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi57</reference>
+			<reference>PSI57</reference>
 			<default>
 				<type>Skill</type>
 				<name>Pyrokinesis</name>
@@ -3457,7 +3457,7 @@
 			<name>Expansion</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi56</reference>
+			<reference>PSI56</reference>
 			<default>
 				<type>Skill</type>
 				<name>PK Shield</name>
@@ -3473,7 +3473,7 @@
 			<name>Nerve Damage</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi56</reference>
+			<reference>PSI56</reference>
 			<default>
 				<type>Skill</type>
 				<name>Cryokinesis</name>
@@ -3489,7 +3489,7 @@
 			<name>PK Shield</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi56</reference>
+			<reference>PSI56</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychokinesis</category>
@@ -3511,7 +3511,7 @@
 			<name>Pyrokinesis</name>
 			<difficulty>Will/H</difficulty>
 			<points>1</points>
-			<reference>Psi56</reference>
+			<reference>PSI56</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychokinesis</category>
@@ -3533,7 +3533,7 @@
 			<name>Suppression</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi56</reference>
+			<reference>PSI56</reference>
 			<default>
 				<type>Skill</type>
 				<name>PK Shield</name>
@@ -3547,7 +3547,7 @@
 		</technique>
 		<skill_container version="2" open="yes">
 			<name>Telekinesis</name>
-			<reference>Psi53</reference>
+			<reference>PSI53</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Psychokinesis</category>
@@ -3557,7 +3557,7 @@
 				<name>Brain Squeeze</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi54</reference>
+				<reference>PSI54</reference>
 				<default>
 					<type>Skill</type>
 					<name>TK Crush</name>
@@ -3574,7 +3574,7 @@
 				<name>Flat Edge</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi53</reference>
+				<reference>PSI53</reference>
 				<default>
 					<type>Skill</type>
 					<name>TK Bullet</name>
@@ -3591,7 +3591,7 @@
 				<name>Levitation</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi55</reference>
+				<reference>PSI55</reference>
 				<categories>
 					<category>Psionics</category>
 					<category>Psychokinesis</category>
@@ -3613,7 +3613,7 @@
 				<name>Mass Grab</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi55</reference>
+				<reference>PSI55</reference>
 				<default>
 					<type>Skill</type>
 					<name>TK Grab</name>
@@ -3630,7 +3630,7 @@
 				<name>Rapid Fire</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi53</reference>
+				<reference>PSI53</reference>
 				<default>
 					<type>Skill</type>
 					<name>TK Bullet</name>
@@ -3647,7 +3647,7 @@
 				<name>Rapid Launch</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi55</reference>
+				<reference>PSI55</reference>
 				<default>
 					<type>Skill</type>
 					<name>Levitation</name>
@@ -3664,7 +3664,7 @@
 				<name>Sharp Edge</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi53</reference>
+				<reference>PSI53</reference>
 				<default>
 					<type>Skill</type>
 					<name>TK Bullet</name>
@@ -3681,7 +3681,7 @@
 				<name>Silencer</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi53</reference>
+				<reference>PSI53</reference>
 				<default>
 					<type>Skill</type>
 					<name>TK Bullet</name>
@@ -3698,7 +3698,7 @@
 				<name>Telekinetic Control</name>
 				<difficulty>IQ/VH</difficulty>
 				<points>1</points>
-				<reference>Psi54</reference>
+				<reference>PSI54</reference>
 				<categories>
 					<category>Psionics</category>
 					<category>Psychokinesis</category>
@@ -3720,7 +3720,7 @@
 				<name>Throat Squeeze</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi54</reference>
+				<reference>PSI54</reference>
 				<default>
 					<type>Skill</type>
 					<name>TK Crush</name>
@@ -3737,7 +3737,7 @@
 				<name>TK Bullet</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi53</reference>
+				<reference>PSI53</reference>
 				<categories>
 					<category>Psionics</category>
 					<category>Psychokinesis</category>
@@ -3759,7 +3759,7 @@
 				<name>TK Crush</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi54</reference>
+				<reference>PSI54</reference>
 				<categories>
 					<category>Psionics</category>
 					<category>Psychokinesis</category>
@@ -3781,7 +3781,7 @@
 				<name>TK Grab</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi54</reference>
+				<reference>PSI54</reference>
 				<categories>
 					<category>Psionics</category>
 					<category>Psychokinesis</category>
@@ -3803,14 +3803,14 @@
 	</skill_container>
 	<skill_container version="2" open="yes">
 		<name>Telepathy</name>
-		<reference>Psi57</reference>
+		<reference>PSI57</reference>
 		<categories>
 			<category>Psionics</category>
 			<category>Telepathy</category>
 		</categories>
 		<skill_container version="2" open="yes">
 			<name>Communication</name>
-			<reference>Psi57</reference>
+			<reference>PSI57</reference>
 			<categories>
 				<category>Communication</category>
 				<category>Psionics</category>
@@ -3820,7 +3820,7 @@
 				<name>Animalism</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi58</reference>
+				<reference>PSI58</reference>
 				<default>
 					<type>Skill</type>
 					<name>Emotion Sense</name>
@@ -3837,7 +3837,7 @@
 				<name>Borrow Skill</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi57</reference>
+				<reference>PSI57</reference>
 				<categories>
 					<category>Communication</category>
 					<category>Psionics</category>
@@ -3859,7 +3859,7 @@
 				<name>Broadcast</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi60</reference>
+				<reference>PSI60</reference>
 				<default>
 					<type>Skill</type>
 					<name>Telesend</name>
@@ -3876,7 +3876,7 @@
 				<name>Deep Probe</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi59</reference>
+				<reference>PSI59</reference>
 				<default>
 					<type>Skill</type>
 					<name>Telereceive</name>
@@ -3893,7 +3893,7 @@
 				<name>Emotion Sense</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi58</reference>
+				<reference>PSI58</reference>
 				<categories>
 					<category>Communication</category>
 					<category>Psionics</category>
@@ -3914,7 +3914,7 @@
 				<name>Faster Learning</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi58</reference>
+				<reference>PSI58</reference>
 				<default>
 					<type>Skill</type>
 					<name>Borrow Skill</name>
@@ -3931,7 +3931,7 @@
 				<name>Full Communication</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi60</reference>
+				<reference>PSI60</reference>
 				<default>
 					<type>Skill</type>
 					<name>Telesend</name>
@@ -3948,7 +3948,7 @@
 				<name>Multiplicity</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi59</reference>
+				<reference>PSI59</reference>
 				<default>
 					<type>Skill</type>
 					<name>Telereceive</name>
@@ -3965,7 +3965,7 @@
 				<name>Multiplicity</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi59</reference>
+				<reference>PSI59</reference>
 				<default>
 					<type>Skill</type>
 					<name>Telesend</name>
@@ -3983,7 +3983,7 @@
 				<name>New Approach</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi59</reference>
+				<reference>PSI59</reference>
 				<default>
 					<type>Skill</type>
 					<name>Telereceive</name>
@@ -4000,7 +4000,7 @@
 				<name>Retention</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi58</reference>
+				<reference>PSI58</reference>
 				<default>
 					<type>Skill</type>
 					<name>Borrow Skill</name>
@@ -4017,7 +4017,7 @@
 				<name>Secure</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi60</reference>
+				<reference>PSI60</reference>
 				<default>
 					<type>Skill</type>
 					<name>Telesend</name>
@@ -4034,7 +4034,7 @@
 				<name>Send Senses</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi60</reference>
+				<reference>PSI60</reference>
 				<default>
 					<type>Skill</type>
 					<name>Telesend</name>
@@ -4051,7 +4051,7 @@
 				<name>Telereceive</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi58</reference>
+				<reference>PSI58</reference>
 				<categories>
 					<category>Communication</category>
 					<category>Psionics</category>
@@ -4076,7 +4076,7 @@
 				<name>Telesend</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi60</reference>
+				<reference>PSI60</reference>
 				<categories>
 					<category>Communication</category>
 					<category>Psionics</category>
@@ -4101,7 +4101,7 @@
 				<name>Universal</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi60</reference>
+				<reference>PSI60</reference>
 				<default>
 					<type>Skill</type>
 					<name>Telereceive</name>
@@ -4118,7 +4118,7 @@
 				<name>Universal</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi60</reference>
+				<reference>PSI60</reference>
 				<default>
 					<type>Skill</type>
 					<name>Telesend</name>
@@ -4134,7 +4134,7 @@
 		</skill_container>
 		<skill_container version="2" open="yes">
 			<name>Control</name>
-			<reference>Psi60</reference>
+			<reference>PSI60</reference>
 			<categories>
 				<category>Control</category>
 				<category>Psionics</category>
@@ -4144,7 +4144,7 @@
 				<name>Amnesia</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi64</reference>
+				<reference>PSI64</reference>
 				<default>
 					<type>Skill</type>
 					<name>Suggestion</name>
@@ -4161,7 +4161,7 @@
 				<name>Animalism</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi64</reference>
+				<reference>PSI64</reference>
 				<default>
 					<type>Skill</type>
 					<name>Telecontrol</name>
@@ -4178,7 +4178,7 @@
 				<name>Aspect</name>
 				<difficulty>Will/H</difficulty>
 				<points>1</points>
-				<reference>Psi61</reference>
+				<reference>PSI61</reference>
 				<categories>
 					<category>Control</category>
 					<category>Psionics</category>
@@ -4200,7 +4200,7 @@
 				<name>Aura Extension</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi61</reference>
+				<reference>PSI61</reference>
 				<default>
 					<type>Skill</type>
 					<name>Aspect</name>
@@ -4217,7 +4217,7 @@
 				<name>Distant Use</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi62</reference>
+				<reference>PSI62</reference>
 				<default>
 					<type>Skill</type>
 					<name>Mind Swap</name>
@@ -4234,7 +4234,7 @@
 				<name>Distant Use</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi64</reference>
+				<reference>PSI64</reference>
 				<default>
 					<type>Skill</type>
 					<name>Telecontrol</name>
@@ -4251,7 +4251,7 @@
 				<name>Independent</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi64</reference>
+				<reference>PSI64</reference>
 				<default>
 					<type>Skill</type>
 					<name>Suggestion</name>
@@ -4268,7 +4268,7 @@
 				<name>Mass Wipe</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi62</reference>
+				<reference>PSI62</reference>
 				<default>
 					<type>Skill</type>
 					<name>Mindwipe</name>
@@ -4285,7 +4285,7 @@
 				<name>Mental Surgery</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi61</reference>
+				<reference>PSI61</reference>
 				<categories>
 					<category>Control</category>
 					<category>Psionics</category>
@@ -4306,7 +4306,7 @@
 				<name>Mind Swap</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi62</reference>
+				<reference>PSI62</reference>
 				<categories>
 					<category>Control</category>
 					<category>Psionics</category>
@@ -4327,7 +4327,7 @@
 				<name>Mindwipe</name>
 				<difficulty>Will/H</difficulty>
 				<points>1</points>
-				<reference>Psi62</reference>
+				<reference>PSI62</reference>
 				<categories>
 					<category>Control</category>
 					<category>Psionics</category>
@@ -4348,7 +4348,7 @@
 				<name>New Approach</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi62</reference>
+				<reference>PSI62</reference>
 				<default>
 					<type>Skill</type>
 					<name>Mind Swap</name>
@@ -4365,7 +4365,7 @@
 				<name>New Approach</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi64</reference>
+				<reference>PSI64</reference>
 				<default>
 					<type>Skill</type>
 					<name>Telecontrol</name>
@@ -4382,7 +4382,7 @@
 				<name>Pressed Attack</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi64</reference>
+				<reference>PSI64</reference>
 				<default>
 					<type>Skill</type>
 					<name>Suggestion</name>
@@ -4399,7 +4399,7 @@
 				<name>Psychosmatic</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi63</reference>
+				<reference>PSI63</reference>
 				<default>
 					<type>Skill</type>
 					<name>Sensory Control</name>
@@ -4416,7 +4416,7 @@
 				<name>Quick and Dirty</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi61</reference>
+				<reference>PSI61</reference>
 				<default>
 					<type>Skill</type>
 					<name>Mental Surgery</name>
@@ -4433,7 +4433,7 @@
 				<name>Secondary Senses</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi64</reference>
+				<reference>PSI64</reference>
 				<default>
 					<type>Skill</type>
 					<name>Telecontrol</name>
@@ -4450,7 +4450,7 @@
 				<name>Sensory Control</name>
 				<difficulty>Will/H</difficulty>
 				<points>1</points>
-				<reference>Psi62</reference>
+				<reference>PSI62</reference>
 				<categories>
 					<category>Control</category>
 					<category>Psionics</category>
@@ -4475,7 +4475,7 @@
 				<name>Subconscious Hand-Off</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi63</reference>
+				<reference>PSI63</reference>
 				<default>
 					<type>Skill</type>
 					<name>Sensory Control</name>
@@ -4492,7 +4492,7 @@
 				<name>Suggestion</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi61</reference>
+				<reference>PSI61</reference>
 				<categories>
 					<category>Control</category>
 					<category>Psionics</category>
@@ -4517,7 +4517,7 @@
 				<name>Telecontrol</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi64</reference>
+				<reference>PSI64</reference>
 				<categories>
 					<category>Control</category>
 					<category>Psionics</category>
@@ -4538,7 +4538,7 @@
 		</skill_container>
 		<skill_container version="2" open="yes">
 			<name>Offense</name>
-			<reference>Psi64</reference>
+			<reference>PSI64</reference>
 			<categories>
 				<category>Offense</category>
 				<category>Psionics</category>
@@ -4548,7 +4548,7 @@
 				<name>Double Strike</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi66</reference>
+				<reference>PSI66</reference>
 				<default>
 					<type>Skill</type>
 					<name>Mental Stab</name>
@@ -4565,7 +4565,7 @@
 				<name>Group Scare</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi65</reference>
+				<reference>PSI65</reference>
 				<default>
 					<type>Skill</type>
 					<name>Instill Fear</name>
@@ -4582,7 +4582,7 @@
 				<name>Indirect</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi65</reference>
+				<reference>PSI65</reference>
 				<default>
 					<type>Skill</type>
 					<name>Instill Fear</name>
@@ -4599,7 +4599,7 @@
 				<name>Instill Fear</name>
 				<difficulty>Will/H</difficulty>
 				<points>1</points>
-				<reference>Psi64</reference>
+				<reference>PSI64</reference>
 				<categories>
 					<category>Offense</category>
 					<category>Psionics</category>
@@ -4621,7 +4621,7 @@
 				<name>Lasting Blow</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi65</reference>
+				<reference>PSI65</reference>
 				<default>
 					<type>Skill</type>
 					<name>Mental Blow</name>
@@ -4638,7 +4638,7 @@
 				<name>Mental Blow</name>
 				<difficulty>Will/H</difficulty>
 				<points>1</points>
-				<reference>Psi65</reference>
+				<reference>PSI65</reference>
 				<categories>
 					<category>Offense</category>
 					<category>Psionics</category>
@@ -4659,7 +4659,7 @@
 				<name>Mental Stab</name>
 				<difficulty>Will/H</difficulty>
 				<points>1</points>
-				<reference>Psi65</reference>
+				<reference>PSI65</reference>
 				<categories>
 					<category>Offense</category>
 					<category>Psionics</category>
@@ -4680,7 +4680,7 @@
 				<name>Neurological Damage</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi65</reference>
+				<reference>PSI65</reference>
 				<default>
 					<type>Skill</type>
 					<name>Mental Blow</name>
@@ -4697,7 +4697,7 @@
 				<name>New Approach</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi65</reference>
+				<reference>PSI65</reference>
 				<default>
 					<type>Skill</type>
 					<name>Instill Fear</name>
@@ -4714,7 +4714,7 @@
 				<name>Sleep (Telepathy)</name>
 				<difficulty>Will/H</difficulty>
 				<points>1</points>
-				<reference>Psi65</reference>
+				<reference>PSI65</reference>
 				<categories>
 					<category>Offense</category>
 					<category>Psionics</category>
@@ -4734,7 +4734,7 @@
 		</skill_container>
 		<skill_container version="2" open="yes">
 			<name>Sense and Defense</name>
-			<reference>Psi66</reference>
+			<reference>PSI66</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Sense and Defense</category>
@@ -4744,7 +4744,7 @@
 				<name>Bulk Compensation</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi66</reference>
+				<reference>PSI66</reference>
 				<default>
 					<type>Skill</type>
 					<name>Mind Clouding</name>
@@ -4761,7 +4761,7 @@
 				<name>Exclusion</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi66</reference>
+				<reference>PSI66</reference>
 				<default>
 					<type>Skill</type>
 					<name>Mind Clouding</name>
@@ -4778,7 +4778,7 @@
 				<name>Expansion</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi67</reference>
+				<reference>PSI67</reference>
 				<default>
 					<type>Skill</type>
 					<name>Mind Shield</name>
@@ -4795,7 +4795,7 @@
 				<name>Mind Clouding</name>
 				<difficulty>IQ/H</difficulty>
 				<points>1</points>
-				<reference>Psi66</reference>
+				<reference>PSI66</reference>
 				<categories>
 					<category>Psionics</category>
 					<category>Sense and Defense</category>
@@ -4817,7 +4817,7 @@
 				<name>Mind Shield</name>
 				<difficulty>Will/H</difficulty>
 				<points>1</points>
-				<reference>Psi66</reference>
+				<reference>PSI66</reference>
 				<categories>
 					<category>Psionics</category>
 					<category>Sense and Defense</category>
@@ -4839,7 +4839,7 @@
 				<name>Omniscan</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi67</reference>
+				<reference>PSI67</reference>
 				<default>
 					<type>Skill</type>
 					<name>Telescan</name>
@@ -4856,7 +4856,7 @@
 				<name>Reflective Shield</name>
 				<difficulty>H</difficulty>
 				<points>2</points>
-				<reference>Psi67</reference>
+				<reference>PSI67</reference>
 				<default>
 					<type>Skill</type>
 					<name>Mind Shield</name>
@@ -4873,7 +4873,7 @@
 				<name>Telepathy Sense</name>
 				<difficulty>Per/H</difficulty>
 				<points>1</points>
-				<reference>Psi67</reference>
+				<reference>PSI67</reference>
 				<categories>
 					<category>Psionics</category>
 					<category>Sense and Defense</category>
@@ -4894,7 +4894,7 @@
 				<name>Telescan</name>
 				<difficulty>Per/H</difficulty>
 				<points>1</points>
-				<reference>Psi67</reference>
+				<reference>PSI67</reference>
 				<categories>
 					<category>Psionics</category>
 					<category>Sense and Defense</category>
@@ -4915,7 +4915,7 @@
 	</skill_container>
 	<skill_container version="2" open="yes">
 		<name>Teleportation</name>
-		<reference>Psi68</reference>
+		<reference>PSI68</reference>
 		<categories>
 			<category>Psionics</category>
 			<category>Teleportation</category>
@@ -4924,7 +4924,7 @@
 			<name>Autoteleport</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi68</reference>
+			<reference>PSI68</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Teleportation</category>
@@ -4952,7 +4952,7 @@
 			<name>Bulk Compensation</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi68</reference>
+			<reference>PSI68</reference>
 			<default>
 				<type>Skill</type>
 				<name>Autoteleport</name>
@@ -4968,7 +4968,7 @@
 			<name>Careful</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi68</reference>
+			<reference>PSI68</reference>
 			<default>
 				<type>Skill</type>
 				<name>Autoteleport</name>
@@ -4984,7 +4984,7 @@
 			<name>Exoteleport</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi69</reference>
+			<reference>PSI69</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Teleportation</category>
@@ -5009,7 +5009,7 @@
 			<name>Far Reach</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi70</reference>
+			<reference>PSI70</reference>
 			<default>
 				<type>Skill</type>
 				<name>Exoteleport</name>
@@ -5036,7 +5036,7 @@
 			<name>Innerportation</name>
 			<difficulty>IQ/H</difficulty>
 			<points>1</points>
-			<reference>Psi70</reference>
+			<reference>PSI70</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Teleportation</category>
@@ -5057,7 +5057,7 @@
 			<name>Mass Port</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi70</reference>
+			<reference>PSI70</reference>
 			<default>
 				<type>Skill</type>
 				<name>Exoteleport</name>
@@ -5073,7 +5073,7 @@
 			<name>Mass Port</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi71</reference>
+			<reference>PSI71</reference>
 			<default>
 				<type>Skill</type>
 				<name>Innerportation</name>
@@ -5089,7 +5089,7 @@
 			<name>Portersense</name>
 			<difficulty>Per/H</difficulty>
 			<points>1</points>
-			<reference>Psi71</reference>
+			<reference>PSI71</reference>
 			<categories>
 				<category>Psionics</category>
 				<category>Teleportation</category>
@@ -5109,7 +5109,7 @@
 			<name>Tracking</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi68</reference>
+			<reference>PSI68</reference>
 			<default>
 				<type>Skill</type>
 				<name>Autoteleport</name>
@@ -5125,7 +5125,7 @@
 			<name>Wrenching Journey</name>
 			<difficulty>H</difficulty>
 			<points>2</points>
-			<reference>Psi70</reference>
+			<reference>PSI70</reference>
 			<default>
 				<type>Skill</type>
 				<name>Exoteleport</name>

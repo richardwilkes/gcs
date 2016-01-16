@@ -5,7 +5,7 @@
 		<encumbrance_penalty_multiplier>1</encumbrance_penalty_multiplier>
 		<difficulty>DX/A</difficulty>
 		<points>1</points>
-		<reference>Jim</reference>
+		<reference></reference>
 		<notes>The ability to flee skillfully, or perhaps attack surprisingly quickly, in an Urban Area</notes>
 		<categories>
 			<category>Criminal/Street</category>
@@ -44,7 +44,7 @@
 		<specialization>Herbalist</specialization>
 		<difficulty>IQ/H</difficulty>
 		<points>1</points>
-		<reference>Jim</reference>
+		<reference></reference>
 		<categories>
 			<category>Medical</category>
 			<category>Plants</category>
@@ -61,7 +61,7 @@
 		<name>Blacksmith</name>
 		<difficulty>IQ/A</difficulty>
 		<points>1</points>
-		<reference>Jim</reference>
+		<reference></reference>
 		<categories>
 			<category>Craft</category>
 		</categories>
@@ -73,7 +73,7 @@
 		<name>Butcher</name>
 		<difficulty>Per/A</difficulty>
 		<points>1</points>
-		<reference>Jim</reference>
+		<reference></reference>
 		<notes>The ablity to cut and trim common animal carcasses into desirable cooking portions</notes>
 		<categories>
 			<category>Craft</category>

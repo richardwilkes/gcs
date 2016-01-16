@@ -595,7 +595,7 @@
 		<name>Higher Purpose (Acquire Knowledge)</name>
 		<type>Mental, Exotic</type>
 		<base_points>5</base_points>
-		<reference>B59, MH1:24</reference>
+		<reference>B59,MH1:24</reference>
 		<categories>
 			<category>Advantage</category>
 		</categories>
@@ -604,7 +604,7 @@
 		<name>Higher Purpose (Defend the Faith)</name>
 		<type>Mental, Exotic</type>
 		<base_points>5</base_points>
-		<reference>B59, MH1:24</reference>
+		<reference>B59,MH1:24</reference>
 		<categories>
 			<category>Advantage</category>
 		</categories>
@@ -613,7 +613,7 @@
 		<name>Higher Purpose (Hunt @one type of monster@)</name>
 		<type>Mental, Exotic</type>
 		<base_points>5</base_points>
-		<reference>B59, MH1:24</reference>
+		<reference>B59,MH1:24</reference>
 		<categories>
 			<category>Advantage</category>
 		</categories>
@@ -642,7 +642,7 @@
 			<type>Mental</type>
 			<levels>1</levels>
 			<points_per_level>5</points_per_level>
-			<reference>MHC45</reference>
+			<reference>MH1:45</reference>
 			<notes>Adds +1 per level to any mysticism rolls</notes>
 			<categories>
 				<category>Advantage</category>
@@ -665,7 +665,7 @@
 					<name>Limited</name>
 					<cost type="percentage">-30</cost>
 					<affects>total</affects>
-					<reference>MHC43</reference>
+					<reference>MH1:43</reference>
 					<notes>Half-Strength except against evil undead or spirit beings</notes>
 				</modifier>
 				<modifier version="1">
@@ -683,7 +683,7 @@
 					<name>Mysticism</name>
 					<cost type="percentage">-10</cost>
 					<affects>total</affects>
-					<reference>MHC43</reference>
+					<reference>MH1:43</reference>
 					<notes>Must live by a strict moral code</notes>
 				</modifier>
 				<reference>MH1:43</reference>
@@ -928,7 +928,7 @@
 					<name>Mysticism</name>
 					<cost type="percentage">-10</cost>
 					<affects>total</affects>
-					<reference>MHC44</reference>
+					<reference>MH1:44</reference>
 					<notes>Must live by strict moral code</notes>
 				</modifier>
 				<reference>MH1:44</reference>
@@ -1272,7 +1272,7 @@
 					<name>Psionic</name>
 					<cost type="percentage">-10</cost>
 					<affects>total</affects>
-					<reference>MHC45</reference>
+					<reference>MH1:45</reference>
 					<notes>Vulnerable to anti-psi and psychotronics</notes>
 				</modifier>
 				<reference>MH1:45</reference>

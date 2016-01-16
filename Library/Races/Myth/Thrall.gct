@@ -3,7 +3,7 @@
 	<advantage_list>
 		<advantage_container open="yes" type="race">
 			<name>Thrall</name>
-			<reference>Myth63</reference>
+			<reference>MYTH63</reference>
 			<advantage_container open="yes">
 				<name>Advantages</name>
 				<advantage>

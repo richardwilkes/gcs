@@ -552,7 +552,7 @@
 		<name>Back Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B230, MA67</reference>
+		<reference>B230,MA67</reference>
 		<default>
 			<type>Skill</type>
 			<name>Acrobatics</name>
@@ -574,7 +574,7 @@
 		<name>Back Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B230, MA67</reference>
+		<reference>B230,MA67</reference>
 		<default>
 			<type>Skill</type>
 			<name>Karate</name>
@@ -976,7 +976,7 @@
 		<name>Choke Hold</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B230, MA69</reference>
+		<reference>B230,MA69</reference>
 		<default>
 			<type>Skill</type>
 			<name>Judo</name>
@@ -992,7 +992,7 @@
 		<name>Choke Hold</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B230, ACT3:16</reference>
+		<reference>B230,ACT3:16</reference>
 		<default>
 			<type>Skill</type>
 			<name>Wrestling</name>
@@ -1156,7 +1156,7 @@
 		<specialization>Melee Weapons</specialization>
 		<difficulty>IQ/A</difficulty>
 		<points>1</points>
-		<reference>B185, ACT3:11</reference>
+		<reference>B185,ACT3:11</reference>
 		<categories>
 			<category>Arts/Entertainment</category>
 			<category>Knowledge</category>
@@ -1580,7 +1580,7 @@
 		<tech_level/>
 		<difficulty>IQ/E</difficulty>
 		<points>1</points>
-		<reference>Sup35</reference>
+		<reference>SU35</reference>
 		<categories>
 			<category>Everyman</category>
 			<category>Knowledge</category>
@@ -1760,7 +1760,7 @@
 		<name>Disarming</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B230, MA70</reference>
+		<reference>B230,MA70</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Unarmed or Melee Weapon Skill@</name>
@@ -2090,7 +2090,7 @@
 		<name>Dual-Weapon Attack</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B230, MA83</reference>
+		<reference>B230,MA83</reference>
 		<default>
 			<type>Skill</type>
 			<name>@One-Handed Combat Skill@</name>
@@ -2138,7 +2138,7 @@
 		<name>Elbow Strike</name>
 		<difficulty>A</difficulty>
 		<points>1</points>
-		<reference>B230, MA71</reference>
+		<reference>B230,MA71</reference>
 		<default>
 			<type>Skill</type>
 			<name>Brawling</name>
@@ -2154,7 +2154,7 @@
 		<name>Elbow Strike</name>
 		<difficulty>A</difficulty>
 		<points>1</points>
-		<reference>B230, MA71</reference>
+		<reference>B230,MA71</reference>
 		<default>
 			<type>Skill</type>
 			<name>Karate</name>
@@ -4097,7 +4097,7 @@
 		<name>Feint</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B231, MA73</reference>
+		<reference>B231,MA73</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Unarmed or Melee Weapon Skill@</name>
@@ -4113,7 +4113,7 @@
 		<name>Feint</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B231, MA73</reference>
+		<reference>B231,MA73</reference>
 		<default>
 			<type>Skill</type>
 			<name>Acrobatics</name>
@@ -4189,7 +4189,7 @@
 		<name>Flying Jump Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>MA83, ACT3:17</reference>
+		<reference>MA83,ACT3:17</reference>
 		<default>
 			<type>Skill</type>
 			<name>Acrobatics</name>
@@ -4219,7 +4219,7 @@
 		<name>Flying Jump Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>MA83, ACT3:17</reference>
+		<reference>MA83,ACT3:17</reference>
 		<default>
 			<type>Skill</type>
 			<name>Karate</name>
@@ -4376,7 +4376,7 @@
 		<name>Ground Fighting</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B231, MA73</reference>
+		<reference>B231,MA73</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Melee Combat Skill@</name>
@@ -5182,7 +5182,7 @@
 		<name>Jump Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B231, MA75, ACT3:17</reference>
+		<reference>B231,MA75,ACT3:17</reference>
 		<default>
 			<type>Skill</type>
 			<name>Acrobatics</name>
@@ -5204,7 +5204,7 @@
 		<name>Jump Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B231, MA75</reference>
+		<reference>B231,MA75</reference>
 		<default>
 			<type>Skill</type>
 			<name>Karate</name>
@@ -5252,7 +5252,7 @@
 		<name>Kicking</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B231, MA75, ACT3:17</reference>
+		<reference>B231,MA75,ACT3:17</reference>
 		<default>
 			<type>Skill</type>
 			<name>Acrobatics</name>
@@ -5274,7 +5274,7 @@
 		<name>Kicking</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B231, MA75</reference>
+		<reference>B231,MA75</reference>
 		<default>
 			<type>Skill</type>
 			<name>Brawling</name>
@@ -5290,7 +5290,7 @@
 		<name>Kicking</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B231, MA75</reference>
+		<reference>B231,MA75</reference>
 		<default>
 			<type>Skill</type>
 			<name>Karate</name>
@@ -5306,7 +5306,7 @@
 		<name>Knee Strike</name>
 		<difficulty>A</difficulty>
 		<points>1</points>
-		<reference>B232, MA76</reference>
+		<reference>B232,MA76</reference>
 		<default>
 			<type>Skill</type>
 			<name>Brawling</name>
@@ -6034,7 +6034,7 @@
 					<tech_level/>
 					<difficulty>IQ/E</difficulty>
 					<points>1</points>
-					<reference>Sup35</reference>
+					<reference>SU35</reference>
 					<categories>
 						<category>Everyman</category>
 						<category>Knowledge</category>
@@ -9633,7 +9633,7 @@
 		<name>Lethal Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>MA85, ACT3:17</reference>
+		<reference>MA85,ACT3:17</reference>
 		<default>
 			<type>Skill</type>
 			<name>Karate</name>
@@ -9655,7 +9655,7 @@
 		<name>Lethal Strike</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>MA85, ACT3:17</reference>
+		<reference>MA85,ACT3:17</reference>
 		<default>
 			<type>Skill</type>
 			<name>Karate</name>
@@ -11534,7 +11534,7 @@
 		<name>Neck Snap</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA77</reference>
+		<reference>B232,MA77</reference>
 		<default>
 			<type>ST</type>
 			<modifier>-4</modifier>
@@ -12476,7 +12476,7 @@
 		<name>Retain Weapon</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA78</reference>
+		<reference>B232,MA78</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Melee Weapon Skill@</name>
@@ -12592,7 +12592,7 @@
 		<name>Roll with Blow</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>MA87, ACT3:18</reference>
+		<reference>MA87,ACT3:18</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Unarmed Combat Skill@</name>
@@ -12618,7 +12618,7 @@
 		<name>Roll with Blow</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>MA87, ACT3:18</reference>
+		<reference>MA87,ACT3:18</reference>
 		<default>
 			<type>Skill</type>
 			<name>Acrobatics</name>
@@ -13452,7 +13452,7 @@
 		<name>Stamp Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>MA80, ACT3:19</reference>
+		<reference>MA80,ACT3:19</reference>
 		<default>
 			<type>Skill</type>
 			<name>Acrobatics</name>
@@ -14776,7 +14776,7 @@
 		<name>Sweeping Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, ACT3:19</reference>
+		<reference>B232,ACT3:19</reference>
 		<default>
 			<type>Skill</type>
 			<name>Acrobatics</name>
@@ -14798,7 +14798,7 @@
 		<name>Sweeping Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA81</reference>
+		<reference>B232,MA81</reference>
 		<default>
 			<type>Skill</type>
 			<name>Judo</name>
@@ -14814,7 +14814,7 @@
 		<name>Sweeping Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA81</reference>
+		<reference>B232,MA81</reference>
 		<default>
 			<type>Skill</type>
 			<name>Karate</name>
@@ -14830,7 +14830,7 @@
 		<name>Sweeping Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA81</reference>
+		<reference>B232,MA81</reference>
 		<default>
 			<type>Skill</type>
 			<name>Sumo Wrestling</name>

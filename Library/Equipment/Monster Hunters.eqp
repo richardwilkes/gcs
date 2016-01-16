@@ -1652,7 +1652,7 @@
 					<legality_class>4</legality_class>
 					<value>12500</value>
 					<weight>50 lb</weight>
-					<reference>MH1:58, 62</reference>
+					<reference>MH1:58,62</reference>
 					<ranged_weapon>
 						<damage>2d fat</damage>
 						<strength>11&#8225;</strength>
@@ -1676,7 +1676,7 @@
 					<legality_class>4</legality_class>
 					<value>26000</value>
 					<weight>11 lb</weight>
-					<reference>MH1:58, 62</reference>
+					<reference>MH1:58,62</reference>
 					<ranged_weapon>
 						<damage>Will-2 aff</damage>
 						<strength>9&#8225;</strength>
@@ -1700,7 +1700,7 @@
 					<legality_class>4</legality_class>
 					<value>19000</value>
 					<weight>15 lb</weight>
-					<reference>MH1:58, 62</reference>
+					<reference>MH1:58,62</reference>
 					<ranged_weapon>
 						<damage>Will-4 aff</damage>
 						<strength>10&#8225;</strength>

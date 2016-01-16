@@ -37,7 +37,7 @@
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW27</reference>
+			<reference>P27</reference>
 			<notes>Magical</notes>
 		</modifier>
 		<modifier version="1">
@@ -117,7 +117,7 @@
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW26</reference>
+			<reference>P26</reference>
 			<notes>Chi</notes>
 		</modifier>
 		<reference>DF1:21</reference>
@@ -331,7 +331,7 @@
 			<name>Power Modifier</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>PW28</reference>
+			<reference>P28</reference>
 			<notes>Psionic</notes>
 		</modifier>
 		<reference>DF3:40</reference>

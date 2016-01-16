@@ -3,7 +3,7 @@
 	<advantage_list>
 		<advantage_container version="2" open="yes" type="metatrait">
 			<name>Actor</name>
-			<reference>HF4</reference>
+			<reference></reference>
 			<notes>25 Points</notes>
 			<advantage_container version="2" open="yes" type="metatrait">
 				<name>Attributes</name>
@@ -622,7 +622,7 @@
 						<type>Physical</type>
 						<levels>1</levels>
 						<points_per_level>5</points_per_level>
-						<reference>HF3</reference>
+						<reference></reference>
 						<notes>+1 Reaction from Actors, Performers and those hiring same.</notes>
 						<skill_bonus>
 							<name compare="is">Acting</name>

@@ -927,7 +927,7 @@
 					<name>Super-Effort</name>
 					<cost type="percentage">300</cost>
 					<affects>total</affects>
-					<reference>Sup24</reference>
+					<reference>SU24</reference>
 				</modifier>
 				<reference>B14</reference>
 				<categories>
@@ -1408,7 +1408,7 @@
 					<name>Field Sense</name>
 					<cost type="points">10</cost>
 					<affects>total</affects>
-					<reference>Sup27</reference>
+					<reference>SU27</reference>
 				</modifier>
 				<reference>B81</reference>
 				<categories>

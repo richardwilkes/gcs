@@ -140,7 +140,7 @@
 					<name>Power Modifier</name>
 					<cost type="percentage">-10</cost>
 					<affects>total</affects>
-					<reference>PW27</reference>
+					<reference>P27</reference>
 					<notes>Magical</notes>
 				</modifier>
 				<categories>

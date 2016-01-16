@@ -27,7 +27,7 @@
 						<name>Super-Effort</name>
 						<cost type="percentage">300</cost>
 						<affects>total</affects>
-						<reference>Sup24</reference>
+						<reference>SU24</reference>
 					</modifier>
 					<reference>B14</reference>
 					<categories>
@@ -472,7 +472,7 @@
 						<name>Super Effort</name>
 						<cost type="percentage">400</cost>
 						<affects>total</affects>
-						<reference>Sup24</reference>
+						<reference>SU24</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
 						<name>One Attack Only</name>

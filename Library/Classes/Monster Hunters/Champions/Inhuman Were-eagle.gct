@@ -115,14 +115,14 @@
 						<name>Cosmic</name>
 						<cost type="percentage">50</cost>
 						<affects>total</affects>
-						<reference>Sup26</reference>
+						<reference>SU26</reference>
 						<notes>Instantaneous Acceleration</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
 						<name>Cosmic</name>
 						<cost type="percentage">50</cost>
 						<affects>total</affects>
-						<reference>Sup27</reference>
+						<reference>SU27</reference>
 						<notes>Complete Maneuverability</notes>
 					</modifier>
 					<reference>B52</reference>

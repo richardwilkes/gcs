@@ -486,7 +486,7 @@
 					<name>Super-Effort</name>
 					<cost type="percentage">300</cost>
 					<affects>total</affects>
-					<reference>Sup24</reference>
+					<reference>SU24</reference>
 				</modifier>
 				<reference>B14</reference>
 				<categories>
@@ -1945,7 +1945,7 @@
 					<name>Field Sense</name>
 					<cost type="points">10</cost>
 					<affects>total</affects>
-					<reference>Sup27</reference>
+					<reference>SU27</reference>
 				</modifier>
 				<reference>B81</reference>
 				<categories>
@@ -2375,7 +2375,7 @@
 						<name>Multiplication</name>
 						<cost type="percentage">20</cost>
 						<affects>total</affects>
-						<reference>Sup26</reference>
+						<reference>SU26</reference>
 					</modifier>
 					<modifier version="1">
 						<name>Duplicate is -1 SM</name>
@@ -3302,7 +3302,7 @@
 					<name>Super-Effort</name>
 					<cost type="percentage">300</cost>
 					<affects>total</affects>
-					<reference>Sup24</reference>
+					<reference>SU24</reference>
 				</modifier>
 				<reference>B14</reference>
 				<categories>
@@ -5669,7 +5669,7 @@
 						<name>Specialized</name>
 						<cost type="percentage">-35</cost>
 						<affects>total</affects>
-						<reference>House</reference>
+						<reference></reference>
 						<notes>@Family: Canidae@</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
@@ -6612,7 +6612,7 @@
 					<name>Super Effort</name>
 					<cost type="percentage">400</cost>
 					<affects>total</affects>
-					<reference>Sup24</reference>
+					<reference>SU24</reference>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>One Attack Only</name>
@@ -8473,7 +8473,7 @@
 						<name>Multiplication</name>
 						<cost type="percentage">20</cost>
 						<affects>total</affects>
-						<reference>Sup26</reference>
+						<reference>SU26</reference>
 					</modifier>
 					<modifier version="1">
 						<name>Duplicate is -1 SM</name>
@@ -9288,14 +9288,14 @@
 					<name>Cosmic</name>
 					<cost type="percentage">50</cost>
 					<affects>total</affects>
-					<reference>Sup26</reference>
+					<reference>SU26</reference>
 					<notes>Instantaneous Acceleration</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Cosmic</name>
 					<cost type="percentage">50</cost>
 					<affects>total</affects>
-					<reference>Sup27</reference>
+					<reference>SU27</reference>
 					<notes>Complete Maneuverability</notes>
 				</modifier>
 				<reference>B52</reference>
@@ -9615,7 +9615,7 @@
 					<name>Super Effort</name>
 					<cost type="percentage">400</cost>
 					<affects>total</affects>
-					<reference>Sup24</reference>
+					<reference>SU24</reference>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>One Attack Only</name>
@@ -9690,7 +9690,7 @@
 					<name>Bouncing Only</name>
 					<cost type="percentage">-50</cost>
 					<affects>total</affects>
-					<reference>Sup28</reference>
+					<reference>SU28</reference>
 				</modifier>
 				<reference>B89</reference>
 				<notes>@New Move and Jump Stats@</notes>
@@ -9902,7 +9902,7 @@
 					<name>Super-Effort</name>
 					<cost type="percentage">300</cost>
 					<affects>total</affects>
-					<reference>Sup24</reference>
+					<reference>SU24</reference>
 				</modifier>
 				<reference>B14</reference>
 				<categories>
@@ -9981,7 +9981,7 @@
 						<name>Multiplication</name>
 						<cost type="percentage">20</cost>
 						<affects>total</affects>
-						<reference>Sup26</reference>
+						<reference>SU26</reference>
 					</modifier>
 					<reference>B50</reference>
 					<categories>
@@ -10476,7 +10476,7 @@
 						<name>Super-Effort</name>
 						<cost type="percentage">300</cost>
 						<affects>total</affects>
-						<reference>Sup24</reference>
+						<reference>SU24</reference>
 					</modifier>
 					<reference>B14</reference>
 					<categories>
@@ -11438,7 +11438,7 @@
 					<name>Super-Effort</name>
 					<cost type="percentage">300</cost>
 					<affects>total</affects>
-					<reference>Sup24</reference>
+					<reference>SU24</reference>
 				</modifier>
 				<reference>B14</reference>
 				<categories>
@@ -15594,14 +15594,14 @@
 						<name>Cosmic</name>
 						<cost type="percentage">50</cost>
 						<affects>total</affects>
-						<reference>Sup26</reference>
+						<reference>SU26</reference>
 						<notes>Instantaneous Acceleration</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
 						<name>Cosmic</name>
 						<cost type="percentage">50</cost>
 						<affects>total</affects>
-						<reference>Sup27</reference>
+						<reference>SU27</reference>
 						<notes>Complete Maneuverability</notes>
 					</modifier>
 					<reference>B52</reference>
@@ -15832,14 +15832,14 @@
 						<name>Cosmic</name>
 						<cost type="percentage">50</cost>
 						<affects>total</affects>
-						<reference>Sup26</reference>
+						<reference>SU26</reference>
 						<notes>Instantaneous Acceleration</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
 						<name>Cosmic</name>
 						<cost type="percentage">50</cost>
 						<affects>total</affects>
-						<reference>Sup27</reference>
+						<reference>SU27</reference>
 						<notes>Complete Maneuverability</notes>
 					</modifier>
 					<reference>B52</reference>
@@ -16091,14 +16091,14 @@
 						<name>Cosmic</name>
 						<cost type="percentage">50</cost>
 						<affects>total</affects>
-						<reference>Sup26</reference>
+						<reference>SU26</reference>
 						<notes>Instantaneous Acceleration</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
 						<name>Cosmic</name>
 						<cost type="percentage">50</cost>
 						<affects>total</affects>
-						<reference>Sup27</reference>
+						<reference>SU27</reference>
 						<notes>Complete Maneuverability</notes>
 					</modifier>
 					<reference>B52</reference>
@@ -16170,7 +16170,7 @@
 						<name>Field Sense</name>
 						<cost type="points">10</cost>
 						<affects>total</affects>
-						<reference>Sup27</reference>
+						<reference>SU27</reference>
 					</modifier>
 					<modifier version="1" enabled="no">
 						<name>Imaging Radar</name>
@@ -18355,7 +18355,7 @@
 					<name>Super-Effort</name>
 					<cost type="percentage">300</cost>
 					<affects>total</affects>
-					<reference>Sup24</reference>
+					<reference>SU24</reference>
 				</modifier>
 				<reference>B14</reference>
 				<categories>
@@ -18483,14 +18483,14 @@
 						<name>Cosmic</name>
 						<cost type="percentage">50</cost>
 						<affects>total</affects>
-						<reference>Sup26</reference>
+						<reference>SU26</reference>
 						<notes>Instantaneous Acceleration</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
 						<name>Cosmic</name>
 						<cost type="percentage">50</cost>
 						<affects>total</affects>
-						<reference>Sup27</reference>
+						<reference>SU27</reference>
 						<notes>Complete Maneuverability</notes>
 					</modifier>
 					<reference>B52</reference>
@@ -18649,7 +18649,7 @@
 						<name>Field Sense</name>
 						<cost type="points">10</cost>
 						<affects>total</affects>
-						<reference>Sup27</reference>
+						<reference>SU27</reference>
 					</modifier>
 					<modifier version="1">
 						<name>Increased Range 10x</name>
@@ -18775,14 +18775,14 @@
 						<name>Cosmic</name>
 						<cost type="percentage">50</cost>
 						<affects>total</affects>
-						<reference>Sup26</reference>
+						<reference>SU26</reference>
 						<notes>Instantaneous Acceleration</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
 						<name>Cosmic</name>
 						<cost type="percentage">50</cost>
 						<affects>total</affects>
-						<reference>Sup27</reference>
+						<reference>SU27</reference>
 						<notes>Complete Maneuverability</notes>
 					</modifier>
 					<reference>B52</reference>
@@ -19032,7 +19032,7 @@
 						<name>Field Sense</name>
 						<cost type="points">10</cost>
 						<affects>total</affects>
-						<reference>Sup27</reference>
+						<reference>SU27</reference>
 					</modifier>
 					<modifier version="1">
 						<name>Increased Range 10x</name>
@@ -19092,14 +19092,14 @@
 						<name>Cosmic</name>
 						<cost type="percentage">50</cost>
 						<affects>total</affects>
-						<reference>Sup26</reference>
+						<reference>SU26</reference>
 						<notes>Instantaneous Acceleration</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
 						<name>Cosmic</name>
 						<cost type="percentage">50</cost>
 						<affects>total</affects>
-						<reference>Sup27</reference>
+						<reference>SU27</reference>
 						<notes>Complete Maneuverability</notes>
 					</modifier>
 					<reference>B52</reference>
@@ -19334,7 +19334,7 @@
 						<name>Field Sense</name>
 						<cost type="points">10</cost>
 						<affects>total</affects>
-						<reference>Sup27</reference>
+						<reference>SU27</reference>
 					</modifier>
 					<modifier version="1">
 						<name>Increased Range 10x</name>
@@ -19460,14 +19460,14 @@
 						<name>Cosmic</name>
 						<cost type="percentage">50</cost>
 						<affects>total</affects>
-						<reference>Sup26</reference>
+						<reference>SU26</reference>
 						<notes>Instantaneous Acceleration</notes>
 					</modifier>
 					<modifier version="1" enabled="no">
 						<name>Cosmic</name>
 						<cost type="percentage">50</cost>
 						<affects>total</affects>
-						<reference>Sup27</reference>
+						<reference>SU27</reference>
 						<notes>Complete Maneuverability</notes>
 					</modifier>
 					<reference>B52</reference>
@@ -19613,7 +19613,7 @@
 						<name>Field Sense</name>
 						<cost type="points">10</cost>
 						<affects>total</affects>
-						<reference>Sup27</reference>
+						<reference>SU27</reference>
 					</modifier>
 					<modifier version="1">
 						<name>Increased Range 10x</name>
@@ -19682,7 +19682,7 @@
 						<name>Bouncing Only</name>
 						<cost type="percentage">-50</cost>
 						<affects>total</affects>
-						<reference>Sup28</reference>
+						<reference>SU28</reference>
 					</modifier>
 					<reference>B89</reference>
 					<notes>@New Move and Jump Stats@</notes>

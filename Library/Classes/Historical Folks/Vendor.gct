@@ -116,7 +116,7 @@
 						<type>Physical</type>
 						<levels>1</levels>
 						<points_per_level>5</points_per_level>
-						<reference>My109</reference>
+						<reference>HF109</reference>
 						<notes>+1/lvl bonus from clients and others in profession</notes>
 						<categories>
 							<category>Talent</category>

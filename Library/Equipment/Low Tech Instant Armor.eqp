@@ -7,7 +7,7 @@
 		<legality_class>5</legality_class>
 		<value>160</value>
 		<weight>3 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 15 secs; Holdout: 0; Required for suit of plate. Light mail protects armpits and inside elbows.</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -28,7 +28,7 @@
 		<legality_class>4</legality_class>
 		<value>80</value>
 		<weight>3 lb</weight>
-		<reference>LT-IA:16</reference>
+		<reference>LTIA16</reference>
 		<notes>Don: 6 secs; Holdout: -4; Flexible and susceptible to blunt trauma (p. B379); -1 DR vs. impaling.</notes>
 		<categories>
 			<category>Footwear</category>
@@ -45,7 +45,7 @@
 		<legality_class>5</legality_class>
 		<value>50</value>
 		<weight>1.5 lb</weight>
-		<reference>LT-IA:16</reference>
+		<reference>LTIA16</reference>
 		<notes>Don: 6 secs; Holdout: -1; Flexible and susceptible to blunt trauma (p. B379); +1 DR vs. cutting.</notes>
 		<categories>
 			<category>Footwear</category>
@@ -62,7 +62,7 @@
 		<legality_class>4</legality_class>
 		<value>450</value>
 		<weight>5 lb</weight>
-		<reference>LT-IA:8</reference>
+		<reference>LTIA8</reference>
 		<notes>Don: 15 secs; Holdout: -2; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -79,7 +79,7 @@
 		<legality_class>4</legality_class>
 		<value>225</value>
 		<weight>2.5 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -100,7 +100,7 @@
 		<legality_class>4</legality_class>
 		<value>238</value>
 		<weight>2.7 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -121,7 +121,7 @@
 		<legality_class>4</legality_class>
 		<value>45</value>
 		<weight>0.5 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -2; Reaction Pen.-1</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -138,7 +138,7 @@
 		<legality_class>4</legality_class>
 		<value>900</value>
 		<weight>10 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 30 secs; Holdout: -2; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -155,7 +155,7 @@
 		<legality_class>4</legality_class>
 		<value>45</value>
 		<weight>0.5 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -172,7 +172,7 @@
 		<legality_class>4</legality_class>
 		<value>180</value>
 		<weight>2 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -189,7 +189,7 @@
 		<legality_class>4</legality_class>
 		<value>190</value>
 		<weight>3.2 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -206,7 +206,7 @@
 		<legality_class>4</legality_class>
 		<value>900</value>
 		<weight>10 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 30 secs; Holdout: -2; Reaction Pen.-2</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -227,7 +227,7 @@
 		<legality_class>3</legality_class>
 		<value>900</value>
 		<weight>10 lb</weight>
-		<reference>LT-IA:8</reference>
+		<reference>LTIA8</reference>
 		<notes>Don: 15 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -244,7 +244,7 @@
 		<legality_class>3</legality_class>
 		<value>450</value>
 		<weight>5 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -265,7 +265,7 @@
 		<legality_class>3</legality_class>
 		<value>463</value>
 		<weight>5.2 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -286,7 +286,7 @@
 		<legality_class>3</legality_class>
 		<value>90</value>
 		<weight>1 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -303,7 +303,7 @@
 		<legality_class>3</legality_class>
 		<value>1800</value>
 		<weight>20 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 30 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -320,7 +320,7 @@
 		<legality_class>3</legality_class>
 		<value>90</value>
 		<weight>1 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -337,7 +337,7 @@
 		<legality_class>3</legality_class>
 		<value>360</value>
 		<weight>4 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -354,7 +354,7 @@
 		<legality_class>3</legality_class>
 		<value>370</value>
 		<weight>5.2 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -371,7 +371,7 @@
 		<legality_class>3</legality_class>
 		<value>1800</value>
 		<weight>20 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 30 secs; Holdout: -4; Reaction Pen.-2</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -392,7 +392,7 @@
 		<legality_class>4</legality_class>
 		<value>18</value>
 		<weight>6 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 15 secs; Holdout: -4; Reaction Pen.-1; Combustible. See Making Things Burn (p. B433); treat as resistant.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -409,7 +409,7 @@
 		<legality_class>4</legality_class>
 		<value>9</value>
 		<weight>3 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -5; Reaction Pen.-1; Combustible. See Making Things Burn (p. B433); treat as resistant.</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -430,7 +430,7 @@
 		<legality_class>4</legality_class>
 		<value>22</value>
 		<weight>3.2 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -451,7 +451,7 @@
 		<legality_class>4</legality_class>
 		<value>35</value>
 		<weight>12 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 30 secs; Holdout: -4; Reaction Pen.-1; Combustible. See Making Things Burn (p. B433); treat as resistant.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -468,7 +468,7 @@
 		<legality_class>4</legality_class>
 		<value>2</value>
 		<weight>0.6 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -5; Reaction Pen.-1; Combustible. See Making Things Burn (p. B433); treat as resistant.</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -485,7 +485,7 @@
 		<legality_class>4</legality_class>
 		<value>7</value>
 		<weight>2.4 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -5; Reaction Pen.-1; Combustible. See Making Things Burn (p. B433); treat as resistant.</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -502,7 +502,7 @@
 		<legality_class>4</legality_class>
 		<value>17</value>
 		<weight>3.6 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -519,7 +519,7 @@
 		<legality_class>4</legality_class>
 		<value>35</value>
 		<weight>12 lb</weight>
-		<reference>LT-IA:4</reference>
+		<reference>LTIA4</reference>
 		<notes>Don: 30 secs; Holdout: -4; Reaction Pen.-2; Combustible. See Making Things Burn (p. B433); treat as resistant.</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -540,7 +540,7 @@
 		<legality_class>4</legality_class>
 		<value>25</value>
 		<weight>3 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 8 secs; Holdout: 0; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -557,7 +557,7 @@
 		<legality_class>4</legality_class>
 		<value>13</value>
 		<weight>1.5 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 4 secs; Holdout: -1; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -578,7 +578,7 @@
 		<legality_class>4</legality_class>
 		<value>26</value>
 		<weight>1.7 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 4 secs; Holdout: -1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -599,7 +599,7 @@
 		<legality_class>4</legality_class>
 		<value>3</value>
 		<weight>0.3 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: 0; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -616,7 +616,7 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>6 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 15 secs; Holdout: 0; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -633,7 +633,7 @@
 		<legality_class>4</legality_class>
 		<value>3</value>
 		<weight>0.3 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -1; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -650,7 +650,7 @@
 		<legality_class>4</legality_class>
 		<value>10</value>
 		<weight>1.2 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 3 secs; Holdout: -1; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -667,7 +667,7 @@
 		<legality_class>4</legality_class>
 		<value>20</value>
 		<weight>2.4 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 3 secs; Holdout: -1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -684,7 +684,7 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>6 lb</weight>
-		<reference>LT-IA:4</reference>
+		<reference>LTIA4</reference>
 		<notes>Don: 15 secs; Holdout: 0; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -705,7 +705,7 @@
 		<legality_class>4</legality_class>
 		<value>90</value>
 		<weight>1.5 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 10 secs; Holdout: -3; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing; Gives Ham-Fisted 2 (p. B138).</notes>
 		<categories>
 			<category>Gloves</category>
@@ -722,7 +722,7 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>1.2 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 10 secs; Holdout: -2; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing; Gives Ham-Fisted 2 (p. B138).</notes>
 		<categories>
 			<category>Gloves</category>
@@ -739,7 +739,7 @@
 		<legality_class>4</legality_class>
 		<value>32</value>
 		<weight>1.6 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 10 secs; Holdout: -4; -1 DR vs. crushing; Gives Ham-Fisted 2 (p. B138).</notes>
 		<categories>
 			<category>Gloves</category>
@@ -756,7 +756,7 @@
 		<legality_class>4</legality_class>
 		<value>13</value>
 		<weight>1.5 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 10 secs; Holdout: -4; Gives Ham-Fisted 2 (p. B138).</notes>
 		<categories>
 			<category>Gloves</category>
@@ -773,7 +773,7 @@
 		<legality_class>3</legality_class>
 		<value>120</value>
 		<weight>1.8 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 10 secs; Holdout: -4; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing; Gives Ham-Fisted 2 (p. B138).</notes>
 		<categories>
 			<category>Gloves</category>
@@ -790,7 +790,7 @@
 		<legality_class>4</legality_class>
 		<value>100</value>
 		<weight>0.8 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 10 secs; Holdout: -4; Gives Ham-Fisted 2 (p. B138).</notes>
 		<categories>
 			<category>Gloves</category>
@@ -807,7 +807,7 @@
 		<legality_class>4</legality_class>
 		<value>60</value>
 		<weight>1.6 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 10 secs; Holdout: -4; Gives Ham-Fisted 2 (p. B138).</notes>
 		<categories>
 			<category>Gloves</category>
@@ -824,7 +824,7 @@
 		<legality_class>3</legality_class>
 		<value>250</value>
 		<weight>2 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 10 secs; Holdout: -6; Gives Ham-Fisted 2 (p. B138).</notes>
 		<categories>
 			<category>Gloves</category>
@@ -841,7 +841,7 @@
 		<legality_class>4</legality_class>
 		<value>90</value>
 		<weight>2.4 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 10 secs; Holdout: -5; Gives Ham-Fisted 2 (p. B138).</notes>
 		<categories>
 			<category>Gloves</category>
@@ -858,7 +858,7 @@
 		<legality_class>4</legality_class>
 		<value>5</value>
 		<weight>0.6 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 10 secs; Holdout: -2; Flexible and susceptible to blunt trauma (p. B379); Gives Ham-Fisted 1 (p. B138).</notes>
 		<categories>
 			<category>Gloves</category>
@@ -875,7 +875,7 @@
 		<legality_class>5</legality_class>
 		<value>15</value>
 		<weight>0.5 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 10 secs; Holdout: -1; Flexible and susceptible to blunt trauma (p. B379); +1 DR vs. cutting; Enclosedmittens andgloves protectvs.cold,heat,contactpoison,etc.,but giveBadGrip1(p.B123); Gives Ham-Fisted 1 (p. B138).</notes>
 		<categories>
 			<category>Gloves</category>
@@ -892,7 +892,7 @@
 		<legality_class>5</legality_class>
 		<value>15</value>
 		<weight>0.5 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 10 secs; Holdout: -1; Flexible and susceptible to blunt trauma (p. B379); +1 DR vs. cutting; Enclosedmittens andgloves protectvs.cold,heat,contactpoison,etc.,but giveBadGrip1(p.B123); Gives Ham-Fisted 1 (p. B138).</notes>
 		<categories>
 			<category>Gloves</category>
@@ -909,7 +909,7 @@
 		<legality_class>4</legality_class>
 		<value>125</value>
 		<weight>12.5 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 15 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -926,7 +926,7 @@
 		<legality_class>4</legality_class>
 		<value>63</value>
 		<weight>6.3 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -947,7 +947,7 @@
 		<legality_class>4</legality_class>
 		<value>76</value>
 		<weight>6.5 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -968,7 +968,7 @@
 		<legality_class>4</legality_class>
 		<value>75</value>
 		<weight>7.5 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 9 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Full Helm</category>
@@ -989,7 +989,7 @@
 		<legality_class>4</legality_class>
 		<value>90</value>
 		<weight>9.3 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 9 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Full Helm</category>
@@ -1010,7 +1010,7 @@
 		<legality_class>4</legality_class>
 		<value>13</value>
 		<weight>1.3 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -1027,7 +1027,7 @@
 		<legality_class>4</legality_class>
 		<value>250</value>
 		<weight>25 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 30 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -1044,7 +1044,7 @@
 		<legality_class>4</legality_class>
 		<value>13</value>
 		<weight>1.3 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -1061,7 +1061,7 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>5 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -1078,7 +1078,7 @@
 		<legality_class>4</legality_class>
 		<value>60</value>
 		<weight>6.2 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -1095,7 +1095,7 @@
 		<legality_class>4</legality_class>
 		<value>250</value>
 		<weight>25 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 30 secs; Holdout: -4; Reaction Pen.-2</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -1116,7 +1116,7 @@
 		<legality_class>4</legality_class>
 		<value>63</value>
 		<weight>7.5 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 15 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -1133,7 +1133,7 @@
 		<legality_class>4</legality_class>
 		<value>31</value>
 		<weight>3.8 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -1154,7 +1154,7 @@
 		<legality_class>4</legality_class>
 		<value>44</value>
 		<weight>4 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -1175,7 +1175,7 @@
 		<legality_class>4</legality_class>
 		<value>38</value>
 		<weight>4.5 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 9 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Full Helm</category>
@@ -1196,7 +1196,7 @@
 		<legality_class>4</legality_class>
 		<value>53</value>
 		<weight>6.3 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 9 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Full Helm</category>
@@ -1217,7 +1217,7 @@
 		<legality_class>4</legality_class>
 		<value>6</value>
 		<weight>0.8 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -1234,7 +1234,7 @@
 		<legality_class>4</legality_class>
 		<value>125</value>
 		<weight>15 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 30 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -1251,7 +1251,7 @@
 		<legality_class>4</legality_class>
 		<value>6</value>
 		<weight>0.8 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -1268,7 +1268,7 @@
 		<legality_class>4</legality_class>
 		<value>25</value>
 		<weight>3 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -1285,7 +1285,7 @@
 		<legality_class>4</legality_class>
 		<value>35</value>
 		<weight>4.2 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -1302,7 +1302,7 @@
 		<legality_class>4</legality_class>
 		<value>125</value>
 		<weight>15 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 30 secs; Holdout: -3; Reaction Pen.-2</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -1323,7 +1323,7 @@
 		<legality_class>4</legality_class>
 		<value>125</value>
 		<weight>12.5 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 15 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -1340,7 +1340,7 @@
 		<legality_class>4</legality_class>
 		<value>63</value>
 		<weight>6.3 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -1361,7 +1361,7 @@
 		<legality_class>4</legality_class>
 		<value>76</value>
 		<weight>6.5 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -1382,7 +1382,7 @@
 		<legality_class>4</legality_class>
 		<value>250</value>
 		<weight>25 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 30 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -1399,7 +1399,7 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>5 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -1416,7 +1416,7 @@
 		<legality_class>4</legality_class>
 		<value>60</value>
 		<weight>6.2 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -1433,7 +1433,7 @@
 		<legality_class>4</legality_class>
 		<value>250</value>
 		<weight>25 lb</weight>
-		<reference>LT-IA:4</reference>
+		<reference>LTIA4</reference>
 		<notes>Don: 30 secs; Holdout: -4; Reaction Pen.-2</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -1454,7 +1454,7 @@
 		<legality_class>4</legality_class>
 		<value>150</value>
 		<weight>9 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 15 secs; Holdout: -3; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -1471,7 +1471,7 @@
 		<legality_class>4</legality_class>
 		<value>300</value>
 		<weight>18 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 30 secs; Holdout: -3; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -1488,7 +1488,7 @@
 		<legality_class>4</legality_class>
 		<value>15</value>
 		<weight>0.9 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -4; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -1505,7 +1505,7 @@
 		<legality_class>4</legality_class>
 		<value>300</value>
 		<weight>18 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 30 secs; Holdout: -3; Reaction Pen.-2; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -1526,7 +1526,7 @@
 		<legality_class>4</legality_class>
 		<value>30</value>
 		<weight>1.4 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -1543,7 +1543,7 @@
 		<legality_class>4</legality_class>
 		<value>120</value>
 		<weight>5.6 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -1560,7 +1560,7 @@
 		<legality_class>4</legality_class>
 		<value>130</value>
 		<weight>6.8 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -1577,7 +1577,7 @@
 		<legality_class>4</legality_class>
 		<value>600</value>
 		<weight>28 lb</weight>
-		<reference>LT-IA:4</reference>
+		<reference>LTIA4</reference>
 		<notes>Don: 30 secs; Holdout: -4; Reaction Pen.-2</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -1598,7 +1598,7 @@
 		<legality_class>4</legality_class>
 		<value>75</value>
 		<weight>6 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 10 secs; Holdout: 0; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -1615,7 +1615,7 @@
 		<legality_class>4</legality_class>
 		<value>38</value>
 		<weight>3 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 5 secs; Holdout: -1; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -1636,7 +1636,7 @@
 		<legality_class>4</legality_class>
 		<value>51</value>
 		<weight>3.2 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 5 secs; Holdout: -1; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -1657,7 +1657,7 @@
 		<legality_class>4</legality_class>
 		<value>8</value>
 		<weight>0.6 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: 0; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -1674,7 +1674,7 @@
 		<legality_class>4</legality_class>
 		<value>150</value>
 		<weight>12 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 20 secs; Holdout: 0; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -1691,7 +1691,7 @@
 		<legality_class>4</legality_class>
 		<value>8</value>
 		<weight>0.6 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -1; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -1708,7 +1708,7 @@
 		<legality_class>4</legality_class>
 		<value>30</value>
 		<weight>2.4 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 4 secs; Holdout: -1; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -1725,7 +1725,7 @@
 		<legality_class>4</legality_class>
 		<value>40</value>
 		<weight>3.6 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 4 secs; Holdout: -1; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -1742,7 +1742,7 @@
 		<legality_class>4</legality_class>
 		<value>150</value>
 		<weight>12 lb</weight>
-		<reference>LT-IA:4</reference>
+		<reference>LTIA4</reference>
 		<notes>Don: 20 secs; Holdout: 0; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -1763,7 +1763,7 @@
 		<legality_class>4</legality_class>
 		<value>175</value>
 		<weight>10 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 15 secs; Holdout: -2; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -1780,7 +1780,7 @@
 		<legality_class>4</legality_class>
 		<value>88</value>
 		<weight>5 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -1801,7 +1801,7 @@
 		<legality_class>4</legality_class>
 		<value>101</value>
 		<weight>5.2 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -1822,7 +1822,7 @@
 		<legality_class>4</legality_class>
 		<value>18</value>
 		<weight>1 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -2; Reaction Pen.-1</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -1839,7 +1839,7 @@
 		<legality_class>4</legality_class>
 		<value>350</value>
 		<weight>20 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 30 secs; Holdout: -2; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -1856,7 +1856,7 @@
 		<legality_class>4</legality_class>
 		<value>18</value>
 		<weight>1 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -1873,7 +1873,7 @@
 		<legality_class>4</legality_class>
 		<value>70</value>
 		<weight>4 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -1890,7 +1890,7 @@
 		<legality_class>4</legality_class>
 		<value>80</value>
 		<weight>5.2 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -1907,7 +1907,7 @@
 		<legality_class>4</legality_class>
 		<value>350</value>
 		<weight>20 lb</weight>
-		<reference>LT-IA:4</reference>
+		<reference>LTIA4</reference>
 		<notes>Don: 30 secs; Holdout: -2; Reaction Pen.-2</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -1928,7 +1928,7 @@
 		<legality_class>4</legality_class>
 		<value>26</value>
 		<weight>1.8 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -1945,7 +1945,7 @@
 		<legality_class>4</legality_class>
 		<value>105</value>
 		<weight>7 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -1962,7 +1962,7 @@
 		<legality_class>4</legality_class>
 		<value>115</value>
 		<weight>8.2 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -1979,7 +1979,7 @@
 		<legality_class>4</legality_class>
 		<value>525</value>
 		<weight>35 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 30 secs; Holdout: -4; Reaction Pen.-2</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -2000,7 +2000,7 @@
 		<legality_class>4</legality_class>
 		<value>60</value>
 		<weight>7.5 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 10 secs; Holdout: -1; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -2017,7 +2017,7 @@
 		<legality_class>4</legality_class>
 		<value>30</value>
 		<weight>3.8 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 5 secs; Holdout: -2; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -2038,7 +2038,7 @@
 		<legality_class>4</legality_class>
 		<value>43</value>
 		<weight>4 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 5 secs; Holdout: -2; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -2059,7 +2059,7 @@
 		<legality_class>4</legality_class>
 		<value>6</value>
 		<weight>0.8 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -1; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -2076,7 +2076,7 @@
 		<legality_class>4</legality_class>
 		<value>120</value>
 		<weight>15 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 20 secs; Holdout: -1; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -2093,7 +2093,7 @@
 		<legality_class>4</legality_class>
 		<value>6</value>
 		<weight>0.8 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -2; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -2110,7 +2110,7 @@
 		<legality_class>4</legality_class>
 		<value>24</value>
 		<weight>3 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 4 secs; Holdout: -2; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -2127,7 +2127,7 @@
 		<legality_class>4</legality_class>
 		<value>34</value>
 		<weight>4.2 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 4 secs; Holdout: -2; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -2144,7 +2144,7 @@
 		<legality_class>4</legality_class>
 		<value>120</value>
 		<weight>15 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 20 secs; Holdout: -1; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379)</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -2165,7 +2165,7 @@
 		<legality_class>4</legality_class>
 		<value>110</value>
 		<weight>13 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 15 secs; Holdout: -2; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -2182,7 +2182,7 @@
 		<legality_class>4</legality_class>
 		<value>55</value>
 		<weight>6.5 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -2203,7 +2203,7 @@
 		<legality_class>4</legality_class>
 		<value>68</value>
 		<weight>6.7 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -2224,7 +2224,7 @@
 		<legality_class>4</legality_class>
 		<value>11</value>
 		<weight>1.3 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -2; Reaction Pen.-1</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -2241,7 +2241,7 @@
 		<legality_class>4</legality_class>
 		<value>220</value>
 		<weight>26 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 30 secs; Holdout: -2; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -2258,7 +2258,7 @@
 		<legality_class>4</legality_class>
 		<value>11</value>
 		<weight>1.3 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -2275,7 +2275,7 @@
 		<legality_class>4</legality_class>
 		<value>44</value>
 		<weight>5.2 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -2292,7 +2292,7 @@
 		<legality_class>4</legality_class>
 		<value>54</value>
 		<weight>6.4 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -2309,7 +2309,7 @@
 		<legality_class>4</legality_class>
 		<value>220</value>
 		<weight>26 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 30 secs; Holdout: -2; Reaction Pen.-2</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -2330,7 +2330,7 @@
 		<legality_class>4</legality_class>
 		<value>100</value>
 		<weight>10 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 15 secs; Holdout: -4; Reaction Pen.-1; -1 DR vs. impaling.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -2347,7 +2347,7 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>5 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -5; Reaction Pen.-1; -1 DR vs. impaling.</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -2368,7 +2368,7 @@
 		<legality_class>4</legality_class>
 		<value>63</value>
 		<weight>5.2 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -2389,7 +2389,7 @@
 		<legality_class>4</legality_class>
 		<value>10</value>
 		<weight>1 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -4; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -1 DR vs. impaling.</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -2406,7 +2406,7 @@
 		<legality_class>4</legality_class>
 		<value>200</value>
 		<weight>20 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 30 secs; Holdout: -4; Reaction Pen.-1; -1 DR vs. impaling.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -2423,7 +2423,7 @@
 		<legality_class>4</legality_class>
 		<value>10</value>
 		<weight>1 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -5; Reaction Pen.-1; -1 DR vs. impaling.</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -2440,7 +2440,7 @@
 		<legality_class>4</legality_class>
 		<value>40</value>
 		<weight>4 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -5; Reaction Pen.-1; -1 DR vs. impaling.</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -2457,7 +2457,7 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>5.2 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -2474,7 +2474,7 @@
 		<legality_class>4</legality_class>
 		<value>200</value>
 		<weight>20 lb</weight>
-		<reference>LT-IA:4</reference>
+		<reference>LTIA4</reference>
 		<notes>Don: 30 secs; Holdout: -4; Reaction Pen.-2; -1 DR vs. impaling.</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -2495,7 +2495,7 @@
 		<legality_class>5</legality_class>
 		<value>90</value>
 		<weight>1.7 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 15 secs; Holdout: 0; Flexible and susceptible to blunt trauma (p. B379); +1 DR vs. cutting.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -2512,7 +2512,7 @@
 		<legality_class>5</legality_class>
 		<value>45</value>
 		<weight>0.80 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -1; Flexible and susceptible to blunt trauma (p. B379); +1 DR vs. cutting.</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -2533,7 +2533,7 @@
 		<legality_class>5</legality_class>
 		<value>58</value>
 		<weight>1 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -2554,7 +2554,7 @@
 		<legality_class>5</legality_class>
 		<value>9</value>
 		<weight>0.2 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: 0; Flexible and susceptible to blunt trauma (p. B379); +1 DR vs. cutting.</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -2571,7 +2571,7 @@
 		<legality_class>5</legality_class>
 		<value>180</value>
 		<weight>3.3 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 30 secs; Holdout: 0; Flexible and susceptible to blunt trauma (p. B379); +1 DR vs. cutting.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -2588,7 +2588,7 @@
 		<legality_class>5</legality_class>
 		<value>9</value>
 		<weight>0.2 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -1; Flexible and susceptible to blunt trauma (p. B379); +1 DR vs. cutting.</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -2605,7 +2605,7 @@
 		<legality_class>5</legality_class>
 		<value>36</value>
 		<weight>0.7 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -1; Flexible and susceptible to blunt trauma (p. B379); +1 DR vs. cutting.</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -2622,7 +2622,7 @@
 		<legality_class>5</legality_class>
 		<value>46</value>
 		<weight>1.9 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -2639,7 +2639,7 @@
 		<legality_class>5</legality_class>
 		<value>180</value>
 		<weight>3.3 lb</weight>
-		<reference>LT-IA:4</reference>
+		<reference>LTIA4</reference>
 		<notes>Don: 30 secs; Holdout: 0; Flexible and susceptible to blunt trauma (p. B379); +1 DR vs. cutting.</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -2660,7 +2660,7 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>6 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 15 secs; Holdout: -2; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -1 DR vs. impaling.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -2677,7 +2677,7 @@
 		<legality_class>4</legality_class>
 		<value>25</value>
 		<weight>3 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -3; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -1 DR vs. impaling.</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -2698,7 +2698,7 @@
 		<legality_class>4</legality_class>
 		<value>38</value>
 		<weight>3.2 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -2719,7 +2719,7 @@
 		<legality_class>4</legality_class>
 		<value>5</value>
 		<weight>0.6 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -2; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -1 DR vs. impaling.</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -2736,7 +2736,7 @@
 		<legality_class>4</legality_class>
 		<value>100</value>
 		<weight>12 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 30 secs; Holdout: -2; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -1 DR vs. impaling.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -2753,7 +2753,7 @@
 		<legality_class>4</legality_class>
 		<value>5</value>
 		<weight>0.6 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -3; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -1 DR vs. impaling.</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -2770,7 +2770,7 @@
 		<legality_class>4</legality_class>
 		<value>20</value>
 		<weight>2.4 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -3; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -1 DR vs. impaling.</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -2787,7 +2787,7 @@
 		<legality_class>4</legality_class>
 		<value>30</value>
 		<weight>3.6 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -2804,7 +2804,7 @@
 		<legality_class>4</legality_class>
 		<value>100</value>
 		<weight>12 lb</weight>
-		<reference>LT-IA:4</reference>
+		<reference>LTIA4</reference>
 		<notes>Don: 30 secs; Holdout: -2; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -1 DR vs. impaling.</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -2825,7 +2825,7 @@
 		<legality_class>3</legality_class>
 		<value>500</value>
 		<weight>10 lb</weight>
-		<reference>LT-IA:8</reference>
+		<reference>LTIA8</reference>
 		<notes>Don: 10 secs; Holdout: -3; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -2842,7 +2842,7 @@
 		<legality_class>3</legality_class>
 		<value>300</value>
 		<weight>6 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 6 secs; Holdout: -4; Reaction Pen.-2; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Coif</category>
@@ -2867,7 +2867,7 @@
 		<legality_class>3</legality_class>
 		<value>315</value>
 		<weight>7.8 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 6 secs; Holdout: -4; Reaction Pen.-2</notes>
 		<categories>
 			<category>Coif</category>
@@ -2892,7 +2892,7 @@
 		<legality_class>3</legality_class>
 		<value>50</value>
 		<weight>1 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -3; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -2909,7 +2909,7 @@
 		<legality_class>3</legality_class>
 		<value>1000</value>
 		<weight>20 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 20 secs; Holdout: -3; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -2926,7 +2926,7 @@
 		<legality_class>3</legality_class>
 		<value>50</value>
 		<weight>1 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -4; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -2943,7 +2943,7 @@
 		<legality_class>3</legality_class>
 		<value>1000</value>
 		<weight>20 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 20 secs; Holdout: -3; Reaction Pen.-2; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -2964,7 +2964,7 @@
 		<legality_class>3</legality_class>
 		<value>450</value>
 		<weight>7.5 lb</weight>
-		<reference>LT-IA:8</reference>
+		<reference>LTIA8</reference>
 		<notes>Don: 8 secs; Holdout: -2; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -2981,7 +2981,7 @@
 		<legality_class>4</legality_class>
 		<value>270</value>
 		<weight>4.5 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 5 secs; Holdout: -3; Reaction Pen.-2; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Coif</category>
@@ -3006,7 +3006,7 @@
 		<legality_class>4</legality_class>
 		<value>285</value>
 		<weight>6.3 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 5 secs; Holdout: -3; Reaction Pen.-2</notes>
 		<categories>
 			<category>Coif</category>
@@ -3031,7 +3031,7 @@
 		<legality_class>3</legality_class>
 		<value>45</value>
 		<weight>0.80 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -2; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -3048,7 +3048,7 @@
 		<legality_class>3</legality_class>
 		<value>900</value>
 		<weight>15 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 15 secs; Holdout: -2; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -3065,7 +3065,7 @@
 		<legality_class>3</legality_class>
 		<value>45</value>
 		<weight>0.80 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -3; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -3082,7 +3082,7 @@
 		<legality_class>3</legality_class>
 		<value>900</value>
 		<weight>15 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 15 secs; Holdout: -2; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -3103,7 +3103,7 @@
 		<legality_class>3</legality_class>
 		<value>600</value>
 		<weight>9 lb</weight>
-		<reference>LT-IA:8</reference>
+		<reference>LTIA8</reference>
 		<notes>Don: 8 secs; Holdout: -3; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -3120,7 +3120,7 @@
 		<legality_class>3</legality_class>
 		<value>360</value>
 		<weight>5.4 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 5 secs; Holdout: -4; Reaction Pen.-2; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Coif</category>
@@ -3145,7 +3145,7 @@
 		<legality_class>3</legality_class>
 		<value>375</value>
 		<weight>7.2 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 5 secs; Holdout: -4; Reaction Pen.-2</notes>
 		<categories>
 			<category>Coif</category>
@@ -3170,7 +3170,7 @@
 		<legality_class>3</legality_class>
 		<value>60</value>
 		<weight>0.90 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -3; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -3187,7 +3187,7 @@
 		<legality_class>3</legality_class>
 		<value>1200</value>
 		<weight>18 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 15 secs; Holdout: -3; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -3204,7 +3204,7 @@
 		<legality_class>3</legality_class>
 		<value>60</value>
 		<weight>0.90 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -4; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -3221,7 +3221,7 @@
 		<legality_class>3</legality_class>
 		<value>1200</value>
 		<weight>18 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 15 secs; Holdout: -3; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -3242,7 +3242,7 @@
 		<legality_class>3</legality_class>
 		<value>450</value>
 		<weight>9 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 9 secs; Holdout: -4; Reaction Pen.-2; Gives -1 DX, except for Lance skill.ushing</notes>
 		<categories>
 			<category>Coif</category>
@@ -3267,7 +3267,7 @@
 		<legality_class>3</legality_class>
 		<value>465</value>
 		<weight>10.8 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 9 secs; Holdout: -4; Reaction Pen.-2</notes>
 		<categories>
 			<category>Coif</category>
@@ -3292,7 +3292,7 @@
 		<legality_class>3</legality_class>
 		<value>75</value>
 		<weight>1.5 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -3; Reaction Pen.-1; Gives -1 DX, except for Lance skill.ushing</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -3309,7 +3309,7 @@
 		<legality_class>3</legality_class>
 		<value>1500</value>
 		<weight>30 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 30 secs; Holdout: -3; Reaction Pen.-2; Gives -1 DX, except for Lance skill.ushing</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -3330,7 +3330,7 @@
 		<legality_class>4</legality_class>
 		<value>250</value>
 		<weight>6 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 8 secs; Holdout: -1; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -3347,7 +3347,7 @@
 		<legality_class>4</legality_class>
 		<value>150</value>
 		<weight>3.6 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 5 secs; Holdout: -2; Reaction Pen.-2; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Coif</category>
@@ -3372,7 +3372,7 @@
 		<legality_class>4</legality_class>
 		<value>165</value>
 		<weight>5.4 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 5 secs; Holdout: -2; Reaction Pen.-2</notes>
 		<categories>
 			<category>Coif</category>
@@ -3397,7 +3397,7 @@
 		<legality_class>4</legality_class>
 		<value>25</value>
 		<weight>0.6 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -1; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -3414,7 +3414,7 @@
 		<legality_class>4</legality_class>
 		<value>500</value>
 		<weight>12 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 15 secs; Holdout: -1; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -3431,7 +3431,7 @@
 		<legality_class>4</legality_class>
 		<value>25</value>
 		<weight>0.6 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -2; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -3448,7 +3448,7 @@
 		<legality_class>4</legality_class>
 		<value>500</value>
 		<weight>12 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 15 secs; Holdout: -1; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -3469,7 +3469,7 @@
 		<legality_class>5</legality_class>
 		<value>8</value>
 		<weight>0.5 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 6 secs; Holdout: -3; Flexible and susceptible to blunt trauma (p. B379); +1 DR vs. cutting; Enclosedmittens andgloves protectvs.cold,heat,contactpoison,etc.,but giveBadGrip1(p.B123); Gives Ham-Fisted 2 (p. B138).</notes>
 		<categories>
 			<category>Gloves</category>
@@ -3486,7 +3486,7 @@
 		<legality_class>4</legality_class>
 		<value>20</value>
 		<weight>1 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 6 secs; Holdout: -3; Flexible and susceptible to blunt trauma (p. B379); Enclosedmittens andgloves protectvs.cold,heat,contactpoison,etc.,but giveBadGrip1(p.B123); Gives Ham-Fisted 2 (p. B138).</notes>
 		<categories>
 			<category>Gloves</category>
@@ -3503,7 +3503,7 @@
 		<legality_class>4</legality_class>
 		<value>40</value>
 		<weight>1 lb</weight>
-		<reference>LT-IA:16</reference>
+		<reference>LTIA16</reference>
 		<notes>Don: 6 secs; Holdout: -1; Flexible and susceptible to blunt trauma (p. B379); Gives +1 to Stealth.</notes>
 		<categories>
 			<category>Footwear</category>
@@ -3520,7 +3520,7 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>2 lb</weight>
-		<reference>LT-IA:16</reference>
+		<reference>LTIA16</reference>
 		<notes>Don: 6 secs; Holdout: -5; Flexible and susceptible to blunt trauma (p. B379); Erases -2 in Stealth penalties when walking on snow.</notes>
 		<categories>
 			<category>Footwear</category>
@@ -3537,7 +3537,7 @@
 		<legality_class>3</legality_class>
 		<value>400</value>
 		<weight>9 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 4 secs; Holdout: -7; Reaction Pen.-1; Combustible. See Making Things Burn (p. B433); treat as resistant.</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -3554,7 +3554,7 @@
 		<legality_class>3</legality_class>
 		<value>410</value>
 		<weight>10.2 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 4 secs; Holdout: -7; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -3571,7 +3571,7 @@
 		<legality_class>3</legality_class>
 		<value>2000</value>
 		<weight>45 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 20 secs; Holdout: -6; Reaction Pen.-2; Combustible. See Making Things Burn (p. B433); treat as resistant.</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -3592,7 +3592,7 @@
 		<legality_class>3</legality_class>
 		<value>1000</value>
 		<weight>8 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 11 secs; Holdout: -8; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -3613,7 +3613,7 @@
 		<legality_class>3</legality_class>
 		<value>1013</value>
 		<weight>8.2 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 11 secs; Holdout: -8; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -3634,7 +3634,7 @@
 		<legality_class>3</legality_class>
 		<value>1200</value>
 		<weight>9.6 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 14 secs; Holdout: -8; Reaction Pen.-1</notes>
 		<categories>
 			<category>Full Helm</category>
@@ -3655,7 +3655,7 @@
 		<legality_class>3</legality_class>
 		<value>1215</value>
 		<weight>11.4 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 14 secs; Holdout: -8; Reaction Pen.-1</notes>
 		<categories>
 			<category>Full Helm</category>
@@ -3676,7 +3676,7 @@
 		<legality_class>3</legality_class>
 		<value>1400</value>
 		<weight>11.2 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 16 secs; Holdout: 0; Reaction Pen.-2</notes>
 		<categories>
 			<category>Greathelm</category>
@@ -3701,7 +3701,7 @@
 		<legality_class>3</legality_class>
 		<value>200</value>
 		<weight>1.6 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -7; Reaction Pen.-1</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -3718,7 +3718,7 @@
 		<legality_class>3</legality_class>
 		<value>800</value>
 		<weight>6.4 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 9 secs; Holdout: -8; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -3735,7 +3735,7 @@
 		<legality_class>3</legality_class>
 		<value>810</value>
 		<weight>7.6 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 9 secs; Holdout: -8; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -3752,7 +3752,7 @@
 		<legality_class>3</legality_class>
 		<value>4000</value>
 		<weight>32 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 45 secs; Holdout: -7; Reaction Pen.-2</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -3773,7 +3773,7 @@
 		<legality_class>4</legality_class>
 		<value>500</value>
 		<weight>4 lb</weight>
-		<reference>LT-IA:8</reference>
+		<reference>LTIA8</reference>
 		<notes>Don: 23 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -3790,7 +3790,7 @@
 		<legality_class>4</legality_class>
 		<value>250</value>
 		<weight>2 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 11 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -3811,7 +3811,7 @@
 		<legality_class>4</legality_class>
 		<value>263</value>
 		<weight>2.2 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 11 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -3832,7 +3832,7 @@
 		<legality_class>4</legality_class>
 		<value>300</value>
 		<weight>2.4 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 14 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Full Helm</category>
@@ -3853,7 +3853,7 @@
 		<legality_class>4</legality_class>
 		<value>315</value>
 		<weight>4.2 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 14 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Full Helm</category>
@@ -3874,7 +3874,7 @@
 		<legality_class>4</legality_class>
 		<value>350</value>
 		<weight>2.8 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 16 secs; Holdout: 0; Reaction Pen.-2</notes>
 		<categories>
 			<category>Greathelm</category>
@@ -3899,7 +3899,7 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>0.40 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -3916,7 +3916,7 @@
 		<legality_class>4</legality_class>
 		<value>1000</value>
 		<weight>8 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 45 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -3933,7 +3933,7 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>0.40 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -3950,7 +3950,7 @@
 		<legality_class>4</legality_class>
 		<value>200</value>
 		<weight>1.6 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 9 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -3967,7 +3967,7 @@
 		<legality_class>4</legality_class>
 		<value>210</value>
 		<weight>2.8 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 9 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -3984,7 +3984,7 @@
 		<legality_class>4</legality_class>
 		<value>1000</value>
 		<weight>8 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 45 secs; Holdout: -3; Reaction Pen.-2</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -4005,7 +4005,7 @@
 		<legality_class>3</legality_class>
 		<value>1250</value>
 		<weight>10 lb</weight>
-		<reference>LT-IA:8</reference>
+		<reference>LTIA8</reference>
 		<notes>Don: 23 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -4022,7 +4022,7 @@
 		<legality_class>3</legality_class>
 		<value>625</value>
 		<weight>5 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 11 secs; Holdout: -6; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -4043,7 +4043,7 @@
 		<legality_class>3</legality_class>
 		<value>638</value>
 		<weight>5.2 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 11 secs; Holdout: -6; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -4064,7 +4064,7 @@
 		<legality_class>3</legality_class>
 		<value>750</value>
 		<weight>6 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 14 secs; Holdout: -6; Reaction Pen.-1</notes>
 		<categories>
 			<category>Full Helm</category>
@@ -4085,7 +4085,7 @@
 		<legality_class>3</legality_class>
 		<value>765</value>
 		<weight>7.8 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 14 secs; Holdout: -6; Reaction Pen.-1</notes>
 		<categories>
 			<category>Full Helm</category>
@@ -4106,7 +4106,7 @@
 		<legality_class>3</legality_class>
 		<value>875</value>
 		<weight>7 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 16 secs; Holdout: 0; Reaction Pen.-2</notes>
 		<categories>
 			<category>Greathelm</category>
@@ -4131,7 +4131,7 @@
 		<legality_class>3</legality_class>
 		<value>125</value>
 		<weight>1 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -4148,7 +4148,7 @@
 		<legality_class>3</legality_class>
 		<value>2500</value>
 		<weight>20 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 45 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -4165,7 +4165,7 @@
 		<legality_class>3</legality_class>
 		<value>125</value>
 		<weight>1 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -6; Reaction Pen.-1</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -4182,7 +4182,7 @@
 		<legality_class>3</legality_class>
 		<value>500</value>
 		<weight>4 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 9 secs; Holdout: -6; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -4199,7 +4199,7 @@
 		<legality_class>3</legality_class>
 		<value>510</value>
 		<weight>5.2 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 9 secs; Holdout: -6; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -4216,7 +4216,7 @@
 		<legality_class>3</legality_class>
 		<value>2500</value>
 		<weight>20 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 45 secs; Holdout: -5; Reaction Pen.-2</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -4237,7 +4237,7 @@
 		<legality_class>4</legality_class>
 		<value>100</value>
 		<weight>0.80 lb</weight>
-		<reference>LT-IA:16</reference>
+		<reference>LTIA16</reference>
 		<notes>Don: 10 secs; Holdout: -4</notes>
 		<categories>
 			<category>Footwear</category>
@@ -4254,7 +4254,7 @@
 		<legality_class>4</legality_class>
 		<value>60</value>
 		<weight>1.6 lb</weight>
-		<reference>LT-IA:16</reference>
+		<reference>LTIA16</reference>
 		<notes>Don: 10 secs; Holdout: -4</notes>
 		<categories>
 			<category>Footwear</category>
@@ -4271,7 +4271,7 @@
 		<legality_class>3</legality_class>
 		<value>250</value>
 		<weight>2 lb</weight>
-		<reference>LT-IA:16</reference>
+		<reference>LTIA16</reference>
 		<notes>Don: 10 secs; Holdout: -6</notes>
 		<categories>
 			<category>Footwear</category>
@@ -4288,7 +4288,7 @@
 		<legality_class>3</legality_class>
 		<value>90</value>
 		<weight>2.4 lb</weight>
-		<reference>LT-IA:16</reference>
+		<reference>LTIA16</reference>
 		<notes>Don: 10 secs; Holdout: -5</notes>
 		<categories>
 			<category>Footwear</category>
@@ -4305,7 +4305,7 @@
 		<legality_class>4</legality_class>
 		<value>25</value>
 		<weight>0.5 lb</weight>
-		<reference>LT-IA:16</reference>
+		<reference>LTIA16</reference>
 		<notes>Don: 10 secs; Holdout: -2; Flexible and susceptible to blunt trauma (p. B379); DR applies to underside only.</notes>
 		<categories>
 			<category>Footwear</category>
@@ -4322,7 +4322,7 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>1.5 lb</weight>
-		<reference>LT-IA:16</reference>
+		<reference>LTIA16</reference>
 		<notes>Don: 10 secs; Holdout: -2; Flexible and susceptible to blunt trauma (p. B379); DR applies to underside only; Lets wearer ignore -2 to attacks and -1 to defenses for bad terrain.</notes>
 		<categories>
 			<category>Footwear</category>
@@ -4339,7 +4339,7 @@
 		<legality_class>3</legality_class>
 		<value>55</value>
 		<weight>2 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -6; Reaction Pen.-1</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -4356,7 +4356,7 @@
 		<legality_class>3</legality_class>
 		<value>220</value>
 		<weight>8 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -7; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -4373,7 +4373,7 @@
 		<legality_class>3</legality_class>
 		<value>230</value>
 		<weight>9.2 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -7; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -4390,7 +4390,7 @@
 		<legality_class>3</legality_class>
 		<value>1100</value>
 		<weight>40 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 30 secs; Holdout: -6; Reaction Pen.-2</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -4411,7 +4411,7 @@
 		<legality_class>4</legality_class>
 		<value>160</value>
 		<weight>8 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 15 secs; Holdout: -3; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -4428,7 +4428,7 @@
 		<legality_class>4</legality_class>
 		<value>80</value>
 		<weight>4 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -4; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -4449,7 +4449,7 @@
 		<legality_class>4</legality_class>
 		<value>93</value>
 		<weight>4.2 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -4470,7 +4470,7 @@
 		<legality_class>4</legality_class>
 		<value>16</value>
 		<weight>0.80 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -3; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -4487,7 +4487,7 @@
 		<legality_class>4</legality_class>
 		<value>320</value>
 		<weight>16 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 30 secs; Holdout: -3; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -4504,7 +4504,7 @@
 		<legality_class>4</legality_class>
 		<value>16</value>
 		<weight>0.80 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -4; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -4521,7 +4521,7 @@
 		<legality_class>4</legality_class>
 		<value>64</value>
 		<weight>3.2 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -4; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -4538,7 +4538,7 @@
 		<legality_class>4</legality_class>
 		<value>74</value>
 		<weight>4.4 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -4555,7 +4555,7 @@
 		<legality_class>4</legality_class>
 		<value>320</value>
 		<weight>16 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 30 secs; Holdout: -3; Reaction Pen.-2; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -4576,7 +4576,7 @@
 		<legality_class>3</legality_class>
 		<value>275</value>
 		<weight>14 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 15 secs; Holdout: -4; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -4593,7 +4593,7 @@
 		<legality_class>3</legality_class>
 		<value>138</value>
 		<weight>7 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -5; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -4614,7 +4614,7 @@
 		<legality_class>3</legality_class>
 		<value>151</value>
 		<weight>7.2 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -4635,7 +4635,7 @@
 		<legality_class>3</legality_class>
 		<value>28</value>
 		<weight>1.4 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -4; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -4652,7 +4652,7 @@
 		<legality_class>3</legality_class>
 		<value>550</value>
 		<weight>28 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 30 secs; Holdout: -4; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -4669,7 +4669,7 @@
 		<legality_class>3</legality_class>
 		<value>28</value>
 		<weight>1.4 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -5; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -4686,7 +4686,7 @@
 		<legality_class>3</legality_class>
 		<value>110</value>
 		<weight>5.6 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -5; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -4703,7 +4703,7 @@
 		<legality_class>3</legality_class>
 		<value>120</value>
 		<weight>6.8 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -4720,7 +4720,7 @@
 		<legality_class>3</legality_class>
 		<value>550</value>
 		<weight>28 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 30 secs; Holdout: -4; Reaction Pen.-2; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -4741,7 +4741,7 @@
 		<legality_class>3</legality_class>
 		<value>1200</value>
 		<weight>32 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 45 secs; Holdout: -5; Reaction Pen.-2</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -4762,7 +4762,7 @@
 		<legality_class>4</legality_class>
 		<value>300</value>
 		<weight>8 lb</weight>
-		<reference>LT-IA:8</reference>
+		<reference>LTIA8</reference>
 		<notes>Don: 23 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -4779,7 +4779,7 @@
 		<legality_class>4</legality_class>
 		<value>600</value>
 		<weight>16 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 45 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -4796,7 +4796,7 @@
 		<legality_class>4</legality_class>
 		<value>30</value>
 		<weight>0.80 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -4813,7 +4813,7 @@
 		<legality_class>4</legality_class>
 		<value>600</value>
 		<weight>16 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 45 secs; Holdout: -3; Reaction Pen.-2</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -4834,7 +4834,7 @@
 		<legality_class>3</legality_class>
 		<value>450</value>
 		<weight>12 lb</weight>
-		<reference>LT-IA:8</reference>
+		<reference>LTIA8</reference>
 		<notes>Don: 23 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -4851,7 +4851,7 @@
 		<legality_class>3</legality_class>
 		<value>900</value>
 		<weight>24 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 45 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -4868,7 +4868,7 @@
 		<legality_class>3</legality_class>
 		<value>45</value>
 		<weight>1.2 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -5; Reaction Pen.-1</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -4885,7 +4885,7 @@
 		<legality_class>3</legality_class>
 		<value>900</value>
 		<weight>24 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 45 secs; Holdout: -4; Reaction Pen.-2</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -4906,7 +4906,7 @@
 		<legality_class>4</legality_class>
 		<value>40</value>
 		<weight>2 lb</weight>
-		<reference>LT-IA:16</reference>
+		<reference>LTIA16</reference>
 		<notes>Don: 6 secs; Holdout: -3; Flexible and susceptible to blunt trauma (p. B379); -1 DR vs. impaling.</notes>
 		<categories>
 			<category>Footwear</category>
@@ -4923,7 +4923,7 @@
 		<legality_class>4</legality_class>
 		<value>65</value>
 		<weight>3 lb</weight>
-		<reference>LT-IA:16</reference>
+		<reference>LTIA16</reference>
 		<notes>Don: 6 secs; Holdout: -3; Flexible and susceptible to blunt trauma (p. B379); -1 DR vs. impaling; Lets wearer ignore -2 to attacks and -1 to defenses for bad terrain.</notes>
 		<categories>
 			<category>Footwear</category>
@@ -4940,7 +4940,7 @@
 		<legality_class>4</legality_class>
 		<value>45</value>
 		<weight>2.5 lb</weight>
-		<reference>LT-IA:16</reference>
+		<reference>LTIA16</reference>
 		<notes>Don: 6 secs; Holdout: -3; Flexible and susceptible to blunt trauma (p. B379); -1 DR vs. impaling.</notes>
 		<categories>
 			<category>Footwear</category>
@@ -4957,7 +4957,7 @@
 		<legality_class>3</legality_class>
 		<value>90</value>
 		<weight>1.5 lb</weight>
-		<reference>LT-IA:16</reference>
+		<reference>LTIA16</reference>
 		<notes>Don: 6 secs; Holdout: -3; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Footwear</category>
@@ -4974,7 +4974,7 @@
 		<legality_class>3</legality_class>
 		<value>120</value>
 		<weight>1.8 lb</weight>
-		<reference>LT-IA:16</reference>
+		<reference>LTIA16</reference>
 		<notes>Don: 6 secs; Holdout: -4; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Footwear</category>
@@ -4991,7 +4991,7 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>1.2 lb</weight>
-		<reference>LT-IA:16</reference>
+		<reference>LTIA16</reference>
 		<notes>Don: 6 secs; Holdout: -2; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
 			<category>Footwear</category>
@@ -5008,7 +5008,7 @@
 		<legality_class>4</legality_class>
 		<value>32</value>
 		<weight>1.6 lb</weight>
-		<reference>LT-IA:16</reference>
+		<reference>LTIA16</reference>
 		<notes>Don: 10 secs; Holdout: -4; -1 DR vs. crushing.</notes>
 		<categories>
 			<category>Footwear</category>
@@ -5025,7 +5025,7 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>20 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 30 secs; Holdout: -9; Reaction Pen.-2; Combustible. See Making Things Burn (p. B433); treat as resistant.</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -5046,7 +5046,7 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>15 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 15 secs; Holdout: -8; Reaction Pen.-1; Semi-ablative. Loses 1 DR per 10 points of basic damage it resists (see p. B47).</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -5063,7 +5063,7 @@
 		<legality_class>4</legality_class>
 		<value>25</value>
 		<weight>7.5 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -9; Reaction Pen.-1; Semi-ablative. Loses 1 DR per 10 points of basic damage it resists (see p. B47).</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -5084,7 +5084,7 @@
 		<legality_class>4</legality_class>
 		<value>38</value>
 		<weight>7.7 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -9; Reaction Pen.-1</notes>
 		<categories>
 			<category>Bascinet</category>
@@ -5105,7 +5105,7 @@
 		<legality_class>4</legality_class>
 		<value>30</value>
 		<weight>9 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 9 secs; Holdout: -9; Reaction Pen.-1; Semi-ablative. Loses 1 DR per 10 points of basic damage it resists (see p. B47).</notes>
 		<categories>
 			<category>Full Helm</category>
@@ -5126,7 +5126,7 @@
 		<legality_class>4</legality_class>
 		<value>45</value>
 		<weight>10.8 lb</weight>
-		<reference>LT-IA:14</reference>
+		<reference>LTIA14</reference>
 		<notes>Don: 9 secs; Holdout: -9; Reaction Pen.-1</notes>
 		<categories>
 			<category>Full Helm</category>
@@ -5147,7 +5147,7 @@
 		<legality_class>4</legality_class>
 		<value>5</value>
 		<weight>1.5 lb</weight>
-		<reference>LT-IA:7</reference>
+		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -8; Reaction Pen.-1; Semi-ablative. Loses 1 DR per 10 points of basic damage it resists (see p. B47).</notes>
 		<categories>
 			<category>Groin Armor</category>
@@ -5164,7 +5164,7 @@
 		<legality_class>4</legality_class>
 		<value>100</value>
 		<weight>30 lb</weight>
-		<reference>LT-IA:10</reference>
+		<reference>LTIA10</reference>
 		<notes>Don: 30 secs; Holdout: -9; Reaction Pen.-1; Semi-ablative. Loses 1 DR per 10 points of basic damage it resists (see p. B47).</notes>
 		<categories>
 			<category>Limb Armor</category>
@@ -5181,7 +5181,7 @@
 		<legality_class>4</legality_class>
 		<value>5</value>
 		<weight>1.5 lb</weight>
-		<reference>LT-IA:15</reference>
+		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -9; Reaction Pen.-1; Semi-ablative. Loses 1 DR per 10 points of basic damage it resists (see p. B47).</notes>
 		<categories>
 			<category>Neck Armor</category>
@@ -5198,7 +5198,7 @@
 		<legality_class>4</legality_class>
 		<value>20</value>
 		<weight>6 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -9; Reaction Pen.-1; Semi-ablative. Loses 1 DR per 10 points of basic damage it resists (see p. B47).</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -5215,7 +5215,7 @@
 		<legality_class>4</legality_class>
 		<value>30</value>
 		<weight>7.2 lb</weight>
-		<reference>LT-IA:13</reference>
+		<reference>LTIA13</reference>
 		<notes>Don: 6 secs; Holdout: -9; Reaction Pen.-1</notes>
 		<categories>
 			<category>Pot Helm</category>
@@ -5232,7 +5232,7 @@
 		<legality_class>4</legality_class>
 		<value>100</value>
 		<weight>30 lb</weight>
-		<reference>LT-IA:5</reference>
+		<reference>LTIA5</reference>
 		<notes>Don: 30 secs; Holdout: -8; Reaction Pen.-2; Semi-ablative. Loses 1 DR per 10 points of basic damage it resists (see p. B47).</notes>
 		<categories>
 			<category>Body Armor</category>

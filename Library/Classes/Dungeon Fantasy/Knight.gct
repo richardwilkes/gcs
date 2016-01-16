@@ -28,7 +28,7 @@
 						<name>Super-Effort</name>
 						<cost type="percentage">300</cost>
 						<affects>total</affects>
-						<reference>Sup24</reference>
+						<reference>SU24</reference>
 					</modifier>
 					<reference>B14</reference>
 					<categories>
@@ -192,7 +192,7 @@
 							<name>Super-Effort</name>
 							<cost type="percentage">300</cost>
 							<affects>total</affects>
-							<reference>Sup24</reference>
+							<reference>SU24</reference>
 						</modifier>
 						<reference>B14</reference>
 						<notes>1 to 6</notes>
@@ -494,7 +494,7 @@
 							<name>Super Effort</name>
 							<cost type="percentage">400</cost>
 							<affects>total</affects>
-							<reference>Sup24</reference>
+							<reference>SU24</reference>
 						</modifier>
 						<modifier version="1" enabled="no">
 							<name>One Attack Only</name>
@@ -517,7 +517,7 @@
 						<name>Weapon Bond</name>
 						<type>Mental</type>
 						<base_points>1</base_points>
-						<reference>HT250, MA52</reference>
+						<reference>HT250,MA52</reference>
 						<notes>You own a Weapon that is uniquely suited to you.</notes>
 						<categories>
 							<category>Perk</category>

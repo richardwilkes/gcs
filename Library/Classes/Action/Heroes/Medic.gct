@@ -347,7 +347,7 @@
 							<name>Super-Effort</name>
 							<cost type="percentage">300</cost>
 							<affects>total</affects>
-							<reference>Sup24</reference>
+							<reference>SU24</reference>
 						</modifier>
 						<reference>B14</reference>
 						<categories>
@@ -2642,7 +2642,7 @@
 								<tech_level/>
 								<difficulty>IQ/E</difficulty>
 								<points>2</points>
-								<reference>Sup35</reference>
+								<reference>SU35</reference>
 								<categories>
 									<category>Everyman</category>
 									<category>Knowledge</category>

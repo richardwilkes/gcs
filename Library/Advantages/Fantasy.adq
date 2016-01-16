@@ -549,7 +549,7 @@
 			<cost type="points">2</cost>
 			<affects>levels_only</affects>
 		</modifier>
-		<reference>F132,P3:15</reference>
+		<reference>F132</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>

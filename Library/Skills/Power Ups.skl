@@ -5,7 +5,7 @@
 		<specialization>@Melee Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue6</reference>
+		<reference>PU1:6</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>Imbue</category>
@@ -27,7 +27,7 @@
 		<specialization>@Ranged Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue6</reference>
+		<reference>PU1:6</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>Imbue</category>
@@ -49,7 +49,7 @@
 		<specialization>@Ranged Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue6</reference>
+		<reference>PU1:6</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>Imbue</category>
@@ -71,7 +71,7 @@
 		<specialization>@Ranged Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue11</reference>
+		<reference>PU1:11</reference>
 		<categories>
 			<category>Imbue</category>
 			<category>Ranged</category>
@@ -89,7 +89,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue11</reference>
+		<reference>PU1:11</reference>
 		<categories>
 			<category>General</category>
 			<category>Imbue</category>
@@ -111,7 +111,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue11</reference>
+		<reference>PU1:11</reference>
 		<categories>
 			<category>General</category>
 			<category>Imbue</category>
@@ -129,7 +129,7 @@
 		<specialization>@Ranged Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue6</reference>
+		<reference>PU1:6</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>Imbue</category>
@@ -147,7 +147,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue7</reference>
+		<reference>PU1:7</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>General</category>
@@ -165,7 +165,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue11</reference>
+		<reference>PU1:11</reference>
 		<categories>
 			<category>General</category>
 			<category>Imbue</category>
@@ -183,7 +183,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue7</reference>
+		<reference>PU1:7</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>General</category>
@@ -201,7 +201,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue11</reference>
+		<reference>PU1:11</reference>
 		<categories>
 			<category>General</category>
 			<category>Imbue</category>
@@ -227,7 +227,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue12</reference>
+		<reference>PU1:12</reference>
 		<categories>
 			<category>General</category>
 			<category>Imbue</category>
@@ -249,7 +249,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue7</reference>
+		<reference>PU1:7</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>General</category>
@@ -267,7 +267,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue12</reference>
+		<reference>PU1:12</reference>
 		<categories>
 			<category>General</category>
 			<category>Imbue</category>
@@ -289,7 +289,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue12</reference>
+		<reference>PU1:12</reference>
 		<categories>
 			<category>General</category>
 			<category>Imbue</category>
@@ -315,7 +315,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue7</reference>
+		<reference>PU1:7</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>General</category>
@@ -333,7 +333,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue7</reference>
+		<reference>PU1:7</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>General</category>
@@ -351,7 +351,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue8</reference>
+		<reference>PU1:8</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>General</category>
@@ -369,7 +369,7 @@
 		<specialization>@Ranged Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue8</reference>
+		<reference>PU1:8</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>Imbue</category>
@@ -391,7 +391,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue12</reference>
+		<reference>PU1:12</reference>
 		<categories>
 			<category>General</category>
 			<category>Imbue</category>
@@ -413,7 +413,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue8</reference>
+		<reference>PU1:8</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>General</category>
@@ -439,7 +439,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue8</reference>
+		<reference>PU1:8</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>General</category>
@@ -465,7 +465,7 @@
 		<specialization>@Ranged Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue8</reference>
+		<reference>PU1:8</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>Imbue</category>
@@ -487,7 +487,7 @@
 		<specialization>@Ranged Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue9</reference>
+		<reference>PU1:9</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>Imbue</category>
@@ -505,7 +505,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue12</reference>
+		<reference>PU1:12</reference>
 		<categories>
 			<category>General</category>
 			<category>Imbue</category>
@@ -523,7 +523,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue9</reference>
+		<reference>PU1:9</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>General</category>
@@ -541,7 +541,7 @@
 		<specialization>@Ranged Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue9</reference>
+		<reference>PU1:9</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>Imbue</category>
@@ -559,7 +559,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue9</reference>
+		<reference>PU1:9</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>General</category>
@@ -577,7 +577,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue13</reference>
+		<reference>PU1:13</reference>
 		<categories>
 			<category>General</category>
 			<category>Imbue</category>
@@ -599,7 +599,7 @@
 		<specialization>@Melee Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue9</reference>
+		<reference>PU1:9</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>Imbue</category>
@@ -617,7 +617,7 @@
 		<specialization>@Ranged Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue9</reference>
+		<reference>PU1:9</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>Imbue</category>
@@ -639,7 +639,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue10</reference>
+		<reference>PU1:10</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>General</category>
@@ -657,7 +657,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue10</reference>
+		<reference>PU1:10</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>General</category>
@@ -683,7 +683,7 @@
 		<specialization>@Melee Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue13</reference>
+		<reference>PU1:13</reference>
 		<categories>
 			<category>Imbue</category>
 			<category>Melee</category>
@@ -701,7 +701,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue10</reference>
+		<reference>PU1:10</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>General</category>
@@ -719,7 +719,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue10</reference>
+		<reference>PU1:10</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>General</category>
@@ -741,7 +741,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue10</reference>
+		<reference>PU1:10</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>General</category>
@@ -767,7 +767,7 @@
 		<specialization>@Melee Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue10</reference>
+		<reference>PU1:10</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>Imbue</category>
@@ -793,7 +793,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue13</reference>
+		<reference>PU1:13</reference>
 		<categories>
 			<category>General</category>
 			<category>Imbue</category>
@@ -819,7 +819,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue11</reference>
+		<reference>PU1:11</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>General</category>
@@ -845,7 +845,7 @@
 		<specialization>@Melee Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue13</reference>
+		<reference>PU1:13</reference>
 		<categories>
 			<category>Imbue</category>
 			<category>Melee</category>
@@ -863,7 +863,7 @@
 		<specialization>@General Weapon Skill@</specialization>
 		<difficulty>DX/VH</difficulty>
 		<points>1</points>
-		<reference>Imbue13</reference>
+		<reference>PU1:13</reference>
 		<categories>
 			<category>General</category>
 			<category>Imbue</category>

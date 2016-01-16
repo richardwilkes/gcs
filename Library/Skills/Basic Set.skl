@@ -1430,7 +1430,7 @@
 		<name>Back Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B230, MA67</reference>
+		<reference>B230,MA67</reference>
 		<default>
 			<type>Skill</type>
 			<name>Karate</name>
@@ -2565,7 +2565,7 @@
 		<name>Choke Hold</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B230, MA69</reference>
+		<reference>B230,MA69</reference>
 		<default>
 			<type>Skill</type>
 			<name>Judo</name>
@@ -2587,7 +2587,7 @@
 		<name>Choke Hold</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B230, MA69</reference>
+		<reference>B230,MA69</reference>
 		<default>
 			<type>Skill</type>
 			<name>Wrestling</name>
@@ -3549,7 +3549,7 @@
 		<name>Disarming</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B230, MA70</reference>
+		<reference>B230,MA70</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Unarmed or Melee Weapon Skill@</name>
@@ -4013,7 +4013,7 @@
 		<name>Dual-Weapon Attack</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B230, MA83</reference>
+		<reference>B230,MA83</reference>
 		<default>
 			<type>Skill</type>
 			<name>Broadsword</name>
@@ -4029,7 +4029,7 @@
 		<name>Dual-Weapon Attack</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B230, MA83</reference>
+		<reference>B230,MA83</reference>
 		<default>
 			<type>Skill</type>
 			<name>Guns</name>
@@ -4046,7 +4046,7 @@
 		<name>Dual-Weapon Attack</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B230, MA83</reference>
+		<reference>B230,MA83</reference>
 		<default>
 			<type>Skill</type>
 			<name>Knife</name>
@@ -4062,7 +4062,7 @@
 		<name>Dual-Weapon Attack</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B230, MA83</reference>
+		<reference>B230,MA83</reference>
 		<default>
 			<type>Skill</type>
 			<name>Shortsword</name>
@@ -4107,7 +4107,7 @@
 		<name>Elbow Strike</name>
 		<difficulty>A</difficulty>
 		<points>1</points>
-		<reference>B230, MA71</reference>
+		<reference>B230,MA71</reference>
 		<default>
 			<type>Skill</type>
 			<name>Brawling</name>
@@ -4129,7 +4129,7 @@
 		<name>Elbow Strike</name>
 		<difficulty>A</difficulty>
 		<points>1</points>
-		<reference>B230, MA71</reference>
+		<reference>B230,MA71</reference>
 		<default>
 			<type>Skill</type>
 			<name>Karate</name>
@@ -6262,7 +6262,7 @@
 		<name>Feint</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B231, MA73</reference>
+		<reference>B231,MA73</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Unarmed or Melee Weapon Skill@</name>
@@ -6428,7 +6428,7 @@
 		<name>Finger Lock</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B231, MA73</reference>
+		<reference>B231,MA73</reference>
 		<default>
 			<type>Skill</type>
 			<name>Arm Lock</name>
@@ -7440,7 +7440,7 @@
 		<name>Ground Fighting</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B231, MA73</reference>
+		<reference>B231,MA73</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Combat Skill@</name>
@@ -8611,7 +8611,7 @@
 		<name>Horse Archery</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B231, MA74</reference>
+		<reference>B231,MA74</reference>
 		<default>
 			<type>Skill</type>
 			<name>Bow</name>
@@ -8925,7 +8925,7 @@
 		<name>Jump Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B231, MA75</reference>
+		<reference>B231,MA75</reference>
 		<default>
 			<type>Skill</type>
 			<name>Karate</name>
@@ -8992,7 +8992,7 @@
 		<name>Kicking</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B231, MA75</reference>
+		<reference>B231,MA75</reference>
 		<default>
 			<type>Skill</type>
 			<name>Brawling</name>
@@ -9008,7 +9008,7 @@
 		<name>Kicking</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B231, MA75</reference>
+		<reference>B231,MA75</reference>
 		<default>
 			<type>Skill</type>
 			<name>Karate</name>
@@ -9024,7 +9024,7 @@
 		<name>Knee Strike</name>
 		<difficulty>A</difficulty>
 		<points>1</points>
-		<reference>B232, MA76</reference>
+		<reference>B232,MA76</reference>
 		<default>
 			<type>Skill</type>
 			<name>Brawling</name>
@@ -11841,7 +11841,7 @@
 		<name>Neck Snap</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA77</reference>
+		<reference>B232,MA77</reference>
 		<default>
 			<type>ST</type>
 			<modifier>-4</modifier>
@@ -13321,7 +13321,7 @@
 		<name>Retain Weapon</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA78</reference>
+		<reference>B232,MA78</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Melee Weapon Skill@</name>
@@ -13337,7 +13337,7 @@
 		<name>Retain Weapon (@Ranged Weapon@)</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA78</reference>
+		<reference>B232,MA78</reference>
 		<default>
 			<type>DX</type>
 			<modifier>0</modifier>
@@ -15970,7 +15970,7 @@
 		<name>Sweep</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA81</reference>
+		<reference>B232,MA81</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Two-Handed Weapon Skill@</name>
@@ -15986,7 +15986,7 @@
 		<name>Sweep</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA81</reference>
+		<reference>B232,MA81</reference>
 		<default>
 			<type>Skill</type>
 			<name>Polearm</name>
@@ -16002,7 +16002,7 @@
 		<name>Sweep</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA81</reference>
+		<reference>B232,MA81</reference>
 		<default>
 			<type>Skill</type>
 			<name>Spear</name>
@@ -16018,7 +16018,7 @@
 		<name>Sweep</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA81</reference>
+		<reference>B232,MA81</reference>
 		<default>
 			<type>Skill</type>
 			<name>Staff</name>
@@ -16034,7 +16034,7 @@
 		<name>Sweeping Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA81</reference>
+		<reference>B232,MA81</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Unarmed Combat Skill@</name>
@@ -16050,7 +16050,7 @@
 		<name>Sweeping Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA81</reference>
+		<reference>B232,MA81</reference>
 		<default>
 			<type>Skill</type>
 			<name>Judo</name>
@@ -16066,7 +16066,7 @@
 		<name>Sweeping Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA81</reference>
+		<reference>B232,MA81</reference>
 		<default>
 			<type>Skill</type>
 			<name>Karate</name>
@@ -16082,7 +16082,7 @@
 		<name>Sweeping Kick</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA81</reference>
+		<reference>B232,MA81</reference>
 		<default>
 			<type>Skill</type>
 			<name>Sumo Wrestling</name>
@@ -16719,7 +16719,7 @@
 		<name>Whirlwind Attack</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA89</reference>
+		<reference>B232,MA89</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Melee Weapon Skill@</name>
@@ -16735,7 +16735,7 @@
 		<name>Whirlwind Attack</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA89</reference>
+		<reference>B232,MA89</reference>
 		<default>
 			<type>Skill</type>
 			<name>Boxing</name>
@@ -16751,7 +16751,7 @@
 		<name>Whirlwind Attack</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA89</reference>
+		<reference>B232,MA89</reference>
 		<default>
 			<type>Skill</type>
 			<name>Broadsword</name>
@@ -16767,7 +16767,7 @@
 		<name>Whirlwind Attack</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA89</reference>
+		<reference>B232,MA89</reference>
 		<default>
 			<type>Skill</type>
 			<name>Karate</name>
@@ -16783,7 +16783,7 @@
 		<name>Whirlwind Attack</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA89</reference>
+		<reference>B232,MA89</reference>
 		<default>
 			<type>Skill</type>
 			<name>Staff</name>
@@ -16799,7 +16799,7 @@
 		<name>Whirlwind Attack</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>B232, MA89</reference>
+		<reference>B232,MA89</reference>
 		<default>
 			<type>Skill</type>
 			<name>Two-Handed Sword</name>

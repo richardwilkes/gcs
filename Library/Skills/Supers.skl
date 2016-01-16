@@ -6,7 +6,7 @@
 		<tech_level/>
 		<difficulty>IQ/E</difficulty>
 		<points>1</points>
-		<reference>Sup35</reference>
+		<reference>SU35</reference>
 		<categories>
 			<category>Everyman</category>
 			<category>Knowledge</category>
@@ -33,7 +33,7 @@
 		<specialization>Supers</specialization>
 		<difficulty>IQ/A</difficulty>
 		<points>1</points>
-		<reference>Sup36</reference>
+		<reference>SU36</reference>
 		<categories>
 			<category>Knowledge</category>
 		</categories>
@@ -42,7 +42,7 @@
 		<name>Bullet Parry</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Sup38</reference>
+		<reference>SU38</reference>
 		<default>
 			<type>Skill</type>
 			<name>Parry Missile-Weapons</name>
@@ -63,7 +63,7 @@
 		<name>Camouflaged Mind Block</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Sup38</reference>
+		<reference>SU38</reference>
 		<default>
 			<type>Skill</type>
 			<name>Mind Block</name>
@@ -80,7 +80,7 @@
 		<name>Coded Thoughts</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Sup38</reference>
+		<reference>SU38</reference>
 		<default>
 			<type>Skill</type>
 			<name>Mind Block</name>
@@ -101,7 +101,7 @@
 		<name>Energy Parry</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Sup38</reference>
+		<reference>SU38</reference>
 		<default>
 			<type>Skill</type>
 			<name>Parry Missile-Weapons</name>
@@ -126,7 +126,7 @@
 		<name>Human Missile</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Sup38</reference>
+		<reference>SU38</reference>
 		<default>
 			<type>Skill</type>
 			<name>Acrobatics</name>
@@ -147,7 +147,7 @@
 		<name>Human Missile</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Sup38</reference>
+		<reference>SU38</reference>
 		<default>
 			<type>Skill</type>
 			<name>Aerobatics</name>
@@ -168,7 +168,7 @@
 		<name>Human Missile</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Sup38</reference>
+		<reference>SU38</reference>
 		<default>
 			<type>Skill</type>
 			<name>Aquabatics</name>
@@ -201,7 +201,7 @@
 		<name>Human Missile</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Sup38</reference>
+		<reference>SU38</reference>
 		<default>
 			<type>Skill</type>
 			<name>Jumping</name>
@@ -222,7 +222,7 @@
 		<name>Multiport</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Sup38</reference>
+		<reference>SU38</reference>
 		<default>
 			<type>Skill</type>
 			<name>Body Sense</name>
@@ -244,7 +244,7 @@
 		<name>No Mind</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Sup38</reference>
+		<reference>SU38</reference>
 		<default>
 			<type>Skill</type>
 			<name>Mind Block</name>
@@ -266,7 +266,7 @@
 		<name>Remote Hypnosis</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Sup38</reference>
+		<reference>SU38</reference>
 		<default>
 			<type>Skill</type>
 			<name>Hypnosis</name>
@@ -283,7 +283,7 @@
 		<name>Tight Beam</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>Sup38</reference>
+		<reference>SU38</reference>
 		<default>
 			<type>Skill</type>
 			<name>Innate Attack</name>

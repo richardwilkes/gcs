@@ -508,7 +508,7 @@
 						<name>Brave</name>
 						<type>Physical</type>
 						<base_points>1</base_points>
-						<reference>MHC25</reference>
+						<reference>MH1:25</reference>
 						<notes>Fail Fright checks on 15+</notes>
 						<categories>
 							<category>Perk</category>
@@ -691,7 +691,7 @@
 						<name>Equipment Bond (@Item@)</name>
 						<type>Physical, Exotic</type>
 						<base_points>1</base_points>
-						<reference>Sup31</reference>
+						<reference>SU31</reference>
 						<notes>You have a tool particularly suited to you for +1 to skill rolls using it.</notes>
 						<categories>
 							<category>Perk</category>

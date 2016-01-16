@@ -933,38 +933,38 @@ mVpXR0dtZeOk9vLyE9cnMbdSv/LGOfHdavVHP3Y9vPd/AQ/Z5nQF3R5kAAAAAElFTkSuQmCC
 					<name>Power Modifier</name>
 					<cost type="percentage">-10</cost>
 					<affects>total</affects>
-					<reference>PW26</reference>
+					<reference>P26</reference>
 					<notes>Chi</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Power Modifier</name>
 					<cost type="percentage">-10</cost>
 					<affects>total</affects>
-					<reference>PW26</reference>
+					<reference>P26</reference>
 					<notes>Divine</notes>
 				</modifier>
 				<modifier version="1">
 					<name>Power Modifier</name>
 					<cost type="percentage">-10</cost>
 					<affects>total</affects>
-					<reference>PW28</reference>
+					<reference>P28</reference>
 					<notes>Psionic</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Power Modifier</name>
 					<cost type="percentage">-25</cost>
 					<affects>total</affects>
-					<reference>PW28</reference>
+					<reference>P28</reference>
 					<notes>Spirit</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Power Modifier</name>
 					<cost type="percentage">-10</cost>
 					<affects>total</affects>
-					<reference>PW29</reference>
+					<reference>P29</reference>
 					<notes>Super</notes>
 				</modifier>
-				<reference>PW127</reference>
+				<reference>P127</reference>
 				<categories>
 					<category>Advantage</category>
 				</categories>

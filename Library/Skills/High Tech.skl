@@ -310,7 +310,7 @@
 		<name>Mounted Shooting</name>
 		<difficulty>H</difficulty>
 		<points>2</points>
-		<reference>HT251, MA77</reference>
+		<reference>HT251,MA77</reference>
 		<default>
 			<type>Skill</type>
 			<name>@Ranged Weapon Skill@</name>

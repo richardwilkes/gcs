@@ -1233,84 +1233,84 @@
 			<name>Imbue level 1</name>
 			<cost type="points">10</cost>
 			<affects>total</affects>
-			<reference>Imbue4</reference>
+			<reference>PU1:4</reference>
 			<notes>Novice imbuement skills available.</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Imbue level 2</name>
 			<cost type="points">20</cost>
 			<affects>total</affects>
-			<reference>Imbue4</reference>
+			<reference>PU1:4</reference>
 			<notes>Intermediate (and easier) imbuement skills available.</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Imbue level 3</name>
 			<cost type="points">40</cost>
 			<affects>total</affects>
-			<reference>Imbue4</reference>
+			<reference>PU1:4</reference>
 			<notes>Master (and easier) imbuement skills available.</notes>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Chi</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>Imbue4</reference>
+			<reference>PU1:4</reference>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Divine</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>Imbue4</reference>
+			<reference>PU1:4</reference>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Magical</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>Imbue4</reference>
+			<reference>PU1:4</reference>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Psionic</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>Imbue4</reference>
+			<reference>PU1:4</reference>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Cosmic</name>
 			<cost type="percentage">50</cost>
 			<affects>total</affects>
-			<reference>Imbue4</reference>
+			<reference>PU1:4</reference>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Ignore DR</name>
 			<cost type="percentage">300</cost>
 			<affects>total</affects>
-			<reference>Imbue4</reference>
+			<reference>PU1:4</reference>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Only One Skill</name>
 			<cost type="percentage">-80</cost>
 			<affects>total</affects>
-			<reference>Imbue4</reference>
+			<reference>PU1:4</reference>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Only Two Skills</name>
 			<cost type="percentage">-60</cost>
 			<affects>total</affects>
-			<reference>Imbue4</reference>
+			<reference>PU1:4</reference>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Only Three Skills</name>
 			<cost type="percentage">-40</cost>
 			<affects>total</affects>
-			<reference>Imbue4</reference>
+			<reference>PU1:4</reference>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Only Four Skills</name>
 			<cost type="percentage">-20</cost>
 			<affects>total</affects>
-			<reference>Imbue4</reference>
+			<reference>PU1:4</reference>
 		</modifier>
-		<reference>Imbue4</reference>
+		<reference>PU1:4</reference>
 		<categories>
 			<category>Imbue</category>
 		</categories>
@@ -1320,7 +1320,7 @@
 		<type>Mental, Supernatural</type>
 		<levels>1</levels>
 		<points_per_level>10</points_per_level>
-		<reference>Imbue17</reference>
+		<reference>PU1:17</reference>
 		<categories>
 			<category>Enhancement</category>
 			<category>Imbue</category>

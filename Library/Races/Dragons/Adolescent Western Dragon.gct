@@ -3,7 +3,7 @@
 	<advantage_list>
 		<advantage_container open="yes" type="race">
 			<name>Adolescent Western Dragon</name>
-			<reference>Dgn146</reference>
+			<reference>DR146</reference>
 			<advantage>
 				<name>Increased Strength</name>
 				<type>Physical</type>
@@ -304,7 +304,7 @@
 			</advantage>
 			<advantage_container open="no" type="metatrait">
 				<name>Western Dragon</name>
-				<reference>Dgn146</reference>
+				<reference>DR146</reference>
 				<advantage>
 					<name>Bad Grip</name>
 					<type>Physical</type>

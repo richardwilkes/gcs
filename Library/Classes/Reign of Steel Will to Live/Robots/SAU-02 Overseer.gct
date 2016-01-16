@@ -1017,7 +1017,7 @@
 					<name>Massively Parallel</name>
 					<cost type="percentage">20</cost>
 					<affects>total</affects>
-					<reference>Sup26</reference>
+					<reference>SU26</reference>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Controls</name>
@@ -1399,7 +1399,7 @@
 					<name>Specialized</name>
 					<cost type="percentage">-35</cost>
 					<affects>total</affects>
-					<reference>House</reference>
+					<reference></reference>
 					<notes>@Family: Canidae@</notes>
 				</modifier>
 				<modifier version="1">

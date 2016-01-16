@@ -3,7 +3,7 @@
 	<advantage_list>
 		<advantage_container version="2" open="yes" type="race">
 			<name>Race: Elf</name>
-			<reference>BA190</reference>
+			<reference>BS190</reference>
 			<categories>
 				<category>Race</category>
 			</categories>
