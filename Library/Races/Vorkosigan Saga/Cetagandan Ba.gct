@@ -28,7 +28,7 @@
 					<category>Advantage</category>
 				</categories>
 				<attribute_bonus>
-					<attribute>taste_smell</attribute>
+					<attribute>taste smell</attribute>
 					<amount per_level="yes">1</amount>
 				</attribute_bonus>
 			</advantage>
@@ -304,7 +304,7 @@
 					<category>Advantage</category>
 				</categories>
 				<prereq_list all="yes">
-					<attribute_prereq has="yes" which="ht" compare="at_least">10</attribute_prereq>
+					<attribute_prereq has="yes" which="ht" compare="at least">10</attribute_prereq>
 				</prereq_list>
 			</advantage>
 			<advantage version="2">

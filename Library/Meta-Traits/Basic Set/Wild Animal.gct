@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<template unique_id="eh7cbahw:-12oqiw1x4mewn">
+<template unique_id="eh7cbahw:-12oqiw1x4mewn" version="1">
 	<advantage_list>
-		<advantage_container open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Meta-Trait: Wild Animal</name>
 			<reference>B263</reference>
-			<advantage>
+			<advantage version="2">
 				<name>Bestial</name>
 				<type>Mental, Exotic</type>
 				<base_points>-10</base_points>
 				<reference>B124</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Cannot Speak</name>
 				<type>Physical</type>
 				<base_points>-15</base_points>
 				<reference>B125</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Hidebound</name>
 				<type>Physical</type>
 				<base_points>-5</base_points>
 				<reference>B138</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Taboo Trait (Fixed IQ)</name>
 				<type>Physical</type>
 				<reference>B263</reference>

@@ -2,34 +2,6 @@
 <template unique_id="faefdknw:-1pq64sdfppyvn" version="1">
 	<advantage_list>
 		<advantage version="2">
-			<name>Decreased Strength</name>
-			<type>Physical</type>
-			<levels>2</levels>
-			<points_per_level>-10</points_per_level>
-			<reference>B14</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-			<attribute_bonus>
-				<attribute>st</attribute>
-				<amount per_level="yes">-1</amount>
-			</attribute_bonus>
-		</advantage>
-		<advantage version="2">
-			<name>Increased Dexterity</name>
-			<type>Physical</type>
-			<levels>1</levels>
-			<points_per_level>20</points_per_level>
-			<reference>B15</reference>
-			<categories>
-				<category>Advantage</category>
-			</categories>
-			<attribute_bonus>
-				<attribute>dx</attribute>
-				<amount per_level="yes">1</amount>
-			</attribute_bonus>
-		</advantage>
-		<advantage version="2">
 			<name>Decreased Intelligence</name>
 			<type>Physical</type>
 			<levels>2</levels>
@@ -40,6 +12,20 @@
 			</categories>
 			<attribute_bonus>
 				<attribute>iq</attribute>
+				<amount per_level="yes">-1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Decreased Strength</name>
+			<type>Physical</type>
+			<levels>2</levels>
+			<points_per_level>-10</points_per_level>
+			<reference>B14</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>st</attribute>
 				<amount per_level="yes">-1</amount>
 			</attribute_bonus>
 		</advantage>
@@ -56,6 +42,38 @@
 				<attribute>will</attribute>
 				<amount per_level="yes">-1</amount>
 			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Easily Insulted</name>
+			<type>Mental</type>
+			<base_points>-1</base_points>
+			<reference>B164</reference>
+			<categories>
+				<category>Quirk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Increased Dexterity</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<points_per_level>20</points_per_level>
+			<reference>B15</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>dx</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Loves practical jokes</name>
+			<type>Mental</type>
+			<base_points>-1</base_points>
+			<reference>B164</reference>
+			<categories>
+				<category>Quirk</category>
+			</categories>
 		</advantage>
 		<advantage version="2">
 			<name>Reduced Consumption</name>
@@ -150,24 +168,6 @@
 			<notes>-1 Reaction</notes>
 			<categories>
 				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Easily Insulted</name>
-			<type>Mental</type>
-			<base_points>-1</base_points>
-			<reference>B164</reference>
-			<categories>
-				<category>Quirk</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Loves practical jokes</name>
-			<type>Mental</type>
-			<base_points>-1</base_points>
-			<reference>B164</reference>
-			<categories>
-				<category>Quirk</category>
 			</categories>
 		</advantage>
 	</advantage_list>

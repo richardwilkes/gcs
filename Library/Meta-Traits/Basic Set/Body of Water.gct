@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
 <template unique_id="eh7dgruq:hutw07iyxmu4" version="1">
 	<advantage_list>
-		<advantage_container version="2" open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Meta-Trait: Body of Water</name>
 			<reference>B262</reference>
 			<advantage version="2">

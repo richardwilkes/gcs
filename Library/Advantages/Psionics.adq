@@ -27,7 +27,6 @@
 			<affects>total</affects>
 			<notes>This is an early edition and is quite possibly riddled with errors.  I'd welcome any assistance; Send any comments to jdshue@mtu.edu</notes>
 		</modifier>
-		<reference></reference>
 		<notes>Helpful comments can be found in the modifiers of this advantage.</notes>
 	</advantage>
 	<advantage_container version="2" open="yes">
@@ -820,7 +819,6 @@
 	</advantage_container>
 	<advantage_container version="2" open="yes">
 		<name>Custom Psionic Powers</name>
-		<reference></reference>
 		<categories>
 			<category>Power</category>
 		</categories>
@@ -829,7 +827,6 @@
 			<type>Mental</type>
 			<levels>1</levels>
 			<points_per_level>3</points_per_level>
-			<reference></reference>
 			<notes>Limited Telepathy talent. Incompatible with telepathy talent.</notes>
 			<categories>
 				<category>Communication</category>
@@ -860,7 +857,7 @@
 				<advantage_prereq has="no">
 					<name compare="is">Telepathy Talent</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</advantage>
@@ -869,7 +866,6 @@
 			<type>Mental</type>
 			<levels>1</levels>
 			<points_per_level>3</points_per_level>
-			<reference></reference>
 			<notes>Limited Telepathy talent. Incompatible with telepathy talent.</notes>
 			<categories>
 				<category>Communication</category>
@@ -915,7 +911,7 @@
 				<advantage_prereq has="no">
 					<name compare="is">Telepathy Talent</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</advantage>
@@ -924,7 +920,6 @@
 			<type>Mental</type>
 			<levels>1</levels>
 			<points_per_level>3</points_per_level>
-			<reference></reference>
 			<notes>Limited ergokinesis talent. Incompatible with ergokinesis talent.</notes>
 			<categories>
 				<category>Cyberpsi</category>
@@ -963,7 +958,6 @@
 			<type>Mental</type>
 			<levels>1</levels>
 			<points_per_level>3</points_per_level>
-			<reference></reference>
 			<notes>Limited ESP talent. Incompatible with ESP talent.</notes>
 			<categories>
 				<category>Divination</category>
@@ -1031,7 +1025,7 @@
 				<advantage_prereq has="no">
 					<name compare="is">ESP Talent</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</advantage>
@@ -1040,7 +1034,6 @@
 			<type>Mental</type>
 			<levels>1</levels>
 			<points_per_level>3</points_per_level>
-			<reference></reference>
 			<notes>Limited ergokinesis talent. Incompatible with ergokinesis talent.</notes>
 			<categories>
 				<category>Cyberpsi</category>
@@ -1094,7 +1087,6 @@
 			<type>Mental</type>
 			<levels>1</levels>
 			<points_per_level>3</points_per_level>
-			<reference></reference>
 			<notes>Limited Telepathy talent. Incompatible with telepathy talent.</notes>
 			<categories>
 				<category>Communication</category>
@@ -1125,7 +1117,7 @@
 				<advantage_prereq has="no">
 					<name compare="is">Telepathy Talent</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</advantage>
@@ -1134,7 +1126,6 @@
 			<type>Mental</type>
 			<levels>1</levels>
 			<points_per_level>3</points_per_level>
-			<reference></reference>
 			<notes>Limited ergokinesis talent. Incompatible with ergokinesis talent.</notes>
 			<categories>
 				<category>Ergokinesis</category>
@@ -1168,7 +1159,6 @@
 			<type>Mental</type>
 			<levels>1</levels>
 			<points_per_level>3</points_per_level>
-			<reference></reference>
 			<notes>Limited ESP talent. Incompatible with ESP talent.</notes>
 			<categories>
 				<category>Divination</category>
@@ -1211,7 +1201,7 @@
 				<advantage_prereq has="no">
 					<name compare="is">ESP Talent</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</advantage>
@@ -1220,7 +1210,6 @@
 			<type>Mental</type>
 			<levels>1</levels>
 			<points_per_level>3</points_per_level>
-			<reference></reference>
 			<notes>Limited Telepathy talent. Incompatible with telepathy talent.</notes>
 			<categories>
 				<category>Communication</category>
@@ -1251,7 +1240,7 @@
 				<advantage_prereq has="no">
 					<name compare="is">Telepathy Talent</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</advantage>
@@ -1260,7 +1249,6 @@
 			<type>Mental</type>
 			<levels>1</levels>
 			<points_per_level>3</points_per_level>
-			<reference></reference>
 			<notes>Limited psychokinesis talent. Incompatible with psychokinesis talent.</notes>
 			<categories>
 				<category>Power</category>
@@ -1295,7 +1283,7 @@
 				<advantage_prereq has="no">
 					<name compare="is">Psychokinesis Talent</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</advantage>
@@ -1634,7 +1622,7 @@
 				<weapon_bonus>
 					<name compare="is">Lightning</name>
 					<specialization compare="is anything"></specialization>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 					<amount>1</amount>
 				</weapon_bonus>
 			</advantage>
@@ -1765,17 +1753,17 @@
 				<advantage_prereq has="no">
 					<name compare="is">Photokinesis Talent</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="no">
 					<name compare="is">Electrokinesis Talent</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="no">
 					<name compare="is">Cyberpsi Talent</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</advantage>
@@ -2454,12 +2442,12 @@
 				<advantage_prereq has="no">
 					<name compare="is">Divination Talent</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="no">
 					<name compare="is">Remote Senses Talent</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</advantage>
@@ -2733,7 +2721,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Clairvoyance</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 			</advantage>
@@ -4191,7 +4179,7 @@
 				<advantage_prereq has="no">
 					<name compare="is">Telekinesis Talent</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</advantage>
@@ -4417,7 +4405,7 @@
 				<weapon_bonus>
 					<name compare="is">Innate Attack</name>
 					<specialization compare="is">Projectile</specialization>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 					<amount>1</amount>
 				</weapon_bonus>
 			</advantage>
@@ -5802,22 +5790,22 @@
 				<advantage_prereq has="no">
 					<name compare="is">Offense Talent</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="no">
 					<name compare="is">Control Talent</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="no">
 					<name compare="is">Sense and Defense Talent</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="no">
 					<name compare="is">Communication Talent</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 		</advantage>

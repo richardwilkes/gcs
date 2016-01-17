@@ -19,17 +19,17 @@
 			</attribute_bonus>
 		</advantage>
 		<advantage version="2">
+			<name>Impulsiveness (CR: 12)</name>
+			<type>Mental</type>
+			<base_points>-10</base_points>
+			<reference>B139</reference>
+		</advantage>
+		<advantage version="2">
 			<name>Night Vision</name>
 			<type>Physical</type>
 			<levels>9</levels>
 			<points_per_level>1</points_per_level>
 			<reference>B71</reference>
-		</advantage>
-		<advantage version="2">
-			<name>Impulsiveness (CR: 12)</name>
-			<type>Mental</type>
-			<base_points>-10</base_points>
-			<reference>B139</reference>
 		</advantage>
 	</advantage_list>
 	<notes>Goblins have green skin, pointed ears, and small, sharp, white teeth. Magic fascinates many goblins, and they respect mages. There are few mighty goblin wizards, but the race produces a remarkable number of hedge magicians and dabblers. They are great traders and merchants. They travel everywhere, trading where they travel, and wherever they go, a few settle down. There are no exclusively goblin nations in Ytarria, but they are the majority in several parts of Megalos, particularly in the Duchy of Yibyorak (p. 100).

@@ -7,7 +7,6 @@
 		<legality_class>8</legality_class>
 		<value>20</value>
 		<weight>0.3 lb</weight>
-		<reference></reference>
 		<notes>A simple plastic bag to keep a Cephlid from drying out.</notes>
 		<categories>
 			<category>Gear</category>
@@ -24,7 +23,6 @@
 		<legality_class>4</legality_class>
 		<value>20</value>
 		<weight>0.5 lb</weight>
-		<reference></reference>
 		<notes>Holds six daggers</notes>
 		<categories>
 			<category>Ammunition</category>
@@ -36,7 +34,6 @@
 		<legality_class>4</legality_class>
 		<value>10</value>
 		<weight>2 lb</weight>
-		<reference></reference>
 		<notes>Basic Equipment for the First Aid skill</notes>
 		<categories>
 			<category>Medical</category>
@@ -47,7 +44,6 @@
 		<legality_class>4</legality_class>
 		<value>20</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Holds 20 bolts</notes>
 		<categories>
 			<category>Ammunition</category>
@@ -64,7 +60,6 @@
 		<legality_class>4</legality_class>
 		<value>150</value>
 		<weight>9 lb</weight>
-		<reference></reference>
 		<notes>Metal plates riveted to a leather fronting over a quilted gambeson</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -80,7 +75,6 @@
 		<legality_class>4</legality_class>
 		<value>0.5</value>
 		<weight>0.008 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Money: Westerosii</category>
 		</categories>
@@ -92,7 +86,6 @@
 		<legality_class>4</legality_class>
 		<value>15</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<melee_weapon>
 			<strength>7</strength>
 			<usage>parry</usage>
@@ -110,7 +103,6 @@
 		<legality_class>4</legality_class>
 		<value>80</value>
 		<weight>5.5 lb</weight>
-		<reference></reference>
 		<notes>Has a belt and pockets</notes>
 		<categories>
 			<category>Clothing</category>
@@ -122,7 +114,6 @@
 		<legality_class>4</legality_class>
 		<value>1</value>
 		<weight>0.008 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Money: Alternative Medieval Coins</category>
 		</categories>
@@ -133,7 +124,6 @@
 		<legality_class>4</legality_class>
 		<value>4</value>
 		<weight>0.0625 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Money: Westerosii</category>
 		</categories>
@@ -144,7 +134,6 @@
 		<legality_class>4</legality_class>
 		<value>4</value>
 		<weight>0.032 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Money: Alternative Medieval Coins</category>
 		</categories>
@@ -155,7 +144,6 @@
 		<legality_class>4</legality_class>
 		<value>1</value>
 		<weight>0.016 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Money: Westerosii</category>
 		</categories>
@@ -166,7 +154,6 @@
 		<legality_class>4</legality_class>
 		<value>8</value>
 		<weight>0.125 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Money: Westerosii</category>
 		</categories>
@@ -178,7 +165,6 @@
 		<legality_class>4</legality_class>
 		<value>50000</value>
 		<weight>2 lb</weight>
-		<reference></reference>
 		<notes>Allows Communication with Carrike Mage's Crystal ball</notes>
 		<categories>
 			<category>Magical Tool</category>
@@ -195,7 +181,6 @@
 		<legality_class>4</legality_class>
 		<value>80</value>
 		<weight>5 lb</weight>
-		<reference></reference>
 		<notes>Normal everyday clothing with a belt</notes>
 		<categories>
 			<category>Clothing</category>
@@ -207,7 +192,6 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>2 lb</weight>
-		<reference></reference>
 		<notes>Gives a +1 to first Aid rolls</notes>
 		<categories>
 			<category>Medical</category>
@@ -225,7 +209,6 @@
 		<legality_class>4</legality_class>
 		<value>40</value>
 		<weight>3 lb</weight>
-		<reference></reference>
 		<notes>Contains Thread, string, bow strings, wax and feathers. Also 15 Arrow points</notes>
 		<categories>
 			<category>Gear</category>
@@ -239,7 +222,6 @@
 		<legality_class>4</legality_class>
 		<value>60</value>
 		<weight>8 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Body Armor</category>
 		</categories>
@@ -259,7 +241,6 @@
 		<legality_class>4</legality_class>
 		<value>60</value>
 		<weight>11 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Body Armor</category>
 		</categories>
@@ -278,7 +259,6 @@
 		<legality_class>4</legality_class>
 		<value>200</value>
 		<weight>0.004 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Money: Alternative Medieval Coins</category>
 		</categories>
@@ -289,7 +269,6 @@
 		<legality_class>4</legality_class>
 		<value>11760</value>
 		<weight>1.1 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Money: Westerosii</category>
 		</categories>
@@ -300,7 +279,6 @@
 		<legality_class>4</legality_class>
 		<value>2</value>
 		<weight>0.032 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Money: Westerosii</category>
 		</categories>
@@ -312,7 +290,6 @@
 		<legality_class>4</legality_class>
 		<value>5</value>
 		<weight>0.5 lb</weight>
-		<reference></reference>
 		<melee_weapon>
 			<damage>Thr +1</damage>
 			<strength>8</strength>
@@ -349,7 +326,6 @@
 		<legality_class>4</legality_class>
 		<value>10</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Underthings for Women</notes>
 		<categories>
 			<category>Clothing</category>
@@ -362,7 +338,6 @@
 		<legality_class>-</legality_class>
 		<value>25</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Footwear</category>
 		</categories>
@@ -374,7 +349,6 @@
 		<legality_class>-</legality_class>
 		<value>15</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Clothing</category>
 		</categories>
@@ -385,7 +359,6 @@
 		<legality_class>4</legality_class>
 		<value>30</value>
 		<weight>2 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Clothing</category>
 		</categories>
@@ -396,7 +369,6 @@
 		<legality_class>4</legality_class>
 		<value>10</value>
 		<weight>0.5 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Clothing</category>
 		</categories>
@@ -406,7 +378,6 @@
 		<description>Lock Picks</description>
 		<legality_class>4</legality_class>
 		<value>30</value>
-		<reference></reference>
 		<notes>Spy/Thief </notes>
 		<categories>
 			<category>Gear</category>
@@ -419,7 +390,6 @@
 		<legality_class>4</legality_class>
 		<value>55</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<melee_weapon>
 			<damage>Sw cut -1</damage>
 			<strength>7</strength>
@@ -466,7 +436,6 @@
 		<legality_class>4</legality_class>
 		<value>12</value>
 		<weight>2 lb</weight>
-		<reference></reference>
 		<notes>Water proof skin or cloth 5X7 feet</notes>
 		<categories>
 			<category>Gear</category>
@@ -478,7 +447,6 @@
 		<legality_class>8</legality_class>
 		<value>15</value>
 		<weight>2 lb</weight>
-		<reference></reference>
 		<notes>Cup, Eating Utensils, flint, sharpening stone- the stff no one but an idiot leaves home without</notes>
 		<categories>
 			<category>Gear</category>
@@ -495,7 +463,6 @@
 		<legality_class>4</legality_class>
 		<value>200</value>
 		<weight>10 lb</weight>
-		<reference></reference>
 		<notes>Gives a +2 to First Aid skills</notes>
 		<categories>
 			<category>Medical</category>
@@ -512,7 +479,6 @@
 		<legality_class>4</legality_class>
 		<value>10</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Holds about 15 pounds</notes>
 		<categories>
 			<category>Gear</category>
@@ -523,7 +489,6 @@
 		<legality_class>4</legality_class>
 		<value>20</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Holds 20 arrows</notes>
 		<categories>
 			<category>Missile Weapon</category>
@@ -538,7 +503,6 @@
 		<legality_class>4</legality_class>
 		<value>40</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Magical tool that extends reach and serves as a baton</notes>
 		<categories>
 			<category>Magical Tool</category>
@@ -559,7 +523,6 @@
 		<legality_class>4</legality_class>
 		<value>3</value>
 		<weight>0.3 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Melee Weapon</category>
 		</categories>
@@ -570,7 +533,6 @@
 		<legality_class>4</legality_class>
 		<value>5</value>
 		<weight>0.5 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Melee Weapon</category>
 		</categories>
@@ -581,7 +543,6 @@
 		<legality_class>4</legality_class>
 		<value>20</value>
 		<weight>0.004 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Money: Alternative Medieval Coins</category>
 		</categories>
@@ -592,7 +553,6 @@
 		<legality_class>4</legality_class>
 		<value>392</value>
 		<weight>0.44 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Money: Westerosii</category>
 		</categories>
@@ -603,7 +563,6 @@
 		<legality_class>4</legality_class>
 		<value>56</value>
 		<weight>0.0625 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Money: Westerosii</category>
 		</categories>
@@ -615,7 +574,6 @@
 		<legality_class>-</legality_class>
 		<value>20</value>
 		<weight>0.5 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Clothing</category>
 		</categories>
@@ -626,7 +584,6 @@
 		<legality_class>4</legality_class>
 		<value>0</value>
 		<weight>1.5 lb</weight>
-		<reference></reference>
 		<notes>A magical tool that extends reach and serves as a quarterstaff</notes>
 		<categories>
 			<category>Magical Tool</category>
@@ -647,7 +604,6 @@
 		<legality_class>4</legality_class>
 		<value>300</value>
 		<weight>15 lb</weight>
-		<reference></reference>
 		<notes>Basic tools for doing Surgery</notes>
 		<categories>
 			<category>Medical</category>
@@ -659,7 +615,6 @@
 		<legality_class>6</legality_class>
 		<value>30</value>
 		<weight>0.5 lb</weight>
-		<reference></reference>
 		<notes>Magical tool that extends reach</notes>
 		<categories>
 			<category>Magical Tool</category>
@@ -677,7 +632,6 @@
 		<legality_class>4</legality_class>
 		<value>0</value>
 		<weight>8 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Gear</category>
 		</categories>
@@ -688,7 +642,6 @@
 		<legality_class>4</legality_class>
 		<value>0</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Gear</category>
 		</categories>
@@ -699,7 +652,6 @@
 		<legality_class>4</legality_class>
 		<value>0</value>
 		<weight>2 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Gear</category>
 		</categories>
@@ -710,7 +662,6 @@
 		<legality_class>4</legality_class>
 		<value>20</value>
 		<weight>1.5 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Clothing</category>
 		</categories>
@@ -721,7 +672,6 @@
 		<legality_class>4</legality_class>
 		<value>30</value>
 		<weight>4 lb</weight>
-		<reference></reference>
 		<categories>
 			<category>Clothing</category>
 		</categories>

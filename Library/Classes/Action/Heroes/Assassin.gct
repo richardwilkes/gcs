@@ -1,81 +1,11 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
 <template unique_id="gfo8b34b:-q8kdnk58k2o1" version="1">
 	<advantage_list>
-		<advantage_container version="2" open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Assassin</name>
 			<reference>ACT1:7</reference>
 			<advantage_container version="2" open="yes">
 				<name>Advantages</name>
-				<advantage version="2">
-					<name>Luck</name>
-					<type>Mental</type>
-					<base_points>15</base_points>
-					<modifier version="1" enabled="no">
-						<name>Active</name>
-						<cost type="percentage">-40</cost>
-						<affects>total</affects>
-						<reference>B66</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Aspected</name>
-						<cost type="percentage">-20</cost>
-						<affects>total</affects>
-						<reference>B66</reference>
-						<notes>@Aspect@</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Defensive</name>
-						<cost type="percentage">-20</cost>
-						<affects>total</affects>
-						<reference>B66</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Wishing</name>
-						<cost type="percentage">100</cost>
-						<affects>total</affects>
-						<reference>P59</reference>
-					</modifier>
-					<reference>B66</reference>
-					<notes>Usable once per hour of play</notes>
-					<categories>
-						<category>Advantage</category>
-					</categories>
-				</advantage>
-				<advantage version="2">
-					<name>Talent (Craftiness)</name>
-					<type>Mental</type>
-					<levels>4</levels>
-					<points_per_level>5</points_per_level>
-					<reference>ACT1:19</reference>
-					<categories>
-						<category>Advantage</category>
-					</categories>
-					<skill_bonus>
-						<name compare="is">Electrician</name>
-						<specialization compare="is anything"></specialization>
-						<amount per_level="yes">1</amount>
-					</skill_bonus>
-					<skill_bonus>
-						<name compare="is">Electronics Operation</name>
-						<specialization compare="is anything"></specialization>
-						<amount per_level="yes">1</amount>
-					</skill_bonus>
-					<skill_bonus>
-						<name compare="is">Electronics Repair</name>
-						<specialization compare="is anything"></specialization>
-						<amount per_level="yes">1</amount>
-					</skill_bonus>
-					<skill_bonus>
-						<name compare="is">Engineer</name>
-						<specialization compare="is anything">Electrical</specialization>
-						<amount per_level="yes">1</amount>
-					</skill_bonus>
-					<skill_bonus>
-						<name compare="is">Engineer</name>
-						<specialization compare="is anything">Electronics</specialization>
-						<amount per_level="yes">1</amount>
-					</skill_bonus>
-				</advantage>
 				<advantage_container version="2" open="yes">
 					<name>Choose 25 Points</name>
 					<advantage version="2">
@@ -119,7 +49,7 @@
 							<amount>1</amount>
 						</attribute_bonus>
 						<attribute_bonus>
-							<attribute>fright_check</attribute>
+							<attribute>fright check</attribute>
 							<amount>2</amount>
 						</attribute_bonus>
 					</advantage>
@@ -338,7 +268,7 @@
 					<advantage_container version="2" open="yes">
 						<name>Lenses</name>
 						<reference>ACT1:4</reference>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Criminal</name>
 							<advantage version="2">
 								<name>Contact (@Fence, fixer, smuggler@)</name>
@@ -505,7 +435,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Intelligence</name>
 							<advantage version="2">
 								<name>Must take template's Duty</name>
@@ -525,13 +455,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -541,7 +471,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Law Enforcement</name>
 							<advantage version="2">
 								<name>Legal Enforcement Powers (@FBI Agent@)</name>
@@ -579,13 +509,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -595,7 +525,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Military</name>
 							<advantage version="2">
 								<name>Must take template's Duty</name>
@@ -615,13 +545,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -631,7 +561,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Security</name>
 							<advantage version="2">
 								<name>Legal Enforcement Powers (@Federal or Secret Service@)</name>
@@ -650,13 +580,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -816,6 +746,76 @@
 						</categories>
 					</advantage>
 				</advantage_container>
+				<advantage version="2">
+					<name>Luck</name>
+					<type>Mental</type>
+					<base_points>15</base_points>
+					<modifier version="1" enabled="no">
+						<name>Active</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B66</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Aspected</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B66</reference>
+						<notes>@Aspect@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Defensive</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B66</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Wishing</name>
+						<cost type="percentage">100</cost>
+						<affects>total</affects>
+						<reference>P59</reference>
+					</modifier>
+					<reference>B66</reference>
+					<notes>Usable once per hour of play</notes>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Talent (Craftiness)</name>
+					<type>Mental</type>
+					<levels>4</levels>
+					<points_per_level>5</points_per_level>
+					<reference>ACT1:19</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+					<skill_bonus>
+						<name compare="is">Electrician</name>
+						<specialization compare="is anything"></specialization>
+						<amount per_level="yes">1</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">Electronics Operation</name>
+						<specialization compare="is anything"></specialization>
+						<amount per_level="yes">1</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">Electronics Repair</name>
+						<specialization compare="is anything"></specialization>
+						<amount per_level="yes">1</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">Engineer</name>
+						<specialization compare="is anything">Electrical</specialization>
+						<amount per_level="yes">1</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">Engineer</name>
+						<specialization compare="is anything">Electronics</specialization>
+						<amount per_level="yes">1</amount>
+					</skill_bonus>
+				</advantage>
 			</advantage_container>
 			<advantage_container version="2" open="yes">
 				<name>Attributes</name>
@@ -963,7 +963,7 @@
 							<name>Loner</name>
 							<type>Mental</type>
 							<base_points>-5</base_points>
-							<cr adj="reaction_penalty">12</cr>
+							<cr adj="reaction penalty">12</cr>
 							<reference>B142</reference>
 							<categories>
 								<category>Disadvantage</category>
@@ -992,9 +992,9 @@
 						<advantage version="2">
 							<name>Odious Personal Habit</name>
 							<type>Physical</type>
-							<base_points>-15</base_points>
+							<base_points>-5</base_points>
 							<reference>B22</reference>
-							<notes>@Habit@; -3 Reaction</notes>
+							<notes>@Habit@; -1 Reaction</notes>
 							<categories>
 								<category>Disadvantage</category>
 							</categories>
@@ -1012,9 +1012,9 @@
 						<advantage version="2">
 							<name>Odious Personal Habit</name>
 							<type>Physical</type>
-							<base_points>-5</base_points>
+							<base_points>-15</base_points>
 							<reference>B22</reference>
-							<notes>@Habit@; -1 Reaction</notes>
+							<notes>@Habit@; -3 Reaction</notes>
 							<categories>
 								<category>Disadvantage</category>
 							</categories>
@@ -2029,13 +2029,13 @@
 						<weapon_bonus>
 							<name compare="is">Boxing</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">1</level>
+							<level compare="at least">1</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 						<weapon_bonus>
 							<name compare="is">Boxing</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">2</level>
+							<level compare="at least">2</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 					</skill>
@@ -2051,7 +2051,7 @@
 						<weapon_bonus>
 							<name compare="is">Brawling</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">2</level>
+							<level compare="at least">2</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 					</skill>
@@ -2068,13 +2068,13 @@
 						<weapon_bonus>
 							<name compare="is">Karate</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">0</level>
+							<level compare="at least">0</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 						<weapon_bonus>
 							<name compare="is">Karate</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">1</level>
+							<level compare="at least">1</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 					</skill>
@@ -2127,7 +2127,7 @@
 								<weapon_bonus>
 									<name compare="is">Brawling</name>
 									<specialization compare="is anything"></specialization>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 									<amount per_level="yes">1</amount>
 								</weapon_bonus>
 							</skill>
@@ -2951,7 +2951,7 @@
 								<category>Spy</category>
 							</categories>
 							<prereq_list all="no">
-								<when_tl compare="at_least">8</when_tl>
+								<when_tl compare="at least">8</when_tl>
 								<skill_prereq has="yes">
 									<name compare="is">computer operation</name>
 									<specialization compare="is"></specialization>

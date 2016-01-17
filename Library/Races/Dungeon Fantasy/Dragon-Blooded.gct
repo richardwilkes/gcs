@@ -5,6 +5,240 @@
 			<name>Dragon-Blooded</name>
 			<reference>DF3:15</reference>
 			<advantage version="2">
+				<name>Born Biter</name>
+				<type>Physical</type>
+				<reference>DF3:15</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Claws, Sharp (Feet)</name>
+				<type>Physical</type>
+				<melee_weapon>
+					<damage>thr cut</damage>
+					<usage>Kick</usage>
+					<reach>C,1</reach>
+					<parry>No</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Brawling</name>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Karate</name>
+						<modifier>-2</modifier>
+					</default>
+				</melee_weapon>
+				<reference>B42</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Claws, Sharp (Hands)</name>
+				<type>Physical</type>
+				<base_points>5</base_points>
+				<melee_weapon>
+					<damage>thr-1 cut</damage>
+					<usage>Slash</usage>
+					<reach>C</reach>
+					<parry>0</parry>
+					<block>No</block>
+					<default>
+						<type>DX</type>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Brawling</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Boxing</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Karate</name>
+						<modifier>0</modifier>
+					</default>
+				</melee_weapon>
+				<reference>B42</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Damage Resistance</name>
+				<type>Physical, Exotic</type>
+				<levels>1</levels>
+				<points_per_level>5</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>Ablative</name>
+					<cost type="percentage">-80</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Absorption</name>
+					<cost type="percentage">80</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>Enhances @Trait@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Absorption</name>
+					<cost type="percentage">100</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>Enhances any trait</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Absorption</name>
+					<cost type="percentage">80</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>Healing only</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Can't wear armor</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Directional</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+					<notes>@Direction: Back, Right, Left, Top or Underside@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Directional</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+					<notes>Front</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Flexible</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Hardened</name>
+					<cost type="percentage">20</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Limited</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>@Common Attack Form@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Limited</name>
+					<cost type="percentage">-60</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>@Occasional Attack Form@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Limited</name>
+					<cost type="percentage">-80</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>@Rare Attack Form@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Limited</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B46</reference>
+					<notes>@Very Common Attack Form@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Reflection</name>
+					<cost type="percentage">100</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Semi-Ablative</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Tough Skin</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B47</reference>
+				</modifier>
+				<reference>B47</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<dr_bonus>
+					<location>full body except eyes</location>
+					<amount per_level="yes">1</amount>
+				</dr_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Disturbing Voice</name>
+				<type>Physical</type>
+				<base_points>-10</base_points>
+				<reference>B132</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+				<prereq_list all="yes">
+					<advantage_prereq has="no">
+						<name compare="is">voice</name>
+						<notes compare="is anything"></notes>
+					</advantage_prereq>
+				</prereq_list>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Cannot learn non-reptilain languages above Accented.</name>
+				<type>Physical</type>
+				<reference>DF3:15</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Emerald or Ruby scales.</name>
+				<type>Physical</type>
+				<reference>DF3:15</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Head armour not interchangeable with humans.</name>
+				<type>Physical</type>
+				<reference>DF3:15</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Health</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>10</points_per_level>
+				<reference>B14</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>ht</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
 				<name>Increased Strength</name>
 				<type>Physical</type>
 				<levels>1</levels>
@@ -35,21 +269,6 @@
 				</categories>
 				<attribute_bonus>
 					<attribute>st</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Increased Health</name>
-				<type>Physical</type>
-				<levels>1</levels>
-				<points_per_level>10</points_per_level>
-				<reference>B14</reference>
-				<categories>
-					<category>Advantage</category>
-					<category>Attribute</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>ht</attribute>
 					<amount per_level="yes">1</amount>
 				</attribute_bonus>
 			</advantage>
@@ -293,190 +512,6 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
-				<name>Claws, Sharp (Hands)</name>
-				<type>Physical</type>
-				<base_points>5</base_points>
-				<melee_weapon>
-					<damage>thr-1 cut</damage>
-					<usage>Slash</usage>
-					<reach>C</reach>
-					<parry>0</parry>
-					<block>No</block>
-					<default>
-						<type>DX</type>
-						<modifier>0</modifier>
-					</default>
-					<default>
-						<type>Skill</type>
-						<name>Brawling</name>
-						<modifier>0</modifier>
-					</default>
-					<default>
-						<type>Skill</type>
-						<name>Boxing</name>
-						<modifier>0</modifier>
-					</default>
-					<default>
-						<type>Skill</type>
-						<name>Karate</name>
-						<modifier>0</modifier>
-					</default>
-				</melee_weapon>
-				<reference>B42</reference>
-				<categories>
-					<category>Advantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Claws, Sharp (Feet)</name>
-				<type>Physical</type>
-				<melee_weapon>
-					<damage>thr cut</damage>
-					<usage>Kick</usage>
-					<reach>C,1</reach>
-					<parry>No</parry>
-					<block>No</block>
-					<default>
-						<type>DX</type>
-						<modifier>-2</modifier>
-					</default>
-					<default>
-						<type>Skill</type>
-						<name>Brawling</name>
-						<modifier>-2</modifier>
-					</default>
-					<default>
-						<type>Skill</type>
-						<name>Karate</name>
-						<modifier>-2</modifier>
-					</default>
-				</melee_weapon>
-				<reference>B42</reference>
-				<categories>
-					<category>Advantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Damage Resistance</name>
-				<type>Physical, Exotic</type>
-				<levels>1</levels>
-				<points_per_level>5</points_per_level>
-				<modifier version="1" enabled="no">
-					<name>Ablative</name>
-					<cost type="percentage">-80</cost>
-					<affects>total</affects>
-					<reference>B47</reference>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Absorption</name>
-					<cost type="percentage">80</cost>
-					<affects>total</affects>
-					<reference>B46</reference>
-					<notes>Enhances @Trait@</notes>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Absorption</name>
-					<cost type="percentage">100</cost>
-					<affects>total</affects>
-					<reference>B46</reference>
-					<notes>Enhances any trait</notes>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Absorption</name>
-					<cost type="percentage">80</cost>
-					<affects>total</affects>
-					<reference>B46</reference>
-					<notes>Healing only</notes>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Can't wear armor</name>
-					<cost type="percentage">-40</cost>
-					<affects>total</affects>
-					<reference>B47</reference>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Directional</name>
-					<cost type="percentage">-40</cost>
-					<affects>total</affects>
-					<reference>B47</reference>
-					<notes>@Direction: Back, Right, Left, Top or Underside@</notes>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Directional</name>
-					<cost type="percentage">-20</cost>
-					<affects>total</affects>
-					<reference>B47</reference>
-					<notes>Front</notes>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Flexible</name>
-					<cost type="percentage">-20</cost>
-					<affects>total</affects>
-					<reference>B47</reference>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Hardened</name>
-					<cost type="percentage">20</cost>
-					<levels>1</levels>
-					<affects>total</affects>
-					<reference>B47</reference>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Limited</name>
-					<cost type="percentage">-40</cost>
-					<affects>total</affects>
-					<reference>B46</reference>
-					<notes>@Common Attack Form@</notes>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Limited</name>
-					<cost type="percentage">-60</cost>
-					<affects>total</affects>
-					<reference>B46</reference>
-					<notes>@Occasional Attack Form@</notes>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Limited</name>
-					<cost type="percentage">-80</cost>
-					<affects>total</affects>
-					<reference>B46</reference>
-					<notes>@Rare Attack Form@</notes>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Limited</name>
-					<cost type="percentage">-20</cost>
-					<affects>total</affects>
-					<reference>B46</reference>
-					<notes>@Very Common Attack Form@</notes>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Reflection</name>
-					<cost type="percentage">100</cost>
-					<affects>total</affects>
-					<reference>B47</reference>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Semi-Ablative</name>
-					<cost type="percentage">-20</cost>
-					<affects>total</affects>
-					<reference>B47</reference>
-				</modifier>
-				<modifier version="1">
-					<name>Tough Skin</name>
-					<cost type="percentage">-40</cost>
-					<affects>total</affects>
-					<reference>B47</reference>
-				</modifier>
-				<reference>B47</reference>
-				<categories>
-					<category>Advantage</category>
-				</categories>
-				<dr_bonus>
-					<location>full_body_except_eyes</location>
-					<amount per_level="yes">1</amount>
-				</dr_bonus>
-			</advantage>
-			<advantage version="2">
 				<name>Nictitating Membrane</name>
 				<type>Physical, Exotic</type>
 				<levels>2</levels>
@@ -560,6 +595,21 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
+				<name>Social Stigma (Monster)</name>
+				<type>Social</type>
+				<base_points>-15</base_points>
+				<reference>DF3:11</reference>
+				<notes>-3 reaction; -6 to skills; Denied entry to town on 9 or less</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">intimidation</name>
+					<specialization compare="is anything"></specialization>
+					<amount>1</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2">
 				<name>Teeth, Sharp</name>
 				<type>Physical, Exotic</type>
 				<base_points>1</base_points>
@@ -585,36 +635,6 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
-				<name>Disturbing Voice</name>
-				<type>Physical</type>
-				<base_points>-10</base_points>
-				<reference>B132</reference>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-				<prereq_list all="yes">
-					<advantage_prereq has="no">
-						<name compare="is">voice</name>
-						<notes compare="is anything"></notes>
-					</advantage_prereq>
-				</prereq_list>
-			</advantage>
-			<advantage version="2">
-				<name>Social Stigma (Monster)</name>
-				<type>Social</type>
-				<base_points>-15</base_points>
-				<reference>DF3:11</reference>
-				<notes>-3 reaction; -6 to skills; Denied entry to town on 9 or less</notes>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-				<skill_bonus>
-					<name compare="is">intimidation</name>
-					<specialization compare="is anything"></specialization>
-					<amount>1</amount>
-				</skill_bonus>
-			</advantage>
-			<advantage version="2">
 				<name>Vow</name>
 				<type>Mental</type>
 				<levels>0</levels>
@@ -624,26 +644,6 @@
 				<categories>
 					<category>Quirk</category>
 				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Born Biter</name>
-				<type>Physical</type>
-				<reference>DF3:15</reference>
-			</advantage>
-			<advantage version="2">
-				<name>Feature: Cannot learn non-reptilain languages above Accented.</name>
-				<type>Physical</type>
-				<reference>DF3:15</reference>
-			</advantage>
-			<advantage version="2">
-				<name>Feature: Head armour not interchangeable with humans.</name>
-				<type>Physical</type>
-				<reference>DF3:15</reference>
-			</advantage>
-			<advantage version="2">
-				<name>Feature: Emerald or Ruby scales.</name>
-				<type>Physical</type>
-				<reference>DF3:15</reference>
 			</advantage>
 		</advantage_container>
 	</advantage_list>

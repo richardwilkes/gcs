@@ -1336,7 +1336,7 @@
 			<skill_prereq has="yes">
 				<name compare="is">Hypnotism</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">14</level>
+				<level compare="at least">14</level>
 			</skill_prereq>
 		</prereq_list>
 	</skill>
@@ -1613,7 +1613,7 @@
 			<skill_prereq has="yes">
 				<name compare="is">Climbing</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">14</level>
+				<level compare="at least">14</level>
 			</skill_prereq>
 			<advantage_prereq has="yes">
 				<name compare="is">Trained by a Master</name>
@@ -1622,7 +1622,7 @@
 			<skill_prereq has="yes">
 				<name compare="is">Acrobatics</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">14</level>
+				<level compare="at least">14</level>
 			</skill_prereq>
 		</prereq_list>
 	</skill>
@@ -1771,7 +1771,7 @@
 			<skill_prereq has="yes">
 				<name compare="is">@melee combat skill@</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">18</level>
+				<level compare="at least">18</level>
 			</skill_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">

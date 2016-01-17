@@ -3,106 +3,18 @@
 	<advantage_list>
 		<advantage_container version="2" open="yes">
 			<name>Animal Handler</name>
+			<reference>HF5</reference>
 			<notes>20 Points</notes>
 			<categories>
 				<category>Job Template</category>
 			</categories>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Attributes</name>
 			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
-				<name>Secondary Characteristics</name>
-			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Class Advantages</name>
-				<advantage_container version="2" open="yes" type="metatrait">
+				<advantage_container version="2" open="yes" type="meta trait">
 					<name>20 Points Chosen From:</name>
-					<advantage version="2">
-						<name>Increased Intelligence</name>
-						<type>Mental</type>
-						<levels>1</levels>
-						<points_per_level>20</points_per_level>
-						<reference>B15</reference>
-						<categories>
-							<category>Advantage</category>
-							<category>Attribute</category>
-						</categories>
-						<attribute_bonus>
-							<attribute>iq</attribute>
-							<amount per_level="yes">1</amount>
-						</attribute_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Increased Health</name>
-						<type>Physical</type>
-						<levels>1</levels>
-						<points_per_level>10</points_per_level>
-						<reference>B14</reference>
-						<categories>
-							<category>Advantage</category>
-							<category>Attribute</category>
-						</categories>
-						<attribute_bonus>
-							<attribute>ht</attribute>
-							<amount per_level="yes">1</amount>
-						</attribute_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Extra Hit Points</name>
-						<type>Physical</type>
-						<levels>1</levels>
-						<points_per_level>2</points_per_level>
-						<modifier version="1" enabled="no">
-							<name>Size</name>
-							<cost type="percentage">-10</cost>
-							<levels>1</levels>
-							<affects>total</affects>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>No Fine Manipulators</name>
-							<cost type="percentage">-40</cost>
-							<affects>total</affects>
-						</modifier>
-						<reference>B16</reference>
-						<categories>
-							<category>Advantage</category>
-							<category>Attribute</category>
-						</categories>
-						<attribute_bonus>
-							<attribute>hp</attribute>
-							<amount per_level="yes">1</amount>
-						</attribute_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Increased Perception</name>
-						<type>Mental/Physical</type>
-						<levels>1</levels>
-						<points_per_level>5</points_per_level>
-						<reference>B16</reference>
-						<categories>
-							<category>Advantage</category>
-							<category>Attribute</category>
-						</categories>
-						<attribute_bonus>
-							<attribute>perception</attribute>
-							<amount per_level="yes">1</amount>
-						</attribute_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Increased Will</name>
-						<type>Mental</type>
-						<levels>1</levels>
-						<points_per_level>5</points_per_level>
-						<reference>B16</reference>
-						<categories>
-							<category>Advantage</category>
-							<category>Attribute</category>
-						</categories>
-						<attribute_bonus>
-							<attribute>will</attribute>
-							<amount per_level="yes">1</amount>
-						</attribute_bonus>
-					</advantage>
 					<advantage version="2">
 						<name>Animal Empathy</name>
 						<type>Mental</type>
@@ -154,46 +66,6 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
-						<name>Talent (Animal Friend)</name>
-						<type>Mental</type>
-						<levels>1</levels>
-						<points_per_level>5</points_per_level>
-						<reference>B90</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-						<skill_bonus>
-							<name compare="contains">animal handling</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">falconry</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">packing</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">riding</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">teamster</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">veterinary</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-					</advantage>
-					<advantage version="2">
 						<name>Combat Reflexes</name>
 						<type>Mental</type>
 						<base_points>15</base_points>
@@ -220,7 +92,7 @@
 							<amount>1</amount>
 						</attribute_bonus>
 						<attribute_bonus>
-							<attribute>fright_check</attribute>
+							<attribute>fright check</attribute>
 							<amount>2</amount>
 						</attribute_bonus>
 					</advantage>
@@ -249,6 +121,32 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
+						<name>Extra Hit Points</name>
+						<type>Physical</type>
+						<levels>1</levels>
+						<points_per_level>2</points_per_level>
+						<modifier version="1" enabled="no">
+							<name>Size</name>
+							<cost type="percentage">-10</cost>
+							<levels>1</levels>
+							<affects>total</affects>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>No Fine Manipulators</name>
+							<cost type="percentage">-40</cost>
+							<affects>total</affects>
+						</modifier>
+						<reference>B16</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>hp</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
 						<name>Fearlessness</name>
 						<type>Mental</type>
 						<levels>1</levels>
@@ -269,6 +167,66 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
+						<name>Increased Health</name>
+						<type>Physical</type>
+						<levels>1</levels>
+						<points_per_level>10</points_per_level>
+						<reference>B14</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>ht</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Increased Intelligence</name>
+						<type>Mental</type>
+						<levels>1</levels>
+						<points_per_level>20</points_per_level>
+						<reference>B15</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>iq</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Increased Perception</name>
+						<type>Mental/Physical</type>
+						<levels>1</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B16</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>perception</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Increased Will</name>
+						<type>Mental</type>
+						<levels>1</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B16</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>will</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
 						<name>Less Sleep</name>
 						<type>Physical</type>
 						<levels>1</levels>
@@ -277,51 +235,6 @@
 						<categories>
 							<category>Advantage</category>
 						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Talent (Outdoorsman)</name>
-						<type>Mental</type>
-						<levels>1</levels>
-						<points_per_level>10</points_per_level>
-						<reference>B91</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-						<skill_bonus>
-							<name compare="is">camouflage</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">fishing</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">mimicry</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">naturalist</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">navigation</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">survival</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">tracking</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
 					</advantage>
 					<advantage version="2">
 						<name>Patron</name>
@@ -475,7 +388,7 @@
 							<category>Advantage</category>
 						</categories>
 						<prereq_list all="yes">
-							<attribute_prereq has="yes" which="ht" compare="at_least">10</attribute_prereq>
+							<attribute_prereq has="yes" which="ht" compare="at least">10</attribute_prereq>
 						</prereq_list>
 					</advantage>
 					<advantage version="2">
@@ -487,7 +400,7 @@
 							<category>Advantage</category>
 						</categories>
 						<prereq_list all="yes">
-							<attribute_prereq has="yes" which="ht" compare="at_least">12</attribute_prereq>
+							<attribute_prereq has="yes" which="ht" compare="at least">12</attribute_prereq>
 						</prereq_list>
 					</advantage>
 					<advantage version="2">
@@ -644,11 +557,96 @@
 							<category>Advantage</category>
 						</categories>
 					</advantage>
+					<advantage version="2">
+						<name>Talent (Animal Friend)</name>
+						<type>Mental</type>
+						<levels>1</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B90</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="contains">animal handling</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">falconry</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">packing</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">riding</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">teamster</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">veterinary</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Talent (Outdoorsman)</name>
+						<type>Mental</type>
+						<levels>1</levels>
+						<points_per_level>10</points_per_level>
+						<reference>B91</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">camouflage</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">fishing</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">mimicry</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">naturalist</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">navigation</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">survival</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">tracking</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+					</advantage>
 				</advantage_container>
 			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Class Disadvantages</name>
-				<advantage_container version="2" open="yes" type="metatrait">
+				<advantage_container version="2" open="yes" type="meta trait">
 					<name>-20 Points Chosen From:</name>
 					<advantage version="2">
 						<name>Duty (@Duty@)</name>
@@ -697,19 +695,10 @@
 						<name>Loner</name>
 						<type>Mental</type>
 						<base_points>-5</base_points>
-						<cr adj="reaction_penalty">12</cr>
+						<cr adj="reaction penalty">12</cr>
 						<reference>B142</reference>
 						<categories>
 							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Uncongenial</name>
-						<type>Mental</type>
-						<base_points>-1</base_points>
-						<reference>B164</reference>
-						<categories>
-							<category>Quirk</category>
 						</categories>
 					</advantage>
 					<advantage version="2">
@@ -744,15 +733,6 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
-						<name>Pacifism: Reluctant Killer</name>
-						<type>Mental</type>
-						<base_points>-5</base_points>
-						<reference>B148</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
 						<name>Pacifism: Cannot Harm Innocents</name>
 						<type>Mental</type>
 						<base_points>-10</base_points>
@@ -765,6 +745,15 @@
 						<name>Pacifism: Cannot Kill</name>
 						<type>Mental</type>
 						<base_points>-15</base_points>
+						<reference>B148</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Pacifism: Reluctant Killer</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
 						<reference>B148</reference>
 						<categories>
 							<category>Disadvantage</category>
@@ -785,70 +774,6 @@
 						<base_points>-30</base_points>
 						<reference>B148</reference>
 						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Wealth</name>
-						<type>Social</type>
-						<modifier version="1" enabled="no">
-							<name>Dead Broke</name>
-							<cost type="points">-25</cost>
-							<affects>total</affects>
-							<reference>B25</reference>
-							<notes>Starting wealth is $0</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Poor</name>
-							<cost type="points">-15</cost>
-							<affects>total</affects>
-							<reference>B25</reference>
-							<notes>Starting wealth is 1/5 average</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Struggling</name>
-							<cost type="points">-10</cost>
-							<affects>total</affects>
-							<reference>B25</reference>
-							<notes>Starting wealth is 1/2 average</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Average</name>
-							<cost type="points">0</cost>
-							<affects>total</affects>
-							<reference>B25</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Comfortable</name>
-							<cost type="points">10</cost>
-							<affects>total</affects>
-							<reference>B25</reference>
-							<notes>Starting wealth is 2x average</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Wealthy</name>
-							<cost type="points">20</cost>
-							<affects>total</affects>
-							<reference>B25</reference>
-							<notes>Starting wealth is 5x average</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Very Wealthy</name>
-							<cost type="points">30</cost>
-							<affects>total</affects>
-							<reference>B25</reference>
-							<notes>Starting wealth is 20x average</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Filthy Rich</name>
-							<cost type="points">50</cost>
-							<affects>total</affects>
-							<reference>B25</reference>
-							<notes>Starting wealth is 100x average</notes>
-						</modifier>
-						<reference>B25</reference>
-						<categories>
-							<category>Advantage</category>
 							<category>Disadvantage</category>
 						</categories>
 					</advantage>
@@ -1089,21 +1014,21 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
-						<name>Social Stigma (Second-Class Citizen)</name>
-						<type>Social</type>
-						<base_points>-5</base_points>
-						<reference>B155</reference>
-						<notes>-1 Reaction</notes>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
 						<name>Social Stigma (Minority Group)</name>
 						<type>Social</type>
 						<base_points>-10</base_points>
 						<reference>B155</reference>
 						<notes>-2 Reaction from others; +2 Reaction in own group</notes>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Social Stigma (Second-Class Citizen)</name>
+						<type>Social</type>
+						<base_points>-5</base_points>
+						<reference>B155</reference>
+						<notes>-1 Reaction</notes>
 						<categories>
 							<category>Disadvantage</category>
 						</categories>
@@ -1132,7 +1057,83 @@
 							<amount>-5</amount>
 						</skill_bonus>
 					</advantage>
+					<advantage version="2">
+						<name>Uncongenial</name>
+						<type>Mental</type>
+						<base_points>-1</base_points>
+						<reference>B164</reference>
+						<categories>
+							<category>Quirk</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth</name>
+						<type>Social</type>
+						<modifier version="1" enabled="no">
+							<name>Dead Broke</name>
+							<cost type="points">-25</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is $0</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Poor</name>
+							<cost type="points">-15</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 1/5 average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Struggling</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 1/2 average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Average</name>
+							<cost type="points">0</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Comfortable</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 2x average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Wealthy</name>
+							<cost type="points">20</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 5x average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Very Wealthy</name>
+							<cost type="points">30</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 20x average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Filthy Rich</name>
+							<cost type="points">50</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 100x average</notes>
+						</modifier>
+						<reference>B25</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
 				</advantage_container>
+			</advantage_container>
+			<advantage_container version="2" open="yes" type="meta trait">
+				<name>Secondary Characteristics</name>
 			</advantage_container>
 		</advantage_container>
 	</advantage_list>

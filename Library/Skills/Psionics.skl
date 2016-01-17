@@ -164,7 +164,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Para-Invisibility</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -266,7 +266,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Psionic Shield</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -287,7 +287,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Psychic Armor</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -324,7 +324,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Screaming</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -377,7 +377,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">True Sight (Anti-Psi)</name>
 					<notes compare="contains"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -406,7 +406,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Astral Armor</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -443,7 +443,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Astral Celerity</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -484,7 +484,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Astral Sword</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -943,7 +943,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Dampen</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -999,7 +999,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">EK Shield</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -1021,7 +1021,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Electric Vision</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -1077,7 +1077,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Lightning</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -1167,7 +1167,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Radar Sense</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -1206,7 +1206,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Surge</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -1304,7 +1304,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Flash</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -1398,7 +1398,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Photorefraction</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -1529,7 +1529,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Combat Sense</name>
 						<notes compare="is anything">Divination ability</notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -1636,7 +1636,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Prognostication</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -1916,7 +1916,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Racial Memory</name>
 					<notes compare="contains">ESP</notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -1963,7 +1963,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Awareness</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -2002,17 +2002,17 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Clairaudience (Have Clairvoyance)</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 					<advantage_prereq has="yes">
 						<name compare="is">Clairaudience</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 					<advantage_prereq has="yes">
 						<name compare="is">Clairvoyance</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -2211,7 +2211,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">True Sight (ESP)</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -2318,7 +2318,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Adjustment</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -2339,7 +2339,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Coincidence</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -2361,7 +2361,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Combat Sense</name>
 					<notes compare="is anything">Probability alteration ability</notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -2382,7 +2382,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Curse</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -2451,7 +2451,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Second Chance</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -2504,7 +2504,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Weather Control</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -2569,17 +2569,17 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Cure Injury</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">Cure Disease</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 				<advantage_prereq has="yes">
 					<name compare="is">Cure</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -2648,7 +2648,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Disease Shield</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -2705,7 +2705,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Life Extension</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -2993,7 +2993,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Drain DX</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -3014,7 +3014,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Drain Emotion</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -3035,7 +3035,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Drain HT</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -3056,7 +3056,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Drain IQ</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -3077,7 +3077,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Drain ST</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -3362,7 +3362,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Steal Life</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -3383,7 +3383,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Steal Power</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -3413,7 +3413,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Cryokinesis</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -3499,7 +3499,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">PK Shield</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -3521,7 +3521,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Pyrokinesis</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -3601,7 +3601,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Levitation</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -3708,7 +3708,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Telekinetic Control</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -3747,7 +3747,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">TK Bullet</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -3769,7 +3769,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">TK Crush</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -3791,7 +3791,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">TK Grab</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -3847,7 +3847,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Borrow Skill</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -4188,7 +4188,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Aspect</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -4527,7 +4527,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Telecontrol</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -4609,7 +4609,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Instill Fear</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -4805,7 +4805,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Mind Clouding</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -4827,7 +4827,7 @@
 					<advantage_prereq has="yes">
 						<name compare="is">Mind Shield</name>
 						<notes compare="is anything"></notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<default>
@@ -4997,7 +4997,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Exoteleport</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>
@@ -5045,7 +5045,7 @@
 				<advantage_prereq has="yes">
 					<name compare="is">Innerportation</name>
 					<notes compare="is anything"></notes>
-					<level compare="at_least">1</level>
+					<level compare="at least">1</level>
 				</advantage_prereq>
 			</prereq_list>
 			<default>

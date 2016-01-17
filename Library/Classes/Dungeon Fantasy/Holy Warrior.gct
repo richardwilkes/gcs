@@ -91,90 +91,8 @@
 					</attribute_bonus>
 				</advantage>
 			</advantage_container>
-			<advantage_container version="2" open="no">
-				<name>Secondary Characteristics</name>
-				<advantage version="2">
-					<name>Decreased Basic Speed -0.50</name>
-					<type>Physical</type>
-					<base_points>-10</base_points>
-					<attribute_bonus>
-						<attribute>speed</attribute>
-						<amount>-0.5</amount>
-					</attribute_bonus>
-				</advantage>
-				<advantage version="2">
-					<name>Increased Will</name>
-					<type>Mental</type>
-					<levels>2</levels>
-					<points_per_level>5</points_per_level>
-					<reference>B16</reference>
-					<categories>
-						<category>Advantage</category>
-						<category>Attribute</category>
-					</categories>
-					<attribute_bonus>
-						<attribute>will</attribute>
-						<amount per_level="yes">1</amount>
-					</attribute_bonus>
-				</advantage>
-			</advantage_container>
 			<advantage_container version="2" open="yes">
 				<name>Class Advantages</name>
-				<advantage version="2">
-					<name>Shtick</name>
-					<type>Mental/Physical</type>
-					<base_points>1</base_points>
-					<reference>B101,HT250,MA51</reference>
-					<notes>Foes slain personally can't rise as undead</notes>
-					<categories>
-						<category>Perk</category>
-					</categories>
-				</advantage>
-				<advantage version="2">
-					<name>Holiness</name>
-					<type>Mental</type>
-					<levels>2</levels>
-					<points_per_level>5</points_per_level>
-					<reference>DF1:22</reference>
-					<categories>
-						<category>Advantage</category>
-					</categories>
-				</advantage>
-				<advantage version="2">
-					<name>Talent (Born War Leader)</name>
-					<type>Physical</type>
-					<levels>1</levels>
-					<points_per_level>5</points_per_level>
-					<reference>DF1:14</reference>
-					<categories>
-						<category>Advantage</category>
-					</categories>
-					<skill_bonus>
-						<name compare="is">leadership</name>
-						<specialization compare="is anything"></specialization>
-						<amount per_level="yes">1</amount>
-					</skill_bonus>
-					<skill_bonus>
-						<name compare="is">strategy</name>
-						<specialization compare="is anything"></specialization>
-						<amount per_level="yes">1</amount>
-					</skill_bonus>
-					<skill_bonus>
-						<name compare="starts with">tactics</name>
-						<specialization compare="is anything"></specialization>
-						<amount per_level="yes">1</amount>
-					</skill_bonus>
-					<skill_bonus>
-						<name compare="is">intelligence analysis</name>
-						<specialization compare="is anything"></specialization>
-						<amount per_level="yes">1</amount>
-					</skill_bonus>
-					<skill_bonus>
-						<name compare="is">savoir-faire</name>
-						<specialization compare="is anything">military</specialization>
-						<amount per_level="yes">1</amount>
-					</skill_bonus>
-				</advantage>
 				<advantage_container version="2" open="no" type="meta trait">
 					<name>25 Points in holy abilities</name>
 					<notes>put leftovers into more Advantages</notes>
@@ -1204,6 +1122,27 @@
 				<advantage_container version="2" open="no" type="race">
 					<name>A further 25 Points chosen from:</name>
 					<notes>or additional Holy abilities</notes>
+					<advantage_container version="2" open="yes" type="meta trait">
+						<name>Another Higher Purpose</name>
+						<advantage version="2">
+							<name>Higher Purpose (Slay Demons)</name>
+							<type>Mental, Exotic</type>
+							<base_points>5</base_points>
+							<reference>B59</reference>
+							<categories>
+								<category>Advantage</category>
+							</categories>
+						</advantage>
+						<advantage version="2">
+							<name>Higher Purpose (Slay Undead)</name>
+							<type>Mental, Exotic</type>
+							<base_points>5</base_points>
+							<reference>B59</reference>
+							<categories>
+								<category>Advantage</category>
+							</categories>
+						</advantage>
+					</advantage_container>
 					<advantage version="2">
 						<name>Combat Reflexes</name>
 						<type>Mental</type>
@@ -1284,6 +1223,56 @@
 						</attribute_bonus>
 					</advantage>
 					<advantage version="2">
+						<name>Fearlessness</name>
+						<type>Mental</type>
+						<levels>7</levels>
+						<points_per_level>2</points_per_level>
+						<reference>B55</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Hard to Kill</name>
+						<type>Physical</type>
+						<levels>1</levels>
+						<points_per_level>2</points_per_level>
+						<reference>B58</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Hard to Subdue</name>
+						<type>Physical</type>
+						<levels>1</levels>
+						<points_per_level>2</points_per_level>
+						<reference>B59</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>High Pain Threshold</name>
+						<type>Physical</type>
+						<base_points>10</base_points>
+						<reference>B59</reference>
+						<notes>Never suffer shock penalties when injured; +3 on all HT rolls to avoid knockdown and stunning; +3 to resist torture</notes>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Holiness</name>
+						<type>Mental</type>
+						<levels>2</levels>
+						<points_per_level>5</points_per_level>
+						<reference>DF1:22</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
 						<name>Increased Dexterity</name>
 						<type>Physical</type>
 						<levels>1</levels>
@@ -1302,16 +1291,6 @@
 							<attribute>dx</attribute>
 							<amount per_level="yes">1</amount>
 						</attribute_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Fearlessness</name>
-						<type>Mental</type>
-						<levels>7</levels>
-						<points_per_level>2</points_per_level>
-						<reference>B55</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
 					</advantage>
 					<advantage version="2">
 						<name>Increased Health</name>
@@ -1377,57 +1356,6 @@
 							<amount per_level="yes">1</amount>
 						</attribute_bonus>
 					</advantage>
-					<advantage version="2">
-						<name>Hard to Kill</name>
-						<type>Physical</type>
-						<levels>1</levels>
-						<points_per_level>2</points_per_level>
-						<reference>B58</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Hard to Subdue</name>
-						<type>Physical</type>
-						<levels>1</levels>
-						<points_per_level>2</points_per_level>
-						<reference>B59</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>High Pain Threshold</name>
-						<type>Physical</type>
-						<base_points>10</base_points>
-						<reference>B59</reference>
-						<notes>Never suffer shock penalties when injured; +3 on all HT rolls to avoid knockdown and stunning; +3 to resist torture</notes>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-					</advantage>
-					<advantage_container version="2" open="yes" type="meta trait">
-						<name>Another Higher Purpose</name>
-						<advantage version="2">
-							<name>Higher Purpose (Slay Undead)</name>
-							<type>Mental, Exotic</type>
-							<base_points>5</base_points>
-							<reference>B59</reference>
-							<categories>
-								<category>Advantage</category>
-							</categories>
-						</advantage>
-						<advantage version="2">
-							<name>Higher Purpose (Slay Demons)</name>
-							<type>Mental, Exotic</type>
-							<base_points>5</base_points>
-							<reference>B59</reference>
-							<categories>
-								<category>Advantage</category>
-							</categories>
-						</advantage>
-					</advantage_container>
 					<advantage version="2">
 						<name>Luck</name>
 						<type>Mental</type>
@@ -1548,108 +1476,6 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
-						<name>Striking ST</name>
-						<type>Physical, Exotic</type>
-						<levels>2</levels>
-						<points_per_level>5</points_per_level>
-						<modifier version="1" enabled="no">
-							<name>No Fine Manipulators</name>
-							<cost type="percentage">-40</cost>
-							<affects>total</affects>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Size</name>
-							<cost type="percentage">-10</cost>
-							<levels>1</levels>
-							<affects>total</affects>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Super Effort</name>
-							<cost type="percentage">400</cost>
-							<affects>total</affects>
-							<reference>SU24</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>One Attack Only</name>
-							<cost type="percentage">-60</cost>
-							<affects>total</affects>
-							<reference>P79</reference>
-							<notes>@Attack@</notes>
-						</modifier>
-						<reference>B88</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-						<attribute_bonus>
-							<attribute limitation="striking only">st</attribute>
-							<amount per_level="yes">1</amount>
-						</attribute_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Talent (Born War Leader)</name>
-						<type>Physical</type>
-						<levels>3</levels>
-						<points_per_level>5</points_per_level>
-						<reference>DF1:14</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-						<skill_bonus>
-							<name compare="is">leadership</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">strategy</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="starts with">tactics</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">intelligence analysis</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">savoir-faire</name>
-							<specialization compare="is anything">military</specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Holiness</name>
-						<type>Mental</type>
-						<levels>2</levels>
-						<points_per_level>5</points_per_level>
-						<reference>DF1:22</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Unfazeable</name>
-						<type>Mental</type>
-						<base_points>15</base_points>
-						<reference>B95</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Weapon Bond</name>
-						<type>Mental</type>
-						<base_points>1</base_points>
-						<reference>HT250,MA52</reference>
-						<notes>You own a Weapon that is uniquely suited to you.</notes>
-						<categories>
-							<category>Perk</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
 						<name>Resistant</name>
 						<type>Physical</type>
 						<modifier version="1" enabled="no">
@@ -1751,18 +1577,101 @@
 							<category>Advantage</category>
 						</categories>
 					</advantage>
-				</advantage_container>
-				<advantage_container version="2" open="no" type="meta trait">
-					<name>Choose one Higher Purpose</name>
 					<advantage version="2">
-						<name>Higher Purpose (Slay Undead)</name>
-						<type>Mental, Exotic</type>
-						<base_points>5</base_points>
-						<reference>B59</reference>
+						<name>Striking ST</name>
+						<type>Physical, Exotic</type>
+						<levels>2</levels>
+						<points_per_level>5</points_per_level>
+						<modifier version="1" enabled="no">
+							<name>No Fine Manipulators</name>
+							<cost type="percentage">-40</cost>
+							<affects>total</affects>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Size</name>
+							<cost type="percentage">-10</cost>
+							<levels>1</levels>
+							<affects>total</affects>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Super Effort</name>
+							<cost type="percentage">400</cost>
+							<affects>total</affects>
+							<reference>SU24</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>One Attack Only</name>
+							<cost type="percentage">-60</cost>
+							<affects>total</affects>
+							<reference>P79</reference>
+							<notes>@Attack@</notes>
+						</modifier>
+						<reference>B88</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<attribute_bonus>
+							<attribute limitation="striking only">st</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Talent (Born War Leader)</name>
+						<type>Physical</type>
+						<levels>3</levels>
+						<points_per_level>5</points_per_level>
+						<reference>DF1:14</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">leadership</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">strategy</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="starts with">tactics</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">intelligence analysis</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">savoir-faire</name>
+							<specialization compare="is anything">military</specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Unfazeable</name>
+						<type>Mental</type>
+						<base_points>15</base_points>
+						<reference>B95</reference>
 						<categories>
 							<category>Advantage</category>
 						</categories>
 					</advantage>
+					<advantage version="2">
+						<name>Weapon Bond</name>
+						<type>Mental</type>
+						<base_points>1</base_points>
+						<reference>HT250,MA52</reference>
+						<notes>You own a Weapon that is uniquely suited to you.</notes>
+						<categories>
+							<category>Perk</category>
+						</categories>
+					</advantage>
+				</advantage_container>
+				<advantage_container version="2" open="no" type="meta trait">
+					<name>Choose one Higher Purpose</name>
 					<advantage version="2">
 						<name>Higher Purpose (Slay Demons)</name>
 						<type>Mental, Exotic</type>
@@ -1772,10 +1681,145 @@
 							<category>Advantage</category>
 						</categories>
 					</advantage>
+					<advantage version="2">
+						<name>Higher Purpose (Slay Undead)</name>
+						<type>Mental, Exotic</type>
+						<base_points>5</base_points>
+						<reference>B59</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
 				</advantage_container>
+				<advantage version="2">
+					<name>Holiness</name>
+					<type>Mental</type>
+					<levels>2</levels>
+					<points_per_level>5</points_per_level>
+					<reference>DF1:22</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Shtick</name>
+					<type>Mental/Physical</type>
+					<base_points>1</base_points>
+					<reference>B101,HT250,MA51</reference>
+					<notes>Foes slain personally can't rise as undead</notes>
+					<categories>
+						<category>Perk</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Talent (Born War Leader)</name>
+					<type>Physical</type>
+					<levels>1</levels>
+					<points_per_level>5</points_per_level>
+					<reference>DF1:14</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+					<skill_bonus>
+						<name compare="is">leadership</name>
+						<specialization compare="is anything"></specialization>
+						<amount per_level="yes">1</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">strategy</name>
+						<specialization compare="is anything"></specialization>
+						<amount per_level="yes">1</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="starts with">tactics</name>
+						<specialization compare="is anything"></specialization>
+						<amount per_level="yes">1</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">intelligence analysis</name>
+						<specialization compare="is anything"></specialization>
+						<amount per_level="yes">1</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">savoir-faire</name>
+						<specialization compare="is anything">military</specialization>
+						<amount per_level="yes">1</amount>
+					</skill_bonus>
+				</advantage>
 			</advantage_container>
 			<advantage_container version="2" open="yes">
 				<name>Class Disadvantages</name>
+				<advantage_container version="2" open="no" type="race">
+					<name>A further -15 Points chosen from:</name>
+					<notes>or any previous list</notes>
+					<advantage version="2">
+						<name>Bloodlust</name>
+						<type>Mental</type>
+						<base_points>-10</base_points>
+						<cr>12</cr>
+						<reference>B125</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Code of Honor (Chivalry)</name>
+						<type>Mental</type>
+						<base_points>-15</base_points>
+						<reference>B127</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Easy to Read</name>
+						<type>Mental</type>
+						<base_points>-10</base_points>
+						<reference>B134</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>No Sense of Humor</name>
+						<type>Physical</type>
+						<base_points>-10</base_points>
+						<reference>B146</reference>
+						<notes>-2 Reaction</notes>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Overconfidence</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<cr>12</cr>
+						<reference>B148</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Sense of Duty</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<reference>B153</reference>
+						<notes>Adventuring companions</notes>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Stubbornness</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<reference>B157</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+				</advantage_container>
 				<advantage_container version="2" open="no" type="race">
 					<name>Another -15 Points Chosen From:</name>
 					<notes>or above Traits</notes>
@@ -1947,77 +1991,6 @@
 						</categories>
 					</advantage>
 				</advantage_container>
-				<advantage_container version="2" open="no" type="race">
-					<name>A further -15 Points chosen from:</name>
-					<notes>or any previous list</notes>
-					<advantage version="2">
-						<name>Bloodlust</name>
-						<type>Mental</type>
-						<base_points>-10</base_points>
-						<cr>12</cr>
-						<reference>B125</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Code of Honor (Chivalry)</name>
-						<type>Mental</type>
-						<base_points>-15</base_points>
-						<reference>B127</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Easy to Read</name>
-						<type>Mental</type>
-						<base_points>-10</base_points>
-						<reference>B134</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>No Sense of Humor</name>
-						<type>Physical</type>
-						<base_points>-10</base_points>
-						<reference>B146</reference>
-						<notes>-2 Reaction</notes>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Overconfidence</name>
-						<type>Mental</type>
-						<base_points>-5</base_points>
-						<cr>12</cr>
-						<reference>B148</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Sense of Duty</name>
-						<type>Mental</type>
-						<base_points>-5</base_points>
-						<reference>B153</reference>
-						<notes>Adventuring companions</notes>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Stubbornness</name>
-						<type>Mental</type>
-						<base_points>-5</base_points>
-						<reference>B157</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-				</advantage_container>
 				<advantage_container version="2" open="no" type="meta trait">
 					<name>Choose One of:</name>
 					<advantage version="2">
@@ -2050,6 +2023,33 @@
 						</categories>
 					</advantage>
 				</advantage_container>
+			</advantage_container>
+			<advantage_container version="2" open="no">
+				<name>Secondary Characteristics</name>
+				<advantage version="2">
+					<name>Decreased Basic Speed -0.50</name>
+					<type>Physical</type>
+					<base_points>-10</base_points>
+					<attribute_bonus>
+						<attribute>speed</attribute>
+						<amount>-0.5</amount>
+					</attribute_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Increased Will</name>
+					<type>Mental</type>
+					<levels>2</levels>
+					<points_per_level>5</points_per_level>
+					<reference>B16</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>will</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
 			</advantage_container>
 		</advantage_container>
 	</advantage_list>

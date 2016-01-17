@@ -5,6 +5,21 @@
 			<name>Halfling</name>
 			<reference>DF3:14</reference>
 			<advantage version="2">
+				<name>Decreased Basic Move</name>
+				<type>Mental</type>
+				<levels>1</levels>
+				<points_per_level>-5</points_per_level>
+				<reference>B16</reference>
+				<categories>
+					<category>Attribute</category>
+					<category>Disadvantage</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>will</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
 				<name>Decreased Strength</name>
 				<type>Physical</type>
 				<levels>3</levels>
@@ -18,6 +33,55 @@
 					<attribute>st</attribute>
 					<amount per_level="yes">-1</amount>
 				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Extra Hit Points</name>
+				<type>Physical</type>
+				<levels>2</levels>
+				<points_per_level>2</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>Size</name>
+					<cost type="percentage">-10</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>No Fine Manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B16</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>hp</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Hairy Feet</name>
+				<type>Physical</type>
+			</advantage>
+			<advantage version="2">
+				<name>Gluttony</name>
+				<type>Mental</type>
+				<base_points>-5</base_points>
+				<cr>12</cr>
+				<reference>B137</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Honest Face</name>
+				<type>Physical</type>
+				<base_points>1</base_points>
+				<reference>B101</reference>
+				<categories>
+					<category>Perk</category>
+				</categories>
 			</advantage>
 			<advantage version="2">
 				<name>Increased Dexterity</name>
@@ -55,6 +119,16 @@
 				</attribute_bonus>
 			</advantage>
 			<advantage version="2">
+				<name>Kleptomania</name>
+				<type>Mental</type>
+				<base_points>-15</base_points>
+				<cr>12</cr>
+				<reference>B141</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
 				<name>Reduced Size</name>
 				<type>Physical</type>
 				<levels>2</levels>
@@ -64,45 +138,25 @@
 				</attribute_bonus>
 			</advantage>
 			<advantage version="2">
-				<name>Extra Hit Points</name>
-				<type>Physical</type>
+				<name>Silence</name>
+				<type>Physical, Exotic</type>
 				<levels>2</levels>
-				<points_per_level>2</points_per_level>
+				<points_per_level>5</points_per_level>
 				<modifier version="1" enabled="no">
-					<name>Size</name>
-					<cost type="percentage">-10</cost>
-					<levels>1</levels>
+					<name>Dynamic</name>
+					<cost type="percentage">40</cost>
 					<affects>total</affects>
+					<reference>P76</reference>
 				</modifier>
-				<modifier version="1" enabled="no">
-					<name>No Fine Manipulators</name>
-					<cost type="percentage">-40</cost>
-					<affects>total</affects>
-				</modifier>
-				<reference>B16</reference>
+				<reference>B85</reference>
 				<categories>
 					<category>Advantage</category>
-					<category>Attribute</category>
 				</categories>
-				<attribute_bonus>
-					<attribute>hp</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Decreased Basic Move</name>
-				<type>Mental</type>
-				<levels>1</levels>
-				<points_per_level>-5</points_per_level>
-				<reference>B16</reference>
-				<categories>
-					<category>Attribute</category>
-					<category>Disadvantage</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>will</attribute>
-					<amount per_level="yes">-1</amount>
-				</attribute_bonus>
+				<skill_bonus>
+					<name compare="is">stealth</name>
+					<specialization compare="is anything"></specialization>
+					<amount>2</amount>
+				</skill_bonus>
 			</advantage>
 			<advantage version="2">
 				<name>Talent (Halfling Marksmanship)</name>
@@ -143,60 +197,6 @@
 					<specialization compare="is anything"></specialization>
 					<amount per_level="yes">1</amount>
 				</skill_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Honest Face</name>
-				<type>Physical</type>
-				<base_points>1</base_points>
-				<reference>B101</reference>
-				<categories>
-					<category>Perk</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Silence</name>
-				<type>Physical, Exotic</type>
-				<levels>2</levels>
-				<points_per_level>5</points_per_level>
-				<modifier version="1" enabled="no">
-					<name>Dynamic</name>
-					<cost type="percentage">40</cost>
-					<affects>total</affects>
-					<reference>P76</reference>
-				</modifier>
-				<reference>B85</reference>
-				<categories>
-					<category>Advantage</category>
-				</categories>
-				<skill_bonus>
-					<name compare="is">stealth</name>
-					<specialization compare="is anything"></specialization>
-					<amount>2</amount>
-				</skill_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Gluttony</name>
-				<type>Mental</type>
-				<base_points>-5</base_points>
-				<cr>12</cr>
-				<reference>B137</reference>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Kleptomania</name>
-				<type>Mental</type>
-				<base_points>-15</base_points>
-				<cr>12</cr>
-				<reference>B141</reference>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Feature: Hairy Feet</name>
-				<type>Physical</type>
 			</advantage>
 		</advantage_container>
 	</advantage_list>

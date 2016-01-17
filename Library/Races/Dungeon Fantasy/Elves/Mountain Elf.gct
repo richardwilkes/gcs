@@ -5,6 +5,20 @@
 			<name>Mountian Elf</name>
 			<reference>DF3:7</reference>
 			<advantage version="2">
+				<name>Acute Vision</name>
+				<type>Physical</type>
+				<levels>2</levels>
+				<points_per_level>2</points_per_level>
+				<reference>B35</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>vision</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
 				<name>Decreased Strength</name>
 				<type>Physical</type>
 				<levels>1</levels>
@@ -18,6 +32,16 @@
 					<attribute>st</attribute>
 					<amount per_level="yes">-1</amount>
 				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Elven Gear</name>
+				<type>Physical</type>
+				<base_points>1</base_points>
+				<reference>DF3:6</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Electric blue hair</name>
+				<type>Physical</type>
 			</advantage>
 			<advantage version="2">
 				<name>Increased Dexterity</name>
@@ -40,18 +64,14 @@
 				</attribute_bonus>
 			</advantage>
 			<advantage version="2">
-				<name>Acute Vision</name>
-				<type>Physical</type>
-				<levels>2</levels>
-				<points_per_level>2</points_per_level>
-				<reference>B35</reference>
+				<name>Loner</name>
+				<type>Mental</type>
+				<base_points>-5</base_points>
+				<cr adj="reaction penalty">12</cr>
+				<reference>B142</reference>
 				<categories>
-					<category>Advantage</category>
+					<category>Disadvantage</category>
 				</categories>
-				<attribute_bonus>
-					<attribute>vision</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
 			</advantage>
 			<advantage version="2">
 				<name>Magery</name>
@@ -62,43 +82,43 @@
 				<modifier version="1" enabled="no">
 					<name>Dance</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Dark-Aspected</name>
 					<cost type="percentage">-50</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Day-Aspected</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Musical</name>
 					<cost type="percentage">-50</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Night-Aspected</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>One College</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 					<notes>@College@</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Solitary</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Song</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<reference>B66</reference>
 				<categories>
@@ -150,6 +170,16 @@
 				</skill_bonus>
 			</advantage>
 			<advantage version="2">
+				<name>Sense of Duty</name>
+				<type>Mental</type>
+				<base_points>-15</base_points>
+				<reference>DF3:6</reference>
+				<notes>Nature</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
 				<name>Telescopic Vision</name>
 				<type>Physical</type>
 				<levels>1</levels>
@@ -164,36 +194,6 @@
 				<categories>
 					<category>Advantage</category>
 				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Elven Gear</name>
-				<type>Physical</type>
-				<base_points>1</base_points>
-				<reference>DF3:6</reference>
-			</advantage>
-			<advantage version="2">
-				<name>Loner</name>
-				<type>Mental</type>
-				<base_points>-5</base_points>
-				<cr adj="reaction_penalty">12</cr>
-				<reference>B142</reference>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Sense of Duty</name>
-				<type>Mental</type>
-				<base_points>-15</base_points>
-				<reference>DF3:6</reference>
-				<notes>Nature</notes>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Feature: Electric blue hair</name>
-				<type>Physical</type>
 			</advantage>
 		</advantage_container>
 	</advantage_list>

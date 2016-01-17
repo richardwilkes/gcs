@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<template unique_id="i1kbuxss:1js3hekm55k8g">
+<template unique_id="i1kbuxss:1js3hekm55k8g" version="1">
 	<advantage_list>
-		<advantage_container open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Meta-Trait: Mummified Undead</name>
 			<reference>H27</reference>
 			<advantage version="2">
 				<name>Appearance</name>
 				<type>Physical</type>
-				<modifier version="1" enabled="yes">
+				<modifier version="1">
 					<name>Universal</name>
 					<cost type="percentage">25</cost>
 					<affects>total</affects>
@@ -42,7 +42,7 @@
 					<cost type="points">-24</cost>
 					<affects>total</affects>
 				</modifier>
-				<modifier version="1" enabled="yes">
+				<modifier version="1">
 					<name>Monstrous</name>
 					<cost type="points">-20</cost>
 					<affects>total</affects>
@@ -92,7 +92,7 @@
 					<category>Advantage</category>
 				</categories>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Doesn't Breathe</name>
 				<type>Physical, Exotic</type>
 				<base_points>20</base_points>
@@ -128,17 +128,25 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
-				<name>Resistant</name>
-				<type>Physical</type>
-				<modifier version="1" enabled="yes">
-					<name>Immunity to Metabolic Hazards</name>
-					<cost type="points">30</cost>
-					<affects>total</affects>
-					<reference>B80</reference>
-				</modifier>
+				<name>Injury Tolerance (No Blood)</name>
+				<type>Physical, Exotic</type>
+				<base_points>5</base_points>
+				<reference>B61</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
 			</advantage>
 			<advantage version="2">
-				<name>Injury Tolerance (No Blood)</name>
+				<name>Injury Tolerance (No Brain)</name>
+				<type>Physical, Exotic</type>
+				<base_points>5</base_points>
+				<reference>B61</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Injury Tolerance (No Vitals)</name>
 				<type>Physical, Exotic</type>
 				<base_points>5</base_points>
 				<reference>B61</reference>
@@ -156,22 +164,14 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
-				<name>Injury Tolerance (No Vitals)</name>
-				<type>Physical, Exotic</type>
-				<base_points>5</base_points>
-				<reference>B61</reference>
-				<categories>
-					<category>Advantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Injury Tolerance (No Brain)</name>
-				<type>Physical, Exotic</type>
-				<base_points>5</base_points>
-				<reference>B61</reference>
-				<categories>
-					<category>Advantage</category>
-				</categories>
+				<name>Resistant</name>
+				<type>Physical</type>
+				<modifier version="1">
+					<name>Immunity to Metabolic Hazards</name>
+					<cost type="points">30</cost>
+					<affects>total</affects>
+					<reference>B80</reference>
+				</modifier>
 			</advantage>
 			<advantage version="2">
 				<name>Social Stigma (Dead)</name>

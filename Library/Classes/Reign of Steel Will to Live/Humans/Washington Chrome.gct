@@ -14,29 +14,6 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
-				<name>Rank</name>
-				<type>Physical</type>
-				<levels>1</levels>
-				<points_per_level>5</points_per_level>
-				<modifier version="1" enabled="no">
-					<name>Replaces Status</name>
-					<cost type="points">5</cost>
-					<affects>levels only</affects>
-					<reference>B29</reference>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Courtesy</name>
-					<cost type="points">-4</cost>
-					<affects>levels only</affects>
-					<reference>B29</reference>
-				</modifier>
-				<reference>B29</reference>
-				<notes>Military: </notes>
-				<categories>
-					<category>Advantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
 				<name>Patron</name>
 				<type>Social</type>
 				<modifier version="1" enabled="no">
@@ -323,6 +300,29 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
+				<name>Rank</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>5</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>Replaces Status</name>
+					<cost type="points">5</cost>
+					<affects>levels only</affects>
+					<reference>B29</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Courtesy</name>
+					<cost type="points">-4</cost>
+					<affects>levels only</affects>
+					<reference>B29</reference>
+				</modifier>
+				<reference>B29</reference>
+				<notes>Military: </notes>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
 				<name>Wealth</name>
 				<type>Social</type>
 				<modifier version="1" enabled="no">
@@ -389,59 +389,6 @@
 		</advantage_container>
 		<advantage_container version="2" open="yes">
 			<name>Class Disadvantages</name>
-			<advantage version="2">
-				<name>Duty (Washington Chromes)</name>
-				<type>Social</type>
-				<modifier version="1" enabled="no">
-					<name>FR: 6</name>
-					<cost type="points">-2</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>FR: 9</name>
-					<cost type="points">-5</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>FR: 12</name>
-					<cost type="points">-10</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1">
-					<name>FR: 15</name>
-					<cost type="points">-15</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1">
-					<name>Extremely Hazardous</name>
-					<cost type="points">-5</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Involuntary</name>
-					<cost type="points">-5</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Nonhazardous</name>
-					<cost type="points">5</cost>
-					<affects>total</affects>
-				</modifier>
-				<reference>B133</reference>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Overconfidence</name>
-				<type>Mental</type>
-				<base_points>-5</base_points>
-				<cr>12</cr>
-				<reference>B148</reference>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-			</advantage>
 			<advantage_container version="2" open="yes">
 				<name>-45 Points in:</name>
 				<advantage version="2">
@@ -658,13 +605,13 @@
 						<affects>total</affects>
 						<reference>B148</reference>
 					</modifier>
-					<modifier version="1">
+					<modifier version="1" enabled="no">
 						<name>Disturbing</name>
 						<cost type="points">-10</cost>
 						<affects>total</affects>
 						<reference>B148</reference>
 					</modifier>
-					<modifier version="1" enabled="no">
+					<modifier version="1">
 						<name>Diabolical</name>
 						<cost type="points">-15</cost>
 						<affects>total</affects>
@@ -684,13 +631,13 @@
 						<affects>total</affects>
 						<reference>B148</reference>
 					</modifier>
-					<modifier version="1" enabled="no">
+					<modifier version="1">
 						<name>Disturbing</name>
 						<cost type="points">-10</cost>
 						<affects>total</affects>
 						<reference>B148</reference>
 					</modifier>
-					<modifier version="1">
+					<modifier version="1" enabled="no">
 						<name>Diabolical</name>
 						<cost type="points">-15</cost>
 						<affects>total</affects>
@@ -756,6 +703,59 @@
 					</categories>
 				</advantage>
 			</advantage_container>
+			<advantage version="2">
+				<name>Duty (Washington Chromes)</name>
+				<type>Social</type>
+				<modifier version="1" enabled="no">
+					<name>FR: 6</name>
+					<cost type="points">-2</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>FR: 9</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>FR: 12</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1">
+					<name>FR: 15</name>
+					<cost type="points">-15</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1">
+					<name>Extremely Hazardous</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Involuntary</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Nonhazardous</name>
+					<cost type="points">5</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B133</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Overconfidence</name>
+				<type>Mental</type>
+				<base_points>-5</base_points>
+				<cr>12</cr>
+				<reference>B148</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
 		</advantage_container>
 	</advantage_list>
 	<skill_list>

@@ -2,60 +2,99 @@
 <equipment_list unique_id="hvpje2b6:1v23e2inqx413" version="1">
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Fog</description>
+		<description>Air</description>
 		<tech_level>9</tech_level>
 		<legality_class>3</legality_class>
-		<value>30</value>
+		<value>300</value>
 		<melee_weapon>
-			<usage>Jam</usage>
+			<usage>Stealth</usage>
 			<default>
 				<type>Skill</type>
 				<name>Computer Hacking</name>
-				<modifier>-2</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Jam Program:  Complexity 2; Continuous</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Jam</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Receptor</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>30</value>
-		<melee_weapon>
-			<usage>Listen</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Hacking</name>
-				<modifier>-2</modifier>
+				<modifier>-3</modifier>
 			</default>
 			<default>
 				<type>Skill</type>
 				<name>Expert Skill</name>
 				<specialization>Computer Security</specialization>
-				<modifier>0</modifier>
+				<modifier>-3</modifier>
 			</default>
 		</melee_weapon>
-		<notes>Listen Program:  Complexity 2; Continuous</notes>
+		<notes>Stealth Program:  Complexity 4; Continuous</notes>
 		<categories>
 			<category>Program</category>
-			<category>Program: Listen</category>
+			<category>Program: Stealth</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Datastream Skiff</description>
+		<description>Auto Gate</description>
 		<tech_level>9</tech_level>
 		<legality_class>4</legality_class>
-		<value>85</value>
-		<weight>0.5 lb</weight>
-		<notes>Complexity 4; 10TB; 2B/20hr; MALF 14</notes>
+		<value>1000</value>
+		<melee_weapon>
+			<usage>Trigger</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Operation</name>
+				<modifier>2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Expert Skill</name>
+				<specialization>Computer Security</specialization>
+				<modifier>2</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Trigger Program:  Complexity 5; Continuous</notes>
 		<categories>
-			<category>Computer</category>
+			<category>Program</category>
+			<category>Program: Trigger</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Bad Kitty</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>300</value>
+		<melee_weapon>
+			<usage>Breach</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Hacking</name>
+				<modifier>-1</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Breach Program:  Complexity 4; Single Execution</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Breach</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Changeling</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>1000</value>
+		<melee_weapon>
+			<usage>Alter</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Programming</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Computer Hacking</name>
+				<modifier>-2</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Alter Program:  Complexity 5; Single Execution</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Alter</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -86,6 +125,157 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Chimera</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<melee_weapon>
+			<usage>ICE</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Hacking</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Expert Skill</name>
+				<specialization>Computer Security</specialization>
+				<modifier>2</modifier>
+			</default>
+		</melee_weapon>
+		<notes>ICE Program:  Complexity 5; Continuous</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: ICE</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Command Wizard</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>3000</value>
+		<melee_weapon>
+			<usage>Control</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Hacking</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Computer Operation</name>
+				<modifier>-1</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Control Program:  Complexity 6; Single Execution</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Control</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Datastream Flyer</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>21250</value>
+		<weight>5 lb</weight>
+		<notes>Complexity 6; 100 TB; 2C/20hr or ext pwr; Cyberdeck; MALF 14</notes>
+		<categories>
+			<category>Computer</category>
+			<category>Cyberdeck</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Datastream Glider</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>850</value>
+		<weight>5 lb</weight>
+		<notes>Complexity 5; 100 TB; 2C/20hr or ext pwr; MALF 14</notes>
+		<categories>
+			<category>Computer</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Datastream Rider</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>17000</value>
+		<weight>5 lb</weight>
+		<notes>Complexity 6; 100 TB; 2C/20hr or ext pwr; MALF 14</notes>
+		<categories>
+			<category>Computer</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Datastream Skiff</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>85</value>
+		<weight>0.5 lb</weight>
+		<notes>Complexity 4; 10TB; 2B/20hr; MALF 14</notes>
+		<categories>
+			<category>Computer</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>DataWrench</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>3000</value>
+		<melee_weapon>
+			<usage>Alter</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Programming</name>
+				<modifier>-1</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Computer Hacking</name>
+				<modifier>-1</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Alter Program:  Complexity 6; Single Execution</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Alter</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>DigiCloak</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>1000</value>
+		<melee_weapon>
+			<usage>Stealth</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Hacking</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Expert Skill</name>
+				<specialization>Computer Security</specialization>
+				<modifier>-2</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Stealth Program:  Complexity 5; Continuous</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Stealth</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>eEar</description>
 		<tech_level>9</tech_level>
 		<legality_class>3</legality_class>
@@ -108,6 +298,26 @@
 		<categories>
 			<category>Program</category>
 			<category>Program: Listen</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>F.A.M.E.</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>1000</value>
+		<melee_weapon>
+			<usage>Breach</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Hacking</name>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Breach Program:  Complexity 5; Single Execution</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Breach</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -158,6 +368,52 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Fog</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>30</value>
+		<melee_weapon>
+			<usage>Jam</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Hacking</name>
+				<modifier>-2</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Jam Program:  Complexity 2; Continuous</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Jam</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Fortunata</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<melee_weapon>
+			<usage>Analyze</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Programming</name>
+				<modifier>-1</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Expert Skill</name>
+				<specialization>Computer Security</specialization>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Analyze Program:  Complexity 5; Continuous or Single Execution</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Analyze</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Foxhound</description>
 		<tech_level>9</tech_level>
 		<legality_class>4</legality_class>
@@ -184,130 +440,53 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Mercury Systems MS 55</description>
+		<description>Goldwave Mark 5</description>
 		<tech_level>9</tech_level>
 		<legality_class>4</legality_class>
-		<value>100</value>
-		<weight>0.5 lb</weight>
-		<notes>Complexity 4; 10TB; 2B/20hr</notes>
+		<value>5000</value>
+		<weight>5 lb</weight>
+		<notes>Complexity 5; 100 TB; 2C/20hr or ext pwr; High Capacity</notes>
 		<categories>
 			<category>Computer</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Roger</description>
+		<description>Goldwave Mark 6</description>
 		<tech_level>9</tech_level>
 		<legality_class>4</legality_class>
-		<value>100</value>
-		<melee_weapon>
-			<usage>Trigger</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Operation</name>
-				<modifier>0</modifier>
-			</default>
-			<default>
-				<type>Skill</type>
-				<name>Expert Skill</name>
-				<specialization>Computer Security</specialization>
-				<modifier>0</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Trigger Program:  Complexity 3; Continuous</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Trigger</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Static Sea</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>100</value>
-		<melee_weapon>
-			<usage>Jam</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Hacking</name>
-				<modifier>-1</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Jam Program:  Complexity 3; Continuous</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Jam</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>OmniShard</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>200</value>
-		<weight>0.25 lb</weight>
-		<notes>Complexity 4; 10TB; 1B/10hr</notes>
+		<value>37500</value>
+		<weight>5 lb</weight>
+		<notes>Complexity 6; 100 TB; 2C/20hr or ext pwr; Cyberdeck; High Capacity</notes>
 		<categories>
 			<category>Computer</category>
+			<category>Cyberdeck</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Shirley S-Comp 100</description>
+		<description>Goldwave Mark 6 Plus</description>
 		<tech_level>9</tech_level>
 		<legality_class>4</legality_class>
-		<value>200</value>
-		<weight>1 lb</weight>
-		<notes>Complexity 4; 10TB; 2B/20hr; Hardened</notes>
+		<value>150000</value>
+		<weight>5 lb</weight>
+		<notes>Complexity 6; 100 TB; 1C/10hr or ext pwr; Cyberdeck; High Capacity; Hardened </notes>
 		<categories>
 			<category>Computer</category>
+			<category>Cyberdeck</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Air</description>
+		<description>Goldwave Mark 7</description>
 		<tech_level>9</tech_level>
 		<legality_class>3</legality_class>
-		<value>300</value>
-		<melee_weapon>
-			<usage>Stealth</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Hacking</name>
-				<modifier>-3</modifier>
-			</default>
-			<default>
-				<type>Skill</type>
-				<name>Expert Skill</name>
-				<specialization>Computer Security</specialization>
-				<modifier>-3</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Stealth Program:  Complexity 4; Continuous</notes>
+		<value>937500</value>
+		<weight>5 lb</weight>
+		<notes>Complexity 7; 100 TB; 2C/20hr or ext pwr; Cyberdeck; High Capacity</notes>
 		<categories>
-			<category>Program</category>
-			<category>Program: Stealth</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Bad Kitty</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>300</value>
-		<melee_weapon>
-			<usage>Breach</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Hacking</name>
-				<modifier>-1</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Breach Program:  Complexity 4; Single Execution</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Breach</category>
+			<category>Computer</category>
+			<category>Cyberdeck</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -338,6 +517,126 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Javelin</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>1000</value>
+		<melee_weapon>
+			<usage>Damage</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Hacking</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Expert Skill</name>
+				<specialization>Computer Security</specialization>
+				<modifier>-3</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Damage Program:  Complexity 5; Single Execution</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Damage</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Loki</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>3000</value>
+		<melee_weapon>
+			<usage>Spoof</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Hacking</name>
+				<modifier>-1</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Spoof Program:  Complexity 6; Continuous or Single Execution</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Spoof</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Mercury Systems MS 55</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>0.5 lb</weight>
+		<notes>Complexity 4; 10TB; 2B/20hr</notes>
+		<categories>
+			<category>Computer</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Mercury Systems MS 101</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<weight>5 lb</weight>
+		<notes>Complexity 5; 100 TB; 2C/20hr or ext pwr</notes>
+		<categories>
+			<category>Computer</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Mercury Systems MS 202</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>20000</value>
+		<weight>5 lb</weight>
+		<notes>Complexity 6; 100 TB; 2C/20hr or ext pwr</notes>
+		<categories>
+			<category>Computer</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Mercury Systems MS 202c</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>25000</value>
+		<weight>5 lb</weight>
+		<notes>Complexity 6; 100 TB; 2C/20hr or ext pwr; Cyberdeck</notes>
+		<categories>
+			<category>Computer</category>
+			<category>Cyberdeck</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Mercury Systems MS 303</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>500000</value>
+		<weight>5 lb</weight>
+		<notes>Complexity 7; 100 TB; 2C/20hr or ext pwr</notes>
+		<categories>
+			<category>Computer</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Mercury Systems MS 303c</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>625000</value>
+		<weight>5 lb</weight>
+		<notes>Complexity 7; 100 TB; 2C/20hr or ext pwr; Cyberdeck</notes>
+		<categories>
+			<category>Computer</category>
+			<category>Cyberdeck</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Mirror Maze</description>
 		<tech_level>9</tech_level>
 		<legality_class>3</legality_class>
@@ -354,6 +653,128 @@
 		<categories>
 			<category>Program</category>
 			<category>Program: Spoof</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Niteshade</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>3000</value>
+		<melee_weapon>
+			<usage>Stealth</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Hacking</name>
+				<modifier>-1</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Expert Skill</name>
+				<specialization>Computer Security</specialization>
+				<modifier>-1</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Stealth Program:  Complexity 6; Continuous</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Stealth</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>OmniCapsule</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>2000</value>
+		<weight>2.5 lb</weight>
+		<notes>Complexity 5; 100 TB; 1C/10hr or ext pwr</notes>
+		<categories>
+			<category>Computer</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>OmniGuide</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>50000</value>
+		<weight>2.5 lb</weight>
+		<notes>Complexity 6; 100 TB; 1C/10hr or ext pwr, Cyberdeck</notes>
+		<categories>
+			<category>Computer</category>
+			<category>Cyberdeck</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>OmniSelf</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>1000000</value>
+		<notes>Complexity 6; 100 GB; 1 flexible A/10hr; Printed on bodysuit; Neural Interface</notes>
+		<categories>
+			<category>Computer</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>OmniShard</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>0.25 lb</weight>
+		<notes>Complexity 4; 10TB; 1B/10hr</notes>
+		<categories>
+			<category>Computer</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>OmniShell</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>100000</value>
+		<weight>5 lb</weight>
+		<notes>Complexity 6; 100 TB; 1C/10hr or ext pwr; Cyberdeck; Hardened</notes>
+		<categories>
+			<category>Computer</category>
+			<category>Cyberdeck</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>OmniSkin</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>2200</value>
+		<notes>Complexity 4; 100 GB; 1 flexible A/10hr; Printed on bodysuit</notes>
+		<categories>
+			<category>Computer</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>OmniSkin 2</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>80000</value>
+		<notes>Complexity 5; 100 GB; 1 flexible A/10hr; Printed on bodysuit; Neural Input</notes>
+		<categories>
+			<category>Computer</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>OmniWorld</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>1250000</value>
+		<weight>2.5 lb</weight>
+		<notes>Complexity 7; 100 TB; 1C/10hr or ext pwr; Cyberdeck</notes>
+		<categories>
+			<category>Computer</category>
+			<category>Cyberdeck</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -383,6 +804,57 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Psyclone</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>10000</value>
+		<melee_weapon>
+			<usage>Damage</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Hacking</name>
+				<modifier>-1</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Expert Skill</name>
+				<specialization>Computer Security</specialization>
+				<modifier>-1</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Damage Program:  Complexity 7; Single Execution</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Damage</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Puppet Master</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>1000</value>
+		<melee_weapon>
+			<usage>Control</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Hacking</name>
+				<modifier>-1</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Computer Operation</name>
+				<modifier>-2</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Control Program:  Complexity 5; Single Execution</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Control</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Raspberry</description>
 		<tech_level>9</tech_level>
 		<legality_class>3</legality_class>
@@ -399,6 +871,84 @@
 		<categories>
 			<category>Program</category>
 			<category>Program: Jam</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Receptor</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>30</value>
+		<melee_weapon>
+			<usage>Listen</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Hacking</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Expert Skill</name>
+				<specialization>Computer Security</specialization>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Listen Program:  Complexity 2; Continuous</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Listen</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Red Line</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>3000</value>
+		<melee_weapon>
+			<usage>Damage</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Hacking</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Expert Skill</name>
+				<specialization>Computer Security</specialization>
+				<modifier>-2</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Damage Program:  Complexity 6; Single Execution</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Damage</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Roger</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<melee_weapon>
+			<usage>Trigger</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Operation</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Expert Skill</name>
+				<specialization>Computer Security</specialization>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Trigger Program:  Complexity 3; Continuous</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Trigger</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -428,6 +978,32 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Seeker</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<melee_weapon>
+			<usage>Search</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Operation</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Expert Skill</name>
+				<specialization>Computer Security</specialization>
+				<modifier>1</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Search Program:  Complexity 5; Continuous or Single Execution</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Search</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Sentinal</description>
 		<tech_level>9</tech_level>
 		<legality_class>3</legality_class>
@@ -450,6 +1026,122 @@
 		<categories>
 			<category>Program</category>
 			<category>Program: Listen</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Shirley S-Comp 100</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>1 lb</weight>
+		<notes>Complexity 4; 10TB; 2B/20hr; Hardened</notes>
+		<categories>
+			<category>Computer</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Shirley S-Deck 1000</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>2000</value>
+		<weight>10 lb</weight>
+		<notes>Complexity 5; 100 TB; 2C/20hr or ext pwr; Hardened</notes>
+		<categories>
+			<category>Computer</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Shirley S-Deck 2000</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>50000</value>
+		<weight>10 lb</weight>
+		<notes>Complexity 6; 100 TB; 2C/20hr or ext pwr; Cyberdeck; Hardened</notes>
+		<categories>
+			<category>Computer</category>
+			<category>Cyberdeck</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Shirley S-Deck 2600</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>75000</value>
+		<weight>10 lb</weight>
+		<notes>Complexity 6; 100 TB; 2C/20hr or ext pwr; Cyberdeck; Hardened; High Capacity</notes>
+		<categories>
+			<category>Computer</category>
+			<category>Cyberdeck</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Shirley S-Deck 3000</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>1250000</value>
+		<weight>10 lb</weight>
+		<notes>Complexity 7; 100 TB; 2C/20hr or ext pwr; Cyberdeck; Hardened</notes>
+		<categories>
+			<category>Computer</category>
+			<category>Cyberdeck</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Shirley S-Deck Extreme</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>1870000</value>
+		<weight>10 lb</weight>
+		<notes>Complexity 7; 100 TB; 2C/20hr or ext pwr; Cyberdeck; Hardened; High Capacity</notes>
+		<categories>
+			<category>Computer</category>
+			<category>Cyberdeck</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Smooth Op</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>1000</value>
+		<melee_weapon>
+			<usage>Spoof</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Hacking</name>
+				<modifier>-2</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Spoof Program:  Complexity 5; Continuous or Single Execution</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Spoof</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Static Sea</description>
+		<tech_level>9</tech_level>
+		<legality_class>3</legality_class>
+		<value>100</value>
+		<melee_weapon>
+			<usage>Jam</usage>
+			<default>
+				<type>Skill</type>
+				<name>Computer Hacking</name>
+				<modifier>-1</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Jam Program:  Complexity 3; Continuous</notes>
+		<categories>
+			<category>Program</category>
+			<category>Program: Jam</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -528,698 +1220,6 @@
 		<categories>
 			<category>Program</category>
 			<category>Program: Analyze</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Datastream Glider</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>850</value>
-		<weight>5 lb</weight>
-		<notes>Complexity 5; 100 TB; 2C/20hr or ext pwr; MALF 14</notes>
-		<categories>
-			<category>Computer</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Auto Gate</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>1000</value>
-		<melee_weapon>
-			<usage>Trigger</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Operation</name>
-				<modifier>2</modifier>
-			</default>
-			<default>
-				<type>Skill</type>
-				<name>Expert Skill</name>
-				<specialization>Computer Security</specialization>
-				<modifier>2</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Trigger Program:  Complexity 5; Continuous</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Trigger</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Changeling</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>1000</value>
-		<melee_weapon>
-			<usage>Alter</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Programming</name>
-				<modifier>-2</modifier>
-			</default>
-			<default>
-				<type>Skill</type>
-				<name>Computer Hacking</name>
-				<modifier>-2</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Alter Program:  Complexity 5; Single Execution</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Alter</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Chimera</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>1000</value>
-		<melee_weapon>
-			<usage>ICE</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Hacking</name>
-				<modifier>0</modifier>
-			</default>
-			<default>
-				<type>Skill</type>
-				<name>Expert Skill</name>
-				<specialization>Computer Security</specialization>
-				<modifier>2</modifier>
-			</default>
-		</melee_weapon>
-		<notes>ICE Program:  Complexity 5; Continuous</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: ICE</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>DigiCloak</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>1000</value>
-		<melee_weapon>
-			<usage>Stealth</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Hacking</name>
-				<modifier>-2</modifier>
-			</default>
-			<default>
-				<type>Skill</type>
-				<name>Expert Skill</name>
-				<specialization>Computer Security</specialization>
-				<modifier>-2</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Stealth Program:  Complexity 5; Continuous</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Stealth</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>F.A.M.E.</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>1000</value>
-		<melee_weapon>
-			<usage>Breach</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Hacking</name>
-				<modifier>0</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Breach Program:  Complexity 5; Single Execution</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Breach</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Fortunata</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>1000</value>
-		<melee_weapon>
-			<usage>Analyze</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Programming</name>
-				<modifier>-1</modifier>
-			</default>
-			<default>
-				<type>Skill</type>
-				<name>Expert Skill</name>
-				<specialization>Computer Security</specialization>
-				<modifier>0</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Analyze Program:  Complexity 5; Continuous or Single Execution</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Analyze</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Javelin</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>1000</value>
-		<melee_weapon>
-			<usage>Damage</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Hacking</name>
-				<modifier>-3</modifier>
-			</default>
-			<default>
-				<type>Skill</type>
-				<name>Expert Skill</name>
-				<specialization>Computer Security</specialization>
-				<modifier>-3</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Damage Program:  Complexity 5; Single Execution</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Damage</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Mercury Systems MS 101</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>1000</value>
-		<weight>5 lb</weight>
-		<notes>Complexity 5; 100 TB; 2C/20hr or ext pwr</notes>
-		<categories>
-			<category>Computer</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Puppet Master</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>1000</value>
-		<melee_weapon>
-			<usage>Control</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Hacking</name>
-				<modifier>-1</modifier>
-			</default>
-			<default>
-				<type>Skill</type>
-				<name>Computer Operation</name>
-				<modifier>-2</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Control Program:  Complexity 5; Single Execution</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Control</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Seeker</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>1000</value>
-		<melee_weapon>
-			<usage>Search</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Operation</name>
-				<modifier>0</modifier>
-			</default>
-			<default>
-				<type>Skill</type>
-				<name>Expert Skill</name>
-				<specialization>Computer Security</specialization>
-				<modifier>1</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Search Program:  Complexity 5; Continuous or Single Execution</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Search</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Smooth Op</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>1000</value>
-		<melee_weapon>
-			<usage>Spoof</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Hacking</name>
-				<modifier>-2</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Spoof Program:  Complexity 5; Continuous or Single Execution</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Spoof</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>OmniCapsule</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>2000</value>
-		<weight>2.5 lb</weight>
-		<notes>Complexity 5; 100 TB; 1C/10hr or ext pwr</notes>
-		<categories>
-			<category>Computer</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Shirley S-Deck 1000</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>2000</value>
-		<weight>10 lb</weight>
-		<notes>Complexity 5; 100 TB; 2C/20hr or ext pwr; Hardened</notes>
-		<categories>
-			<category>Computer</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>OmniSkin</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>2200</value>
-		<notes>Complexity 4; 100 GB; 1 flexible A/10hr; Printed on bodysuit</notes>
-		<categories>
-			<category>Computer</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Command Wizard</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>3000</value>
-		<melee_weapon>
-			<usage>Control</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Hacking</name>
-				<modifier>0</modifier>
-			</default>
-			<default>
-				<type>Skill</type>
-				<name>Computer Operation</name>
-				<modifier>-1</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Control Program:  Complexity 6; Single Execution</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Control</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>DataWrench</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>3000</value>
-		<melee_weapon>
-			<usage>Alter</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Programming</name>
-				<modifier>-1</modifier>
-			</default>
-			<default>
-				<type>Skill</type>
-				<name>Computer Hacking</name>
-				<modifier>-1</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Alter Program:  Complexity 6; Single Execution</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Alter</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Loki</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>3000</value>
-		<melee_weapon>
-			<usage>Spoof</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Hacking</name>
-				<modifier>-1</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Spoof Program:  Complexity 6; Continuous or Single Execution</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Spoof</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Niteshade</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>3000</value>
-		<melee_weapon>
-			<usage>Stealth</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Hacking</name>
-				<modifier>-1</modifier>
-			</default>
-			<default>
-				<type>Skill</type>
-				<name>Expert Skill</name>
-				<specialization>Computer Security</specialization>
-				<modifier>-1</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Stealth Program:  Complexity 6; Continuous</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Stealth</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Red Line</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>3000</value>
-		<melee_weapon>
-			<usage>Damage</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Hacking</name>
-				<modifier>-2</modifier>
-			</default>
-			<default>
-				<type>Skill</type>
-				<name>Expert Skill</name>
-				<specialization>Computer Security</specialization>
-				<modifier>-2</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Damage Program:  Complexity 6; Single Execution</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Damage</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Goldwave Mark 5</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>5000</value>
-		<weight>5 lb</weight>
-		<notes>Complexity 5; 100 TB; 2C/20hr or ext pwr; High Capacity</notes>
-		<categories>
-			<category>Computer</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Psyclone</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>10000</value>
-		<melee_weapon>
-			<usage>Damage</usage>
-			<default>
-				<type>Skill</type>
-				<name>Computer Hacking</name>
-				<modifier>-1</modifier>
-			</default>
-			<default>
-				<type>Skill</type>
-				<name>Expert Skill</name>
-				<specialization>Computer Security</specialization>
-				<modifier>-1</modifier>
-			</default>
-		</melee_weapon>
-		<notes>Damage Program:  Complexity 7; Single Execution</notes>
-		<categories>
-			<category>Program</category>
-			<category>Program: Damage</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Datastream Rider</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>17000</value>
-		<weight>5 lb</weight>
-		<notes>Complexity 6; 100 TB; 2C/20hr or ext pwr; MALF 14</notes>
-		<categories>
-			<category>Computer</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Mercury Systems MS 202</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>20000</value>
-		<weight>5 lb</weight>
-		<notes>Complexity 6; 100 TB; 2C/20hr or ext pwr</notes>
-		<categories>
-			<category>Computer</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Datastream Flyer</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>21250</value>
-		<weight>5 lb</weight>
-		<notes>Complexity 6; 100 TB; 2C/20hr or ext pwr; Cyberdeck; MALF 14</notes>
-		<categories>
-			<category>Computer</category>
-			<category>Cyberdeck</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Mercury Systems MS 202c</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>25000</value>
-		<weight>5 lb</weight>
-		<notes>Complexity 6; 100 TB; 2C/20hr or ext pwr; Cyberdeck</notes>
-		<categories>
-			<category>Computer</category>
-			<category>Cyberdeck</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Goldwave Mark 6</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>37500</value>
-		<weight>5 lb</weight>
-		<notes>Complexity 6; 100 TB; 2C/20hr or ext pwr; Cyberdeck; High Capacity</notes>
-		<categories>
-			<category>Computer</category>
-			<category>Cyberdeck</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>OmniGuide</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>50000</value>
-		<weight>2.5 lb</weight>
-		<notes>Complexity 6; 100 TB; 1C/10hr or ext pwr, Cyberdeck</notes>
-		<categories>
-			<category>Computer</category>
-			<category>Cyberdeck</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Shirley S-Deck 2000</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>50000</value>
-		<weight>10 lb</weight>
-		<notes>Complexity 6; 100 TB; 2C/20hr or ext pwr; Cyberdeck; Hardened</notes>
-		<categories>
-			<category>Computer</category>
-			<category>Cyberdeck</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Shirley S-Deck 2600</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>75000</value>
-		<weight>10 lb</weight>
-		<notes>Complexity 6; 100 TB; 2C/20hr or ext pwr; Cyberdeck; Hardened; High Capacity</notes>
-		<categories>
-			<category>Computer</category>
-			<category>Cyberdeck</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>OmniSkin 2</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>80000</value>
-		<notes>Complexity 5; 100 GB; 1 flexible A/10hr; Printed on bodysuit; Neural Input</notes>
-		<categories>
-			<category>Computer</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>OmniShell</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>100000</value>
-		<weight>5 lb</weight>
-		<notes>Complexity 6; 100 TB; 1C/10hr or ext pwr; Cyberdeck; Hardened</notes>
-		<categories>
-			<category>Computer</category>
-			<category>Cyberdeck</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Goldwave Mark 6 Plus</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>150000</value>
-		<weight>5 lb</weight>
-		<notes>Complexity 6; 100 TB; 1C/10hr or ext pwr; Cyberdeck; High Capacity; Hardened </notes>
-		<categories>
-			<category>Computer</category>
-			<category>Cyberdeck</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Mercury Systems MS 303</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>500000</value>
-		<weight>5 lb</weight>
-		<notes>Complexity 7; 100 TB; 2C/20hr or ext pwr</notes>
-		<categories>
-			<category>Computer</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Mercury Systems MS 303c</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>625000</value>
-		<weight>5 lb</weight>
-		<notes>Complexity 7; 100 TB; 2C/20hr or ext pwr; Cyberdeck</notes>
-		<categories>
-			<category>Computer</category>
-			<category>Cyberdeck</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Goldwave Mark 7</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>937500</value>
-		<weight>5 lb</weight>
-		<notes>Complexity 7; 100 TB; 2C/20hr or ext pwr; Cyberdeck; High Capacity</notes>
-		<categories>
-			<category>Computer</category>
-			<category>Cyberdeck</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>OmniSelf</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>1000000</value>
-		<notes>Complexity 6; 100 GB; 1 flexible A/10hr; Printed on bodysuit; Neural Interface</notes>
-		<categories>
-			<category>Computer</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>OmniWorld</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>1250000</value>
-		<weight>2.5 lb</weight>
-		<notes>Complexity 7; 100 TB; 1C/10hr or ext pwr; Cyberdeck</notes>
-		<categories>
-			<category>Computer</category>
-			<category>Cyberdeck</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Shirley S-Deck 3000</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>1250000</value>
-		<weight>10 lb</weight>
-		<notes>Complexity 7; 100 TB; 2C/20hr or ext pwr; Cyberdeck; Hardened</notes>
-		<categories>
-			<category>Computer</category>
-			<category>Cyberdeck</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Shirley S-Deck Extreme</description>
-		<tech_level>9</tech_level>
-		<legality_class>3</legality_class>
-		<value>1870000</value>
-		<weight>10 lb</weight>
-		<notes>Complexity 7; 100 TB; 2C/20hr or ext pwr; Cyberdeck; Hardened; High Capacity</notes>
-		<categories>
-			<category>Computer</category>
-			<category>Cyberdeck</category>
 		</categories>
 	</equipment>
 </equipment_list>

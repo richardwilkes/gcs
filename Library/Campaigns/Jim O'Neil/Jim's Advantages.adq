@@ -5,7 +5,6 @@
 		<type>Physical</type>
 		<levels>1</levels>
 		<points_per_level>-5</points_per_level>
-		<reference></reference>
 		<notes>A negative reaction (spell it out) to Dust ; more allergic causes more levels of difficulty.</notes>
 		<categories>
 			<category>Disadvantage</category>

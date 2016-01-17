@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
 <template unique_id="gg18t4g2:-13giiba0yfs9r" version="1">
 	<advantage_list>
-		<advantage_container version="2" open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Face Man</name>
 			<reference>ACT1:9</reference>
 			<advantage_container version="2" open="yes">
@@ -674,7 +674,7 @@
 					<advantage_container version="2" open="yes">
 						<name>Lenses</name>
 						<reference>ACT1:4</reference>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Criminal</name>
 							<advantage version="2">
 								<name>Contact (@Fence, fixer, smuggler@)</name>
@@ -841,7 +841,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Intelligence</name>
 							<advantage version="2">
 								<name>Must take template's Duty</name>
@@ -861,13 +861,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -877,7 +877,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Law Enforcement</name>
 							<advantage version="2">
 								<name>Legal Enforcement Powers (@FBI Agent@)</name>
@@ -915,13 +915,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -931,7 +931,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Military</name>
 							<advantage version="2">
 								<name>Must take template's Duty</name>
@@ -951,13 +951,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -967,7 +967,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Security</name>
 							<advantage version="2">
 								<name>Legal Enforcement Powers (@Federal or Secret Service@)</name>
@@ -986,13 +986,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -1492,6 +1492,98 @@
 				<name>Disadvantages</name>
 				<advantage_container version="2" open="yes">
 					<name>Choose -50 points</name>
+					<advantage_container version="2" open="yes">
+						<name> Max -20 points</name>
+						<advantage version="2">
+							<name>Curious</name>
+							<type>Mental</type>
+							<base_points>-5</base_points>
+							<cr>12</cr>
+							<reference>B129</reference>
+							<categories>
+								<category>Disadvantage</category>
+							</categories>
+						</advantage>
+						<advantage version="2">
+							<name>Impulsiveness</name>
+							<type>Mental</type>
+							<base_points>-10</base_points>
+							<cr>12</cr>
+							<reference>B139</reference>
+							<categories>
+								<category>Disadvantage</category>
+							</categories>
+						</advantage>
+						<advantage version="2">
+							<name>Jealousy</name>
+							<type>Mental</type>
+							<base_points>-10</base_points>
+							<reference>B140</reference>
+							<categories>
+								<category>Disadvantage</category>
+							</categories>
+						</advantage>
+						<advantage version="2">
+							<name>Kleptomania</name>
+							<type>Mental</type>
+							<base_points>-15</base_points>
+							<cr>12</cr>
+							<reference>B141</reference>
+							<categories>
+								<category>Disadvantage</category>
+							</categories>
+						</advantage>
+						<advantage version="2">
+							<name>Overconfidence</name>
+							<type>Mental</type>
+							<base_points>-5</base_points>
+							<cr>12</cr>
+							<reference>B148</reference>
+							<categories>
+								<category>Disadvantage</category>
+							</categories>
+						</advantage>
+						<advantage version="2">
+							<name>Selfish</name>
+							<type>Mental</type>
+							<base_points>-5</base_points>
+							<cr>12</cr>
+							<reference>B153</reference>
+							<categories>
+								<category>Disadvantage</category>
+							</categories>
+						</advantage>
+						<advantage_container version="2" open="yes">
+							<name>Trademark</name>
+							<advantage version="2">
+								<name>Trademark (@Complex@)</name>
+								<type>Mental</type>
+								<base_points>-10</base_points>
+								<reference>B159</reference>
+								<categories>
+									<category>Disadvantage</category>
+								</categories>
+							</advantage>
+							<advantage version="2">
+								<name>Trademark (@Elaborate@)</name>
+								<type>Mental</type>
+								<base_points>-15</base_points>
+								<reference>B159</reference>
+								<categories>
+									<category>Disadvantage</category>
+								</categories>
+							</advantage>
+							<advantage version="2">
+								<name>Trademark (@Simple@)</name>
+								<type>Mental</type>
+								<base_points>-5</base_points>
+								<reference>B159</reference>
+								<categories>
+									<category>Disadvantage</category>
+								</categories>
+							</advantage>
+						</advantage_container>
+					</advantage_container>
 					<advantage version="2">
 						<name>Duty (@Agency, mob, service, or similar@)</name>
 						<type>Social</type>
@@ -1593,98 +1685,6 @@
 							<category>Disadvantage</category>
 						</categories>
 					</advantage>
-					<advantage_container version="2" open="yes">
-						<name> Max -20 points</name>
-						<advantage version="2">
-							<name>Curious</name>
-							<type>Mental</type>
-							<base_points>-5</base_points>
-							<cr>12</cr>
-							<reference>B129</reference>
-							<categories>
-								<category>Disadvantage</category>
-							</categories>
-						</advantage>
-						<advantage version="2">
-							<name>Jealousy</name>
-							<type>Mental</type>
-							<base_points>-10</base_points>
-							<reference>B140</reference>
-							<categories>
-								<category>Disadvantage</category>
-							</categories>
-						</advantage>
-						<advantage version="2">
-							<name>Impulsiveness</name>
-							<type>Mental</type>
-							<base_points>-10</base_points>
-							<cr>12</cr>
-							<reference>B139</reference>
-							<categories>
-								<category>Disadvantage</category>
-							</categories>
-						</advantage>
-						<advantage version="2">
-							<name>Kleptomania</name>
-							<type>Mental</type>
-							<base_points>-15</base_points>
-							<cr>12</cr>
-							<reference>B141</reference>
-							<categories>
-								<category>Disadvantage</category>
-							</categories>
-						</advantage>
-						<advantage version="2">
-							<name>Overconfidence</name>
-							<type>Mental</type>
-							<base_points>-5</base_points>
-							<cr>12</cr>
-							<reference>B148</reference>
-							<categories>
-								<category>Disadvantage</category>
-							</categories>
-						</advantage>
-						<advantage version="2">
-							<name>Selfish</name>
-							<type>Mental</type>
-							<base_points>-5</base_points>
-							<cr>12</cr>
-							<reference>B153</reference>
-							<categories>
-								<category>Disadvantage</category>
-							</categories>
-						</advantage>
-						<advantage_container version="2" open="yes">
-							<name>Trademark</name>
-							<advantage version="2">
-								<name>Trademark (@Complex@)</name>
-								<type>Mental</type>
-								<base_points>-10</base_points>
-								<reference>B159</reference>
-								<categories>
-									<category>Disadvantage</category>
-								</categories>
-							</advantage>
-							<advantage version="2">
-								<name>Trademark (@Elaborate@)</name>
-								<type>Mental</type>
-								<base_points>-15</base_points>
-								<reference>B159</reference>
-								<categories>
-									<category>Disadvantage</category>
-								</categories>
-							</advantage>
-							<advantage version="2">
-								<name>Trademark (@Simple@)</name>
-								<type>Mental</type>
-								<base_points>-5</base_points>
-								<reference>B159</reference>
-								<categories>
-									<category>Disadvantage</category>
-								</categories>
-							</advantage>
-						</advantage_container>
-					</advantage_container>
 				</advantage_container>
 			</advantage_container>
 		</advantage_container>
@@ -1996,13 +1996,13 @@
 						<weapon_bonus>
 							<name compare="is">Boxing</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">1</level>
+							<level compare="at least">1</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 						<weapon_bonus>
 							<name compare="is">Boxing</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">2</level>
+							<level compare="at least">2</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 					</skill>
@@ -2018,7 +2018,7 @@
 						<weapon_bonus>
 							<name compare="is">Brawling</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">2</level>
+							<level compare="at least">2</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 					</skill>
@@ -2035,13 +2035,13 @@
 						<weapon_bonus>
 							<name compare="is">Karate</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">0</level>
+							<level compare="at least">0</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 						<weapon_bonus>
 							<name compare="is">Karate</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">1</level>
+							<level compare="at least">1</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 					</skill>
@@ -2779,7 +2779,7 @@
 								<weapon_bonus>
 									<name compare="is">Brawling</name>
 									<specialization compare="is anything"></specialization>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 									<amount per_level="yes">1</amount>
 								</weapon_bonus>
 							</skill>
@@ -3603,7 +3603,7 @@
 								<category>Spy</category>
 							</categories>
 							<prereq_list all="no">
-								<when_tl compare="at_least">8</when_tl>
+								<when_tl compare="at least">8</when_tl>
 								<skill_prereq has="yes">
 									<name compare="is">computer operation</name>
 									<specialization compare="is"></specialization>

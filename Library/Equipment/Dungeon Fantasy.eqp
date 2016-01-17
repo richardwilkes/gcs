@@ -1921,6 +1921,19 @@
 	</equipment_container>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Rations</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>2</value>
+		<weight>0.5 lb</weight>
+		<reference>DF1:23</reference>
+		<notes>One meal</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Rope, 3/4", 10 yd</description>
 		<legality_class>4</legality_class>
 		<value>25</value>
@@ -2135,6 +2148,32 @@
 			<category>Concoctions:Potions</category>
 		</categories>
 	</equipment>
+	<equipment_container version="3" open="yes">
+		<description>Strongbox, Iron</description>
+		<legality_class>4</legality_class>
+		<value>250</value>
+		<weight>15 lb</weight>
+		<reference>DF1:23</reference>
+		<notes>Holds 40 lbs of coins or other small items; DR12, HP10</notes>
+		<categories>
+			<category>Containers</category>
+		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at most">40 lb</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sundial, Miniature</description>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>1 lb</weight>
+		<reference>DF1:23</reference>
+		<notes>allows Navigation at only -1 for equipment, only in sunlight</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
+	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
 		<description>Surgical Instruments</description>
@@ -2319,19 +2358,6 @@
 		<notes>Burns for 1 hour, 2 yd.</notes>
 		<categories>
 			<category>Light Sources</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Rations</description>
-		<tech_level>0</tech_level>
-		<legality_class>4</legality_class>
-		<value>2</value>
-		<weight>0.5 lb</weight>
-		<reference>DF1:23</reference>
-		<notes>One meal</notes>
-		<categories>
-			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -2677,30 +2703,4 @@
 			<category>Musical Instruments</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Sundial, Miniature</description>
-		<legality_class>4</legality_class>
-		<value>40</value>
-		<weight>1 lb</weight>
-		<reference>DF1:23</reference>
-		<notes>allows Navigation at only -1 for equipment, only in sunlight</notes>
-		<categories>
-			<category>Camping and Survival Gear</category>
-		</categories>
-	</equipment>
-	<equipment_container version="3" open="yes">
-		<description>Strongbox, Iron</description>
-		<legality_class>4</legality_class>
-		<value>250</value>
-		<weight>15 lb</weight>
-		<reference>DF1:23</reference>
-		<notes>Holds 40 lbs of coins or other small items; DR12, HP10</notes>
-		<categories>
-			<category>Containers</category>
-		</categories>
-		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at most">40 lb</contained_weight_prereq>
-		</prereq_list>
-	</equipment_container>
 </equipment_list>

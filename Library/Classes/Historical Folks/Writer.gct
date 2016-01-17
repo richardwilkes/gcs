@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
 <template unique_id="g2gmtmpp:11xpfirww9a9u" version="1">
 	<advantage_list>
-		<advantage_container version="2" open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Writer</name>
 			<reference>HF50</reference>
 			<notes>[15 points]</notes>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Class Advantages</name>
-				<advantage_container version="2" open="yes" type="metatrait">
+				<advantage_container version="2" open="yes" type="meta trait">
 					<name>15 Points Chosen From:</name>
 					<advantage version="2">
 						<name>Empathy</name>
@@ -40,15 +40,6 @@
 						</skill_bonus>
 					</advantage>
 					<advantage version="2">
-						<name>Fashion Sense</name>
-						<type>Mental</type>
-						<base_points>5</base_points>
-						<reference>B21</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
 						<name>Empathy (Sensitive)</name>
 						<type>Mental</type>
 						<base_points>5</base_points>
@@ -77,6 +68,15 @@
 							<specialization compare="is anything"></specialization>
 							<amount>1</amount>
 						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Fashion Sense</name>
+						<type>Mental</type>
+						<base_points>5</base_points>
+						<reference>B21</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
 					</advantage>
 					<advantage version="2">
 						<name>Intuition</name>
@@ -365,9 +365,9 @@
 					</advantage>
 				</advantage_container>
 			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Class Disadvantages</name>
-				<advantage_container version="2" open="yes" type="metatrait">
+				<advantage_container version="2" open="yes" type="meta trait">
 					<name>-20 Points Chosen From:</name>
 					<advantage version="2">
 						<name>Absent-Mindedness</name>
@@ -399,16 +399,6 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
-						<name>Overconfidence</name>
-						<type>Mental</type>
-						<base_points>-5</base_points>
-						<cr>12</cr>
-						<reference>B148</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
 						<name>Jealousy</name>
 						<type>Mental</type>
 						<base_points>-10</base_points>
@@ -421,7 +411,7 @@
 						<name>Loner</name>
 						<type>Mental</type>
 						<base_points>-5</base_points>
-						<cr adj="reaction_penalty">12</cr>
+						<cr adj="reaction penalty">12</cr>
 						<reference>B142</reference>
 						<categories>
 							<category>Disadvantage</category>
@@ -448,29 +438,62 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
-						<name>Wealth (Debt)</name>
+						<name>Overconfidence</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<cr>12</cr>
+						<reference>B148</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Reputation</name>
 						<type>Social</type>
 						<levels>1</levels>
-						<points_per_level>-1</points_per_level>
+						<points_per_level>-5</points_per_level>
+						<modifier version="1" enabled="no">
+							<name>People Affected</name>
+							<cost type="multiplier">1</cost>
+							<reference>B27</reference>
+							<notes>Almost everyone</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Affected</name>
+							<cost type="multiplier">0.67</cost>
+							<reference>B27</reference>
+							<notes>Almost everyone except @large class of people@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Affected</name>
+							<cost type="multiplier">0.5</cost>
+							<reference>B27</reference>
+							<notes>@Large class of people@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Affected</name>
+							<cost type="multiplier">0.33</cost>
+							<reference>B27</reference>
+							<notes>@Small class of people@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Recognized all the time</name>
+							<cost type="multiplier">1</cost>
+							<reference>B28</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Recognized sometimes</name>
+							<cost type="multiplier">0.5</cost>
+							<reference>B28</reference>
+							<notes>10-</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Recognized occasionally</name>
+							<cost type="multiplier">0.33</cost>
+							<reference>B28</reference>
+							<notes>7-</notes>
+						</modifier>
 						<reference>B26</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Wealth (Poor)</name>
-						<type>Social</type>
-						<base_points>-15</base_points>
-						<reference>B25</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Wealth (Struggling)</name>
-						<type>Social</type>
-						<base_points>-10</base_points>
-						<reference>B25</reference>
 						<categories>
 							<category>Disadvantage</category>
 						</categories>
@@ -644,57 +667,6 @@
 						</skill_bonus>
 					</advantage>
 					<advantage version="2">
-						<name>Reputation</name>
-						<type>Social</type>
-						<levels>1</levels>
-						<points_per_level>-5</points_per_level>
-						<modifier version="1" enabled="no">
-							<name>People Affected</name>
-							<cost type="multiplier">1</cost>
-							<reference>B27</reference>
-							<notes>Almost everyone</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>People Affected</name>
-							<cost type="multiplier">0.67</cost>
-							<reference>B27</reference>
-							<notes>Almost everyone except @large class of people@</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>People Affected</name>
-							<cost type="multiplier">0.5</cost>
-							<reference>B27</reference>
-							<notes>@Large class of people@</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>People Affected</name>
-							<cost type="multiplier">0.33</cost>
-							<reference>B27</reference>
-							<notes>@Small class of people@</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Recognized all the time</name>
-							<cost type="multiplier">1</cost>
-							<reference>B28</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Recognized sometimes</name>
-							<cost type="multiplier">0.5</cost>
-							<reference>B28</reference>
-							<notes>10-</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Recognized occasionally</name>
-							<cost type="multiplier">0.33</cost>
-							<reference>B28</reference>
-							<notes>7-</notes>
-						</modifier>
-						<reference>B26</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
 						<name>Truthfulness</name>
 						<type>Mental</type>
 						<base_points>-5</base_points>
@@ -708,6 +680,34 @@
 							<specialization compare="is anything"></specialization>
 							<amount>-5</amount>
 						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth (Debt)</name>
+						<type>Social</type>
+						<levels>1</levels>
+						<points_per_level>-1</points_per_level>
+						<reference>B26</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth (Poor)</name>
+						<type>Social</type>
+						<base_points>-15</base_points>
+						<reference>B25</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth (Struggling)</name>
+						<type>Social</type>
+						<base_points>-10</base_points>
+						<reference>B25</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
 					</advantage>
 				</advantage_container>
 			</advantage_container>

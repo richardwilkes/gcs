@@ -9,6 +9,50 @@
 		</advantage_container>
 		<advantage_container version="2" open="yes">
 			<name>Class Disadvantages</name>
+			<advantage_container version="2" open="yes">
+				<name>Choose One from:</name>
+				<advantage version="2">
+					<name>Secret (Cyborg)</name>
+					<type>Social</type>
+					<modifier version="1" enabled="no">
+						<name>Serious Embarrassment</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B152</reference>
+					</modifier>
+					<modifier version="1">
+						<name>Utter Rejection</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B152</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Imprisonment</name>
+						<cost type="points">-20</cost>
+						<affects>total</affects>
+						<reference>B152</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Possible Death</name>
+						<cost type="points">-30</cost>
+						<affects>total</affects>
+						<reference>B152</reference>
+					</modifier>
+					<reference>B152</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Social Stigma (Valuable Property)</name>
+					<type>Social</type>
+					<base_points>-10</base_points>
+					<reference>B156</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+			</advantage_container>
 			<advantage version="2">
 				<name>Enemy (Local Overseer)</name>
 				<type>Social</type>
@@ -127,50 +171,6 @@
 					<category>Disadvantage</category>
 				</categories>
 			</advantage>
-			<advantage_container version="2" open="yes">
-				<name>Choose One from:</name>
-				<advantage version="2">
-					<name>Secret (Cyborg)</name>
-					<type>Social</type>
-					<modifier version="1" enabled="no">
-						<name>Serious Embarrassment</name>
-						<cost type="points">-5</cost>
-						<affects>total</affects>
-						<reference>B152</reference>
-					</modifier>
-					<modifier version="1">
-						<name>Utter Rejection</name>
-						<cost type="points">-10</cost>
-						<affects>total</affects>
-						<reference>B152</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Imprisonment</name>
-						<cost type="points">-20</cost>
-						<affects>total</affects>
-						<reference>B152</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Possible Death</name>
-						<cost type="points">-30</cost>
-						<affects>total</affects>
-						<reference>B152</reference>
-					</modifier>
-					<reference>B152</reference>
-					<categories>
-						<category>Disadvantage</category>
-					</categories>
-				</advantage>
-				<advantage version="2">
-					<name>Social Stigma (Valuable Property)</name>
-					<type>Social</type>
-					<base_points>-10</base_points>
-					<reference>B156</reference>
-					<categories>
-						<category>Disadvantage</category>
-					</categories>
-				</advantage>
-			</advantage_container>
 		</advantage_container>
 	</advantage_list>
 </template>

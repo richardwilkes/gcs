@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
 <template unique_id="g2gmtmpp:11xpfirww9a9u" version="1">
 	<advantage_list>
-		<advantage_container version="2" open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Woodcutter</name>
 			<reference>HF50</reference>
 			<notes>[25 points]</notes>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Attributes</name>
 				<advantage version="2">
 					<name>Increased Strength</name>
@@ -42,83 +42,10 @@
 					</attribute_bonus>
 				</advantage>
 			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
-				<name>Secondary Characteristics</name>
-			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Class Advantages</name>
-				<advantage_container version="2" open="yes" type="metatrait">
+				<advantage_container version="2" open="yes" type="meta trait">
 					<name>10 Points Chosen From:</name>
-					<advantage version="2">
-						<name>Extra Fatigue Points</name>
-						<type>Physical</type>
-						<levels>1</levels>
-						<points_per_level>3</points_per_level>
-						<reference>B16</reference>
-						<categories>
-							<category>Advantage</category>
-							<category>Attribute</category>
-						</categories>
-						<attribute_bonus>
-							<attribute>fp</attribute>
-							<amount per_level="yes">1</amount>
-						</attribute_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Increased Perception</name>
-						<type>Mental/Physical</type>
-						<levels>1</levels>
-						<points_per_level>5</points_per_level>
-						<reference>B16</reference>
-						<categories>
-							<category>Advantage</category>
-							<category>Attribute</category>
-						</categories>
-						<attribute_bonus>
-							<attribute>perception</attribute>
-							<amount per_level="yes">1</amount>
-						</attribute_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Talent (Animal Friend)</name>
-						<type>Mental</type>
-						<levels>1</levels>
-						<points_per_level>5</points_per_level>
-						<reference>B90</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-						<skill_bonus>
-							<name compare="contains">animal handling</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">falconry</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">packing</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">riding</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">teamster</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">veterinary</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-					</advantage>
 					<advantage version="2">
 						<name>Absolute Direction</name>
 						<type>Mental/Physical</type>
@@ -186,6 +113,21 @@
 						</skill_bonus>
 					</advantage>
 					<advantage version="2">
+						<name>Extra Fatigue Points</name>
+						<type>Physical</type>
+						<levels>1</levels>
+						<points_per_level>3</points_per_level>
+						<reference>B16</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>fp</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
 						<name>Fearlessness</name>
 						<type>Mental</type>
 						<levels>1</levels>
@@ -204,6 +146,71 @@
 						<categories>
 							<category>Advantage</category>
 						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>High Pain Threshold</name>
+						<type>Physical</type>
+						<base_points>10</base_points>
+						<reference>B59</reference>
+						<notes>Never suffer shock penalties when injured; +3 on all HT rolls to avoid knockdown and stunning; +3 to resist torture</notes>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Increased Perception</name>
+						<type>Mental/Physical</type>
+						<levels>1</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B16</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>perception</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Talent (Animal Friend)</name>
+						<type>Mental</type>
+						<levels>1</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B90</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="contains">animal handling</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">falconry</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">packing</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">riding</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">teamster</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">veterinary</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
 					</advantage>
 					<advantage version="2">
 						<name>Talent (Green Thumb)</name>
@@ -240,21 +247,11 @@
 							<amount per_level="yes">1</amount>
 						</skill_bonus>
 					</advantage>
-					<advantage version="2">
-						<name>High Pain Threshold</name>
-						<type>Physical</type>
-						<base_points>10</base_points>
-						<reference>B59</reference>
-						<notes>Never suffer shock penalties when injured; +3 on all HT rolls to avoid knockdown and stunning; +3 to resist torture</notes>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-					</advantage>
 				</advantage_container>
 			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Class Disadvantages</name>
-				<advantage_container version="2" open="yes" type="metatrait">
+				<advantage_container version="2" open="yes" type="meta trait">
 					<name>-15 Points Chosen From:</name>
 					<advantage version="2">
 						<name>Bad Back (Mild)</name>
@@ -316,19 +313,10 @@
 						<name>Loner</name>
 						<type>Mental</type>
 						<base_points>-5</base_points>
-						<cr adj="reaction_penalty">12</cr>
+						<cr adj="reaction penalty">12</cr>
 						<reference>B142</reference>
 						<categories>
 							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Uncongenial</name>
-						<type>Mental</type>
-						<base_points>-1</base_points>
-						<reference>B164</reference>
-						<categories>
-							<category>Quirk</category>
 						</categories>
 					</advantage>
 					<advantage version="2">
@@ -465,41 +453,88 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
-						<name>Wealth (Debt)</name>
-						<type>Social</type>
-						<levels>1</levels>
-						<points_per_level>-1</points_per_level>
-						<reference>B26</reference>
+						<name>Shyness (Crippling)</name>
+						<type>Mental</type>
+						<base_points>-20</base_points>
+						<reference>B154</reference>
 						<categories>
 							<category>Disadvantage</category>
 						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Wealth (Poor)</name>
-						<type>Social</type>
-						<base_points>-15</base_points>
-						<reference>B25</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Wealth (Struggling)</name>
-						<type>Social</type>
-						<base_points>-10</base_points>
-						<reference>B25</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Wealth (Dead Broke)</name>
-						<type>Social</type>
-						<base_points>-25</base_points>
-						<reference>B25</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
+						<skill_bonus>
+							<name compare="is">acting</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">carousing</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">diplomacy</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">fast-talk</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">intimidation</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">leadership</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">merchant</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">panhandling</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">performance</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">politics</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">public speaking</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">savoir-faire</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">sex appeal</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">streetwise</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">teaching</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
 					</advantage>
 					<advantage version="2">
 						<name>Shyness (Mild)</name>
@@ -670,90 +705,6 @@
 						</skill_bonus>
 					</advantage>
 					<advantage version="2">
-						<name>Shyness (Crippling)</name>
-						<type>Mental</type>
-						<base_points>-20</base_points>
-						<reference>B154</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-						<skill_bonus>
-							<name compare="is">acting</name>
-							<specialization compare="is anything"></specialization>
-							<amount>-4</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">carousing</name>
-							<specialization compare="is anything"></specialization>
-							<amount>-4</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">diplomacy</name>
-							<specialization compare="is anything"></specialization>
-							<amount>-4</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">fast-talk</name>
-							<specialization compare="is anything"></specialization>
-							<amount>-4</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">intimidation</name>
-							<specialization compare="is anything"></specialization>
-							<amount>-4</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">leadership</name>
-							<specialization compare="is anything"></specialization>
-							<amount>-4</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">merchant</name>
-							<specialization compare="is anything"></specialization>
-							<amount>-4</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">panhandling</name>
-							<specialization compare="is anything"></specialization>
-							<amount>-4</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">performance</name>
-							<specialization compare="is anything"></specialization>
-							<amount>-4</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">politics</name>
-							<specialization compare="is anything"></specialization>
-							<amount>-4</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">public speaking</name>
-							<specialization compare="is anything"></specialization>
-							<amount>-4</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">savoir-faire</name>
-							<specialization compare="is anything"></specialization>
-							<amount>-4</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">sex appeal</name>
-							<specialization compare="is anything"></specialization>
-							<amount>-4</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">streetwise</name>
-							<specialization compare="is anything"></specialization>
-							<amount>-4</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">teaching</name>
-							<specialization compare="is anything"></specialization>
-							<amount>-4</amount>
-						</skill_bonus>
-					</advantage>
-					<advantage version="2">
 						<name>Social Stigma (Uneducated)</name>
 						<type>Social</type>
 						<base_points>-5</base_points>
@@ -774,6 +725,52 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
+						<name>Uncongenial</name>
+						<type>Mental</type>
+						<base_points>-1</base_points>
+						<reference>B164</reference>
+						<categories>
+							<category>Quirk</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth (Dead Broke)</name>
+						<type>Social</type>
+						<base_points>-25</base_points>
+						<reference>B25</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth (Debt)</name>
+						<type>Social</type>
+						<levels>1</levels>
+						<points_per_level>-1</points_per_level>
+						<reference>B26</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth (Poor)</name>
+						<type>Social</type>
+						<base_points>-15</base_points>
+						<reference>B25</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth (Struggling)</name>
+						<type>Social</type>
+						<base_points>-10</base_points>
+						<reference>B25</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
 						<name>Workaholic</name>
 						<type>Physical</type>
 						<base_points>-5</base_points>
@@ -783,6 +780,9 @@
 						</categories>
 					</advantage>
 				</advantage_container>
+			</advantage_container>
+			<advantage_container version="2" open="yes" type="meta trait">
+				<name>Secondary Characteristics</name>
 			</advantage_container>
 		</advantage_container>
 	</advantage_list>
@@ -1036,7 +1036,7 @@
 						<weapon_bonus>
 							<name compare="is">Brawling</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">2</level>
+							<level compare="at least">2</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 					</skill>

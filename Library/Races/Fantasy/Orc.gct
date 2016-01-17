@@ -1,58 +1,58 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<template unique_id="egmbdur3:kph6w7gzpbjf">
+<template unique_id="egmbdur3:kph6w7gzpbjf" version="1">
 	<advantage_list>
-		<advantage_container open="yes" type="race">
+		<advantage_container version="2" open="yes" type="race">
 			<name>Orc</name>
 			<reference>F110</reference>
-			<advantage>
+			<advantage version="2">
 				<name>Acute Taste &amp; Smell</name>
 				<type>Physical</type>
 				<levels>2</levels>
 				<points_per_level>2</points_per_level>
 				<reference>B35</reference>
 				<attribute_bonus>
-					<attribute>taste,smell</attribute>
-					<amount per_level="yes">+1</amount>
+					<attribute>taste smell</attribute>
+					<amount per_level="yes">1</amount>
 				</attribute_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Appearance - Unattractive</name>
 				<type>Physical</type>
 				<base_points>-4</base_points>
 				<reference>B21</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Attribute modifiers: IQ -1, HT +1</name>
 				<type>Mental/Physical</type>
 				<base_points>-10</base_points>
 				<attribute_bonus>
-					<attribute>IQ</attribute>
-					<amount per_level="no">-1</amount>
+					<attribute>iq</attribute>
+					<amount>-1</amount>
 				</attribute_bonus>
 				<attribute_bonus>
-					<attribute>HT</attribute>
-					<amount per_level="no">+1</amount>
+					<attribute>ht</attribute>
+					<amount>1</amount>
 				</attribute_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Bad Temper (CR: 12)</name>
 				<type>Mental</type>
 				<base_points>-10</base_points>
 				<reference>B124</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Bowlegged</name>
 				<type>Physical</type>
 				<base_points>-1</base_points>
 				<reference>B165</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Callous</name>
 				<type>Mental</type>
 				<base_points>-5</base_points>
 				<reference>B125</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Combat Reflexes</name>
 				<type>Mental</type>
 				<base_points>15</base_points>
@@ -60,83 +60,83 @@
 				<skill_bonus>
 					<name compare="starts with">fast-draw</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">+1</amount>
+					<amount>1</amount>
 				</skill_bonus>
 				<attribute_bonus>
 					<attribute>dodge</attribute>
-					<amount per_level="no">+1</amount>
+					<amount>1</amount>
 				</attribute_bonus>
 				<attribute_bonus>
 					<attribute>parry</attribute>
-					<amount per_level="no">+1</amount>
+					<amount>1</amount>
 				</attribute_bonus>
 				<attribute_bonus>
 					<attribute>block</attribute>
-					<amount per_level="no">+1</amount>
+					<amount>1</amount>
 				</attribute_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Disturbing Voice</name>
 				<type>Physical</type>
 				<base_points>-10</base_points>
 				<reference>B132</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Fearlessness</name>
 				<type>Mental</type>
 				<levels>2</levels>
 				<points_per_level>2</points_per_level>
 				<reference>B55</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Fit (only at night -20%)</name>
 				<type>Physical</type>
 				<base_points>4</base_points>
 				<reference>B55</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Impulsiveness (CR: 12)</name>
 				<type>Mental</type>
 				<base_points>-10</base_points>
 				<reference>B139</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Infravision</name>
 				<type>Physical, Exotic</type>
 				<base_points>10</base_points>
 				<reference>B60</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Rapid Healing</name>
 				<type>Physical</type>
 				<base_points>5</base_points>
 				<reference>B79</reference>
 				<prereq_list all="yes">
-					<attribute_prereq has="yes" which="HT" compare="atLeast">10</attribute_prereq>
+					<attribute_prereq has="yes" which="ht" compare="at least">10</attribute_prereq>
 				</prereq_list>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Resistant (Disease +3)</name>
 				<type>Physical</type>
 				<base_points>3</base_points>
 				<reference>B81</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Sadism (CR: 12)</name>
 				<type>Mental</type>
 				<base_points>-15</base_points>
 				<reference>B152</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Secondary characteristic, Basic Speed +0.75</name>
 				<type>Physical</type>
 				<base_points>15</base_points>
 				<attribute_bonus>
 					<attribute>speed</attribute>
-					<amount per_level="no">+0.75</amount>
+					<amount>0.75</amount>
 				</attribute_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Unfit (Only by day -20%)</name>
 				<type>Physical</type>
 				<base_points>-4</base_points>

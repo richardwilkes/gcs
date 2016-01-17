@@ -2807,7 +2807,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">2200 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">2200 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -3147,7 +3147,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">1400 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1400 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -3161,7 +3161,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">2000 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">2000 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -3760,7 +3760,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">2000 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">2000 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -4518,7 +4518,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">1000 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1000 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -7108,7 +7108,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">2000 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">2000 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -7496,7 +7496,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">800 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">800 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -7510,7 +7510,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">800 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">800 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -8177,7 +8177,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">1200 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1200 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -8791,7 +8791,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">800 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">800 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -9510,7 +9510,7 @@
 			<category>Defenses</category>
 		</categories>
 		<dr_bonus>
-			<location>full_body</location>
+			<location>full body</location>
 			<amount>2</amount>
 		</dr_bonus>
 		<dr_bonus>
@@ -9549,7 +9549,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">10000 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">10000 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -12112,7 +12112,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">2200 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">2200 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -13886,7 +13886,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">800 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">800 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -14831,7 +14831,7 @@
 			<category>Personal Conveyances</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">200 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">200 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -16105,7 +16105,7 @@
 			<category>Personal Conveyances</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">900 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">900 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -18004,7 +18004,7 @@
 			<category>Personal Conveyances</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">900 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">900 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -18124,7 +18124,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">800 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">800 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -18138,7 +18138,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">1200 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1200 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -18152,7 +18152,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">1000 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1000 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -18486,7 +18486,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">1000 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1000 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="no">
@@ -19118,7 +19118,7 @@
 			<category>Personal Conveyances</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">200 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">200 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -20418,7 +20418,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">1000 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1000 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -23122,7 +23122,7 @@
 			<category>General Equipment</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">10 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">10 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -23214,7 +23214,7 @@
 			<category>Personal Conveyances</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">200 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">200 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -23228,7 +23228,7 @@
 			<category>Personal Conveyances</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">200 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">200 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -23273,7 +23273,7 @@
 			<category>Defenses</category>
 		</categories>
 		<dr_bonus>
-			<location>full_body</location>
+			<location>full body</location>
 			<amount>2</amount>
 		</dr_bonus>
 		<dr_bonus>
@@ -24214,7 +24214,7 @@
 			<category>General Equipment</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">50 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">50 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -24228,7 +24228,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">800 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">800 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -26483,7 +26483,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">600 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">600 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -29054,7 +29054,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">4000 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">4000 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -32578,7 +32578,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">6000 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">6000 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -33655,7 +33655,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">1000 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1000 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -33669,7 +33669,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">4000 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">4000 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -33683,7 +33683,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">7200 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">7200 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -33791,7 +33791,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">1600 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1600 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -33818,7 +33818,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">2200 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">2200 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -34063,7 +34063,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">4800 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">4800 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -34290,7 +34290,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">1000 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1000 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -34416,7 +34416,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">1000 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1000 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -35121,7 +35121,7 @@
 			<category>Personal Conveyances</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">500 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">500 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -35282,7 +35282,7 @@
 			<category>Personal Conveyances</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">200 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">200 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -35502,7 +35502,7 @@
 			<category>Personal Conveyances</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">400 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">400 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -35563,7 +35563,7 @@
 			<category>Personal Conveyances</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">200 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">200 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -37274,7 +37274,7 @@
 			<category>Security and Surveillance</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">40 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">40 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -37288,7 +37288,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">2000 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">2000 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -38480,7 +38480,7 @@
 			<category>Personal Conveyances</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">200 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">200 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -38668,7 +38668,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">1000 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1000 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -43648,7 +43648,7 @@
 			<category>Deception and Intrusion</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">20 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">20 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -43663,7 +43663,7 @@
 			<category>Deception and Intrusion</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">400 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">400 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -43678,7 +43678,7 @@
 			<category>Deception and Intrusion</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">100 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">100 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -44013,7 +44013,7 @@
 			<category>Personal Conveyances</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">260 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">260 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -44236,7 +44236,7 @@
 			<category>Personal Conveyances</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">900 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">900 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -46198,7 +46198,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">4000 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">4000 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -48459,7 +48459,7 @@
 			<category>Personal Conveyances</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">440 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">440 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -48649,8 +48649,8 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>TsNIITochMash AS val, 9x39mm</description>
-		<tech_level>7</tech_level>
+		<description>TsNIITochMash AS Val, 9x39mm</description>
+		<tech_level>8</tech_level>
 		<legality_class>2</legality_class>
 		<value>750</value>
 		<weight>7 lb</weight>
@@ -48740,8 +48740,8 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>TsNIITochMash AS Val, 9x39mm</description>
-		<tech_level>8</tech_level>
+		<description>TsNIITochMash AS val, 9x39mm</description>
+		<tech_level>7</tech_level>
 		<legality_class>2</legality_class>
 		<value>750</value>
 		<weight>7 lb</weight>
@@ -49820,7 +49820,7 @@
 			<category>General Equipment</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">10 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">10 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -49846,7 +49846,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">2200 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">2200 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -52594,7 +52594,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">1200 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1200 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -52608,7 +52608,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">800 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">800 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -53168,7 +53168,7 @@
 			<category>Personal Conveyances</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">200 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">200 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -54051,7 +54051,7 @@
 			<category>Vehicles</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">6600 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">6600 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 </equipment_list>

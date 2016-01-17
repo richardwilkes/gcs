@@ -8,75 +8,6 @@
 				<advantage_container version="2" open="yes">
 					<name>20 points chosen from</name>
 					<advantage version="2">
-						<name>Increased Strength</name>
-						<type>Physical</type>
-						<levels>2</levels>
-						<points_per_level>10</points_per_level>
-						<modifier version="1" enabled="no">
-							<name>No Fine Manipulators</name>
-							<cost type="percentage">-40</cost>
-							<affects>total</affects>
-							<reference>B15</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Size</name>
-							<cost type="percentage">-10</cost>
-							<levels>1</levels>
-							<affects>total</affects>
-							<reference>B15</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Super-Effort</name>
-							<cost type="percentage">300</cost>
-							<affects>total</affects>
-							<reference>SU24</reference>
-						</modifier>
-						<reference>B14</reference>
-						<categories>
-							<category>Advantage</category>
-							<category>Attribute</category>
-						</categories>
-						<attribute_bonus>
-							<attribute>st</attribute>
-							<amount per_level="yes">1</amount>
-						</attribute_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Increased Dexterity</name>
-						<type>Physical</type>
-						<levels>1</levels>
-						<points_per_level>20</points_per_level>
-						<modifier version="1" enabled="no">
-							<name>No Fine Manipulators</name>
-							<cost type="percentage">-40</cost>
-							<affects>total</affects>
-						</modifier>
-						<reference>B15</reference>
-						<categories>
-							<category>Advantage</category>
-							<category>Attribute</category>
-						</categories>
-						<attribute_bonus>
-							<attribute>dx</attribute>
-							<amount per_level="yes">1</amount>
-						</attribute_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Increased Health</name>
-						<type>Physical</type>
-						<levels>2</levels>
-						<points_per_level>10</points_per_level>
-						<reference>B14</reference>
-						<categories>
-							<category>Advantage</category>
-							<category>Attribute</category>
-						</categories>
-						<attribute_bonus>
-							<attribute>ht</attribute>
-							<amount per_level="yes">1</amount>
-						</attribute_bonus>
-					</advantage>
-					<advantage version="2">
 						<name>Ambidexterity</name>
 						<type>Physical</type>
 						<base_points>5</base_points>
@@ -135,6 +66,75 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
+						<name>Increased Dexterity</name>
+						<type>Physical</type>
+						<levels>1</levels>
+						<points_per_level>20</points_per_level>
+						<modifier version="1" enabled="no">
+							<name>No Fine Manipulators</name>
+							<cost type="percentage">-40</cost>
+							<affects>total</affects>
+						</modifier>
+						<reference>B15</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>dx</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Increased Health</name>
+						<type>Physical</type>
+						<levels>2</levels>
+						<points_per_level>10</points_per_level>
+						<reference>B14</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>ht</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Increased Strength</name>
+						<type>Physical</type>
+						<levels>2</levels>
+						<points_per_level>10</points_per_level>
+						<modifier version="1" enabled="no">
+							<name>No Fine Manipulators</name>
+							<cost type="percentage">-40</cost>
+							<affects>total</affects>
+							<reference>B15</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Size</name>
+							<cost type="percentage">-10</cost>
+							<levels>1</levels>
+							<affects>total</affects>
+							<reference>B15</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Super-Effort</name>
+							<cost type="percentage">300</cost>
+							<affects>total</affects>
+							<reference>SU24</reference>
+						</modifier>
+						<reference>B14</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>st</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
 						<name>Patron</name>
 						<type>Social</type>
 						<base_points>10</base_points>
@@ -178,7 +178,7 @@
 							<category>Advantage</category>
 						</categories>
 						<prereq_list all="yes">
-							<attribute_prereq has="yes" which="ht" compare="at_least">10</attribute_prereq>
+							<attribute_prereq has="yes" which="ht" compare="at least">10</attribute_prereq>
 						</prereq_list>
 					</advantage>
 					<advantage version="2">
@@ -255,6 +255,10 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
+						<name>Templates with Ten-Hut! spend an additional 5 points</name>
+						<type>Physical</type>
+					</advantage>
+					<advantage version="2">
 						<name>Unfazeable</name>
 						<type>Mental</type>
 						<base_points>15</base_points>
@@ -262,10 +266,6 @@
 						<categories>
 							<category>Advantage</category>
 						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Templates with Ten-Hut! spend an additional 5 points</name>
-						<type>Physical</type>
 					</advantage>
 				</advantage_container>
 				<advantage version="2">
@@ -275,50 +275,6 @@
 			</advantage_container>
 			<advantage_container version="2" open="yes">
 				<name>Disadvantages</name>
-				<advantage version="2">
-					<name>Duty (@Duty@)</name>
-					<type>Social</type>
-					<modifier version="1" enabled="no">
-						<name>FR: 6</name>
-						<cost type="points">-2</cost>
-						<affects>total</affects>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>FR: 9</name>
-						<cost type="points">-5</cost>
-						<affects>total</affects>
-					</modifier>
-					<modifier version="1">
-						<name>FR: 12</name>
-						<cost type="points">-10</cost>
-						<affects>total</affects>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>FR: 15</name>
-						<cost type="points">-15</cost>
-						<affects>total</affects>
-					</modifier>
-					<modifier version="1">
-						<name>Extremely Hazardous</name>
-						<cost type="points">-5</cost>
-						<affects>total</affects>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Involuntary</name>
-						<cost type="points">-5</cost>
-						<affects>total</affects>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Nonhazardous</name>
-						<cost type="points">5</cost>
-						<affects>total</affects>
-					</modifier>
-					<reference>B133</reference>
-					<categories>
-						<category>Disadvantage</category>
-						<category>Why we fight</category>
-					</categories>
-				</advantage>
 				<advantage_container version="2" open="yes">
 					<name>Add to template options</name>
 					<advantage version="2">
@@ -399,6 +355,50 @@
 						</categories>
 					</advantage>
 				</advantage_container>
+				<advantage version="2">
+					<name>Duty (@Duty@)</name>
+					<type>Social</type>
+					<modifier version="1" enabled="no">
+						<name>FR: 6</name>
+						<cost type="points">-2</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>FR: 9</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1">
+						<name>FR: 12</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>FR: 15</name>
+						<cost type="points">-15</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1">
+						<name>Extremely Hazardous</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Involuntary</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Nonhazardous</name>
+						<cost type="points">5</cost>
+						<affects>total</affects>
+					</modifier>
+					<reference>B133</reference>
+					<categories>
+						<category>Disadvantage</category>
+						<category>Why we fight</category>
+					</categories>
+				</advantage>
 			</advantage_container>
 		</advantage_container>
 	</advantage_list>

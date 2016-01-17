@@ -20,7 +20,7 @@
 			<category>Accessories</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">1.21 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">1.21 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -155,7 +155,7 @@
 			<category>Accessories</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">2 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">2 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">

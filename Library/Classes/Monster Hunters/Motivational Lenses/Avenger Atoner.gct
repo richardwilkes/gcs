@@ -6,21 +6,6 @@
 			<advantage_container version="2" open="yes">
 				<name>Advantages</name>
 				<advantage version="2">
-					<name>Increased Will</name>
-					<type>Mental</type>
-					<levels>1</levels>
-					<points_per_level>5</points_per_level>
-					<reference>B16</reference>
-					<categories>
-						<category>Advantage</category>
-						<category>Attribute</category>
-					</categories>
-					<attribute_bonus>
-						<attribute>will</attribute>
-						<amount per_level="yes">1</amount>
-					</attribute_bonus>
-				</advantage>
-				<advantage version="2">
 					<name>Fearlessness</name>
 					<type>Mental</type>
 					<levels>2</levels>
@@ -39,6 +24,21 @@
 					<categories>
 						<category>Advantage</category>
 					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Increased Will</name>
+					<type>Mental</type>
+					<levels>1</levels>
+					<points_per_level>5</points_per_level>
+					<reference>B16</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>will</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
 				</advantage>
 			</advantage_container>
 			<advantage_container version="2" open="yes">

@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<template unique_id="eh7btlh5:545yi7r1pb7r">
+<template unique_id="eh7btlh5:545yi7r1pb7r" version="1">
 	<advantage_list>
-		<advantage_container open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Meta-Trait: Quadruped</name>
 			<reference>B263</reference>
-			<advantage>
+			<advantage version="2">
 				<name>Extra Legs (4 legs)</name>
 				<type>Physical, Exotic</type>
 				<base_points>5</base_points>
 				<reference>B54</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Horizontal</name>
 				<type>Physical, Exotic</type>
 				<base_points>-10</base_points>
 				<reference>B139</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>No Fine Manipulators</name>
 				<type>Physical</type>
 				<base_points>-30</base_points>

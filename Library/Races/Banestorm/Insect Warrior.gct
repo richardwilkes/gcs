@@ -2,46 +2,22 @@
 <template unique_id="faeet2nr:-n838e5y1holj" version="1">
 	<advantage_list>
 		<advantage version="2">
-			<name>Increased Strength</name>
+			<name>Appearance (Unattractive)</name>
 			<type>Physical</type>
-			<levels>3</levels>
-			<points_per_level>10</points_per_level>
-			<reference>B14</reference>
-			<categories>
-				<category>Advantage</category>
-			</categories>
-			<attribute_bonus>
-				<attribute>st</attribute>
-				<amount per_level="yes">1</amount>
-			</attribute_bonus>
-		</advantage>
-		<advantage version="2">
-			<name>Decreased Intelligence</name>
-			<type>Physical</type>
-			<levels>1</levels>
-			<points_per_level>-20</points_per_level>
-			<reference>B15</reference>
+			<base_points>-4</base_points>
+			<reference>B21</reference>
 			<categories>
 				<category>Disadvantage</category>
 			</categories>
-			<attribute_bonus>
-				<attribute>iq</attribute>
-				<amount per_level="yes">-1</amount>
-			</attribute_bonus>
 		</advantage>
 		<advantage version="2">
-			<name>Increased Health</name>
+			<name>Cannot Speak (Mute)</name>
 			<type>Physical</type>
-			<levels>2</levels>
-			<points_per_level>10</points_per_level>
-			<reference>B14</reference>
+			<base_points>-25</base_points>
+			<reference>B125</reference>
 			<categories>
-				<category>Advantage</category>
+				<category>Disadvantage</category>
 			</categories>
-			<attribute_bonus>
-				<attribute>ht</attribute>
-				<amount per_level="yes">1</amount>
-			</attribute_bonus>
 		</advantage>
 		<advantage version="2">
 			<name>Damage Resistance</name>
@@ -164,6 +140,20 @@
 			</dr_bonus>
 		</advantage>
 		<advantage version="2">
+			<name>Decreased Intelligence</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<points_per_level>-20</points_per_level>
+			<reference>B15</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>iq</attribute>
+				<amount per_level="yes">-1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
 			<name>Extra Arm</name>
 			<type>Physical, Exotic</type>
 			<levels>2</levels>
@@ -233,6 +223,90 @@
 			<categories>
 				<category>Advantage</category>
 			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Hard of Hearing</name>
+			<type>Physical</type>
+			<base_points>-10</base_points>
+			<reference>B138</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>hearing</attribute>
+				<amount>-4</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Increased Health</name>
+			<type>Physical</type>
+			<levels>2</levels>
+			<points_per_level>10</points_per_level>
+			<reference>B14</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>ht</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Increased Strength</name>
+			<type>Physical</type>
+			<levels>3</levels>
+			<points_per_level>10</points_per_level>
+			<reference>B14</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>st</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Low TL</name>
+			<type>Social</type>
+			<levels>1</levels>
+			<points_per_level>-5</points_per_level>
+			<reference>B22</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Sense of Duty</name>
+			<type>Mental</type>
+			<base_points>-10</base_points>
+			<reference>B153</reference>
+			<notes>Colony</notes>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Short Lifespan</name>
+			<type>Physical, Exotic</type>
+			<levels>1</levels>
+			<points_per_level>-10</points_per_level>
+			<reference>B154</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Slave Mentality</name>
+			<type>Physical</type>
+			<base_points>-40</base_points>
+			<reference>B154</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Sterility</name>
+			<type>Physical</type>
 		</advantage>
 		<advantage version="2">
 			<name>Telecommunication</name>
@@ -313,80 +387,6 @@
 			<categories>
 				<category>Advantage</category>
 			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Hard of Hearing</name>
-			<type>Physical</type>
-			<base_points>-10</base_points>
-			<reference>B138</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-			<attribute_bonus>
-				<attribute>hearing</attribute>
-				<amount>-4</amount>
-			</attribute_bonus>
-		</advantage>
-		<advantage version="2">
-			<name>Low TL</name>
-			<type>Social</type>
-			<levels>1</levels>
-			<points_per_level>-5</points_per_level>
-			<reference>B22</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Cannot Speak (Mute)</name>
-			<type>Physical</type>
-			<base_points>-25</base_points>
-			<reference>B125</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Sense of Duty</name>
-			<type>Mental</type>
-			<base_points>-10</base_points>
-			<reference>B153</reference>
-			<notes>Colony</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Short Lifespan</name>
-			<type>Physical, Exotic</type>
-			<levels>1</levels>
-			<points_per_level>-10</points_per_level>
-			<reference>B154</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Slave Mentality</name>
-			<type>Physical</type>
-			<base_points>-40</base_points>
-			<reference>B154</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Appearance (Unattractive)</name>
-			<type>Physical</type>
-			<base_points>-4</base_points>
-			<reference>B21</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Sterility</name>
-			<type>Physical</type>
 		</advantage>
 	</advantage_list>
 	<notes>The bizarre insect men live solely underground, near the border between Zarak and the Great Desert. To date, only a few dwarves know they are more than just large bugs. The Zarakun of Ginnrel consider them a major threat and are trying to wipe them out. Doing so, however, is proving difficult.

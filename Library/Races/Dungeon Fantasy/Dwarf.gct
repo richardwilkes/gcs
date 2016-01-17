@@ -5,51 +5,6 @@
 			<name>Dwarf</name>
 			<reference>DF3:6</reference>
 			<advantage version="2">
-				<name>Increased Health</name>
-				<type>Physical</type>
-				<levels>1</levels>
-				<points_per_level>10</points_per_level>
-				<reference>B14</reference>
-				<categories>
-					<category>Advantage</category>
-					<category>Attribute</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>ht</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Extra Fatigue Points</name>
-				<type>Physical</type>
-				<levels>3</levels>
-				<points_per_level>3</points_per_level>
-				<reference>B16</reference>
-				<categories>
-					<category>Advantage</category>
-					<category>Attribute</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>fp</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Decreased Basic Move</name>
-				<type>Mental</type>
-				<levels>1</levels>
-				<points_per_level>-5</points_per_level>
-				<reference>B16</reference>
-				<categories>
-					<category>Attribute</category>
-					<category>Disadvantage</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>move</attribute>
-					<amount per_level="yes">-1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
 				<name>Alcohol Tolerance</name>
 				<type>Physical</type>
 				<base_points>1</base_points>
@@ -174,9 +129,74 @@
 					<category>Advantage</category>
 				</categories>
 				<dr_bonus>
-					<location>full_body_except_eyes</location>
+					<location>full body except eyes</location>
 					<amount per_level="yes">1</amount>
 				</dr_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Decreased Basic Move</name>
+				<type>Mental</type>
+				<levels>1</levels>
+				<points_per_level>-5</points_per_level>
+				<reference>B16</reference>
+				<categories>
+					<category>Attribute</category>
+					<category>Disadvantage</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>move</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Dwarven Gear</name>
+				<type>Physical</type>
+				<base_points>1</base_points>
+				<reference>DF3:6</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Extra Fatigue Points</name>
+				<type>Physical</type>
+				<levels>3</levels>
+				<points_per_level>3</points_per_level>
+				<reference>B16</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>fp</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Armour not interchangeable with that of humans</name>
+				<type>Physical</type>
+			</advantage>
+			<advantage version="2">
+				<name>Greed</name>
+				<type>Mental</type>
+				<base_points>-15</base_points>
+				<cr>12</cr>
+				<reference>B137</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Health</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>10</points_per_level>
+				<reference>B14</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>ht</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
 			</advantage>
 			<advantage version="2">
 				<name>Lifting ST</name>
@@ -207,7 +227,7 @@
 					<category>Advantage</category>
 				</categories>
 				<attribute_bonus>
-					<attribute limitation="lifting_only">st</attribute>
+					<attribute limitation="lifting only">st</attribute>
 					<amount per_level="yes">1</amount>
 				</attribute_bonus>
 			</advantage>
@@ -219,66 +239,6 @@
 				<reference>B71</reference>
 				<categories>
 					<category>Advantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Talent (Pickaxe Penchant)</name>
-				<type>Mental</type>
-				<levels>1</levels>
-				<points_per_level>5</points_per_level>
-				<reference>DF3:6</reference>
-				<categories>
-					<category>Advantage</category>
-				</categories>
-				<skill_bonus>
-					<name compare="contains">axe/mace</name>
-					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">1</amount>
-				</skill_bonus>
-				<skill_bonus>
-					<name compare="is">forced entry</name>
-					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">1</amount>
-				</skill_bonus>
-				<skill_bonus>
-					<name compare="is">prospecting</name>
-					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">1</amount>
-				</skill_bonus>
-				<skill_bonus>
-					<name compare="is">thrown weapon</name>
-					<specialization compare="is anything">axe/mace</specialization>
-					<amount per_level="yes">1</amount>
-				</skill_bonus>
-				<skill_bonus>
-					<name compare="is">two handed axe/mace</name>
-					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">1</amount>
-				</skill_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Dwarven Gear</name>
-				<type>Physical</type>
-				<base_points>1</base_points>
-				<reference>DF3:6</reference>
-			</advantage>
-			<advantage version="2">
-				<name>Greed</name>
-				<type>Mental</type>
-				<base_points>-15</base_points>
-				<cr>12</cr>
-				<reference>B137</reference>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Stubbornness</name>
-				<type>Mental</type>
-				<base_points>-5</base_points>
-				<reference>B157</reference>
-				<categories>
-					<category>Disadvantage</category>
 				</categories>
 			</advantage>
 			<advantage version="2">
@@ -329,8 +289,48 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
-				<name>Feature: Armour not interchangeable with that of humans</name>
-				<type>Physical</type>
+				<name>Stubbornness</name>
+				<type>Mental</type>
+				<base_points>-5</base_points>
+				<reference>B157</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Talent (Pickaxe Penchant)</name>
+				<type>Mental</type>
+				<levels>1</levels>
+				<points_per_level>5</points_per_level>
+				<reference>DF3:6</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="contains">axe/mace</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">forced entry</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">prospecting</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">thrown weapon</name>
+					<specialization compare="is anything">axe/mace</specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">two handed axe/mace</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
 			</advantage>
 		</advantage_container>
 	</advantage_list>

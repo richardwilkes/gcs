@@ -145,7 +145,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">-1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>F132,PU3:6</reference>
 		<categories>
@@ -218,7 +218,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>F132,PU3:6</reference>
 		<categories>
@@ -276,7 +276,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>F132,PU3:6</reference>
 		<categories>
@@ -331,7 +331,7 @@
 			<affects>total</affects>
 			<notes>Bonus to will to resist "evil influences"</notes>
 		</modifier>
-		<reference>F132,H,PU3:9</reference>
+		<reference>F132,PU3:9</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>
@@ -425,7 +425,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">-3</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>F132,PU3:13</reference>
 		<categories>
@@ -547,7 +547,7 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">2</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
 		<reference>F132</reference>
 		<categories>

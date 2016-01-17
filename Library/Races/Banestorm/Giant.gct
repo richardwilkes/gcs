@@ -17,7 +17,7 @@
 					<category>Advantage</category>
 				</categories>
 				<attribute_bonus>
-					<attribute>taste_smell</attribute>
+					<attribute>taste smell</attribute>
 					<amount per_level="yes">1</amount>
 				</attribute_bonus>
 			</advantage>
@@ -147,7 +147,7 @@
 					<category>Advantage</category>
 				</categories>
 				<dr_bonus>
-					<location>full_body_except_eyes</location>
+					<location>full body except eyes</location>
 					<amount per_level="yes">1</amount>
 				</dr_bonus>
 			</advantage>

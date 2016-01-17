@@ -2,16 +2,16 @@
 <template unique_id="faehkils:-1tngpj6c7ql1i" version="1">
 	<advantage_list>
 		<advantage version="2">
-			<name>Increased Health</name>
+			<name>Acute Hearing</name>
 			<type>Physical</type>
 			<levels>1</levels>
-			<points_per_level>10</points_per_level>
-			<reference>B14</reference>
+			<points_per_level>2</points_per_level>
+			<reference>B35</reference>
 			<categories>
 				<category>Advantage</category>
 			</categories>
 			<attribute_bonus>
-				<attribute>ht</attribute>
+				<attribute>hearing</attribute>
 				<amount per_level="yes">1</amount>
 			</attribute_bonus>
 		</advantage>
@@ -30,16 +30,16 @@
 			</attribute_bonus>
 		</advantage>
 		<advantage version="2">
-			<name>Acute Hearing</name>
+			<name>Increased Health</name>
 			<type>Physical</type>
 			<levels>1</levels>
-			<points_per_level>2</points_per_level>
-			<reference>B35</reference>
+			<points_per_level>10</points_per_level>
+			<reference>B14</reference>
 			<categories>
 				<category>Advantage</category>
 			</categories>
 			<attribute_bonus>
-				<attribute>hearing</attribute>
+				<attribute>ht</attribute>
 				<amount per_level="yes">1</amount>
 			</attribute_bonus>
 		</advantage>

@@ -2,63 +2,47 @@
 <template unique_id="faehp7db:-1whrndw0m4jtf" version="1">
 	<advantage_list>
 		<advantage version="2">
-			<name>Increased Strength</name>
+			<name>Can't learn most other languages beyond the Accented level</name>
 			<type>Physical</type>
-			<levels>4</levels>
-			<points_per_level>10</points_per_level>
-			<modifier version="1">
-				<name>SM+1</name>
-				<cost type="percentage">-10</cost>
-				<affects>total</affects>
-			</modifier>
-			<reference>B14</reference>
-			<categories>
-				<category>Advantage</category>
-			</categories>
-			<attribute_bonus>
-				<attribute>st</attribute>
-				<amount per_level="yes">1</amount>
-			</attribute_bonus>
-		</advantage>
-		<advantage version="2">
-			<name>Decreased Intelligence</name>
-			<type>Physical</type>
-			<levels>1</levels>
-			<points_per_level>-20</points_per_level>
-			<reference>B15</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-			<attribute_bonus>
-				<attribute>iq</attribute>
-				<amount per_level="yes">-1</amount>
-			</attribute_bonus>
-		</advantage>
-		<advantage version="2">
-			<name>Increased Health</name>
-			<type>Physical</type>
-			<levels>2</levels>
-			<points_per_level>10</points_per_level>
-			<reference>B14</reference>
-			<categories>
-				<category>Advantage</category>
-			</categories>
-			<attribute_bonus>
-				<attribute>ht</attribute>
-				<amount per_level="yes">1</amount>
-			</attribute_bonus>
-		</advantage>
-		<advantage version="2">
-			<name>Size Modifier +1</name>
-			<type>Physical</type>
-			<reference>B19</reference>
 			<categories>
 				<category>Features</category>
 			</categories>
-			<cost_reduction>
-				<attribute>st</attribute>
-				<percentage>10</percentage>
-			</cost_reduction>
+		</advantage>
+		<advantage version="2">
+			<name>Claws, Sharp (Hands)</name>
+			<type>Physical</type>
+			<base_points>5</base_points>
+			<melee_weapon>
+				<damage>thr-1 cut</damage>
+				<usage>Slash</usage>
+				<reach>C</reach>
+				<parry>0</parry>
+				<block>No</block>
+				<default>
+					<type>DX</type>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Brawling</name>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Boxing</name>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Karate</name>
+					<modifier>0</modifier>
+				</default>
+			</melee_weapon>
+			<reference>B42</reference>
+			<notes>Only pay for hands or feet, not both</notes>
+			<categories>
+				<category>Advantage</category>
+			</categories>
 		</advantage>
 		<advantage version="2">
 			<name>Damage Resistance</name>
@@ -181,6 +165,53 @@
 			</dr_bonus>
 		</advantage>
 		<advantage version="2">
+			<name>Decreased Intelligence</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<points_per_level>-20</points_per_level>
+			<reference>B15</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>iq</attribute>
+				<amount per_level="yes">-1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Increased Health</name>
+			<type>Physical</type>
+			<levels>2</levels>
+			<points_per_level>10</points_per_level>
+			<reference>B14</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>ht</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Increased Strength</name>
+			<type>Physical</type>
+			<levels>4</levels>
+			<points_per_level>10</points_per_level>
+			<modifier version="1">
+				<name>SM+1</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+			</modifier>
+			<reference>B14</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>st</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
 			<name>Longevity</name>
 			<type>Physical</type>
 			<base_points>2</base_points>
@@ -211,78 +242,6 @@
 				<notes>Others can target your eyes at only -6 to hit</notes>
 			</modifier>
 			<reference>B74</reference>
-			<categories>
-				<category>Advantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Claws, Sharp (Hands)</name>
-			<type>Physical</type>
-			<base_points>5</base_points>
-			<melee_weapon>
-				<damage>thr-1 cut</damage>
-				<usage>Slash</usage>
-				<reach>C</reach>
-				<parry>0</parry>
-				<block>No</block>
-				<default>
-					<type>DX</type>
-					<modifier>0</modifier>
-				</default>
-				<default>
-					<type>Skill</type>
-					<name>Brawling</name>
-					<modifier>0</modifier>
-				</default>
-				<default>
-					<type>Skill</type>
-					<name>Boxing</name>
-					<modifier>0</modifier>
-				</default>
-				<default>
-					<type>Skill</type>
-					<name>Karate</name>
-					<modifier>0</modifier>
-				</default>
-			</melee_weapon>
-			<reference>B42</reference>
-			<notes>Only pay for hands or feet, not both</notes>
-			<categories>
-				<category>Advantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Teeth, Sharp</name>
-			<type>Physical, Exotic</type>
-			<base_points>1</base_points>
-			<melee_weapon>
-				<damage>thr-1 cut</damage>
-				<usage>Bite</usage>
-				<reach>C</reach>
-				<parry>No</parry>
-				<block>No</block>
-				<default>
-					<type>Skill</type>
-					<name>Brawling</name>
-					<modifier>0</modifier>
-				</default>
-				<default>
-					<type>DX</type>
-					<modifier>0</modifier>
-				</default>
-			</melee_weapon>
-			<reference>B91</reference>
-			<categories>
-				<category>Advantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Temperature Tolerance</name>
-			<type>Physical</type>
-			<levels>5</levels>
-			<points_per_level>1</points_per_level>
-			<reference>B93</reference>
-			<notes>Centered at 80 degrees</notes>
 			<categories>
 				<category>Advantage</category>
 			</categories>
@@ -372,6 +331,18 @@
 			</skill_bonus>
 		</advantage>
 		<advantage version="2">
+			<name>Size Modifier +1</name>
+			<type>Physical</type>
+			<reference>B19</reference>
+			<categories>
+				<category>Features</category>
+			</categories>
+			<cost_reduction>
+				<attribute>st</attribute>
+				<percentage>10</percentage>
+			</cost_reduction>
+		</advantage>
+		<advantage version="2">
 			<name>Social Stigma (Barbarian)</name>
 			<type>Social</type>
 			<base_points>-10</base_points>
@@ -382,10 +353,39 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
-			<name>Can't learn most other languages beyond the Accented level</name>
-			<type>Physical</type>
+			<name>Teeth, Sharp</name>
+			<type>Physical, Exotic</type>
+			<base_points>1</base_points>
+			<melee_weapon>
+				<damage>thr-1 cut</damage>
+				<usage>Bite</usage>
+				<reach>C</reach>
+				<parry>No</parry>
+				<block>No</block>
+				<default>
+					<type>Skill</type>
+					<name>Brawling</name>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>DX</type>
+					<modifier>0</modifier>
+				</default>
+			</melee_weapon>
+			<reference>B91</reference>
 			<categories>
-				<category>Features</category>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Temperature Tolerance</name>
+			<type>Physical</type>
+			<levels>5</levels>
+			<points_per_level>1</points_per_level>
+			<reference>B93</reference>
+			<notes>Centered at 80 degrees</notes>
+			<categories>
+				<category>Advantage</category>
 			</categories>
 		</advantage>
 	</advantage_list>

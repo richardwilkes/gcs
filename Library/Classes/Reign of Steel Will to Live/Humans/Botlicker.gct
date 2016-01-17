@@ -3,57 +3,6 @@
 	<advantage_list>
 		<advantage_container version="2" open="yes">
 			<name>Class Advantages</name>
-			<advantage version="2" round_down="yes">
-				<name>Reputation (Collaborator)</name>
-				<type>Social</type>
-				<levels>1</levels>
-				<points_per_level>5</points_per_level>
-				<modifier version="1" enabled="no">
-					<name>People Affected</name>
-					<cost type="multiplier">1</cost>
-					<reference>B27</reference>
-					<notes>Almost everyone</notes>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>People Affected</name>
-					<cost type="multiplier">0.67</cost>
-					<reference>B27</reference>
-					<notes>Almost everyone except @large class of people@</notes>
-				</modifier>
-				<modifier version="1">
-					<name>People Affected</name>
-					<cost type="multiplier">0.5</cost>
-					<reference>B27</reference>
-					<notes>The Zone&#8217;s robots</notes>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>People Affected</name>
-					<cost type="multiplier">0.33</cost>
-					<reference>B27</reference>
-					<notes>@Small class of people@</notes>
-				</modifier>
-				<modifier version="1">
-					<name>Recognized all the time</name>
-					<cost type="multiplier">1</cost>
-					<reference>B28</reference>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Recognized sometimes</name>
-					<cost type="multiplier">0.5</cost>
-					<reference>B28</reference>
-					<notes>10-</notes>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Recognized occasionally</name>
-					<cost type="multiplier">0.33</cost>
-					<reference>B28</reference>
-					<notes>7-</notes>
-				</modifier>
-				<reference>B26</reference>
-				<categories>
-					<category>Advantage</category>
-				</categories>
-			</advantage>
 			<advantage version="2">
 				<name>Patron</name>
 				<type>Social</type>
@@ -193,6 +142,57 @@
 					<reference>B55</reference>
 				</modifier>
 				<reference>B72</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2" round_down="yes">
+				<name>Reputation (Collaborator)</name>
+				<type>Social</type>
+				<levels>1</levels>
+				<points_per_level>5</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>People Affected</name>
+					<cost type="multiplier">1</cost>
+					<reference>B27</reference>
+					<notes>Almost everyone</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>People Affected</name>
+					<cost type="multiplier">0.67</cost>
+					<reference>B27</reference>
+					<notes>Almost everyone except @large class of people@</notes>
+				</modifier>
+				<modifier version="1">
+					<name>People Affected</name>
+					<cost type="multiplier">0.5</cost>
+					<reference>B27</reference>
+					<notes>The Zone&#8217;s robots</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>People Affected</name>
+					<cost type="multiplier">0.33</cost>
+					<reference>B27</reference>
+					<notes>@Small class of people@</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Recognized all the time</name>
+					<cost type="multiplier">1</cost>
+					<reference>B28</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Recognized sometimes</name>
+					<cost type="multiplier">0.5</cost>
+					<reference>B28</reference>
+					<notes>10-</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Recognized occasionally</name>
+					<cost type="multiplier">0.33</cost>
+					<reference>B28</reference>
+					<notes>7-</notes>
+				</modifier>
+				<reference>B26</reference>
 				<categories>
 					<category>Advantage</category>
 				</categories>

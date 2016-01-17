@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
 <template unique_id="gg1f21hw:cgz0becsxasy" version="1">
 	<advantage_list>
-		<advantage_container version="2" open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Hacker</name>
 			<reference>ACT1:10</reference>
 			<advantage_container version="2" open="yes">
@@ -240,7 +240,7 @@
 					<advantage_container version="2" open="yes">
 						<name>Lenses</name>
 						<reference>ACT1:4</reference>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Criminal</name>
 							<advantage version="2">
 								<name>Contact (@Fence, fixer, smuggler@)</name>
@@ -407,7 +407,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Intelligence</name>
 							<advantage version="2">
 								<name>Must take template's Duty</name>
@@ -427,13 +427,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -443,7 +443,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Law Enforcement</name>
 							<advantage version="2">
 								<name>Legal Enforcement Powers (@FBI Agent@)</name>
@@ -481,13 +481,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -497,7 +497,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Military</name>
 							<advantage version="2">
 								<name>Must take template's Duty</name>
@@ -517,13 +517,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -533,7 +533,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Security</name>
 							<advantage version="2">
 								<name>Legal Enforcement Powers (@Federal or Secret Service@)</name>
@@ -552,13 +552,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -1040,7 +1040,7 @@
 							<name>Cowardice</name>
 							<type>Mental</type>
 							<base_points>-10</base_points>
-							<cr adj="fright_check_penalty">12</cr>
+							<cr adj="fright check penalty">12</cr>
 							<reference>B129</reference>
 							<categories>
 								<category>Disadvantage</category>
@@ -1080,7 +1080,7 @@
 								<amount>3</amount>
 							</skill_bonus>
 							<prereq_list all="yes">
-								<attribute_prereq has="yes" which="ht" compare="at_most">15</attribute_prereq>
+								<attribute_prereq has="yes" which="ht" compare="at most">15</attribute_prereq>
 							</prereq_list>
 						</advantage>
 						<advantage version="2">
@@ -1111,7 +1111,7 @@
 								<category>Disadvantage</category>
 							</categories>
 							<prereq_list all="yes">
-								<attribute_prereq has="yes" which="dx" compare="at_most">13</attribute_prereq>
+								<attribute_prereq has="yes" which="dx" compare="at most">13</attribute_prereq>
 							</prereq_list>
 						</advantage>
 						<advantage version="2">
@@ -1123,7 +1123,7 @@
 								<category>Disadvantage</category>
 							</categories>
 							<prereq_list all="yes">
-								<attribute_prereq has="yes" which="dx" compare="at_most">13</attribute_prereq>
+								<attribute_prereq has="yes" which="dx" compare="at most">13</attribute_prereq>
 							</prereq_list>
 						</advantage>
 						<advantage version="2">
@@ -1200,7 +1200,7 @@
 								<amount>-2</amount>
 							</skill_bonus>
 							<prereq_list all="yes">
-								<attribute_prereq has="yes" which="ht" compare="at_most">14</attribute_prereq>
+								<attribute_prereq has="yes" which="ht" compare="at most">14</attribute_prereq>
 							</prereq_list>
 						</advantage>
 						<advantage version="2">
@@ -1281,7 +1281,7 @@
 								<amount>5</amount>
 							</skill_bonus>
 							<prereq_list all="yes">
-								<attribute_prereq has="yes" which="ht" compare="at_most">13</attribute_prereq>
+								<attribute_prereq has="yes" which="ht" compare="at most">13</attribute_prereq>
 							</prereq_list>
 						</advantage>
 					</advantage_container>
@@ -1355,7 +1355,7 @@
 							<name>Loner</name>
 							<type>Mental</type>
 							<base_points>-5</base_points>
-							<cr adj="reaction_penalty">12</cr>
+							<cr adj="reaction penalty">12</cr>
 							<reference>B142</reference>
 							<categories>
 								<category>Disadvantage</category>
@@ -1642,7 +1642,7 @@
 					</advantage>
 					<advantage_container version="2" open="yes">
 						<name>Lenses</name>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Criminal</name>
 							<advantage version="2">
 								<name>Contact (@Fence, fixer, smuggler@)</name>
@@ -1809,7 +1809,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Intelligence</name>
 							<advantage version="2">
 								<name>Must take template's Duty</name>
@@ -1829,13 +1829,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -1845,7 +1845,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Law Enforcement</name>
 							<advantage version="2">
 								<name>Legal Enforcement Powers (@FBI Agent@)</name>
@@ -1883,13 +1883,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -1931,13 +1931,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -2363,7 +2363,7 @@
 							<category>Spy</category>
 						</categories>
 						<prereq_list all="no">
-							<when_tl compare="at_least">8</when_tl>
+							<when_tl compare="at least">8</when_tl>
 							<skill_prereq has="yes">
 								<name compare="is">computer operation</name>
 								<specialization compare="is"></specialization>
@@ -2542,7 +2542,7 @@
 								<weapon_bonus>
 									<name compare="is">Brawling</name>
 									<specialization compare="is anything"></specialization>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 									<amount per_level="yes">1</amount>
 								</weapon_bonus>
 							</skill>
@@ -3366,7 +3366,7 @@
 								<category>Spy</category>
 							</categories>
 							<prereq_list all="no">
-								<when_tl compare="at_least">8</when_tl>
+								<when_tl compare="at least">8</when_tl>
 								<skill_prereq has="yes">
 									<name compare="is">computer operation</name>
 									<specialization compare="is"></specialization>

@@ -5,90 +5,6 @@
 			<name>Infernal</name>
 			<reference>DF3:12</reference>
 			<advantage version="2">
-				<name>Increased Strength</name>
-				<type>Physical</type>
-				<levels>2</levels>
-				<points_per_level>10</points_per_level>
-				<modifier version="1" enabled="no">
-					<name>No Fine Manipulators</name>
-					<cost type="percentage">-40</cost>
-					<affects>total</affects>
-					<reference>B15</reference>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Size</name>
-					<cost type="percentage">-10</cost>
-					<levels>1</levels>
-					<affects>total</affects>
-					<reference>B15</reference>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Super-Effort</name>
-					<cost type="percentage">300</cost>
-					<affects>total</affects>
-					<reference>SU24</reference>
-				</modifier>
-				<reference>B14</reference>
-				<categories>
-					<category>Advantage</category>
-					<category>Attribute</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>st</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Increased Health</name>
-				<type>Physical</type>
-				<levels>1</levels>
-				<points_per_level>10</points_per_level>
-				<reference>B14</reference>
-				<categories>
-					<category>Advantage</category>
-					<category>Attribute</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>ht</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Increased Dexterity</name>
-				<type>Physical</type>
-				<levels>1</levels>
-				<points_per_level>20</points_per_level>
-				<modifier version="1" enabled="no">
-					<name>No Fine Manipulators</name>
-					<cost type="percentage">-40</cost>
-					<affects>total</affects>
-				</modifier>
-				<reference>B15</reference>
-				<categories>
-					<category>Advantage</category>
-					<category>Attribute</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>dx</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Extra Fatigue Points</name>
-				<type>Physical</type>
-				<levels>1</levels>
-				<points_per_level>3</points_per_level>
-				<reference>B16</reference>
-				<categories>
-					<category>Advantage</category>
-					<category>Attribute</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>fp</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
 				<name>Basic Speed +0.5</name>
 				<type>Physical</type>
 				<base_points>10</base_points>
@@ -248,7 +164,7 @@
 					<category>Advantage</category>
 				</categories>
 				<dr_bonus>
-					<location>full_body_except_eyes</location>
+					<location>full body except eyes</location>
 					<amount per_level="yes">1</amount>
 				</dr_bonus>
 			</advantage>
@@ -273,6 +189,25 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
+				<name>Extra Fatigue Points</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>3</points_per_level>
+				<reference>B16</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>fp</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Functions/Detects as "Evil" regardless of actual morality</name>
+				<type>Physical</type>
+			</advantage>
+			<advantage version="2">
 				<name>Fit</name>
 				<type>Physical</type>
 				<base_points>5</base_points>
@@ -281,6 +216,96 @@
 				<categories>
 					<category>Advantage</category>
 				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Dexterity</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>20</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>No Fine Manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B15</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dx</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Health</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>10</points_per_level>
+				<reference>B14</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>ht</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Strength</name>
+				<type>Physical</type>
+				<levels>2</levels>
+				<points_per_level>10</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>No Fine Manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B15</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Size</name>
+					<cost type="percentage">-10</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+					<reference>B15</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Super-Effort</name>
+					<cost type="percentage">300</cost>
+					<affects>total</affects>
+					<reference>SU24</reference>
+				</modifier>
+				<reference>B14</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>st</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Infernal Gifts</name>
+				<type>Physical</type>
+				<base_points>1</base_points>
+				<reference>DF3:13</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Social Stigma (Infernal)</name>
+				<type>Social</type>
+				<base_points>-10</base_points>
+				<reference>DF3:11</reference>
+				<notes>-2 Reaction; -2 to social skills; -3 to helpful clerical spells</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">intimidation</name>
+					<specialization compare="is anything"></specialization>
+					<amount>1</amount>
+				</skill_bonus>
 			</advantage>
 			<advantage version="2">
 				<name>Spirit Empathy</name>
@@ -305,12 +330,6 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
-				<name>Infernal Gifts</name>
-				<type>Physical</type>
-				<base_points>1</base_points>
-				<reference>DF3:13</reference>
-			</advantage>
-			<advantage version="2">
 				<name>Unnatural Features</name>
 				<type>Physical</type>
 				<levels>2</levels>
@@ -332,21 +351,6 @@
 				</skill_bonus>
 			</advantage>
 			<advantage version="2">
-				<name>Social Stigma (Infernal)</name>
-				<type>Social</type>
-				<base_points>-10</base_points>
-				<reference>DF3:11</reference>
-				<notes>-2 Reaction; -2 to social skills; -3 to helpful clerical spells</notes>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-				<skill_bonus>
-					<name compare="is">intimidation</name>
-					<specialization compare="is anything"></specialization>
-					<amount>1</amount>
-				</skill_bonus>
-			</advantage>
-			<advantage version="2">
 				<name>Weakness (Blessed areas/Good Sanctity, 1D/Min)</name>
 				<type>Physical, Exotic</type>
 				<base_points>-20</base_points>
@@ -354,10 +358,6 @@
 				<categories>
 					<category>Disadvantage</category>
 				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Feature: Functions/Detects as "Evil" regardless of actual morality</name>
-				<type>Physical</type>
 			</advantage>
 		</advantage_container>
 		<advantage_container version="2" open="yes">
@@ -672,21 +672,21 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
-				<name>Striker, Piercing (Tail)</name>
+				<name>Striker, Impaling (Tail)</name>
 				<type>Physical, Exotic</type>
-				<base_points>5</base_points>
+				<base_points>8</base_points>
 				<melee_weapon>
-					<damage>thr:+1 pi</damage>
+					<damage>thr:+1 imp</damage>
 					<reach>C</reach>
 					<parry>0</parry>
 					<block>No</block>
 					<default>
-						<type>Skill</type>
-						<name>Brawling</name>
+						<type>DX</type>
 						<modifier>0</modifier>
 					</default>
 					<default>
-						<type>DX</type>
+						<type>Skill</type>
+						<name>Brawling</name>
 						<modifier>0</modifier>
 					</default>
 				</melee_weapon>
@@ -720,21 +720,21 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
-				<name>Striker, Impaling (Tail)</name>
+				<name>Striker, Piercing (Tail)</name>
 				<type>Physical, Exotic</type>
-				<base_points>8</base_points>
+				<base_points>5</base_points>
 				<melee_weapon>
-					<damage>thr:+1 imp</damage>
+					<damage>thr:+1 pi</damage>
 					<reach>C</reach>
 					<parry>0</parry>
 					<block>No</block>
 					<default>
-						<type>DX</type>
+						<type>Skill</type>
+						<name>Brawling</name>
 						<modifier>0</modifier>
 					</default>
 					<default>
-						<type>Skill</type>
-						<name>Brawling</name>
+						<type>DX</type>
 						<modifier>0</modifier>
 					</default>
 				</melee_weapon>

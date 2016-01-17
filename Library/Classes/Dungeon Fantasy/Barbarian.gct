@@ -4,7 +4,7 @@
 		<advantage_container version="2" open="yes" type="race">
 			<name>Barbarian</name>
 			<reference>DF1:4</reference>
-			<advantage_container version="2" open="no">
+			<advantage_container version="2" open="yes">
 				<name>Attributes</name>
 				<advantage version="2">
 					<name>Increased Dexterity</name>
@@ -76,63 +76,9 @@
 					</attribute_bonus>
 				</advantage>
 			</advantage_container>
-			<advantage_container version="2" open="no">
-				<name>Secondary Characteristics</name>
-				<advantage version="2">
-					<name>Decreased Basic Speed</name>
-					<type>Physical</type>
-					<levels>1</levels>
-					<points_per_level>-20</points_per_level>
-					<attribute_bonus>
-						<attribute>speed</attribute>
-						<amount per_level="yes">-1</amount>
-					</attribute_bonus>
-				</advantage>
-				<advantage version="2">
-					<name>Extra Hit Points</name>
-					<type>Physical</type>
-					<levels>5</levels>
-					<points_per_level>2</points_per_level>
-					<modifier version="1">
-						<name>Size</name>
-						<cost type="percentage">-10</cost>
-						<levels>1</levels>
-						<affects>total</affects>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>No Fine Manipulators</name>
-						<cost type="percentage">-40</cost>
-						<affects>total</affects>
-					</modifier>
-					<reference>B16</reference>
-					<categories>
-						<category>Advantage</category>
-						<category>Attribute</category>
-					</categories>
-					<attribute_bonus>
-						<attribute>hp</attribute>
-						<amount per_level="yes">1</amount>
-					</attribute_bonus>
-				</advantage>
-				<advantage version="2">
-					<name>Increased Perception</name>
-					<type>Mental/Physical</type>
-					<levels>2</levels>
-					<points_per_level>5</points_per_level>
-					<reference>B16</reference>
-					<categories>
-						<category>Advantage</category>
-						<category>Attribute</category>
-					</categories>
-					<attribute_bonus>
-						<attribute>perception</attribute>
-						<amount per_level="yes">1</amount>
-					</attribute_bonus>
-				</advantage>
-			</advantage_container>
 			<advantage_container version="2" open="yes">
 				<name>Class Advantages</name>
-				<advantage_container version="2" open="no" type="race">
+				<advantage_container version="2" open="yes" type="race">
 					<name>30 Points chosen from:</name>
 					<advantage version="2">
 						<name>Absolute Direction</name>
@@ -893,7 +839,7 @@
 			</advantage_container>
 			<advantage_container version="2" open="yes">
 				<name>Class Disadvantages</name>
-				<advantage_container version="2" open="no" type="race">
+				<advantage_container version="2" open="yes" type="race">
 					<name>-10 Points Chosen From:</name>
 					<advantage version="2">
 						<name>Easy to Read</name>
@@ -1042,7 +988,7 @@
 						</categories>
 					</advantage>
 				</advantage_container>
-				<advantage_container version="2" open="no" type="race">
+				<advantage_container version="2" open="yes" type="race">
 					<name>-20 Points Chosen From:</name>
 					<advantage version="2">
 						<name>Appearance</name>
@@ -1425,6 +1371,60 @@
 					<categories>
 						<category>Disadvantage</category>
 					</categories>
+				</advantage>
+			</advantage_container>
+			<advantage_container version="2" open="yes">
+				<name>Secondary Characteristics</name>
+				<advantage version="2">
+					<name>Decreased Basic Speed</name>
+					<type>Physical</type>
+					<levels>1</levels>
+					<points_per_level>-20</points_per_level>
+					<attribute_bonus>
+						<attribute>speed</attribute>
+						<amount per_level="yes">-1</amount>
+					</attribute_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Extra Hit Points</name>
+					<type>Physical</type>
+					<levels>5</levels>
+					<points_per_level>2</points_per_level>
+					<modifier version="1">
+						<name>Size</name>
+						<cost type="percentage">-10</cost>
+						<levels>1</levels>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>No Fine Manipulators</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+					</modifier>
+					<reference>B16</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>hp</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Increased Perception</name>
+					<type>Mental/Physical</type>
+					<levels>2</levels>
+					<points_per_level>5</points_per_level>
+					<reference>B16</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>perception</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
 				</advantage>
 			</advantage_container>
 		</advantage_container>
@@ -2373,7 +2373,7 @@
 		</skill_container>
 	</skill_list>
 	<equipment_list>
-		<equipment_container version="3" open="no">
+		<equipment_container version="3" open="yes">
 			<description>Light Barbarian</description>
 			<legality_class>4</legality_class>
 			<value>0</value>
@@ -2417,7 +2417,7 @@
 				</dr_bonus>
 			</equipment>
 		</equipment_container>
-		<equipment_container version="3" open="no">
+		<equipment_container version="3" open="yes">
 			<description>Heavy Barbarian</description>
 			<legality_class>4</legality_class>
 			<value>0</value>
@@ -2471,7 +2471,7 @@
 				</dr_bonus>
 			</equipment>
 		</equipment_container>
-		<equipment_container version="3" open="no">
+		<equipment_container version="3" open="yes">
 			<description>Axe Barbarian</description>
 			<legality_class>4</legality_class>
 			<value>0</value>
@@ -2624,7 +2624,7 @@
 				</categories>
 			</equipment>
 		</equipment_container>
-		<equipment_container version="3" open="no">
+		<equipment_container version="3" open="yes">
 			<description>Broadsword Barbarian</description>
 			<legality_class>4</legality_class>
 			<value>0</value>
@@ -2850,7 +2850,7 @@
 				</attribute_bonus>
 			</equipment>
 		</equipment_container>
-		<equipment_container version="3" open="no">
+		<equipment_container version="3" open="yes">
 			<description>Flail Barbarian</description>
 			<legality_class>4</legality_class>
 			<value>0</value>
@@ -3040,7 +3040,7 @@
 				</categories>
 			</equipment>
 		</equipment_container>
-		<equipment_container version="3" open="no">
+		<equipment_container version="3" open="yes">
 			<description>Polearm Barbarian</description>
 			<legality_class>4</legality_class>
 			<value>0</value>
@@ -3210,7 +3210,7 @@
 				</categories>
 			</equipment>
 		</equipment_container>
-		<equipment_container version="3" open="no">
+		<equipment_container version="3" open="yes">
 			<description>Spear Barbarian</description>
 			<legality_class>4</legality_class>
 			<value>0</value>
@@ -3400,7 +3400,7 @@
 				</attribute_bonus>
 			</equipment>
 		</equipment_container>
-		<equipment_container version="3" open="no">
+		<equipment_container version="3" open="yes">
 			<description>Two-Handed Axe Barbarian</description>
 			<legality_class>4</legality_class>
 			<value>0</value>
@@ -3541,7 +3541,7 @@
 				</categories>
 			</equipment>
 		</equipment_container>
-		<equipment_container version="3" open="no">
+		<equipment_container version="3" open="yes">
 			<description>Two-Handed Flail Barbarian</description>
 			<legality_class>4</legality_class>
 			<value>0</value>
@@ -3553,7 +3553,7 @@
 				<legality_class>4</legality_class>
 				<value>20</value>
 				<weight>2 lb</weight>
-				<reference>LT55/72</reference>
+				<reference>LT55,LT72</reference>
 				<melee_weapon>
 					<damage>sw+1 cr</damage>
 					<strength>7</strength>
@@ -3646,7 +3646,7 @@
 				</categories>
 			</equipment>
 		</equipment_container>
-		<equipment_container version="3" open="no">
+		<equipment_container version="3" open="yes">
 			<description>Two-Handed Sword Barbarian</description>
 			<legality_class>4</legality_class>
 			<value>0</value>

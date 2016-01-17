@@ -1,34 +1,17 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
 <template unique_id="g2gmtmpp:11xpfirww9a9u" version="1">
 	<advantage_list>
-		<advantage_container version="2" open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Vendor</name>
+			<reference>HF49</reference>
 			<notes>[10 points]</notes>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Attributes</name>
 			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
-				<name>Secondary Characteristics</name>
-			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Class Advantages</name>
-				<advantage_container version="2" open="yes" type="metatrait">
+				<advantage_container version="2" open="yes" type="meta trait">
 					<name>10 Points Chosen From:</name>
-					<advantage version="2">
-						<name>Increased Will</name>
-						<type>Mental</type>
-						<levels>1</levels>
-						<points_per_level>5</points_per_level>
-						<reference>B16</reference>
-						<categories>
-							<category>Advantage</category>
-							<category>Attribute</category>
-						</categories>
-						<attribute_bonus>
-							<attribute>will</attribute>
-							<amount per_level="yes">1</amount>
-						</attribute_bonus>
-					</advantage>
 					<advantage version="2">
 						<name>Contact (@Who@)</name>
 						<type>Social</type>
@@ -112,11 +95,26 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
+						<name>Increased Will</name>
+						<type>Mental</type>
+						<levels>1</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B16</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>will</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
 						<name>Talent (Talker)</name>
 						<type>Physical</type>
 						<levels>1</levels>
 						<points_per_level>5</points_per_level>
-						<reference>HF109</reference>
+						<reference>MYST108</reference>
 						<notes>+1/lvl bonus from clients and others in profession</notes>
 						<categories>
 							<category>Talent</category>
@@ -198,9 +196,9 @@
 					</advantage>
 				</advantage_container>
 			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Class Disadvantages</name>
-				<advantage_container version="2" open="yes" type="metatrait">
+				<advantage_container version="2" open="yes" type="meta trait">
 					<name>-15 Points Chosen From:</name>
 					<advantage version="2">
 						<name>Greed</name>
@@ -208,6 +206,16 @@
 						<base_points>-15</base_points>
 						<cr>12</cr>
 						<reference>B137</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Status (@Description@)</name>
+						<type>Social</type>
+						<levels>1</levels>
+						<points_per_level>-5</points_per_level>
+						<reference>B28</reference>
 						<categories>
 							<category>Disadvantage</category>
 						</categories>
@@ -249,17 +257,10 @@
 							<category>Disadvantage</category>
 						</categories>
 					</advantage>
-					<advantage version="2">
-						<name>Status (@Description@)</name>
-						<type>Social</type>
-						<levels>1</levels>
-						<points_per_level>-5</points_per_level>
-						<reference>B28</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
 				</advantage_container>
+			</advantage_container>
+			<advantage_container version="2" open="yes" type="meta trait">
+				<name>Secondary Characteristics</name>
 			</advantage_container>
 		</advantage_container>
 	</advantage_list>

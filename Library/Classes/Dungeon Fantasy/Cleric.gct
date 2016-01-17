@@ -1595,175 +1595,6 @@
 			</advantage_container>
 			<advantage_container version="2" open="yes">
 				<name>Class Disadvantages</name>
-				<advantage_container version="2" open="no" type="meta trait">
-					<name>Chose one of</name>
-					<advantage version="2">
-						<name>Honesty</name>
-						<type>Mental</type>
-						<base_points>-10</base_points>
-						<cr>12</cr>
-						<reference>B138</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Sense of Duty</name>
-						<type>Mental</type>
-						<base_points>-10</base_points>
-						<reference>B153</reference>
-						<notes>Coreligionists</notes>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Vow (Use no edged Weapons)</name>
-						<type>Physical</type>
-						<base_points>-10</base_points>
-						<reference>B161</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-				</advantage_container>
-				<advantage_container version="2" open="no" type="meta trait">
-					<name>Another -15 Points chosen from:</name>
-					<notes>or those above</notes>
-					<advantage version="2">
-						<name>Disciplines of Faith (Mysticism)</name>
-						<type>Mental</type>
-						<base_points>-10</base_points>
-						<reference>B132</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Disciplines of Faith (Ritualism)</name>
-						<type>Mental</type>
-						<base_points>-5</base_points>
-						<reference>B132</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Fanaticism</name>
-						<type>Mental</type>
-						<base_points>-15</base_points>
-						<modifier version="1" enabled="no">
-							<name>Extreme</name>
-							<cost type="percentage">0</cost>
-							<affects>total</affects>
-							<reference>B136</reference>
-						</modifier>
-						<reference>B136</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Intolerance (All other religions)</name>
-						<type>Mental</type>
-						<modifier version="1" enabled="no">
-							<name>Scope: Common</name>
-							<cost type="points">-5</cost>
-							<affects>total</affects>
-							<reference>B140</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Scope: Occasional</name>
-							<cost type="points">-2</cost>
-							<affects>total</affects>
-							<reference>B140</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Scope: Rare</name>
-							<cost type="points">-1</cost>
-							<affects>total</affects>
-							<reference>B140</reference>
-						</modifier>
-						<modifier version="1">
-							<name>Scope: Anyone unlike you</name>
-							<cost type="points">-10</cost>
-							<affects>total</affects>
-							<reference>B140</reference>
-						</modifier>
-						<reference>B140</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Intolerance (Evil religions)</name>
-						<type>Mental</type>
-						<modifier version="1">
-							<name>Scope: Common</name>
-							<cost type="points">-5</cost>
-							<affects>total</affects>
-							<reference>B140</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Scope: Occasional</name>
-							<cost type="points">-2</cost>
-							<affects>total</affects>
-							<reference>B140</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Scope: Rare</name>
-							<cost type="points">-1</cost>
-							<affects>total</affects>
-							<reference>B140</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Scope: Anyone unlike you</name>
-							<cost type="points">-10</cost>
-							<affects>total</affects>
-							<reference>B140</reference>
-						</modifier>
-						<reference>B140</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Vow (Chastity)</name>
-						<type>Physical</type>
-						<base_points>-5</base_points>
-						<reference>B161</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Vow (Vegetarianism)</name>
-						<type>Physical</type>
-						<base_points>-5</base_points>
-						<reference>B161</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Wealth (Poor)</name>
-						<type>Social</type>
-						<base_points>-15</base_points>
-						<reference>B25</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Wealth (Struggling)</name>
-						<type>Social</type>
-						<base_points>-10</base_points>
-						<reference>B25</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-				</advantage_container>
 				<advantage_container version="2" open="no" type="race">
 					<name>A further -25 Points chosen from:</name>
 					<notes>or any of the above lists</notes>
@@ -1930,6 +1761,175 @@
 							<affects>total</affects>
 							<reference>SU32</reference>
 						</modifier>
+						<reference>B161</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+				</advantage_container>
+				<advantage_container version="2" open="no" type="meta trait">
+					<name>Another -15 Points chosen from:</name>
+					<notes>or those above</notes>
+					<advantage version="2">
+						<name>Disciplines of Faith (Mysticism)</name>
+						<type>Mental</type>
+						<base_points>-10</base_points>
+						<reference>B132</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Disciplines of Faith (Ritualism)</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<reference>B132</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Fanaticism</name>
+						<type>Mental</type>
+						<base_points>-15</base_points>
+						<modifier version="1" enabled="no">
+							<name>Extreme</name>
+							<cost type="percentage">0</cost>
+							<affects>total</affects>
+							<reference>B136</reference>
+						</modifier>
+						<reference>B136</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Intolerance (All other religions)</name>
+						<type>Mental</type>
+						<modifier version="1" enabled="no">
+							<name>Scope: Common</name>
+							<cost type="points">-5</cost>
+							<affects>total</affects>
+							<reference>B140</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Scope: Occasional</name>
+							<cost type="points">-2</cost>
+							<affects>total</affects>
+							<reference>B140</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Scope: Rare</name>
+							<cost type="points">-1</cost>
+							<affects>total</affects>
+							<reference>B140</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Scope: Anyone unlike you</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B140</reference>
+						</modifier>
+						<reference>B140</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Intolerance (Evil religions)</name>
+						<type>Mental</type>
+						<modifier version="1">
+							<name>Scope: Common</name>
+							<cost type="points">-5</cost>
+							<affects>total</affects>
+							<reference>B140</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Scope: Occasional</name>
+							<cost type="points">-2</cost>
+							<affects>total</affects>
+							<reference>B140</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Scope: Rare</name>
+							<cost type="points">-1</cost>
+							<affects>total</affects>
+							<reference>B140</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Scope: Anyone unlike you</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B140</reference>
+						</modifier>
+						<reference>B140</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Vow (Chastity)</name>
+						<type>Physical</type>
+						<base_points>-5</base_points>
+						<reference>B161</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Vow (Vegetarianism)</name>
+						<type>Physical</type>
+						<base_points>-5</base_points>
+						<reference>B161</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth (Poor)</name>
+						<type>Social</type>
+						<base_points>-15</base_points>
+						<reference>B25</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth (Struggling)</name>
+						<type>Social</type>
+						<base_points>-10</base_points>
+						<reference>B25</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+				</advantage_container>
+				<advantage_container version="2" open="no" type="meta trait">
+					<name>Chose one of</name>
+					<advantage version="2">
+						<name>Honesty</name>
+						<type>Mental</type>
+						<base_points>-10</base_points>
+						<cr>12</cr>
+						<reference>B138</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Sense of Duty</name>
+						<type>Mental</type>
+						<base_points>-10</base_points>
+						<reference>B153</reference>
+						<notes>Coreligionists</notes>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Vow (Use no edged Weapons)</name>
+						<type>Physical</type>
+						<base_points>-10</base_points>
 						<reference>B161</reference>
 						<categories>
 							<category>Disadvantage</category>

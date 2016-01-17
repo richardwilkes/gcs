@@ -4,26 +4,6 @@
 		<advantage_container version="2" open="yes" type="race">
 			<name>Air-Infused</name>
 			<reference>DF3:13</reference>
-			<advantage version="2">
-				<name>Increased Dexterity</name>
-				<type>Physical</type>
-				<levels>1</levels>
-				<points_per_level>20</points_per_level>
-				<modifier version="1" enabled="no">
-					<name>No Fine Manipulators</name>
-					<cost type="percentage">-40</cost>
-					<affects>total</affects>
-				</modifier>
-				<reference>B15</reference>
-				<categories>
-					<category>Advantage</category>
-					<category>Attribute</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>dx</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
 			<advantage_container version="2" open="yes">
 				<name>Air</name>
 				<modifier version="1">
@@ -174,7 +154,7 @@
 						<category>Advantage</category>
 					</categories>
 					<dr_bonus>
-						<location>full_body_except_eyes</location>
+						<location>full body except eyes</location>
 						<amount per_level="yes">1</amount>
 					</dr_bonus>
 				</advantage>
@@ -228,6 +208,32 @@
 					</categories>
 				</advantage>
 			</advantage_container>
+			<advantage version="2">
+				<name>Increased Dexterity</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>20</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>No Fine Manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B15</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dx</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Puff of Air</name>
+				<type>Physical</type>
+				<base_points>1</base_points>
+				<reference>DF3:13</reference>
+			</advantage>
 			<advantage version="2">
 				<name>Reputation</name>
 				<type>Social</type>
@@ -352,12 +358,6 @@
 					<specialization compare="is anything"></specialization>
 					<amount per_level="yes">-1</amount>
 				</skill_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Puff of Air</name>
-				<type>Physical</type>
-				<base_points>1</base_points>
-				<reference>DF3:13</reference>
 			</advantage>
 		</advantage_container>
 	</advantage_list>

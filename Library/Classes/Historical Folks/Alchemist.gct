@@ -3,11 +3,12 @@
 	<advantage_list>
 		<advantage_container version="2" open="yes">
 			<name>Alchemist</name>
+			<reference>HF4</reference>
 			<notes>40 Points</notes>
 			<categories>
 				<category>Job Template</category>
 			</categories>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Attributes</name>
 				<advantage version="2">
 					<name>Increased Intelligence</name>
@@ -25,12 +26,9 @@
 					</attribute_bonus>
 				</advantage>
 			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
-				<name>Secondary Characteristics</name>
-			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Class Advantages</name>
-				<advantage_container version="2" open="yes" type="metatrait">
+				<advantage_container version="2" open="yes" type="meta trait">
 					<name>10 Points Chosen From:</name>
 					<advantage version="2">
 						<name>Acute Taste &amp; Smell</name>
@@ -42,7 +40,7 @@
 							<category>Advantage</category>
 						</categories>
 						<attribute_bonus>
-							<attribute>taste_smell</attribute>
+							<attribute>taste smell</attribute>
 							<amount per_level="yes">1</amount>
 						</attribute_bonus>
 					</advantage>
@@ -70,56 +68,6 @@
 						<categories>
 							<category>Advantage</category>
 						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Talent (Mathematical Ability)</name>
-						<type>Mental</type>
-						<levels>1</levels>
-						<points_per_level>10</points_per_level>
-						<reference>B90</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-						<skill_bonus>
-							<name compare="is">accounting</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">astronomy</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">cryptography</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">engineer</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">finance</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">market analysis</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">mathematics</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">physics</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
 					</advantage>
 					<advantage version="2">
 						<name>Patron</name>
@@ -410,6 +358,76 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
+						<name>Single-Minded</name>
+						<type>Mental</type>
+						<base_points>5</base_points>
+						<reference>B85</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Status</name>
+						<type>Social</type>
+						<levels>1</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B28</reference>
+						<notes>@Description@</notes>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Talent (Mathematical Ability)</name>
+						<type>Mental</type>
+						<levels>1</levels>
+						<points_per_level>10</points_per_level>
+						<reference>B90</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">accounting</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">astronomy</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">cryptography</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">engineer</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">finance</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">market analysis</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">mathematics</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">physics</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
 						<name>Talent (Sage)</name>
 						<type>Physical</type>
 						<levels>1</levels>
@@ -478,26 +496,6 @@
 							<specialization compare="is anything"></specialization>
 							<amount per_level="yes">1</amount>
 						</skill_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Single-Minded</name>
-						<type>Mental</type>
-						<base_points>5</base_points>
-						<reference>B85</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Status</name>
-						<type>Social</type>
-						<levels>1</levels>
-						<points_per_level>5</points_per_level>
-						<reference>B28</reference>
-						<notes>@Description@</notes>
-						<categories>
-							<category>Advantage</category>
-						</categories>
 					</advantage>
 					<advantage version="2">
 						<name>Temperature Tolerance</name>
@@ -575,9 +573,9 @@
 					</advantage>
 				</advantage_container>
 			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Class Disadvantages</name>
-				<advantage_container version="2" open="yes" type="metatrait">
+				<advantage_container version="2" open="yes" type="meta trait">
 					<name>-15 Points Chosen From:</name>
 					<advantage version="2">
 						<name>Absent-Mindedness</name>
@@ -611,7 +609,7 @@
 					<advantage version="2">
 						<name>Intolerance (@Class, Ethnicity, Nationality, Religion, Sex, or Species@)</name>
 						<type>Mental</type>
-						<modifier version="1">
+						<modifier version="1" enabled="no">
 							<name>Scope: Common</name>
 							<cost type="points">-5</cost>
 							<affects>total</affects>
@@ -629,7 +627,7 @@
 							<affects>total</affects>
 							<reference>B140</reference>
 						</modifier>
-						<modifier version="1" enabled="no">
+						<modifier version="1">
 							<name>Scope: Anyone unlike you</name>
 							<cost type="points">-10</cost>
 							<affects>total</affects>
@@ -643,7 +641,7 @@
 					<advantage version="2">
 						<name>Intolerance (@Class, Ethnicity, Nationality, Religion, Sex, or Species@)</name>
 						<type>Mental</type>
-						<modifier version="1" enabled="no">
+						<modifier version="1">
 							<name>Scope: Common</name>
 							<cost type="points">-5</cost>
 							<affects>total</affects>
@@ -661,7 +659,7 @@
 							<affects>total</affects>
 							<reference>B140</reference>
 						</modifier>
-						<modifier version="1">
+						<modifier version="1" enabled="no">
 							<name>Scope: Anyone unlike you</name>
 							<cost type="points">-10</cost>
 							<affects>total</affects>
@@ -676,19 +674,10 @@
 						<name>Loner</name>
 						<type>Mental</type>
 						<base_points>-5</base_points>
-						<cr adj="reaction_penalty">12</cr>
+						<cr adj="reaction penalty">12</cr>
 						<reference>B142</reference>
 						<categories>
 							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Uncongenial</name>
-						<type>Mental</type>
-						<base_points>-1</base_points>
-						<reference>B164</reference>
-						<categories>
-							<category>Quirk</category>
 						</categories>
 					</advantage>
 					<advantage version="2">
@@ -921,6 +910,15 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
+						<name>Uncongenial</name>
+						<type>Mental</type>
+						<base_points>-1</base_points>
+						<reference>B164</reference>
+						<categories>
+							<category>Quirk</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
 						<name>Unfit</name>
 						<type>Physical</type>
 						<base_points>-5</base_points>
@@ -954,6 +952,9 @@
 						</categories>
 					</advantage>
 				</advantage_container>
+			</advantage_container>
+			<advantage_container version="2" open="yes" type="meta trait">
+				<name>Secondary Characteristics</name>
 			</advantage_container>
 		</advantage_container>
 	</advantage_list>
@@ -1280,7 +1281,7 @@
 						</categories>
 						<prereq_list all="yes">
 							<prereq_list all="yes">
-								<when_tl compare="at_least">8</when_tl>
+								<when_tl compare="at least">8</when_tl>
 								<skill_prereq has="yes">
 									<name compare="is">Computer Operation</name>
 									<specialization compare="is anything"></specialization>

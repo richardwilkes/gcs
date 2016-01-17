@@ -2,24 +2,6 @@
 <template unique_id="ih2s1rvi:-1c0rektea8bxf" version="1">
 	<advantage_list>
 		<advantage_container version="2" open="yes">
-			<name>Secondary Characteristics</name>
-			<advantage version="2">
-				<name>Increased Perception</name>
-				<type>Mental/Physical</type>
-				<levels>1</levels>
-				<points_per_level>5</points_per_level>
-				<reference>B16</reference>
-				<categories>
-					<category>Advantage</category>
-					<category>Attribute</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>perception</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
-		</advantage_container>
-		<advantage_container version="2" open="yes">
 			<name>Class Advantages</name>
 			<advantage version="2">
 				<name>Absolute Direction</name>
@@ -90,13 +72,6 @@
 		</advantage_container>
 		<advantage_container version="2" open="yes">
 			<name>Class Disadvantages</name>
-			<advantage version="2">
-				<name>Social Stigma (Outlaw)</name>
-				<type>Social</type>
-				<base_points>-15</base_points>
-				<reference>RSWL8</reference>
-				<notes>Reaction -3 from robots, +3 from humans from the same subculture</notes>
-			</advantage>
 			<advantage_container version="2" open="yes">
 				<name>-10 Points in:</name>
 				<advantage version="2">
@@ -162,6 +137,31 @@
 					</categories>
 				</advantage>
 			</advantage_container>
+			<advantage version="2">
+				<name>Social Stigma (Outlaw)</name>
+				<type>Social</type>
+				<base_points>-15</base_points>
+				<reference>RSWL8</reference>
+				<notes>Reaction -3 from robots, +3 from humans from the same subculture</notes>
+			</advantage>
+		</advantage_container>
+		<advantage_container version="2" open="yes">
+			<name>Secondary Characteristics</name>
+			<advantage version="2">
+				<name>Increased Perception</name>
+				<type>Mental/Physical</type>
+				<levels>1</levels>
+				<points_per_level>5</points_per_level>
+				<reference>B16</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>perception</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
 		</advantage_container>
 	</advantage_list>
 	<skill_list>

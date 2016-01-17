@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
 <character unique_id="hrqfgtea:-15zarblwj4ey" version="2">
 	<created_date>Feb 16, 2014</created_date>
-	<modified_date>Jun 13, 2014 9:54 AM</modified_date>
+	<modified_date>Jan 17, 2016 3:38 PM</modified_date>
 	<profile>
 		<name>Draft Horse</name>
 		<age>0</age>
@@ -24,33 +24,6 @@
 	<include_kick>true</include_kick>
 	<include_kick_with_boots>true</include_kick_with_boots>
 	<advantage_list>
-		<advantage_container version="2" open="yes" type="meta trait">
-			<name>Meta-Trait: Domestic Animal</name>
-			<reference>B263</reference>
-			<advantage version="2">
-				<name>Cannot Speak</name>
-				<type>Physical</type>
-				<base_points>-15</base_points>
-				<reference>B125</reference>
-			</advantage>
-			<advantage version="2">
-				<name>Hidebound</name>
-				<type>Physical</type>
-				<base_points>-5</base_points>
-				<reference>B138</reference>
-			</advantage>
-			<advantage version="2">
-				<name>Taboo Trait (Fixed IQ)</name>
-				<type>Mental</type>
-			</advantage>
-			<advantage version="2">
-				<name>Valuable Property</name>
-				<type>Social</type>
-				<base_points>-10</base_points>
-				<reference>B156</reference>
-				<notes>Cost: $2000</notes>
-			</advantage>
-		</advantage_container>
 		<advantage version="2">
 			<name>Enhanced Move (Ground)</name>
 			<type>Physical, Exotic</type>
@@ -138,6 +111,43 @@
 			</dr_bonus>
 		</advantage>
 		<advantage version="2">
+			<name>Horizontal</name>
+			<type>Physical, Exotic</type>
+			<base_points>-10</base_points>
+			<reference>B139</reference>
+			<categories>
+				<category>Animal</category>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage_container version="2" open="yes" type="meta trait">
+			<name>Meta-Trait: Domestic Animal</name>
+			<reference>B263</reference>
+			<advantage version="2">
+				<name>Cannot Speak</name>
+				<type>Physical</type>
+				<base_points>-15</base_points>
+				<reference>B125</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Hidebound</name>
+				<type>Physical</type>
+				<base_points>-5</base_points>
+				<reference>B138</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Taboo Trait (Fixed IQ)</name>
+				<type>Mental</type>
+			</advantage>
+			<advantage version="2">
+				<name>Valuable Property</name>
+				<type>Social</type>
+				<base_points>-10</base_points>
+				<reference>B156</reference>
+				<notes>Cost: $2000</notes>
+			</advantage>
+		</advantage_container>
+		<advantage version="2">
 			<name>Peripheral Vision</name>
 			<type>Physical</type>
 			<base_points>15</base_points>
@@ -156,16 +166,6 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
-			<name>Horizontal</name>
-			<type>Physical, Exotic</type>
-			<base_points>-10</base_points>
-			<reference>B139</reference>
-			<categories>
-				<category>Animal</category>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
 			<name>Weak Bite</name>
 			<type>Physical, Exotic</type>
 			<base_points>-2</base_points>
@@ -176,7 +176,7 @@
 			</categories>
 		</advantage>
 	</advantage_list>
-	<print_settings printer="HP LaserJet M1536dnf MFP (C1388F) @ Spock" units="in">
+	<print_settings units="in">
 		<orientation>portrait</orientation>
 		<width>8.267716407775879</width>
 		<height>11.692913055419922</height>

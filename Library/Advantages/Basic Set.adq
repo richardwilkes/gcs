@@ -4373,7 +4373,6 @@
 			<name>Magic Only</name>
 			<cost type="percentage">-10</cost>
 			<affects>total</affects>
-			<reference>FAQ 3.2.17</reference>
 			<notes>Subject to involuntary FP drain</notes>
 		</modifier>
 		<reference>B16</reference>
@@ -11891,7 +11890,6 @@
 			<name>Specialized</name>
 			<cost type="percentage">-35</cost>
 			<affects>total</affects>
-			<reference></reference>
 			<notes>@Family: Canidae@</notes>
 		</modifier>
 		<reference>B75</reference>

@@ -62,15 +62,18 @@
 		</advantage_container>
 		<advantage_container version="2" open="yes">
 			<name>Class Disadvantages</name>
-			<advantage version="2">
-				<name>Social Stigma (Outlaw)</name>
-				<type>Social</type>
-				<base_points>-15</base_points>
-				<reference>RSWL8</reference>
-				<notes>Reaction -3 from robots, +3 from humans from the same subculture</notes>
-			</advantage>
 			<advantage_container version="2" open="yes">
 				<name>-15 Points in:</name>
+				<advantage version="2">
+					<name>Demophobia (Crowds)</name>
+					<type>Mental</type>
+					<base_points>-15</base_points>
+					<cr>12</cr>
+					<reference>B149</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
 				<advantage version="2">
 					<name>Dependant (Family members)</name>
 					<type>Social</type>
@@ -268,16 +271,6 @@
 					</categories>
 				</advantage>
 				<advantage version="2">
-					<name>Demophobia (Crowds)</name>
-					<type>Mental</type>
-					<base_points>-15</base_points>
-					<cr>12</cr>
-					<reference>B149</reference>
-					<categories>
-						<category>Disadvantage</category>
-					</categories>
-				</advantage>
-				<advantage version="2">
 					<name>Sense of Duty</name>
 					<type>Mental</type>
 					<modifier version="1" enabled="no">
@@ -432,6 +425,13 @@
 					</categories>
 				</advantage>
 			</advantage_container>
+			<advantage version="2">
+				<name>Social Stigma (Outlaw)</name>
+				<type>Social</type>
+				<base_points>-15</base_points>
+				<reference>RSWL8</reference>
+				<notes>Reaction -3 from robots, +3 from humans from the same subculture</notes>
+			</advantage>
 		</advantage_container>
 	</advantage_list>
 	<skill_list>

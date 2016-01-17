@@ -386,9 +386,9 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
-		<reference>MA:FCCS,SiV,SC:PC,PU3:13</reference>
+		<reference>MAFCCS17,PU3:13</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>
@@ -452,7 +452,7 @@
 			<affects>total</affects>
 			<notes>Reduce chance of impersonal battlefield hazards</notes>
 		</modifier>
-		<reference>MA:FCCS,SiV,PU3:12</reference>
+		<reference>MAFCCS17,PU3:12</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>
@@ -503,9 +503,9 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">-1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
-		<reference>MA,PU3:7</reference>
+		<reference>MA47,PU3:7</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>
@@ -601,9 +601,9 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">-1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
-		<reference>MA,PU3:7</reference>
+		<reference>MA47,PU3:7</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>
@@ -701,7 +701,7 @@
 			<affects>total</affects>
 			<notes>Bonus to unskilled Per rolls to notice clues, and to all rolls to use Intuition</notes>
 		</modifier>
-		<reference>MA:FCCS,PU3:13</reference>
+		<reference>MAFCCS17,PU3:13</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>

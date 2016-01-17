@@ -5,6 +5,10 @@
 			<name>Half-Elf</name>
 			<reference>DF3:7</reference>
 			<advantage version="2">
+				<name>Feature: Unnatural hair colour</name>
+				<type>Physical</type>
+			</advantage>
+			<advantage version="2">
 				<name>Increased Dexterity</name>
 				<type>Physical</type>
 				<levels>1</levels>
@@ -33,43 +37,43 @@
 				<modifier version="1" enabled="no">
 					<name>Dance</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Dark-Aspected</name>
 					<cost type="percentage">-50</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Day-Aspected</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Musical</name>
 					<cost type="percentage">-50</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Night-Aspected</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>One College</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 					<notes>@College@</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Solitary</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Song</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<reference>B66</reference>
 				<categories>
@@ -105,10 +109,6 @@
 				<categories>
 					<category>Disadvantage</category>
 				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Feature: Unnatural hair colour</name>
-				<type>Physical</type>
 			</advantage>
 		</advantage_container>
 	</advantage_list>

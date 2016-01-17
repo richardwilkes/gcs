@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
 <template unique_id="gg5rursz:1wgyvdxg34mde" version="1">
 	<advantage_list>
-		<advantage_container version="2" open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Investigator</name>
 			<reference>ACT1:12</reference>
 			<advantage_container version="2" open="yes">
@@ -34,7 +34,7 @@
 								<category>Advantage</category>
 							</categories>
 							<attribute_bonus>
-								<attribute>taste_smell</attribute>
+								<attribute>taste smell</attribute>
 								<amount per_level="yes">1</amount>
 							</attribute_bonus>
 						</advantage>
@@ -488,7 +488,7 @@
 					<advantage_container version="2" open="yes">
 						<name>Lenses</name>
 						<reference>ACT1:4</reference>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Criminal</name>
 							<advantage version="2">
 								<name>Contact (@Fence, fixer, smuggler@)</name>
@@ -655,7 +655,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Intelligence</name>
 							<advantage version="2">
 								<name>Must take template's Duty</name>
@@ -675,13 +675,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -691,7 +691,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Law Enforcement</name>
 							<advantage version="2">
 								<name>Legal Enforcement Powers (@FBI Agent@)</name>
@@ -729,13 +729,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -745,7 +745,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Military</name>
 							<advantage version="2">
 								<name>Must take template's Duty</name>
@@ -765,13 +765,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -781,7 +781,7 @@
 								</categories>
 							</advantage>
 						</advantage_container>
-						<advantage_container version="2" open="yes" type="metatrait">
+						<advantage_container version="2" open="yes" type="meta trait">
 							<name>Security</name>
 							<advantage version="2">
 								<name>Legal Enforcement Powers (@Federal or Secret Service@)</name>
@@ -800,13 +800,13 @@
 								<modifier version="1" enabled="no">
 									<name>Replaces Status</name>
 									<cost type="points">5</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<modifier version="1" enabled="no">
 									<name>Courtesy</name>
 									<cost type="points">-4</cost>
-									<affects>levels_only</affects>
+									<affects>levels only</affects>
 									<reference>B29</reference>
 								</modifier>
 								<reference>B29</reference>
@@ -1189,7 +1189,7 @@
 								<amount>3</amount>
 							</skill_bonus>
 							<prereq_list all="yes">
-								<attribute_prereq has="yes" which="ht" compare="at_most">15</attribute_prereq>
+								<attribute_prereq has="yes" which="ht" compare="at most">15</attribute_prereq>
 							</prereq_list>
 						</advantage>
 						<advantage version="2">
@@ -1242,7 +1242,7 @@
 								<amount>5</amount>
 							</skill_bonus>
 							<prereq_list all="yes">
-								<attribute_prereq has="yes" which="ht" compare="at_most">13</attribute_prereq>
+								<attribute_prereq has="yes" which="ht" compare="at most">13</attribute_prereq>
 							</prereq_list>
 						</advantage>
 					</advantage_container>
@@ -1590,11 +1590,11 @@
 						</categories>
 						<prereq_list all="no">
 							<prereq_list all="yes">
-								<when_tl compare="at_least">8</when_tl>
+								<when_tl compare="at least">8</when_tl>
 								<skill_prereq has="yes">
 									<name compare="is">Computer Operation</name>
 									<specialization compare="is anything"></specialization>
-									<level compare="at_least">1</level>
+									<level compare="at least">1</level>
 								</skill_prereq>
 							</prereq_list>
 							<advantage_prereq has="yes">
@@ -1693,13 +1693,13 @@
 						<weapon_bonus>
 							<name compare="is">Boxing</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">1</level>
+							<level compare="at least">1</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 						<weapon_bonus>
 							<name compare="is">Boxing</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">2</level>
+							<level compare="at least">2</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 					</skill>
@@ -1715,7 +1715,7 @@
 						<weapon_bonus>
 							<name compare="is">Brawling</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">2</level>
+							<level compare="at least">2</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 					</skill>
@@ -1732,13 +1732,13 @@
 						<weapon_bonus>
 							<name compare="is">Karate</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">0</level>
+							<level compare="at least">0</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 						<weapon_bonus>
 							<name compare="is">Karate</name>
 							<specialization compare="is anything"></specialization>
-							<level compare="at_least">1</level>
+							<level compare="at least">1</level>
 							<amount per_level="yes">1</amount>
 						</weapon_bonus>
 					</skill>
@@ -2408,7 +2408,7 @@
 								<weapon_bonus>
 									<name compare="is">Brawling</name>
 									<specialization compare="is anything"></specialization>
-									<level compare="at_least">2</level>
+									<level compare="at least">2</level>
 									<amount per_level="yes">1</amount>
 								</weapon_bonus>
 							</skill>
@@ -3232,7 +3232,7 @@
 								<category>Spy</category>
 							</categories>
 							<prereq_list all="no">
-								<when_tl compare="at_least">8</when_tl>
+								<when_tl compare="at least">8</when_tl>
 								<skill_prereq has="yes">
 									<name compare="is">computer operation</name>
 									<specialization compare="is"></specialization>

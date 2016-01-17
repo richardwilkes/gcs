@@ -3302,13 +3302,57 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Potion: Lichdom</description>
+		<description>Ointment: Aging</description>
 		<legality_class>4</legality_class>
-		<value>0</value>
-		<weight>0.25 lb</weight>
-		<reference>M160</reference>
+		<value>825</value>
+		<weight>0.2 lb</weight>
+		<reference>M214</reference>
 		<categories>
-			<category>Potion</category>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Alchemical Antidote</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>0.2 lb</weight>
+		<reference>M217</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Attractiveness</description>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>0.2 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Awakening</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.2 lb</weight>
+		<reference>M217</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Battle</description>
+		<legality_class>4</legality_class>
+		<value>350</value>
+		<weight>0.2 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Ointment</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -3335,77 +3379,33 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Pastille: Dragonslaying</description>
+		<description>Ointment: Charisma</description>
 		<legality_class>4</legality_class>
-		<value>2600</value>
-		<weight>0.075 lb</weight>
-		<reference>M213</reference>
-		<categories>
-			<category>Pastille</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Beast-Speech</description>
-		<legality_class>4</legality_class>
-		<value>850</value>
-		<weight>0.25 lb</weight>
-		<reference>M213</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Bird Control</description>
-		<legality_class>4</legality_class>
-		<value>550</value>
-		<weight>0.25 lb</weight>
-		<reference>M213</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Beast-Speech</description>
-		<legality_class>4</legality_class>
-		<value>850</value>
-		<weight>0.025 lb</weight>
-		<reference>M213</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Bird Control</description>
-		<legality_class>4</legality_class>
-		<value>550</value>
-		<weight>0.025 lb</weight>
-		<reference>M213</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Aging</description>
-		<legality_class>4</legality_class>
-		<value>825</value>
+		<value>350</value>
 		<weight>0.2 lb</weight>
-		<reference>M214</reference>
+		<reference>M218</reference>
 		<categories>
 			<category>Ointment</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Ointment: Battle</description>
+		<description>Ointment: Craftsmanship</description>
 		<legality_class>4</legality_class>
-		<value>350</value>
+		<value>1100</value>
 		<weight>0.2 lb</weight>
-		<reference>M214</reference>
+		<reference>M219</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Death</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.2 lb</weight>
+		<reference>M215</reference>
 		<categories>
 			<category>Ointment</category>
 		</categories>
@@ -3423,11 +3423,154 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Ointment: Eternal Rest</description>
+		<legality_class>4</legality_class>
+		<value>4100</value>
+		<weight>0.2 lb</weight>
+		<reference>M217</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Fear</description>
+		<legality_class>4</legality_class>
+		<value>225</value>
+		<weight>0.2 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Fertility</description>
+		<legality_class>4</legality_class>
+		<value>6000</value>
+		<weight>0.2 lb</weight>
+		<reference>M217</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Ointment: Fetching and Carrying</description>
 		<legality_class>4</legality_class>
 		<value>300</value>
 		<weight>0.2 lb</weight>
 		<reference>M214</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Fire Risistance</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.2 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Flight</description>
+		<legality_class>4</legality_class>
+		<value>3000</value>
+		<weight>0.2 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Foolishness</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.2 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Foresight</description>
+		<legality_class>4</legality_class>
+		<value>2000</value>
+		<weight>0.2 lb</weight>
+		<reference>M218</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Friendship</description>
+		<legality_class>4</legality_class>
+		<value>550</value>
+		<weight>0.2 lb</weight>
+		<reference>M219</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Fustration</description>
+		<legality_class>4</legality_class>
+		<value>650</value>
+		<weight>0.2 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Gullibility</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.2 lb</weight>
+		<reference>M219</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Hatred</description>
+		<legality_class>4</legality_class>
+		<value>300</value>
+		<weight>0.2 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Healing</description>
+		<legality_class>4</legality_class>
+		<value>120</value>
+		<weight>0.2 lb</weight>
+		<reference>M217</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Hearing</description>
+		<legality_class>4</legality_class>
+		<value>300</value>
+		<weight>0.2 lb</weight>
+		<reference>M219</reference>
 		<categories>
 			<category>Ointment</category>
 		</categories>
@@ -3445,6 +3588,17 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Ointment: Invisibility</description>
+		<legality_class>4</legality_class>
+		<value>3000</value>
+		<weight>0.2 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Ointment: Invulnerability</description>
 		<legality_class>4</legality_class>
 		<value>2100</value>
@@ -3456,11 +3610,176 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Ointment: Jealousy</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>0.2 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Keen Sight</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>0.2 lb</weight>
+		<reference>M219</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Ointment: Leadership</description>
 		<legality_class>4</legality_class>
 		<value>1650</value>
 		<weight>0.2 lb</weight>
 		<reference>M214</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Lecherousness</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.2 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Long Slumber</description>
+		<legality_class>4</legality_class>
+		<value>9000</value>
+		<weight>0.2 lb</weight>
+		<reference>M217</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Luck</description>
+		<legality_class>4</legality_class>
+		<value>1300</value>
+		<weight>0.2 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Madness</description>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>0.2 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Magic Resistance</description>
+		<legality_class>4</legality_class>
+		<value>1600</value>
+		<weight>0.2 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Memory</description>
+		<legality_class>4</legality_class>
+		<value>1500</value>
+		<weight>0.2 lb</weight>
+		<reference>M219</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Music</description>
+		<legality_class>4</legality_class>
+		<value>300</value>
+		<weight>0.2 lb</weight>
+		<reference>M219</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Odium</description>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<weight>0.2 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Pain Resistance</description>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>0.2 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Reanimation</description>
+		<legality_class>4</legality_class>
+		<value>4100</value>
+		<weight>0.2 lb</weight>
+		<reference>M217</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Regeneration</description>
+		<legality_class>4</legality_class>
+		<value>5000</value>
+		<weight>0.2 lb</weight>
+		<reference>M218</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Self-Love</description>
+		<legality_class>4</legality_class>
+		<value>750</value>
+		<weight>0.2 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Ointment: Sleep</description>
+		<legality_class>4</legality_class>
+		<value>120</value>
+		<weight>0.2 lb</weight>
+		<reference>M218</reference>
 		<categories>
 			<category>Ointment</category>
 		</categories>
@@ -3500,363 +3819,44 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Pastille: Aging</description>
+		<description>Ointment: Tranquility</description>
 		<legality_class>4</legality_class>
-		<value>1650</value>
-		<weight>0.075 lb</weight>
-		<reference>M214</reference>
+		<value>500</value>
+		<weight>0.2 lb</weight>
+		<reference>M218</reference>
 		<categories>
-			<category>Pastille</category>
+			<category>Ointment</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Pastille: Endurance</description>
+		<description>Ointment: Transformation</description>
 		<legality_class>4</legality_class>
-		<value>2800</value>
-		<weight>0.075 lb</weight>
-		<reference>M214</reference>
+		<value>3000</value>
+		<weight>0.2 lb</weight>
+		<reference>M216</reference>
 		<categories>
-			<category>Pastille</category>
+			<category>Ointment</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Pastille: Fetching and Carrying</description>
-		<legality_class>4</legality_class>
-		<value>600</value>
-		<weight>0.075 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Pastille</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Pastille: Leadership</description>
-		<legality_class>4</legality_class>
-		<value>3300</value>
-		<weight>0.075 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Pastille</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Pastille: Stealth</description>
-		<legality_class>4</legality_class>
-		<value>1000</value>
-		<weight>0.075 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Pastille</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Aging</description>
-		<legality_class>4</legality_class>
-		<value>825</value>
-		<weight>0.25 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Battle</description>
-		<legality_class>4</legality_class>
-		<value>350</value>
-		<weight>0.25 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Endurance</description>
-		<legality_class>4</legality_class>
-		<value>1400</value>
-		<weight>0.25 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Fetching and Carrying</description>
-		<legality_class>4</legality_class>
-		<value>300</value>
-		<weight>0.25 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Invulnerability</description>
-		<legality_class>4</legality_class>
-		<value>2100</value>
-		<weight>0.25 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Leadership</description>
-		<legality_class>4</legality_class>
-		<value>1650</value>
-		<weight>0.25 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Speed</description>
+		<description>Ointment: True Sight</description>
 		<legality_class>4</legality_class>
 		<value>550</value>
-		<weight>0.25 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Stealth</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
-		<weight>0.25 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Strength</description>
-		<legality_class>4</legality_class>
-		<value>250</value>
-		<weight>0.25 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Aging</description>
-		<legality_class>4</legality_class>
-		<value>825</value>
-		<weight>0.025 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Battle</description>
-		<legality_class>4</legality_class>
-		<value>350</value>
-		<weight>0.025 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Endurance</description>
-		<legality_class>4</legality_class>
-		<value>1400</value>
-		<weight>0.025 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Fetching and Carrying</description>
-		<legality_class>4</legality_class>
-		<value>300</value>
-		<weight>0.025 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Invulnerability</description>
-		<legality_class>4</legality_class>
-		<value>2100</value>
-		<weight>0.025 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Leadership</description>
-		<legality_class>4</legality_class>
-		<value>1650</value>
-		<weight>0.025 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Speed</description>
-		<legality_class>4</legality_class>
-		<value>550</value>
-		<weight>0.025 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Stealth</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
-		<weight>0.025 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Strength</description>
-		<legality_class>4</legality_class>
-		<value>250</value>
-		<weight>0.025 lb</weight>
-		<reference>M214</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Death</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
 		<weight>0.2 lb</weight>
-		<reference>M215</reference>
+		<reference>M216</reference>
 		<categories>
 			<category>Ointment</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Ointment: Fear</description>
+		<description>Ointment: Truth</description>
 		<legality_class>4</legality_class>
-		<value>225</value>
+		<value>1100</value>
 		<weight>0.2 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Foolishness</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
-		<weight>0.2 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Fustration</description>
-		<legality_class>4</legality_class>
-		<value>650</value>
-		<weight>0.2 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Hatred</description>
-		<legality_class>4</legality_class>
-		<value>300</value>
-		<weight>0.2 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Jealousy</description>
-		<legality_class>4</legality_class>
-		<value>400</value>
-		<weight>0.2 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Lecherousness</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
-		<weight>0.2 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Madness</description>
-		<legality_class>4</legality_class>
-		<value>200</value>
-		<weight>0.2 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Odium</description>
-		<legality_class>4</legality_class>
-		<value>1000</value>
-		<weight>0.2 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Self-Love</description>
-		<legality_class>4</legality_class>
-		<value>750</value>
-		<weight>0.2 lb</weight>
-		<reference>M215</reference>
+		<reference>M219</reference>
 		<categories>
 			<category>Ointment</category>
 		</categories>
@@ -3874,6 +3874,17 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Ointment: Water-Walking</description>
+		<legality_class>4</legality_class>
+		<value>700</value>
+		<weight>0.2 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Ointment</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Ointment: Weakness</description>
 		<legality_class>4</legality_class>
 		<value>400</value>
@@ -3885,11 +3896,66 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Pastille: Aging</description>
+		<legality_class>4</legality_class>
+		<value>1650</value>
+		<weight>0.075 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Pastille: Awakening</description>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<weight>0.075 lb</weight>
+		<reference>M217</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Pastille: Craftsmanship</description>
+		<legality_class>4</legality_class>
+		<value>2200</value>
+		<weight>0.075 lb</weight>
+		<reference>M219</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Pastille: Death</description>
 		<legality_class>4</legality_class>
 		<value>1000</value>
 		<weight>0.075 lb</weight>
 		<reference>M215</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Pastille: Dragonslaying</description>
+		<legality_class>4</legality_class>
+		<value>2600</value>
+		<weight>0.075 lb</weight>
+		<reference>M213</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Pastille: Endurance</description>
+		<legality_class>4</legality_class>
+		<value>2800</value>
+		<weight>0.075 lb</weight>
+		<reference>M214</reference>
 		<categories>
 			<category>Pastille</category>
 		</categories>
@@ -3907,11 +3973,44 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Pastille: Fetching and Carrying</description>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>0.075 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Pastille: Foolishness</description>
 		<legality_class>4</legality_class>
 		<value>1000</value>
 		<weight>0.075 lb</weight>
 		<reference>M215</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Pastille: Foresight</description>
+		<legality_class>4</legality_class>
+		<value>4000</value>
+		<weight>0.075 lb</weight>
+		<reference>M218</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Pastille: Friendship</description>
+		<legality_class>4</legality_class>
+		<value>1100</value>
+		<weight>0.075 lb</weight>
+		<reference>M219</reference>
 		<categories>
 			<category>Pastille</category>
 		</categories>
@@ -3951,6 +4050,17 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Pastille: Leadership</description>
+		<legality_class>4</legality_class>
+		<value>3300</value>
+		<weight>0.075 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Pastille: Lecherousness</description>
 		<legality_class>4</legality_class>
 		<value>1000</value>
@@ -3962,11 +4072,66 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Pastille: Long Slumber</description>
+		<legality_class>4</legality_class>
+		<value>18000</value>
+		<weight>0.075 lb</weight>
+		<reference>M217</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Pastille: Luck</description>
+		<legality_class>4</legality_class>
+		<value>2600</value>
+		<weight>0.075 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Pastille: Madness</description>
 		<legality_class>4</legality_class>
 		<value>400</value>
 		<weight>0.075 lb</weight>
 		<reference>M215</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Pastille: Magic Resistance</description>
+		<legality_class>4</legality_class>
+		<value>3200</value>
+		<weight>0.075 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Pastille: Memory</description>
+		<legality_class>4</legality_class>
+		<value>3000</value>
+		<weight>0.075 lb</weight>
+		<reference>M219</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Pastille: Music</description>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>0.075 lb</weight>
+		<reference>M219</reference>
 		<categories>
 			<category>Pastille</category>
 		</categories>
@@ -3995,6 +4160,50 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Pastille: Sleep</description>
+		<legality_class>4</legality_class>
+		<value>240</value>
+		<weight>0.075 lb</weight>
+		<reference>M218</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Pastille: Stealth</description>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<weight>0.075 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Pastille: Tranquility</description>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<weight>0.075 lb</weight>
+		<reference>M218</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Pastille: Truth</description>
+		<legality_class>4</legality_class>
+		<value>2200</value>
+		<weight>0.075 lb</weight>
+		<reference>M219</reference>
+		<categories>
+			<category>Pastille</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Pastille: Weakness</description>
 		<legality_class>4</legality_class>
 		<value>800</value>
@@ -4006,11 +4215,132 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Potion: Aging</description>
+		<legality_class>4</legality_class>
+		<value>825</value>
+		<weight>0.25 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Alchemical Antidote</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>0.25 lb</weight>
+		<reference>M217</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Attractiveness</description>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>0.25 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Awakening</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.25 lb</weight>
+		<reference>M217</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Battle</description>
+		<legality_class>4</legality_class>
+		<value>350</value>
+		<weight>0.25 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Beast-Speech</description>
+		<legality_class>4</legality_class>
+		<value>850</value>
+		<weight>0.25 lb</weight>
+		<reference>M213</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Bird Control</description>
+		<legality_class>4</legality_class>
+		<value>550</value>
+		<weight>0.25 lb</weight>
+		<reference>M213</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Charisma</description>
+		<legality_class>4</legality_class>
+		<value>350</value>
+		<weight>0.25 lb</weight>
+		<reference>M218</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Craftsmanship</description>
+		<legality_class>4</legality_class>
+		<value>1100</value>
+		<weight>0.25 lb</weight>
+		<reference>M219</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Potion: Death</description>
 		<legality_class>4</legality_class>
 		<value>500</value>
 		<weight>0.25 lb</weight>
 		<reference>M215</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Endurance</description>
+		<legality_class>4</legality_class>
+		<value>1400</value>
+		<weight>0.25 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Eternal Rest</description>
+		<legality_class>4</legality_class>
+		<value>4100</value>
+		<weight>0.25 lb</weight>
+		<reference>M217</reference>
 		<categories>
 			<category>Potion</category>
 		</categories>
@@ -4028,385 +4358,22 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Potion: Foolishness</description>
+		<description>Potion: Fertility</description>
 		<legality_class>4</legality_class>
-		<value>500</value>
+		<value>6000</value>
 		<weight>0.25 lb</weight>
-		<reference>M215</reference>
+		<reference>M217</reference>
 		<categories>
 			<category>Potion</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Potion: Fustration</description>
-		<legality_class>4</legality_class>
-		<value>650</value>
-		<weight>0.25 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Hatred</description>
+		<description>Potion: Fetching and Carrying</description>
 		<legality_class>4</legality_class>
 		<value>300</value>
 		<weight>0.25 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Jealousy</description>
-		<legality_class>4</legality_class>
-		<value>400</value>
-		<weight>0.25 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Lecherousness</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
-		<weight>0.25 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Madness</description>
-		<legality_class>4</legality_class>
-		<value>200</value>
-		<weight>0.25 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Odium</description>
-		<legality_class>4</legality_class>
-		<value>1000</value>
-		<weight>0.25 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Self-Love</description>
-		<legality_class>4</legality_class>
-		<value>750</value>
-		<weight>0.25 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Unluckiness</description>
-		<legality_class>4</legality_class>
-		<value>1600</value>
-		<weight>0.25 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Weakness</description>
-		<legality_class>4</legality_class>
-		<value>400</value>
-		<weight>0.25 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Death</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
-		<weight>0.025 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Fear</description>
-		<legality_class>4</legality_class>
-		<value>225</value>
-		<weight>0.025 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Foolishness</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
-		<weight>0.025 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Fustration</description>
-		<legality_class>4</legality_class>
-		<value>650</value>
-		<weight>0.025 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Hatred</description>
-		<legality_class>4</legality_class>
-		<value>300</value>
-		<weight>0.025 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Jealousy</description>
-		<legality_class>4</legality_class>
-		<value>400</value>
-		<weight>0.025 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Lecherousness</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
-		<weight>0.025 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Madness</description>
-		<legality_class>4</legality_class>
-		<value>200</value>
-		<weight>0.025 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Odium</description>
-		<legality_class>4</legality_class>
-		<value>1000</value>
-		<weight>0.025 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Self-Love</description>
-		<legality_class>4</legality_class>
-		<value>750</value>
-		<weight>0.025 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Unluckiness</description>
-		<legality_class>4</legality_class>
-		<value>1600</value>
-		<weight>0.025 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Weakness</description>
-		<legality_class>4</legality_class>
-		<value>400</value>
-		<weight>0.025 lb</weight>
-		<reference>M215</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Attractiveness</description>
-		<legality_class>4</legality_class>
-		<value>600</value>
-		<weight>0.2 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Fire Risistance</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
-		<weight>0.2 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Flight</description>
-		<legality_class>4</legality_class>
-		<value>3000</value>
-		<weight>0.2 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Invisibility</description>
-		<legality_class>4</legality_class>
-		<value>3000</value>
-		<weight>0.2 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Luck</description>
-		<legality_class>4</legality_class>
-		<value>1300</value>
-		<weight>0.2 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Magic Resistance</description>
-		<legality_class>4</legality_class>
-		<value>1600</value>
-		<weight>0.2 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Pain Resistance</description>
-		<legality_class>4</legality_class>
-		<value>600</value>
-		<weight>0.2 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Transformation</description>
-		<legality_class>4</legality_class>
-		<value>3000</value>
-		<weight>0.2 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: True Sight</description>
-		<legality_class>4</legality_class>
-		<value>550</value>
-		<weight>0.2 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Water-Walking</description>
-		<legality_class>4</legality_class>
-		<value>700</value>
-		<weight>0.2 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Pastille: Luck</description>
-		<legality_class>4</legality_class>
-		<value>2600</value>
-		<weight>0.075 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Pastille</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Pastille: Magic Resistance</description>
-		<legality_class>4</legality_class>
-		<value>3200</value>
-		<weight>0.075 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Pastille</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Attractiveness</description>
-		<legality_class>4</legality_class>
-		<value>600</value>
-		<weight>0.25 lb</weight>
-		<reference>M216</reference>
+		<reference>M214</reference>
 		<categories>
 			<category>Potion</category>
 		</categories>
@@ -4435,6 +4402,61 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Potion: Foolishness</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.25 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Foresight</description>
+		<legality_class>4</legality_class>
+		<value>2000</value>
+		<weight>0.25 lb</weight>
+		<reference>M218</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Forgetfulness</description>
+		<legality_class>4</legality_class>
+		<value>700</value>
+		<weight>0.25 lb</weight>
+		<reference>M219</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Friendship</description>
+		<legality_class>4</legality_class>
+		<value>550</value>
+		<weight>0.25 lb</weight>
+		<reference>M219</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Fustration</description>
+		<legality_class>4</legality_class>
+		<value>650</value>
+		<weight>0.25 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Potion: Gambling</description>
 		<legality_class>4</legality_class>
 		<value>900</value>
@@ -4446,341 +4468,33 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Potion: Invisibility</description>
-		<legality_class>4</legality_class>
-		<value>3000</value>
-		<weight>0.25 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Luck</description>
-		<legality_class>4</legality_class>
-		<value>1300</value>
-		<weight>0.25 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Magic Resistance</description>
-		<legality_class>4</legality_class>
-		<value>1600</value>
-		<weight>0.25 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Pain Resistance</description>
-		<legality_class>4</legality_class>
-		<value>600</value>
-		<weight>0.25 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Transformation</description>
-		<legality_class>4</legality_class>
-		<value>3000</value>
-		<weight>0.25 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: True Sight</description>
-		<legality_class>4</legality_class>
-		<value>550</value>
-		<weight>0.25 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Water Breathing</description>
-		<legality_class>4</legality_class>
-		<value>600</value>
-		<weight>0.25 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Water-Walking</description>
-		<legality_class>4</legality_class>
-		<value>700</value>
-		<weight>0.25 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Attractiveness</description>
-		<legality_class>4</legality_class>
-		<value>600</value>
-		<weight>0.025 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Fire Risistance</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
-		<weight>0.025 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Flight</description>
-		<legality_class>4</legality_class>
-		<value>3000</value>
-		<weight>0.025 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Gambling</description>
-		<legality_class>4</legality_class>
-		<value>900</value>
-		<weight>0.025 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Luck</description>
-		<legality_class>4</legality_class>
-		<value>1300</value>
-		<weight>0.025 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Magic Resistance</description>
-		<legality_class>4</legality_class>
-		<value>1600</value>
-		<weight>0.025 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Pain Resistance</description>
-		<legality_class>4</legality_class>
-		<value>600</value>
-		<weight>0.025 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Transformation</description>
-		<legality_class>4</legality_class>
-		<value>3000</value>
-		<weight>0.025 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: True Sight</description>
-		<legality_class>4</legality_class>
-		<value>550</value>
-		<weight>0.025 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Water-Walking</description>
-		<legality_class>4</legality_class>
-		<value>700</value>
-		<weight>0.025 lb</weight>
-		<reference>M216</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Alchemical Antidote</description>
-		<legality_class>4</legality_class>
-		<value>400</value>
-		<weight>0.2 lb</weight>
-		<reference>M217</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Awakening</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
-		<weight>0.2 lb</weight>
-		<reference>M217</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Eternal Rest</description>
-		<legality_class>4</legality_class>
-		<value>4100</value>
-		<weight>0.2 lb</weight>
-		<reference>M217</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Fertility</description>
-		<legality_class>4</legality_class>
-		<value>6000</value>
-		<weight>0.2 lb</weight>
-		<reference>M217</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Healing</description>
-		<legality_class>4</legality_class>
-		<value>120</value>
-		<weight>0.2 lb</weight>
-		<reference>M217</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Long Slumber</description>
-		<legality_class>4</legality_class>
-		<value>9000</value>
-		<weight>0.2 lb</weight>
-		<reference>M217</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Reanimation</description>
-		<legality_class>4</legality_class>
-		<value>4100</value>
-		<weight>0.2 lb</weight>
-		<reference>M217</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Pastille: Awakening</description>
-		<legality_class>4</legality_class>
-		<value>1000</value>
-		<weight>0.075 lb</weight>
-		<reference>M217</reference>
-		<categories>
-			<category>Pastille</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Pastille: Long Slumber</description>
-		<legality_class>4</legality_class>
-		<value>18000</value>
-		<weight>0.075 lb</weight>
-		<reference>M217</reference>
-		<categories>
-			<category>Pastille</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Alchemical Antidote</description>
-		<legality_class>4</legality_class>
-		<value>400</value>
-		<weight>0.25 lb</weight>
-		<reference>M217</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Awakening</description>
+		<description>Potion: Gullibility</description>
 		<legality_class>4</legality_class>
 		<value>500</value>
 		<weight>0.25 lb</weight>
-		<reference>M217</reference>
+		<reference>M219</reference>
 		<categories>
 			<category>Potion</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Potion: Eternal Rest</description>
+		<description>Potion: Hardheartedness</description>
 		<legality_class>4</legality_class>
-		<value>4100</value>
+		<value>500</value>
 		<weight>0.25 lb</weight>
-		<reference>M217</reference>
+		<reference>M218</reference>
 		<categories>
 			<category>Potion</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Potion: Fertility</description>
+		<description>Potion: Hatred</description>
 		<legality_class>4</legality_class>
-		<value>6000</value>
+		<value>300</value>
 		<weight>0.25 lb</weight>
-		<reference>M217</reference>
+		<reference>M215</reference>
 		<categories>
 			<category>Potion</category>
 		</categories>
@@ -4820,6 +4534,72 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Potion: Invisibility</description>
+		<legality_class>4</legality_class>
+		<value>3000</value>
+		<weight>0.25 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Invulnerability</description>
+		<legality_class>4</legality_class>
+		<value>2100</value>
+		<weight>0.25 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Jealousy</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>0.25 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Leadership</description>
+		<legality_class>4</legality_class>
+		<value>1650</value>
+		<weight>0.25 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Lecherousness</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.25 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Lichdom</description>
+		<legality_class>4</legality_class>
+		<value>0</value>
+		<weight>0.25 lb</weight>
+		<reference>M160</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Potion: Long Slumber</description>
 		<legality_class>4</legality_class>
 		<value>9000</value>
@@ -4831,462 +4611,33 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Powder: Alchemical Antidote</description>
+		<description>Potion: Luck</description>
 		<legality_class>4</legality_class>
-		<value>400</value>
-		<weight>0.025 lb</weight>
-		<reference>M217</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Awakening</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
-		<weight>0.025 lb</weight>
-		<reference>M217</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Fertility</description>
-		<legality_class>4</legality_class>
-		<value>6000</value>
-		<weight>0.025 lb</weight>
-		<reference>M217</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Healing</description>
-		<legality_class>4</legality_class>
-		<value>120</value>
-		<weight>0.025 lb</weight>
-		<reference>M217</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Hybridization</description>
-		<legality_class>4</legality_class>
-		<value>2250</value>
-		<weight>0.025 lb</weight>
-		<reference>M217</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Long Slumber</description>
-		<legality_class>4</legality_class>
-		<value>9000</value>
-		<weight>0.025 lb</weight>
-		<reference>M217</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Charisma</description>
-		<legality_class>4</legality_class>
-		<value>350</value>
-		<weight>0.2 lb</weight>
-		<reference>M218</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Foresight</description>
-		<legality_class>4</legality_class>
-		<value>2000</value>
-		<weight>0.2 lb</weight>
-		<reference>M218</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Regeneration</description>
-		<legality_class>4</legality_class>
-		<value>5000</value>
-		<weight>0.2 lb</weight>
-		<reference>M218</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Sleep</description>
-		<legality_class>4</legality_class>
-		<value>120</value>
-		<weight>0.2 lb</weight>
-		<reference>M218</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Tranquility</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
-		<weight>0.2 lb</weight>
-		<reference>M218</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Pastille: Foresight</description>
-		<legality_class>4</legality_class>
-		<value>4000</value>
-		<weight>0.075 lb</weight>
-		<reference>M218</reference>
-		<categories>
-			<category>Pastille</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Pastille: Sleep</description>
-		<legality_class>4</legality_class>
-		<value>240</value>
-		<weight>0.075 lb</weight>
-		<reference>M218</reference>
-		<categories>
-			<category>Pastille</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Pastille: Tranquility</description>
-		<legality_class>4</legality_class>
-		<value>1000</value>
-		<weight>0.075 lb</weight>
-		<reference>M218</reference>
-		<categories>
-			<category>Pastille</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Charisma</description>
-		<legality_class>4</legality_class>
-		<value>350</value>
+		<value>1300</value>
 		<weight>0.25 lb</weight>
-		<reference>M218</reference>
+		<reference>M216</reference>
 		<categories>
 			<category>Potion</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Potion: Foresight</description>
+		<description>Potion: Madness</description>
 		<legality_class>4</legality_class>
-		<value>2000</value>
+		<value>200</value>
 		<weight>0.25 lb</weight>
-		<reference>M218</reference>
+		<reference>M215</reference>
 		<categories>
 			<category>Potion</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Potion: Hardheartedness</description>
+		<description>Potion: Magic Resistance</description>
 		<legality_class>4</legality_class>
-		<value>500</value>
+		<value>1600</value>
 		<weight>0.25 lb</weight>
-		<reference>M218</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Resurrection</description>
-		<legality_class>4</legality_class>
-		<value>25000</value>
-		<weight>0.25 lb</weight>
-		<reference>M218</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Sleep</description>
-		<legality_class>4</legality_class>
-		<value>120</value>
-		<weight>0.25 lb</weight>
-		<reference>M218</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Tranquility</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
-		<weight>0.25 lb</weight>
-		<reference>M218</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Youth</description>
-		<legality_class>4</legality_class>
-		<value>25000</value>
-		<weight>0.25 lb</weight>
-		<reference>M218</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Charisma</description>
-		<legality_class>4</legality_class>
-		<value>350</value>
-		<weight>0.025 lb</weight>
-		<reference>M218</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Foresight</description>
-		<legality_class>4</legality_class>
-		<value>2000</value>
-		<weight>0.025 lb</weight>
-		<reference>M218</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Sleep</description>
-		<legality_class>4</legality_class>
-		<value>120</value>
-		<weight>0.025 lb</weight>
-		<reference>M218</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Powder: Tranquility</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
-		<weight>0.025 lb</weight>
-		<reference>M218</reference>
-		<categories>
-			<category>Powder</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Craftsmanship</description>
-		<legality_class>4</legality_class>
-		<value>1100</value>
-		<weight>0.2 lb</weight>
-		<reference>M219</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Friendship</description>
-		<legality_class>4</legality_class>
-		<value>550</value>
-		<weight>0.2 lb</weight>
-		<reference>M219</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Gullibility</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
-		<weight>0.2 lb</weight>
-		<reference>M219</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Hearing</description>
-		<legality_class>4</legality_class>
-		<value>300</value>
-		<weight>0.2 lb</weight>
-		<reference>M219</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Keen Sight</description>
-		<legality_class>4</legality_class>
-		<value>400</value>
-		<weight>0.2 lb</weight>
-		<reference>M219</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Memory</description>
-		<legality_class>4</legality_class>
-		<value>1500</value>
-		<weight>0.2 lb</weight>
-		<reference>M219</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Music</description>
-		<legality_class>4</legality_class>
-		<value>300</value>
-		<weight>0.2 lb</weight>
-		<reference>M219</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Ointment: Truth</description>
-		<legality_class>4</legality_class>
-		<value>1100</value>
-		<weight>0.2 lb</weight>
-		<reference>M219</reference>
-		<categories>
-			<category>Ointment</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Pastille: Craftsmanship</description>
-		<legality_class>4</legality_class>
-		<value>2200</value>
-		<weight>0.075 lb</weight>
-		<reference>M219</reference>
-		<categories>
-			<category>Pastille</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Pastille: Friendship</description>
-		<legality_class>4</legality_class>
-		<value>1100</value>
-		<weight>0.075 lb</weight>
-		<reference>M219</reference>
-		<categories>
-			<category>Pastille</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Pastille: Memory</description>
-		<legality_class>4</legality_class>
-		<value>3000</value>
-		<weight>0.075 lb</weight>
-		<reference>M219</reference>
-		<categories>
-			<category>Pastille</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Pastille: Music</description>
-		<legality_class>4</legality_class>
-		<value>600</value>
-		<weight>0.075 lb</weight>
-		<reference>M219</reference>
-		<categories>
-			<category>Pastille</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Pastille: Truth</description>
-		<legality_class>4</legality_class>
-		<value>2200</value>
-		<weight>0.075 lb</weight>
-		<reference>M219</reference>
-		<categories>
-			<category>Pastille</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Craftsmanship</description>
-		<legality_class>4</legality_class>
-		<value>1100</value>
-		<weight>0.25 lb</weight>
-		<reference>M219</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Forgetfulness</description>
-		<legality_class>4</legality_class>
-		<value>700</value>
-		<weight>0.25 lb</weight>
-		<reference>M219</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Friendship</description>
-		<legality_class>4</legality_class>
-		<value>550</value>
-		<weight>0.25 lb</weight>
-		<reference>M219</reference>
-		<categories>
-			<category>Potion</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Potion: Gullibility</description>
-		<legality_class>4</legality_class>
-		<value>500</value>
-		<weight>0.25 lb</weight>
-		<reference>M219</reference>
+		<reference>M216</reference>
 		<categories>
 			<category>Potion</category>
 		</categories>
@@ -5315,6 +4666,127 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Potion: Odium</description>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<weight>0.25 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Pain Resistance</description>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>0.25 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Resurrection</description>
+		<legality_class>4</legality_class>
+		<value>25000</value>
+		<weight>0.25 lb</weight>
+		<reference>M218</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Self-Love</description>
+		<legality_class>4</legality_class>
+		<value>750</value>
+		<weight>0.25 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Sleep</description>
+		<legality_class>4</legality_class>
+		<value>120</value>
+		<weight>0.25 lb</weight>
+		<reference>M218</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Speed</description>
+		<legality_class>4</legality_class>
+		<value>550</value>
+		<weight>0.25 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Stealth</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.25 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Strength</description>
+		<legality_class>4</legality_class>
+		<value>250</value>
+		<weight>0.25 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Tranquility</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.25 lb</weight>
+		<reference>M218</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Transformation</description>
+		<legality_class>4</legality_class>
+		<value>3000</value>
+		<weight>0.25 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: True Sight</description>
+		<legality_class>4</legality_class>
+		<value>550</value>
+		<weight>0.25 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Potion: Truth</description>
 		<legality_class>4</legality_class>
 		<value>1100</value>
@@ -5337,6 +4809,50 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Potion: Unluckiness</description>
+		<legality_class>4</legality_class>
+		<value>1600</value>
+		<weight>0.25 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Water Breathing</description>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>0.25 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Water-Walking</description>
+		<legality_class>4</legality_class>
+		<value>700</value>
+		<weight>0.25 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Potion: Weakness</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>0.25 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Potion: Wisdom</description>
 		<legality_class>4</legality_class>
 		<value>1500</value>
@@ -5348,11 +4864,121 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Potion: Youth</description>
+		<legality_class>4</legality_class>
+		<value>25000</value>
+		<weight>0.25 lb</weight>
+		<reference>M218</reference>
+		<categories>
+			<category>Potion</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Aging</description>
+		<legality_class>4</legality_class>
+		<value>825</value>
+		<weight>0.025 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Alchemical Antidote</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>0.025 lb</weight>
+		<reference>M217</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Attractiveness</description>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>0.025 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Awakening</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.025 lb</weight>
+		<reference>M217</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Battle</description>
+		<legality_class>4</legality_class>
+		<value>350</value>
+		<weight>0.025 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Beast-Speech</description>
+		<legality_class>4</legality_class>
+		<value>850</value>
+		<weight>0.025 lb</weight>
+		<reference>M213</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Bird Control</description>
+		<legality_class>4</legality_class>
+		<value>550</value>
+		<weight>0.025 lb</weight>
+		<reference>M213</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Charisma</description>
+		<legality_class>4</legality_class>
+		<value>350</value>
+		<weight>0.025 lb</weight>
+		<reference>M218</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Powder: Craftsmanship</description>
 		<legality_class>4</legality_class>
 		<value>1100</value>
 		<weight>0.025 lb</weight>
 		<reference>M219</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Death</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.025 lb</weight>
+		<reference>M215</reference>
 		<categories>
 			<category>Powder</category>
 		</categories>
@@ -5370,6 +4996,94 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Powder: Endurance</description>
+		<legality_class>4</legality_class>
+		<value>1400</value>
+		<weight>0.025 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Fear</description>
+		<legality_class>4</legality_class>
+		<value>225</value>
+		<weight>0.025 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Fertility</description>
+		<legality_class>4</legality_class>
+		<value>6000</value>
+		<weight>0.025 lb</weight>
+		<reference>M217</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Fetching and Carrying</description>
+		<legality_class>4</legality_class>
+		<value>300</value>
+		<weight>0.025 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Fire Risistance</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.025 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Flight</description>
+		<legality_class>4</legality_class>
+		<value>3000</value>
+		<weight>0.025 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Foolishness</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.025 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Foresight</description>
+		<legality_class>4</legality_class>
+		<value>2000</value>
+		<weight>0.025 lb</weight>
+		<reference>M218</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Powder: Friendship</description>
 		<legality_class>4</legality_class>
 		<value>550</value>
@@ -5381,11 +5095,154 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Powder: Fustration</description>
+		<legality_class>4</legality_class>
+		<value>650</value>
+		<weight>0.025 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Gambling</description>
+		<legality_class>4</legality_class>
+		<value>900</value>
+		<weight>0.025 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Powder: Gullibility</description>
 		<legality_class>4</legality_class>
 		<value>500</value>
 		<weight>0.025 lb</weight>
 		<reference>M219</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Hatred</description>
+		<legality_class>4</legality_class>
+		<value>300</value>
+		<weight>0.025 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Healing</description>
+		<legality_class>4</legality_class>
+		<value>120</value>
+		<weight>0.025 lb</weight>
+		<reference>M217</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Hybridization</description>
+		<legality_class>4</legality_class>
+		<value>2250</value>
+		<weight>0.025 lb</weight>
+		<reference>M217</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Invulnerability</description>
+		<legality_class>4</legality_class>
+		<value>2100</value>
+		<weight>0.025 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Jealousy</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>0.025 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Leadership</description>
+		<legality_class>4</legality_class>
+		<value>1650</value>
+		<weight>0.025 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Lecherousness</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.025 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Long Slumber</description>
+		<legality_class>4</legality_class>
+		<value>9000</value>
+		<weight>0.025 lb</weight>
+		<reference>M217</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Luck</description>
+		<legality_class>4</legality_class>
+		<value>1300</value>
+		<weight>0.025 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Madness</description>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>0.025 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Magic Resistance</description>
+		<legality_class>4</legality_class>
+		<value>1600</value>
+		<weight>0.025 lb</weight>
+		<reference>M216</reference>
 		<categories>
 			<category>Powder</category>
 		</categories>
@@ -5414,6 +5271,116 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Powder: Odium</description>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<weight>0.025 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Pain Resistance</description>
+		<legality_class>4</legality_class>
+		<value>600</value>
+		<weight>0.025 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Self-Love</description>
+		<legality_class>4</legality_class>
+		<value>750</value>
+		<weight>0.025 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Sleep</description>
+		<legality_class>4</legality_class>
+		<value>120</value>
+		<weight>0.025 lb</weight>
+		<reference>M218</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Speed</description>
+		<legality_class>4</legality_class>
+		<value>550</value>
+		<weight>0.025 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Stealth</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.025 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Strength</description>
+		<legality_class>4</legality_class>
+		<value>250</value>
+		<weight>0.025 lb</weight>
+		<reference>M214</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Tranquility</description>
+		<legality_class>4</legality_class>
+		<value>500</value>
+		<weight>0.025 lb</weight>
+		<reference>M218</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Transformation</description>
+		<legality_class>4</legality_class>
+		<value>3000</value>
+		<weight>0.025 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: True Sight</description>
+		<legality_class>4</legality_class>
+		<value>550</value>
+		<weight>0.025 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Powder: Truth</description>
 		<legality_class>4</legality_class>
 		<value>1100</value>
@@ -5430,6 +5397,39 @@
 		<value>750</value>
 		<weight>0.025 lb</weight>
 		<reference>M219</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Unluckiness</description>
+		<legality_class>4</legality_class>
+		<value>1600</value>
+		<weight>0.025 lb</weight>
+		<reference>M215</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Water-Walking</description>
+		<legality_class>4</legality_class>
+		<value>700</value>
+		<weight>0.025 lb</weight>
+		<reference>M216</reference>
+		<categories>
+			<category>Powder</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Powder: Weakness</description>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>0.025 lb</weight>
+		<reference>M215</reference>
 		<categories>
 			<category>Powder</category>
 		</categories>

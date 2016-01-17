@@ -4,119 +4,7 @@
 		<advantage_container version="2" open="yes">
 			<name>Inhuman Vampire</name>
 			<advantage_container version="2" open="yes">
-				<name>Attributes</name>
-				<advantage version="2">
-					<name>Increased Strength</name>
-					<type>Physical</type>
-					<levels>5</levels>
-					<points_per_level>10</points_per_level>
-					<modifier version="1" enabled="no">
-						<name>No Fine Manipulators</name>
-						<cost type="percentage">-40</cost>
-						<affects>total</affects>
-						<reference>B15</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Size</name>
-						<cost type="percentage">-10</cost>
-						<levels>1</levels>
-						<affects>total</affects>
-						<reference>B15</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Super-Effort</name>
-						<cost type="percentage">300</cost>
-						<affects>total</affects>
-						<reference>SU24</reference>
-					</modifier>
-					<reference>B14</reference>
-					<categories>
-						<category>Advantage</category>
-						<category>Attribute</category>
-					</categories>
-					<attribute_bonus>
-						<attribute>st</attribute>
-						<amount per_level="yes">1</amount>
-					</attribute_bonus>
-				</advantage>
-				<advantage version="2">
-					<name>Increased Dexterity</name>
-					<type>Physical</type>
-					<levels>2</levels>
-					<points_per_level>20</points_per_level>
-					<modifier version="1" enabled="no">
-						<name>No Fine Manipulators</name>
-						<cost type="percentage">-40</cost>
-						<affects>total</affects>
-					</modifier>
-					<reference>B15</reference>
-					<categories>
-						<category>Advantage</category>
-						<category>Attribute</category>
-					</categories>
-					<attribute_bonus>
-						<attribute>dx</attribute>
-						<amount per_level="yes">1</amount>
-					</attribute_bonus>
-				</advantage>
-				<advantage version="2">
-					<name>Increased Health</name>
-					<type>Physical</type>
-					<levels>2</levels>
-					<points_per_level>10</points_per_level>
-					<reference>B14</reference>
-					<categories>
-						<category>Advantage</category>
-						<category>Attribute</category>
-					</categories>
-					<attribute_bonus>
-						<attribute>ht</attribute>
-						<amount per_level="yes">1</amount>
-					</attribute_bonus>
-				</advantage>
-			</advantage_container>
-			<advantage_container version="2" open="yes">
-				<name>Secondary Characteristics</name>
-				<advantage version="2">
-					<name>Increased Basic Speed</name>
-					<type>Physical</type>
-					<levels>4</levels>
-					<points_per_level>5</points_per_level>
-					<reference>B17</reference>
-					<categories>
-						<category>Advantage</category>
-						<category>Attribute</category>
-					</categories>
-					<attribute_bonus>
-						<attribute>speed</attribute>
-						<amount per_level="yes">0.25</amount>
-					</attribute_bonus>
-				</advantage>
-				<advantage version="2">
-					<name>Increased Perception</name>
-					<type>Mental/Physical</type>
-					<levels>2</levels>
-					<points_per_level>5</points_per_level>
-					<reference>B16</reference>
-					<categories>
-						<category>Advantage</category>
-						<category>Attribute</category>
-					</categories>
-					<attribute_bonus>
-						<attribute>perception</attribute>
-						<amount per_level="yes">1</amount>
-					</attribute_bonus>
-				</advantage>
-			</advantage_container>
-			<advantage_container version="2" open="yes">
 				<name>Advantages</name>
-				<advantage_container version="2" open="yes">
-					<name>Perks</name>
-					<advantage version="2">
-						<name>Can burn HP for extra effort</name>
-						<type>Physical</type>
-					</advantage>
-				</advantage_container>
 				<advantage version="2">
 					<name>Acute Taste &amp; Smell</name>
 					<type>Physical</type>
@@ -132,7 +20,7 @@
 						<category>Advantage</category>
 					</categories>
 					<attribute_bonus>
-						<attribute>taste_smell</attribute>
+						<attribute>taste smell</attribute>
 						<amount per_level="yes">1</amount>
 					</attribute_bonus>
 				</advantage>
@@ -151,6 +39,75 @@
 						<cost type="percentage">50</cost>
 						<affects>total</affects>
 						<reference>P47</reference>
+					</modifier>
+					<reference>B49</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Doesn't Breathe</name>
+					<type>Physical, Exotic</type>
+					<base_points>20</base_points>
+					<modifier version="1" enabled="no">
+						<name>Gills</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Gills</name>
+						<cost type="points">-20</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
+						<notes>Suffocates in air</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Oxygen Absorption</name>
+						<cost type="percentage">-25</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Oxygen Storage</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
+						<notes>Can hold breath 25 times as long as normal</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Oxygen Storage</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
+						<notes>Can hold breath 50 times as long as normal</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Oxygen Storage</name>
+						<cost type="percentage">-30</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
+						<notes>Can hold breath 100 times as long as normal</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Oxygen Storage</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
+						<notes>Can hold breath 200 times as long as normal</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Oxygen Storage</name>
+						<cost type="percentage">-10</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
+						<notes>Can hold breath 300 times as long as normal</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Oxygen Combustion</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
 					</modifier>
 					<reference>B49</reference>
 					<categories>
@@ -177,6 +134,62 @@
 					</categories>
 				</advantage>
 				<advantage version="2">
+					<name>Mind Control</name>
+					<type>Mental, Exotic</type>
+					<base_points>50</base_points>
+					<modifier version="1" enabled="no">
+						<name>Conditioning</name>
+						<cost type="percentage">50</cost>
+						<affects>total</affects>
+						<reference>B69</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>No Memory</name>
+						<cost type="percentage">10</cost>
+						<affects>total</affects>
+						<reference>B69</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Conditioning Only</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B69</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Puppet</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B69</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Independent</name>
+						<cost type="percentage">70</cost>
+						<affects>total</affects>
+						<reference>P61</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Emotion Control</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>P61</reference>
+					</modifier>
+					<modifier version="1">
+						<name>Suggestion</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>P61</reference>
+					</modifier>
+					<modifier version="1">
+						<name>Blood Agent</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+					</modifier>
+					<reference>B68</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
 					<name>Night Vision</name>
 					<type>Physical</type>
 					<levels>9</levels>
@@ -186,6 +199,13 @@
 						<category>Advantage</category>
 					</categories>
 				</advantage>
+				<advantage_container version="2" open="yes">
+					<name>Perks</name>
+					<advantage version="2">
+						<name>Can burn HP for extra effort</name>
+						<type>Physical</type>
+					</advantage>
+				</advantage_container>
 				<advantage version="2">
 					<name>Resistant</name>
 					<type>Physical</type>
@@ -322,130 +342,77 @@
 						<category>Advantage</category>
 					</categories>
 				</advantage>
+			</advantage_container>
+			<advantage_container version="2" open="yes">
+				<name>Attributes</name>
 				<advantage version="2">
-					<name>Mind Control</name>
-					<type>Mental, Exotic</type>
-					<base_points>50</base_points>
+					<name>Increased Dexterity</name>
+					<type>Physical</type>
+					<levels>2</levels>
+					<points_per_level>20</points_per_level>
 					<modifier version="1" enabled="no">
-						<name>Conditioning</name>
-						<cost type="percentage">50</cost>
-						<affects>total</affects>
-						<reference>B69</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>No Memory</name>
-						<cost type="percentage">10</cost>
-						<affects>total</affects>
-						<reference>B69</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Conditioning Only</name>
-						<cost type="percentage">-50</cost>
-						<affects>total</affects>
-						<reference>B69</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Puppet</name>
-						<cost type="percentage">-40</cost>
-						<affects>total</affects>
-						<reference>B69</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Independent</name>
-						<cost type="percentage">70</cost>
-						<affects>total</affects>
-						<reference>P61</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Emotion Control</name>
-						<cost type="percentage">-50</cost>
-						<affects>total</affects>
-						<reference>P61</reference>
-					</modifier>
-					<modifier version="1">
-						<name>Suggestion</name>
-						<cost type="percentage">-40</cost>
-						<affects>total</affects>
-						<reference>P61</reference>
-					</modifier>
-					<modifier version="1">
-						<name>Blood Agent</name>
+						<name>No Fine Manipulators</name>
 						<cost type="percentage">-40</cost>
 						<affects>total</affects>
 					</modifier>
-					<reference>B68</reference>
+					<reference>B15</reference>
 					<categories>
 						<category>Advantage</category>
+						<category>Attribute</category>
 					</categories>
+					<attribute_bonus>
+						<attribute>dx</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
 				</advantage>
 				<advantage version="2">
-					<name>Doesn't Breathe</name>
-					<type>Physical, Exotic</type>
-					<base_points>20</base_points>
-					<modifier version="1" enabled="no">
-						<name>Gills</name>
-						<cost type="percentage">-50</cost>
-						<affects>total</affects>
-						<reference>B49</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Gills</name>
-						<cost type="points">-20</cost>
-						<affects>total</affects>
-						<reference>B49</reference>
-						<notes>Suffocates in air</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Oxygen Absorption</name>
-						<cost type="percentage">-25</cost>
-						<affects>total</affects>
-						<reference>B49</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Oxygen Storage</name>
-						<cost type="percentage">-50</cost>
-						<affects>total</affects>
-						<reference>B49</reference>
-						<notes>Can hold breath 25 times as long as normal</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Oxygen Storage</name>
-						<cost type="percentage">-40</cost>
-						<affects>total</affects>
-						<reference>B49</reference>
-						<notes>Can hold breath 50 times as long as normal</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Oxygen Storage</name>
-						<cost type="percentage">-30</cost>
-						<affects>total</affects>
-						<reference>B49</reference>
-						<notes>Can hold breath 100 times as long as normal</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Oxygen Storage</name>
-						<cost type="percentage">-20</cost>
-						<affects>total</affects>
-						<reference>B49</reference>
-						<notes>Can hold breath 200 times as long as normal</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Oxygen Storage</name>
-						<cost type="percentage">-10</cost>
-						<affects>total</affects>
-						<reference>B49</reference>
-						<notes>Can hold breath 300 times as long as normal</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Oxygen Combustion</name>
-						<cost type="percentage">-50</cost>
-						<affects>total</affects>
-						<reference>B49</reference>
-					</modifier>
-					<reference>B49</reference>
+					<name>Increased Health</name>
+					<type>Physical</type>
+					<levels>2</levels>
+					<points_per_level>10</points_per_level>
+					<reference>B14</reference>
 					<categories>
 						<category>Advantage</category>
+						<category>Attribute</category>
 					</categories>
+					<attribute_bonus>
+						<attribute>ht</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Increased Strength</name>
+					<type>Physical</type>
+					<levels>5</levels>
+					<points_per_level>10</points_per_level>
+					<modifier version="1" enabled="no">
+						<name>No Fine Manipulators</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B15</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Size</name>
+						<cost type="percentage">-10</cost>
+						<levels>1</levels>
+						<affects>total</affects>
+						<reference>B15</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Super-Effort</name>
+						<cost type="percentage">300</cost>
+						<affects>total</affects>
+						<reference>SU24</reference>
+					</modifier>
+					<reference>B14</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>st</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
 				</advantage>
 			</advantage_container>
 			<advantage_container version="2" open="yes">
@@ -613,64 +580,6 @@
 						<affects>total</affects>
 						<reference>B161</reference>
 					</modifier>
-					<modifier version="1" enabled="no">
-						<name>@Rare Substance@</name>
-						<cost type="multiplier">0.5</cost>
-						<reference>B161</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>@Occasional Substance@</name>
-						<cost type="multiplier">1</cost>
-						<reference>B161</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>@Common Substance@</name>
-						<cost type="multiplier">2</cost>
-						<reference>B161</reference>
-					</modifier>
-					<modifier version="1">
-						<name>Sunlight</name>
-						<cost type="multiplier">3</cost>
-						<reference>B161</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Fatigue Only</name>
-						<cost type="percentage">-50</cost>
-						<affects>total</affects>
-						<reference>B161</reference>
-					</modifier>
-					<modifier version="1">
-						<name>Variable</name>
-						<cost type="percentage">-40</cost>
-						<affects>total</affects>
-						<reference>B161</reference>
-					</modifier>
-					<reference>B161</reference>
-					<categories>
-						<category>Disadvantage</category>
-					</categories>
-				</advantage>
-				<advantage version="2">
-					<name>Weakness</name>
-					<type>Physical, Exotic</type>
-					<modifier version="1">
-						<name>1d damage per minute</name>
-						<cost type="points">-20</cost>
-						<affects>total</affects>
-						<reference>B161</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>1d damage per 5 minutes</name>
-						<cost type="points">-10</cost>
-						<affects>total</affects>
-						<reference>B161</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>1d damage per 30 minutes</name>
-						<cost type="points">-5</cost>
-						<affects>total</affects>
-						<reference>B161</reference>
-					</modifier>
 					<modifier version="1">
 						<name>Holy water and artifacts</name>
 						<cost type="multiplier">0.5</cost>
@@ -708,12 +617,103 @@
 						<category>Disadvantage</category>
 					</categories>
 				</advantage>
+				<advantage version="2">
+					<name>Weakness</name>
+					<type>Physical, Exotic</type>
+					<modifier version="1">
+						<name>1d damage per minute</name>
+						<cost type="points">-20</cost>
+						<affects>total</affects>
+						<reference>B161</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>1d damage per 5 minutes</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B161</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>1d damage per 30 minutes</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B161</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>@Rare Substance@</name>
+						<cost type="multiplier">0.5</cost>
+						<reference>B161</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>@Occasional Substance@</name>
+						<cost type="multiplier">1</cost>
+						<reference>B161</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>@Common Substance@</name>
+						<cost type="multiplier">2</cost>
+						<reference>B161</reference>
+					</modifier>
+					<modifier version="1">
+						<name>Sunlight</name>
+						<cost type="multiplier">3</cost>
+						<reference>B161</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Fatigue Only</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B161</reference>
+					</modifier>
+					<modifier version="1">
+						<name>Variable</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B161</reference>
+					</modifier>
+					<reference>B161</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
 			</advantage_container>
 			<advantage version="2">
 				<name>Features</name>
 				<type>Physical</type>
 				<notes>Affected by True Faith and Path of Undead (instead of Body/Mind) magic; Cannot use holy items; Neither has nor uses FP; Sterile</notes>
 			</advantage>
+			<advantage_container version="2" open="yes">
+				<name>Secondary Characteristics</name>
+				<advantage version="2">
+					<name>Increased Basic Speed</name>
+					<type>Physical</type>
+					<levels>4</levels>
+					<points_per_level>5</points_per_level>
+					<reference>B17</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>speed</attribute>
+						<amount per_level="yes">0.25</amount>
+					</attribute_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Increased Perception</name>
+					<type>Mental/Physical</type>
+					<levels>2</levels>
+					<points_per_level>5</points_per_level>
+					<reference>B16</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>perception</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+			</advantage_container>
 		</advantage_container>
 	</advantage_list>
 </template>

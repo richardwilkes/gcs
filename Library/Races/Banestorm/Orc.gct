@@ -2,48 +2,6 @@
 <template unique_id="faeh6lz8:-m66qh9ee7s0e" version="1">
 	<advantage_list>
 		<advantage version="2">
-			<name>Decreased Intelligence</name>
-			<type>Physical</type>
-			<levels>1</levels>
-			<points_per_level>-20</points_per_level>
-			<reference>B15</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-			<attribute_bonus>
-				<attribute>iq</attribute>
-				<amount per_level="yes">-1</amount>
-			</attribute_bonus>
-		</advantage>
-		<advantage version="2">
-			<name>Increased Health</name>
-			<type>Physical</type>
-			<levels>2</levels>
-			<points_per_level>10</points_per_level>
-			<reference>B14</reference>
-			<categories>
-				<category>Advantage</category>
-			</categories>
-			<attribute_bonus>
-				<attribute>ht</attribute>
-				<amount per_level="yes">1</amount>
-			</attribute_bonus>
-		</advantage>
-		<advantage version="2">
-			<name>Extra Hit Points</name>
-			<type>Physical</type>
-			<levels>3</levels>
-			<points_per_level>2</points_per_level>
-			<reference>B16</reference>
-			<categories>
-				<category>Advantage</category>
-			</categories>
-			<attribute_bonus>
-				<attribute>hp</attribute>
-				<amount per_level="yes">1</amount>
-			</attribute_bonus>
-		</advantage>
-		<advantage version="2">
 			<name>Acute Hearing</name>
 			<type>Physical</type>
 			<levels>2</levels>
@@ -66,6 +24,57 @@
 			<categories>
 				<category>Disadvantage</category>
 			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Decreased Intelligence</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<points_per_level>-20</points_per_level>
+			<reference>B15</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>iq</attribute>
+				<amount per_level="yes">-1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Doesn't regard betrayal as wrong</name>
+			<type>Mental</type>
+			<base_points>-1</base_points>
+			<reference>B163</reference>
+			<categories>
+				<category>Quirk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Extra Hit Points</name>
+			<type>Physical</type>
+			<levels>3</levels>
+			<points_per_level>2</points_per_level>
+			<reference>B16</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>hp</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Increased Health</name>
+			<type>Physical</type>
+			<levels>2</levels>
+			<points_per_level>10</points_per_level>
+			<reference>B14</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>ht</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
 		</advantage>
 		<advantage version="2">
 			<name>Intolerance (Total)</name>
@@ -100,25 +109,6 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
-			<name>Social Stigma (Barbarian)</name>
-			<type>Social</type>
-			<base_points>-10</base_points>
-			<reference>BS186</reference>
-			<notes>-2 Reaction from others; +2 Reaction by Barbarians</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Doesn't regard betrayal as wrong</name>
-			<type>Mental</type>
-			<base_points>-1</base_points>
-			<reference>B163</reference>
-			<categories>
-				<category>Quirk</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
 			<name>Kowtows to stronger people</name>
 			<type>Mental</type>
 			<base_points>-1</base_points>
@@ -134,6 +124,16 @@
 			<reference>B163</reference>
 			<categories>
 				<category>Quirk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Social Stigma (Barbarian)</name>
+			<type>Social</type>
+			<base_points>-10</base_points>
+			<reference>BS186</reference>
+			<notes>-2 Reaction from others; +2 Reaction by Barbarians</notes>
+			<categories>
+				<category>Disadvantage</category>
 			</categories>
 		</advantage>
 	</advantage_list>

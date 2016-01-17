@@ -2,6 +2,58 @@
 <equipment_list unique_id="hv8v70l7:1sln60b6nubus" version="1">
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>5mm Airdart clip</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>18</value>
+		<weight>1.1 lb</weight>
+		<reference>IW200</reference>
+		<categories>
+			<category>Ammunition</category>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>6.8mm ICW clip</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>0.5 lb</weight>
+		<reference>IW200</reference>
+		<categories>
+			<category>Ammunition</category>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>10mm ISP clip</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>45</value>
+		<weight>0.71 lb</weight>
+		<reference>IW200</reference>
+		<categories>
+			<category>Ammunition</category>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>20mm CF/4 clip</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>0.78 lb</weight>
+		<reference>IW200</reference>
+		<categories>
+			<category>Ammunition</category>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>Armor Cuirass</description>
 		<tech_level>9</tech_level>
 		<legality_class>2</legality_class>
@@ -85,115 +137,6 @@
 			<location>groin</location>
 			<amount>20</amount>
 		</dr_bonus>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Combat Helmet</description>
-		<tech_level>9</tech_level>
-		<legality_class>1</legality_class>
-		<value>120</value>
-		<weight>4 lb</weight>
-		<reference>IW26</reference>
-		<categories>
-			<category>Headgear</category>
-		</categories>
-		<dr_bonus>
-			<location>skull</location>
-			<amount>20</amount>
-		</dr_bonus>
-		<dr_bonus>
-			<location>neck</location>
-			<amount>20</amount>
-		</dr_bonus>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Combat Helmet Visor</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>72</value>
-		<weight>0.24 lb</weight>
-		<reference>IW26</reference>
-		<categories>
-			<category>Headgear</category>
-		</categories>
-		<dr_bonus>
-			<location>eyes</location>
-			<amount>5</amount>
-		</dr_bonus>
-		<dr_bonus>
-			<location>face</location>
-			<amount>5</amount>
-		</dr_bonus>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Mesh Cloth Suit</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>375</value>
-		<weight>2.5 lb</weight>
-		<reference>IW26</reference>
-		<notes>One third against non piercing and cutting</notes>
-		<categories>
-			<category>Body Armor</category>
-		</categories>
-		<dr_bonus>
-			<location>full_body</location>
-			<amount>4</amount>
-		</dr_bonus>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>5mm Airdart clip</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>18</value>
-		<weight>1.1 lb</weight>
-		<reference>IW200</reference>
-		<categories>
-			<category>Ammunition</category>
-			<category>Missile Weapon</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>6.8mm ICW clip</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>40</value>
-		<weight>0.5 lb</weight>
-		<reference>IW200</reference>
-		<categories>
-			<category>Ammunition</category>
-			<category>Missile Weapon</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>10mm ISP clip</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>45</value>
-		<weight>0.71 lb</weight>
-		<reference>IW200</reference>
-		<categories>
-			<category>Ammunition</category>
-			<category>Missile Weapon</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>20mm CF/4 clip</description>
-		<tech_level>9</tech_level>
-		<legality_class>4</legality_class>
-		<value>10</value>
-		<weight>0.78 lb</weight>
-		<reference>IW200</reference>
-		<categories>
-			<category>Ammunition</category>
-			<category>Missile Weapon</category>
-		</categories>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
@@ -785,6 +728,46 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
+		<description>Combat Helmet</description>
+		<tech_level>9</tech_level>
+		<legality_class>1</legality_class>
+		<value>120</value>
+		<weight>4 lb</weight>
+		<reference>IW26</reference>
+		<categories>
+			<category>Headgear</category>
+		</categories>
+		<dr_bonus>
+			<location>skull</location>
+			<amount>20</amount>
+		</dr_bonus>
+		<dr_bonus>
+			<location>neck</location>
+			<amount>20</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Combat Helmet Visor</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>72</value>
+		<weight>0.24 lb</weight>
+		<reference>IW26</reference>
+		<categories>
+			<category>Headgear</category>
+		</categories>
+		<dr_bonus>
+			<location>eyes</location>
+			<amount>5</amount>
+		</dr_bonus>
+		<dr_bonus>
+			<location>face</location>
+			<amount>5</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
 		<description>D cell</description>
 		<tech_level>9</tech_level>
 		<legality_class>4</legality_class>
@@ -1030,6 +1013,23 @@
 		<categories>
 			<category>Missile Weapon</category>
 		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Mesh Cloth Suit</description>
+		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
+		<value>375</value>
+		<weight>2.5 lb</weight>
+		<reference>IW26</reference>
+		<notes>One third against non piercing and cutting</notes>
+		<categories>
+			<category>Body Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>full body</location>
+			<amount>4</amount>
+		</dr_bonus>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>

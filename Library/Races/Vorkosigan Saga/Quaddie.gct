@@ -79,6 +79,45 @@
 					<category>Advantage</category>
 				</categories>
 			</advantage>
+			<advantage_container version="2" open="yes">
+				<name>Common Disadvantages</name>
+				<advantage version="2">
+					<name>Odious Personal Habit</name>
+					<type>Physical</type>
+					<modifier version="1">
+						<name>-1 Reaction</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B22</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>-2 Reaction</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B22</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>-3 Reaction</name>
+						<cost type="points">-15</cost>
+						<affects>total</affects>
+						<reference>B22</reference>
+					</modifier>
+					<reference>B22</reference>
+					<notes>No innate sense of personal property</notes>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Workaholic</name>
+					<type>Physical</type>
+					<base_points>-5</base_points>
+					<reference>B162</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+			</advantage_container>
 			<advantage version="2">
 				<name>Extra Arm</name>
 				<type>Physical, Exotic</type>
@@ -150,6 +189,16 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
+				<name>Honesty</name>
+				<type>Mental</type>
+				<base_points>-10</base_points>
+				<cr>12</cr>
+				<reference>B138</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
 				<name>Increased Health</name>
 				<type>Physical</type>
 				<levels>2</levels>
@@ -163,27 +212,6 @@
 					<attribute>ht</attribute>
 					<amount per_level="yes">1</amount>
 				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Longevity</name>
-				<type>Physical</type>
-				<base_points>2</base_points>
-				<reference>B66</reference>
-				<categories>
-					<category>Advantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Rapid Healing</name>
-				<type>Physical</type>
-				<base_points>5</base_points>
-				<reference>B79</reference>
-				<categories>
-					<category>Advantage</category>
-				</categories>
-				<prereq_list all="yes">
-					<attribute_prereq has="yes" which="ht" compare="at_least">10</attribute_prereq>
-				</prereq_list>
 			</advantage>
 			<advantage version="2">
 				<name>Lame (Crippled Legs)</name>
@@ -202,14 +230,38 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
-				<name>Honesty</name>
+				<name>Longevity</name>
+				<type>Physical</type>
+				<base_points>2</base_points>
+				<reference>B66</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Only fertile with other Quaddies</name>
+				<type>Physical</type>
+			</advantage>
+			<advantage version="2">
+				<name>Pacifism: Self-Defense Only</name>
 				<type>Mental</type>
-				<base_points>-10</base_points>
-				<cr>12</cr>
-				<reference>B138</reference>
+				<base_points>-15</base_points>
+				<reference>B148</reference>
 				<categories>
 					<category>Disadvantage</category>
 				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Rapid Healing</name>
+				<type>Physical</type>
+				<base_points>5</base_points>
+				<reference>B79</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<prereq_list all="yes">
+					<attribute_prereq has="yes" which="ht" compare="at least">10</attribute_prereq>
+				</prereq_list>
 			</advantage>
 			<advantage version="2">
 				<name>Selfless</name>
@@ -264,58 +316,6 @@
 				<categories>
 					<category>Disadvantage</category>
 				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Pacifism: Self-Defense Only</name>
-				<type>Mental</type>
-				<base_points>-15</base_points>
-				<reference>B148</reference>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-			</advantage>
-			<advantage_container version="2" open="yes">
-				<name>Common Disadvantages</name>
-				<advantage version="2">
-					<name>Workaholic</name>
-					<type>Physical</type>
-					<base_points>-5</base_points>
-					<reference>B162</reference>
-					<categories>
-						<category>Disadvantage</category>
-					</categories>
-				</advantage>
-				<advantage version="2">
-					<name>Odious Personal Habit</name>
-					<type>Physical</type>
-					<modifier version="1">
-						<name>-1 Reaction</name>
-						<cost type="points">-5</cost>
-						<affects>total</affects>
-						<reference>B22</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>-2 Reaction</name>
-						<cost type="points">-10</cost>
-						<affects>total</affects>
-						<reference>B22</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>-3 Reaction</name>
-						<cost type="points">-15</cost>
-						<affects>total</affects>
-						<reference>B22</reference>
-					</modifier>
-					<reference>B22</reference>
-					<notes>No innate sense of personal property</notes>
-					<categories>
-						<category>Disadvantage</category>
-					</categories>
-				</advantage>
-			</advantage_container>
-			<advantage version="2">
-				<name>Only fertile with other Quaddies</name>
-				<type>Physical</type>
 			</advantage>
 		</advantage_container>
 	</advantage_list>

@@ -101,9 +101,9 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
-		<reference>H,PU3:6</reference>
+		<reference>H19,PU3:6</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>
@@ -159,9 +159,9 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">-2</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
-		<reference>H,PU3:6</reference>
+		<reference>H19,PU3:9</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>
@@ -215,9 +215,9 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
-		<reference>H,PU3:9</reference>
+		<reference>PU3:9</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>
@@ -276,7 +276,7 @@
 			<affects>total</affects>
 			<notes>Bonus to resist covered skills</notes>
 		</modifier>
-		<reference>H,PU3:12</reference>
+		<reference>H19,PU3:12</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>
@@ -362,9 +362,9 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">2</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
-		<reference>H,PU3:14</reference>
+		<reference>H19,PU3:14</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>
@@ -447,7 +447,7 @@
 			<affects>total</affects>
 			<notes>Bonus to first influence roll made against one or more audience members after a successful performance.</notes>
 		</modifier>
-		<reference>H,PU3:14</reference>
+		<reference>H19,PU3:14</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>
@@ -486,9 +486,9 @@
 		<modifier version="1" enabled="no">
 			<name>Alternative Cost</name>
 			<cost type="points">1</cost>
-			<affects>levels_only</affects>
+			<affects>levels only</affects>
 		</modifier>
-		<reference>H,PU3:6</reference>
+		<reference>PU3:17</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>

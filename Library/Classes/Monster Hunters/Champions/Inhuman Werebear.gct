@@ -4,78 +4,6 @@
 		<advantage_container version="2" open="yes">
 			<name>Inhuman Werebear</name>
 			<advantage_container version="2" open="yes">
-				<name>Attributes</name>
-				<advantage version="2">
-					<name>Increased Strength</name>
-					<type>Physical</type>
-					<levels>10</levels>
-					<points_per_level>10</points_per_level>
-					<modifier version="1" enabled="no">
-						<name>No Fine Manipulators</name>
-						<cost type="percentage">-40</cost>
-						<affects>total</affects>
-						<reference>B15</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Size</name>
-						<cost type="percentage">-10</cost>
-						<levels>1</levels>
-						<affects>total</affects>
-						<reference>B15</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Super-Effort</name>
-						<cost type="percentage">300</cost>
-						<affects>total</affects>
-						<reference>SU24</reference>
-					</modifier>
-					<reference>B14</reference>
-					<categories>
-						<category>Advantage</category>
-						<category>Attribute</category>
-					</categories>
-					<attribute_bonus>
-						<attribute>st</attribute>
-						<amount per_level="yes">1</amount>
-					</attribute_bonus>
-				</advantage>
-				<advantage version="2">
-					<name>Increased Dexterity</name>
-					<type>Physical</type>
-					<levels>1</levels>
-					<points_per_level>20</points_per_level>
-					<modifier version="1" enabled="no">
-						<name>No Fine Manipulators</name>
-						<cost type="percentage">-40</cost>
-						<affects>total</affects>
-					</modifier>
-					<reference>B15</reference>
-					<categories>
-						<category>Advantage</category>
-						<category>Attribute</category>
-					</categories>
-					<attribute_bonus>
-						<attribute>dx</attribute>
-						<amount per_level="yes">1</amount>
-					</attribute_bonus>
-				</advantage>
-				<advantage version="2">
-					<name>Increased Health</name>
-					<type>Physical</type>
-					<levels>2</levels>
-					<points_per_level>10</points_per_level>
-					<reference>B14</reference>
-					<categories>
-						<category>Advantage</category>
-						<category>Attribute</category>
-					</categories>
-					<attribute_bonus>
-						<attribute>ht</attribute>
-						<amount per_level="yes">1</amount>
-					</attribute_bonus>
-				</advantage>
-			</advantage_container>
-			<advantage_container version="2" open="yes">
 				<name>Advantages</name>
 				<advantage version="2">
 					<name>Claws, Blunt</name>
@@ -234,7 +162,7 @@
 						<category>Advantage</category>
 					</categories>
 					<dr_bonus>
-						<location>full_body</location>
+						<location>full body</location>
 						<amount per_level="yes">1</amount>
 					</dr_bonus>
 				</advantage>
@@ -271,6 +199,78 @@
 					<categories>
 						<category>Perk</category>
 					</categories>
+				</advantage>
+			</advantage_container>
+			<advantage_container version="2" open="yes">
+				<name>Attributes</name>
+				<advantage version="2">
+					<name>Increased Dexterity</name>
+					<type>Physical</type>
+					<levels>1</levels>
+					<points_per_level>20</points_per_level>
+					<modifier version="1" enabled="no">
+						<name>No Fine Manipulators</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+					</modifier>
+					<reference>B15</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>dx</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Increased Health</name>
+					<type>Physical</type>
+					<levels>2</levels>
+					<points_per_level>10</points_per_level>
+					<reference>B14</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>ht</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Increased Strength</name>
+					<type>Physical</type>
+					<levels>10</levels>
+					<points_per_level>10</points_per_level>
+					<modifier version="1" enabled="no">
+						<name>No Fine Manipulators</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B15</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Size</name>
+						<cost type="percentage">-10</cost>
+						<levels>1</levels>
+						<affects>total</affects>
+						<reference>B15</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Super-Effort</name>
+						<cost type="percentage">300</cost>
+						<affects>total</affects>
+						<reference>SU24</reference>
+					</modifier>
+					<reference>B14</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>st</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
 				</advantage>
 			</advantage_container>
 			<advantage_container version="2" open="yes">

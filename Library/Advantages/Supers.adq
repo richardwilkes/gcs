@@ -550,7 +550,7 @@
 			<advantage_prereq has="yes">
 				<name compare="starts with">Damage Resistance</name>
 				<notes compare="is anything"></notes>
-				<level compare="at_least">3</level>
+				<level compare="at least">3</level>
 			</advantage_prereq>
 		</prereq_list>
 	</advantage>
@@ -589,30 +589,30 @@
 				<skill_prereq has="yes">
 					<name compare="is">Move!</name>
 					<specialization compare="is anything"></specialization>
-					<level compare="at_least">16</level>
+					<level compare="at least">16</level>
 				</skill_prereq>
 				<skill_prereq has="yes">
 					<name compare="is">Throw!</name>
 					<specialization compare="is anything"></specialization>
-					<level compare="at_least">16</level>
+					<level compare="at least">16</level>
 				</skill_prereq>
 				<skill_prereq has="yes">
 					<name compare="is">Bow!</name>
 					<specialization compare="is anything"></specialization>
-					<level compare="at_least">16</level>
+					<level compare="at least">16</level>
 				</skill_prereq>
 			</prereq_list>
 			<prereq_list all="yes">
 				<skill_prereq has="yes">
 					<name compare="is">Acrobatics</name>
 					<specialization compare="is anything"></specialization>
-					<level compare="at_least">16</level>
+					<level compare="at least">16</level>
 				</skill_prereq>
 				<prereq_list all="no">
 					<skill_prereq has="yes">
 						<name compare="is">Observation</name>
 						<specialization compare="is anything"></specialization>
-						<level compare="at_least">16</level>
+						<level compare="at least">16</level>
 					</skill_prereq>
 				</prereq_list>
 			</prereq_list>

@@ -692,7 +692,7 @@
 					<category>Power</category>
 				</categories>
 				<dr_bonus>
-					<location>full_body</location>
+					<location>full body</location>
 					<amount per_level="yes">1</amount>
 				</dr_bonus>
 			</advantage>
@@ -1577,7 +1577,7 @@
 					<category>Power</category>
 				</categories>
 				<dr_bonus>
-					<location>full_body</location>
+					<location>full body</location>
 					<amount per_level="yes">1</amount>
 				</dr_bonus>
 			</advantage>

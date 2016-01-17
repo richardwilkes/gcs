@@ -101,7 +101,7 @@
 			<affects>total</affects>
 			<notes>Bonus to initiative rolls if leader</notes>
 		</modifier>
-		<reference>BS184,DF1,MH1,PU3:12</reference>
+		<reference>BS184,DF1:14,PU3:12</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>
@@ -149,7 +149,7 @@
 			<affects>total</affects>
 			<notes>Bonus to default rolls to maintain, evaluate, or trade in ranged weapons</notes>
 		</modifier>
-		<reference>BS184,DF3,PU3:11</reference>
+		<reference>BS184,DF3:14,PU3:11</reference>
 		<categories>
 			<category>Advantage</category>
 			<category>Talent</category>

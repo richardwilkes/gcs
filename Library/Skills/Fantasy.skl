@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
 <skill_list unique_id="hv8uw3dk:-40kz0zga4dk9" version="1">
+	<technique version="2" limit="0">
+		<name>Chariot Archery</name>
+		<difficulty>H</difficulty>
+		<points>2</points>
+		<reference>F136</reference>
+		<default>
+			<type>Skill</type>
+			<name>Bow</name>
+			<modifier>-6</modifier>
+		</default>
+		<categories>
+			<category>Animal</category>
+			<category>Combat/Weapon</category>
+			<category>Ranged Combat</category>
+			<category>Technique</category>
+			<category>Vehicle</category>
+		</categories>
+	</technique>
 	<skill version="2">
 		<name>Expert Skill</name>
 		<specialization>@Field of expertise@</specialization>
@@ -22,24 +40,6 @@
 			<category>Scholarly</category>
 		</categories>
 	</skill>
-	<technique version="2" limit="0">
-		<name>Chariot Archery</name>
-		<difficulty>H</difficulty>
-		<points>2</points>
-		<reference>F136</reference>
-		<default>
-			<type>Skill</type>
-			<name>Bow</name>
-			<modifier>-6</modifier>
-		</default>
-		<categories>
-			<category>Animal</category>
-			<category>Combat/Weapon</category>
-			<category>Ranged Combat</category>
-			<category>Technique</category>
-			<category>Vehicle</category>
-		</categories>
-	</technique>
 	<technique version="2" limit="0">
 		<name>Hang From Saddle</name>
 		<difficulty>H</difficulty>

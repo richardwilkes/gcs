@@ -2,62 +2,6 @@
 <template unique_id="ih2s1rvi:-1c0rektea8bxf" version="1">
 	<advantage_list>
 		<advantage_container version="2" open="yes">
-			<name>Attributes</name>
-			<advantage version="2">
-				<name>Decreased Strength</name>
-				<type>Physical</type>
-				<levels>3</levels>
-				<points_per_level>-10</points_per_level>
-				<reference>B14</reference>
-				<categories>
-					<category>Attribute</category>
-					<category>Disadvantage</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>st</attribute>
-					<amount per_level="yes">-1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Increased Dexterity</name>
-				<type>Physical</type>
-				<levels>3</levels>
-				<points_per_level>20</points_per_level>
-				<modifier version="1" enabled="no">
-					<name>No Fine Manipulators</name>
-					<cost type="percentage">-40</cost>
-					<affects>total</affects>
-				</modifier>
-				<reference>B15</reference>
-				<categories>
-					<category>Advantage</category>
-					<category>Attribute</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>dx</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
-		</advantage_container>
-		<advantage_container version="2" open="yes">
-			<name>Secondary Characteristics</name>
-			<advantage version="2">
-				<name>Fewer Hit Points</name>
-				<type>Physical</type>
-				<levels>2</levels>
-				<points_per_level>-2</points_per_level>
-				<reference>B16</reference>
-				<categories>
-					<category>Attribute</category>
-					<category>Disadvantage</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>hp</attribute>
-					<amount per_level="yes">-1</amount>
-				</attribute_bonus>
-			</advantage>
-		</advantage_container>
-		<advantage_container version="2" open="yes">
 			<name>Advantages</name>
 			<advantage version="2">
 				<name>Absolute Direction</name>
@@ -300,6 +244,44 @@
 			</advantage>
 		</advantage_container>
 		<advantage_container version="2" open="yes">
+			<name>Attributes</name>
+			<advantage version="2">
+				<name>Decreased Strength</name>
+				<type>Physical</type>
+				<levels>3</levels>
+				<points_per_level>-10</points_per_level>
+				<reference>B14</reference>
+				<categories>
+					<category>Attribute</category>
+					<category>Disadvantage</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>st</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Dexterity</name>
+				<type>Physical</type>
+				<levels>3</levels>
+				<points_per_level>20</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>No Fine Manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B15</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dx</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+		</advantage_container>
+		<advantage_container version="2" open="yes">
 			<name>Disadvantages</name>
 			<advantage version="2">
 				<name>Self-Destruct</name>
@@ -355,6 +337,24 @@
 		</advantage_container>
 		<advantage_container version="2" open="yes">
 			<name>Quirks</name>
+		</advantage_container>
+		<advantage_container version="2" open="yes">
+			<name>Secondary Characteristics</name>
+			<advantage version="2">
+				<name>Fewer Hit Points</name>
+				<type>Physical</type>
+				<levels>2</levels>
+				<points_per_level>-2</points_per_level>
+				<reference>B16</reference>
+				<categories>
+					<category>Attribute</category>
+					<category>Disadvantage</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>hp</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
+			</advantage>
 		</advantage_container>
 	</advantage_list>
 </template>

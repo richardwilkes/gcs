@@ -1,45 +1,45 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<template unique_id="egl94k9z:-1kchwlpfmcyik">
+<template unique_id="egl94k9z:-1kchwlpfmcyik" version="1">
 	<advantage_list>
-		<advantage_container open="yes" type="race">
+		<advantage_container version="2" open="yes" type="race">
 			<name>Halfling</name>
 			<reference>F109</reference>
-			<advantage>
+			<advantage version="2">
 				<name>Attribute modifiers: ST -5, DX +1 HT +2</name>
 				<type>Physical</type>
 				<base_points>-10</base_points>
 				<attribute_bonus>
-					<attribute>ST</attribute>
-					<amount per_level="no">-5</amount>
+					<attribute>st</attribute>
+					<amount>-5</amount>
 				</attribute_bonus>
 				<attribute_bonus>
-					<attribute>DX</attribute>
-					<amount per_level="no">+1</amount>
+					<attribute>dx</attribute>
+					<amount>1</amount>
 				</attribute_bonus>
 				<attribute_bonus>
-					<attribute>HT</attribute>
-					<amount per_level="no">+2</amount>
+					<attribute>ht</attribute>
+					<amount>2</amount>
 				</attribute_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Fond of Food and drink</name>
 				<type>Mental</type>
 				<base_points>-1</base_points>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Hard to Kill</name>
 				<type>Physical</type>
 				<levels>4</levels>
 				<points_per_level>2</points_per_level>
 				<reference>B58</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Mundane Background</name>
 				<type>Mental</type>
 				<base_points>-10</base_points>
 				<reference>B144</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Overweight (ST+1 vs knockback)</name>
 				<type>Physical</type>
 				<base_points>-1</base_points>
@@ -47,34 +47,34 @@
 				<skill_bonus>
 					<name compare="is">disguise</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-1</amount>
+					<amount>-1</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">shadowing</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-1</amount>
+					<amount>-1</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">swimming</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">+1</amount>
+					<amount>1</amount>
 				</skill_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Prefers to live underground</name>
 				<type>Mental</type>
 				<base_points>-1</base_points>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Secondary characteristic, SM-2 Will+2</name>
 				<type>Mental/Physical</type>
 				<base_points>10</base_points>
 				<attribute_bonus>
 					<attribute>will</attribute>
-					<amount per_level="no">+2</amount>
+					<amount>2</amount>
 				</attribute_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Silence</name>
 				<type>Physical, Exotic</type>
 				<levels>4</levels>
@@ -83,10 +83,10 @@
 				<skill_bonus>
 					<name compare="is">stealth</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">+2</amount>
+					<amount>2</amount>
 				</skill_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Talent (Green Thumb)</name>
 				<type>Mental</type>
 				<levels>1</levels>
@@ -95,27 +95,27 @@
 				<skill_bonus>
 					<name compare="contains">biology</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">+1</amount>
+					<amount per_level="yes">1</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">farming</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">+1</amount>
+					<amount per_level="yes">1</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">gardening</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">+1</amount>
+					<amount per_level="yes">1</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">herb lore</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">+1</amount>
+					<amount per_level="yes">1</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">naturalist</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">+1</amount>
+					<amount per_level="yes">1</amount>
 				</skill_bonus>
 			</advantage>
 		</advantage_container>

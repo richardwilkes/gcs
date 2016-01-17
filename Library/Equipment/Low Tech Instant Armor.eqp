@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
 <equipment_list unique_id="hv8irnjw:-jks2hyo6kqxr" version="1">
-  <equipment version="3">
+	<equipment version="3">
 		<quantity>1</quantity>
 		<description>Arming Doublet Torso Armor</description>
 		<tech_level>4</tech_level>
@@ -700,57 +700,6 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Gauntlets,Fine Mail </description>
-		<tech_level>2</tech_level>
-		<legality_class>4</legality_class>
-		<value>90</value>
-		<weight>1.5 lb</weight>
-		<reference>LTIA15</reference>
-		<notes>Don: 10 secs; Holdout: -3; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing; Gives Ham-Fisted 2 (p. B138).</notes>
-		<categories>
-			<category>Gloves</category>
-		</categories>
-		<dr_bonus>
-			<location>hands</location>
-			<amount>4</amount>
-		</dr_bonus>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Gauntlets,Light Mail </description>
-		<tech_level>2</tech_level>
-		<legality_class>4</legality_class>
-		<value>50</value>
-		<weight>1.2 lb</weight>
-		<reference>LTIA15</reference>
-		<notes>Don: 10 secs; Holdout: -2; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing; Gives Ham-Fisted 2 (p. B138).</notes>
-		<categories>
-			<category>Gloves</category>
-		</categories>
-		<dr_bonus>
-			<location>hands</location>
-			<amount>3</amount>
-		</dr_bonus>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Gauntlets,Light Scale </description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>32</value>
-		<weight>1.6 lb</weight>
-		<reference>LTIA15</reference>
-		<notes>Don: 10 secs; Holdout: -4; -1 DR vs. crushing; Gives Ham-Fisted 2 (p. B138).</notes>
-		<categories>
-			<category>Gloves</category>
-		</categories>
-		<dr_bonus>
-			<location>hands</location>
-			<amount>3</amount>
-		</dr_bonus>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
 		<description>Gauntlets, Hardened Leather </description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
@@ -866,6 +815,57 @@
 		<dr_bonus>
 			<location>hands</location>
 			<amount>1</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Gauntlets,Fine Mail </description>
+		<tech_level>2</tech_level>
+		<legality_class>4</legality_class>
+		<value>90</value>
+		<weight>1.5 lb</weight>
+		<reference>LTIA15</reference>
+		<notes>Don: 10 secs; Holdout: -3; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing; Gives Ham-Fisted 2 (p. B138).</notes>
+		<categories>
+			<category>Gloves</category>
+		</categories>
+		<dr_bonus>
+			<location>hands</location>
+			<amount>4</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Gauntlets,Light Mail </description>
+		<tech_level>2</tech_level>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>1.2 lb</weight>
+		<reference>LTIA15</reference>
+		<notes>Don: 10 secs; Holdout: -2; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing; Gives Ham-Fisted 2 (p. B138).</notes>
+		<categories>
+			<category>Gloves</category>
+		</categories>
+		<dr_bonus>
+			<location>hands</location>
+			<amount>3</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Gauntlets,Light Scale </description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>32</value>
+		<weight>1.6 lb</weight>
+		<reference>LTIA15</reference>
+		<notes>Don: 10 secs; Holdout: -4; -1 DR vs. crushing; Gives Ham-Fisted 2 (p. B138).</notes>
+		<categories>
+			<category>Gloves</category>
+		</categories>
+		<dr_bonus>
+			<location>hands</location>
+			<amount>3</amount>
 		</dr_bonus>
 	</equipment>
 	<equipment version="3">
@@ -2511,7 +2511,7 @@
 		<tech_level>0</tech_level>
 		<legality_class>5</legality_class>
 		<value>45</value>
-		<weight>0.80 lb</weight>
+		<weight>0.8 lb</weight>
 		<reference>LTIA14</reference>
 		<notes>Don: 8 secs; Holdout: -1; Flexible and susceptible to blunt trauma (p. B379); +1 DR vs. cutting.</notes>
 		<categories>
@@ -3030,7 +3030,7 @@
 		<tech_level>2</tech_level>
 		<legality_class>3</legality_class>
 		<value>45</value>
-		<weight>0.80 lb</weight>
+		<weight>0.8 lb</weight>
 		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -2; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
@@ -3064,7 +3064,7 @@
 		<tech_level>2</tech_level>
 		<legality_class>3</legality_class>
 		<value>45</value>
-		<weight>0.80 lb</weight>
+		<weight>0.8 lb</weight>
 		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -3; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
@@ -3169,7 +3169,7 @@
 		<tech_level>2</tech_level>
 		<legality_class>3</legality_class>
 		<value>60</value>
-		<weight>0.90 lb</weight>
+		<weight>0.9 lb</weight>
 		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -3; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
@@ -3203,7 +3203,7 @@
 		<tech_level>2</tech_level>
 		<legality_class>3</legality_class>
 		<value>60</value>
-		<weight>0.90 lb</weight>
+		<weight>0.9 lb</weight>
 		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -4; Reaction Pen.-1; Flexible and susceptible to blunt trauma (p. B379); -2 DR vs. crushing.</notes>
 		<categories>
@@ -3898,7 +3898,7 @@
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
 		<value>50</value>
-		<weight>0.40 lb</weight>
+		<weight>0.4 lb</weight>
 		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -3; Reaction Pen.-1</notes>
 		<categories>
@@ -3932,7 +3932,7 @@
 		<tech_level>4</tech_level>
 		<legality_class>4</legality_class>
 		<value>50</value>
-		<weight>0.40 lb</weight>
+		<weight>0.4 lb</weight>
 		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>
@@ -4236,7 +4236,7 @@
 		<tech_level>4</tech_level>
 		<legality_class>4</legality_class>
 		<value>100</value>
-		<weight>0.80 lb</weight>
+		<weight>0.8 lb</weight>
 		<reference>LTIA16</reference>
 		<notes>Don: 10 secs; Holdout: -4</notes>
 		<categories>
@@ -4469,7 +4469,7 @@
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
 		<value>16</value>
-		<weight>0.80 lb</weight>
+		<weight>0.8 lb</weight>
 		<reference>LTIA7</reference>
 		<notes>Don: 3 secs; Holdout: -3; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
@@ -4503,7 +4503,7 @@
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
 		<value>16</value>
-		<weight>0.80 lb</weight>
+		<weight>0.8 lb</weight>
 		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -4; Reaction Pen.-1; -1 DR vs. crushing.</notes>
 		<categories>
@@ -4795,7 +4795,7 @@
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
 		<value>30</value>
-		<weight>0.80 lb</weight>
+		<weight>0.8 lb</weight>
 		<reference>LTIA15</reference>
 		<notes>Don: 3 secs; Holdout: -4; Reaction Pen.-1</notes>
 		<categories>

@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<template unique_id="eh7dc7ko:1s5k6n733lflh">
+<template unique_id="eh7dc7ko:1s5k6n733lflh" version="1">
 	<advantage_list>
-		<advantage_container open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Meta-Trait: Vermiform</name>
 			<reference>B263</reference>
-			<advantage>
+			<advantage version="2">
 				<name>Double-Jointed</name>
 				<type>Physical</type>
 				<base_points>15</base_points>
 				<reference>B56</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>No Legs (Slithers)</name>
 				<type>Physical, Exotic</type>
 				<reference>B145</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>No Manipulators</name>
 				<type>Physical</type>
 				<base_points>-50</base_points>

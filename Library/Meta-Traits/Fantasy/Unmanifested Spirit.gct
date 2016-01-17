@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
 <template unique_id="egsnmscc:frnogwa1l58k" version="1">
 	<advantage_list>
-		<advantage_container version="2" open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Unmanifested Spirit Metatrait</name>
 			<reference>F134</reference>
 			<advantage version="2">

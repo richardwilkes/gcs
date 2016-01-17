@@ -276,13 +276,6 @@
 		</advantage_container>
 		<advantage_container version="2" open="yes">
 			<name>Class Disadvantages</name>
-			<advantage version="2">
-				<name>Social Stigma (Outlaw)</name>
-				<type>Social</type>
-				<base_points>-15</base_points>
-				<reference>RSWL8</reference>
-				<notes>Reaction -3 from robots, +3 from humans from the same subculture</notes>
-			</advantage>
 			<advantage_container version="2" open="yes">
 				<name>-20 Points in:</name>
 				<advantage version="2">
@@ -474,6 +467,13 @@
 					</categories>
 				</advantage>
 			</advantage_container>
+			<advantage version="2">
+				<name>Social Stigma (Outlaw)</name>
+				<type>Social</type>
+				<base_points>-15</base_points>
+				<reference>RSWL8</reference>
+				<notes>Reaction -3 from robots, +3 from humans from the same subculture</notes>
+			</advantage>
 		</advantage_container>
 	</advantage_list>
 	<skill_list>

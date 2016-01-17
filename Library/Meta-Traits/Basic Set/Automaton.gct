@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<template unique_id="eis26k9m:-5jyvz0jcm5tm">
+<template unique_id="eis26k9m:-5jyvz0jcm5tm" version="1">
 	<advantage_list>
-		<advantage_container open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Meta-Trait: Automaton</name>
 			<reference>B263</reference>
-			<advantage>
+			<advantage version="2">
 				<name>Hidebound</name>
 				<type>Physical</type>
 				<base_points>-5</base_points>
 				<reference>B138</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Incurious (CR: 6)</name>
 				<type>Mental</type>
 				<base_points>-10</base_points>
 				<reference>B140</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Low Empathy</name>
 				<type>Mental</type>
 				<base_points>-20</base_points>
@@ -24,82 +24,82 @@
 				<skill_bonus>
 					<name compare="is">acting</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">carousing</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">criminology</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">detect lies</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">diplomacy</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">enthrallment</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">fast-talk</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">interrogation</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">leadership</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">merchant</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">politics</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="contains">psychology</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="contains">savoir-faire</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">sex appeal</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">sociology</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">streetwise</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<prereq_list all="yes">
 					<advantage_prereq has="no">
@@ -116,14 +116,14 @@
 					</advantage_prereq>
 				</prereq_list>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>No Sense of Humor</name>
 				<type>Physical</type>
 				<base_points>-10</base_points>
 				<reference>B146</reference>
 				<notes>-2 Reaction</notes>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Slave Mentality</name>
 				<type>Physical</type>
 				<base_points>-40</base_points>

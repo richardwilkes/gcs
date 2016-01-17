@@ -210,7 +210,7 @@
 			<category>Luggage</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">20 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">20 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -760,7 +760,7 @@
 			<category>Luggage</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">50 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">50 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -3996,7 +3996,7 @@
 			<category>Combat Accessories</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">20 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">20 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -4010,7 +4010,7 @@
 			<category>Combat Accessories</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at_most">20 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">20 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment version="3">
@@ -5186,7 +5186,7 @@
 			<category>Infiltration</category>
 		</categories>
 		<dr_bonus>
-			<location>full_body</location>
+			<location>full body</location>
 			<amount>1</amount>
 		</dr_bonus>
 	</equipment>
@@ -5202,7 +5202,7 @@
 			<category>Infiltration</category>
 		</categories>
 		<dr_bonus>
-			<location>full_body</location>
+			<location>full body</location>
 			<amount>1</amount>
 		</dr_bonus>
 	</equipment>

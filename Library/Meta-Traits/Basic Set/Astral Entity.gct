@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<template unique_id="eis1sp0j:1emqlireq83ey">
+<template unique_id="eis1sp0j:1emqlireq83ey" version="1">
 	<advantage_list>
-		<advantage_container open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Meta-Trait: Astral Entity</name>
 			<reference>B263</reference>
-			<advantage>
+			<advantage version="2">
 				<name>Doesn't Breathe</name>
 				<type>Physical, Exotic</type>
 				<base_points>20</base_points>
 				<reference>B49</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Doesn't Eat or Drink</name>
 				<type>Physical, Exotic</type>
 				<base_points>10</base_points>
 				<reference>B50</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Doesn't Sleep</name>
 				<type>Physical, Exotic</type>
 				<base_points>20</base_points>
 				<reference>B50</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Insubstantiality</name>
 				<type>Mental/Physical, Exotic</type>
 				<base_points>80</base_points>
-				<modifier version="1" enabled="yes">
+				<modifier version="1">
 					<name>Always On</name>
 					<cost type="percentage">-50</cost>
 					<affects>total</affects>
@@ -35,20 +35,20 @@
 				<reference>B63</reference>
 				<notes>Always On</notes>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Invisibility</name>
 				<type>Mental/Physical, Exotic</type>
 				<base_points>36</base_points>
 				<reference>B63</reference>
 				<notes>Substantial Only</notes>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Resistant (Immune to Metabolic Hazards)</name>
 				<type>Physical</type>
 				<base_points>30</base_points>
 				<reference>B81</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Unaging</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>

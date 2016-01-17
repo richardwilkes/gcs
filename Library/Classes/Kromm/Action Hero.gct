@@ -691,13 +691,13 @@
 					<weapon_bonus>
 						<name compare="is">Boxing</name>
 						<specialization compare="is anything"></specialization>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 						<amount per_level="yes">1</amount>
 					</weapon_bonus>
 					<weapon_bonus>
 						<name compare="is">Boxing</name>
 						<specialization compare="is anything"></specialization>
-						<level compare="at_least">2</level>
+						<level compare="at least">2</level>
 						<amount per_level="yes">1</amount>
 					</weapon_bonus>
 				</skill>
@@ -713,7 +713,7 @@
 					<weapon_bonus>
 						<name compare="is">Brawling</name>
 						<specialization compare="is anything"></specialization>
-						<level compare="at_least">2</level>
+						<level compare="at least">2</level>
 						<amount per_level="yes">1</amount>
 					</weapon_bonus>
 				</skill>
@@ -730,13 +730,13 @@
 					<weapon_bonus>
 						<name compare="is">Karate</name>
 						<specialization compare="is anything"></specialization>
-						<level compare="at_least">0</level>
+						<level compare="at least">0</level>
 						<amount per_level="yes">1</amount>
 					</weapon_bonus>
 					<weapon_bonus>
 						<name compare="is">Karate</name>
 						<specialization compare="is anything"></specialization>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 						<amount per_level="yes">1</amount>
 					</weapon_bonus>
 				</skill>

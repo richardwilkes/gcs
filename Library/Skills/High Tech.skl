@@ -438,7 +438,7 @@
 			<skill_prereq has="yes">
 				<name compare="is">Guns</name>
 				<specialization compare="is"></specialization>
-				<level compare="at_least">18</level>
+				<level compare="at least">18</level>
 			</skill_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -470,7 +470,7 @@
 			<skill_prereq has="yes">
 				<name compare="is">Guns</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">18</level>
+				<level compare="at least">18</level>
 			</skill_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -502,7 +502,7 @@
 			<skill_prereq has="yes">
 				<name compare="is">Guns</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">18</level>
+				<level compare="at least">18</level>
 			</skill_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -534,7 +534,7 @@
 			<skill_prereq has="yes">
 				<name compare="is">Guns</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">18</level>
+				<level compare="at least">18</level>
 			</skill_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -566,7 +566,7 @@
 			<skill_prereq has="yes">
 				<name compare="is">Guns</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">18</level>
+				<level compare="at least">18</level>
 			</skill_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -598,7 +598,7 @@
 			<skill_prereq has="yes">
 				<name compare="is">Guns</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">18</level>
+				<level compare="at least">18</level>
 			</skill_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -630,7 +630,7 @@
 			<skill_prereq has="yes">
 				<name compare="is">Guns</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">18</level>
+				<level compare="at least">18</level>
 			</skill_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -662,7 +662,7 @@
 			<skill_prereq has="yes">
 				<name compare="is">Guns</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">18</level>
+				<level compare="at least">18</level>
 			</skill_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -694,7 +694,7 @@
 			<skill_prereq has="yes">
 				<name compare="is">Guns</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">18</level>
+				<level compare="at least">18</level>
 			</skill_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -726,7 +726,7 @@
 			<skill_prereq has="yes">
 				<name compare="is">Guns</name>
 				<specialization compare="is anything"></specialization>
-				<level compare="at_least">18</level>
+				<level compare="at least">18</level>
 			</skill_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">

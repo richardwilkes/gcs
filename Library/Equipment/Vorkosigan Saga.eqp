@@ -147,48 +147,6 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Sonic Grenade</description>
-		<tech_level>9</tech_level>
-		<legality_class>1</legality_class>
-		<value>240</value>
-		<weight>1 lb</weight>
-		<reference>VOR89</reference>
-		<ranged_weapon>
-			<damage>12d corr ex</damage>
-			<strength>8</strength>
-			<usage>Thrown</usage>
-			<accuracy>0</accuracy>
-			<range>STx2.5</range>
-			<rate_of_fire>1</rate_of_fire>
-			<shots>1</shots>
-			<default>
-				<type>Skill</type>
-				<name>Throwing</name>
-				<modifier>0</modifier>
-			</default>
-			<default>
-				<type>Skill</type>
-				<name>Dropping</name>
-				<modifier>-4</modifier>
-			</default>
-			<default>
-				<type>DX</type>
-				<modifier>-3</modifier>
-			</default>
-		</ranged_weapon>
-		<notes>Armor in area loses 3DR for 3 turns, 2 second delay after release, use weapon stats for range, etc for launched grenades</notes>
-		<categories>
-			<category>Muscle Powered</category>
-			<category>Ranged Weapons</category>
-		</categories>
-		<skill_bonus>
-			<name compare="is"></name>
-			<specialization compare="is anything"></specialization>
-			<amount>1</amount>
-		</skill_bonus>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
 		<description>Fast-Penta</description>
 		<tech_level>9</tech_level>
 		<legality_class>3</legality_class>
@@ -685,6 +643,48 @@
 		<categories>
 			<category>Ranged Weapons</category>
 		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Sonic Grenade</description>
+		<tech_level>9</tech_level>
+		<legality_class>1</legality_class>
+		<value>240</value>
+		<weight>1 lb</weight>
+		<reference>VOR89</reference>
+		<ranged_weapon>
+			<damage>12d corr ex</damage>
+			<strength>8</strength>
+			<usage>Thrown</usage>
+			<accuracy>0</accuracy>
+			<range>STx2.5</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1</shots>
+			<default>
+				<type>Skill</type>
+				<name>Throwing</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Dropping</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>DX</type>
+				<modifier>-3</modifier>
+			</default>
+		</ranged_weapon>
+		<notes>Armor in area loses 3DR for 3 turns, 2 second delay after release, use weapon stats for range, etc for launched grenades</notes>
+		<categories>
+			<category>Muscle Powered</category>
+			<category>Ranged Weapons</category>
+		</categories>
+		<skill_bonus>
+			<name compare="is"></name>
+			<specialization compare="is anything"></specialization>
+			<amount>1</amount>
+		</skill_bonus>
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>

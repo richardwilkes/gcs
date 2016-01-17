@@ -1,53 +1,53 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<template unique_id="eh7dgruq:hutw07iyxmu4">
+<template unique_id="eh7dgruq:hutw07iyxmu4" version="1">
 	<advantage_list>
-		<advantage_container open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Meta-Trait: Body of Earth</name>
 			<reference>B262</reference>
-			<advantage>
+			<advantage version="2">
 				<name>Damage Resistance</name>
 				<type>Physical, Exotic</type>
 				<levels>2</levels>
 				<points_per_level>5</points_per_level>
 				<reference>B47</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Doesn't Breathe</name>
 				<type>Physical, Exotic</type>
 				<base_points>20</base_points>
 				<reference>B49</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Injury Tolerance (Diffuse)</name>
 				<type>Physical, Exotic</type>
 				<base_points>100</base_points>
 				<reference>B60</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Invertebrate</name>
 				<type>Physical, Exotic</type>
 				<base_points>-20</base_points>
 				<reference>B140</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Pressure Support 3 (Immune to high pressure)</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>
 				<reference>B77</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Resistant (Immunity to Metabolic Hazards)</name>
 				<type>Physical</type>
 				<base_points>30</base_points>
 				<reference>B81</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Sealed</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>
 				<reference>B82</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Vacuum Support</name>
 				<type>Physical, Exotic</type>
 				<base_points>5</base_points>

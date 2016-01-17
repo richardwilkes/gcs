@@ -49,50 +49,6 @@
 			</advantage_container>
 			<advantage_container version="2" open="yes">
 				<name>Disadvantages</name>
-				<advantage version="2">
-					<name>Duty (@Duty@)</name>
-					<type>Social</type>
-					<modifier version="1" enabled="no">
-						<name>FR: 6</name>
-						<cost type="points">-2</cost>
-						<affects>total</affects>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>FR: 9</name>
-						<cost type="points">-5</cost>
-						<affects>total</affects>
-					</modifier>
-					<modifier version="1">
-						<name>FR: 12</name>
-						<cost type="points">-10</cost>
-						<affects>total</affects>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>FR: 15</name>
-						<cost type="points">-15</cost>
-						<affects>total</affects>
-					</modifier>
-					<modifier version="1">
-						<name>Extremely Hazardous</name>
-						<cost type="points">-5</cost>
-						<affects>total</affects>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Involuntary</name>
-						<cost type="points">-5</cost>
-						<affects>total</affects>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Nonhazardous</name>
-						<cost type="points">5</cost>
-						<affects>total</affects>
-					</modifier>
-					<reference>B133</reference>
-					<categories>
-						<category>Disadvantage</category>
-						<category>Why we fight</category>
-					</categories>
-				</advantage>
 				<advantage_container version="2" open="yes">
 					<name>Add to template options</name>
 					<advantage version="2">
@@ -173,6 +129,50 @@
 						</categories>
 					</advantage>
 				</advantage_container>
+				<advantage version="2">
+					<name>Duty (@Duty@)</name>
+					<type>Social</type>
+					<modifier version="1" enabled="no">
+						<name>FR: 6</name>
+						<cost type="points">-2</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>FR: 9</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1">
+						<name>FR: 12</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>FR: 15</name>
+						<cost type="points">-15</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1">
+						<name>Extremely Hazardous</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Involuntary</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Nonhazardous</name>
+						<cost type="points">5</cost>
+						<affects>total</affects>
+					</modifier>
+					<reference>B133</reference>
+					<categories>
+						<category>Disadvantage</category>
+						<category>Why we fight</category>
+					</categories>
+				</advantage>
 			</advantage_container>
 		</advantage_container>
 	</advantage_list>

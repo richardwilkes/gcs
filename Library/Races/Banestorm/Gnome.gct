@@ -2,30 +2,6 @@
 <template unique_id="fad674gz:-11ik603xauts7" version="1">
 	<advantage_list>
 		<advantage version="2">
-			<name>Extra Fatigue Points</name>
-			<type>Physical</type>
-			<levels>1</levels>
-			<points_per_level>3</points_per_level>
-			<reference>B16</reference>
-			<categories>
-				<category>Advantage</category>
-			</categories>
-			<attribute_bonus>
-				<attribute>fp</attribute>
-				<amount per_level="yes">1</amount>
-			</attribute_bonus>
-		</advantage>
-		<advantage version="2">
-			<name>Decreased Basic Move</name>
-			<type>Physical</type>
-			<levels>1</levels>
-			<points_per_level>-5</points_per_level>
-			<attribute_bonus>
-				<attribute>move</attribute>
-				<amount per_level="yes">-1</amount>
-			</attribute_bonus>
-		</advantage>
-		<advantage version="2">
 			<name>Damage Resistance</name>
 			<type>Physical, Exotic</type>
 			<levels>1</levels>
@@ -146,6 +122,64 @@
 			</dr_bonus>
 		</advantage>
 		<advantage version="2">
+			<name>Decreased Basic Move</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<points_per_level>-5</points_per_level>
+			<attribute_bonus>
+				<attribute>move</attribute>
+				<amount per_level="yes">-1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Doesn't Like to Live Underground</name>
+			<type>Physical</type>
+			<base_points>-1</base_points>
+			<reference>BS192</reference>
+		</advantage>
+		<advantage version="2">
+			<name>Extra Fatigue Points</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<points_per_level>3</points_per_level>
+			<reference>B16</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>fp</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Honest Face</name>
+			<type>Physical</type>
+			<base_points>1</base_points>
+			<reference>B101</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Longevity</name>
+			<type>Physical</type>
+			<base_points>2</base_points>
+			<reference>B66</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Sense of Duty</name>
+			<type>Mental</type>
+			<base_points>-15</base_points>
+			<reference>B153</reference>
+			<notes>Nature</notes>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Talent (Green Thumb)</name>
 			<type>Mental</type>
 			<levels>1</levels>
@@ -179,40 +213,6 @@
 				<specialization compare="is anything"></specialization>
 				<amount per_level="yes">1</amount>
 			</skill_bonus>
-		</advantage>
-		<advantage version="2">
-			<name>Honest Face</name>
-			<type>Physical</type>
-			<base_points>1</base_points>
-			<reference>B101</reference>
-			<categories>
-				<category>Perk</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Longevity</name>
-			<type>Physical</type>
-			<base_points>2</base_points>
-			<reference>B66</reference>
-			<categories>
-				<category>Advantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Sense of Duty</name>
-			<type>Mental</type>
-			<base_points>-15</base_points>
-			<reference>B153</reference>
-			<notes>Nature</notes>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Doesn't Like to Live Underground</name>
-			<type>Physical</type>
-			<base_points>-1</base_points>
-			<reference>BS192</reference>
 		</advantage>
 	</advantage_list>
 	<notes>Gnomes are smaller and slighter than dwarves, and the men habitually wear their beards trimmed short. Their love of nature is equal to that of the elves, if different in style.

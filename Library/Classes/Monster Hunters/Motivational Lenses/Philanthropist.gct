@@ -7,72 +7,13 @@
 				<name>Advantages</name>
 				<advantage_container version="2" open="yes">
 					<name>Chose one</name>
-					<advantage version="2">
-						<name>Wealth</name>
-						<type>Social</type>
-						<modifier version="1" enabled="no">
-							<name>Dead Broke</name>
-							<cost type="points">-25</cost>
-							<affects>total</affects>
-							<reference>B25</reference>
-							<notes>Starting wealth is $0</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Poor</name>
-							<cost type="points">-15</cost>
-							<affects>total</affects>
-							<reference>B25</reference>
-							<notes>Starting wealth is 1/5 average</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Struggling</name>
-							<cost type="points">-10</cost>
-							<affects>total</affects>
-							<reference>B25</reference>
-							<notes>Starting wealth is 1/2 average</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Average</name>
-							<cost type="points">0</cost>
-							<affects>total</affects>
-							<reference>B25</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Comfortable</name>
-							<cost type="points">10</cost>
-							<affects>total</affects>
-							<reference>B25</reference>
-							<notes>Starting wealth is 2x average</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Wealthy</name>
-							<cost type="points">20</cost>
-							<affects>total</affects>
-							<reference>B25</reference>
-							<notes>Starting wealth is 5x average</notes>
-						</modifier>
-						<modifier version="1">
-							<name>Very Wealthy</name>
-							<cost type="points">30</cost>
-							<affects>total</affects>
-							<reference>B25</reference>
-							<notes>Starting wealth is 20x average</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Filthy Rich</name>
-							<cost type="points">50</cost>
-							<affects>total</affects>
-							<reference>B25</reference>
-							<notes>Starting wealth is 100x average</notes>
-						</modifier>
-						<reference>B25</reference>
-						<categories>
-							<category>Advantage</category>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
 					<advantage_container version="2" open="yes">
 						<name>OR</name>
+						<advantage version="2">
+							<name>Skill Package</name>
+							<type>Physical</type>
+							<base_points>10</base_points>
+						</advantage>
 						<advantage version="2">
 							<name>Wealth</name>
 							<type>Social</type>
@@ -137,12 +78,71 @@
 								<category>Disadvantage</category>
 							</categories>
 						</advantage>
-						<advantage version="2">
-							<name>Skill Package</name>
-							<type>Physical</type>
-							<base_points>10</base_points>
-						</advantage>
 					</advantage_container>
+					<advantage version="2">
+						<name>Wealth</name>
+						<type>Social</type>
+						<modifier version="1" enabled="no">
+							<name>Dead Broke</name>
+							<cost type="points">-25</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is $0</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Poor</name>
+							<cost type="points">-15</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 1/5 average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Struggling</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 1/2 average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Average</name>
+							<cost type="points">0</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Comfortable</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 2x average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Wealthy</name>
+							<cost type="points">20</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 5x average</notes>
+						</modifier>
+						<modifier version="1">
+							<name>Very Wealthy</name>
+							<cost type="points">30</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 20x average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Filthy Rich</name>
+							<cost type="points">50</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 100x average</notes>
+						</modifier>
+						<reference>B25</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
 				</advantage_container>
 			</advantage_container>
 			<advantage_container version="2" open="yes">
@@ -285,7 +285,7 @@
 					</categories>
 					<prereq_list all="yes">
 						<prereq_list all="yes">
-							<when_tl compare="at_least">8</when_tl>
+							<when_tl compare="at least">8</when_tl>
 							<skill_prereq has="yes">
 								<name compare="is">Computer Operation</name>
 								<specialization compare="is anything"></specialization>

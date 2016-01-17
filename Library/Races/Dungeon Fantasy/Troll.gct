@@ -5,6 +5,104 @@
 			<name>Troll</name>
 			<reference>DF3:16</reference>
 			<advantage version="2">
+				<name>Appearance</name>
+				<type>Physical</type>
+				<modifier version="1" enabled="no">
+					<name>Universal</name>
+					<cost type="percentage">25</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Off-the-Shelf Looks</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Androgynous</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Impressive</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Attractive</name>
+					<cost type="points">4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Average</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Horrific</name>
+					<cost type="points">-24</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Monstrous</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Hideous</name>
+					<cost type="points">-16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1">
+					<name>Ugly</name>
+					<cost type="points">-8</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Unattractive</name>
+					<cost type="points">-4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Handsome</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Beautiful</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Handsome</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Beautiful</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Transcendent</name>
+					<cost type="points">20</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B21</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Bad Temper</name>
+				<type>Mental</type>
+				<base_points>-10</base_points>
+				<cr>12</cr>
+				<reference>B124</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
 				<name>Decreased Strength</name>
 				<type>Physical</type>
 				<levels>1</levels>
@@ -18,6 +116,62 @@
 					<attribute>st</attribute>
 					<amount per_level="yes">-1</amount>
 				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Discriminatory Smell</name>
+				<type>Physical, Exotic</type>
+				<base_points>15</base_points>
+				<modifier version="1" enabled="no">
+					<name>Emotion Sense</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>B49</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Profiling</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>P47</reference>
+				</modifier>
+				<reference>B49</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Extra Hit Points</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>2</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>Size</name>
+					<cost type="percentage">-10</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>No Fine Manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B16</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>hp</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Night Adapted Vision (-5)</name>
+				<type>Physical</type>
+				<reference>DF3:16</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Tufts of brightly coloured hair. Wrinkles.</name>
+				<type>Physical</type>
 			</advantage>
 			<advantage version="2">
 				<name>Increased Dexterity</name>
@@ -55,32 +209,6 @@
 				</attribute_bonus>
 			</advantage>
 			<advantage version="2">
-				<name>Extra Hit Points</name>
-				<type>Physical</type>
-				<levels>1</levels>
-				<points_per_level>2</points_per_level>
-				<modifier version="1" enabled="no">
-					<name>Size</name>
-					<cost type="percentage">-10</cost>
-					<levels>1</levels>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>No Fine Manipulators</name>
-					<cost type="percentage">-40</cost>
-					<affects>total</affects>
-				</modifier>
-				<reference>B16</reference>
-				<categories>
-					<category>Advantage</category>
-					<category>Attribute</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>hp</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
 				<name>Increased Perception</name>
 				<type>Mental/Physical</type>
 				<levels>2</levels>
@@ -94,27 +222,6 @@
 					<attribute>perception</attribute>
 					<amount per_level="yes">1</amount>
 				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Discriminatory Smell</name>
-				<type>Physical, Exotic</type>
-				<base_points>15</base_points>
-				<modifier version="1" enabled="no">
-					<name>Emotion Sense</name>
-					<cost type="percentage">50</cost>
-					<affects>total</affects>
-					<reference>B49</reference>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Profiling</name>
-					<cost type="percentage">50</cost>
-					<affects>total</affects>
-					<reference>P47</reference>
-				</modifier>
-				<reference>B49</reference>
-				<categories>
-					<category>Advantage</category>
-				</categories>
 			</advantage>
 			<advantage version="2">
 				<name>Regeneration</name>
@@ -242,6 +349,21 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
+				<name>Social Stigma (Monster)</name>
+				<type>Social</type>
+				<base_points>-15</base_points>
+				<reference>DF3:11</reference>
+				<notes>-3 reaction; -6 to skills; Denied entry to town on 9 or less</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">intimidation</name>
+					<specialization compare="is anything"></specialization>
+					<amount>1</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2">
 				<name>Teeth, Sharp</name>
 				<type>Physical, Exotic</type>
 				<base_points>1</base_points>
@@ -282,119 +404,6 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
-				<name>Appearance</name>
-				<type>Physical</type>
-				<modifier version="1" enabled="no">
-					<name>Universal</name>
-					<cost type="percentage">25</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Off-the-Shelf Looks</name>
-					<cost type="percentage">-50</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Androgynous</name>
-					<cost type="points">0</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Impressive</name>
-					<cost type="points">0</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Attractive</name>
-					<cost type="points">4</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Average</name>
-					<cost type="points">0</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Horrific</name>
-					<cost type="points">-24</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Monstrous</name>
-					<cost type="points">-20</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Hideous</name>
-					<cost type="points">-16</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1">
-					<name>Ugly</name>
-					<cost type="points">-8</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Unattractive</name>
-					<cost type="points">-4</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Handsome</name>
-					<cost type="points">12</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Beautiful</name>
-					<cost type="points">12</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Very Handsome</name>
-					<cost type="points">16</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Very Beautiful</name>
-					<cost type="points">16</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Transcendent</name>
-					<cost type="points">20</cost>
-					<affects>total</affects>
-				</modifier>
-				<reference>B21</reference>
-				<categories>
-					<category>Advantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Bad Temper</name>
-				<type>Mental</type>
-				<base_points>-10</base_points>
-				<cr>12</cr>
-				<reference>B124</reference>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Social Stigma (Monster)</name>
-				<type>Social</type>
-				<base_points>-15</base_points>
-				<reference>DF3:11</reference>
-				<notes>-3 reaction; -6 to skills; Denied entry to town on 9 or less</notes>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-				<skill_bonus>
-					<name compare="is">intimidation</name>
-					<specialization compare="is anything"></specialization>
-					<amount>1</amount>
-				</skill_bonus>
-			</advantage>
-			<advantage version="2">
 				<name>Vulnerability (Fire, Damage x2)</name>
 				<type>Physical, Exotic</type>
 				<base_points>-30</base_points>
@@ -402,15 +411,6 @@
 				<categories>
 					<category>Disadvantage</category>
 				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Feature: Night Adapted Vision (-5)</name>
-				<type>Physical</type>
-				<reference>DF3:16</reference>
-			</advantage>
-			<advantage version="2">
-				<name>Feature: Tufts of brightly coloured hair. Wrinkles.</name>
-				<type>Physical</type>
 			</advantage>
 		</advantage_container>
 	</advantage_list>

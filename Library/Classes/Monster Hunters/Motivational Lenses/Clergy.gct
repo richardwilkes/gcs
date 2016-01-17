@@ -489,7 +489,7 @@
 				</categories>
 				<prereq_list all="yes">
 					<prereq_list all="yes">
-						<when_tl compare="at_least">8</when_tl>
+						<when_tl compare="at least">8</when_tl>
 						<skill_prereq has="yes">
 							<name compare="is">Computer Operation</name>
 							<specialization compare="is anything"></specialization>

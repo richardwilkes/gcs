@@ -29,34 +29,13 @@
 				</skill_bonus>
 			</advantage>
 			<advantage version="2">
-				<name>Talent (Elder Gift)</name>
-				<type>Physical</type>
-				<levels>2</levels>
-				<points_per_level>5</points_per_level>
-				<reference>DF3:6</reference>
+				<name>Frightens Animals</name>
+				<type>Mental, Supernatural</type>
+				<base_points>-10</base_points>
+				<reference>B137</reference>
 				<categories>
-					<category>Advantage</category>
+					<category>Disadvantage</category>
 				</categories>
-				<skill_bonus>
-					<name compare="is">alchemy</name>
-					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">1</amount>
-				</skill_bonus>
-				<skill_bonus>
-					<name compare="starts with">hidden lore</name>
-					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">1</amount>
-				</skill_bonus>
-				<skill_bonus>
-					<name compare="starts with">occultism</name>
-					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">1</amount>
-				</skill_bonus>
-				<skill_bonus>
-					<name compare="starts with">thaumatology</name>
-					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">1</amount>
-				</skill_bonus>
 			</advantage>
 			<advantage version="2">
 				<name>Injury Tolerance (Homogenous)</name>
@@ -140,24 +119,6 @@
 				</skill_bonus>
 			</advantage>
 			<advantage version="2">
-				<name>Unfazeable</name>
-				<type>Mental</type>
-				<base_points>15</base_points>
-				<reference>B95</reference>
-				<categories>
-					<category>Advantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Frightens Animals</name>
-				<type>Mental, Supernatural</type>
-				<base_points>-10</base_points>
-				<reference>B137</reference>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
 				<name>Supernatural Features (Not Quite Right)</name>
 				<type>Physical, Supernatural</type>
 				<base_points>-5</base_points>
@@ -165,6 +126,45 @@
 				<notes>-1 reaction to those who see your abilities. +1 to mundane or magical attempts to discover your nature.</notes>
 				<categories>
 					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Talent (Elder Gift)</name>
+				<type>Physical</type>
+				<levels>2</levels>
+				<points_per_level>5</points_per_level>
+				<reference>DF3:6</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">alchemy</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="starts with">hidden lore</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="starts with">occultism</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="starts with">thaumatology</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Unfazeable</name>
+				<type>Mental</type>
+				<base_points>15</base_points>
+				<reference>B95</reference>
+				<categories>
+					<category>Advantage</category>
 				</categories>
 			</advantage>
 			<advantage version="2">

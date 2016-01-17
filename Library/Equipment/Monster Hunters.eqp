@@ -755,6 +755,14 @@
 			<notes>Items can be Dead-Language and Encrypted</notes>
 			<equipment version="3">
 				<quantity>1</quantity>
+				<description>Collection</description>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<reference>MH1:57</reference>
+				<notes>Total cost of all Rituals, Weight: Highest weight + 1/5 total of the rest</notes>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
 				<description>Grimoire +2</description>
 				<tech_level>8</tech_level>
 				<legality_class>4</legality_class>
@@ -879,14 +887,6 @@
 					<amount>10</amount>
 				</skill_bonus>
 			</equipment>
-			<equipment version="3">
-				<quantity>1</quantity>
-				<description>Collection</description>
-				<legality_class>4</legality_class>
-				<value>0</value>
-				<reference>MH1:57</reference>
-				<notes>Total cost of all Rituals, Weight: Highest weight + 1/5 total of the rest</notes>
-			</equipment>
 		</equipment_container>
 		<equipment_container version="3" open="yes">
 			<description>Magical Workspace Kits</description>
@@ -904,19 +904,19 @@
 			</equipment>
 			<equipment version="3">
 				<quantity>1</quantity>
+				<description>Workspace Kit, Fine</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>60000</value>
+				<reference>MH1:57</reference>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
 				<description>Workspace Kit, Good</description>
 				<tech_level>8</tech_level>
 				<legality_class>4</legality_class>
 				<value>15000</value>
 				<weight>200 lb</weight>
-				<reference>MH1:57</reference>
-			</equipment>
-			<equipment version="3">
-				<quantity>1</quantity>
-				<description>Workspace Kit, Fine</description>
-				<tech_level>8</tech_level>
-				<legality_class>4</legality_class>
-				<value>60000</value>
 				<reference>MH1:57</reference>
 			</equipment>
 		</equipment_container>
@@ -945,19 +945,19 @@
 			</equipment>
 			<equipment version="3">
 				<quantity>1</quantity>
-				<description>Holy Symbol, Ancient</description>
+				<description>Holy Symbol, Aged</description>
 				<tech_level>8</tech_level>
 				<legality_class>4</legality_class>
-				<value>4000</value>
+				<value>1000</value>
 				<weight>0.5 lb</weight>
 				<reference>MH1:57</reference>
 			</equipment>
 			<equipment version="3">
 				<quantity>1</quantity>
-				<description>Holy Symbol, Aged</description>
+				<description>Holy Symbol, Ancient</description>
 				<tech_level>8</tech_level>
 				<legality_class>4</legality_class>
-				<value>1000</value>
+				<value>4000</value>
 				<weight>0.5 lb</weight>
 				<reference>MH1:57</reference>
 			</equipment>
@@ -1090,7 +1090,7 @@
 				<category>Clothing</category>
 			</categories>
 			<dr_bonus>
-				<location>full_body</location>
+				<location>full body</location>
 				<amount>0</amount>
 			</dr_bonus>
 		</equipment>
@@ -1407,234 +1407,6 @@
 		<legality_class>4</legality_class>
 		<value>0</value>
 		<equipment_container version="3" open="yes">
-			<description>Melee Weapons</description>
-			<tech_level>8</tech_level>
-			<legality_class>4</legality_class>
-			<value>0</value>
-			<notes>Weapons can be Balanced, Disguised, Fine, Holy, Silver, Silver-Coated, Titanium, Very Fine, Weighted</notes>
-			<equipment version="3">
-				<quantity>1</quantity>
-				<description>Chainsaw</description>
-				<tech_level>8</tech_level>
-				<legality_class>4</legality_class>
-				<value>300</value>
-				<weight>13 lb</weight>
-				<reference>MH1:60</reference>
-				<melee_weapon>
-					<damage>sw+ 1d cut</damage>
-					<strength>11&#8225;</strength>
-					<usage>swing</usage>
-					<reach>1</reach>
-					<parry>0U</parry>
-					<default>
-						<type>Skill</type>
-						<name>Two-Handed Axe/Mace</name>
-						<modifier>-2</modifier>
-					</default>
-				</melee_weapon>
-				<notes>low-end chainsaw is half price with 1/6 chance of chain snapping if stopped by DR</notes>
-				<categories>
-					<category>Improvised Weapon</category>
-					<category>Melee Weapon</category>
-				</categories>
-			</equipment>
-			<equipment version="3">
-				<quantity>1</quantity>
-				<description>Circular Saw</description>
-				<tech_level>8</tech_level>
-				<legality_class>4</legality_class>
-				<value>75</value>
-				<weight>20 lb</weight>
-				<reference>MH1:60</reference>
-				<melee_weapon>
-					<damage>sw+ 3(2) cut</damage>
-					<strength>11&#8225;</strength>
-					<usage>swing</usage>
-					<reach>1</reach>
-					<parry>0</parry>
-					<default>
-						<type>Skill</type>
-						<name>Two-Handed Axe/Mace</name>
-						<modifier>-3</modifier>
-					</default>
-				</melee_weapon>
-				<categories>
-					<category>Improvised Weapon</category>
-					<category>Melee Weapon</category>
-				</categories>
-			</equipment>
-			<equipment version="3">
-				<quantity>1</quantity>
-				<description>Pool Cue</description>
-				<tech_level>8</tech_level>
-				<legality_class>4</legality_class>
-				<value>30</value>
-				<weight>2 lb</weight>
-				<reference>MH1:60</reference>
-				<melee_weapon>
-					<damage>sw cr</damage>
-					<strength>9</strength>
-					<usage>swing</usage>
-					<reach>1</reach>
-					<parry>0</parry>
-					<default>
-						<type>Skill</type>
-						<name>Broadsword</name>
-						<modifier>-1</modifier>
-					</default>
-				</melee_weapon>
-				<categories>
-					<category>Improvised Weapon</category>
-					<category>Melee Weapon</category>
-				</categories>
-			</equipment>
-			<equipment version="3">
-				<quantity>1</quantity>
-				<description>Power Drill</description>
-				<tech_level>8</tech_level>
-				<legality_class>4</legality_class>
-				<value>50</value>
-				<weight>2 lb</weight>
-				<reference>MH1:60</reference>
-				<melee_weapon>
-					<damage>1d+2(2) pi++</damage>
-					<strength>8</strength>
-					<usage>thrust</usage>
-					<reach>C</reach>
-					<parry>0</parry>
-					<default>
-						<type>Skill</type>
-						<name>Karate</name>
-						<modifier>-2</modifier>
-					</default>
-				</melee_weapon>
-				<categories>
-					<category>Improvised Weapon</category>
-					<category>Melee Weapon</category>
-				</categories>
-			</equipment>
-			<equipment version="3">
-				<quantity>1</quantity>
-				<description>Road Flare</description>
-				<tech_level>8</tech_level>
-				<legality_class>4</legality_class>
-				<value>5</value>
-				<weight>1 lb</weight>
-				<reference>MH1:60</reference>
-				<melee_weapon>
-					<damage>1d-4 burn</damage>
-					<strength>6</strength>
-					<reach>1</reach>
-					<parry>0</parry>
-					<default>
-						<type>Skill</type>
-						<name>Shortsword</name>
-						<modifier>-2</modifier>
-					</default>
-				</melee_weapon>
-				<categories>
-					<category>Improvised Weapon</category>
-					<category>Melee Weapon</category>
-				</categories>
-			</equipment>
-			<equipment version="3">
-				<quantity>1</quantity>
-				<description>Scissors OR Screwdriver</description>
-				<tech_level>8</tech_level>
-				<legality_class>4</legality_class>
-				<value>2</value>
-				<weight>0.3 lb</weight>
-				<reference>MH1:60</reference>
-				<melee_weapon>
-					<damage>thr-2 imp</damage>
-					<strength>5</strength>
-					<usage>thrust</usage>
-					<reach>C</reach>
-					<parry>0</parry>
-					<default>
-						<type>Skill</type>
-						<name>Knife</name>
-						<modifier>-1</modifier>
-					</default>
-				</melee_weapon>
-				<categories>
-					<category>Improvised Weapon</category>
-					<category>Melee Weapon</category>
-				</categories>
-			</equipment>
-			<equipment version="3">
-				<quantity>1</quantity>
-				<description>Shovel</description>
-				<tech_level>8</tech_level>
-				<legality_class>4</legality_class>
-				<value>15</value>
-				<weight>6 lb</weight>
-				<reference>MH1:60</reference>
-				<melee_weapon>
-					<damage>sw+3 cut</damage>
-					<strength>12&#8225;</strength>
-					<usage>swing</usage>
-					<reach>1, 2*</reach>
-					<parry>0</parry>
-					<default>
-						<type>Skill</type>
-						<name>Two-Handed Axe/Mace</name>
-						<modifier>-2</modifier>
-					</default>
-				</melee_weapon>
-				<categories>
-					<category>Improvised Weapon</category>
-					<category>Melee Weapon</category>
-				</categories>
-			</equipment>
-			<equipment version="3">
-				<quantity>1</quantity>
-				<description>Tire Iron</description>
-				<tech_level>8</tech_level>
-				<legality_class>4</legality_class>
-				<value>10</value>
-				<weight>2 lb</weight>
-				<reference>MH1:60</reference>
-				<melee_weapon>
-					<damage>sw+1 cr</damage>
-					<strength>10</strength>
-					<usage>swing</usage>
-					<reach>1</reach>
-					<parry>0</parry>
-					<default>
-						<type>Skill</type>
-						<name>Axe/Mace</name>
-						<modifier>-2</modifier>
-					</default>
-				</melee_weapon>
-				<categories>
-					<category>Improvised Weapon</category>
-					<category>Melee Weapon</category>
-				</categories>
-			</equipment>
-		</equipment_container>
-		<equipment_container version="3" open="yes">
-			<description>Muscle-Powered Ranged Weapons</description>
-			<tech_level>8</tech_level>
-			<legality_class>4</legality_class>
-			<value>0</value>
-			<equipment version="3">
-				<quantity>1</quantity>
-				<description>Bows and Crossbows</description>
-				<legality_class>4</legality_class>
-				<value>0</value>
-				<notes>See Basic Set. They can be Balanced, Compound, Fine. Arrow and bolt heads can be normal, bodkin-point, willow-leaf in shape and silver in material</notes>
-			</equipment>
-			<equipment version="3">
-				<quantity>1</quantity>
-				<description>Thrown Weapons</description>
-				<tech_level>8</tech_level>
-				<legality_class>4</legality_class>
-				<value>0</value>
-				<notes>Same as Melee Weapons</notes>
-			</equipment>
-		</equipment_container>
-		<equipment_container version="3" open="yes">
 			<description>Firearms</description>
 			<tech_level>8</tech_level>
 			<legality_class>4</legality_class>
@@ -1652,7 +1424,7 @@
 					<legality_class>4</legality_class>
 					<value>12500</value>
 					<weight>50 lb</weight>
-					<reference>MH1:58,62</reference>
+					<reference>MH1:58,MH1:62</reference>
 					<ranged_weapon>
 						<damage>2d fat</damage>
 						<strength>11&#8225;</strength>
@@ -1676,7 +1448,7 @@
 					<legality_class>4</legality_class>
 					<value>26000</value>
 					<weight>11 lb</weight>
-					<reference>MH1:58,62</reference>
+					<reference>MH1:58,MH1:62</reference>
 					<ranged_weapon>
 						<damage>Will-2 aff</damage>
 						<strength>9&#8225;</strength>
@@ -1700,7 +1472,7 @@
 					<legality_class>4</legality_class>
 					<value>19000</value>
 					<weight>15 lb</weight>
-					<reference>MH1:58,62</reference>
+					<reference>MH1:58,MH1:62</reference>
 					<ranged_weapon>
 						<damage>Will-4 aff</damage>
 						<strength>10&#8225;</strength>
@@ -1947,156 +1719,6 @@
 				</equipment>
 			</equipment_container>
 			<equipment_container version="3" open="yes">
-				<description>Guns (SMG)</description>
-				<tech_level>8</tech_level>
-				<legality_class>4</legality_class>
-				<value>0</value>
-				<equipment version="3">
-					<quantity>1</quantity>
-					<description>Machine Pistol, 9mm</description>
-					<tech_level>8</tech_level>
-					<legality_class>4</legality_class>
-					<value>425</value>
-					<weight>7.5 lb</weight>
-					<reference>MH1:62</reference>
-					<ranged_weapon>
-						<damage>2d+2 pi</damage>
-						<strength>10</strength>
-						<accuracy>2</accuracy>
-						<range>130/1,400</range>
-						<rate_of_fire>18</rate_of_fire>
-						<shots>32(3)</shots>
-						<bulk>-2</bulk>
-						<recoil>3</recoil>
-					</ranged_weapon>
-					<notes>$10($29) 1.3 lbs</notes>
-					<categories>
-						<category>Firearm</category>
-						<category>Ranged Weapon</category>
-					</categories>
-				</equipment>
-				<equipment version="3">
-					<quantity>1</quantity>
-					<description>SMG, .45</description>
-					<tech_level>8</tech_level>
-					<legality_class>4</legality_class>
-					<value>900</value>
-					<weight>6.5 lb</weight>
-					<reference>MH1:62</reference>
-					<ranged_weapon>
-						<damage>2d+1 pi+</damage>
-						<strength>8&#8224;</strength>
-						<accuracy>3</accuracy>
-						<range>160/1,700</range>
-						<rate_of_fire>10</rate_of_fire>
-						<shots>25+1(3)</shots>
-						<bulk>-4</bulk>
-						<recoil>2</recoil>
-					</ranged_weapon>
-					<notes>$13($36) 1.6 lbs</notes>
-					<categories>
-						<category>Firearm</category>
-						<category>Ranged Weapon</category>
-					</categories>
-				</equipment>
-				<equipment version="3">
-					<quantity>1</quantity>
-					<description>SMG, 9mm</description>
-					<tech_level>8</tech_level>
-					<legality_class>4</legality_class>
-					<value>1500</value>
-					<weight>6 lb</weight>
-					<reference>MH1:62</reference>
-					<ranged_weapon>
-						<damage>3d-1</damage>
-						<strength>8&#8224;</strength>
-						<accuracy>4</accuracy>
-						<range>170/1,900</range>
-						<rate_of_fire>13</rate_of_fire>
-						<shots>30+1(3)</shots>
-						<bulk>-4</bulk>
-						<recoil>2</recoil>
-					</ranged_weapon>
-					<notes>$9($29) 1.2 lbs</notes>
-					<categories>
-						<category>Firearm</category>
-						<category>Ranged Weapon</category>
-					</categories>
-				</equipment>
-				<equipment version="3">
-					<quantity>1</quantity>
-					<description>SMG, Compact 9mm</description>
-					<tech_level>8</tech_level>
-					<legality_class>4</legality_class>
-					<value>1200</value>
-					<weight>3.8 lb</weight>
-					<reference>MH1:62</reference>
-					<ranged_weapon>
-						<damage>2d+2 pi</damage>
-						<strength>8&#8224;</strength>
-						<accuracy>2</accuracy>
-						<range>160/1,800</range>
-						<rate_of_fire>15</rate_of_fire>
-						<shots>30+1(3)</shots>
-						<bulk>-2</bulk>
-						<recoil>2</recoil>
-					</ranged_weapon>
-					<notes>$9($34) 1 lb</notes>
-					<categories>
-						<category>Firearm</category>
-						<category>Ranged Weapon</category>
-					</categories>
-				</equipment>
-			</equipment_container>
-			<equipment_container version="3" open="yes">
-				<description>Liquid Projector (Flamethrower)</description>
-				<legality_class>4</legality_class>
-				<value>0</value>
-				<equipment version="3">
-					<quantity>1</quantity>
-					<description>Backpack Flamethrower</description>
-					<tech_level>8</tech_level>
-					<legality_class>4</legality_class>
-					<value>2000</value>
-					<weight>50 lb</weight>
-					<reference>MH1:62</reference>
-					<ranged_weapon>
-						<damage>3d burn</damage>
-						<strength>10&#8224;</strength>
-						<range>40</range>
-						<rate_of_fire>Jet</rate_of_fire>
-						<shots>10</shots>
-						<bulk>-7</bulk>
-					</ranged_weapon>
-					<notes>$10. 20 lbs. If hit, take 1d burn/s for 2dx5s (1dx5 past 25 yards). If dmg through tank DR2t, 1/6 explodes to hit all within 2 yards</notes>
-					<categories>
-						<category>Heavy Weapon</category>
-						<category>Ranged Weapon</category>
-					</categories>
-				</equipment>
-				<equipment version="3">
-					<quantity>1</quantity>
-					<description>Handheld Flamethrower</description>
-					<tech_level>8</tech_level>
-					<legality_class>4</legality_class>
-					<value>500</value>
-					<weight>7.8 lb</weight>
-					<reference>MH1:62</reference>
-					<ranged_weapon>
-						<damage>3d burn</damage>
-						<strength>6&#8224;</strength>
-						<range>40</range>
-						<rate_of_fire>Jet</rate_of_fire>
-						<shots>1</shots>
-						<bulk>-4</bulk>
-					</ranged_weapon>
-					<notes>$1. 2 lbs. If hit, take 1d burn/s for 2dx5s (1dx5 past 25 yards).</notes>
-					<categories>
-						<category>Ranged Weapon</category>
-					</categories>
-				</equipment>
-			</equipment_container>
-			<equipment_container version="3" open="yes">
 				<description>Guns (Shotgun)</description>
 				<tech_level>8</tech_level>
 				<legality_class>4</legality_class>
@@ -2250,76 +1872,103 @@
 				</equipment>
 			</equipment_container>
 			<equipment_container version="3" open="yes">
-				<description>Lioquid Projector (Squirt Gun)</description>
+				<description>Guns (SMG)</description>
 				<tech_level>8</tech_level>
 				<legality_class>4</legality_class>
 				<value>0</value>
 				<equipment version="3">
 					<quantity>1</quantity>
-					<description>Backpack Squirt Gun</description>
+					<description>Machine Pistol, 9mm</description>
 					<tech_level>8</tech_level>
 					<legality_class>4</legality_class>
-					<value>45</value>
-					<weight>18 lb</weight>
+					<value>425</value>
+					<weight>7.5 lb</weight>
 					<reference>MH1:62</reference>
 					<ranged_weapon>
-						<damage>special</damage>
-						<strength>4&#8224;</strength>
-						<range>12</range>
-						<rate_of_fire>Jet</rate_of_fire>
-						<shots>15(12)</shots>
-						<bulk>-3</bulk>
+						<damage>2d+2 pi</damage>
+						<strength>10</strength>
+						<accuracy>2</accuracy>
+						<range>130/1,400</range>
+						<rate_of_fire>18</rate_of_fire>
+						<shots>32(3)</shots>
+						<bulk>-2</bulk>
+						<recoil>3</recoil>
 					</ranged_weapon>
-					<notes>($15) 15 lbs. Usually filled with Holy Water. Dispersion gives +2 to hit</notes>
+					<notes>$10($29) 1.3 lbs</notes>
 					<categories>
+						<category>Firearm</category>
 						<category>Ranged Weapon</category>
 					</categories>
 				</equipment>
 				<equipment version="3">
 					<quantity>1</quantity>
-					<description>Squirt Carbine</description>
+					<description>SMG, .45</description>
 					<tech_level>8</tech_level>
 					<legality_class>4</legality_class>
-					<value>30</value>
-					<weight>3.5 lb</weight>
+					<value>900</value>
+					<weight>6.5 lb</weight>
 					<reference>MH1:62</reference>
 					<ranged_weapon>
-						<damage>special</damage>
-						<strength>4&#8224;</strength>
-						<range>8</range>
-						<rate_of_fire>Jet</rate_of_fire>
-						<shots>2(7)</shots>
-						<bulk>-3</bulk>
+						<damage>2d+1 pi+</damage>
+						<strength>8&#8224;</strength>
+						<accuracy>3</accuracy>
+						<range>160/1,700</range>
+						<rate_of_fire>10</rate_of_fire>
+						<shots>25+1(3)</shots>
+						<bulk>-4</bulk>
+						<recoil>2</recoil>
 					</ranged_weapon>
-					<notes>($5) 2 lbs. Usually filled with Holy Water. Dispersion gives +2 to hit</notes>
+					<notes>$13($36) 1.6 lbs</notes>
 					<categories>
+						<category>Firearm</category>
 						<category>Ranged Weapon</category>
 					</categories>
 				</equipment>
-			</equipment_container>
-			<equipment_container version="3" open="yes">
-				<description>Liquid Projector (Sprayer)</description>
-				<tech_level>8</tech_level>
-				<legality_class>4</legality_class>
-				<value>0</value>
 				<equipment version="3">
 					<quantity>1</quantity>
-					<description>Handheld Sprayer</description>
+					<description>SMG, 9mm</description>
 					<tech_level>8</tech_level>
 					<legality_class>4</legality_class>
-					<value>10</value>
-					<weight>0.1 lb</weight>
+					<value>1500</value>
+					<weight>6 lb</weight>
 					<reference>MH1:62</reference>
 					<ranged_weapon>
-						<damage>special</damage>
-						<strength>3</strength>
-						<range>2</range>
-						<rate_of_fire>Jet</rate_of_fire>
-						<shots>20</shots>
-						<bulk>-1</bulk>
+						<damage>3d-1</damage>
+						<strength>8&#8224;</strength>
+						<accuracy>4</accuracy>
+						<range>170/1,900</range>
+						<rate_of_fire>13</rate_of_fire>
+						<shots>30+1(3)</shots>
+						<bulk>-4</bulk>
+						<recoil>2</recoil>
 					</ranged_weapon>
-					<notes>Usually filled with Holy Water. Dispersion gives +2 to hit</notes>
+					<notes>$9($29) 1.2 lbs</notes>
 					<categories>
+						<category>Firearm</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>SMG, Compact 9mm</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>1200</value>
+					<weight>3.8 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>2d+2 pi</damage>
+						<strength>8&#8224;</strength>
+						<accuracy>2</accuracy>
+						<range>160/1,800</range>
+						<rate_of_fire>15</rate_of_fire>
+						<shots>30+1(3)</shots>
+						<bulk>-2</bulk>
+						<recoil>2</recoil>
+					</ranged_weapon>
+					<notes>$9($34) 1 lb</notes>
+					<categories>
+						<category>Firearm</category>
 						<category>Ranged Weapon</category>
 					</categories>
 				</equipment>
@@ -2404,22 +2053,133 @@
 				</equipment>
 			</equipment_container>
 			<equipment_container version="3" open="yes">
-				<description>Special Ammo</description>
+				<description>Lioquid Projector (Squirt Gun)</description>
 				<tech_level>8</tech_level>
 				<legality_class>4</legality_class>
 				<value>0</value>
 				<equipment version="3">
 					<quantity>1</quantity>
-					<description>Powder Options</description>
+					<description>Backpack Squirt Gun</description>
 					<tech_level>8</tech_level>
 					<legality_class>4</legality_class>
-					<value>0</value>
-					<reference>MH1:63</reference>
-					<notes>Extra-Powerful, Hand-Matched, Match-Grade, Silent</notes>
+					<value>45</value>
+					<weight>18 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>special</damage>
+						<strength>4&#8224;</strength>
+						<range>12</range>
+						<rate_of_fire>Jet</rate_of_fire>
+						<shots>15(12)</shots>
+						<bulk>-3</bulk>
+					</ranged_weapon>
+					<notes>($15) 15 lbs. Usually filled with Holy Water. Dispersion gives +2 to hit</notes>
 					<categories>
-						<category>Ammunition</category>
+						<category>Ranged Weapon</category>
 					</categories>
 				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Squirt Carbine</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>30</value>
+					<weight>3.5 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>special</damage>
+						<strength>4&#8224;</strength>
+						<range>8</range>
+						<rate_of_fire>Jet</rate_of_fire>
+						<shots>2(7)</shots>
+						<bulk>-3</bulk>
+					</ranged_weapon>
+					<notes>($5) 2 lbs. Usually filled with Holy Water. Dispersion gives +2 to hit</notes>
+					<categories>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+			</equipment_container>
+			<equipment_container version="3" open="yes">
+				<description>Liquid Projector (Flamethrower)</description>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Backpack Flamethrower</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>2000</value>
+					<weight>50 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>3d burn</damage>
+						<strength>10&#8224;</strength>
+						<range>40</range>
+						<rate_of_fire>Jet</rate_of_fire>
+						<shots>10</shots>
+						<bulk>-7</bulk>
+					</ranged_weapon>
+					<notes>$10. 20 lbs. If hit, take 1d burn/s for 2dx5s (1dx5 past 25 yards). If dmg through tank DR2t, 1/6 explodes to hit all within 2 yards</notes>
+					<categories>
+						<category>Heavy Weapon</category>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Handheld Flamethrower</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>500</value>
+					<weight>7.8 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>3d burn</damage>
+						<strength>6&#8224;</strength>
+						<range>40</range>
+						<rate_of_fire>Jet</rate_of_fire>
+						<shots>1</shots>
+						<bulk>-4</bulk>
+					</ranged_weapon>
+					<notes>$1. 2 lbs. If hit, take 1d burn/s for 2dx5s (1dx5 past 25 yards).</notes>
+					<categories>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+			</equipment_container>
+			<equipment_container version="3" open="yes">
+				<description>Liquid Projector (Sprayer)</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Handheld Sprayer</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>10</value>
+					<weight>0.1 lb</weight>
+					<reference>MH1:62</reference>
+					<ranged_weapon>
+						<damage>special</damage>
+						<strength>3</strength>
+						<range>2</range>
+						<rate_of_fire>Jet</rate_of_fire>
+						<shots>20</shots>
+						<bulk>-1</bulk>
+					</ranged_weapon>
+					<notes>Usually filled with Holy Water. Dispersion gives +2 to hit</notes>
+					<categories>
+						<category>Ranged Weapon</category>
+					</categories>
+				</equipment>
+			</equipment_container>
+			<equipment_container version="3" open="yes">
+				<description>Special Ammo</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
 				<equipment version="3">
 					<quantity>1</quantity>
 					<description>Payload Options</description>
@@ -2428,6 +2188,18 @@
 					<value>0</value>
 					<reference>MH1:63</reference>
 					<notes>Armor-Piercing, Chemical, Dragon's Breath, Explosive, Flare, Hollow-Point, Holy-Water, Rock Salt, Silver, Thermate, Wooden</notes>
+					<categories>
+						<category>Ammunition</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Powder Options</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>0</value>
+					<reference>MH1:63</reference>
+					<notes>Extra-Powerful, Hand-Matched, Match-Grade, Silent</notes>
 					<categories>
 						<category>Ammunition</category>
 					</categories>
@@ -2505,6 +2277,234 @@
 				<categories>
 					<category>Hand Grenade</category>
 				</categories>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Melee Weapons</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<notes>Weapons can be Balanced, Disguised, Fine, Holy, Silver, Silver-Coated, Titanium, Very Fine, Weighted</notes>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Chainsaw</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>300</value>
+				<weight>13 lb</weight>
+				<reference>MH1:60</reference>
+				<melee_weapon>
+					<damage>sw+ 1d cut</damage>
+					<strength>11&#8225;</strength>
+					<usage>swing</usage>
+					<reach>1</reach>
+					<parry>0U</parry>
+					<default>
+						<type>Skill</type>
+						<name>Two-Handed Axe/Mace</name>
+						<modifier>-2</modifier>
+					</default>
+				</melee_weapon>
+				<notes>low-end chainsaw is half price with 1/6 chance of chain snapping if stopped by DR</notes>
+				<categories>
+					<category>Improvised Weapon</category>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Circular Saw</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>75</value>
+				<weight>20 lb</weight>
+				<reference>MH1:60</reference>
+				<melee_weapon>
+					<damage>sw+ 3(2) cut</damage>
+					<strength>11&#8225;</strength>
+					<usage>swing</usage>
+					<reach>1</reach>
+					<parry>0</parry>
+					<default>
+						<type>Skill</type>
+						<name>Two-Handed Axe/Mace</name>
+						<modifier>-3</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Improvised Weapon</category>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Pool Cue</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>30</value>
+				<weight>2 lb</weight>
+				<reference>MH1:60</reference>
+				<melee_weapon>
+					<damage>sw cr</damage>
+					<strength>9</strength>
+					<usage>swing</usage>
+					<reach>1</reach>
+					<parry>0</parry>
+					<default>
+						<type>Skill</type>
+						<name>Broadsword</name>
+						<modifier>-1</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Improvised Weapon</category>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Power Drill</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>2 lb</weight>
+				<reference>MH1:60</reference>
+				<melee_weapon>
+					<damage>1d+2(2) pi++</damage>
+					<strength>8</strength>
+					<usage>thrust</usage>
+					<reach>C</reach>
+					<parry>0</parry>
+					<default>
+						<type>Skill</type>
+						<name>Karate</name>
+						<modifier>-2</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Improvised Weapon</category>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Road Flare</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>5</value>
+				<weight>1 lb</weight>
+				<reference>MH1:60</reference>
+				<melee_weapon>
+					<damage>1d-4 burn</damage>
+					<strength>6</strength>
+					<reach>1</reach>
+					<parry>0</parry>
+					<default>
+						<type>Skill</type>
+						<name>Shortsword</name>
+						<modifier>-2</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Improvised Weapon</category>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Scissors OR Screwdriver</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>2</value>
+				<weight>0.3 lb</weight>
+				<reference>MH1:60</reference>
+				<melee_weapon>
+					<damage>thr-2 imp</damage>
+					<strength>5</strength>
+					<usage>thrust</usage>
+					<reach>C</reach>
+					<parry>0</parry>
+					<default>
+						<type>Skill</type>
+						<name>Knife</name>
+						<modifier>-1</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Improvised Weapon</category>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Shovel</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>15</value>
+				<weight>6 lb</weight>
+				<reference>MH1:60</reference>
+				<melee_weapon>
+					<damage>sw+3 cut</damage>
+					<strength>12&#8225;</strength>
+					<usage>swing</usage>
+					<reach>1, 2*</reach>
+					<parry>0</parry>
+					<default>
+						<type>Skill</type>
+						<name>Two-Handed Axe/Mace</name>
+						<modifier>-2</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Improvised Weapon</category>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Tire Iron</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>10</value>
+				<weight>2 lb</weight>
+				<reference>MH1:60</reference>
+				<melee_weapon>
+					<damage>sw+1 cr</damage>
+					<strength>10</strength>
+					<usage>swing</usage>
+					<reach>1</reach>
+					<parry>0</parry>
+					<default>
+						<type>Skill</type>
+						<name>Axe/Mace</name>
+						<modifier>-2</modifier>
+					</default>
+				</melee_weapon>
+				<categories>
+					<category>Improvised Weapon</category>
+					<category>Melee Weapon</category>
+				</categories>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Muscle-Powered Ranged Weapons</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Bows and Crossbows</description>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<notes>See Basic Set. They can be Balanced, Compound, Fine. Arrow and bolt heads can be normal, bodkin-point, willow-leaf in shape and silver in material</notes>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Thrown Weapons</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>0</value>
+				<notes>Same as Melee Weapons</notes>
 			</equipment>
 		</equipment_container>
 	</equipment_container>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
 <character unique_id="hrnmpyjg:bztg861noho" version="2">
 	<created_date>Feb 14, 2014</created_date>
-	<modified_date>Jun 13, 2014 9:59 AM</modified_date>
+	<modified_date>Jan 17, 2016 3:38 PM</modified_date>
 	<profile>
 		<name>Clay Golem</name>
 		<age>0</age>
@@ -24,6 +24,30 @@
 	<include_kick>true</include_kick>
 	<include_kick_with_boots>true</include_kick_with_boots>
 	<advantage_list>
+		<advantage version="2">
+			<name>Cannot Learn</name>
+			<type>Mental</type>
+			<base_points>-30</base_points>
+			<reference>B125</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Disturbing Voice</name>
+			<type>Physical</type>
+			<base_points>-10</base_points>
+			<reference>B132</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+			<prereq_list all="yes">
+				<advantage_prereq has="no">
+					<name compare="is">voice</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</advantage>
 		<advantage version="2">
 			<name>Doesn't Breathe</name>
 			<type>Physical, Exotic</type>
@@ -118,6 +142,15 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Fragile (Unnatural)</name>
+			<type>Physical, Exotic</type>
+			<base_points>-50</base_points>
+			<reference>B137</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>High Pain Threshold</name>
 			<type>Physical</type>
 			<base_points>10</base_points>
@@ -126,12 +159,6 @@
 			<categories>
 				<category>Advantage</category>
 			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Resistant (Immunity to Metabolic Hazards)</name>
-			<type>Physical</type>
-			<base_points>30</base_points>
-			<reference>B81</reference>
 		</advantage>
 		<advantage version="2">
 			<name>Injury Tolerance (Homogenous)</name>
@@ -147,51 +174,6 @@
 			<type>Physical, Exotic</type>
 			<base_points>5</base_points>
 			<reference>B61</reference>
-			<categories>
-				<category>Advantage</category>
-				<category>Mech</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Single-Minded</name>
-			<type>Mental</type>
-			<base_points>5</base_points>
-			<reference>B85</reference>
-			<categories>
-				<category>Advantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Unaging</name>
-			<type>Physical, Exotic</type>
-			<base_points>15</base_points>
-			<modifier version="1" enabled="no">
-				<name>Age Control</name>
-				<cost type="percentage">20</cost>
-				<affects>total</affects>
-				<reference>B95</reference>
-			</modifier>
-			<reference>B95</reference>
-			<categories>
-				<category>Advantage</category>
-				<category>Mech</category>
-				<category>Spirit</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Unfazeable</name>
-			<type>Mental</type>
-			<base_points>15</base_points>
-			<reference>B95</reference>
-			<categories>
-				<category>Advantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Vacuum Support</name>
-			<type>Physical, Exotic</type>
-			<base_points>5</base_points>
-			<reference>B96</reference>
 			<categories>
 				<category>Advantage</category>
 				<category>Mech</category>
@@ -327,30 +309,6 @@
 			</advantage>
 		</advantage_container>
 		<advantage version="2">
-			<name>Cannot Learn</name>
-			<type>Mental</type>
-			<base_points>-30</base_points>
-			<reference>B125</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Disturbing Voice</name>
-			<type>Physical</type>
-			<base_points>-10</base_points>
-			<reference>B132</reference>
-			<categories>
-				<category>Disadvantage</category>
-			</categories>
-			<prereq_list all="yes">
-				<advantage_prereq has="no">
-					<name compare="is">voice</name>
-					<notes compare="is anything"></notes>
-				</advantage_prereq>
-			</prereq_list>
-		</advantage>
-		<advantage version="2">
 			<name>No Sense of Smell/Taste</name>
 			<type>Physical</type>
 			<base_points>-5</base_points>
@@ -371,12 +329,53 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
+			<name>Resistant (Immunity to Metabolic Hazards)</name>
+			<type>Physical</type>
+			<base_points>30</base_points>
+			<reference>B81</reference>
+		</advantage>
+		<advantage version="2">
+			<name>Single-Minded</name>
+			<type>Mental</type>
+			<base_points>5</base_points>
+			<reference>B85</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
 			<name>Social Stigma (Valuable Property)</name>
 			<type>Social</type>
 			<base_points>-10</base_points>
 			<reference>B156</reference>
 			<categories>
 				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Unaging</name>
+			<type>Physical, Exotic</type>
+			<base_points>15</base_points>
+			<modifier version="1" enabled="no">
+				<name>Age Control</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B95</reference>
+			</modifier>
+			<reference>B95</reference>
+			<categories>
+				<category>Advantage</category>
+				<category>Mech</category>
+				<category>Spirit</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Unfazeable</name>
+			<type>Mental</type>
+			<base_points>15</base_points>
+			<reference>B95</reference>
+			<categories>
+				<category>Advantage</category>
 			</categories>
 		</advantage>
 		<advantage version="2">
@@ -390,16 +389,17 @@
 			</categories>
 		</advantage>
 		<advantage version="2">
-			<name>Fragile (Unnatural)</name>
+			<name>Vacuum Support</name>
 			<type>Physical, Exotic</type>
-			<base_points>-50</base_points>
-			<reference>B137</reference>
+			<base_points>5</base_points>
+			<reference>B96</reference>
 			<categories>
-				<category>Disadvantage</category>
+				<category>Advantage</category>
+				<category>Mech</category>
 			</categories>
 		</advantage>
 	</advantage_list>
-	<print_settings printer="HP LaserJet M1536dnf MFP (C1388F) @ Spock" units="in">
+	<print_settings units="in">
 		<orientation>portrait</orientation>
 		<width>8.267716407775879</width>
 		<height>11.692913055419922</height>

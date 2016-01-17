@@ -5,60 +5,92 @@
 			<name>Gargoyle</name>
 			<reference>DF3:9</reference>
 			<advantage version="2">
-				<name>Increased Health</name>
+				<name>Appearance</name>
 				<type>Physical</type>
-				<levels>1</levels>
-				<points_per_level>10</points_per_level>
-				<reference>B14</reference>
-				<categories>
-					<category>Advantage</category>
-					<category>Attribute</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>ht</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Decreased Intelligence</name>
-				<type>Mental</type>
-				<levels>1</levels>
-				<points_per_level>-20</points_per_level>
-				<reference>B15</reference>
-				<categories>
-					<category>Attribute</category>
-					<category>Disadvantage</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>iq</attribute>
-					<amount per_level="yes">-1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Extra Hit Points</name>
-				<type>Physical</type>
-				<levels>2</levels>
-				<points_per_level>2</points_per_level>
 				<modifier version="1" enabled="no">
-					<name>Size</name>
-					<cost type="percentage">-10</cost>
-					<levels>1</levels>
+					<name>Universal</name>
+					<cost type="percentage">25</cost>
 					<affects>total</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>No Fine Manipulators</name>
-					<cost type="percentage">-40</cost>
+					<name>Off-the-Shelf Looks</name>
+					<cost type="percentage">-50</cost>
 					<affects>total</affects>
 				</modifier>
-				<reference>B16</reference>
+				<modifier version="1" enabled="no">
+					<name>Androgynous</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Impressive</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Attractive</name>
+					<cost type="points">4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Average</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Horrific</name>
+					<cost type="points">-24</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Monstrous</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Hideous</name>
+					<cost type="points">-16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1">
+					<name>Ugly</name>
+					<cost type="points">-8</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Unattractive</name>
+					<cost type="points">-4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Handsome</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Beautiful</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Handsome</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Beautiful</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Transcendent</name>
+					<cost type="points">20</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B21</reference>
 				<categories>
 					<category>Advantage</category>
-					<category>Attribute</category>
 				</categories>
-				<attribute_bonus>
-					<attribute>hp</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
 			</advantage>
 			<advantage version="2">
 				<name>Basic Speed -0.25</name>
@@ -254,9 +286,54 @@
 					<category>Advantage</category>
 				</categories>
 				<dr_bonus>
-					<location>full_body_except_eyes</location>
+					<location>full body except eyes</location>
 					<amount per_level="yes">1</amount>
 				</dr_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Decreased Intelligence</name>
+				<type>Mental</type>
+				<levels>1</levels>
+				<points_per_level>-20</points_per_level>
+				<reference>B15</reference>
+				<categories>
+					<category>Attribute</category>
+					<category>Disadvantage</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>iq</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Extra Hit Points</name>
+				<type>Physical</type>
+				<levels>2</levels>
+				<points_per_level>2</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>Size</name>
+					<cost type="percentage">-10</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>No Fine Manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B16</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>hp</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Torso armour not interchangeable with that of humans</name>
+				<type>Physical</type>
 			</advantage>
 			<advantage version="2">
 				<name>Flight</name>
@@ -355,6 +432,31 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
+				<name>Gluttony</name>
+				<type>Mental</type>
+				<base_points>-5</base_points>
+				<cr>12</cr>
+				<reference>B137</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Health</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>10</points_per_level>
+				<reference>B14</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>ht</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
 				<name>Night Vision</name>
 				<type>Physical</type>
 				<levels>5</levels>
@@ -363,6 +465,22 @@
 				<categories>
 					<category>Advantage</category>
 				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Odious Racial Habit</name>
+				<type>Physical</type>
+				<base_points>-5</base_points>
+				<reference>B22</reference>
+				<notes>Dirty; -1 Reaction</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Stony</name>
+				<type>Physical</type>
+				<base_points>1</base_points>
+				<reference>DF3:9</reference>
 			</advantage>
 			<advantage version="2">
 				<name>Striker, Impaling (Tail)</name>
@@ -393,124 +511,6 @@
 				<categories>
 					<category>Advantage</category>
 				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Stony</name>
-				<type>Physical</type>
-				<base_points>1</base_points>
-				<reference>DF3:9</reference>
-			</advantage>
-			<advantage version="2">
-				<name>Appearance</name>
-				<type>Physical</type>
-				<modifier version="1" enabled="no">
-					<name>Universal</name>
-					<cost type="percentage">25</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Off-the-Shelf Looks</name>
-					<cost type="percentage">-50</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Androgynous</name>
-					<cost type="points">0</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Impressive</name>
-					<cost type="points">0</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Attractive</name>
-					<cost type="points">4</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Average</name>
-					<cost type="points">0</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Horrific</name>
-					<cost type="points">-24</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Monstrous</name>
-					<cost type="points">-20</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Hideous</name>
-					<cost type="points">-16</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1">
-					<name>Ugly</name>
-					<cost type="points">-8</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Unattractive</name>
-					<cost type="points">-4</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Handsome</name>
-					<cost type="points">12</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Beautiful</name>
-					<cost type="points">12</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Very Handsome</name>
-					<cost type="points">16</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Very Beautiful</name>
-					<cost type="points">16</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Transcendent</name>
-					<cost type="points">20</cost>
-					<affects>total</affects>
-				</modifier>
-				<reference>B21</reference>
-				<categories>
-					<category>Advantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Gluttony</name>
-				<type>Mental</type>
-				<base_points>-5</base_points>
-				<cr>12</cr>
-				<reference>B137</reference>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Odious Racial Habit</name>
-				<type>Physical</type>
-				<base_points>-5</base_points>
-				<reference>B22</reference>
-				<notes>Dirty; -1 Reaction</notes>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Feature: Torso armour not interchangeable with that of humans</name>
-				<type>Physical</type>
 			</advantage>
 		</advantage_container>
 	</advantage_list>

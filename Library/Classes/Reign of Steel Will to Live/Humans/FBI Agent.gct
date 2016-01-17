@@ -404,6 +404,166 @@
 		</advantage_container>
 		<advantage_container version="2" open="yes">
 			<name>Class Disadvantages</name>
+			<advantage_container version="2" open="yes">
+				<name>-15 Points in:</name>
+				<advantage version="2">
+					<name>Alcoholism</name>
+					<type>Physical</type>
+					<base_points>-15</base_points>
+					<modifier version="1" enabled="no">
+						<name>Illegal</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<reference>B122</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Bully</name>
+					<type>Mental</type>
+					<base_points>-10</base_points>
+					<cr>12</cr>
+					<reference>B125</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Curious</name>
+					<type>Mental</type>
+					<base_points>-5</base_points>
+					<cr>12</cr>
+					<reference>B129</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Honesty</name>
+					<type>Mental</type>
+					<base_points>-10</base_points>
+					<cr>12</cr>
+					<reference>B138</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Intolerance (Criminals and subversives)</name>
+					<type>Mental</type>
+					<modifier version="1">
+						<name>Scope: Common</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B140</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Scope: Occasional</name>
+						<cost type="points">-2</cost>
+						<affects>total</affects>
+						<reference>B140</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Scope: Rare</name>
+						<cost type="points">-1</cost>
+						<affects>total</affects>
+						<reference>B140</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Scope: Anyone unlike you</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B140</reference>
+					</modifier>
+					<reference>B140</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>No Sense of Humor</name>
+					<type>Physical</type>
+					<base_points>-10</base_points>
+					<reference>B146</reference>
+					<notes>-2 Reaction</notes>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Overconfidence</name>
+					<type>Mental</type>
+					<base_points>-5</base_points>
+					<cr>12</cr>
+					<reference>B148</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2" round_down="yes">
+					<name>Reputation</name>
+					<type>Social</type>
+					<levels>1</levels>
+					<points_per_level>-5</points_per_level>
+					<modifier version="1" enabled="no">
+						<name>People Affected</name>
+						<cost type="multiplier">1</cost>
+						<reference>B27</reference>
+						<notes>Almost everyone</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>People Affected</name>
+						<cost type="multiplier">0.67</cost>
+						<reference>B27</reference>
+						<notes>Almost everyone except @large class of people@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>People Affected</name>
+						<cost type="multiplier">0.5</cost>
+						<reference>B27</reference>
+						<notes>@Large class of people@</notes>
+					</modifier>
+					<modifier version="1">
+						<name>People Affected</name>
+						<cost type="multiplier">0.33</cost>
+						<reference>B27</reference>
+						<notes>Showoff (from associates)</notes>
+					</modifier>
+					<modifier version="1">
+						<name>Recognized all the time</name>
+						<cost type="multiplier">1</cost>
+						<reference>B28</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Recognized sometimes</name>
+						<cost type="multiplier">0.5</cost>
+						<reference>B28</reference>
+						<notes>10-</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Recognized occasionally</name>
+						<cost type="multiplier">0.33</cost>
+						<reference>B28</reference>
+						<notes>7-</notes>
+					</modifier>
+					<reference>B26</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Stubbornness</name>
+					<type>Mental</type>
+					<base_points>-5</base_points>
+					<reference>B157</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+			</advantage_container>
 			<advantage version="2">
 				<name>Duty (FBI)</name>
 				<type>Social</type>
@@ -565,166 +725,6 @@
 					<category>Disadvantage</category>
 				</categories>
 			</advantage>
-			<advantage_container version="2" open="yes">
-				<name>-15 Points in:</name>
-				<advantage version="2">
-					<name>Alcoholism</name>
-					<type>Physical</type>
-					<base_points>-15</base_points>
-					<modifier version="1" enabled="no">
-						<name>Illegal</name>
-						<cost type="points">-5</cost>
-						<affects>total</affects>
-						<reference>B122</reference>
-					</modifier>
-					<reference>B122</reference>
-					<categories>
-						<category>Disadvantage</category>
-					</categories>
-				</advantage>
-				<advantage version="2">
-					<name>Bully</name>
-					<type>Mental</type>
-					<base_points>-10</base_points>
-					<cr>12</cr>
-					<reference>B125</reference>
-					<categories>
-						<category>Disadvantage</category>
-					</categories>
-				</advantage>
-				<advantage version="2">
-					<name>Curious</name>
-					<type>Mental</type>
-					<base_points>-5</base_points>
-					<cr>12</cr>
-					<reference>B129</reference>
-					<categories>
-						<category>Disadvantage</category>
-					</categories>
-				</advantage>
-				<advantage version="2">
-					<name>Honesty</name>
-					<type>Mental</type>
-					<base_points>-10</base_points>
-					<cr>12</cr>
-					<reference>B138</reference>
-					<categories>
-						<category>Disadvantage</category>
-					</categories>
-				</advantage>
-				<advantage version="2">
-					<name>Intolerance (Criminals and subversives)</name>
-					<type>Mental</type>
-					<modifier version="1">
-						<name>Scope: Common</name>
-						<cost type="points">-5</cost>
-						<affects>total</affects>
-						<reference>B140</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Scope: Occasional</name>
-						<cost type="points">-2</cost>
-						<affects>total</affects>
-						<reference>B140</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Scope: Rare</name>
-						<cost type="points">-1</cost>
-						<affects>total</affects>
-						<reference>B140</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Scope: Anyone unlike you</name>
-						<cost type="points">-10</cost>
-						<affects>total</affects>
-						<reference>B140</reference>
-					</modifier>
-					<reference>B140</reference>
-					<categories>
-						<category>Disadvantage</category>
-					</categories>
-				</advantage>
-				<advantage version="2">
-					<name>No Sense of Humor</name>
-					<type>Physical</type>
-					<base_points>-10</base_points>
-					<reference>B146</reference>
-					<notes>-2 Reaction</notes>
-					<categories>
-						<category>Disadvantage</category>
-					</categories>
-				</advantage>
-				<advantage version="2">
-					<name>Overconfidence</name>
-					<type>Mental</type>
-					<base_points>-5</base_points>
-					<cr>12</cr>
-					<reference>B148</reference>
-					<categories>
-						<category>Disadvantage</category>
-					</categories>
-				</advantage>
-				<advantage version="2" round_down="yes">
-					<name>Reputation</name>
-					<type>Social</type>
-					<levels>1</levels>
-					<points_per_level>-5</points_per_level>
-					<modifier version="1" enabled="no">
-						<name>People Affected</name>
-						<cost type="multiplier">1</cost>
-						<reference>B27</reference>
-						<notes>Almost everyone</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>People Affected</name>
-						<cost type="multiplier">0.67</cost>
-						<reference>B27</reference>
-						<notes>Almost everyone except @large class of people@</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>People Affected</name>
-						<cost type="multiplier">0.5</cost>
-						<reference>B27</reference>
-						<notes>@Large class of people@</notes>
-					</modifier>
-					<modifier version="1">
-						<name>People Affected</name>
-						<cost type="multiplier">0.33</cost>
-						<reference>B27</reference>
-						<notes>Showoff (from associates)</notes>
-					</modifier>
-					<modifier version="1">
-						<name>Recognized all the time</name>
-						<cost type="multiplier">1</cost>
-						<reference>B28</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Recognized sometimes</name>
-						<cost type="multiplier">0.5</cost>
-						<reference>B28</reference>
-						<notes>10-</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Recognized occasionally</name>
-						<cost type="multiplier">0.33</cost>
-						<reference>B28</reference>
-						<notes>7-</notes>
-					</modifier>
-					<reference>B26</reference>
-					<categories>
-						<category>Disadvantage</category>
-					</categories>
-				</advantage>
-				<advantage version="2">
-					<name>Stubbornness</name>
-					<type>Mental</type>
-					<base_points>-5</base_points>
-					<reference>B157</reference>
-					<categories>
-						<category>Disadvantage</category>
-					</categories>
-				</advantage>
-			</advantage_container>
 		</advantage_container>
 	</advantage_list>
 	<skill_list>

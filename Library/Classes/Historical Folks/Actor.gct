@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
 <template unique_id="g2gmtmpp:11xpfirww9a9u" version="1">
 	<advantage_list>
-		<advantage_container version="2" open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Actor</name>
-			<reference></reference>
+			<reference>HF4</reference>
 			<notes>25 Points</notes>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Attributes</name>
 			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
-				<name>Secondary Characteristics</name>
-			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Class Advantages</name>
-				<advantage_container version="2" open="yes" type="metatrait">
+				<advantage_container version="2" open="yes" type="meta trait">
 					<name>15 Points Chosen From:</name>
 					<advantage version="2">
 						<name>Absolute Timing</name>
@@ -28,41 +25,6 @@
 						<categories>
 							<category>Advantage</category>
 						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Talent (Allure)</name>
-						<type>Physical</type>
-						<levels>1</levels>
-						<points_per_level>5</points_per_level>
-						<reference>F132</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-						<skill_bonus>
-							<name compare="is">dancing</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="starts with">erotic art</name>
-							<specialization compare="is anything"></specialization>
-							<amount>1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">makeup</name>
-							<specialization compare="is anything"></specialization>
-							<amount>1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">sex appeal</name>
-							<specialization compare="is anything"></specialization>
-							<amount>1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">singing</name>
-							<specialization compare="is anything"></specialization>
-							<amount>1</amount>
-						</skill_bonus>
 					</advantage>
 					<advantage version="2">
 						<name>Ally (@Who@)</name>
@@ -243,46 +205,6 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
-						<name>Talent (Bard)</name>
-						<type>Physical</type>
-						<levels>1</levels>
-						<points_per_level>5</points_per_level>
-						<reference>F132</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-						<skill_bonus>
-							<name compare="is">heraldry</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">literature</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">musical influence</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">poetry</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">public speaking</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">singing</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-					</advantage>
-					<advantage version="2">
 						<name>Charisma</name>
 						<type>Mental</type>
 						<levels>1</levels>
@@ -309,41 +231,6 @@
 						</skill_bonus>
 						<skill_bonus>
 							<name compare="is">public speaking</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Talent (Musical Ability)</name>
-						<type>Mental</type>
-						<levels>1</levels>
-						<points_per_level>5</points_per_level>
-						<reference>B91</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-						<skill_bonus>
-							<name compare="is">group performance</name>
-							<specialization compare="is">conducting</specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">musical composition</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">musical influence</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">musical instrument</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">singing</name>
 							<specialization compare="is anything"></specialization>
 							<amount per_level="yes">1</amount>
 						</skill_bonus>
@@ -543,6 +430,116 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
+						<name>Talent (Allure)</name>
+						<type>Physical</type>
+						<levels>1</levels>
+						<points_per_level>5</points_per_level>
+						<reference>F132</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">dancing</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="starts with">erotic art</name>
+							<specialization compare="is anything"></specialization>
+							<amount>1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">makeup</name>
+							<specialization compare="is anything"></specialization>
+							<amount>1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">sex appeal</name>
+							<specialization compare="is anything"></specialization>
+							<amount>1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">singing</name>
+							<specialization compare="is anything"></specialization>
+							<amount>1</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Talent (Bard)</name>
+						<type>Physical</type>
+						<levels>1</levels>
+						<points_per_level>5</points_per_level>
+						<reference>F132</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">heraldry</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">literature</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">musical influence</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">poetry</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">public speaking</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">singing</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Talent (Musical Ability)</name>
+						<type>Mental</type>
+						<levels>1</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B91</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">group performance</name>
+							<specialization compare="is">conducting</specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">musical composition</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">musical influence</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">musical instrument</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">singing</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
 						<name>Talent (Smooth Operator)</name>
 						<type>Mental</type>
 						<levels>1</levels>
@@ -622,7 +619,7 @@
 						<type>Physical</type>
 						<levels>1</levels>
 						<points_per_level>5</points_per_level>
-						<reference></reference>
+						<reference>HF3</reference>
 						<notes>+1 Reaction from Actors, Performers and those hiring same.</notes>
 						<skill_bonus>
 							<name compare="is">Acting</name>
@@ -705,16 +702,26 @@
 					</advantage>
 				</advantage_container>
 			</advantage_container>
-			<advantage_container version="2" open="yes" type="metatrait">
+			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Class Disadvantages</name>
-				<advantage_container version="2" open="yes" type="metatrait">
+				<advantage_container version="2" open="yes" type="meta trait">
 					<name>-15 Points Chosen From:</name>
 					<advantage version="2">
-						<name>Cowardice</name>
+						<name>Chummy</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<reference>B126</reference>
+						<notes>React to others at +2; -1 to IQ-based skills when alone</notes>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Chummy (Gregarious)</name>
 						<type>Mental</type>
 						<base_points>-10</base_points>
-						<cr adj="fright_check_penalty">12</cr>
-						<reference>B129</reference>
+						<reference>B126</reference>
+						<notes>React to others at +4; -2 to IQ-based skills when alone, or -1 in a group of 4 or less</notes>
 						<categories>
 							<category>Disadvantage</category>
 						</categories>
@@ -740,21 +747,11 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
-						<name>Chummy</name>
-						<type>Mental</type>
-						<base_points>-5</base_points>
-						<reference>B126</reference>
-						<notes>React to others at +2; -1 to IQ-based skills when alone</notes>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Chummy (Gregarious)</name>
+						<name>Cowardice</name>
 						<type>Mental</type>
 						<base_points>-10</base_points>
-						<reference>B126</reference>
-						<notes>React to others at +4; -2 to IQ-based skills when alone, or -1 in a group of 4 or less</notes>
+						<cr adj="fright check penalty">12</cr>
+						<reference>B129</reference>
 						<categories>
 							<category>Disadvantage</category>
 						</categories>
@@ -775,25 +772,6 @@
 						<reference>B164</reference>
 						<categories>
 							<category>Quirk</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Hidebound</name>
-						<type>Physical</type>
-						<base_points>-5</base_points>
-						<reference>B138</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Incurious</name>
-						<type>Mental</type>
-						<base_points>-5</base_points>
-						<cr>12</cr>
-						<reference>B140</reference>
-						<categories>
-							<category>Disadvantage</category>
 						</categories>
 					</advantage>
 					<advantage version="2">
@@ -840,6 +818,25 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
+						<name>Hidebound</name>
+						<type>Physical</type>
+						<base_points>-5</base_points>
+						<reference>B138</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Incurious</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<cr>12</cr>
+						<reference>B140</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
 						<name>Jealousy</name>
 						<type>Mental</type>
 						<base_points>-10</base_points>
@@ -854,15 +851,6 @@
 						<base_points>-5</base_points>
 						<cr>12</cr>
 						<reference>B148</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Wealth (Poor)</name>
-						<type>Social</type>
-						<base_points>-15</base_points>
-						<reference>B25</reference>
 						<categories>
 							<category>Disadvantage</category>
 						</categories>
@@ -947,7 +935,19 @@
 							<category>Disadvantage</category>
 						</categories>
 					</advantage>
+					<advantage version="2">
+						<name>Wealth (Poor)</name>
+						<type>Social</type>
+						<base_points>-15</base_points>
+						<reference>B25</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
 				</advantage_container>
+			</advantage_container>
+			<advantage_container version="2" open="yes" type="meta trait">
+				<name>Secondary Characteristics</name>
 			</advantage_container>
 		</advantage_container>
 	</advantage_list>
@@ -1392,7 +1392,7 @@
 							<category>Engineer</category>
 						</categories>
 						<prereq_list all="yes">
-							<when_tl compare="at_least">5</when_tl>
+							<when_tl compare="at least">5</when_tl>
 							<skill_prereq has="yes">
 								<name compare="is">mathematics</name>
 								<specialization compare="is">applied</specialization>

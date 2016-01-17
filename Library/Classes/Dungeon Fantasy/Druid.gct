@@ -91,526 +91,8 @@
 					</attribute_bonus>
 				</advantage>
 			</advantage_container>
-			<advantage_container version="2" open="no">
-				<name>Secondary Characteristics</name>
-				<advantage version="2">
-					<name>Decreased Basic Speed -0.25</name>
-					<type>Physical</type>
-					<base_points>-5</base_points>
-					<attribute_bonus>
-						<attribute>speed</attribute>
-						<amount>-0.25</amount>
-					</attribute_bonus>
-				</advantage>
-			</advantage_container>
 			<advantage_container version="2" open="yes">
 				<name>Class Advantages</name>
-				<advantage version="2">
-					<name>Talent (Green Thumb)</name>
-					<type>Mental</type>
-					<levels>1</levels>
-					<points_per_level>5</points_per_level>
-					<reference>B90</reference>
-					<categories>
-						<category>Advantage</category>
-					</categories>
-					<skill_bonus>
-						<name compare="contains">biology</name>
-						<specialization compare="is anything"></specialization>
-						<amount per_level="yes">1</amount>
-					</skill_bonus>
-					<skill_bonus>
-						<name compare="is">farming</name>
-						<specialization compare="is anything"></specialization>
-						<amount per_level="yes">1</amount>
-					</skill_bonus>
-					<skill_bonus>
-						<name compare="is">gardening</name>
-						<specialization compare="is anything"></specialization>
-						<amount per_level="yes">1</amount>
-					</skill_bonus>
-					<skill_bonus>
-						<name compare="is">herb lore</name>
-						<specialization compare="is anything"></specialization>
-						<amount per_level="yes">1</amount>
-					</skill_bonus>
-					<skill_bonus>
-						<name compare="is">naturalist</name>
-						<specialization compare="is anything"></specialization>
-						<amount per_level="yes">1</amount>
-					</skill_bonus>
-				</advantage>
-				<advantage version="2">
-					<name>Power Investiture (Druid)</name>
-					<type>Mental, Supernatural</type>
-					<levels>3</levels>
-					<points_per_level>10</points_per_level>
-					<reference>DF1:22</reference>
-					<categories>
-						<category>Advantage</category>
-					</categories>
-					<spell_bonus>
-						<college_name compare="is">druidic</college_name>
-						<amount>1</amount>
-					</spell_bonus>
-				</advantage>
-				<advantage_container version="2" open="no" type="race">
-					<name>A further 20 Points chosen from:</name>
-					<notes>or from among additional Druidic abilities</notes>
-					<advantage version="2">
-						<name>Extra Fatigue Points</name>
-						<type>Physical</type>
-						<levels>6</levels>
-						<points_per_level>3</points_per_level>
-						<reference>B16</reference>
-						<categories>
-							<category>Advantage</category>
-							<category>Attribute</category>
-						</categories>
-						<attribute_bonus>
-							<attribute>fp</attribute>
-							<amount per_level="yes">1</amount>
-						</attribute_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Increased Intelligence</name>
-						<type>Mental</type>
-						<levels>1</levels>
-						<points_per_level>20</points_per_level>
-						<reference>B15</reference>
-						<categories>
-							<category>Advantage</category>
-							<category>Attribute</category>
-						</categories>
-						<attribute_bonus>
-							<attribute>iq</attribute>
-							<amount per_level="yes">1</amount>
-						</attribute_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Increased Health</name>
-						<type>Physical</type>
-						<levels>2</levels>
-						<points_per_level>10</points_per_level>
-						<reference>B14</reference>
-						<categories>
-							<category>Advantage</category>
-							<category>Attribute</category>
-						</categories>
-						<attribute_bonus>
-							<attribute>ht</attribute>
-							<amount per_level="yes">1</amount>
-						</attribute_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Increased Perception</name>
-						<type>Mental/Physical</type>
-						<levels>4</levels>
-						<points_per_level>5</points_per_level>
-						<reference>B16</reference>
-						<categories>
-							<category>Advantage</category>
-							<category>Attribute</category>
-						</categories>
-						<attribute_bonus>
-							<attribute>perception</attribute>
-							<amount per_level="yes">1</amount>
-						</attribute_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Intuition</name>
-						<type>Mental</type>
-						<base_points>15</base_points>
-						<modifier version="1" enabled="no">
-							<name>Inspired</name>
-							<cost type="percentage">100</cost>
-							<affects>total</affects>
-							<reference>P56</reference>
-						</modifier>
-						<reference>B63</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Luck</name>
-						<type>Mental</type>
-						<base_points>15</base_points>
-						<modifier version="1" enabled="no">
-							<name>Active</name>
-							<cost type="percentage">-40</cost>
-							<affects>total</affects>
-							<reference>B66</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Aspected</name>
-							<cost type="percentage">-20</cost>
-							<affects>total</affects>
-							<reference>B66</reference>
-							<notes>@Aspect@</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Defensive</name>
-							<cost type="percentage">-20</cost>
-							<affects>total</affects>
-							<reference>B66</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Wishing</name>
-							<cost type="percentage">100</cost>
-							<affects>total</affects>
-							<reference>P59</reference>
-						</modifier>
-						<reference>B66</reference>
-						<notes>Usable once per hour of play</notes>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Mind Shield</name>
-						<type>Mental, Exotic</type>
-						<levels>5</levels>
-						<points_per_level>4</points_per_level>
-						<modifier version="1" enabled="no">
-							<name>Cybernetic</name>
-							<cost type="percentage">-50</cost>
-							<affects>total</affects>
-							<reference>B70</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Limited</name>
-							<cost type="percentage">-50</cost>
-							<affects>total</affects>
-							<reference>P62</reference>
-							<notes>@Source@</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Limited</name>
-							<cost type="percentage">-75</cost>
-							<affects>total</affects>
-							<reference>P62</reference>
-							<notes>@Power/College/Focus@</notes>
-						</modifier>
-						<reference>B70</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Power Investiture (Druid)</name>
-						<type>Mental, Supernatural</type>
-						<levels>2</levels>
-						<points_per_level>10</points_per_level>
-						<reference>DF1:22</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-						<spell_bonus>
-							<college_name compare="is">druidic</college_name>
-							<amount>1</amount>
-						</spell_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Resistant</name>
-						<type>Physical</type>
-						<modifier version="1" enabled="no">
-							<name>@Very Common: Metabolic Hazards, etc.@</name>
-							<cost type="points">30</cost>
-							<affects>total</affects>
-							<reference>B80</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>@Common: Poison, Sickness, etc.@</name>
-							<cost type="points">15</cost>
-							<affects>total</affects>
-							<reference>B81</reference>
-						</modifier>
-						<modifier version="1">
-							<name>Disease</name>
-							<cost type="points">10</cost>
-							<affects>total</affects>
-							<reference>B81</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>@Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.@</name>
-							<cost type="points">5</cost>
-							<affects>total</affects>
-							<reference>B81</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Immunity</name>
-							<cost type="multiplier">1</cost>
-							<reference>B81</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>+8 to all HT rolls to resist</name>
-							<cost type="multiplier">0.5</cost>
-							<reference>B81</reference>
-						</modifier>
-						<modifier version="1">
-							<name>+3 to all HT rolls to resist</name>
-							<cost type="multiplier">0.33</cost>
-							<reference>B81</reference>
-						</modifier>
-						<reference>B81</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Spirit Empathy</name>
-						<type>Mental, Supernatural</type>
-						<base_points>10</base_points>
-						<modifier version="1" enabled="no">
-							<name>Specialized</name>
-							<cost type="percentage">-50</cost>
-							<affects>total</affects>
-							<reference>B87</reference>
-							<notes>@Type: Angels, Demons, Elementals, Faerie, Ghosts, etc.@</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Remote</name>
-							<cost type="percentage">50</cost>
-							<affects>total</affects>
-							<reference>P48</reference>
-						</modifier>
-						<reference>B88</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Talent (Animal Friend)</name>
-						<type>Mental</type>
-						<levels>4</levels>
-						<points_per_level>5</points_per_level>
-						<reference>B90</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-						<skill_bonus>
-							<name compare="contains">animal handling</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">falconry</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">packing</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">riding</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">teamster</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">veterinary</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Talent (Green Thumb)</name>
-						<type>Mental</type>
-						<levels>3</levels>
-						<points_per_level>5</points_per_level>
-						<reference>B90</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-						<skill_bonus>
-							<name compare="contains">biology</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">farming</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">gardening</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">herb lore</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">naturalist</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Talent (Healer)</name>
-						<type>Mental</type>
-						<levels>2</levels>
-						<points_per_level>10</points_per_level>
-						<reference>B90</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-						<skill_bonus>
-							<name compare="is">diagnosis</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">esoteric medicine</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">first aid</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">pharmacy</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">physician</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">physiology</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">psychology</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">surgery</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">veterinary</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Talent (Outdoorsman)</name>
-						<type>Mental</type>
-						<levels>2</levels>
-						<points_per_level>10</points_per_level>
-						<reference>B91</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-						<skill_bonus>
-							<name compare="is">camouflage</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">fishing</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">mimicry</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">naturalist</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">navigation</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="contains">survival</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-						<skill_bonus>
-							<name compare="is">tracking</name>
-							<specialization compare="is anything"></specialization>
-							<amount per_level="yes">1</amount>
-						</skill_bonus>
-					</advantage>
-					<advantage version="2">
-						<name>Resistant</name>
-						<type>Physical</type>
-						<modifier version="1" enabled="no">
-							<name>@Very Common: Metabolic Hazards, etc.@</name>
-							<cost type="points">30</cost>
-							<affects>total</affects>
-							<reference>B80</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>@Common: Poison, Sickness, etc.@</name>
-							<cost type="points">15</cost>
-							<affects>total</affects>
-							<reference>B81</reference>
-						</modifier>
-						<modifier version="1">
-							<name>Disease</name>
-							<cost type="points">10</cost>
-							<affects>total</affects>
-							<reference>B81</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>@Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.@</name>
-							<cost type="points">5</cost>
-							<affects>total</affects>
-							<reference>B81</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Immunity</name>
-							<cost type="multiplier">1</cost>
-							<reference>B81</reference>
-						</modifier>
-						<modifier version="1">
-							<name>+8 to all HT rolls to resist</name>
-							<cost type="multiplier">0.5</cost>
-							<reference>B81</reference>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>+3 to all HT rolls to resist</name>
-							<cost type="multiplier">0.33</cost>
-							<reference>B81</reference>
-						</modifier>
-						<reference>B81</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Signature Gear</name>
-						<type>Social</type>
-						<reference>B85</reference>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-					</advantage>
-				</advantage_container>
 				<advantage_container version="2" open="no" type="race">
 					<name>20 Points in Druidic abilities:</name>
 					<notes>put leftovers into spells</notes>
@@ -671,13 +153,13 @@
 								<reference>B36</reference>
 								<notes>No roll required</notes>
 							</modifier>
-							<modifier version="1" enabled="no">
+							<modifier version="1">
 								<name>Appears almost all the time</name>
 								<cost type="multiplier">3</cost>
 								<reference>B36</reference>
 								<notes>15-</notes>
 							</modifier>
-							<modifier version="1">
+							<modifier version="1" enabled="no">
 								<name>Appears quite often</name>
 								<cost type="multiplier">2</cost>
 								<reference>B36</reference>
@@ -849,13 +331,13 @@
 								<reference>B36</reference>
 								<notes>No roll required</notes>
 							</modifier>
-							<modifier version="1">
+							<modifier version="1" enabled="no">
 								<name>Appears almost all the time</name>
 								<cost type="multiplier">3</cost>
 								<reference>B36</reference>
 								<notes>15-</notes>
 							</modifier>
-							<modifier version="1" enabled="no">
+							<modifier version="1">
 								<name>Appears quite often</name>
 								<cost type="multiplier">2</cost>
 								<reference>B36</reference>
@@ -1187,62 +669,6 @@
 								<reference>B48</reference>
 							</modifier>
 							<modifier version="1">
-								<name>plants</name>
-								<cost type="points">20</cost>
-								<affects>total</affects>
-								<reference>B48</reference>
-							</modifier>
-							<modifier version="1" enabled="no">
-								<name>@Very Common Substance/Condition@</name>
-								<cost type="points">30</cost>
-								<affects>total</affects>
-								<reference>B48</reference>
-							</modifier>
-							<modifier version="1" enabled="no">
-								<name>Precise</name>
-								<cost type="percentage">100</cost>
-								<affects>total</affects>
-								<reference>B48</reference>
-							</modifier>
-							<modifier version="1" enabled="no">
-								<name>Signal Detection</name>
-								<cost type="percentage">0</cost>
-								<affects>total</affects>
-								<reference>B48</reference>
-							</modifier>
-							<modifier version="1" enabled="no">
-								<name>Vague</name>
-								<cost type="percentage">-50</cost>
-								<affects>total</affects>
-								<reference>B48</reference>
-							</modifier>
-							<modifier version="1" enabled="no">
-								<name>Analyzing</name>
-								<cost type="percentage">100</cost>
-								<affects>total</affects>
-								<reference>P47</reference>
-							</modifier>
-							<reference>B48</reference>
-							<categories>
-								<category>Advantage</category>
-							</categories>
-						</advantage>
-						<advantage version="2">
-							<name>Detect</name>
-							<type>Mental/Physical, Exotic</type>
-							<modifier version="1" enabled="no">
-								<name>@Rare Substance/Condition@</name>
-								<cost type="points">5</cost>
-								<affects>total</affects>
-								<reference>B48</reference>
-							</modifier>
-							<modifier version="1" enabled="no">
-								<name>@Occasional Substance/Condition@</name>
-								<cost type="points">10</cost>
-								<affects>total</affects>
-								<reference>B48</reference>
-							</modifier>
-							<modifier version="1">
 								<name>animals</name>
 								<cost type="points">20</cost>
 								<affects>total</affects>
@@ -1306,6 +732,62 @@
 							</modifier>
 							<modifier version="1">
 								<name>anything alive</name>
+								<cost type="points">30</cost>
+								<affects>total</affects>
+								<reference>B48</reference>
+							</modifier>
+							<modifier version="1" enabled="no">
+								<name>Precise</name>
+								<cost type="percentage">100</cost>
+								<affects>total</affects>
+								<reference>B48</reference>
+							</modifier>
+							<modifier version="1" enabled="no">
+								<name>Signal Detection</name>
+								<cost type="percentage">0</cost>
+								<affects>total</affects>
+								<reference>B48</reference>
+							</modifier>
+							<modifier version="1" enabled="no">
+								<name>Vague</name>
+								<cost type="percentage">-50</cost>
+								<affects>total</affects>
+								<reference>B48</reference>
+							</modifier>
+							<modifier version="1" enabled="no">
+								<name>Analyzing</name>
+								<cost type="percentage">100</cost>
+								<affects>total</affects>
+								<reference>P47</reference>
+							</modifier>
+							<reference>B48</reference>
+							<categories>
+								<category>Advantage</category>
+							</categories>
+						</advantage>
+						<advantage version="2">
+							<name>Detect</name>
+							<type>Mental/Physical, Exotic</type>
+							<modifier version="1" enabled="no">
+								<name>@Rare Substance/Condition@</name>
+								<cost type="points">5</cost>
+								<affects>total</affects>
+								<reference>B48</reference>
+							</modifier>
+							<modifier version="1" enabled="no">
+								<name>@Occasional Substance/Condition@</name>
+								<cost type="points">10</cost>
+								<affects>total</affects>
+								<reference>B48</reference>
+							</modifier>
+							<modifier version="1">
+								<name>plants</name>
+								<cost type="points">20</cost>
+								<affects>total</affects>
+								<reference>B48</reference>
+							</modifier>
+							<modifier version="1" enabled="no">
+								<name>@Very Common Substance/Condition@</name>
 								<cost type="points">30</cost>
 								<affects>total</affects>
 								<reference>B48</reference>
@@ -1594,6 +1076,512 @@
 						</advantage>
 					</advantage_container>
 				</advantage_container>
+				<advantage_container version="2" open="no" type="race">
+					<name>A further 20 Points chosen from:</name>
+					<notes>or from among additional Druidic abilities</notes>
+					<advantage version="2">
+						<name>Extra Fatigue Points</name>
+						<type>Physical</type>
+						<levels>6</levels>
+						<points_per_level>3</points_per_level>
+						<reference>B16</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>fp</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Increased Health</name>
+						<type>Physical</type>
+						<levels>2</levels>
+						<points_per_level>10</points_per_level>
+						<reference>B14</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>ht</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Increased Intelligence</name>
+						<type>Mental</type>
+						<levels>1</levels>
+						<points_per_level>20</points_per_level>
+						<reference>B15</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>iq</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Increased Perception</name>
+						<type>Mental/Physical</type>
+						<levels>4</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B16</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>perception</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Intuition</name>
+						<type>Mental</type>
+						<base_points>15</base_points>
+						<modifier version="1" enabled="no">
+							<name>Inspired</name>
+							<cost type="percentage">100</cost>
+							<affects>total</affects>
+							<reference>P56</reference>
+						</modifier>
+						<reference>B63</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Luck</name>
+						<type>Mental</type>
+						<base_points>15</base_points>
+						<modifier version="1" enabled="no">
+							<name>Active</name>
+							<cost type="percentage">-40</cost>
+							<affects>total</affects>
+							<reference>B66</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Aspected</name>
+							<cost type="percentage">-20</cost>
+							<affects>total</affects>
+							<reference>B66</reference>
+							<notes>@Aspect@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Defensive</name>
+							<cost type="percentage">-20</cost>
+							<affects>total</affects>
+							<reference>B66</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Wishing</name>
+							<cost type="percentage">100</cost>
+							<affects>total</affects>
+							<reference>P59</reference>
+						</modifier>
+						<reference>B66</reference>
+						<notes>Usable once per hour of play</notes>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Mind Shield</name>
+						<type>Mental, Exotic</type>
+						<levels>5</levels>
+						<points_per_level>4</points_per_level>
+						<modifier version="1" enabled="no">
+							<name>Cybernetic</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B70</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Limited</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>P62</reference>
+							<notes>@Source@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Limited</name>
+							<cost type="percentage">-75</cost>
+							<affects>total</affects>
+							<reference>P62</reference>
+							<notes>@Power/College/Focus@</notes>
+						</modifier>
+						<reference>B70</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Power Investiture (Druid)</name>
+						<type>Mental, Supernatural</type>
+						<levels>2</levels>
+						<points_per_level>10</points_per_level>
+						<reference>DF1:22</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<spell_bonus>
+							<college_name compare="is">druidic</college_name>
+							<amount>1</amount>
+						</spell_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Resistant</name>
+						<type>Physical</type>
+						<modifier version="1" enabled="no">
+							<name>@Very Common: Metabolic Hazards, etc.@</name>
+							<cost type="points">30</cost>
+							<affects>total</affects>
+							<reference>B80</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Common: Poison, Sickness, etc.@</name>
+							<cost type="points">15</cost>
+							<affects>total</affects>
+							<reference>B81</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Disease</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B81</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.@</name>
+							<cost type="points">5</cost>
+							<affects>total</affects>
+							<reference>B81</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Immunity</name>
+							<cost type="multiplier">1</cost>
+							<reference>B81</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>+8 to all HT rolls to resist</name>
+							<cost type="multiplier">0.5</cost>
+							<reference>B81</reference>
+						</modifier>
+						<modifier version="1">
+							<name>+3 to all HT rolls to resist</name>
+							<cost type="multiplier">0.33</cost>
+							<reference>B81</reference>
+						</modifier>
+						<reference>B81</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Resistant</name>
+						<type>Physical</type>
+						<modifier version="1" enabled="no">
+							<name>@Very Common: Metabolic Hazards, etc.@</name>
+							<cost type="points">30</cost>
+							<affects>total</affects>
+							<reference>B80</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Common: Poison, Sickness, etc.@</name>
+							<cost type="points">15</cost>
+							<affects>total</affects>
+							<reference>B81</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Disease</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B81</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.@</name>
+							<cost type="points">5</cost>
+							<affects>total</affects>
+							<reference>B81</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Immunity</name>
+							<cost type="multiplier">1</cost>
+							<reference>B81</reference>
+						</modifier>
+						<modifier version="1">
+							<name>+8 to all HT rolls to resist</name>
+							<cost type="multiplier">0.5</cost>
+							<reference>B81</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>+3 to all HT rolls to resist</name>
+							<cost type="multiplier">0.33</cost>
+							<reference>B81</reference>
+						</modifier>
+						<reference>B81</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Signature Gear</name>
+						<type>Social</type>
+						<reference>B85</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Spirit Empathy</name>
+						<type>Mental, Supernatural</type>
+						<base_points>10</base_points>
+						<modifier version="1" enabled="no">
+							<name>Specialized</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B87</reference>
+							<notes>@Type: Angels, Demons, Elementals, Faerie, Ghosts, etc.@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Remote</name>
+							<cost type="percentage">50</cost>
+							<affects>total</affects>
+							<reference>P48</reference>
+						</modifier>
+						<reference>B88</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Talent (Animal Friend)</name>
+						<type>Mental</type>
+						<levels>4</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B90</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="contains">animal handling</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">falconry</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">packing</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">riding</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">teamster</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">veterinary</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Talent (Green Thumb)</name>
+						<type>Mental</type>
+						<levels>3</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B90</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="contains">biology</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">farming</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">gardening</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">herb lore</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">naturalist</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Talent (Healer)</name>
+						<type>Mental</type>
+						<levels>2</levels>
+						<points_per_level>10</points_per_level>
+						<reference>B90</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">diagnosis</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">esoteric medicine</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">first aid</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">pharmacy</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">physician</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">physiology</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">psychology</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">surgery</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">veterinary</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Talent (Outdoorsman)</name>
+						<type>Mental</type>
+						<levels>2</levels>
+						<points_per_level>10</points_per_level>
+						<reference>B91</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">camouflage</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">fishing</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">mimicry</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">naturalist</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">navigation</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="contains">survival</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">tracking</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+					</advantage>
+				</advantage_container>
+				<advantage version="2">
+					<name>Power Investiture (Druid)</name>
+					<type>Mental, Supernatural</type>
+					<levels>3</levels>
+					<points_per_level>10</points_per_level>
+					<reference>DF1:22</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+					<spell_bonus>
+						<college_name compare="is">druidic</college_name>
+						<amount>1</amount>
+					</spell_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Talent (Green Thumb)</name>
+					<type>Mental</type>
+					<levels>1</levels>
+					<points_per_level>5</points_per_level>
+					<reference>B90</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+					<skill_bonus>
+						<name compare="contains">biology</name>
+						<specialization compare="is anything"></specialization>
+						<amount per_level="yes">1</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">farming</name>
+						<specialization compare="is anything"></specialization>
+						<amount per_level="yes">1</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">gardening</name>
+						<specialization compare="is anything"></specialization>
+						<amount per_level="yes">1</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">herb lore</name>
+						<specialization compare="is anything"></specialization>
+						<amount per_level="yes">1</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">naturalist</name>
+						<specialization compare="is anything"></specialization>
+						<amount per_level="yes">1</amount>
+					</skill_bonus>
+				</advantage>
 			</advantage_container>
 			<advantage_container version="2" open="yes">
 				<name>Class Disadvantages</name>
@@ -1628,18 +1616,18 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
-						<name>Vow (Vegetarianism)</name>
+						<name>Vow (Never Sleep Indoors)</name>
 						<type>Physical</type>
-						<base_points>-5</base_points>
+						<base_points>-10</base_points>
 						<reference>B161</reference>
 						<categories>
 							<category>Disadvantage</category>
 						</categories>
 					</advantage>
 					<advantage version="2">
-						<name>Vow (Never Sleep Indoors)</name>
+						<name>Vow (Vegetarianism)</name>
 						<type>Physical</type>
-						<base_points>-10</base_points>
+						<base_points>-5</base_points>
 						<reference>B161</reference>
 						<categories>
 							<category>Disadvantage</category>
@@ -1667,6 +1655,16 @@
 				<advantage_container version="2" open="no" type="meta trait">
 					<name>A further -25 Points chosen from:</name>
 					<notes>or previous traits</notes>
+					<advantage version="2">
+						<name>Demophobia (Crowds)</name>
+						<type>Mental</type>
+						<base_points>-15</base_points>
+						<cr>12</cr>
+						<reference>B149</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
 					<advantage version="2">
 						<name>Intolerance (Urbanites)</name>
 						<type>Mental</type>
@@ -1740,27 +1738,7 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
-						<name>Demophobia (Crowds)</name>
-						<type>Mental</type>
-						<base_points>-15</base_points>
-						<cr>12</cr>
-						<reference>B149</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
 						<name>Pyrophobia (Fire)</name>
-						<type>Mental</type>
-						<base_points>-5</base_points>
-						<cr>12</cr>
-						<reference>B150</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Technophobia/TL4- (Machinery)</name>
 						<type>Mental</type>
 						<base_points>-5</base_points>
 						<cr>12</cr>
@@ -1774,6 +1752,16 @@
 						<type>Mental</type>
 						<base_points>-5</base_points>
 						<reference>B157</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Technophobia/TL4- (Machinery)</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<cr>12</cr>
+						<reference>B150</reference>
 						<categories>
 							<category>Disadvantage</category>
 						</categories>
@@ -1794,6 +1782,18 @@
 						</categories>
 					</advantage>
 				</advantage_container>
+			</advantage_container>
+			<advantage_container version="2" open="no">
+				<name>Secondary Characteristics</name>
+				<advantage version="2">
+					<name>Decreased Basic Speed -0.25</name>
+					<type>Physical</type>
+					<base_points>-5</base_points>
+					<attribute_bonus>
+						<attribute>speed</attribute>
+						<amount>-0.25</amount>
+					</attribute_bonus>
+				</advantage>
 			</advantage_container>
 		</advantage_container>
 	</advantage_list>

@@ -5,34 +5,20 @@
 			<name>Dark One</name>
 			<reference>DF3:6</reference>
 			<advantage version="2">
-				<name>Talent (Elder Gift)</name>
+				<name>Better Power Items</name>
 				<type>Physical</type>
-				<levels>2</levels>
-				<points_per_level>5</points_per_level>
+				<base_points>1</base_points>
 				<reference>DF3:6</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Bloodlust</name>
+				<type>Mental</type>
+				<base_points>-10</base_points>
+				<cr>12</cr>
+				<reference>B125</reference>
 				<categories>
-					<category>Advantage</category>
+					<category>Disadvantage</category>
 				</categories>
-				<skill_bonus>
-					<name compare="is">alchemy</name>
-					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">1</amount>
-				</skill_bonus>
-				<skill_bonus>
-					<name compare="starts with">hidden lore</name>
-					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">1</amount>
-				</skill_bonus>
-				<skill_bonus>
-					<name compare="starts with">occultism</name>
-					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">1</amount>
-				</skill_bonus>
-				<skill_bonus>
-					<name compare="starts with">thaumatology</name>
-					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">1</amount>
-				</skill_bonus>
 			</advantage>
 			<advantage version="2">
 				<name>High Manual Dexterity</name>
@@ -157,20 +143,34 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
-				<name>Bloodlust</name>
-				<type>Mental</type>
-				<base_points>-10</base_points>
-				<cr>12</cr>
-				<reference>B125</reference>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Better Power Items</name>
+				<name>Talent (Elder Gift)</name>
 				<type>Physical</type>
-				<base_points>1</base_points>
+				<levels>2</levels>
+				<points_per_level>5</points_per_level>
 				<reference>DF3:6</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">alchemy</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="starts with">hidden lore</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="starts with">occultism</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="starts with">thaumatology</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
 			</advantage>
 			<advantage version="2">
 				<name>Unnatural Features</name>

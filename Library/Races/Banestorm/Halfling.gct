@@ -18,9 +18,33 @@
 			</attribute_bonus>
 		</advantage>
 		<advantage version="2">
+			<name>Chummy</name>
+			<type>Mental</type>
+			<base_points>-5</base_points>
+			<reference>B126</reference>
+			<notes>React to others at +2; -1 to IQ-based skills when alone</notes>
+		</advantage>
+		<advantage version="2">
+			<name>Code of Honor (Halfling)</name>
+			<type>Mental</type>
+			<base_points>-5</base_points>
+			<reference>BS185</reference>
+		</advantage>
+		<advantage version="2">
 			<name>Dislikes large bodies of water</name>
 			<type>Physical</type>
 			<base_points>-1</base_points>
+		</advantage>
+		<advantage version="2">
+			<name>Dislikes large bodies of water</name>
+			<type>Physical</type>
+			<base_points>-1</base_points>
+		</advantage>
+		<advantage version="2">
+			<name>Gluttony (CR: 12)</name>
+			<type>Mental</type>
+			<base_points>-5</base_points>
+			<reference>B137</reference>
 		</advantage>
 		<advantage version="2">
 			<name>Secondary Attribute Modifiers (SM-1; HP+1; Basic Move-1)</name>
@@ -38,6 +62,32 @@
 				<attribute>sm</attribute>
 				<amount>-1</amount>
 			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Silence</name>
+			<type>Physical, Exotic</type>
+			<levels>1</levels>
+			<points_per_level>5</points_per_level>
+			<reference>B85</reference>
+			<skill_bonus>
+				<name compare="is">stealth</name>
+				<specialization compare="is anything"></specialization>
+				<amount>2</amount>
+			</skill_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Social Regard</name>
+			<type>Social</type>
+			<levels>1</levels>
+			<points_per_level>5</points_per_level>
+			<reference>B87</reference>
+			<notes>Good Neighbor</notes>
+		</advantage>
+		<advantage version="2">
+			<name>Staid</name>
+			<type>Mental</type>
+			<base_points>-1</base_points>
+			<reference>B164</reference>
 		</advantage>
 		<advantage version="2">
 			<name>Talent (Halfling Ranged Weapon)</name>
@@ -65,56 +115,6 @@
 				<specialization compare="is anything"></specialization>
 				<amount per_level="yes">1</amount>
 			</skill_bonus>
-		</advantage>
-		<advantage version="2">
-			<name>Silence</name>
-			<type>Physical, Exotic</type>
-			<levels>1</levels>
-			<points_per_level>5</points_per_level>
-			<reference>B85</reference>
-			<skill_bonus>
-				<name compare="is">stealth</name>
-				<specialization compare="is anything"></specialization>
-				<amount>2</amount>
-			</skill_bonus>
-		</advantage>
-		<advantage version="2">
-			<name>Social Regard</name>
-			<type>Social</type>
-			<levels>1</levels>
-			<points_per_level>5</points_per_level>
-			<reference>B87</reference>
-			<notes>Good Neighbor</notes>
-		</advantage>
-		<advantage version="2">
-			<name>Chummy</name>
-			<type>Mental</type>
-			<base_points>-5</base_points>
-			<reference>B126</reference>
-			<notes>React to others at +2; -1 to IQ-based skills when alone</notes>
-		</advantage>
-		<advantage version="2">
-			<name>Code of Honor (Halfling)</name>
-			<type>Mental</type>
-			<base_points>-5</base_points>
-			<reference>BS185</reference>
-		</advantage>
-		<advantage version="2">
-			<name>Gluttony (CR: 12)</name>
-			<type>Mental</type>
-			<base_points>-5</base_points>
-			<reference>B137</reference>
-		</advantage>
-		<advantage version="2">
-			<name>Dislikes large bodies of water</name>
-			<type>Physical</type>
-			<base_points>-1</base_points>
-		</advantage>
-		<advantage version="2">
-			<name>Staid</name>
-			<type>Mental</type>
-			<base_points>-1</base_points>
-			<reference>B164</reference>
 		</advantage>
 	</advantage_list>
 	<notes>These small, peaceful folk are mainly interested in farming, eating, drinking, and living the &#8220;good life,&#8221; but they make determined warriors when pushed. Halflings are stocky and round-faced; they almost never wear beards.

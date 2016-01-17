@@ -91,9 +91,6 @@
 					</attribute_bonus>
 				</advantage>
 			</advantage_container>
-			<advantage_container version="2" open="no" type="meta trait">
-				<name>Secondary Characteristics</name>
-			</advantage_container>
 			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Class Advantages</name>
 				<advantage_container version="2" open="yes" type="race">
@@ -1218,6 +1215,49 @@
 			<advantage_container version="2" open="yes" type="meta trait">
 				<name>Class Disadvantages</name>
 				<advantage_container version="2" open="no" type="meta trait">
+					<name>-15 Points Chosen From:</name>
+					<advantage version="2">
+						<name>Curious</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<cr>12</cr>
+						<reference>B129</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Impulsiveness</name>
+						<type>Mental</type>
+						<base_points>-10</base_points>
+						<cr>12</cr>
+						<reference>B139</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Overconfidence</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<cr>12</cr>
+						<reference>B148</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Trickster</name>
+						<type>Mental</type>
+						<base_points>-15</base_points>
+						<cr>12</cr>
+						<reference>B159</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+				</advantage_container>
+				<advantage_container version="2" open="no" type="meta trait">
 					<name>-15 Points chosen from:</name>
 					<advantage_container version="2" open="no">
 						<name>Choose 1 From</name>
@@ -1284,49 +1324,6 @@
 					</advantage>
 				</advantage_container>
 				<advantage_container version="2" open="no" type="meta trait">
-					<name>-15 Points Chosen From:</name>
-					<advantage version="2">
-						<name>Curious</name>
-						<type>Mental</type>
-						<base_points>-5</base_points>
-						<cr>12</cr>
-						<reference>B129</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Impulsiveness</name>
-						<type>Mental</type>
-						<base_points>-10</base_points>
-						<cr>12</cr>
-						<reference>B139</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Overconfidence</name>
-						<type>Mental</type>
-						<base_points>-5</base_points>
-						<cr>12</cr>
-						<reference>B148</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
-						<name>Trickster</name>
-						<type>Mental</type>
-						<base_points>-15</base_points>
-						<cr>12</cr>
-						<reference>B159</reference>
-						<categories>
-							<category>Disadvantage</category>
-						</categories>
-					</advantage>
-				</advantage_container>
-				<advantage_container version="2" open="no" type="meta trait">
 					<name>-20 Points Chosen From:</name>
 					<advantage version="2">
 						<name>Code of Honor (Gentleman's)</name>
@@ -1368,6 +1365,9 @@
 						</categories>
 					</advantage>
 				</advantage_container>
+			</advantage_container>
+			<advantage_container version="2" open="no" type="meta trait">
+				<name>Secondary Characteristics</name>
 			</advantage_container>
 		</advantage_container>
 	</advantage_list>

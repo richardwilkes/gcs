@@ -2537,7 +2537,7 @@
 		<legality_class>4</legality_class>
 		<value>10</value>
 		<weight>1 lb</weight>
-		<reference>LT55/72</reference>
+		<reference>LT55,LT72</reference>
 		<melee_weapon>
 			<damage>sw cr</damage>
 			<strength>6</strength>
@@ -2600,7 +2600,7 @@
 		<legality_class>4</legality_class>
 		<value>20</value>
 		<weight>2 lb</weight>
-		<reference>LT55/72</reference>
+		<reference>LT55,LT72</reference>
 		<melee_weapon>
 			<damage>sw+1 cr</damage>
 			<strength>7</strength>

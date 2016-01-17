@@ -5,68 +5,92 @@
 			<name>Half-Ogre</name>
 			<reference>DF3:15</reference>
 			<advantage version="2">
-				<name>Increased Strength</name>
+				<name>Appearance</name>
 				<type>Physical</type>
-				<levels>4</levels>
-				<points_per_level>10</points_per_level>
 				<modifier version="1" enabled="no">
-					<name>No Fine Manipulators</name>
-					<cost type="percentage">-40</cost>
+					<name>Universal</name>
+					<cost type="percentage">25</cost>
 					<affects>total</affects>
-					<reference>B15</reference>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Size</name>
-					<cost type="percentage">-10</cost>
-					<levels>1</levels>
+					<name>Off-the-Shelf Looks</name>
+					<cost type="percentage">-50</cost>
 					<affects>total</affects>
-					<reference>B15</reference>
 				</modifier>
 				<modifier version="1" enabled="no">
-					<name>Super-Effort</name>
-					<cost type="percentage">300</cost>
+					<name>Androgynous</name>
+					<cost type="points">0</cost>
 					<affects>total</affects>
-					<reference>SU24</reference>
 				</modifier>
-				<reference>B14</reference>
+				<modifier version="1" enabled="no">
+					<name>Impressive</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Attractive</name>
+					<cost type="points">4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Average</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Horrific</name>
+					<cost type="points">-24</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Monstrous</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Hideous</name>
+					<cost type="points">-16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1">
+					<name>Ugly</name>
+					<cost type="points">-8</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Unattractive</name>
+					<cost type="points">-4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Handsome</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Beautiful</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Handsome</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Beautiful</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Transcendent</name>
+					<cost type="points">20</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B21</reference>
 				<categories>
 					<category>Advantage</category>
-					<category>Attribute</category>
 				</categories>
-				<attribute_bonus>
-					<attribute>st</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Decreased Intelligence</name>
-				<type>Mental</type>
-				<levels>1</levels>
-				<points_per_level>-20</points_per_level>
-				<reference>B15</reference>
-				<categories>
-					<category>Attribute</category>
-					<category>Disadvantage</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>iq</attribute>
-					<amount per_level="yes">-1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Increased Health</name>
-				<type>Physical</type>
-				<levels>1</levels>
-				<points_per_level>10</points_per_level>
-				<reference>B14</reference>
-				<categories>
-					<category>Advantage</category>
-					<category>Attribute</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>ht</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
 			</advantage>
 			<advantage version="2">
 				<name>Damage Resistance</name>
@@ -184,9 +208,24 @@
 					<category>Advantage</category>
 				</categories>
 				<dr_bonus>
-					<location>full_body_except_eyes</location>
+					<location>full body except eyes</location>
 					<amount per_level="yes">1</amount>
 				</dr_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Decreased Intelligence</name>
+				<type>Mental</type>
+				<levels>1</levels>
+				<points_per_level>-20</points_per_level>
+				<reference>B15</reference>
+				<categories>
+					<category>Attribute</category>
+					<category>Disadvantage</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>iq</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
 			</advantage>
 			<advantage version="2">
 				<name>Fearlessness</name>
@@ -199,99 +238,60 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
+				<name>Increased Health</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>10</points_per_level>
+				<reference>B14</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>ht</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Strength</name>
+				<type>Physical</type>
+				<levels>4</levels>
+				<points_per_level>10</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>No Fine Manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B15</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Size</name>
+					<cost type="percentage">-10</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+					<reference>B15</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Super-Effort</name>
+					<cost type="percentage">300</cost>
+					<affects>total</affects>
+					<reference>SU24</reference>
+				</modifier>
+				<reference>B14</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>st</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
 				<name>Night Vision</name>
 				<type>Physical</type>
 				<levels>3</levels>
 				<points_per_level>1</points_per_level>
 				<reference>B71</reference>
-				<categories>
-					<category>Advantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Appearance</name>
-				<type>Physical</type>
-				<modifier version="1" enabled="no">
-					<name>Universal</name>
-					<cost type="percentage">25</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Off-the-Shelf Looks</name>
-					<cost type="percentage">-50</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Androgynous</name>
-					<cost type="points">0</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Impressive</name>
-					<cost type="points">0</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Attractive</name>
-					<cost type="points">4</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Average</name>
-					<cost type="points">0</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Horrific</name>
-					<cost type="points">-24</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Monstrous</name>
-					<cost type="points">-20</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Hideous</name>
-					<cost type="points">-16</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1">
-					<name>Ugly</name>
-					<cost type="points">-8</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Unattractive</name>
-					<cost type="points">-4</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Handsome</name>
-					<cost type="points">12</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Beautiful</name>
-					<cost type="points">12</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Very Handsome</name>
-					<cost type="points">16</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Very Beautiful</name>
-					<cost type="points">16</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Transcendent</name>
-					<cost type="points">20</cost>
-					<affects>total</affects>
-				</modifier>
-				<reference>B21</reference>
 				<categories>
 					<category>Advantage</category>
 				</categories>

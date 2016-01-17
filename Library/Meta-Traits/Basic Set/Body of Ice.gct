@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
 <template unique_id="eh7dgruq:hutw07iyxmu4" version="1">
 	<advantage_list>
-		<advantage_container version="2" open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Meta-Trait: Body of Ice</name>
 			<reference>B262</reference>
 			<advantage version="2">
@@ -11,7 +11,7 @@
 				<points_per_level>5</points_per_level>
 				<reference>B46</reference>
 				<dr_bonus>
-					<location>full_body_except_eyes</location>
+					<location>full body except eyes</location>
 					<amount per_level="yes">1</amount>
 				</dr_bonus>
 			</advantage>

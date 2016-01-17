@@ -5,94 +5,6 @@
 			<name>Cat-Folk</name>
 			<reference>DF3:5</reference>
 			<advantage version="2">
-				<name>Decreased Strength</name>
-				<type>Physical</type>
-				<levels>1</levels>
-				<points_per_level>-10</points_per_level>
-				<reference>B14</reference>
-				<categories>
-					<category>Attribute</category>
-					<category>Disadvantage</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>st</attribute>
-					<amount per_level="yes">-1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Increased Dexterity</name>
-				<type>Physical</type>
-				<levels>1</levels>
-				<points_per_level>20</points_per_level>
-				<modifier version="1" enabled="no">
-					<name>No Fine Manipulators</name>
-					<cost type="percentage">-40</cost>
-					<affects>total</affects>
-				</modifier>
-				<reference>B15</reference>
-				<categories>
-					<category>Advantage</category>
-					<category>Attribute</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>dx</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Increased Perception</name>
-				<type>Mental/Physical</type>
-				<levels>1</levels>
-				<points_per_level>5</points_per_level>
-				<reference>B16</reference>
-				<categories>
-					<category>Advantage</category>
-					<category>Attribute</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>perception</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
-				<name>Striking ST</name>
-				<type>Physical, Exotic</type>
-				<levels>2</levels>
-				<points_per_level>5</points_per_level>
-				<modifier version="1" enabled="no">
-					<name>No Fine Manipulators</name>
-					<cost type="percentage">-40</cost>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Size</name>
-					<cost type="percentage">-10</cost>
-					<levels>1</levels>
-					<affects>total</affects>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>Super Effort</name>
-					<cost type="percentage">400</cost>
-					<affects>total</affects>
-					<reference>SU24</reference>
-				</modifier>
-				<modifier version="1" enabled="no">
-					<name>One Attack Only</name>
-					<cost type="percentage">-60</cost>
-					<affects>total</affects>
-					<reference>P79</reference>
-					<notes>@Attack@</notes>
-				</modifier>
-				<reference>B88</reference>
-				<categories>
-					<category>Advantage</category>
-				</categories>
-				<attribute_bonus>
-					<attribute limitation="striking_only">st</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
 				<name>Catfall</name>
 				<type>Physical, Exotic</type>
 				<base_points>10</base_points>
@@ -204,9 +116,91 @@
 					<amount>1</amount>
 				</attribute_bonus>
 				<attribute_bonus>
-					<attribute>fright_check</attribute>
+					<attribute>fright check</attribute>
 					<amount>2</amount>
 				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Decreased Strength</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>-10</points_per_level>
+				<reference>B14</reference>
+				<categories>
+					<category>Attribute</category>
+					<category>Disadvantage</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>st</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Feature: Tail</name>
+				<type>Physical</type>
+			</advantage>
+			<advantage version="2">
+				<name>Fur</name>
+				<type>Physical, Exotic</type>
+				<base_points>1</base_points>
+				<reference>B101</reference>
+				<categories>
+					<category>Perk</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Impulsiveness</name>
+				<type>Mental</type>
+				<base_points>-10</base_points>
+				<cr>12</cr>
+				<reference>B139</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Dexterity</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>20</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>No Fine Manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B15</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dx</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Perception</name>
+				<type>Mental/Physical</type>
+				<levels>1</levels>
+				<points_per_level>5</points_per_level>
+				<reference>B16</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>perception</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Laziness</name>
+				<type>Mental</type>
+				<base_points>-10</base_points>
+				<reference>B142</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
 			</advantage>
 			<advantage version="2">
 				<name>Night Vision</name>
@@ -219,13 +213,52 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
-				<name>Fur</name>
-				<type>Physical, Exotic</type>
-				<base_points>1</base_points>
-				<reference>B101</reference>
+				<name>Phobia (Entering Water)</name>
+				<type>Physical</type>
+				<base_points>-5</base_points>
+				<cr>15</cr>
 				<categories>
-					<category>Perk</category>
+					<category>Disadvantage</category>
+					<category>Phobia</category>
 				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Striking ST</name>
+				<type>Physical, Exotic</type>
+				<levels>2</levels>
+				<points_per_level>5</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>No Fine Manipulators</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Size</name>
+					<cost type="percentage">-10</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Super Effort</name>
+					<cost type="percentage">400</cost>
+					<affects>total</affects>
+					<reference>SU24</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>One Attack Only</name>
+					<cost type="percentage">-60</cost>
+					<affects>total</affects>
+					<reference>P79</reference>
+					<notes>@Attack@</notes>
+				</modifier>
+				<reference>B88</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<attribute_bonus>
+					<attribute limitation="striking only">st</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
 			</advantage>
 			<advantage version="2">
 				<name>Teeth, Sharp</name>
@@ -251,39 +284,6 @@
 				<categories>
 					<category>Perk</category>
 				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Impulsiveness</name>
-				<type>Mental</type>
-				<base_points>-10</base_points>
-				<cr>12</cr>
-				<reference>B139</reference>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Laziness</name>
-				<type>Mental</type>
-				<base_points>-10</base_points>
-				<reference>B142</reference>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Phobia (Entering Water)</name>
-				<type>Physical</type>
-				<base_points>-5</base_points>
-				<cr>15</cr>
-				<categories>
-					<category>Disadvantage</category>
-					<category>Phobia</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
-				<name>Feature: Tail</name>
-				<type>Physical</type>
 			</advantage>
 		</advantage_container>
 	</advantage_list>

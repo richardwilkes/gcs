@@ -1,44 +1,44 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<template unique_id="eh7aeh39:kiq63bqqofbv">
+<template unique_id="eh7aeh39:kiq63bqqofbv" version="1">
 	<advantage_list>
-		<advantage_container open="yes" type="metatrait">
+		<advantage_container version="2" open="yes" type="meta trait">
 			<name>Meta-Trait: Machine</name>
 			<reference>B263</reference>
-			<advantage>
+			<advantage version="2">
 				<name>Eight-hour energy reserve, Refuel 3 times per day</name>
 				<type>Physical</type>
 				<reference>B263</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Injury Tolerance (No Blood)</name>
 				<type>Physical, Exotic</type>
 				<base_points>5</base_points>
 				<reference>B61</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Injury Tolerance (Unliving)</name>
 				<type>Physical, Exotic</type>
 				<base_points>20</base_points>
 				<reference>B61</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>No fatigue points, Don't spend fatigue points</name>
 				<type>Physical</type>
 				<reference>B263</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Resistant (Immunity to Metabolic Hazards)</name>
 				<type>Physical</type>
 				<base_points>30</base_points>
 				<reference>B81</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Unhealing (Total)</name>
 				<type>Physical, Exotic</type>
 				<base_points>-30</base_points>
 				<reference>B160</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Wears out instead of aging</name>
 				<type>Physical</type>
 				<reference>B263</reference>

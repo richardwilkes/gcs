@@ -5,21 +5,6 @@
 			<name>Nymph</name>
 			<reference>DF3:9</reference>
 			<advantage version="2">
-				<name>Increased Health</name>
-				<type>Physical</type>
-				<levels>1</levels>
-				<points_per_level>10</points_per_level>
-				<reference>B14</reference>
-				<categories>
-					<category>Advantage</category>
-					<category>Attribute</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>ht</attribute>
-					<amount per_level="yes">1</amount>
-				</attribute_bonus>
-			</advantage>
-			<advantage version="2">
 				<name>Appearance</name>
 				<type>Physical</type>
 				<modifier version="1">
@@ -139,16 +124,6 @@
 				</skill_bonus>
 			</advantage>
 			<advantage version="2">
-				<name>Sense of Duty</name>
-				<type>Mental</type>
-				<base_points>-15</base_points>
-				<reference>DF3:6</reference>
-				<notes>Nature</notes>
-				<categories>
-					<category>Disadvantage</category>
-				</categories>
-			</advantage>
-			<advantage version="2">
 				<name>Dependency (Mana)</name>
 				<type>Physical, Exotic</type>
 				<modifier version="1" enabled="no">
@@ -236,12 +211,37 @@
 				</categories>
 			</advantage>
 			<advantage version="2">
+				<name>Feature: Perky</name>
+				<type>Physical</type>
+			</advantage>
+			<advantage version="2">
 				<name>Feature: Skin colour and hair based on some aspect of nature.</name>
 				<type>Physical</type>
 			</advantage>
 			<advantage version="2">
-				<name>Feature: Perky</name>
+				<name>Increased Health</name>
 				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>10</points_per_level>
+				<reference>B14</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>ht</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Sense of Duty</name>
+				<type>Mental</type>
+				<base_points>-15</base_points>
+				<reference>DF3:6</reference>
+				<notes>Nature</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
 			</advantage>
 		</advantage_container>
 	</advantage_list>

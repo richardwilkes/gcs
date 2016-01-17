@@ -5,32 +5,6 @@
 			<name>Chosen One</name>
 			<advantage_container version="2" open="yes">
 				<name>Advantages</name>
-				<advantage version="2">
-					<name>Destiny (@Advantage@)</name>
-					<type>Mental, Supernatural</type>
-					<modifier version="1" enabled="no">
-						<name>Minor</name>
-						<cost type="points">5</cost>
-						<affects>total</affects>
-						<reference>B132</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Major</name>
-						<cost type="points">10</cost>
-						<affects>total</affects>
-						<reference>B132</reference>
-					</modifier>
-					<modifier version="1">
-						<name>Great</name>
-						<cost type="points">15</cost>
-						<affects>total</affects>
-						<reference>B132</reference>
-					</modifier>
-					<reference>B132</reference>
-					<categories>
-						<category>Advantage</category>
-					</categories>
-				</advantage>
 				<advantage_container version="2" open="yes">
 					<name>15 points chosen from</name>
 					<advantage version="2">
@@ -180,6 +154,32 @@
 				<advantage version="2">
 					<name>Add remaining traits to template options</name>
 					<type>Physical</type>
+				</advantage>
+				<advantage version="2">
+					<name>Destiny (@Advantage@)</name>
+					<type>Mental, Supernatural</type>
+					<modifier version="1" enabled="no">
+						<name>Minor</name>
+						<cost type="points">5</cost>
+						<affects>total</affects>
+						<reference>B132</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Major</name>
+						<cost type="points">10</cost>
+						<affects>total</affects>
+						<reference>B132</reference>
+					</modifier>
+					<modifier version="1">
+						<name>Great</name>
+						<cost type="points">15</cost>
+						<affects>total</affects>
+						<reference>B132</reference>
+					</modifier>
+					<reference>B132</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
 				</advantage>
 			</advantage_container>
 			<advantage_container version="2" open="yes">

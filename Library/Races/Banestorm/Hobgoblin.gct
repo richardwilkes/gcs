@@ -2,17 +2,27 @@
 <template unique_id="faef2bh3:and36qpo3ih1" version="1">
 	<advantage_list>
 		<advantage version="2">
-			<name>Increased Strength</name>
-			<type>Physical</type>
-			<levels>1</levels>
-			<points_per_level>10</points_per_level>
-			<reference>B14</reference>
+			<name>Bad Temper</name>
+			<type>Mental</type>
+			<base_points>-10</base_points>
+			<cr>12</cr>
+			<reference>B124</reference>
 			<categories>
-				<category>Advantage</category>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Decreased Intelligence</name>
+			<type>Physical</type>
+			<levels>2</levels>
+			<points_per_level>-20</points_per_level>
+			<reference>B15</reference>
+			<categories>
+				<category>Disadvantage</category>
 			</categories>
 			<attribute_bonus>
-				<attribute>st</attribute>
-				<amount per_level="yes">1</amount>
+				<attribute>iq</attribute>
+				<amount per_level="yes">-1</amount>
 			</attribute_bonus>
 		</advantage>
 		<advantage version="2">
@@ -30,17 +40,17 @@
 			</attribute_bonus>
 		</advantage>
 		<advantage version="2">
-			<name>Decreased Intelligence</name>
+			<name>Increased Strength</name>
 			<type>Physical</type>
-			<levels>2</levels>
-			<points_per_level>-20</points_per_level>
-			<reference>B15</reference>
+			<levels>1</levels>
+			<points_per_level>10</points_per_level>
+			<reference>B14</reference>
 			<categories>
-				<category>Disadvantage</category>
+				<category>Advantage</category>
 			</categories>
 			<attribute_bonus>
-				<attribute>iq</attribute>
-				<amount per_level="yes">-1</amount>
+				<attribute>st</attribute>
+				<amount per_level="yes">1</amount>
 			</attribute_bonus>
 		</advantage>
 		<advantage version="2">
@@ -51,16 +61,6 @@
 			<reference>B71</reference>
 			<categories>
 				<category>Advantage</category>
-			</categories>
-		</advantage>
-		<advantage version="2">
-			<name>Bad Temper</name>
-			<type>Mental</type>
-			<base_points>-10</base_points>
-			<cr>12</cr>
-			<reference>B124</reference>
-			<categories>
-				<category>Disadvantage</category>
 			</categories>
 		</advantage>
 		<advantage version="2">

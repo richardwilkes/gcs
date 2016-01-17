@@ -1,118 +1,118 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<template unique_id="eh7r5ew4:-1wn0xwvlwdlrv">
+<template unique_id="eh7r5ew4:-1wn0xwvlwdlrv" version="1">
 	<advantage_list>
-		<advantage_container open="yes" type="race">
+		<advantage_container version="2" open="yes" type="race">
 			<name>Generic Car (Five Passenger, 115 MPH)</name>
-			<advantage>
+			<advantage version="2">
 				<name>Attribute Modifier: DX</name>
 				<type>Physical</type>
 				<levels>5</levels>
 				<points_per_level>20</points_per_level>
 				<reference>B15</reference>
 				<attribute_bonus>
-					<attribute>DX</attribute>
-					<amount per_level="yes">+1</amount>
+					<attribute>dx</attribute>
+					<amount per_level="yes">1</amount>
 				</attribute_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Damage Resistance</name>
 				<type>Physical, Exotic</type>
 				<levels>9</levels>
 				<points_per_level>5</points_per_level>
 				<reference>B46</reference>
 				<dr_bonus>
-					<location>full_body_except_eyes</location>
-					<amount per_level="yes">+1</amount>
+					<location>full body except eyes</location>
+					<amount per_level="yes">1</amount>
 				</dr_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Dead Broke</name>
 				<type>Social</type>
 				<base_points>-25</base_points>
 				<reference>B25</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Dedicated Controls (Driver)</name>
 				<type>Mental, Exotic</type>
 				<levels>1</levels>
 				<points_per_level>10</points_per_level>
 				<reference>B43</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Doesn't Breathe</name>
 				<type>Physical, Exotic</type>
 				<base_points>20</base_points>
 				<reference>B49</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Eight-hour energy reserve, Refuel 3 times per day</name>
 				<type>Physical</type>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Electrical</name>
 				<type>Physical, Exotic</type>
 				<base_points>-20</base_points>
 				<reference>B134</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Enhanced Move (Ground)</name>
 				<type>Physical, Exotic</type>
 				<levels>3</levels>
 				<points_per_level>20</points_per_level>
 				<reference>B52</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Flammable</name>
 				<type>Physical, Exotic</type>
 				<base_points>-10</base_points>
 				<reference>B137</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Hidebound</name>
 				<type>Physical</type>
 				<base_points>-5</base_points>
 				<reference>B138</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Horizontal</name>
 				<type>Physical, Exotic</type>
 				<base_points>-10</base_points>
 				<reference>B139</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Immunity to Metabolic Hazards</name>
 				<type>Physical</type>
 				<base_points>30</base_points>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Incurious (CR: 6)</name>
 				<type>Mental</type>
 				<base_points>-10</base_points>
 				<reference>B140</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Injury Tolerance (Homogenous)</name>
 				<type>Physical, Exotic</type>
 				<base_points>40</base_points>
 				<reference>B60</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Injury Tolerance (No Blood)</name>
 				<type>Physical, Exotic</type>
 				<base_points>5</base_points>
 				<reference>B61</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>IQ 0</name>
 				<type>Physical</type>
 				<levels>10</levels>
 				<points_per_level>-10</points_per_level>
 				<attribute_bonus>
-					<attribute>IQ</attribute>
-					<amount per_level="no">-10</amount>
+					<attribute>iq</attribute>
+					<amount>-10</amount>
 				</attribute_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Low Empathy</name>
 				<type>Mental</type>
 				<base_points>-20</base_points>
@@ -120,82 +120,82 @@
 				<skill_bonus>
 					<name compare="is">acting</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">carousing</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">criminology</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">detect lies</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">diplomacy</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">enthrallment</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">fast-talk</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">interrogation</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">leadership</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">merchant</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">politics</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="contains">psychology</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="contains">savoir-faire</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">sex appeal</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">sociology</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<skill_bonus>
 					<name compare="is">streetwise</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">-3</amount>
+					<amount>-3</amount>
 				</skill_bonus>
 				<prereq_list all="yes">
 					<advantage_prereq has="no">
@@ -212,73 +212,73 @@
 					</advantage_prereq>
 				</prereq_list>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Maintenance (1 person, Monthly)</name>
 				<type>Physical</type>
 				<base_points>-2</base_points>
 				<reference>B143</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>No fatigue points, Don't spend fatigue points</name>
 				<type>Physical</type>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>No Legs (Wheeled (Any Wheels))</name>
 				<type>Physical, Exotic</type>
 				<base_points>-20</base_points>
 				<reference>B145</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>No Manipulators</name>
 				<type>Physical</type>
 				<base_points>-50</base_points>
 				<reference>B145</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Numb</name>
 				<type>Physical</type>
 				<base_points>-20</base_points>
 				<reference>B146</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Payload (Cargo)</name>
 				<type>Physical, Exotic</type>
 				<levels>13</levels>
 				<points_per_level>1</points_per_level>
 				<reference>B74</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Payload (Passengers)</name>
 				<type>Physical, Exotic</type>
 				<levels>32</levels>
 				<points_per_level>1</points_per_level>
 				<reference>B74</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Pressure Support 3 (Immune to high pressure)</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>
 				<reference>B77</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Resistant (Immunity to Metabolic Hazards)</name>
 				<type>Physical</type>
 				<base_points>30</base_points>
 				<reference>B81</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Restricted Diet (Gasoline)</name>
 				<type>Physical</type>
 				<base_points>-20</base_points>
 				<reference>B151</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Sealed</name>
 				<type>Physical, Exotic</type>
 				<base_points>15</base_points>
 				<reference>B82</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Secondary Attribute Modifier: Basic Move</name>
 				<type>Physical</type>
 				<levels>1</levels>
@@ -286,44 +286,44 @@
 				<reference>B17</reference>
 				<attribute_bonus>
 					<attribute>move</attribute>
-					<amount per_level="yes">+1</amount>
+					<amount per_level="yes">1</amount>
 				</attribute_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Slave Mentality</name>
 				<type>Physical</type>
 				<base_points>-40</base_points>
 				<reference>B154</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>ST Increase</name>
 				<type>Physical</type>
 				<levels>30</levels>
 				<points_per_level>10</points_per_level>
 				<attribute_bonus>
-					<attribute>ST</attribute>
-					<amount per_level="no">+30</amount>
+					<attribute>st</attribute>
+					<amount>30</amount>
 				</attribute_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Unhealing (Total)</name>
 				<type>Physical, Exotic</type>
 				<base_points>-30</base_points>
 				<reference>B160</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Vacuum Support</name>
 				<type>Physical, Exotic</type>
 				<base_points>5</base_points>
 				<reference>B96</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Valuable Property</name>
 				<type>Social</type>
 				<base_points>-10</base_points>
 				<reference>B156</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Wears out instead of aging</name>
 				<type>Physical</type>
 			</advantage>

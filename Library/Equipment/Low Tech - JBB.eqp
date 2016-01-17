@@ -687,7 +687,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="3" open="no">
 		<description>Belt</description>
 		<tech_level>0</tech_level>
 		<legality_class>-</legality_class>
@@ -779,7 +779,7 @@
 			<category>Game</category>
 		</categories>
 	</equipment>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="3" open="no">
 		<description>Bolt Case</description>
 		<legality_class>4</legality_class>
 		<value>20</value>
@@ -882,7 +882,7 @@
 		<legality_class>4</legality_class>
 		<value>10</value>
 		<weight>2 lb</weight>
-		<reference>LT134-135</reference>
+		<reference>LT134</reference>
 		<categories>
 			<category>Animal Handling</category>
 		</categories>
@@ -899,7 +899,7 @@
 		<legality_class>4</legality_class>
 		<value>35</value>
 		<weight>3 lb</weight>
-		<reference>LT134-135</reference>
+		<reference>LT134</reference>
 		<categories>
 			<category>Animal Handling</category>
 		</categories>
@@ -1664,22 +1664,6 @@
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
-		<description>Cabinet, Compartmentalized</description>
-		<legality_class>4</legality_class>
-		<value>200</value>
-		<weight>32 lb</weight>
-		<reference>DF8:20</reference>
-		<notes>An upright chest with a capacity of eight cubic feet (700 lbs.) and doors opening in front. DR 1, 12 HP. Half time required to locate object.</notes>
-		<categories>
-			<category>Container</category>
-			<category>Furniture</category>
-			<category>Storage</category>
-		</categories>
-		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at most">700 lb</contained_weight_prereq>
-		</prereq_list>
-	</equipment_container>
-	<equipment_container version="3" open="yes">
 		<description>Cabinet (Small)</description>
 		<legality_class>4</legality_class>
 		<value>75</value>
@@ -1693,6 +1677,402 @@
 		</categories>
 		<prereq_list all="yes">
 			<contained_weight_prereq has="yes" compare="at most">400 lb</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Cabinet (Wardrobe)</description>
+		<legality_class>4</legality_class>
+		<value>150</value>
+		<weight>30 lb</weight>
+		<reference>DF8:20</reference>
+		<notes>An upright chest with a capacity of eight cubic feet (700 lbs.) and doors opening in front. DR 1, 12 HP.</notes>
+		<categories>
+			<category>Container</category>
+			<category>Furniture</category>
+			<category>Storage</category>
+		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at most">700 lb</contained_weight_prereq>
+		</prereq_list>
+		<equipment_container version="3" open="yes">
+			<description>Basic Outfit - Female</description>
+			<tech_level>0</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>B266</reference>
+			<categories>
+				<category>Clothing</category>
+			</categories>
+			<equipment version="3">
+				<quantity>4</quantity>
+				<description>Shirt (Long Sleeved) - Status 0</description>
+				<tech_level>0</tech_level>
+				<legality_class>-</legality_class>
+				<value>60</value>
+				<weight>1 lb</weight>
+				<reference>B266</reference>
+				<notes>Set cost to 10% of cost of living for status 0 (TL5+ max status +3)</notes>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>4</quantity>
+				<description>Skirt/Petticoat - Status 0</description>
+				<tech_level>0</tech_level>
+				<legality_class>-</legality_class>
+				<value>60</value>
+				<weight>1 lb</weight>
+				<reference>B266</reference>
+				<notes>Set cost to 10% of cost of living for status 0 (TL5+ max status +3)</notes>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>4</quantity>
+				<description>Undergarment</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>5</value>
+				<weight>0.25 lb</weight>
+				<reference>B266</reference>
+				<notes>Braies, chemises, drawers, vests and the like</notes>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+			</equipment>
+		</equipment_container>
+		<equipment_container version="3" open="yes">
+			<description>Basic Outfit - Male</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>B266</reference>
+			<categories>
+				<category>Clothing</category>
+			</categories>
+			<equipment version="3">
+				<quantity>4</quantity>
+				<description>Shirt (Long Sleeved) - Status 0</description>
+				<tech_level>0</tech_level>
+				<legality_class>-</legality_class>
+				<value>60</value>
+				<weight>1 lb</weight>
+				<reference>B266</reference>
+				<notes>Set cost to 10% of cost of living for status 0 (TL5+ max status +3)</notes>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>4</quantity>
+				<description>Trousers/Pants - Status 0</description>
+				<tech_level>0</tech_level>
+				<legality_class>-</legality_class>
+				<value>60</value>
+				<weight>1 lb</weight>
+				<reference>B266</reference>
+				<notes>Set cost to 10% of cost of living for status 0 (TL5+ max status +3)</notes>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>4</quantity>
+				<description>Undergarment</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>5</value>
+				<weight>0.25 lb</weight>
+				<reference>B266</reference>
+				<notes>Braies, chemises, drawers, vests and the like</notes>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+			</equipment>
+		</equipment_container>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Boots</description>
+			<tech_level>2</tech_level>
+			<legality_class>4</legality_class>
+			<value>80</value>
+			<weight>3 lb</weight>
+			<reference>B284</reference>
+			<categories>
+				<category>Clothing</category>
+				<category>Footware</category>
+				<category>Survival</category>
+			</categories>
+			<dr_bonus>
+				<location>feet</location>
+				<amount>2</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Cloth Gloves, Fitted</description>
+			<tech_level>1</tech_level>
+			<legality_class>4</legality_class>
+			<value>15</value>
+			<weight>0.5 lb</weight>
+			<reference>B284,LT98</reference>
+			<melee_weapon>
+				<damage>-</damage>
+				<strength>-</strength>
+				<reach>-</reach>
+				<parry>No</parry>
+				<block>+0</block>
+				<default>
+					<type>Block</type>
+					<name>Cloak</name>
+					<modifier>0</modifier>
+				</default>
+			</melee_weapon>
+			<notes>Gives Bad Grip 1 (B123) and Ham-Fisted 1 (B138) with -1DX when worn. Provides +1DR bonus for cutting only.</notes>
+			<categories>
+				<category>Clothing</category>
+				<category>Gloves</category>
+			</categories>
+			<dr_bonus>
+				<location>hands</location>
+				<amount>1</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Heavy Cloak - Status 0</description>
+			<tech_level>0</tech_level>
+			<legality_class>4</legality_class>
+			<value>90</value>
+			<weight>3 lb</weight>
+			<reference>LT99</reference>
+			<melee_weapon>
+				<damage>-</damage>
+				<strength>-</strength>
+				<reach>-</reach>
+				<parry>No</parry>
+				<block>+0</block>
+				<default>
+					<type>Block</type>
+					<name>Cloak</name>
+					<modifier>0</modifier>
+				</default>
+			</melee_weapon>
+			<ranged_weapon>
+				<damage>Special</damage>
+				<strength>8</strength>
+				<usage>Thrown</usage>
+				<accuracy>+1</accuracy>
+				<range>2</range>
+				<rate_of_fire>1</rate_of_fire>
+				<shots>T(1)</shots>
+				<bulk>-6</bulk>
+				<default>
+					<type>Skill</type>
+					<name>Cloak</name>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Net</name>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Shield</name>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>DX</type>
+					<modifier>-5</modifier>
+				</default>
+			</ranged_weapon>
+			<notes>Set cost to 15% of cost of living for status 0 (TL5+ max status +3) DR+1 vs. cutting.</notes>
+			<categories>
+				<category>Clothing</category>
+				<category>Survival</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>dodge</attribute>
+				<amount>2</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>parry</attribute>
+				<amount>2</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>block</attribute>
+				<amount>2</amount>
+			</attribute_bonus>
+			<dr_bonus>
+				<location>full body except eyes</location>
+				<amount>1</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Hood - Status 0</description>
+			<tech_level>1</tech_level>
+			<legality_class>4</legality_class>
+			<value>6</value>
+			<weight>1 lb</weight>
+			<reference>LT99</reference>
+			<notes>Set cost to 1% of cost of living for status 0 (no max status). Includes headscarves such as: Ghutrah, Keffiyeh, Shemagh, Tagelmust, Wimple</notes>
+			<categories>
+				<category>Clothing</category>
+				<category>Headgear</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Leather Gloves, Fitted</description>
+			<tech_level>1</tech_level>
+			<legality_class>4</legality_class>
+			<value>30</value>
+			<weight>0.5 lb</weight>
+			<reference>B284,LT98</reference>
+			<melee_weapon>
+				<damage>-</damage>
+				<strength>-</strength>
+				<reach>-</reach>
+				<parry>No</parry>
+				<block>+0</block>
+				<default>
+					<type>Block</type>
+					<name>Cloak</name>
+					<modifier>0</modifier>
+				</default>
+			</melee_weapon>
+			<notes>Gives Bad Grip 1 (B123) and Ham-Fisted 1 (B138) with -1DX when worn. Provides +2DR bonus for cutting only.</notes>
+			<categories>
+				<category>Clothing</category>
+				<category>Gloves</category>
+			</categories>
+			<dr_bonus>
+				<location>hands</location>
+				<amount>2</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Light Cloak - Status 0</description>
+			<tech_level>0</tech_level>
+			<legality_class>4</legality_class>
+			<value>60</value>
+			<weight>2 lb</weight>
+			<reference>LT99</reference>
+			<melee_weapon>
+				<damage>-</damage>
+				<strength>-</strength>
+				<reach>-</reach>
+				<parry>No</parry>
+				<block>+0</block>
+				<default>
+					<type>Block</type>
+					<name>Cloak</name>
+					<modifier>0</modifier>
+				</default>
+			</melee_weapon>
+			<ranged_weapon>
+				<damage>Special</damage>
+				<strength>5</strength>
+				<usage>Thrown</usage>
+				<accuracy>+1</accuracy>
+				<range>2</range>
+				<rate_of_fire>1</rate_of_fire>
+				<shots>T(1)</shots>
+				<bulk>-4</bulk>
+				<default>
+					<type>DX</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Cloak</name>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Net</name>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Shield</name>
+					<modifier>-4</modifier>
+				</default>
+			</ranged_weapon>
+			<notes>Set cost to 10% of cost of living for status 0 (TL5+ max status +3)</notes>
+			<categories>
+				<category>Clothing</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>dodge</attribute>
+				<amount>1</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>parry</attribute>
+				<amount>1</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>block</attribute>
+				<amount>1</amount>
+			</attribute_bonus>
+			<skill_bonus>
+				<name compare="is">Holdout</name>
+				<specialization compare="is anything"></specialization>
+				<amount>4</amount>
+			</skill_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Long Coat, Light</description>
+			<legality_class>4</legality_class>
+			<value>50</value>
+			<weight>5 lb</weight>
+			<reference>LT99</reference>
+			<notes>Duster, Kaftan, Overcoat, Raglan, Trench Coat</notes>
+			<categories>
+				<category>Clothing</category>
+			</categories>
+			<skill_bonus>
+				<name compare="is">Holdout</name>
+				<specialization compare="is anything"></specialization>
+				<amount>4</amount>
+			</skill_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Shoes (Cloth or Leather)</description>
+			<tech_level>1</tech_level>
+			<legality_class>4</legality_class>
+			<value>40</value>
+			<weight>2 lb</weight>
+			<reference>B266,LT98</reference>
+			<categories>
+				<category>Clothing</category>
+			</categories>
+			<dr_bonus>
+				<location>feet</location>
+				<amount>1</amount>
+			</dr_bonus>
+		</equipment>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Cabinet, Compartmentalized</description>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>32 lb</weight>
+		<reference>DF8:20</reference>
+		<notes>An upright chest with a capacity of eight cubic feet (700 lbs.) and doors opening in front. DR 1, 12 HP. Half time required to locate object.</notes>
+		<categories>
+			<category>Container</category>
+			<category>Furniture</category>
+			<category>Storage</category>
+		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at most">700 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -2092,66 +2472,6 @@
 			<category>Furnature</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Chisel @Purpose@</description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>20</value>
-		<weight>0.75 lb</weight>
-		<reference>LT28</reference>
-		<melee_weapon>
-			<damage>thr-1 imp</damage>
-			<strength>11</strength>
-			<usage>Thrust</usage>
-			<reach>C</reach>
-			<parry>-1U</parry>
-			<block>No</block>
-		</melee_weapon>
-		<notes>5"-8" long.  Specify one of Woodworking, Metalworking or Mining</notes>
-		<categories>
-			<category>Carpentry</category>
-			<category>Mining</category>
-			<category>Smith</category>
-		</categories>
-		<skill_bonus>
-			<name compare="contains">Axe</name>
-			<specialization compare="is anything"></specialization>
-			<amount>-2</amount>
-		</skill_bonus>
-	</equipment>
-	<equipment_container version="3" open="yes">
-		<description>Chest, Wooden, Compartmentalized</description>
-		<legality_class>4</legality_class>
-		<value>300</value>
-		<weight>45 lb</weight>
-		<reference>DF8:20</reference>
-		<notes>Holds 400 lbs. or 5 cubic feet of loot. Has brackets for two poles; add Basic Lift of carriers to assess encumbrance. DR 2, HP 14. Half time required to locate item.</notes>
-		<categories>
-			<category>Container</category>
-			<category>Portage</category>
-			<category>Storage</category>
-		</categories>
-		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at most">400 lb</contained_weight_prereq>
-		</prereq_list>
-	</equipment_container>
-	<equipment_container version="3" open="yes">
-		<description>Chest, Wooden, Compartmentalized (Small)</description>
-		<legality_class>4</legality_class>
-		<value>120</value>
-		<weight>18 lb</weight>
-		<reference>DF8:20</reference>
-		<notes>Holds 100 lbs. or 2 cubic feet of loot. Has brackets for two poles; add Basic Lift of carriers to assess encumbrance. DR 1, HP 10. Half time required to locate item.</notes>
-		<categories>
-			<category>Container</category>
-			<category>Portage</category>
-			<category>Storage</category>
-		</categories>
-		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at most">100 lb</contained_weight_prereq>
-		</prereq_list>
-	</equipment_container>
 	<equipment_container version="3" open="yes">
 		<description>Chest, Wooden</description>
 		<legality_class>4</legality_class>
@@ -2184,6 +2504,66 @@
 			<contained_weight_prereq has="yes" compare="at most">100 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Chest, Wooden, Compartmentalized</description>
+		<legality_class>4</legality_class>
+		<value>300</value>
+		<weight>45 lb</weight>
+		<reference>DF8:20</reference>
+		<notes>Holds 400 lbs. or 5 cubic feet of loot. Has brackets for two poles; add Basic Lift of carriers to assess encumbrance. DR 2, HP 14. Half time required to locate item.</notes>
+		<categories>
+			<category>Container</category>
+			<category>Portage</category>
+			<category>Storage</category>
+		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at most">400 lb</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
+		<description>Chest, Wooden, Compartmentalized (Small)</description>
+		<legality_class>4</legality_class>
+		<value>120</value>
+		<weight>18 lb</weight>
+		<reference>DF8:20</reference>
+		<notes>Holds 100 lbs. or 2 cubic feet of loot. Has brackets for two poles; add Basic Lift of carriers to assess encumbrance. DR 1, HP 10. Half time required to locate item.</notes>
+		<categories>
+			<category>Container</category>
+			<category>Portage</category>
+			<category>Storage</category>
+		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at most">100 lb</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Chisel @Purpose@</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<weight>0.75 lb</weight>
+		<reference>LT28</reference>
+		<melee_weapon>
+			<damage>thr-1 imp</damage>
+			<strength>11</strength>
+			<usage>Thrust</usage>
+			<reach>C</reach>
+			<parry>-1U</parry>
+			<block>No</block>
+		</melee_weapon>
+		<notes>5"-8" long.  Specify one of Woodworking, Metalworking or Mining</notes>
+		<categories>
+			<category>Carpentry</category>
+			<category>Mining</category>
+			<category>Smith</category>
+		</categories>
+		<skill_bonus>
+			<name compare="contains">Axe</name>
+			<specialization compare="is anything"></specialization>
+			<amount>-2</amount>
+		</skill_bonus>
+	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
 		<description>Chorobates</description>
@@ -2200,21 +2580,6 @@
 		</categories>
 	</equipment>
 	<equipment_container version="3" open="yes">
-		<description>Cloth Bag (1/4 Cup)</description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>0.1</value>
-		<reference>LT34</reference>
-		<notes>3.5 cu. in.</notes>
-		<categories>
-			<category>Container</category>
-			<category>Storage</category>
-		</categories>
-		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at most">0.12 lb</contained_weight_prereq>
-		</prereq_list>
-	</equipment_container>
-	<equipment_container version="3" open="yes">
 		<description>Cloth Bag (1 Cup)</description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
@@ -2230,12 +2595,28 @@
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
+		<description>Cloth Bag (1 Gallon)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>1.75</value>
+		<weight>0.25 lb</weight>
+		<reference>LT34</reference>
+		<notes>0.13 cu. ft.</notes>
+		<categories>
+			<category>Container</category>
+			<category>Storage</category>
+		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at most">7.15 lb</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
 		<description>Cloth Bag (1 Pint)</description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
 		<value>0.25</value>
 		<weight>0.05 lb</weight>
-		<reference>LT34e</reference>
+		<reference>LT34</reference>
 		<notes>29 cu. in.</notes>
 		<categories>
 			<category>Container</category>
@@ -2262,28 +2643,27 @@
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
-		<description>Cloth Bag (1 Gallon)</description>
+		<description>Cloth Bag (1/4 Cup)</description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
-		<value>1.75</value>
-		<weight>0.25 lb</weight>
+		<value>0.1</value>
 		<reference>LT34</reference>
-		<notes>0.13 cu. ft.</notes>
+		<notes>3.5 cu. in.</notes>
 		<categories>
 			<category>Container</category>
 			<category>Storage</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at most">7.15 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">0.12 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="3" open="no">
 		<description>Cloth Bag (2 Gallon)</description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
 		<value>2.75</value>
 		<weight>0.5 lb</weight>
-		<reference>LT34est</reference>
+		<reference>LT34</reference>
 		<notes>0.27 cu. ft.</notes>
 		<categories>
 			<category>Container</category>
@@ -2410,386 +2790,6 @@
 			<amount>1</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment_container version="3" open="yes">
-		<description>Cabinet (Wardrobe)</description>
-		<legality_class>4</legality_class>
-		<value>150</value>
-		<weight>30 lb</weight>
-		<reference>DF8:20</reference>
-		<notes>An upright chest with a capacity of eight cubic feet (700 lbs.) and doors opening in front. DR 1, 12 HP.</notes>
-		<categories>
-			<category>Container</category>
-			<category>Furniture</category>
-			<category>Storage</category>
-		</categories>
-		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at most">700 lb</contained_weight_prereq>
-		</prereq_list>
-		<equipment_container version="3" open="yes">
-			<description>Basic Outfit - Female</description>
-			<tech_level>0</tech_level>
-			<legality_class>4</legality_class>
-			<value>0</value>
-			<reference>B266</reference>
-			<categories>
-				<category>Clothing</category>
-			</categories>
-			<equipment version="3">
-				<quantity>4</quantity>
-				<description>Shirt (Long Sleeved) - Status 0</description>
-				<tech_level>0</tech_level>
-				<legality_class>-</legality_class>
-				<value>60</value>
-				<weight>1 lb</weight>
-				<reference>B266</reference>
-				<notes>Set cost to 10% of cost of living for status 0 (TL5+ max status +3)</notes>
-				<categories>
-					<category>Clothing</category>
-				</categories>
-			</equipment>
-			<equipment version="3">
-				<quantity>4</quantity>
-				<description>Skirt/Petticoat - Status 0</description>
-				<tech_level>0</tech_level>
-				<legality_class>-</legality_class>
-				<value>60</value>
-				<weight>1 lb</weight>
-				<reference>B266</reference>
-				<notes>Set cost to 10% of cost of living for status 0 (TL5+ max status +3)</notes>
-				<categories>
-					<category>Clothing</category>
-				</categories>
-			</equipment>
-			<equipment version="3">
-				<quantity>4</quantity>
-				<description>Undergarment</description>
-				<tech_level>1</tech_level>
-				<legality_class>4</legality_class>
-				<value>5</value>
-				<weight>0.25 lb</weight>
-				<reference>B266</reference>
-				<notes>Braies, chemises, drawers, vests and the like</notes>
-				<categories>
-					<category>Clothing</category>
-				</categories>
-			</equipment>
-		</equipment_container>
-		<equipment_container version="3" open="yes">
-			<description>Basic Outfit - Male</description>
-			<legality_class>4</legality_class>
-			<value>0</value>
-			<reference>B266</reference>
-			<categories>
-				<category>Clothing</category>
-			</categories>
-			<equipment version="3">
-				<quantity>4</quantity>
-				<description>Shirt (Long Sleeved) - Status 0</description>
-				<tech_level>0</tech_level>
-				<legality_class>-</legality_class>
-				<value>60</value>
-				<weight>1 lb</weight>
-				<reference>B266</reference>
-				<notes>Set cost to 10% of cost of living for status 0 (TL5+ max status +3)</notes>
-				<categories>
-					<category>Clothing</category>
-				</categories>
-			</equipment>
-			<equipment version="3">
-				<quantity>4</quantity>
-				<description>Trousers/Pants - Status 0</description>
-				<tech_level>0</tech_level>
-				<legality_class>-</legality_class>
-				<value>60</value>
-				<weight>1 lb</weight>
-				<reference>B266</reference>
-				<notes>Set cost to 10% of cost of living for status 0 (TL5+ max status +3)</notes>
-				<categories>
-					<category>Clothing</category>
-				</categories>
-			</equipment>
-			<equipment version="3">
-				<quantity>4</quantity>
-				<description>Undergarment</description>
-				<tech_level>1</tech_level>
-				<legality_class>4</legality_class>
-				<value>5</value>
-				<weight>0.25 lb</weight>
-				<reference>B266</reference>
-				<notes>Braies, chemises, drawers, vests and the like</notes>
-				<categories>
-					<category>Clothing</category>
-				</categories>
-			</equipment>
-		</equipment_container>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Boots</description>
-			<tech_level>2</tech_level>
-			<legality_class>4</legality_class>
-			<value>80</value>
-			<weight>3 lb</weight>
-			<reference>B284</reference>
-			<categories>
-				<category>Clothing</category>
-				<category>Footware</category>
-				<category>Survival</category>
-			</categories>
-			<dr_bonus>
-				<location>feet</location>
-				<amount>2</amount>
-			</dr_bonus>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Cloth Gloves, Fitted</description>
-			<tech_level>1</tech_level>
-			<legality_class>4</legality_class>
-			<value>15</value>
-			<weight>0.5 lb</weight>
-			<reference>B284,LT98</reference>
-			<melee_weapon>
-				<damage>-</damage>
-				<strength>-</strength>
-				<reach>-</reach>
-				<parry>No</parry>
-				<block>+0</block>
-				<default>
-					<type>Block</type>
-					<name>Cloak</name>
-					<modifier>0</modifier>
-				</default>
-			</melee_weapon>
-			<notes>Gives Bad Grip 1 (B123) and Ham-Fisted 1 (B138) with -1DX when worn. Provides +1DR bonus for cutting only.</notes>
-			<categories>
-				<category>Clothing</category>
-				<category>Gloves</category>
-			</categories>
-			<dr_bonus>
-				<location>hands</location>
-				<amount>1</amount>
-			</dr_bonus>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Heavy Cloak - Status 0</description>
-			<tech_level>0</tech_level>
-			<legality_class>4</legality_class>
-			<value>90</value>
-			<weight>3 lb</weight>
-			<reference>LT99</reference>
-			<melee_weapon>
-				<damage>-</damage>
-				<strength>-</strength>
-				<reach>-</reach>
-				<parry>No</parry>
-				<block>+0</block>
-				<default>
-					<type>Block</type>
-					<name>Cloak</name>
-					<modifier>0</modifier>
-				</default>
-			</melee_weapon>
-			<ranged_weapon>
-				<damage>Special</damage>
-				<strength>8</strength>
-				<usage>Thrown</usage>
-				<accuracy>+1</accuracy>
-				<range>2</range>
-				<rate_of_fire>1</rate_of_fire>
-				<shots>T(1)</shots>
-				<bulk>-6</bulk>
-				<default>
-					<type>Skill</type>
-					<name>Cloak</name>
-					<modifier>0</modifier>
-				</default>
-				<default>
-					<type>Skill</type>
-					<name>Net</name>
-					<modifier>-4</modifier>
-				</default>
-				<default>
-					<type>Skill</type>
-					<name>Shield</name>
-					<modifier>-4</modifier>
-				</default>
-				<default>
-					<type>DX</type>
-					<modifier>-5</modifier>
-				</default>
-			</ranged_weapon>
-			<notes>Set cost to 15% of cost of living for status 0 (TL5+ max status +3) DR+1 vs. cutting.</notes>
-			<categories>
-				<category>Clothing</category>
-				<category>Survival</category>
-			</categories>
-			<attribute_bonus>
-				<attribute>dodge</attribute>
-				<amount>2</amount>
-			</attribute_bonus>
-			<attribute_bonus>
-				<attribute>parry</attribute>
-				<amount>2</amount>
-			</attribute_bonus>
-			<attribute_bonus>
-				<attribute>block</attribute>
-				<amount>2</amount>
-			</attribute_bonus>
-			<dr_bonus>
-				<location>full body except eyes</location>
-				<amount>1</amount>
-			</dr_bonus>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Hood - Status 0</description>
-			<tech_level>1</tech_level>
-			<legality_class>4</legality_class>
-			<value>6</value>
-			<weight>1 lb</weight>
-			<reference>LT99</reference>
-			<notes>Set cost to 1% of cost of living for status 0 (no max status). Includes headscarves such as: Ghutrah, Keffiyeh, Shemagh, Tagelmust, Wimple</notes>
-			<categories>
-				<category>Clothing</category>
-				<category>Headgear</category>
-			</categories>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Leather Gloves, Fitted</description>
-			<tech_level>1</tech_level>
-			<legality_class>4</legality_class>
-			<value>30</value>
-			<weight>0.5 lb</weight>
-			<reference>B284,LT98</reference>
-			<melee_weapon>
-				<damage>-</damage>
-				<strength>-</strength>
-				<reach>-</reach>
-				<parry>No</parry>
-				<block>+0</block>
-				<default>
-					<type>Block</type>
-					<name>Cloak</name>
-					<modifier>0</modifier>
-				</default>
-			</melee_weapon>
-			<notes>Gives Bad Grip 1 (B123) and Ham-Fisted 1 (B138) with -1DX when worn. Provides +2DR bonus for cutting only.</notes>
-			<categories>
-				<category>Clothing</category>
-				<category>Gloves</category>
-			</categories>
-			<dr_bonus>
-				<location>hands</location>
-				<amount>2</amount>
-			</dr_bonus>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Light Cloak - Status 0</description>
-			<tech_level>0</tech_level>
-			<legality_class>4</legality_class>
-			<value>60</value>
-			<weight>2 lb</weight>
-			<reference>LT99</reference>
-			<melee_weapon>
-				<damage>-</damage>
-				<strength>-</strength>
-				<reach>-</reach>
-				<parry>No</parry>
-				<block>+0</block>
-				<default>
-					<type>Block</type>
-					<name>Cloak</name>
-					<modifier>0</modifier>
-				</default>
-			</melee_weapon>
-			<ranged_weapon>
-				<damage>Special</damage>
-				<strength>5</strength>
-				<usage>Thrown</usage>
-				<accuracy>+1</accuracy>
-				<range>2</range>
-				<rate_of_fire>1</rate_of_fire>
-				<shots>T(1)</shots>
-				<bulk>-4</bulk>
-				<default>
-					<type>DX</type>
-					<modifier>-5</modifier>
-				</default>
-				<default>
-					<type>Skill</type>
-					<name>Cloak</name>
-					<modifier>0</modifier>
-				</default>
-				<default>
-					<type>Skill</type>
-					<name>Net</name>
-					<modifier>-4</modifier>
-				</default>
-				<default>
-					<type>Skill</type>
-					<name>Shield</name>
-					<modifier>-4</modifier>
-				</default>
-			</ranged_weapon>
-			<notes>Set cost to 10% of cost of living for status 0 (TL5+ max status +3)</notes>
-			<categories>
-				<category>Clothing</category>
-			</categories>
-			<attribute_bonus>
-				<attribute>dodge</attribute>
-				<amount>1</amount>
-			</attribute_bonus>
-			<attribute_bonus>
-				<attribute>parry</attribute>
-				<amount>1</amount>
-			</attribute_bonus>
-			<attribute_bonus>
-				<attribute>block</attribute>
-				<amount>1</amount>
-			</attribute_bonus>
-			<skill_bonus>
-				<name compare="is">Holdout</name>
-				<specialization compare="is anything"></specialization>
-				<amount>4</amount>
-			</skill_bonus>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Long Coat, Light</description>
-			<legality_class>4</legality_class>
-			<value>50</value>
-			<weight>5 lb</weight>
-			<reference>LT99</reference>
-			<notes>Duster, Kaftan, Overcoat, Raglan, Trench Coat</notes>
-			<categories>
-				<category>Clothing</category>
-			</categories>
-			<skill_bonus>
-				<name compare="is">Holdout</name>
-				<specialization compare="is anything"></specialization>
-				<amount>4</amount>
-			</skill_bonus>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Shoes (Cloth or Leather)</description>
-			<tech_level>1</tech_level>
-			<legality_class>4</legality_class>
-			<value>40</value>
-			<weight>2 lb</weight>
-			<reference>B266,LT98</reference>
-			<categories>
-				<category>Clothing</category>
-			</categories>
-			<dr_bonus>
-				<location>feet</location>
-				<amount>1</amount>
-			</dr_bonus>
-		</equipment>
-	</equipment_container>
 	<equipment_container version="3" open="no">
 		<description>Coin Purse, Small - Leather Pouch (1 Cup)</description>
 		<tech_level>0</tech_level>
@@ -2823,136 +2823,6 @@
 			<contained_weight_prereq has="yes" compare="at most">0.65 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
-	<equipment_container version="3" open="yes">
-		<description>Coins - Alternative Medieval Coins</description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>0</value>
-		<notes>Low Tech Coinage</notes>
-		<categories>
-			<category>Money: GURPS House Rules Medieval Coins</category>
-		</categories>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Copper Farthing</description>
-			<legality_class>4</legality_class>
-			<value>0.25</value>
-			<weight>0.004 lb</weight>
-			<reference></reference>
-			<notes>Equal to 1/4 of a silver penny</notes>
-			<categories>
-				<category>Money: GURPS House Rules Medieval Coins</category>
-			</categories>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Silver Tuppence</description>
-			<legality_class>4</legality_class>
-			<value>2</value>
-			<weight>0.008 lb</weight>
-			<reference></reference>
-			<notes>2 Silver Pennies</notes>
-			<categories>
-				<category>Money: GURPS House Rules Medieval Coins</category>
-			</categories>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Silver Shilling</description>
-			<legality_class>4</legality_class>
-			<value>12</value>
-			<weight>0.048 lb</weight>
-			<reference></reference>
-			<notes>12 Silver Pennies</notes>
-			<categories>
-				<category>Money: GURPS House Rules Medieval Coins</category>
-			</categories>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Gold Crown (Livre, Pound, Mark)</description>
-			<legality_class>4</legality_class>
-			<value>240</value>
-			<weight>0.008 lb</weight>
-			<reference></reference>
-			<notes>240 Silver Pennies</notes>
-			<categories>
-				<category>Money: GURPS House Rules Medieval Coins</category>
-			</categories>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Gold Half-Crown</description>
-			<legality_class>4</legality_class>
-			<value>120</value>
-			<weight>0.004 lb</weight>
-			<reference></reference>
-			<notes>120 Silver Pennies</notes>
-			<categories>
-				<category>Money: GURPS House Rules Medieval Coins</category>
-			</categories>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Silver Groat</description>
-			<legality_class>4</legality_class>
-			<value>4</value>
-			<weight>0.016 lb</weight>
-			<reference></reference>
-			<notes>4 Silver Pennies</notes>
-			<categories>
-				<category>Money: GURPS House Rules Medieval Coins</category>
-			</categories>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Silver Thrupney</description>
-			<legality_class>4</legality_class>
-			<value>3</value>
-			<weight>0.012 lb</weight>
-			<reference></reference>
-			<notes>3 Silver Pennies</notes>
-			<categories>
-				<category>Money: GURPS House Rules Medieval Coins</category>
-			</categories>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Silver Farthing</description>
-			<legality_class>4</legality_class>
-			<value>0.25</value>
-			<weight>0.001 lb</weight>
-			<reference></reference>
-			<notes>1/4 of a silver penny</notes>
-			<categories>
-				<category>Money: GURPS House Rules Medieval Coins</category>
-			</categories>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Copper Penny</description>
-			<legality_class>4</legality_class>
-			<value>1</value>
-			<weight>0.016 lb</weight>
-			<reference></reference>
-			<notes>Equal to 1 silver penny</notes>
-			<categories>
-				<category>Money: GURPS House Rules Medieval Coins</category>
-			</categories>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Silver Penny</description>
-			<legality_class>4</legality_class>
-			<value>1</value>
-			<weight>0.004 lb</weight>
-			<reference></reference>
-			<notes>Base Currency</notes>
-			<categories>
-				<category>Money: GURPS House Rules Medieval Coins</category>
-			</categories>
-		</equipment>
-	</equipment_container>
 	<equipment_container version="3" open="no">
 		<description>Coins</description>
 		<tech_level>1</tech_level>
@@ -2975,6 +2845,17 @@
 		</equipment>
 		<equipment version="3">
 			<quantity>1</quantity>
+			<description>Copper Farthing</description>
+			<legality_class>4</legality_class>
+			<value>0.25</value>
+			<weight>0.001 lb</weight>
+			<notes>1/4 of a copper penny (coin)</notes>
+			<categories>
+				<category>Money: House Rules Medieval Coins</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
 			<description>Gold Coin (Double Crown)</description>
 			<legality_class>4</legality_class>
 			<value>80</value>
@@ -2986,24 +2867,22 @@
 		</equipment>
 		<equipment version="3">
 			<quantity>1</quantity>
-			<description>Copper Farthing</description>
+			<description>Gold Crown</description>
 			<legality_class>4</legality_class>
-			<value>0.25</value>
-			<weight>0.001 lb</weight>
-			<reference></reference>
-			<notes>1/4 of a copper penny (coin)</notes>
+			<value>40</value>
+			<weight>0.004 lb</weight>
+			<notes>1/2 of a gold coin</notes>
 			<categories>
 				<category>Money: House Rules Medieval Coins</category>
 			</categories>
 		</equipment>
 		<equipment version="3">
 			<quantity>1</quantity>
-			<description>Gold Crown</description>
+			<description>Gold Half-Crown</description>
 			<legality_class>4</legality_class>
-			<value>40</value>
+			<value>20</value>
 			<weight>0.004 lb</weight>
-			<reference></reference>
-			<notes>1/2 of a gold coin</notes>
+			<notes>1/4 of a gold coin</notes>
 			<categories>
 				<category>Money: House Rules Medieval Coins</category>
 			</categories>
@@ -3025,22 +2904,129 @@
 			<legality_class>4</legality_class>
 			<value>1</value>
 			<weight>0.004 lb</weight>
-			<reference></reference>
 			<notes>1/4 of a silver penny (coin)</notes>
 			<categories>
 				<category>Money: House Rules Medieval Coins</category>
+			</categories>
+		</equipment>
+	</equipment_container>
+	<equipment_container version="3" open="no">
+		<description>Coins - Alternative Medieval Coins</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>0</value>
+		<notes>Low Tech Coinage</notes>
+		<categories>
+			<category>Money: GURPS House Rules Medieval Coins</category>
+		</categories>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Copper Farthing</description>
+			<legality_class>4</legality_class>
+			<value>0.25</value>
+			<weight>0.004 lb</weight>
+			<notes>Equal to 1/4 of a silver penny</notes>
+			<categories>
+				<category>Money: GURPS House Rules Medieval Coins</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Copper Penny</description>
+			<legality_class>4</legality_class>
+			<value>1</value>
+			<weight>0.016 lb</weight>
+			<notes>Equal to 1 silver penny</notes>
+			<categories>
+				<category>Money: GURPS House Rules Medieval Coins</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Gold Crown (Livre, Pound, Mark)</description>
+			<legality_class>4</legality_class>
+			<value>240</value>
+			<weight>0.008 lb</weight>
+			<notes>240 Silver Pennies</notes>
+			<categories>
+				<category>Money: GURPS House Rules Medieval Coins</category>
 			</categories>
 		</equipment>
 		<equipment version="3">
 			<quantity>1</quantity>
 			<description>Gold Half-Crown</description>
 			<legality_class>4</legality_class>
-			<value>20</value>
+			<value>120</value>
 			<weight>0.004 lb</weight>
-			<reference></reference>
-			<notes>1/4 of a gold coin</notes>
+			<notes>120 Silver Pennies</notes>
 			<categories>
-				<category>Money: House Rules Medieval Coins</category>
+				<category>Money: GURPS House Rules Medieval Coins</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Silver Farthing</description>
+			<legality_class>4</legality_class>
+			<value>0.25</value>
+			<weight>0.001 lb</weight>
+			<notes>1/4 of a silver penny</notes>
+			<categories>
+				<category>Money: GURPS House Rules Medieval Coins</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Silver Groat</description>
+			<legality_class>4</legality_class>
+			<value>4</value>
+			<weight>0.016 lb</weight>
+			<notes>4 Silver Pennies</notes>
+			<categories>
+				<category>Money: GURPS House Rules Medieval Coins</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Silver Penny</description>
+			<legality_class>4</legality_class>
+			<value>1</value>
+			<weight>0.004 lb</weight>
+			<notes>Base Currency</notes>
+			<categories>
+				<category>Money: GURPS House Rules Medieval Coins</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Silver Shilling</description>
+			<legality_class>4</legality_class>
+			<value>12</value>
+			<weight>0.048 lb</weight>
+			<notes>12 Silver Pennies</notes>
+			<categories>
+				<category>Money: GURPS House Rules Medieval Coins</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Silver Thrupney</description>
+			<legality_class>4</legality_class>
+			<value>3</value>
+			<weight>0.012 lb</weight>
+			<notes>3 Silver Pennies</notes>
+			<categories>
+				<category>Money: GURPS House Rules Medieval Coins</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Silver Tuppence</description>
+			<legality_class>4</legality_class>
+			<value>2</value>
+			<weight>0.008 lb</weight>
+			<notes>2 Silver Pennies</notes>
+			<categories>
+				<category>Money: GURPS House Rules Medieval Coins</category>
 			</categories>
 		</equipment>
 	</equipment_container>
@@ -3954,22 +3940,6 @@
 		</categories>
 	</equipment>
 	<equipment_container version="3" open="yes">
-		<description>Earthenware Jar (1/4 Cup)</description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>0.1</value>
-		<weight>0.15 lb</weight>
-		<reference>LT34</reference>
-		<notes>3.5 cu. in.</notes>
-		<categories>
-			<category>Container</category>
-			<category>Storage</category>
-		</categories>
-		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at most">0.3 lb</contained_weight_prereq>
-		</prereq_list>
-	</equipment_container>
-	<equipment_container version="3" open="yes">
 		<description>Earthenware Jar (1 Cup)</description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
@@ -3986,12 +3956,28 @@
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
+		<description>Earthenware Jar (1 Gallon)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>3</value>
+		<weight>4 lb</weight>
+		<reference>LT34</reference>
+		<notes>0.13 cu. ft.</notes>
+		<categories>
+			<category>Container</category>
+			<category>Storage</category>
+		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at most">20.8 lb</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
 		<description>Earthenware Jar (1 Pint)</description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
 		<value>0.75</value>
 		<weight>0.75 lb</weight>
-		<reference>LT34e</reference>
+		<reference>LT34</reference>
 		<notes>29 cu. in.</notes>
 		<categories>
 			<category>Container</category>
@@ -4018,19 +4004,19 @@
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
-		<description>Earthenware Jar (1 Gallon)</description>
+		<description>Earthenware Jar (1/4 Cup)</description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
-		<value>3</value>
-		<weight>4 lb</weight>
+		<value>0.1</value>
+		<weight>0.15 lb</weight>
 		<reference>LT34</reference>
-		<notes>0.13 cu. ft.</notes>
+		<notes>3.5 cu. in.</notes>
 		<categories>
 			<category>Container</category>
 			<category>Storage</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at most">20.8 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">0.3 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -4172,7 +4158,6 @@
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
 		<value>0</value>
-		<reference></reference>
 		<categories>
 			<category>Weights and costs of contents</category>
 		</categories>
@@ -4203,6 +4188,163 @@
 					<category>Survival</category>
 				</categories>
 			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Heavy Cloak</description>
+				<tech_level>1</tech_level>
+				<legality_class>4</legality_class>
+				<value>50</value>
+				<weight>5 lb</weight>
+				<reference>B287</reference>
+				<melee_weapon>
+					<damage>-</damage>
+					<strength>-</strength>
+					<reach>-</reach>
+					<parry>No</parry>
+					<block>+0</block>
+					<default>
+						<type>Block</type>
+						<name>Cloak</name>
+						<modifier>0</modifier>
+					</default>
+				</melee_weapon>
+				<ranged_weapon>
+					<damage>Special</damage>
+					<strength>8</strength>
+					<usage>Thrown</usage>
+					<accuracy>+1</accuracy>
+					<range>2</range>
+					<rate_of_fire>1</rate_of_fire>
+					<shots>T(1)</shots>
+					<bulk>-6</bulk>
+					<default>
+						<type>Skill</type>
+						<name>Cloak</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Net</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Shield</name>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+				</ranged_weapon>
+				<categories>
+					<category>Clothing</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>dodge</attribute>
+					<amount>2</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>parry</attribute>
+					<amount>2</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>block</attribute>
+					<amount>2</amount>
+				</attribute_bonus>
+			</equipment>
+			<equipment_container version="3" open="yes">
+				<description>Leather Pouch (1 Gallon)</description>
+				<tech_level>0</tech_level>
+				<legality_class>4</legality_class>
+				<value>4.5</value>
+				<weight>0.75 lb</weight>
+				<reference>LT34</reference>
+				<notes>0.13 cu. ft.</notes>
+				<categories>
+					<category>Container</category>
+					<category>Storage</category>
+				</categories>
+				<prereq_list all="yes">
+					<contained_weight_prereq has="yes" compare="at most">10.8 lb</contained_weight_prereq>
+				</prereq_list>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Candle, Tallow</description>
+					<tech_level>1</tech_level>
+					<legality_class>4</legality_class>
+					<value>5</value>
+					<weight>1 lb</weight>
+					<reference>B288</reference>
+					<notes>Lasts 12 hours</notes>
+					<categories>
+						<category>Fire</category>
+						<category>Lighting</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Cord/Bowstring (1/4") Flax/Linen Fibre (10 Yards)</description>
+					<tech_level>0</tech_level>
+					<legality_class>4</legality_class>
+					<value>1.25</value>
+					<weight>0.58 lb</weight>
+					<reference>LT43</reference>
+					<notes>Supports 112.5 lbs. static load</notes>
+					<categories>
+						<category>Survival</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Flint, Steel and Tinder</description>
+					<tech_level>0</tech_level>
+					<legality_class>4</legality_class>
+					<value>2</value>
+					<weight>0.2 lb</weight>
+					<reference>LT35</reference>
+					<notes>Base fire starting time 30 seconds</notes>
+					<categories>
+						<category>Fire</category>
+						<category>Survival</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Goggles, Snow or Sand</description>
+					<tech_level>0</tech_level>
+					<legality_class>4</legality_class>
+					<value>15</value>
+					<weight>1 lb</weight>
+					<reference>LT99</reference>
+					<notes>Wooden with narrow horizontal vision slit</notes>
+					<categories>
+						<category>Body Armor</category>
+						<category>Clothing</category>
+					</categories>
+					<skill_bonus>
+						<name compare="contains">Vision</name>
+						<specialization compare="is anything"></specialization>
+						<amount>-3</amount>
+					</skill_bonus>
+					<dr_bonus>
+						<location>eyes</location>
+						<amount>1</amount>
+					</dr_bonus>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Whetstone</description>
+					<tech_level>0</tech_level>
+					<legality_class>4</legality_class>
+					<value>1</value>
+					<weight>0.5 lb</weight>
+					<reference>LT36</reference>
+					<categories>
+						<category>Survival</category>
+					</categories>
+				</equipment>
+			</equipment_container>
 			<equipment_container version="3" open="yes">
 				<description>Leather Pouch (6 Gallon)</description>
 				<tech_level>0</tech_level>
@@ -4233,6 +4375,18 @@
 					<prereq_list all="yes">
 						<contained_weight_prereq has="yes" compare="at most">14.85 lb</contained_weight_prereq>
 					</prereq_list>
+					<equipment version="3">
+						<quantity>1</quantity>
+						<description>Entertainment</description>
+						<tech_level>1</tech_level>
+						<legality_class>4</legality_class>
+						<value>10</value>
+						<weight>1 lb</weight>
+						<notes>Small entertainment item - Dice, Game, Musical Instrument</notes>
+						<categories>
+							<category>Entertainment/Recreation</category>
+						</categories>
+					</equipment>
 					<equipment version="3">
 						<quantity>1</quantity>
 						<description>Gloves</description>
@@ -4449,18 +4603,6 @@
 					</equipment_container>
 					<equipment version="3">
 						<quantity>1</quantity>
-						<description>Entertainment</description>
-						<tech_level>1</tech_level>
-						<legality_class>4</legality_class>
-						<value>10</value>
-						<weight>1 lb</weight>
-						<notes>Small entertainment item - Dice, Game, Musical Instrument</notes>
-						<categories>
-							<category>Entertainment/Recreation</category>
-						</categories>
-					</equipment>
-					<equipment version="3">
-						<quantity>1</quantity>
 						<description>Shirt (Long Sleeved) - Status 0</description>
 						<tech_level>0</tech_level>
 						<legality_class>-</legality_class>
@@ -4508,7 +4650,7 @@
 					<legality_class>4</legality_class>
 					<value>2.75</value>
 					<weight>0.5 lb</weight>
-					<reference>LT34est</reference>
+					<reference>LT34</reference>
 					<notes>0.27 cu. ft.</notes>
 					<categories>
 						<category>Container</category>
@@ -4517,35 +4659,6 @@
 					<prereq_list all="yes">
 						<contained_weight_prereq has="yes" compare="at most">14.85 lb</contained_weight_prereq>
 					</prereq_list>
-					<equipment_container version="3" open="yes">
-						<description>Cloth Bag (1/4 Cup)</description>
-						<tech_level>1</tech_level>
-						<legality_class>4</legality_class>
-						<value>0.1</value>
-						<reference>LT34</reference>
-						<notes>3.5 cu. in.</notes>
-						<categories>
-							<category>Container</category>
-							<category>Storage</category>
-						</categories>
-						<prereq_list all="yes">
-							<contained_weight_prereq has="yes" compare="at most">0.12 lb</contained_weight_prereq>
-						</prereq_list>
-						<equipment version="3">
-							<quantity>1</quantity>
-							<description>Salt (oz.)</description>
-							<tech_level>0</tech_level>
-							<legality_class>-</legality_class>
-							<value>0.13</value>
-							<weight>0.065 lb</weight>
-							<notes>Historically the price of salt up to TL3/4 was roughly equivilant to that of wheat</notes>
-							<categories>
-								<category>Food</category>
-								<category>Spice</category>
-								<category>Survival</category>
-							</categories>
-						</equipment>
-					</equipment_container>
 					<equipment_container version="3" open="yes">
 						<description>Cloth Bag (1 Quart)</description>
 						<tech_level>1</tech_level>
@@ -4576,12 +4689,41 @@
 						</equipment>
 					</equipment_container>
 					<equipment_container version="3" open="yes">
+						<description>Cloth Bag (1/4 Cup)</description>
+						<tech_level>1</tech_level>
+						<legality_class>4</legality_class>
+						<value>0.1</value>
+						<reference>LT34</reference>
+						<notes>3.5 cu. in.</notes>
+						<categories>
+							<category>Container</category>
+							<category>Storage</category>
+						</categories>
+						<prereq_list all="yes">
+							<contained_weight_prereq has="yes" compare="at most">0.12 lb</contained_weight_prereq>
+						</prereq_list>
+						<equipment version="3">
+							<quantity>1</quantity>
+							<description>Salt (oz.)</description>
+							<tech_level>0</tech_level>
+							<legality_class>-</legality_class>
+							<value>0.13</value>
+							<weight>0.065 lb</weight>
+							<notes>Historically the price of salt up to TL3/4 was roughly equivilant to that of wheat</notes>
+							<categories>
+								<category>Food</category>
+								<category>Spice</category>
+								<category>Survival</category>
+							</categories>
+						</equipment>
+					</equipment_container>
+					<equipment_container version="3" open="yes">
 						<description>Earthenware Jar (1 Pint)</description>
 						<tech_level>1</tech_level>
 						<legality_class>4</legality_class>
 						<value>0.75</value>
 						<weight>0.75 lb</weight>
-						<reference>LT34e</reference>
+						<reference>LT34</reference>
 						<notes>28 cu. in.</notes>
 						<categories>
 							<category>Container</category>
@@ -4597,7 +4739,6 @@
 							<legality_class>4</legality_class>
 							<value>0.25</value>
 							<weight>0.05 lb</weight>
-							<reference></reference>
 							<notes>Urban price</notes>
 							<categories>
 								<category>Food</category>
@@ -4638,163 +4779,6 @@
 						</prereq_list>
 					</equipment_container>
 				</equipment_container>
-			</equipment_container>
-			<equipment version="3">
-				<quantity>1</quantity>
-				<description>Heavy Cloak</description>
-				<tech_level>1</tech_level>
-				<legality_class>4</legality_class>
-				<value>50</value>
-				<weight>5 lb</weight>
-				<reference>B287</reference>
-				<melee_weapon>
-					<damage>-</damage>
-					<strength>-</strength>
-					<reach>-</reach>
-					<parry>No</parry>
-					<block>+0</block>
-					<default>
-						<type>Block</type>
-						<name>Cloak</name>
-						<modifier>0</modifier>
-					</default>
-				</melee_weapon>
-				<ranged_weapon>
-					<damage>Special</damage>
-					<strength>8</strength>
-					<usage>Thrown</usage>
-					<accuracy>+1</accuracy>
-					<range>2</range>
-					<rate_of_fire>1</rate_of_fire>
-					<shots>T(1)</shots>
-					<bulk>-6</bulk>
-					<default>
-						<type>Skill</type>
-						<name>Cloak</name>
-						<modifier>0</modifier>
-					</default>
-					<default>
-						<type>Skill</type>
-						<name>Net</name>
-						<modifier>-4</modifier>
-					</default>
-					<default>
-						<type>Skill</type>
-						<name>Shield</name>
-						<modifier>-4</modifier>
-					</default>
-					<default>
-						<type>DX</type>
-						<modifier>-5</modifier>
-					</default>
-				</ranged_weapon>
-				<categories>
-					<category>Clothing</category>
-				</categories>
-				<attribute_bonus>
-					<attribute>dodge</attribute>
-					<amount>2</amount>
-				</attribute_bonus>
-				<attribute_bonus>
-					<attribute>parry</attribute>
-					<amount>2</amount>
-				</attribute_bonus>
-				<attribute_bonus>
-					<attribute>block</attribute>
-					<amount>2</amount>
-				</attribute_bonus>
-			</equipment>
-			<equipment_container version="3" open="yes">
-				<description>Leather Pouch (1 Gallon)</description>
-				<tech_level>0</tech_level>
-				<legality_class>4</legality_class>
-				<value>4.5</value>
-				<weight>0.75 lb</weight>
-				<reference>LT34</reference>
-				<notes>0.13 cu. ft.</notes>
-				<categories>
-					<category>Container</category>
-					<category>Storage</category>
-				</categories>
-				<prereq_list all="yes">
-					<contained_weight_prereq has="yes" compare="at most">10.8 lb</contained_weight_prereq>
-				</prereq_list>
-				<equipment version="3">
-					<quantity>1</quantity>
-					<description>Candle, Tallow</description>
-					<tech_level>1</tech_level>
-					<legality_class>4</legality_class>
-					<value>5</value>
-					<weight>1 lb</weight>
-					<reference>B288</reference>
-					<notes>Lasts 12 hours</notes>
-					<categories>
-						<category>Fire</category>
-						<category>Lighting</category>
-					</categories>
-				</equipment>
-				<equipment version="3">
-					<quantity>1</quantity>
-					<description>Cord/Bowstring (1/4") Flax/Linen Fibre (10 Yards)</description>
-					<tech_level>0</tech_level>
-					<legality_class>4</legality_class>
-					<value>1.25</value>
-					<weight>0.58 lb</weight>
-					<reference>LT43</reference>
-					<notes>Supports 112.5 lbs. static load</notes>
-					<categories>
-						<category>Survival</category>
-					</categories>
-				</equipment>
-				<equipment version="3">
-					<quantity>1</quantity>
-					<description>Flint, Steel and Tinder</description>
-					<tech_level>0</tech_level>
-					<legality_class>4</legality_class>
-					<value>2</value>
-					<weight>0.2 lb</weight>
-					<reference>LT35</reference>
-					<notes>Base fire starting time 30 seconds</notes>
-					<categories>
-						<category>Fire</category>
-						<category>Survival</category>
-					</categories>
-				</equipment>
-				<equipment version="3">
-					<quantity>1</quantity>
-					<description>Goggles, Snow or Sand</description>
-					<tech_level>0</tech_level>
-					<legality_class>4</legality_class>
-					<value>15</value>
-					<weight>1 lb</weight>
-					<reference>LT99</reference>
-					<notes>Wooden with narrow horizontal vision slit</notes>
-					<categories>
-						<category>Body Armor</category>
-						<category>Clothing</category>
-					</categories>
-					<skill_bonus>
-						<name compare="contains">Vision</name>
-						<specialization compare="is anything"></specialization>
-						<amount>-3</amount>
-					</skill_bonus>
-					<dr_bonus>
-						<location>eyes</location>
-						<amount>1</amount>
-					</dr_bonus>
-				</equipment>
-				<equipment version="3">
-					<quantity>1</quantity>
-					<description>Whetstone</description>
-					<tech_level>0</tech_level>
-					<legality_class>4</legality_class>
-					<value>1</value>
-					<weight>0.5 lb</weight>
-					<reference>LT36</reference>
-					<categories>
-						<category>Survival</category>
-					</categories>
-				</equipment>
 			</equipment_container>
 			<equipment version="3">
 				<quantity>1</quantity>
@@ -5035,7 +5019,6 @@
 		<legality_class>4</legality_class>
 		<value>8</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Urban slaughter price; discount by 50% on the hoof at source</notes>
 		<categories>
 			<category>Food</category>
@@ -5049,7 +5032,6 @@
 		<legality_class>4</legality_class>
 		<value>18</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Major market price; discount by 50% on the hoof at source</notes>
 		<categories>
 			<category>Food</category>
@@ -5063,7 +5045,6 @@
 		<legality_class>4</legality_class>
 		<value>8</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Urban market price; discount by 50% at dock</notes>
 		<categories>
 			<category>Food</category>
@@ -5077,36 +5058,7 @@
 		<legality_class>4</legality_class>
 		<value>18</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Major market price; discount by 50% at source; markup by 100% at small markets.</notes>
-		<categories>
-			<category>Food</category>
-			<category>Survival</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Food (@Grain@) Flour or Meal (Common Grain)</description>
-		<tech_level>0</tech_level>
-		<legality_class>4</legality_class>
-		<value>2</value>
-		<weight>1 lb</weight>
-		<reference></reference>
-		<notes>Urban market price; discount by 50% at mill; discount by 25% at minor markets</notes>
-		<categories>
-			<category>Food</category>
-			<category>Survival</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Food (@Grain@) Flour or Meal (Premium Grain)</description>
-		<tech_level>0</tech_level>
-		<legality_class>4</legality_class>
-		<value>4</value>
-		<weight>1 lb</weight>
-		<reference></reference>
-		<notes>Urban market price; discount; by 50% at mill; discount by 25% at minor markets</notes>
 		<categories>
 			<category>Food</category>
 			<category>Survival</category>
@@ -5119,7 +5071,6 @@
 		<legality_class>4</legality_class>
 		<value>25</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Maor market price; discount by 80% at source; Markup by 200% in minor markets</notes>
 		<categories>
 			<category>Food</category>
@@ -5133,8 +5084,33 @@
 		<legality_class>4</legality_class>
 		<value>1</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Major market price; discount by 50% at farm; discount by 25% at minor markets</notes>
+		<categories>
+			<category>Food</category>
+			<category>Survival</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Food (@Grain@) Flour or Meal (Common Grain)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>2</value>
+		<weight>1 lb</weight>
+		<notes>Urban market price; discount by 50% at mill; discount by 25% at minor markets</notes>
+		<categories>
+			<category>Food</category>
+			<category>Survival</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Food (@Grain@) Flour or Meal (Premium Grain)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>4</value>
+		<weight>1 lb</weight>
+		<notes>Urban market price; discount; by 50% at mill; discount by 25% at minor markets</notes>
 		<categories>
 			<category>Food</category>
 			<category>Survival</category>
@@ -5147,7 +5123,6 @@
 		<legality_class>4</legality_class>
 		<value>2</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Urban price discount by 50% at farm</notes>
 		<categories>
 			<category>Food</category>
@@ -5161,7 +5136,6 @@
 		<legality_class>4</legality_class>
 		<value>2</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Urban price; discount by 50% at farm</notes>
 		<categories>
 			<category>Food</category>
@@ -5175,7 +5149,6 @@
 		<legality_class>4</legality_class>
 		<value>4</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Urban price; discount by 50% at farm</notes>
 		<categories>
 			<category>Food</category>
@@ -5189,7 +5162,6 @@
 		<legality_class>4</legality_class>
 		<value>10</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Urban price; discount by 80% at source</notes>
 		<categories>
 			<category>Food</category>
@@ -5203,7 +5175,6 @@
 		<legality_class>4</legality_class>
 		<value>2</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Major market price; discount by 50% at source; discount by 25% at minor markets.</notes>
 		<categories>
 			<category>Food</category>
@@ -5217,7 +5188,6 @@
 		<legality_class>4</legality_class>
 		<value>4</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Major market price; discount by 50% at source</notes>
 		<categories>
 			<category>Food</category>
@@ -5231,7 +5201,6 @@
 		<legality_class>4</legality_class>
 		<value>0.25</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Urban price; discount by 75% at source</notes>
 		<categories>
 			<category>Food</category>
@@ -5366,22 +5335,6 @@
 		</categories>
 	</equipment>
 	<equipment_container version="3" open="yes">
-		<description>Glass Bottle (1/4 Cup)</description>
-		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
-		<value>0.5</value>
-		<weight>0.15 lb</weight>
-		<reference>LT34</reference>
-		<notes>3.5 cu. in.</notes>
-		<categories>
-			<category>Container</category>
-			<category>Storage</category>
-		</categories>
-		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at most">0.3 lb</contained_weight_prereq>
-		</prereq_list>
-	</equipment_container>
-	<equipment_container version="3" open="yes">
 		<description>Glass Bottle (1 Cup)</description>
 		<tech_level>1</tech_level>
 		<legality_class>-</legality_class>
@@ -5398,12 +5351,28 @@
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
+		<description>Glass Bottle (1 Gallon)</description>
+		<tech_level>1</tech_level>
+		<legality_class>-</legality_class>
+		<value>13.5</value>
+		<weight>4 lb</weight>
+		<reference>LT34</reference>
+		<notes>0.13 cu. ft.</notes>
+		<categories>
+			<category>Container</category>
+			<category>Storage</category>
+		</categories>
+		<prereq_list all="yes">
+			<contained_weight_prereq has="yes" compare="at most">20.8 lb</contained_weight_prereq>
+		</prereq_list>
+	</equipment_container>
+	<equipment_container version="3" open="yes">
 		<description>Glass Bottle (1 Pint)</description>
 		<tech_level>1</tech_level>
 		<legality_class>-</legality_class>
 		<value>2.5</value>
 		<weight>0.75 lb</weight>
-		<reference>LT34e</reference>
+		<reference>LT34</reference>
 		<notes>29 cu. in.</notes>
 		<categories>
 			<category>Container</category>
@@ -5430,19 +5399,19 @@
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
-		<description>Glass Bottle (1 Gallon)</description>
+		<description>Glass Bottle (1/4 Cup)</description>
 		<tech_level>1</tech_level>
 		<legality_class>-</legality_class>
-		<value>13.5</value>
-		<weight>4 lb</weight>
+		<value>0.5</value>
+		<weight>0.15 lb</weight>
 		<reference>LT34</reference>
-		<notes>0.13 cu. ft.</notes>
+		<notes>3.5 cu. in.</notes>
 		<categories>
 			<category>Container</category>
 			<category>Storage</category>
 		</categories>
 		<prereq_list all="yes">
-			<contained_weight_prereq has="yes" compare="at most">20.8 lb</contained_weight_prereq>
+			<contained_weight_prereq has="yes" compare="at most">0.3 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
 	<equipment_container version="3" open="yes">
@@ -5779,7 +5748,7 @@
 		<legality_class>4</legality_class>
 		<value>5</value>
 		<weight>1 lb</weight>
-		<reference>LT134-135</reference>
+		<reference>LT134</reference>
 		<categories>
 			<category>Animal Handling</category>
 		</categories>
@@ -6258,7 +6227,7 @@
 		<legality_class>4</legality_class>
 		<value>680</value>
 		<weight>2300 lb</weight>
-		<reference>LT137r</reference>
+		<reference>LT137</reference>
 		<notes>ST0; HP35&#8224; Hnd/SR:-3/4; HT12c; BM4/8*; LW0.84T; BL0.5T;; SM+2; Occ:1; DR2; Rng:F; Cost:$680; HLoc:2DE4W</notes>
 		<categories>
 			<category>Animal Handling</category>
@@ -6275,7 +6244,7 @@
 		<legality_class>4</legality_class>
 		<value>1020</value>
 		<weight>3840 lb</weight>
-		<reference>LT137r</reference>
+		<reference>LT137</reference>
 		<notes>ST0; HP35&#8224; Hnd/SR:-3/4; HT12c; BM4/8*; LW0.84T; BL0.5T;; SM+2; Occ:1; DR2; Rng:F; Cost:$680; HLoc:2DE4W. Light draft load = &#931; Animal Weight * 0.10 * (1.00 - ( 0.07 x Number of Animals) ) x 20</notes>
 		<categories>
 			<category>Animal Handling</category>
@@ -7882,7 +7851,7 @@
 		<legality_class>4</legality_class>
 		<value>210</value>
 		<weight>16 lb</weight>
-		<reference>LT99,B</reference>
+		<reference>LT99,B283</reference>
 		<notes>Heavy Leather Hide (Buff Coat)</notes>
 		<categories>
 			<category>Body Armor</category>
@@ -9598,7 +9567,6 @@
 		<legality_class>-</legality_class>
 		<value>110</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Urban price; discount by 50% at source</notes>
 		<categories>
 			<category>Food</category>
@@ -10174,7 +10142,6 @@
 		<legality_class>-</legality_class>
 		<value>11.25</value>
 		<weight>6 lb</weight>
-		<reference></reference>
 		<notes>Urban price; discount by 50% at source</notes>
 		<categories>
 			<category>Food</category>
@@ -10188,7 +10155,6 @@
 		<legality_class>-</legality_class>
 		<value>0.25</value>
 		<weight>0.05 lb</weight>
-		<reference></reference>
 		<notes>Urban price</notes>
 		<categories>
 			<category>Food</category>
@@ -10424,7 +10390,6 @@
 				<legality_class>-</legality_class>
 				<value>1</value>
 				<weight>1 lb</weight>
-				<reference></reference>
 				<notes>Urban price; discount by 50% at farm</notes>
 				<categories>
 					<category>Food</category>
@@ -10453,7 +10418,6 @@
 				<legality_class>-</legality_class>
 				<value>110</value>
 				<weight>1 lb</weight>
-				<reference></reference>
 				<notes>Urban price; discount by 50% at source</notes>
 				<categories>
 					<category>Food</category>
@@ -10483,7 +10447,6 @@
 				<legality_class>4</legality_class>
 				<value>1.5</value>
 				<weight>2 lb</weight>
-				<reference></reference>
 				<notes>Urban price; discount by 50% at source</notes>
 				<categories>
 					<category>Food</category>
@@ -11145,196 +11108,6 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Rental - Annual (Cottage - Demense 7m x 7m)</description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>5</value>
-		<reference></reference>
-		<notes>Annual rent for a small cottage - may sustitute Duty for rent</notes>
-		<categories>
-			<category>Basic</category>
-			<category>Housing</category>
-			<category>Shelter</category>
-			<category>Survival</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Rental - Annual (Cottage - Town 7m x 10m)</description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>10</value>
-		<reference></reference>
-		<notes>Annual rent for a small town cottage</notes>
-		<categories>
-			<category>Basic</category>
-			<category>Housing</category>
-			<category>Shelter</category>
-			<category>Survival</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Rental - Annual (Craftman's House - Small 7m x 15m)</description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>20</value>
-		<reference></reference>
-		<notes>Annual rent for a town house with craftshop</notes>
-		<categories>
-			<category>Basic</category>
-			<category>Housing</category>
-			<category>Shelter</category>
-			<category>Survival</category>
-			<category>Tools</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Rental - Annual (Craftman's House - Significant 10m x 20m)</description>
-		<tech_level>2</tech_level>
-		<legality_class>4</legality_class>
-		<value>40</value>
-		<reference></reference>
-		<notes>Annual rent for a town house with craftshop and worker's quarters</notes>
-		<categories>
-			<category>Basic</category>
-			<category>Housing</category>
-			<category>Shelter</category>
-			<category>Survival</category>
-			<category>Tools</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Rental - Annual (Craftman's House - Superior 15m x 40m)</description>
-		<tech_level>2</tech_level>
-		<legality_class>4</legality_class>
-		<value>120</value>
-		<reference></reference>
-		<notes>Annual rent for a town house with craftshop and worker's quarters</notes>
-		<categories>
-			<category>Basic</category>
-			<category>Housing</category>
-			<category>Shelter</category>
-			<category>Survival</category>
-			<category>Tools</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Rental - Annual (Merchant's House - Small 7m x 15m)</description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>45</value>
-		<reference></reference>
-		<notes>Annual rent for a town house with counter and storerooms</notes>
-		<categories>
-			<category>Basic</category>
-			<category>Housing</category>
-			<category>Shelter</category>
-			<category>Survival</category>
-			<category>Tools</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Rental - Annual (Merchant's House - Significant 15m x 20m)</description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>360</value>
-		<reference></reference>
-		<notes>Annual rent for a town house with counter and storerooms</notes>
-		<categories>
-			<category>Basic</category>
-			<category>Housing</category>
-			<category>Shelter</category>
-			<category>Survival</category>
-			<category>Tools</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Rental - Annual (Merchant's House - Extensive 20m x 40m)</description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>900</value>
-		<reference></reference>
-		<notes>Annual rent for a town house with store and outbuildings</notes>
-		<categories>
-			<category>Basic</category>
-			<category>Housing</category>
-			<category>Shelter</category>
-			<category>Survival</category>
-			<category>Tools</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Rental - Annual (Row House - Town 7m x 15m)</description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>60</value>
-		<reference></reference>
-		<notes>Annual rent for a multi-story town house of solid construction</notes>
-		<categories>
-			<category>Basic</category>
-			<category>Housing</category>
-			<category>Shelter</category>
-			<category>Survival</category>
-			<category>Tools</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Rental - Annual (House with courtyard 15m x 40m)</description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>1800</value>
-		<reference></reference>
-		<notes>Annual rent for a multi-story town house with courtyard</notes>
-		<categories>
-			<category>Basic</category>
-			<category>Housing</category>
-			<category>Shelter</category>
-			<category>Survival</category>
-			<category>Tools</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Rental - Annual (House with great hall, buttery and grounds 80m x 240m)</description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>2700</value>
-		<reference></reference>
-		<notes>Annual rent for a multi-story town house with fine appointments</notes>
-		<categories>
-			<category>Basic</category>
-			<category>Housing</category>
-			<category>Shelter</category>
-			<category>Survival</category>
-			<category>Tools</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Rental - Annual (Commercial space 7m x 10m)</description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>25</value>
-		<reference></reference>
-		<notes>Annual rent for a ground floor commerical space</notes>
-		<categories>
-			<category>Basic</category>
-			<category>Housing</category>
-			<category>Shelter</category>
-			<category>Survival</category>
-			<category>Tools</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
 		<description>Regular Bow</description>
 		<tech_level>0</tech_level>
 		<legality_class>4</legality_class>
@@ -11361,6 +11134,184 @@
 		</ranged_weapon>
 		<categories>
 			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Rental - Annual (Commercial space 7m x 10m)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>25</value>
+		<notes>Annual rent for a ground floor commerical space</notes>
+		<categories>
+			<category>Basic</category>
+			<category>Housing</category>
+			<category>Shelter</category>
+			<category>Survival</category>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Rental - Annual (Cottage - Demense 7m x 7m)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>5</value>
+		<notes>Annual rent for a small cottage - may sustitute Duty for rent</notes>
+		<categories>
+			<category>Basic</category>
+			<category>Housing</category>
+			<category>Shelter</category>
+			<category>Survival</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Rental - Annual (Cottage - Town 7m x 10m)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<notes>Annual rent for a small town cottage</notes>
+		<categories>
+			<category>Basic</category>
+			<category>Housing</category>
+			<category>Shelter</category>
+			<category>Survival</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Rental - Annual (Craftman's House - Significant 10m x 20m)</description>
+		<tech_level>2</tech_level>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<notes>Annual rent for a town house with craftshop and worker's quarters</notes>
+		<categories>
+			<category>Basic</category>
+			<category>Housing</category>
+			<category>Shelter</category>
+			<category>Survival</category>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Rental - Annual (Craftman's House - Small 7m x 15m)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<notes>Annual rent for a town house with craftshop</notes>
+		<categories>
+			<category>Basic</category>
+			<category>Housing</category>
+			<category>Shelter</category>
+			<category>Survival</category>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Rental - Annual (Craftman's House - Superior 15m x 40m)</description>
+		<tech_level>2</tech_level>
+		<legality_class>4</legality_class>
+		<value>120</value>
+		<notes>Annual rent for a town house with craftshop and worker's quarters</notes>
+		<categories>
+			<category>Basic</category>
+			<category>Housing</category>
+			<category>Shelter</category>
+			<category>Survival</category>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Rental - Annual (House with courtyard 15m x 40m)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>1800</value>
+		<notes>Annual rent for a multi-story town house with courtyard</notes>
+		<categories>
+			<category>Basic</category>
+			<category>Housing</category>
+			<category>Shelter</category>
+			<category>Survival</category>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Rental - Annual (House with great hall, buttery and grounds 80m x 240m)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>2700</value>
+		<notes>Annual rent for a multi-story town house with fine appointments</notes>
+		<categories>
+			<category>Basic</category>
+			<category>Housing</category>
+			<category>Shelter</category>
+			<category>Survival</category>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Rental - Annual (Merchant's House - Extensive 20m x 40m)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>900</value>
+		<notes>Annual rent for a town house with store and outbuildings</notes>
+		<categories>
+			<category>Basic</category>
+			<category>Housing</category>
+			<category>Shelter</category>
+			<category>Survival</category>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Rental - Annual (Merchant's House - Significant 15m x 20m)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>360</value>
+		<notes>Annual rent for a town house with counter and storerooms</notes>
+		<categories>
+			<category>Basic</category>
+			<category>Housing</category>
+			<category>Shelter</category>
+			<category>Survival</category>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Rental - Annual (Merchant's House - Small 7m x 15m)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>45</value>
+		<notes>Annual rent for a town house with counter and storerooms</notes>
+		<categories>
+			<category>Basic</category>
+			<category>Housing</category>
+			<category>Shelter</category>
+			<category>Survival</category>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Rental - Annual (Row House - Town 7m x 15m)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>60</value>
+		<notes>Annual rent for a multi-story town house of solid construction</notes>
+		<categories>
+			<category>Basic</category>
+			<category>Housing</category>
+			<category>Shelter</category>
+			<category>Survival</category>
+			<category>Tools</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -11779,7 +11730,6 @@
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>2 lb</weight>
-		<reference>HR:B289</reference>
 		<categories>
 			<category>Tools</category>
 		</categories>
@@ -13356,7 +13306,6 @@
 		<legality_class>4</legality_class>
 		<value>240</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes> Status/CF: -1/0.5, 0/1, +1/+1, +2/+4, +3/+19, +4/+99 +5/+999</notes>
 		<categories>
 			<category>Food</category>
@@ -13439,6 +13388,28 @@
 				<contained_weight_prereq has="yes" compare="at most">0.65 lb</contained_weight_prereq>
 			</prereq_list>
 			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Copper Coin</description>
+				<legality_class>4</legality_class>
+				<value>1</value>
+				<weight>0.004 lb</weight>
+				<reference>B264</reference>
+				<categories>
+					<category>Money: GURPS Standard Medieval Coins</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Copper Farthing</description>
+				<legality_class>4</legality_class>
+				<value>0.25</value>
+				<weight>0.001 lb</weight>
+				<notes>1/4 of a copper penny (coin)</notes>
+				<categories>
+					<category>Money: House Rules Medieval Coins</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
 				<quantity>3</quantity>
 				<description>Gold Coin</description>
 				<legality_class>4</legality_class>
@@ -13458,29 +13429,6 @@
 				<reference>B264</reference>
 				<categories>
 					<category>Money: GURPS Standard Medieval Coins</category>
-				</categories>
-			</equipment>
-			<equipment version="3">
-				<quantity>1</quantity>
-				<description>Copper Coin</description>
-				<legality_class>4</legality_class>
-				<value>1</value>
-				<weight>0.004 lb</weight>
-				<reference>B264</reference>
-				<categories>
-					<category>Money: GURPS Standard Medieval Coins</category>
-				</categories>
-			</equipment>
-			<equipment version="3">
-				<quantity>1</quantity>
-				<description>Copper Farthing</description>
-				<legality_class>4</legality_class>
-				<value>0.25</value>
-				<weight>0.001 lb</weight>
-				<reference></reference>
-				<notes>1/4 of a copper penny (coin)</notes>
-				<categories>
-					<category>Money: House Rules Medieval Coins</category>
 				</categories>
 			</equipment>
 		</equipment_container>
@@ -13528,6 +13476,17 @@
 				<contained_weight_prereq has="yes" compare="at most">0.65 lb</contained_weight_prereq>
 			</prereq_list>
 			<equipment version="3">
+				<quantity>13</quantity>
+				<description>Copper Coin</description>
+				<legality_class>4</legality_class>
+				<value>0.25</value>
+				<weight>0.004 lb</weight>
+				<reference>B264</reference>
+				<categories>
+					<category>Money: GURPS Standard Medieval Coins</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
 				<quantity>6</quantity>
 				<description>Gold Coin</description>
 				<legality_class>4</legality_class>
@@ -13543,17 +13502,6 @@
 				<description>Silver Coin</description>
 				<legality_class>4</legality_class>
 				<value>4</value>
-				<weight>0.004 lb</weight>
-				<reference>B264</reference>
-				<categories>
-					<category>Money: GURPS Standard Medieval Coins</category>
-				</categories>
-			</equipment>
-			<equipment version="3">
-				<quantity>13</quantity>
-				<description>Copper Coin</description>
-				<legality_class>4</legality_class>
-				<value>0.25</value>
 				<weight>0.004 lb</weight>
 				<reference>B264</reference>
 				<categories>
@@ -13605,6 +13553,28 @@
 				<contained_weight_prereq has="yes" compare="at most">0.65 lb</contained_weight_prereq>
 			</prereq_list>
 			<equipment version="3">
+				<quantity>5</quantity>
+				<description>Copper Coin</description>
+				<legality_class>4</legality_class>
+				<value>1</value>
+				<weight>0.004 lb</weight>
+				<reference>B264</reference>
+				<categories>
+					<category>Money: GURPS Standard Medieval Coins</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Copper Farthing</description>
+				<legality_class>4</legality_class>
+				<value>0.25</value>
+				<weight>0.001 lb</weight>
+				<notes>1/4 of a copper penny (coin)</notes>
+				<categories>
+					<category>Money: House Rules Medieval Coins</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
 				<quantity>9</quantity>
 				<description>Gold Coin</description>
 				<legality_class>4</legality_class>
@@ -13624,29 +13594,6 @@
 				<reference>B264</reference>
 				<categories>
 					<category>Money: GURPS Standard Medieval Coins</category>
-				</categories>
-			</equipment>
-			<equipment version="3">
-				<quantity>5</quantity>
-				<description>Copper Coin</description>
-				<legality_class>4</legality_class>
-				<value>1</value>
-				<weight>0.004 lb</weight>
-				<reference>B264</reference>
-				<categories>
-					<category>Money: GURPS Standard Medieval Coins</category>
-				</categories>
-			</equipment>
-			<equipment version="3">
-				<quantity>1</quantity>
-				<description>Copper Farthing</description>
-				<legality_class>4</legality_class>
-				<value>0.25</value>
-				<weight>0.001 lb</weight>
-				<reference></reference>
-				<notes>1/4 of a copper penny (coin)</notes>
-				<categories>
-					<category>Money: House Rules Medieval Coins</category>
 				</categories>
 			</equipment>
 		</equipment_container>
@@ -13694,6 +13641,28 @@
 				<contained_weight_prereq has="yes" compare="at most">0.65 lb</contained_weight_prereq>
 			</prereq_list>
 			<equipment version="3">
+				<quantity>3</quantity>
+				<description>Copper Coin</description>
+				<legality_class>4</legality_class>
+				<value>1</value>
+				<weight>0.004 lb</weight>
+				<reference>B264</reference>
+				<categories>
+					<category>Money: GURPS Standard Medieval Coins</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Copper Farthing</description>
+				<legality_class>4</legality_class>
+				<value>0.25</value>
+				<weight>0.001 lb</weight>
+				<notes>1/4 of a copper penny (coin)</notes>
+				<categories>
+					<category>Money: House Rules Medieval Coins</category>
+				</categories>
+			</equipment>
+			<equipment version="3">
 				<quantity>11</quantity>
 				<description>Gold Coin</description>
 				<legality_class>4</legality_class>
@@ -13715,31 +13684,26 @@
 					<category>Money: GURPS Standard Medieval Coins</category>
 				</categories>
 			</equipment>
-			<equipment version="3">
-				<quantity>3</quantity>
-				<description>Copper Coin</description>
-				<legality_class>4</legality_class>
-				<value>1</value>
-				<weight>0.004 lb</weight>
-				<reference>B264</reference>
-				<categories>
-					<category>Money: GURPS Standard Medieval Coins</category>
-				</categories>
-			</equipment>
-			<equipment version="3">
-				<quantity>1</quantity>
-				<description>Copper Farthing</description>
-				<legality_class>4</legality_class>
-				<value>0.25</value>
-				<weight>0.001 lb</weight>
-				<reference></reference>
-				<notes>1/4 of a copper penny (coin)</notes>
-				<categories>
-					<category>Money: House Rules Medieval Coins</category>
-				</categories>
-			</equipment>
 		</equipment_container>
 	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Stirrups</description>
+		<tech_level>3</tech_level>
+		<legality_class>3</legality_class>
+		<value>250</value>
+		<weight>30 lb</weight>
+		<reference>LT134</reference>
+		<notes>+2 to HT rolls to resist FP loss. +2 to Riding to stay mounted. Eliminates encumberance penalty.  Required for lance skill.</notes>
+		<categories>
+			<category>Animal Handling</category>
+		</categories>
+		<skill_bonus>
+			<name compare="is">Riding</name>
+			<specialization compare="is">Equine</specialization>
+			<amount>1</amount>
+		</skill_bonus>
+	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
 		<description>Stone Core</description>
@@ -13819,30 +13783,11 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Stirrups</description>
-		<tech_level>3</tech_level>
-		<legality_class>3</legality_class>
-		<value>250</value>
-		<weight>30 lb</weight>
-		<reference>LT134</reference>
-		<notes>+2 to HT rolls to resist FP loss. +2 to Riding to stay mounted. Eliminates encumberance penalty.  Required for lance skill.</notes>
-		<categories>
-			<category>Animal Handling</category>
-		</categories>
-		<skill_bonus>
-			<name compare="is">Riding</name>
-			<specialization compare="is">Equine</specialization>
-			<amount>1</amount>
-		</skill_bonus>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
 		<description>Sugar</description>
 		<tech_level>0</tech_level>
 		<legality_class>-</legality_class>
 		<value>14</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Urban price; discount by 50% at source</notes>
 		<categories>
 			<category>Food</category>
@@ -14196,6 +14141,41 @@
 				<amount>2</amount>
 			</skill_bonus>
 		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Lancet</description>
+			<tech_level>2</tech_level>
+			<legality_class>4</legality_class>
+			<value>25</value>
+			<reference>LT153</reference>
+			<categories>
+				<category>Medical</category>
+				<category>Surgery</category>
+			</categories>
+			<skill_bonus>
+				<name compare="is">Surgery</name>
+				<specialization compare="is anything">Fine Tasks</specialization>
+				<amount>2</amount>
+			</skill_bonus>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Specula (set of five)</description>
+			<tech_level>2</tech_level>
+			<legality_class>4</legality_class>
+			<value>250</value>
+			<weight>7.5 lb</weight>
+			<reference>LT148</reference>
+			<categories>
+				<category>Medical</category>
+				<category>Surgery</category>
+			</categories>
+			<skill_bonus>
+				<name compare="is">Surgery</name>
+				<specialization compare="is anything">Fine Tasks</specialization>
+				<amount>2</amount>
+			</skill_bonus>
+		</equipment>
 		<equipment_container version="3" open="no">
 			<description>Surgeon's Kit (Basic) x 2</description>
 			<tech_level>1</tech_level>
@@ -14374,24 +14354,6 @@
 		</equipment_container>
 		<equipment version="3">
 			<quantity>1</quantity>
-			<description>Trephin (small)</description>
-			<tech_level>2</tech_level>
-			<legality_class>4</legality_class>
-			<value>120</value>
-			<weight>1 lb</weight>
-			<reference>LT148</reference>
-			<categories>
-				<category>Medical</category>
-				<category>Surgery</category>
-			</categories>
-			<skill_bonus>
-				<name compare="is">Surgery</name>
-				<specialization compare="is anything">Fine Tasks</specialization>
-				<amount>2</amount>
-			</skill_bonus>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
 			<description>Trephin (large)</description>
 			<tech_level>2</tech_level>
 			<legality_class>4</legality_class>
@@ -14410,29 +14372,12 @@
 		</equipment>
 		<equipment version="3">
 			<quantity>1</quantity>
-			<description>Specula (set of five)</description>
+			<description>Trephin (small)</description>
 			<tech_level>2</tech_level>
 			<legality_class>4</legality_class>
-			<value>250</value>
-			<weight>7.5 lb</weight>
+			<value>120</value>
+			<weight>1 lb</weight>
 			<reference>LT148</reference>
-			<categories>
-				<category>Medical</category>
-				<category>Surgery</category>
-			</categories>
-			<skill_bonus>
-				<name compare="is">Surgery</name>
-				<specialization compare="is anything">Fine Tasks</specialization>
-				<amount>2</amount>
-			</skill_bonus>
-		</equipment>
-		<equipment version="3">
-			<quantity>1</quantity>
-			<description>Lancet</description>
-			<tech_level>2</tech_level>
-			<legality_class>4</legality_class>
-			<value>25</value>
-			<reference>LT153</reference>
 			<categories>
 				<category>Medical</category>
 				<category>Surgery</category>
@@ -14460,12 +14405,12 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Table, Wooden (Small)</description>
+		<description>Table, Wooden (Large)</description>
 		<legality_class>4</legality_class>
-		<value>120</value>
-		<weight>18 lb</weight>
+		<value>720</value>
+		<weight>100 lb</weight>
 		<reference>DF8:15</reference>
-		<notes>Surface area equals two to three square feet.</notes>
+		<notes>Surface area equals about 21 square feet.</notes>
 		<categories>
 			<category>Furniture</category>
 		</categories>
@@ -14484,12 +14429,12 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Table, Wooden (Large)</description>
+		<description>Table, Wooden (Small)</description>
 		<legality_class>4</legality_class>
-		<value>720</value>
-		<weight>100 lb</weight>
+		<value>120</value>
+		<weight>18 lb</weight>
 		<reference>DF8:15</reference>
-		<notes>Surface area equals about 21 square feet.</notes>
+		<notes>Surface area equals two to three square feet.</notes>
 		<categories>
 			<category>Furniture</category>
 		</categories>
@@ -14501,10 +14446,83 @@
 		<legality_class>4</legality_class>
 		<value>36</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Urban price; discount by 50% at source</notes>
 		<categories>
 			<category>Food</category>
+			<category>Survival</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Tent, 1-Man</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>5 lb</weight>
+		<reference>B288</reference>
+		<notes>Includes ropes; no poles needed</notes>
+		<categories>
+			<category>Basic</category>
+			<category>Survival</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Tent, 2-Man</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>80</value>
+		<weight>12 lb</weight>
+		<reference>B288</reference>
+		<notes>Includes ropes; requires one 6' pole</notes>
+		<categories>
+			<category>Basic</category>
+			<category>Survival</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Tent, 4-Man</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>150</value>
+		<weight>30 lb</weight>
+		<reference>B288</reference>
+		<notes>Includes ropes; requires two 6' poles</notes>
+		<categories>
+			<category>Basic</category>
+			<category>Survival</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Tent, 10-Man</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>250</value>
+		<weight>75 lb</weight>
+		<notes>Includes ropes; requires 8 6' poles, 3 10' poles</notes>
+		<categories>
+			<category>Basic</category>
+			<category>Survival</category>
+		</categories>
+		<skill_bonus>
+			<name compare="contains">survival</name>
+			<specialization compare="is anything"></specialization>
+			<amount>1</amount>
+		</skill_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Tent, 20-Man</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>300</value>
+		<weight>100 lb</weight>
+		<reference>B288</reference>
+		<notes>Includes ropes; requires 12 6' poles, 4 10' poles</notes>
+		<categories>
+			<category>Basic</category>
 			<category>Survival</category>
 		</categories>
 	</equipment>
@@ -14576,81 +14594,6 @@
 		</melee_weapon>
 		<categories>
 			<category>Melee Weapon</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Tent, 1-Man</description>
-		<tech_level>0</tech_level>
-		<legality_class>4</legality_class>
-		<value>50</value>
-		<weight>5 lb</weight>
-		<reference>B288</reference>
-		<notes>Includes ropes; no poles needed</notes>
-		<categories>
-			<category>Basic</category>
-			<category>Survival</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Tent, 2-Man</description>
-		<tech_level>0</tech_level>
-		<legality_class>4</legality_class>
-		<value>80</value>
-		<weight>12 lb</weight>
-		<reference>B288</reference>
-		<notes>Includes ropes; requires one 6' pole</notes>
-		<categories>
-			<category>Basic</category>
-			<category>Survival</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Tent, 4-Man</description>
-		<tech_level>0</tech_level>
-		<legality_class>4</legality_class>
-		<value>150</value>
-		<weight>30 lb</weight>
-		<reference>B288</reference>
-		<notes>Includes ropes; requires two 6' poles</notes>
-		<categories>
-			<category>Basic</category>
-			<category>Survival</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Tent, 10-Man</description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>250</value>
-		<weight>75 lb</weight>
-		<reference>HR:B288</reference>
-		<notes>Includes ropes; requires 8 6' poles, 3 10' poles</notes>
-		<categories>
-			<category>Basic</category>
-			<category>Survival</category>
-		</categories>
-		<skill_bonus>
-			<name compare="contains">survival</name>
-			<specialization compare="is anything"></specialization>
-			<amount>1</amount>
-		</skill_bonus>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
-		<description>Tent, 20-Man</description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>300</value>
-		<weight>100 lb</weight>
-		<reference>B288</reference>
-		<notes>Includes ropes; requires 12 6' poles, 4 10' poles</notes>
-		<categories>
-			<category>Basic</category>
-			<category>Survival</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -15142,19 +15085,6 @@
 	</equipment>
 	<equipment version="3">
 		<quantity>1</quantity>
-		<description>Tool Kit, Portable (Carpentry)</description>
-		<tech_level>1</tech_level>
-		<legality_class>4</legality_class>
-		<value>300</value>
-		<weight>20 lb</weight>
-		<reference>B289</reference>
-		<notes>Basic equipment for Carpentry</notes>
-		<categories>
-			<category>Tools</category>
-		</categories>
-	</equipment>
-	<equipment version="3">
-		<quantity>1</quantity>
 		<description>Tool Kit, Portable (@Skill: Armoury, Smith@)</description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
@@ -15162,6 +15092,19 @@
 		<weight>20 lb</weight>
 		<reference>B289</reference>
 		<notes>Basic equipment for one of: Armoury, Smith</notes>
+		<categories>
+			<category>Tools</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Tool Kit, Portable (Carpentry)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>300</value>
+		<weight>20 lb</weight>
+		<reference>B289</reference>
+		<notes>Basic equipment for Carpentry</notes>
 		<categories>
 			<category>Tools</category>
 		</categories>
@@ -15789,7 +15732,6 @@
 		<legality_class>4</legality_class>
 		<value>5</value>
 		<weight>8 lb</weight>
-		<reference></reference>
 		<notes>Urban price; discount by 50% at source</notes>
 		<categories>
 			<category>Food</category>
@@ -15803,7 +15745,6 @@
 		<legality_class>4</legality_class>
 		<value>1</value>
 		<weight>1 lb</weight>
-		<reference></reference>
 		<notes>Urban price; discount by 50% at source</notes>
 		<categories>
 			<category>Food</category>
@@ -15817,7 +15758,6 @@
 		<legality_class>4</legality_class>
 		<value>1.5</value>
 		<weight>2 lb</weight>
-		<reference></reference>
 		<notes>Urban price; discount by 50% at source</notes>
 		<categories>
 			<category>Food</category>

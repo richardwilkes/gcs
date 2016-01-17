@@ -1,153 +1,153 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<template unique_id="eh8d3fol:-91iwo4bbfas8">
+<template unique_id="eh8d3fol:-91iwo4bbfas8" version="1">
 	<advantage_list>
-		<advantage_container open="yes" type="race">
+		<advantage_container version="2" open="yes" type="race">
 			<name>Demon</name>
 			<reference>M155</reference>
-			<advantage>
+			<advantage version="2">
 				<name>Appearance: Monstrous</name>
 				<type>Physical</type>
 				<base_points>-20</base_points>
 				<reference>B21</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Attribute Modifier: DX</name>
 				<type>Physical</type>
 				<levels>2</levels>
 				<points_per_level>20</points_per_level>
 				<attribute_bonus>
-					<attribute>DX</attribute>
-					<amount per_level="yes">+1</amount>
+					<attribute>dx</attribute>
+					<amount per_level="yes">1</amount>
 				</attribute_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Attribute Modifier: HP</name>
 				<type>Physical</type>
 				<levels>8</levels>
 				<points_per_level>2</points_per_level>
 				<attribute_bonus>
-					<attribute>HP</attribute>
-					<amount per_level="yes">+1</amount>
+					<attribute>hp</attribute>
+					<amount per_level="yes">1</amount>
 				</attribute_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Attribute Modifier: HT</name>
 				<type>Physical</type>
 				<levels>4</levels>
 				<points_per_level>10</points_per_level>
 				<attribute_bonus>
-					<attribute>HT</attribute>
-					<amount per_level="yes">+1</amount>
+					<attribute>ht</attribute>
+					<amount per_level="yes">1</amount>
 				</attribute_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Attribute Modifier: ST</name>
 				<type>Physical</type>
 				<levels>7</levels>
 				<points_per_level>10</points_per_level>
 				<attribute_bonus>
-					<attribute>ST</attribute>
-					<amount per_level="yes">+1</amount>
+					<attribute>st</attribute>
+					<amount per_level="yes">1</amount>
 				</attribute_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Bloodlust (CR: 12)</name>
 				<type>Mental</type>
 				<base_points>-10</base_points>
 				<reference>B125</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Bully (CR: 12)</name>
 				<type>Mental</type>
 				<base_points>-10</base_points>
 				<reference>B125</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Callous</name>
 				<type>Mental</type>
 				<base_points>-5</base_points>
 				<reference>B125</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Damage Resistance</name>
 				<type>Physical, Exotic</type>
 				<levels>5</levels>
 				<points_per_level>5</points_per_level>
 				<reference>B46</reference>
 				<dr_bonus>
-					<location>full_body_except_eyes</location>
-					<amount per_level="yes">+1</amount>
+					<location>full body except eyes</location>
+					<amount per_level="yes">1</amount>
 				</dr_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Feature: Affected by True Faith and Pentagram</name>
 				<type>Physical</type>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Flight (Wings: Basic Move+5)</name>
 				<type>Physical, Exotic</type>
 				<base_points>40</base_points>
 				<reference>B56</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Fragile (Unnatural)</name>
 				<type>Physical, Exotic</type>
 				<base_points>-50</base_points>
 				<reference>B137</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Magery</name>
 				<type>Mental, Supernatural</type>
 				<base_points>5</base_points>
 				<points_per_level>10</points_per_level>
 				<reference>B66</reference>
 				<spell_bonus all_colleges="yes">
-					<amount per_level="yes">+1</amount>
+					<amount per_level="yes">1</amount>
 				</spell_bonus>
 				<skill_bonus>
 					<name compare="is">thaumatology</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="yes">+1</amount>
+					<amount per_level="yes">1</amount>
 				</skill_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Night Vision</name>
 				<type>Physical</type>
 				<levels>5</levels>
 				<points_per_level>1</points_per_level>
 				<reference>B71</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Pacifism: Cannot Harm Innocents (Prevents direct harm of truly good or holy folks only, -50%)</name>
 				<type>Mental</type>
 				<base_points>-5</base_points>
 				<reference>B148</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Resistant (Immunity to Metabolic Hazards)</name>
 				<type>Physical</type>
 				<base_points>30</base_points>
 				<reference>B81</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Resistant (Mind-Affecting Magic Immune)</name>
 				<type>Physical</type>
 				<base_points>30</base_points>
 				<reference>B80</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Sadism (CR: 12)</name>
 				<type>Mental</type>
 				<base_points>-15</base_points>
 				<reference>B152</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Selfish (CR: 12)</name>
 				<type>Mental</type>
 				<base_points>-5</base_points>
 				<reference>B153</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Sharp Claws (Hands)</name>
 				<type>Physical</type>
 				<base_points>5</base_points>
@@ -177,7 +177,7 @@
 				</melee_weapon>
 				<reference>B42</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Sharp Teeth</name>
 				<type>Physical, Exotic</type>
 				<base_points>1</base_points>
@@ -197,7 +197,7 @@
 				</melee_weapon>
 				<reference>B91</reference>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Social Stigma (Monster (reac. -3))</name>
 				<type>Social</type>
 				<base_points>-15</base_points>
@@ -205,24 +205,24 @@
 				<skill_bonus>
 					<name compare="is">intimidation</name>
 					<specialization compare="is anything"></specialization>
-					<amount per_level="no">+1</amount>
+					<amount>1</amount>
 				</skill_bonus>
 			</advantage>
-			<advantage>
+			<advantage version="2">
 				<name>Striking ST</name>
 				<type>Physical, Exotic</type>
 				<levels>2</levels>
 				<points_per_level>5</points_per_level>
 				<reference>B88</reference>
 				<attribute_bonus>
-					<attribute limitation="striking_only">ST</attribute>
-					<amount per_level="yes">+1</amount>
+					<attribute limitation="striking only">st</attribute>
+					<amount per_level="yes">1</amount>
 				</attribute_bonus>
 			</advantage>
 		</advantage_container>
 	</advantage_list>
 	<skill_list>
-		<skill>
+		<skill version="2">
 			<name>Acting</name>
 			<difficulty>IQ/A</difficulty>
 			<points>1</points>
@@ -242,13 +242,13 @@
 				<modifier>-5</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="2">
 			<name>Brawling</name>
 			<difficulty>DX/E</difficulty>
 			<points>4</points>
 			<reference>B182</reference>
 		</skill>
-		<skill>
+		<skill version="2">
 			<name>Broadsword</name>
 			<difficulty>DX/A</difficulty>
 			<points>2</points>
@@ -283,25 +283,25 @@
 				<modifier>-5</modifier>
 			</default>
 		</skill>
-		<skill>
+		<skill version="2">
 			<name>Fast-Talk</name>
 			<difficulty>IQ/A</difficulty>
 			<points>4</points>
 			<reference>B195</reference>
 		</skill>
-		<skill>
+		<skill version="2">
 			<name>Hidden Lore (Demon Lore)</name>
 			<difficulty>IQ/A</difficulty>
 			<points>1</points>
 			<reference>B199</reference>
 		</skill>
-		<skill>
+		<skill version="2">
 			<name>Intimidation</name>
 			<difficulty>Will/A</difficulty>
 			<points>4</points>
 			<reference>B202</reference>
 		</skill>
-		<skill>
+		<skill version="2">
 			<name>Stealth</name>
 			<difficulty>DX/A</difficulty>
 			<points>2</points>

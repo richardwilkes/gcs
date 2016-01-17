@@ -8,19 +8,87 @@
 				<advantage_container version="2" open="yes">
 					<name>20 points chosen from</name>
 					<advantage version="2">
-						<name>Increased Perception</name>
-						<type>Mental/Physical</type>
-						<levels>2</levels>
-						<points_per_level>5</points_per_level>
-						<reference>B16</reference>
+						<name>Contact (Fence, mafioso, etc.)</name>
+						<type>Social</type>
+						<modifier version="1" enabled="no">
+							<name>Effective skill</name>
+							<cost type="points">1</cost>
+							<affects>total</affects>
+							<notes>12</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Effective skill</name>
+							<cost type="points">2</cost>
+							<affects>total</affects>
+							<notes>15</notes>
+						</modifier>
+						<modifier version="1">
+							<name>Effective skill</name>
+							<cost type="points">3</cost>
+							<affects>total</affects>
+							<notes>18</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Effective skill</name>
+							<cost type="points">4</cost>
+							<affects>total</affects>
+							<notes>21</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Can obtain information using supernatural talents</name>
+							<cost type="points">1</cost>
+							<affects>total</affects>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Group</name>
+							<cost type="multiplier">5</cost>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Appears almost all the time</name>
+							<cost type="multiplier">3</cost>
+							<notes>15-</notes>
+						</modifier>
+						<modifier version="1">
+							<name>Appears quite often</name>
+							<cost type="multiplier">2</cost>
+							<notes>12-</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Appears fairly often</name>
+							<cost type="multiplier">1</cost>
+							<notes>9-</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Appears quite rarely</name>
+							<cost type="multiplier">0.5</cost>
+							<notes>6-</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Completely reliable</name>
+							<cost type="multiplier">3</cost>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Usually reliable</name>
+							<cost type="multiplier">2</cost>
+						</modifier>
+						<modifier version="1">
+							<name>Somewhat reliable</name>
+							<cost type="multiplier">1</cost>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Unreliable</name>
+							<cost type="multiplier">0.5</cost>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Favor</name>
+							<cost type="multiplier">0.2</cost>
+							<reference>B55</reference>
+						</modifier>
+						<reference>B44</reference>
+						<notes>Only skill level may change</notes>
 						<categories>
 							<category>Advantage</category>
-							<category>Attribute</category>
 						</categories>
-						<attribute_bonus>
-							<attribute>perception</attribute>
-							<amount per_level="yes">1</amount>
-						</attribute_bonus>
 					</advantage>
 					<advantage version="2">
 						<name>Contact (Gang, mob, etc.)</name>
@@ -106,89 +174,6 @@
 						</categories>
 					</advantage>
 					<advantage version="2">
-						<name>Contact (Fence, mafioso, etc.)</name>
-						<type>Social</type>
-						<modifier version="1" enabled="no">
-							<name>Effective skill</name>
-							<cost type="points">1</cost>
-							<affects>total</affects>
-							<notes>12</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Effective skill</name>
-							<cost type="points">2</cost>
-							<affects>total</affects>
-							<notes>15</notes>
-						</modifier>
-						<modifier version="1">
-							<name>Effective skill</name>
-							<cost type="points">3</cost>
-							<affects>total</affects>
-							<notes>18</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Effective skill</name>
-							<cost type="points">4</cost>
-							<affects>total</affects>
-							<notes>21</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Can obtain information using supernatural talents</name>
-							<cost type="points">1</cost>
-							<affects>total</affects>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Group</name>
-							<cost type="multiplier">5</cost>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Appears almost all the time</name>
-							<cost type="multiplier">3</cost>
-							<notes>15-</notes>
-						</modifier>
-						<modifier version="1">
-							<name>Appears quite often</name>
-							<cost type="multiplier">2</cost>
-							<notes>12-</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Appears fairly often</name>
-							<cost type="multiplier">1</cost>
-							<notes>9-</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Appears quite rarely</name>
-							<cost type="multiplier">0.5</cost>
-							<notes>6-</notes>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Completely reliable</name>
-							<cost type="multiplier">3</cost>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Usually reliable</name>
-							<cost type="multiplier">2</cost>
-						</modifier>
-						<modifier version="1">
-							<name>Somewhat reliable</name>
-							<cost type="multiplier">1</cost>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Unreliable</name>
-							<cost type="multiplier">0.5</cost>
-						</modifier>
-						<modifier version="1" enabled="no">
-							<name>Favor</name>
-							<cost type="multiplier">0.2</cost>
-							<reference>B55</reference>
-						</modifier>
-						<reference>B44</reference>
-						<notes>Only skill level may change</notes>
-						<categories>
-							<category>Advantage</category>
-						</categories>
-					</advantage>
-					<advantage version="2">
 						<name>Danger Sense</name>
 						<type>Mental</type>
 						<base_points>15</base_points>
@@ -196,6 +181,21 @@
 						<categories>
 							<category>Advantage</category>
 						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Increased Perception</name>
+						<type>Mental/Physical</type>
+						<levels>2</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B16</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>perception</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
 					</advantage>
 					<advantage version="2">
 						<name>Zeroed</name>
@@ -217,134 +217,6 @@
 				<advantage_container version="2" open="yes">
 					<name>Add to template options</name>
 				</advantage_container>
-				<advantage version="2">
-					<name>Enemy (Law enforcement OR rival criminals)</name>
-					<type>Social</type>
-					<modifier version="1" enabled="no">
-						<name>Weak Individual</name>
-						<cost type="points">-5</cost>
-						<affects>total</affects>
-						<reference>B135</reference>
-						<notes>50% of your starting points</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Equal Individual</name>
-						<cost type="points">-10</cost>
-						<affects>total</affects>
-						<reference>B135</reference>
-						<notes>100% of your starting points</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Powerful Individual</name>
-						<cost type="points">-20</cost>
-						<affects>total</affects>
-						<reference>B135</reference>
-						<notes>&gt;150% of your starting points</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Weak Group</name>
-						<cost type="points">-10</cost>
-						<affects>total</affects>
-						<reference>B135</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Medium Group</name>
-						<cost type="points">-20</cost>
-						<affects>total</affects>
-						<reference>B135</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Appears almost all the time</name>
-						<cost type="multiplier">3</cost>
-						<reference>B36</reference>
-						<notes>15-</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Appears quite often</name>
-						<cost type="multiplier">2</cost>
-						<reference>B36</reference>
-						<notes>12-</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Appears fairly often</name>
-						<cost type="multiplier">1</cost>
-						<reference>B36</reference>
-						<notes>9-</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Appears quite rarely</name>
-						<cost type="multiplier">0.5</cost>
-						<reference>B36</reference>
-						<notes>6-</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Large/Powerful Group</name>
-						<cost type="points">-30</cost>
-						<affects>total</affects>
-						<reference>B135</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Utterly Formidable Group</name>
-						<cost type="points">-40</cost>
-						<affects>total</affects>
-						<reference>B135</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Unknown</name>
-						<cost type="points">-5</cost>
-						<affects>total</affects>
-						<reference>B135</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Evil Twin</name>
-						<cost type="points">0</cost>
-						<affects>total</affects>
-						<reference>B135</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Evil Twin</name>
-						<cost type="points">-5</cost>
-						<affects>total</affects>
-						<reference>B135</reference>
-						<notes>More skilled or extra abilities</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Evil Twin</name>
-						<cost type="points">-10</cost>
-						<affects>total</affects>
-						<reference>B135</reference>
-						<notes>More skilled and extra abilities</notes>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Watcher</name>
-						<cost type="multiplier">0.25</cost>
-						<reference>B135</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Rival</name>
-						<cost type="multiplier">0.5</cost>
-						<reference>B135</reference>
-					</modifier>
-					<modifier version="1" enabled="no">
-						<name>Hunter</name>
-						<cost type="multiplier">1</cost>
-						<reference>B135</reference>
-					</modifier>
-					<reference>B135</reference>
-					<categories>
-						<category>Disadvantage</category>
-					</categories>
-				</advantage>
-				<advantage version="2">
-					<name>Social Stigma (Criminal Record)</name>
-					<type>Social</type>
-					<base_points>-5</base_points>
-					<reference>B155</reference>
-					<notes>-1 Reaction, -2 for cops &amp; judges</notes>
-					<categories>
-						<category>Disadvantage</category>
-					</categories>
-				</advantage>
 				<advantage_container version="2" open="yes">
 					<name>Chose one</name>
 					<advantage version="2">
@@ -499,6 +371,134 @@
 						</categories>
 					</advantage>
 				</advantage_container>
+				<advantage version="2">
+					<name>Enemy (Law enforcement OR rival criminals)</name>
+					<type>Social</type>
+					<modifier version="1" enabled="no">
+						<name>Weak Individual</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B135</reference>
+						<notes>50% of your starting points</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Equal Individual</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B135</reference>
+						<notes>100% of your starting points</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Powerful Individual</name>
+						<cost type="points">-20</cost>
+						<affects>total</affects>
+						<reference>B135</reference>
+						<notes>&gt;150% of your starting points</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Weak Group</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B135</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Medium Group</name>
+						<cost type="points">-20</cost>
+						<affects>total</affects>
+						<reference>B135</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Appears almost all the time</name>
+						<cost type="multiplier">3</cost>
+						<reference>B36</reference>
+						<notes>15-</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Appears quite often</name>
+						<cost type="multiplier">2</cost>
+						<reference>B36</reference>
+						<notes>12-</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Appears fairly often</name>
+						<cost type="multiplier">1</cost>
+						<reference>B36</reference>
+						<notes>9-</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Appears quite rarely</name>
+						<cost type="multiplier">0.5</cost>
+						<reference>B36</reference>
+						<notes>6-</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Large/Powerful Group</name>
+						<cost type="points">-30</cost>
+						<affects>total</affects>
+						<reference>B135</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Utterly Formidable Group</name>
+						<cost type="points">-40</cost>
+						<affects>total</affects>
+						<reference>B135</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Unknown</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B135</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Evil Twin</name>
+						<cost type="points">0</cost>
+						<affects>total</affects>
+						<reference>B135</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Evil Twin</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B135</reference>
+						<notes>More skilled or extra abilities</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Evil Twin</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B135</reference>
+						<notes>More skilled and extra abilities</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Watcher</name>
+						<cost type="multiplier">0.25</cost>
+						<reference>B135</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Rival</name>
+						<cost type="multiplier">0.5</cost>
+						<reference>B135</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Hunter</name>
+						<cost type="multiplier">1</cost>
+						<reference>B135</reference>
+					</modifier>
+					<reference>B135</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Social Stigma (Criminal Record)</name>
+					<type>Social</type>
+					<base_points>-5</base_points>
+					<reference>B155</reference>
+					<notes>-1 Reaction, -2 for cops &amp; judges</notes>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
 			</advantage_container>
 		</advantage_container>
 	</advantage_list>
@@ -593,7 +593,7 @@
 					<weapon_bonus>
 						<name compare="is">Brawling</name>
 						<specialization compare="is anything"></specialization>
-						<level compare="at_least">2</level>
+						<level compare="at least">2</level>
 						<amount per_level="yes">1</amount>
 					</weapon_bonus>
 				</skill>
