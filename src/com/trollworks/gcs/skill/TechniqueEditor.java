@@ -21,6 +21,7 @@ import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
+import com.trollworks.toolkit.ui.widget.Commitable;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.NumberFilter;
@@ -280,7 +281,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 
 		mLastDefaultType = getDefaultType();
 		skillBased = mLastDefaultType.isSkillBased();
-		UIUtilities.forceFocusToAccept();
+		Commitable.sendCommitToFocusOwner();
 		while (mDefaultPanel.getComponentCount() > 1) {
 			mDefaultPanel.remove(1);
 		}

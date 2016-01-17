@@ -13,6 +13,7 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
+import com.trollworks.toolkit.ui.widget.Commitable;
 import com.trollworks.toolkit.utility.Platform;
 import com.trollworks.toolkit.utility.notification.NotifierTarget;
 import com.trollworks.toolkit.utility.text.DateFormatter;
@@ -45,7 +46,7 @@ import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 
 /** A generic field for a page. */
-public class PageField extends JFormattedTextField implements NotifierTarget, PropertyChangeListener, ActionListener {
+public class PageField extends JFormattedTextField implements NotifierTarget, PropertyChangeListener, ActionListener, Commitable {
 	private GURPSCharacter	mCharacter;
 	private String			mConsumedType;
 	private String			mCustomToolTip;
@@ -285,6 +286,11 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
+		attemptCommit();
+	}
+
+	@Override
+	public void attemptCommit() {
 		try {
 			commitEdit();
 		} catch (ParseException exception) {

@@ -12,10 +12,10 @@
 package com.trollworks.gcs.widgets.outline;
 
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.widget.ActionPanel;
+import com.trollworks.toolkit.ui.widget.Commitable;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
 
@@ -163,7 +163,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 	 * @return Whether anything was modified.
 	 */
 	public final boolean applyChanges() {
-		UIUtilities.forceFocusToAccept();
+		Commitable.sendCommitToFocusOwner();
 		boolean modified = applyChangesSelf();
 		if (modified) {
 			mRow.getDataFile().setModified(true);

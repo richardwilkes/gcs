@@ -18,6 +18,7 @@ import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
+import com.trollworks.toolkit.ui.widget.Commitable;
 import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.utility.Localization;
@@ -261,7 +262,7 @@ public abstract class FeatureEditor extends EditorPanel {
 		} else if (CHANGE_BASE_TYPE.equals(command)) {
 			LAST_ITEM_TYPE = BASE_TYPES[mBaseTypeCombo.getSelectedIndex()];
 			if (!mFeature.getClass().equals(LAST_ITEM_TYPE)) {
-				UIUtilities.forceFocusToAccept();
+				Commitable.sendCommitToFocusOwner();
 				try {
 					parent.add(create(mRow, (Feature) LAST_ITEM_TYPE.newInstance()), UIUtilities.getIndexOf(parent, this));
 				} catch (Exception exception) {

@@ -13,10 +13,10 @@ package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
+import com.trollworks.toolkit.ui.widget.Commitable;
 import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Insets;
@@ -80,7 +80,7 @@ public class AttributeBonusEditor extends FeatureEditor {
 		String command = event.getActionCommand();
 		if (CHANGE_ATTRIBUTE.equals(command)) {
 			((AttributeBonus) getFeature()).setAttribute(BonusAttributeType.values()[((JComboBox<?>) event.getSource()).getSelectedIndex()]);
-			UIUtilities.forceFocusToAccept();
+			Commitable.sendCommitToFocusOwner();
 			rebuild();
 		} else if (CHANGE_LIMITATION.equals(command)) {
 			((AttributeBonus) getFeature()).setLimitation((AttributeBonusLimitation) ((JComboBox<?>) event.getSource()).getSelectedItem());

@@ -14,10 +14,10 @@ package com.trollworks.gcs.feature;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
+import com.trollworks.toolkit.ui.widget.Commitable;
 import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Insets;
@@ -112,7 +112,7 @@ public class SpellBonusEditor extends FeatureEditor {
 				case 0:
 				default:
 					if (!bonus.allColleges()) {
-						UIUtilities.forceFocusToAccept();
+						Commitable.sendCommitToFocusOwner();
 						bonus.allColleges(true);
 						rebuild();
 					}
@@ -134,7 +134,7 @@ public class SpellBonusEditor extends FeatureEditor {
 
 	private void adjustMatchType(SpellBonus bonus, String type) {
 		if (bonus.allColleges() || !type.equals(bonus.getMatchType())) {
-			UIUtilities.forceFocusToAccept();
+			Commitable.sendCommitToFocusOwner();
 			bonus.allColleges(false);
 			bonus.setMatchType(type);
 			rebuild();

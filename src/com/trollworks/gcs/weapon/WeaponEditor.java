@@ -21,6 +21,7 @@ import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.PrecisionLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
+import com.trollworks.toolkit.ui.widget.Commitable;
 import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
@@ -307,7 +308,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 
 	private void setWeapon(WeaponStats weapon) {
 		if (weapon != mWeapon) {
-			UIUtilities.forceFocusToAccept();
+			Commitable.sendCommitToFocusOwner();
 			mWeapon = weapon;
 			setWeaponState(mWeapon != null);
 		}
