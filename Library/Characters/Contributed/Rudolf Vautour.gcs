@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<character unique_id="ehqs9dby:8miu0dkj1jxa" version="1">
+<character unique_id="ehqs9dby:8miu0dkj1jxa" version="2">
 	<created_date>Dec 27, 2005</created_date>
-	<modified_date>Jan 1, 2008 2:06 PM</modified_date>
+	<modified_date>Jan 17, 2016 2:03 PM</modified_date>
 	<profile>
 		<player_name>NPC</player_name>
 		<campaign>Sample</campaign>
@@ -13,8 +13,8 @@
 		<hair>Redhead, Straight, Long</hair>
 		<skin>Dark Tan</skin>
 		<handedness>Right</handedness>
-		<height units="in">64</height>
-		<weight units="lbs">127.0</weight>
+		<height>64 in</height>
+		<weight>127 lb</weight>
 		<SM>0</SM>
 		<gender>Male</gender>
 		<race>Human</race>
@@ -1618,7 +1618,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 					<amount>1</amount>
 				</attribute_bonus>
 				<attribute_bonus>
-					<attribute>fright_check</attribute>
+					<attribute>fright check</attribute>
 					<amount>2</amount>
 				</attribute_bonus>
 			</advantage>
@@ -1671,43 +1671,43 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier version="1" enabled="no">
 					<name>Dance</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Dark-Aspected</name>
 					<cost type="percentage">-50</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Day-Aspected</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Musical</name>
 					<cost type="percentage">-50</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Night-Aspected</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1">
 					<name>One College</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 					<notes>Healing</notes>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Solitary</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Song</name>
 					<cost type="percentage">-40</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 				</modifier>
 				<reference>B66</reference>
 				<categories>
@@ -1740,13 +1740,13 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<modifier version="1" enabled="no">
 					<name>Replaces Status</name>
 					<cost type="points">5</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 					<reference>B29</reference>
 				</modifier>
 				<modifier version="1" enabled="no">
 					<name>Courtesy</name>
 					<cost type="points">-4</cost>
-					<affects>levels_only</affects>
+					<affects>levels only</affects>
 					<reference>B29</reference>
 				</modifier>
 				<reference>B29</reference>
@@ -2733,6 +2733,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 		<spell version="2">
 			<name>Awaken</name>
 			<college>Healing</college>
+			<power_source>Arcane</power_source>
 			<spell_class>Area</spell_class>
 			<casting_cost>1</casting_cost>
 			<maintenance_cost>-</maintenance_cost>
@@ -2751,6 +2752,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 		<spell version="2">
 			<name>Lend Energy</name>
 			<college>Healing</college>
+			<power_source>Arcane</power_source>
 			<spell_class>Regular</spell_class>
 			<casting_cost>1/pt</casting_cost>
 			<maintenance_cost>-</maintenance_cost>
@@ -2765,12 +2767,12 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 					<advantage_prereq has="yes">
 						<name compare="is">magery</name>
 						<notes compare="contains">one college (healing)</notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 					<advantage_prereq has="yes">
 						<name compare="is">magery</name>
 						<notes compare="does not contain">one college</notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<advantage_prereq has="yes">
@@ -2782,6 +2784,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 		<spell version="2">
 			<name>Lend Vitality</name>
 			<college>Healing</college>
+			<power_source>Arcane</power_source>
 			<spell_class>Regular</spell_class>
 			<casting_cost>1/pt</casting_cost>
 			<maintenance_cost>-</maintenance_cost>
@@ -2800,6 +2803,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 		<spell version="2" very_hard="yes">
 			<name>Major Healing</name>
 			<college>Healing</college>
+			<power_source>Arcane</power_source>
 			<spell_class>Regular</spell_class>
 			<casting_cost>1-4</casting_cost>
 			<maintenance_cost>-</maintenance_cost>
@@ -2815,12 +2819,12 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 					<advantage_prereq has="yes">
 						<name compare="is">magery</name>
 						<notes compare="contains">one college (healing)</notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 					<advantage_prereq has="yes">
 						<name compare="is">magery</name>
 						<notes compare="does not contain">one college</notes>
-						<level compare="at_least">1</level>
+						<level compare="at least">1</level>
 					</advantage_prereq>
 				</prereq_list>
 				<spell_prereq has="yes">
@@ -2831,6 +2835,7 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 		<spell version="2">
 			<name>Minor healing</name>
 			<college>Healing</college>
+			<power_source>Arcane</power_source>
 			<spell_class>Regular</spell_class>
 			<casting_cost>1-3</casting_cost>
 			<maintenance_cost>-</maintenance_cost>
@@ -2849,13 +2854,13 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 		</spell>
 	</spell_list>
 	<equipment_list>
-		<equipment version="2" state="equipped">
+		<equipment version="3" state="equipped">
 			<quantity>1</quantity>
 			<description>Mail Coif</description>
 			<tech_level>2</tech_level>
 			<legality_class>3</legality_class>
 			<value>55</value>
-			<weight units="lbs">4.0</weight>
+			<weight>4 lb</weight>
 			<reference>B284</reference>
 			<categories>
 				<category>Headgear</category>
@@ -2869,13 +2874,13 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<amount>4</amount>
 			</dr_bonus>
 		</equipment>
-		<equipment version="2" state="equipped">
+		<equipment version="3" state="equipped">
 			<quantity>1</quantity>
 			<description>Mail Hauberk</description>
 			<tech_level>2</tech_level>
 			<legality_class>3</legality_class>
 			<value>230</value>
-			<weight units="lbs">25.0</weight>
+			<weight>25 lb</weight>
 			<reference>B283</reference>
 			<categories>
 				<category>Body Armor</category>
@@ -2889,13 +2894,13 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<amount>4</amount>
 			</dr_bonus>
 		</equipment>
-		<equipment version="2" state="equipped">
+		<equipment version="3" state="equipped">
 			<quantity>1</quantity>
 			<description>Mail Sleeves</description>
 			<tech_level>2</tech_level>
 			<legality_class>3</legality_class>
 			<value>70</value>
-			<weight units="lbs">9.0</weight>
+			<weight>9 lb</weight>
 			<reference>B283</reference>
 			<categories>
 				<category>Limb Armor</category>
@@ -2905,13 +2910,13 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<amount>4</amount>
 			</dr_bonus>
 		</equipment>
-		<equipment version="2" state="equipped">
+		<equipment version="3" state="equipped">
 			<quantity>1</quantity>
 			<description>Mail Leggings</description>
 			<tech_level>2</tech_level>
 			<legality_class>3</legality_class>
 			<value>110</value>
-			<weight units="lbs">15.0</weight>
+			<weight>15 lb</weight>
 			<reference>B283</reference>
 			<categories>
 				<category>Limb Armor</category>
@@ -2921,13 +2926,12 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<amount>4</amount>
 			</dr_bonus>
 		</equipment>
-		<equipment version="2" state="equipped">
+		<equipment version="3" state="equipped">
 			<quantity>1</quantity>
 			<description>Leather Gloves</description>
 			<tech_level>1</tech_level>
 			<legality_class>-</legality_class>
 			<value>30</value>
-			<weight units="lbs">0.0</weight>
 			<reference>B284</reference>
 			<categories>
 				<category>Gloves</category>
@@ -2937,13 +2941,13 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<amount>2</amount>
 			</dr_bonus>
 		</equipment>
-		<equipment version="2" state="equipped">
+		<equipment version="3" state="equipped">
 			<quantity>1</quantity>
 			<description>Boots</description>
 			<tech_level>2</tech_level>
 			<legality_class>-</legality_class>
 			<value>80</value>
-			<weight units="lbs">3.0</weight>
+			<weight>3 lb</weight>
 			<reference>B284</reference>
 			<categories>
 				<category>Footwear</category>
@@ -2953,13 +2957,13 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<amount>2</amount>
 			</dr_bonus>
 		</equipment>
-		<equipment version="2" state="equipped">
+		<equipment version="3" state="equipped">
 			<quantity>1</quantity>
 			<description>Crossbow (ST14)</description>
 			<tech_level>2</tech_level>
 			<legality_class>4</legality_class>
 			<value>195</value>
-			<weight units="lbs">6.0</weight>
+			<weight>6 lb</weight>
 			<reference>B276</reference>
 			<ranged_weapon>
 				<damage>2d imp</damage>
@@ -2983,22 +2987,22 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				<category>Missile Weapon</category>
 			</categories>
 		</equipment>
-		<equipment_container version="2" open="yes" state="equipped">
+		<equipment_container version="3" open="yes" state="equipped">
 			<description>Bolt Case</description>
 			<legality_class>4</legality_class>
 			<value>20</value>
-			<weight units="lbs">1.0</weight>
+			<weight>1 lb</weight>
 			<notes>Holds 20 bolts</notes>
 			<prereq_list all="yes">
-				<contained_weight_prereq has="yes" compare="at_most" units="lbs">1.21</contained_weight_prereq>
+				<contained_weight_prereq has="yes" compare="at most">1.21 lb</contained_weight_prereq>
 			</prereq_list>
-			<equipment version="2" state="equipped">
+			<equipment version="3" state="equipped">
 				<quantity>20</quantity>
 				<description>Crossbow Bolt</description>
 				<tech_level>2</tech_level>
 				<legality_class>4</legality_class>
 				<value>2</value>
-				<weight units="lbs">0.06</weight>
+				<weight>0.06 lb</weight>
 				<reference>B276</reference>
 				<categories>
 					<category>Ammunition</category>
@@ -3006,25 +3010,25 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 				</categories>
 			</equipment>
 		</equipment_container>
-		<equipment_container version="2" open="yes" state="equipped">
+		<equipment_container version="3" open="yes" state="equipped">
 			<description>Leather Belt</description>
 			<tech_level>2</tech_level>
 			<legality_class>-</legality_class>
 			<value>5</value>
-			<weight units="lbs">0.25</weight>
-			<equipment_container version="2" open="yes" state="equipped">
+			<weight>0.25 lb</weight>
+			<equipment_container version="3" open="yes" state="equipped">
 				<description>Scabbard, Sword</description>
 				<tech_level>1</tech_level>
 				<legality_class>4</legality_class>
 				<value>5</value>
-				<weight units="lbs">0.5</weight>
-				<equipment version="2" state="equipped">
+				<weight>0.5 lb</weight>
+				<equipment version="3" state="equipped">
 					<quantity>1</quantity>
 					<description>Shortsword</description>
 					<tech_level>2</tech_level>
 					<legality_class>4</legality_class>
 					<value>400</value>
-					<weight units="lbs">2.0</weight>
+					<weight>2 lb</weight>
 					<reference>B273</reference>
 					<melee_weapon>
 						<damage>sw cut</damage>
@@ -3145,19 +3149,19 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 					</categories>
 				</equipment>
 			</equipment_container>
-			<equipment_container version="2" open="yes" state="equipped">
+			<equipment_container version="3" open="yes" state="equipped">
 				<description>Scabbard, Knife</description>
 				<tech_level>1</tech_level>
 				<legality_class>4</legality_class>
 				<value>3</value>
-				<weight units="lbs">0.3</weight>
-				<equipment version="2" state="equipped">
+				<weight>0.3 lb</weight>
+				<equipment version="3" state="equipped">
 					<quantity>1</quantity>
 					<description>Small Knife</description>
 					<tech_level>0</tech_level>
 					<legality_class>4</legality_class>
 					<value>30</value>
-					<weight units="lbs">0.5</weight>
+					<weight>0.5 lb</weight>
 					<reference>B272</reference>
 					<melee_weapon>
 						<damage>sw-3 cut</damage>
@@ -3259,112 +3263,112 @@ zenAh4duo/uUtuLgDC+D7Jz/HzqC1VWwj5JaAAAAAElFTkSuQmCC
 					</categories>
 				</equipment>
 			</equipment_container>
-			<equipment_container version="2" open="yes" state="equipped">
+			<equipment_container version="3" open="yes" state="equipped">
 				<description>Purse, Small</description>
 				<tech_level>1</tech_level>
 				<legality_class>4</legality_class>
 				<value>10</value>
-				<weight units="lbs">0.2</weight>
+				<weight>0.2 lb</weight>
 				<reference>B288</reference>
 				<prereq_list all="yes">
-					<contained_weight_prereq has="yes" compare="at_most" units="lbs">1.0</contained_weight_prereq>
+					<contained_weight_prereq has="yes" compare="at most">1 lb</contained_weight_prereq>
 				</prereq_list>
-				<equipment version="2" state="equipped">
+				<equipment version="3" state="equipped">
 					<quantity>6</quantity>
 					<description>Silver Eagle</description>
 					<legality_class>4</legality_class>
 					<value>20</value>
-					<weight units="lbs">0.0040</weight>
+					<weight>0.004 lb</weight>
 					<categories>
 						<category>Money: Alternative Medieval Coins</category>
 					</categories>
 				</equipment>
-				<equipment version="2" state="equipped">
+				<equipment version="3" state="equipped">
 					<quantity>9</quantity>
 					<description>Copper Slug</description>
 					<legality_class>4</legality_class>
 					<value>4</value>
-					<weight units="lbs">0.032</weight>
+					<weight>0.032 lb</weight>
 					<categories>
 						<category>Money: Alternative Medieval Coins</category>
 					</categories>
 				</equipment>
-				<equipment version="2" state="equipped">
+				<equipment version="3" state="equipped">
 					<quantity>12</quantity>
 					<description>Copper Penny</description>
 					<legality_class>4</legality_class>
 					<value>1</value>
-					<weight units="lbs">0.0080</weight>
+					<weight>0.008 lb</weight>
 					<categories>
 						<category>Money: Alternative Medieval Coins</category>
 					</categories>
 				</equipment>
 			</equipment_container>
 		</equipment_container>
-		<equipment_container version="2" open="yes" state="equipped">
+		<equipment_container version="3" open="yes" state="equipped">
 			<description>Backpack, Small</description>
 			<tech_level>1</tech_level>
 			<legality_class>4</legality_class>
 			<value>60</value>
-			<weight units="lbs">3.0</weight>
+			<weight>3 lb</weight>
 			<reference>B288</reference>
 			<prereq_list all="yes">
-				<contained_weight_prereq has="yes" compare="at_most" units="lbs">40.0</contained_weight_prereq>
+				<contained_weight_prereq has="yes" compare="at most">40 lb</contained_weight_prereq>
 			</prereq_list>
-			<equipment_container version="2" open="yes" state="equipped">
+			<equipment_container version="3" open="yes" state="equipped">
 				<description>Wineskin</description>
 				<tech_level>0</tech_level>
 				<legality_class>4</legality_class>
 				<value>10</value>
-				<weight units="lbs">0.25</weight>
+				<weight>0.25 lb</weight>
 				<reference>B288</reference>
 				<prereq_list all="yes">
-					<contained_weight_prereq has="yes" compare="at_most" units="lbs">8.0</contained_weight_prereq>
+					<contained_weight_prereq has="yes" compare="at most">8 lb</contained_weight_prereq>
 				</prereq_list>
-				<equipment version="2" state="equipped">
+				<equipment version="3" state="equipped">
 					<quantity>1</quantity>
 					<description>Water, 1 pint</description>
 					<legality_class>4</legality_class>
 					<value>0</value>
-					<weight units="lbs">2.0</weight>
+					<weight>2 lb</weight>
 				</equipment>
 			</equipment_container>
-			<equipment version="2" state="equipped">
+			<equipment version="3" state="equipped">
 				<quantity>3</quantity>
 				<description>Traveler's Rations</description>
 				<tech_level>0</tech_level>
 				<legality_class>4</legality_class>
 				<value>2</value>
-				<weight units="lbs">0.5</weight>
+				<weight>0.5 lb</weight>
 				<reference>B288</reference>
 				<notes>One meal</notes>
 			</equipment>
 		</equipment_container>
-		<equipment_container version="2" open="yes" state="not_carried">
+		<equipment_container version="3" open="yes" state="not carried">
 			<description>Draft Horse (ST 60, DX 9, IQ 4, HT 16, Move 12)</description>
 			<legality_class>4</legality_class>
 			<value>2000</value>
-			<weight units="lbs">2000.0</weight>
-			<equipment version="2" state="not_carried">
+			<weight>2000 lb</weight>
+			<equipment version="3" state="not carried">
 				<quantity>1</quantity>
 				<description>Tack &amp; Harness</description>
 				<legality_class>4</legality_class>
 				<value>150</value>
-				<weight units="lbs">20.0</weight>
+				<weight>20 lb</weight>
 			</equipment>
 		</equipment_container>
 	</equipment_list>
-	<print_settings printer="HP Color LaserJet 3800" units="in">
-		<orientation>Portrait</orientation>
+	<print_settings printer="HP LaserJet M1536dnf MFP (C1388F)" units="in">
+		<orientation>portrait</orientation>
 		<width>8.5</width>
 		<height>11</height>
 		<top_margin>0.5</top_margin>
 		<left_margin>0.5</left_margin>
 		<bottom_margin>0.25</bottom_margin>
 		<right_margin>0.5</right_margin>
-		<ink_chromaticity>Monochrome</ink_chromaticity>
-		<sides>Duplex</sides>
-		<quality>Normal</quality>
+		<ink_chromaticity>monochrome</ink_chromaticity>
+		<sides>duplex</sides>
+		<quality>normal</quality>
 		<resolution>120000</resolution>
 	</print_settings>
 </character>

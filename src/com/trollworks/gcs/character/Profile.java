@@ -514,7 +514,7 @@ public class Profile {
 					ImageIO.write(mPortrait, FileType.PNG_EXTENSION, baos);
 					out.writeComment(PORTRAIT_COMMENT);
 					out.startSimpleTagEOL(TAG_PORTRAIT);
-					out.println(Base64.getMimeEncoder().encodeToString(baos.toByteArray()));
+					out.println(Text.standardizeLineEndings(Base64.getMimeEncoder().encodeToString(baos.toByteArray())));
 					out.endTagEOL(TAG_PORTRAIT, true);
 				}
 			} catch (Exception ex) {
