@@ -12,7 +12,6 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.preferences.SheetPreferences;
@@ -20,6 +19,7 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.ui.RetinaIcon;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.Localization;
@@ -375,8 +375,7 @@ public class Profile {
 	private static final String[]	HAIR_OPTIONS;
 	private GURPSCharacter			mCharacter;
 	private boolean					mCustomPortrait;
-	private StdImage				mPortrait;
-	private StdImage				mDisplayPortrait;
+	private RetinaIcon				mPortrait;
 	private String					mName;
 	private String					mTitle;
 	private int						mAge;
@@ -401,7 +400,6 @@ public class Profile {
 		mCharacter = character;
 		mCustomPortrait = false;
 		mPortrait = null;
-		mDisplayPortrait = null;
 		mTitle = EMPTY;
 		mAge = full ? getRandomAge() : 0;
 		mBirthday = full ? getRandomMonthAndDay() : EMPTY;
@@ -511,7 +509,7 @@ public class Profile {
 		if (mCustomPortrait && mPortrait != null) {
 			try {
 				try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-					ImageIO.write(mPortrait, FileType.PNG_EXTENSION, baos);
+					ImageIO.write(mPortrait.getRetina(), FileType.PNG_EXTENSION, baos);
 					out.writeComment(PORTRAIT_COMMENT);
 					out.startSimpleTagEOL(TAG_PORTRAIT);
 					out.println(Text.standardizeLineEndings(Base64.getMimeEncoder().encodeToString(baos.toByteArray())));
@@ -528,14 +526,9 @@ public class Profile {
 		setSizeModifierBonus(mCharacter.getIntegerBonusFor(GURPSCharacter.ATTRIBUTES_PREFIX + BonusAttributeType.SM.name()));
 	}
 
-	/**
-	 * @param forPrinting Pass in <code>true</code> to retrieve the double resolution portrait (for
-	 *            printing), or <code>false</code> to retrieve the normal resolution portrait (for
-	 *            display).
-	 * @return The portrait.
-	 */
-	public StdImage getPortrait(boolean forPrinting) {
-		return forPrinting ? mPortrait : mDisplayPortrait;
+	/** @return The portrait. */
+	public RetinaIcon getPortrait() {
+		return mPortrait;
 	}
 
 	/**
@@ -544,7 +537,7 @@ public class Profile {
 	 * @param portrait The new portrait.
 	 */
 	public void setPortrait(StdImage portrait) {
-		if (mPortrait != portrait) {
+		if (portrait == null ? mPortrait != null : mPortrait.getRetina() != portrait) {
 			mCustomPortrait = true;
 			mCharacter.postUndoEdit(PORTRAIT_UNDO, ID_PORTRAIT, mPortrait, portrait);
 			setPortraitInternal(portrait);
@@ -555,13 +548,22 @@ public class Profile {
 	private void setPortraitInternal(StdImage portrait) {
 		if (portrait == null) {
 			mPortrait = null;
-			mDisplayPortrait = null;
 		} else {
-			if (portrait.getWidth() != PORTRAIT_WIDTH * 2 || portrait.getHeight() != PORTRAIT_HEIGHT * 2) {
-				portrait = StdImage.scale(portrait, PORTRAIT_WIDTH * 2, PORTRAIT_HEIGHT * 2);
+			StdImage normal;
+			StdImage retina;
+			int width = portrait.getWidth();
+			int height = portrait.getHeight();
+			if (width == PORTRAIT_WIDTH * 2 && height == PORTRAIT_HEIGHT * 2) {
+				retina = portrait;
+				normal = StdImage.scale(retina, PORTRAIT_WIDTH, PORTRAIT_HEIGHT);
+			} else if (width == PORTRAIT_WIDTH && height == PORTRAIT_HEIGHT) {
+				normal = portrait;
+				retina = StdImage.scale(normal, PORTRAIT_WIDTH * 2, PORTRAIT_HEIGHT * 2);
+			} else {
+				retina = StdImage.scale(portrait, PORTRAIT_WIDTH * 2, PORTRAIT_HEIGHT * 2);
+				normal = StdImage.scale(retina, PORTRAIT_WIDTH, PORTRAIT_HEIGHT);
 			}
-			mPortrait = portrait;
-			mDisplayPortrait = StdImage.scale(mPortrait, PORTRAIT_WIDTH, PORTRAIT_HEIGHT);
+			mPortrait = new RetinaIcon(normal, retina);
 		}
 	}
 
@@ -1214,7 +1216,7 @@ public class Profile {
 	 */
 	public static StdImage getPortraitFromPortraitPath(String path) {
 		if (DEFAULT_PORTRAIT.equals(path)) {
-			return GCSImages.getDefaultPortrait();
+			return StdImage.get("default_portrait"); //$NON-NLS-1$
 		}
 		return path != null ? StdImage.loadImage(new File(path)) : null;
 	}

@@ -15,7 +15,7 @@ import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
-import com.trollworks.toolkit.ui.border.BoxedDropShadowBorder;
+import com.trollworks.toolkit.ui.border.TitledBorder;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.ActionPanel;
 import com.trollworks.toolkit.utility.Localization;
@@ -59,7 +59,7 @@ public class PortraitPreferencePanel extends ActionPanel {
 	public PortraitPreferencePanel(StdImage image) {
 		super();
 		mImage = image;
-		setBorder(new BoxedDropShadowBorder(UIManager.getFont(GCSFonts.KEY_LABEL), PORTRAIT, false));
+		setBorder(new TitledBorder(UIManager.getFont(GCSFonts.KEY_LABEL), PORTRAIT));
 		Insets insets = getInsets();
 		UIUtilities.setOnlySize(this, new Dimension(insets.left + insets.right + Profile.PORTRAIT_WIDTH, insets.top + insets.bottom + Profile.PORTRAIT_HEIGHT));
 		setToolTipText(MessageFormat.format(PORTRAIT_TOOLTIP, new Integer(Profile.PORTRAIT_WIDTH * 2), new Integer(Profile.PORTRAIT_HEIGHT * 2)));

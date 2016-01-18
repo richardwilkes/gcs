@@ -14,7 +14,7 @@ package com.trollworks.gcs.template;
 import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.character.DropPanel;
 import com.trollworks.toolkit.ui.TextDrawing;
-import com.trollworks.toolkit.ui.border.BoxedDropShadowBorder;
+import com.trollworks.toolkit.ui.border.TitledBorder;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineHeader;
@@ -48,7 +48,7 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
 		TemplateSheet.prepOutline(mOutline);
 		add(mHeader);
 		add(mOutline);
-		setBorder(new BoxedDropShadowBorder(false));
+		setBorder(new TitledBorder());
 		setLayout(this);
 	}
 

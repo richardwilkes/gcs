@@ -15,7 +15,7 @@ import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.TextDrawing;
-import com.trollworks.toolkit.ui.border.BoxedDropShadowBorder;
+import com.trollworks.toolkit.ui.border.TitledBorder;
 import com.trollworks.toolkit.ui.widget.ActionPanel;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.Text;
@@ -69,7 +69,7 @@ public class NotesPanel extends ActionPanel {
 	 */
 	public NotesPanel(String notes, boolean continued) {
 		super();
-		setBorder(new CompoundBorder(new BoxedDropShadowBorder(UIManager.getFont(GCSFonts.KEY_LABEL), continued ? NOTES_CONTINUED : NOTES, false), new EmptyBorder(0, 2, 0, 2)));
+		setBorder(new CompoundBorder(new TitledBorder(UIManager.getFont(GCSFonts.KEY_LABEL), continued ? NOTES_CONTINUED : NOTES), new EmptyBorder(0, 2, 0, 2)));
 		setAlignmentY(-1f);
 		setEnabled(true);
 		setOpaque(true);

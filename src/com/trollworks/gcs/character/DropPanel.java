@@ -14,7 +14,7 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.UIUtilities;
-import com.trollworks.toolkit.ui.border.BoxedDropShadowBorder;
+import com.trollworks.toolkit.ui.border.TitledBorder;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -39,7 +39,7 @@ public class DropPanel extends JPanel {
 	private HashMap<Component, Color>	mHorizontalBackgrounds;
 	private HashMap<Component, Color>	mVerticalBackgrounds;
 	private boolean						mPaintVerticalFirst;
-	private BoxedDropShadowBorder		mBoxedDropShadowBorder;
+	private TitledBorder				mTitledBorder;
 
 	/**
 	 * Creates a standard panel with a drop shadow.
@@ -96,8 +96,8 @@ public class DropPanel extends JPanel {
 		super(layout);
 		setOpaque(true);
 		setBackground(Color.WHITE);
-		mBoxedDropShadowBorder = new BoxedDropShadowBorder(font, title, false);
-		setBorder(new CompoundBorder(mBoxedDropShadowBorder, new EmptyBorder(0, 2, 1, 2)));
+		mTitledBorder = new TitledBorder(font, title);
+		setBorder(new CompoundBorder(mTitledBorder, new EmptyBorder(0, 2, 1, 2)));
 		setAlignmentY(TOP_ALIGNMENT);
 		mOnlyReportPreferredSize = onlyReportPreferredSize;
 		mHorizontalBackgrounds = new HashMap<>();
@@ -158,7 +158,7 @@ public class DropPanel extends JPanel {
 	protected void paintComponent(Graphics gc) {
 		super.paintComponent(GraphicsUtilities.prepare(gc));
 
-		Insets insets = mBoxedDropShadowBorder.getBorderInsets(this);
+		Insets insets = mTitledBorder.getBorderInsets(this);
 		Rectangle localBounds = getBounds();
 
 		localBounds.x = insets.left;
@@ -220,9 +220,9 @@ public class DropPanel extends JPanel {
 		mPaintVerticalFirst = first;
 	}
 
-	/** @return The {@link BoxedDropShadowBorder}. */
-	public BoxedDropShadowBorder getBoxedDropShadowBorder() {
-		return mBoxedDropShadowBorder;
+	/** @return The {@link TitledBorder}. */
+	public TitledBorder getTitledBorder() {
+		return mTitledBorder;
 	}
 
 	/**

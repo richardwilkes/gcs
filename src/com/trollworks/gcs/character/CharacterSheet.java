@@ -1109,7 +1109,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 		if (key.equals("PORTRAIT")) { //$NON-NLS-1$
 			String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base.getName(), false), FileType.PNG_EXTENSION);
-			StdImage.writePNG(new File(base.getParentFile(), fileName), description.getPortrait(true), 150);
+			StdImage.writePNG(new File(base.getParentFile(), fileName), description.getPortrait().getRetina(), 150);
 			writeXMLData(out, fileName);
 		} else if (key.equals("NAME")) { //$NON-NLS-1$
 			writeXMLText(out, description.getName());

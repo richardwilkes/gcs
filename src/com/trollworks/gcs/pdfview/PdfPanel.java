@@ -17,7 +17,6 @@ import com.trollworks.toolkit.ui.UIUtilities;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
@@ -151,7 +150,7 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 		if (mNeedLoad && mPdf != null) {
 			PDFRenderer renderer = new PDFRenderer(mPdf);
 			try {
-				mImg = renderer.renderImageWithDPI(mPageIndex, SCALES[mScaleIndex] * Toolkit.getDefaultToolkit().getScreenResolution() * (GraphicsUtilities.isRetinaDisplay((Graphics2D) g) ? 2 : 1));
+				mImg = renderer.renderImageWithDPI(mPageIndex, SCALES[mScaleIndex] * Toolkit.getDefaultToolkit().getScreenResolution() * (GraphicsUtilities.isRetinaDisplay(g) ? 2 : 1));
 			} catch (Throwable throwable) {
 				mImg = null;
 				Log.error(throwable);

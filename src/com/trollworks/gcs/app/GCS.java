@@ -24,6 +24,7 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.Fonts;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.utility.BundleInfo;
 import com.trollworks.toolkit.utility.Dice;
@@ -228,6 +229,7 @@ public class GCS {
 		GraphicsUtilities.configureStandardUI();
 		Preferences.setPreferenceFile("gcs.pref"); //$NON-NLS-1$
 		GCSFonts.register();
+		StdImage.addLocation(GCS.class.getResource("images/")); //$NON-NLS-1$
 		Fonts.loadFromPreferences();
 		App.setAboutPanel(AboutPanel.class);
 		registerFileTypes(new GCSFileProxyCreator());

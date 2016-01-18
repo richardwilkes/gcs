@@ -12,7 +12,7 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.widgets.outline.ColumnUtils;
-import com.trollworks.toolkit.ui.border.BoxedDropShadowBorder;
+import com.trollworks.toolkit.ui.border.TitledBorder;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
@@ -35,7 +35,7 @@ public class OutlineInfo {
 	 * @param contentWidth The content width.
 	 */
 	public OutlineInfo(Outline outline, int contentWidth) {
-		Insets insets = new BoxedDropShadowBorder(false).getBorderInsets(null);
+		Insets insets = new TitledBorder().getBorderInsets(null);
 		OutlineModel outlineModel = outline.getModel();
 		int count = outlineModel.getRowCount();
 		List<Column> columns = outlineModel.getColumns();

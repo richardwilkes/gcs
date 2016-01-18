@@ -15,10 +15,10 @@ import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
+import com.trollworks.toolkit.ui.RetinaIcon;
 import com.trollworks.toolkit.ui.UIUtilities;
-import com.trollworks.toolkit.ui.border.BoxedDropShadowBorder;
+import com.trollworks.toolkit.ui.border.TitledBorder;
 import com.trollworks.toolkit.ui.image.StdImage;
-import com.trollworks.toolkit.ui.print.PrintUtilities;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
@@ -27,13 +27,10 @@ import com.trollworks.toolkit.utility.notification.NotifierTarget;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Insets;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.text.MessageFormat;
 
@@ -75,7 +72,7 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 	 */
 	public PortraitPanel(GURPSCharacter character) {
 		super(null, true);
-		setBorder(new BoxedDropShadowBorder(UIManager.getFont(GCSFonts.KEY_LABEL), PORTRAIT, false));
+		setBorder(new TitledBorder(UIManager.getFont(GCSFonts.KEY_LABEL), PORTRAIT));
 		mCharacter = character;
 		Insets insets = getInsets();
 		UIUtilities.setOnlySize(this, new Dimension(insets.left + insets.right + Profile.PORTRAIT_WIDTH, insets.top + insets.bottom + Profile.PORTRAIT_HEIGHT));
@@ -107,27 +104,12 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 	protected void paintComponent(Graphics g) {
 		Graphics2D gc = GraphicsUtilities.prepare(g);
 		super.paintComponent(gc);
-
-		boolean isPrinting = PrintUtilities.isPrinting(this);
-		Image portrait = mCharacter.getDescription().getPortrait(isPrinting);
-
+		RetinaIcon portrait = mCharacter.getDescription().getPortrait();
 		if (portrait != null) {
 			Insets insets = getInsets();
-			Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
-			AffineTransform transform = null;
-
-			if (isPrinting) {
-				transform = gc.getTransform();
-				gc.scale(0.5, 0.5);
-				bounds.x *= 2;
-				bounds.y *= 2;
-			}
 			RenderingHints saved = GraphicsUtilities.setMaximumQualityForGraphics(gc);
-			gc.drawImage(portrait, bounds.x, bounds.y, null);
+			portrait.paintIcon(this, gc, insets.left, insets.top);
 			gc.setRenderingHints(saved);
-			if (isPrinting) {
-				gc.setTransform(transform);
-			}
 		}
 	}
 

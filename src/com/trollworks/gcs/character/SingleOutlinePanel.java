@@ -12,7 +12,7 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.widgets.outline.ColumnUtils;
-import com.trollworks.toolkit.ui.border.BoxedDropShadowBorder;
+import com.trollworks.toolkit.ui.border.TitledBorder;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineHeader;
@@ -22,6 +22,7 @@ import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.LayoutManager2;
 import java.awt.Rectangle;
@@ -45,7 +46,7 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
 		CharacterSheet.prepOutline(mOutline);
 		add(mHeader);
 		add(mOutline);
-		setBorder(new BoxedDropShadowBorder(false));
+		setBorder(new TitledBorder());
 		setLayout(this);
 	}
 
@@ -86,6 +87,14 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
 		bounds.height -= height;
 		mOutline.setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
 		ColumnUtils.pack(mOutline, bounds.width);
+	}
+
+	@Override
+	protected void paintChildren(Graphics g) {
+		super.paintChildren(g);
+		// Only here to compensate for odd behavior on printing where the outline is shifted
+		// slightly and overlaps the border by half a pixel.
+		paintBorder(g);
 	}
 
 	@Override

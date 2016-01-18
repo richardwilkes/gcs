@@ -163,7 +163,7 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
 
 	@Override
 	public void handleNotification(Object producer, String type, Object data) {
-		getBoxedDropShadowBorder().setTitle(getTitle(mCharacter));
+		getTitledBorder().setTitle(getTitle(mCharacter));
 		invalidate();
 		repaint();
 	}

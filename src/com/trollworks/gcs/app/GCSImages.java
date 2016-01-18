@@ -33,10 +33,6 @@ import java.util.jar.Attributes;
 /** Provides standardized image access. */
 @SuppressWarnings("nls")
 public class GCSImages {
-	static {
-		StdImage.addLocation(GCSImages.class.getResource("images/"));
-	}
-
 	/** @return The exotic type icon. */
 	public static final RetinaIcon getExoticTypeIcon() {
 		return new RetinaIcon("exotic_type");
@@ -60,11 +56,6 @@ public class GCSImages {
 	/** @return The supernatural type icon. */
 	public static final RetinaIcon getSupernaturalTypeIcon() {
 		return new RetinaIcon("supernatural_type");
-	}
-
-	/** @return The default portrait. */
-	public static final StdImage getDefaultPortrait() {
-		return StdImage.get("default_portrait");
 	}
 
 	/** @return The 'about' image. */
