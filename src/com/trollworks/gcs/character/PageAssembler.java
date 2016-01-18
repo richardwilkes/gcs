@@ -21,16 +21,18 @@ import java.awt.Insets;
 
 /** Assembles pages in a sheet. */
 public class PageAssembler {
-	private CharacterSheet	mSheet;
-	private Page			mPage;
-	private Wrapper			mContent;
-	private int				mRemaining;
-	private int				mContentHeight;
-	private int				mContentWidth;
+	private static final int	VERTICAL_SLOP	= 2;	// Shouldn't be necessary, but prevents
+														// cut-offs
+	private CharacterSheet		mSheet;
+	private Page				mPage;
+	private Wrapper				mContent;
+	private int					mRemaining;
+	private int					mContentHeight;
+	private int					mContentWidth;
 
 	/**
 	 * Create a new page assembler.
-	 * 
+	 *
 	 * @param sheet The sheet to assemble pages within.
 	 */
 	PageAssembler(CharacterSheet sheet) {
@@ -73,7 +75,7 @@ public class PageAssembler {
 			Insets insets = mPage.getInsets();
 			Dimension size = mPage.getSize();
 			mContentWidth = size.width - (insets.left + insets.right);
-			mContentHeight = size.height - (insets.top + insets.bottom);
+			mContentHeight = size.height - (insets.top + insets.bottom + VERTICAL_SLOP);
 		}
 		mContent = new Wrapper(new ColumnLayout(1, 2, 2, RowDistribution.GIVE_EXCESS_TO_LAST));
 		mContent.setAlignmentY(-1f);
@@ -83,7 +85,7 @@ public class PageAssembler {
 
 	/**
 	 * Add a panel to the content of the page.
-	 * 
+	 *
 	 * @param panel The panel to add.
 	 * @param leftInfo Outline info for the left outline.
 	 * @param rightInfo Outline info for the right outline.
