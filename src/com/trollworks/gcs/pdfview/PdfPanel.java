@@ -126,7 +126,11 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 	}
 
 	private void markPageForLoading() {
-		if (mPageIndex >= 0 && mPageIndex < mPdf.getNumberOfPages()) {
+		int numberOfPages = mPdf.getNumberOfPages();
+		if (mPageIndex >= 0 && mPageIndex == numberOfPages) {
+			mPageIndex = numberOfPages - 1;
+		}
+		if (mPageIndex >= 0 && mPageIndex < numberOfPages) {
 			PDRectangle cropBox = mPdf.getPage(mPageIndex).getCropBox();
 			float scale = SCALES[mScaleIndex] * Toolkit.getDefaultToolkit().getScreenResolution();
 			mWidth = (int) Math.ceil(cropBox.getWidth() / 72 * scale);
@@ -137,7 +141,7 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 			UIUtilities.setOnlySize(this, size);
 			setSize(size);
 			repaint();
-			mOwner.updateStatus(mPageIndex, mPdf.getNumberOfPages(), SCALES[mScaleIndex]);
+			mOwner.updateStatus(mPageIndex, numberOfPages, SCALES[mScaleIndex]);
 		}
 	}
 
