@@ -69,7 +69,7 @@ public class NotesPanel extends ActionPanel {
 	 */
 	public NotesPanel(String notes, boolean continued) {
 		super();
-		setBorder(new CompoundBorder(new BoxedDropShadowBorder(UIManager.getFont(GCSFonts.KEY_LABEL), continued ? NOTES_CONTINUED : NOTES), new EmptyBorder(0, 2, 0, 2)));
+		setBorder(new CompoundBorder(new BoxedDropShadowBorder(UIManager.getFont(GCSFonts.KEY_LABEL), continued ? NOTES_CONTINUED : NOTES, false), new EmptyBorder(0, 2, 0, 2)));
 		setAlignmentY(-1f);
 		setEnabled(true);
 		setOpaque(true);

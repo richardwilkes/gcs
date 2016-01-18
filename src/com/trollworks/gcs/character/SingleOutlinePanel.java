@@ -33,7 +33,7 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
 
 	/**
 	 * Creates a new outline panel.
-	 * 
+	 *
 	 * @param outline The outline to display.
 	 * @param title The localized title for the panel.
 	 * @param useProxy <code>true</code> if a proxy of the outline should be used.
@@ -45,13 +45,13 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
 		CharacterSheet.prepOutline(mOutline);
 		add(mHeader);
 		add(mOutline);
-		setBorder(new BoxedDropShadowBorder());
+		setBorder(new BoxedDropShadowBorder(false));
 		setLayout(this);
 	}
 
 	/**
 	 * Sets the embedded outline's display range.
-	 * 
+	 *
 	 * @param first The first row to display.
 	 * @param last The last row to display.
 	 */

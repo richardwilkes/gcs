@@ -75,7 +75,7 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 	 */
 	public PortraitPanel(GURPSCharacter character) {
 		super(null, true);
-		setBorder(new BoxedDropShadowBorder(UIManager.getFont(GCSFonts.KEY_LABEL), PORTRAIT));
+		setBorder(new BoxedDropShadowBorder(UIManager.getFont(GCSFonts.KEY_LABEL), PORTRAIT, false));
 		mCharacter = character;
 		Insets insets = getInsets();
 		UIUtilities.setOnlySize(this, new Dimension(insets.left + insets.right + Profile.PORTRAIT_WIDTH, insets.top + insets.bottom + Profile.PORTRAIT_HEIGHT));

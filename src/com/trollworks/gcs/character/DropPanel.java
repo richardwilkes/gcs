@@ -43,7 +43,7 @@ public class DropPanel extends JPanel {
 
 	/**
 	 * Creates a standard panel with a drop shadow.
-	 * 
+	 *
 	 * @param layout The layout to use.
 	 */
 	public DropPanel(LayoutManager layout) {
@@ -52,7 +52,7 @@ public class DropPanel extends JPanel {
 
 	/**
 	 * Creates a standard panel with a drop shadow.
-	 * 
+	 *
 	 * @param layout The layout to use.
 	 * @param onlyReportPreferredSize Whether or not minimum and maximum size is reported as
 	 *            preferred size or not.
@@ -63,7 +63,7 @@ public class DropPanel extends JPanel {
 
 	/**
 	 * Creates a standard panel with a drop shadow.
-	 * 
+	 *
 	 * @param layout The layout to use.
 	 * @param title The title to use.
 	 */
@@ -73,7 +73,7 @@ public class DropPanel extends JPanel {
 
 	/**
 	 * Creates a standard panel with a drop shadow.
-	 * 
+	 *
 	 * @param layout The layout to use.
 	 * @param title The title to use.
 	 * @param onlyReportPreferredSize Whether or not minimum and maximum size is reported as
@@ -85,7 +85,7 @@ public class DropPanel extends JPanel {
 
 	/**
 	 * Creates a standard panel with a drop shadow.
-	 * 
+	 *
 	 * @param layout The layout to use.
 	 * @param title The title to use.
 	 * @param font The font to use for the title.
@@ -96,7 +96,7 @@ public class DropPanel extends JPanel {
 		super(layout);
 		setOpaque(true);
 		setBackground(Color.WHITE);
-		mBoxedDropShadowBorder = new BoxedDropShadowBorder(font, title);
+		mBoxedDropShadowBorder = new BoxedDropShadowBorder(font, title, false);
 		setBorder(new CompoundBorder(mBoxedDropShadowBorder, new EmptyBorder(0, 2, 1, 2)));
 		setAlignmentY(TOP_ALIGNMENT);
 		mOnlyReportPreferredSize = onlyReportPreferredSize;
@@ -117,7 +117,7 @@ public class DropPanel extends JPanel {
 	/**
 	 * Marks an area with a specific background color. The panel specified will be used to calculate
 	 * the area's top and bottom, and the background color will span the width of the drop panel.
-	 * 
+	 *
 	 * @param panel The panel to attach the color to.
 	 * @param background The color to attach.
 	 */
@@ -127,7 +127,7 @@ public class DropPanel extends JPanel {
 
 	/**
 	 * Removes a horizontal background added with {@link #addHorizontalBackground(Component,Color)}.
-	 * 
+	 *
 	 * @param panel The panel to remove.
 	 */
 	public void removeHorizontalBackground(Component panel) {
@@ -137,7 +137,7 @@ public class DropPanel extends JPanel {
 	/**
 	 * Marks an area with a specific background color. The panel specified will be used to calculate
 	 * the area's left and right, and the background color will span the height of the drop panel.
-	 * 
+	 *
 	 * @param panel The panel to attach the color to.
 	 * @param background The color to attach.
 	 */
@@ -147,7 +147,7 @@ public class DropPanel extends JPanel {
 
 	/**
 	 * Removes a vertical background added with {@link #addVerticalBackground(Component,Color)}.
-	 * 
+	 *
 	 * @param panel The panel to remove.
 	 */
 	public void removeVerticalBackground(Component panel) {

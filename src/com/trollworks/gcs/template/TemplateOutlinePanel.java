@@ -37,7 +37,7 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
 
 	/**
 	 * Creates a new template outline panel.
-	 * 
+	 *
 	 * @param outline The outline to display.
 	 * @param title The localized title for the panel.
 	 */
@@ -48,7 +48,7 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
 		TemplateSheet.prepOutline(mOutline);
 		add(mHeader);
 		add(mOutline);
-		setBorder(new BoxedDropShadowBorder());
+		setBorder(new BoxedDropShadowBorder(false));
 		setLayout(this);
 	}
 

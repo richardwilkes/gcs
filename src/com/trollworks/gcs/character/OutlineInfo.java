@@ -30,12 +30,12 @@ public class OutlineInfo {
 
 	/**
 	 * Creates a new outline information holder.
-	 * 
+	 *
 	 * @param outline The outline to collect information about.
 	 * @param contentWidth The content width.
 	 */
 	public OutlineInfo(Outline outline, int contentWidth) {
-		Insets insets = new BoxedDropShadowBorder().getBorderInsets(null);
+		Insets insets = new BoxedDropShadowBorder(false).getBorderInsets(null);
 		OutlineModel outlineModel = outline.getModel();
 		int count = outlineModel.getRowCount();
 		List<Column> columns = outlineModel.getColumns();
