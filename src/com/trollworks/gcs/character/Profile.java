@@ -417,7 +417,7 @@ public class Profile {
 		mPlayerName = full ? getDefaultPlayerName() : EMPTY;
 		mCampaign = full ? getDefaultCampaign() : EMPTY;
 		mNotes = EMPTY;
-		setPortraitInternal(getPortraitFromPortraitPath(getDefaultPortraitPath()));
+		mPortrait = createPortrait(getPortraitFromPortraitPath(getDefaultPortraitPath()));
 	}
 
 	void load(XMLReader reader) throws IOException {
@@ -471,7 +471,7 @@ public class Profile {
 			mReligion = reader.readText();
 		} else if (TAG_PORTRAIT.equals(tag)) {
 			try {
-				setPortraitInternal(StdImage.loadImage(Base64.getMimeDecoder().decode(reader.readText())));
+				mPortrait = createPortrait(StdImage.loadImage(Base64.getMimeDecoder().decode(reader.readText())));
 				mCustomPortrait = true;
 			} catch (Exception imageException) {
 				// Ignore
@@ -540,31 +540,30 @@ public class Profile {
 		if (portrait == null ? mPortrait != null : mPortrait.getRetina() != portrait) {
 			mCustomPortrait = true;
 			mCharacter.postUndoEdit(PORTRAIT_UNDO, ID_PORTRAIT, mPortrait, portrait);
-			setPortraitInternal(portrait);
+			mPortrait = createPortrait(portrait);
 			mCharacter.notifySingle(ID_PORTRAIT, mPortrait);
 		}
 	}
 
-	private void setPortraitInternal(StdImage portrait) {
-		if (portrait == null) {
-			mPortrait = null;
-		} else {
-			StdImage normal;
-			StdImage retina;
-			int width = portrait.getWidth();
-			int height = portrait.getHeight();
-			if (width == PORTRAIT_WIDTH * 2 && height == PORTRAIT_HEIGHT * 2) {
-				retina = portrait;
-				normal = StdImage.scale(retina, PORTRAIT_WIDTH, PORTRAIT_HEIGHT);
-			} else if (width == PORTRAIT_WIDTH && height == PORTRAIT_HEIGHT) {
-				normal = portrait;
-				retina = StdImage.scale(normal, PORTRAIT_WIDTH * 2, PORTRAIT_HEIGHT * 2);
-			} else {
-				retina = StdImage.scale(portrait, PORTRAIT_WIDTH * 2, PORTRAIT_HEIGHT * 2);
-				normal = StdImage.scale(retina, PORTRAIT_WIDTH, PORTRAIT_HEIGHT);
-			}
-			mPortrait = new RetinaIcon(normal, retina);
+	public static RetinaIcon createPortrait(StdImage image) {
+		if (image == null) {
+			return null;
 		}
+		StdImage normal;
+		StdImage retina;
+		int width = image.getWidth();
+		int height = image.getHeight();
+		if (width == PORTRAIT_WIDTH * 2 && height == PORTRAIT_HEIGHT * 2) {
+			retina = image;
+			normal = StdImage.scale(retina, PORTRAIT_WIDTH, PORTRAIT_HEIGHT);
+		} else if (width == PORTRAIT_WIDTH && height == PORTRAIT_HEIGHT) {
+			normal = image;
+			retina = StdImage.scale(normal, PORTRAIT_WIDTH * 2, PORTRAIT_HEIGHT * 2);
+		} else {
+			retina = StdImage.scale(image, PORTRAIT_WIDTH * 2, PORTRAIT_HEIGHT * 2);
+			normal = StdImage.scale(retina, PORTRAIT_WIDTH, PORTRAIT_HEIGHT);
+		}
+		return new RetinaIcon(normal, retina);
 	}
 
 	/** @return The name. */

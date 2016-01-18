@@ -14,6 +14,7 @@ package com.trollworks.gcs.preferences;
 import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.ui.RetinaIcon;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.border.TitledBorder;
 import com.trollworks.toolkit.ui.image.StdImage;
@@ -49,7 +50,7 @@ public class PortraitPreferencePanel extends ActionPanel {
 		Localization.initialize();
 	}
 
-	private StdImage mImage;
+	private RetinaIcon mPortrait;
 
 	/**
 	 * Creates a new character portrait.
@@ -58,7 +59,7 @@ public class PortraitPreferencePanel extends ActionPanel {
 	 */
 	public PortraitPreferencePanel(StdImage image) {
 		super();
-		mImage = image;
+		mPortrait = Profile.createPortrait(image);
 		setBorder(new TitledBorder(UIManager.getFont(GCSFonts.KEY_LABEL), PORTRAIT));
 		Insets insets = getInsets();
 		UIUtilities.setOnlySize(this, new Dimension(insets.left + insets.right + Profile.PORTRAIT_WIDTH, insets.top + insets.bottom + Profile.PORTRAIT_HEIGHT));
@@ -75,7 +76,7 @@ public class PortraitPreferencePanel extends ActionPanel {
 
 	/** @param image The new portrait. */
 	public void setPortrait(StdImage image) {
-		mImage = image;
+		mPortrait = Profile.createPortrait(image);
 		repaint();
 	}
 
@@ -85,8 +86,8 @@ public class PortraitPreferencePanel extends ActionPanel {
 		Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
 		gc.setColor(Color.white);
 		gc.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-		if (mImage != null) {
-			gc.drawImage(mImage, bounds.x, bounds.y, null);
+		if (mPortrait != null) {
+			mPortrait.paintIcon(this, gc, insets.left, insets.top);
 		}
 	}
 }

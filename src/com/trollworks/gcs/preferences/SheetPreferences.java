@@ -465,11 +465,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	}
 
 	private PortraitPreferencePanel createPortrait() {
-		StdImage image = Profile.getPortraitFromPortraitPath(Profile.getDefaultPortraitPath());
-		if (image != null) {
-			image = StdImage.scale(image, Profile.PORTRAIT_WIDTH, Profile.PORTRAIT_HEIGHT);
-		}
-		PortraitPreferencePanel panel = new PortraitPreferencePanel(image);
+		PortraitPreferencePanel panel = new PortraitPreferencePanel(Profile.getPortraitFromPortraitPath(Profile.getDefaultPortraitPath()));
 		panel.addActionListener(this);
 		add(panel);
 		return panel;
@@ -609,9 +605,6 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private void setPortrait(String path) {
 		StdImage image = Profile.getPortraitFromPortraitPath(path);
 		Profile.setDefaultPortraitPath(path);
-		if (image != null) {
-			image = StdImage.scale(image, Profile.PORTRAIT_WIDTH, Profile.PORTRAIT_HEIGHT);
-		}
 		mPortrait.setPortrait(image);
 	}
 
