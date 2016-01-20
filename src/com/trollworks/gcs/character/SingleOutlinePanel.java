@@ -22,7 +22,6 @@ import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.LayoutManager2;
 import java.awt.Rectangle;
@@ -82,19 +81,11 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
 		Insets insets = getInsets();
 		Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
 		int height = mHeader.getPreferredSize().height;
-		mHeader.setBounds(bounds.x, bounds.y, bounds.width, height);
+		mHeader.setLocation(bounds.x, bounds.y);
 		bounds.y += height;
 		bounds.height -= height;
 		mOutline.setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
 		ColumnUtils.pack(mOutline, bounds.width);
-	}
-
-	@Override
-	protected void paintChildren(Graphics g) {
-		super.paintChildren(g);
-		// Only here to compensate for odd behavior on printing where the outline is shifted
-		// slightly and overlaps the border by half a pixel.
-		paintBorder(g);
 	}
 
 	@Override
