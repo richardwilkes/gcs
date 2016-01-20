@@ -44,9 +44,9 @@
 	<property name="iText_path" value="${lib}/${iText}"/>
 	<property name="commons_logging" value="commons-logging-1.2.jar"/>
 	<property name="commons_logging_path" value="${lib}/${commons_logging}"/>
-	<property name="fontbox" value="fontbox-2.0.0-RC2.jar"/>
+	<property name="fontbox" value="fontbox-2.0.0-RC3.jar"/>
 	<property name="fontbox_path" value="${lib}/${fontbox}"/>
-	<property name="pdfbox" value="pdfbox-2.0.0-RC2.jar"/>
+	<property name="pdfbox" value="pdfbox-2.0.0-RC3.jar"/>
 	<property name="pdfbox_path" value="${lib}/${pdfbox}"/>
 	<property name="build_root" value="ant_build"/>
 	<property name="gcs_build" value="${build_root}/${app}"/>

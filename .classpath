@@ -10,8 +10,8 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/toolkit"/>
 	<classpathentry kind="lib" path="libraries/iText-2.1.7.jar" sourcepath="libraries/iText-2.1.7-src.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/apple_stubs"/>
-	<classpathentry kind="lib" path="libraries/fontbox-2.0.0-RC2.jar" sourcepath="libraries/fontbox-2.0.0-RC2-src.zip"/>
-	<classpathentry kind="lib" path="libraries/pdfbox-2.0.0-RC2.jar" sourcepath="libraries/pdfbox-2.0.0-RC2-src.zip"/>
+	<classpathentry kind="lib" path="libraries/fontbox-2.0.0-RC3.jar" sourcepath="libraries/fontbox-2.0.0-RC3-src.zip"/>
+	<classpathentry kind="lib" path="libraries/pdfbox-2.0.0-RC3.jar" sourcepath="libraries/pdfbox-2.0.0-RC3-src.zip"/>
 	<classpathentry kind="lib" path="libraries/commons-logging-1.2.jar" sourcepath="libraries/commons-logging-1.2-src.zip"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
