@@ -184,10 +184,8 @@ public class DropPanel extends JPanel {
 				if (parent != this) {
 					UIUtilities.convertRectangle(bounds, parent, this);
 				}
-				bounds.x = localBounds.x;
-				bounds.width = localBounds.width;
 				gc.setColor(entry.getValue());
-				gc.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+				gc.fillRect(localBounds.x, bounds.y, localBounds.width, bounds.height);
 			}
 		}
 	}
@@ -202,10 +200,8 @@ public class DropPanel extends JPanel {
 				if (parent != this) {
 					UIUtilities.convertRectangle(bounds, parent, this);
 				}
-				bounds.y = localBounds.y;
-				bounds.height = localBounds.height;
 				gc.setColor(entry.getValue());
-				gc.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+				gc.fillRect(bounds.x, localBounds.y, bounds.width, localBounds.height);
 			}
 		}
 	}
