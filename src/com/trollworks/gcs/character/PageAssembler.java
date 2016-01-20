@@ -21,7 +21,7 @@ import java.awt.Insets;
 
 /** Assembles pages in a sheet. */
 public class PageAssembler {
-	private static final int	VERTICAL_SLOP	= 2;	// Shouldn't be necessary, but prevents
+	private static final int	VERTICAL_SLOP	= 4;	// Shouldn't be necessary, but prevents
 														// cut-offs
 	private CharacterSheet		mSheet;
 	private Page				mPage;
