@@ -29,7 +29,7 @@ public class DoubleOutlinePanel extends JPanel implements LayoutManager2 {
 
 	/**
 	 * Creates a new double outline panel.
-	 * 
+	 *
 	 * @param leftOutline The outline to display on the left.
 	 * @param leftTitle The localized title for the left panel.
 	 * @param rightOutline The outline to display on the right.
@@ -47,7 +47,7 @@ public class DoubleOutlinePanel extends JPanel implements LayoutManager2 {
 
 	/**
 	 * Sets the embedded outline's display range.
-	 * 
+	 *
 	 * @param forRight <code>true</code> to set the right outline.
 	 * @param first The first row to display.
 	 * @param last The last row to display.
@@ -105,36 +105,16 @@ public class DoubleOutlinePanel extends JPanel implements LayoutManager2 {
 	public void layoutContainer(Container parent) {
 		Insets insets = getInsets();
 		Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
-		int left = mLeftPanel.getPreferredWidth();
-		int right = mRightPanel.getPreferredWidth();
-
-		if (left + right != bounds.width - 2) {
-			int half = (bounds.width - 2) / 2;
-
-			if (left < half && right < half) {
-				right = half;
-				left = bounds.width - (half + 2);
-			} else if (left < half) {
-				right = bounds.width - (left + 2);
-			} else if (right < half) {
-				left = bounds.width - (right + 2);
-			} else {
-				right = half;
-				left = bounds.width - (half + 2);
-			}
-		}
+		int right = bounds.width / 2 - 1;
+		int left = bounds.width - (2 + right);
 		mLeftPanel.setBounds(bounds.x, bounds.y, left, bounds.height);
 		mRightPanel.setBounds(bounds.x + left + 2, bounds.y, right, bounds.height);
 	}
 
 	private Dimension getLayoutSize(Dimension leftSize, Dimension rightSize) {
-		Dimension size = new Dimension(leftSize);
+		Dimension size = new Dimension(leftSize.width + rightSize.width, Math.max(leftSize.height, rightSize.height));
 		Insets insets = getInsets();
-
-		if (leftSize.height < rightSize.height) {
-			size.height = rightSize.height;
-		}
-		size.width += rightSize.width + 2 + insets.left + insets.right;
+		size.width += 2 + insets.left + insets.right;
 		size.height += insets.top + insets.bottom;
 		return size;
 	}
