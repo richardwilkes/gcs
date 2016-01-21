@@ -684,6 +684,11 @@ public class Spell extends ListRow implements HasSourceReference {
 	}
 
 	@Override
+	public String getReferenceHighlight() {
+		return getName();
+	}
+
+	@Override
 	public Object getData(Column column) {
 		return SpellColumn.values()[column.getID()].getData(this);
 	}

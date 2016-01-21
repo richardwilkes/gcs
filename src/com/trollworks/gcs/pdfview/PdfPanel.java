@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.pdfview;
 
-import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.UIUtilities;
 
@@ -31,9 +30,9 @@ import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDPageLabels;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.rendering.PDFRenderer;
 
 /** A panel that will display a single page of a PDF. */
 public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scrollable {
@@ -42,22 +41,24 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 	private PDDocument			mPdf;
 	private int					mPageIndex;
 	private int					mScaleIndex	= Arrays.binarySearch(SCALES, 1f);
+	private String				mHighlight;
 	private BufferedImage		mImg;
 	private int					mWidth;
 	private int					mHeight;
 	private boolean				mNeedLoad;
+	private boolean				mIgnorePageChange;
 
-	public PdfPanel(PdfDockable owner, PDDocument pdf, PdfRef pdfRef, int page) {
+	public PdfPanel(PdfDockable owner, PDDocument pdf, PdfRef pdfRef, int page, String highlight) {
 		mOwner = owner;
 		mPdf = pdf;
 		setFocusable(true);
 		addMouseListener(this);
 		addKeyListener(this);
-		goToPage(pdfRef, page);
+		goToPage(pdfRef, page, highlight);
 	}
 
-	public void goToPage(PdfRef pdfRef, int page) {
-		if (mPdf != null) {
+	public void goToPage(PdfRef pdfRef, int page, String highlight) {
+		if (!mIgnorePageChange && mPdf != null) {
 			int lastPageIndex = mPageIndex;
 			mPageIndex = page;
 			try {
@@ -72,30 +73,38 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 				// Had no catalog... we will just use the original page number
 			}
 			mPageIndex += pdfRef.getPageToIndexOffset();
-			if (mPageIndex != lastPageIndex) {
+			if (mPageIndex != lastPageIndex || isHighlightNew(highlight)) {
+				mHighlight = highlight;
 				markPageForLoading();
 			}
 		}
 	}
 
-	public int goToPageIndex(int pageIndex) {
-		if (mPdf != null && mPageIndex != pageIndex && pageIndex >= 0 && pageIndex < mPdf.getNumberOfPages()) {
+	private boolean isHighlightNew(String highlight) {
+		return mHighlight == null ? highlight != null : !mHighlight.equals(highlight);
+	}
+
+	public int goToPageIndex(int pageIndex, String highlight) {
+		if (!mIgnorePageChange && mPdf != null && (mPageIndex != pageIndex || isHighlightNew(highlight)) && pageIndex >= 0 && pageIndex < mPdf.getNumberOfPages()) {
 			mPageIndex = pageIndex;
+			mHighlight = highlight;
 			markPageForLoading();
 		}
 		return mPageIndex;
 	}
 
 	public void previousPage() {
-		if (mPdf != null && mPageIndex > 0) {
+		if (!mIgnorePageChange && mPdf != null && mPageIndex > 0) {
 			mPageIndex--;
+			mHighlight = null;
 			markPageForLoading();
 		}
 	}
 
 	public void nextPage() {
-		if (mPdf != null && mPageIndex < mPdf.getNumberOfPages()) {
+		if (!mIgnorePageChange && mPdf != null && mPageIndex < mPdf.getNumberOfPages()) {
 			mPageIndex++;
+			mHighlight = null;
 			markPageForLoading();
 		}
 	}
@@ -130,7 +139,8 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 			mPageIndex = numberOfPages - 1;
 		}
 		if (mPageIndex >= 0 && mPageIndex < numberOfPages) {
-			PDRectangle cropBox = mPdf.getPage(mPageIndex).getCropBox();
+			PDPage page = mPdf.getPage(mPageIndex);
+			PDRectangle cropBox = page.getCropBox();
 			float scale = SCALES[mScaleIndex] * Toolkit.getDefaultToolkit().getScreenResolution();
 			mWidth = (int) Math.ceil(cropBox.getWidth() / 72 * scale);
 			mHeight = (int) Math.ceil(cropBox.getHeight() / 72 * scale);
@@ -140,7 +150,9 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 			UIUtilities.setOnlySize(this, size);
 			setSize(size);
 			repaint();
+			mIgnorePageChange = true;
 			mOwner.updateStatus(mPageIndex, numberOfPages, SCALES[mScaleIndex]);
+			mIgnorePageChange = false;
 		}
 	}
 
@@ -148,13 +160,7 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		if (mNeedLoad && mPdf != null) {
-			PDFRenderer renderer = new PDFRenderer(mPdf);
-			try {
-				mImg = renderer.renderImageWithDPI(mPageIndex, SCALES[mScaleIndex] * Toolkit.getDefaultToolkit().getScreenResolution() * (GraphicsUtilities.isRetinaDisplay(g) ? 2 : 1));
-			} catch (Throwable throwable) {
-				mImg = null;
-				Log.error(throwable);
-			}
+			mImg = PdfRenderer.create(mPdf, mPageIndex, SCALES[mScaleIndex] * (GraphicsUtilities.isRetinaDisplay(g) ? 2 : 1), mHighlight);
 			mNeedLoad = false;
 		}
 		if (mImg != null) {

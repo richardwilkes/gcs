@@ -555,6 +555,11 @@ public class Equipment extends ListRow implements HasSourceReference {
 	}
 
 	@Override
+	public String getReferenceHighlight() {
+		return getDescription();
+	}
+
+	@Override
 	public boolean setReference(String reference) {
 		if (!mReference.equals(reference)) {
 			mReference = reference;

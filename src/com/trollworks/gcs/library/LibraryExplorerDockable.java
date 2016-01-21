@@ -325,7 +325,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 						proxy = dockTemplate(new TemplateDockable(new Template(path.toFile())));
 						break;
 					case FileType.PDF_EXTENSION:
-						proxy = dockPdf(new PdfDockable(new PdfRef(null, path.toFile(), 0), 1));
+						proxy = dockPdf(new PdfDockable(new PdfRef(null, path.toFile(), 0), 1, null));
 						break;
 					default:
 						break;

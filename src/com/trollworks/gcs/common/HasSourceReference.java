@@ -12,6 +12,9 @@
 package com.trollworks.gcs.common;
 
 public interface HasSourceReference {
+	/** @return The text to highlight. */
+	String getReferenceHighlight();
+
 	/** @return The page reference. */
 	String getReference();
 

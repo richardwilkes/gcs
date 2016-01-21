@@ -686,6 +686,11 @@ public class Advantage extends ListRow implements HasSourceReference {
 		return false;
 	}
 
+	@Override
+	public String getReferenceHighlight() {
+		return getName();
+	}
+
 	/**
 	 * @return Whether the point cost should be rounded down rather than up, as is normal for most
 	 *         GURPS rules.

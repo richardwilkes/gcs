@@ -75,7 +75,7 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 	private IconButton	mPreviousPageButton;
 	private IconButton	mNextPageButton;
 
-	public PdfDockable(PdfRef pdfRef, int page) {
+	public PdfDockable(PdfRef pdfRef, int page, String highlight) {
 		super(new BorderLayout());
 		mFile = pdfRef.getFile();
 		int pageCount = 9999;
@@ -99,7 +99,7 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 		mPageField = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(1, pageCount, false)), event -> {
 			if (mPanel != null) {
 				int pageIndex = ((Integer) mPageField.getValue()).intValue() - 1;
-				int newPageIndex = mPanel.goToPageIndex(pageIndex);
+				int newPageIndex = mPanel.goToPageIndex(pageIndex, null);
 				if (pageIndex != newPageIndex) {
 					mPageField.setValue(Integer.valueOf(newPageIndex + 1));
 				} else {
@@ -116,7 +116,7 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 		mToolbar.add(mNextPageButton);
 
 		add(mToolbar, BorderLayout.NORTH);
-		mPanel = new PdfPanel(this, mPdf, pdfRef, page);
+		mPanel = new PdfPanel(this, mPdf, pdfRef, page, highlight);
 		add(new JScrollPane(mPanel), BorderLayout.CENTER);
 
 		setFocusCycleRoot(true);
@@ -160,8 +160,8 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 		return false;
 	}
 
-	public void goToPage(PdfRef pdfRef, int page) {
-		mPanel.goToPage(pdfRef, page);
+	public void goToPage(PdfRef pdfRef, int page, String highlight) {
+		mPanel.goToPage(pdfRef, page, highlight);
 	}
 
 	@Override

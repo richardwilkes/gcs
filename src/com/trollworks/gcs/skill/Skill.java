@@ -566,6 +566,11 @@ public class Skill extends ListRow implements HasSourceReference {
 	}
 
 	@Override
+	public String getReferenceHighlight() {
+		return getName();
+	}
+
+	@Override
 	public boolean contains(String text, boolean lowerCaseOnly) {
 		if (getName().toLowerCase().indexOf(text) != -1) {
 			return true;

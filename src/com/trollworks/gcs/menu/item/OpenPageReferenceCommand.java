@@ -62,24 +62,28 @@ public class OpenPageReferenceCommand extends Command {
 
 	@Override
 	public void adjust() {
-		setEnabled(!getReferences().isEmpty());
+		setEnabled(!getReferences(getTarget()).isEmpty());
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
-		List<String> references = getReferences();
-		if (!references.isEmpty()) {
-			if (this == OPEN_ONE_INSTANCE) {
-				openReference(references.get(0));
-			} else {
-				for (String one : new ReverseListIterator<>(references)) {
-					openReference(one);
+		HasSourceReference target = getTarget();
+		if (target != null) {
+			List<String> references = getReferences(target);
+			if (!references.isEmpty()) {
+				String highlight = target.getReferenceHighlight();
+				if (this == OPEN_ONE_INSTANCE) {
+					openReference(references.get(0), highlight);
+				} else {
+					for (String one : new ReverseListIterator<>(references)) {
+						openReference(one, highlight);
+					}
 				}
 			}
 		}
 	}
 
-	public static void openReference(String reference) {
+	public static void openReference(String reference, String highlight) {
 		int i = reference.length() - 1;
 		while (i >= 0) {
 			char ch = reference.charAt(i);
@@ -107,10 +111,10 @@ public class OpenPageReferenceCommand extends Command {
 					LibraryExplorerDockable library = LibraryExplorerDockable.get();
 					PdfDockable dockable = (PdfDockable) library.getDockableFor(path);
 					if (dockable != null) {
-						dockable.goToPage(ref, page);
+						dockable.goToPage(ref, page, highlight);
 						dockable.getDockContainer().setCurrentDockable(dockable);
 					} else {
-						dockable = new PdfDockable(ref, page);
+						dockable = new PdfDockable(ref, page, highlight);
 						library.dockPdf(dockable);
 						library.open(path);
 					}
@@ -121,8 +125,8 @@ public class OpenPageReferenceCommand extends Command {
 		}
 	}
 
-	private static List<String> getReferences() {
-		List<String> list = new ArrayList<>();
+	private static HasSourceReference getTarget() {
+		HasSourceReference ref = null;
 		Component comp = getFocusOwner();
 		if (comp instanceof Outline) {
 			OutlineModel model = ((Outline) comp).getModel();
@@ -131,15 +135,23 @@ public class OpenPageReferenceCommand extends Command {
 				if (selection.getCount() == 1) {
 					Row row = model.getFirstSelectedRow();
 					if (row instanceof HasSourceReference) {
-						String[] refs = ((HasSourceReference) row).getReference().split("[,;]"); //$NON-NLS-1$
-						if (refs.length > 0) {
-							for (String one : refs) {
-								String trimmed = one.trim();
-								if (!trimmed.isEmpty()) {
-									list.add(trimmed);
-								}
-							}
-						}
+						ref = (HasSourceReference) row;
+					}
+				}
+			}
+		}
+		return ref;
+	}
+
+	private static List<String> getReferences(HasSourceReference ref) {
+		List<String> list = new ArrayList<>();
+		if (ref != null) {
+			String[] refs = ref.getReference().split("[,;]"); //$NON-NLS-1$
+			if (refs.length > 0) {
+				for (String one : refs) {
+					String trimmed = one.trim();
+					if (!trimmed.isEmpty()) {
+						list.add(trimmed);
 					}
 				}
 			}
