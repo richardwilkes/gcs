@@ -23,6 +23,7 @@ import com.trollworks.toolkit.ui.widget.Toolbar;
 import com.trollworks.toolkit.ui.widget.dock.DockContainer;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.utility.FileProxy;
+import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.PrintProxy;
@@ -192,7 +193,7 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 
 	@Override
 	public Icon getTitleIcon() {
-		return null;
+		return FileType.getIconsForFileExtension(FileType.PDF_EXTENSION).getImage(16);
 	}
 
 	@Override

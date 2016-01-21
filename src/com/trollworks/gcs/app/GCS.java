@@ -24,7 +24,6 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.Fonts;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
-import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.utility.BundleInfo;
 import com.trollworks.toolkit.utility.Dice;
@@ -229,7 +228,7 @@ public class GCS {
 		GraphicsUtilities.configureStandardUI();
 		Preferences.setPreferenceFile("gcs.pref"); //$NON-NLS-1$
 		GCSFonts.register();
-		StdImage.addLocation(GCS.class.getResource("images/")); //$NON-NLS-1$
+		GCSImages.getAppIcons(); // Just here to make sure the lookup paths are initialized
 		Fonts.loadFromPreferences();
 		App.setAboutPanel(AboutPanel.class);
 		registerFileTypes(new GCSFileProxyCreator());
@@ -250,9 +249,9 @@ public class GCS {
 		// For legacy
 		FileType.register(LibraryFile.EXTENSION, GCSImages.getAdvantagesDocumentIcons(), LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true);
 
-		FileType.registerPdf(fileProxyCreator, true);
-		FileType.registerHtml(null, false);
-		FileType.registerPng(null, false);
+		FileType.registerPdf(GCSImages.getPDFDocumentIcons(), fileProxyCreator, true);
+		FileType.registerHtml(null, null, false);
+		FileType.registerPng(null, null, false);
 	}
 
 	private static int convert(CmdLine cmdLine) {

@@ -21,6 +21,7 @@ import com.trollworks.toolkit.ui.RetinaIcon;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.utility.BundleInfo;
+import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.cmdline.CmdLine;
 import com.trollworks.toolkit.utility.cmdline.CmdLineOption;
 
@@ -33,6 +34,10 @@ import java.util.jar.Attributes;
 /** Provides standardized image access. */
 @SuppressWarnings("nls")
 public class GCSImages {
+	static {
+		StdImage.addLocation(GCSImages.class.getResource("images/")); //$NON-NLS-1$
+	}
+
 	/** @return The exotic type icon. */
 	public static final RetinaIcon getExoticTypeIcon() {
 		return new RetinaIcon("exotic_type");
@@ -128,6 +133,11 @@ public class GCSImages {
 		return getDocumentIcons(EquipmentList.EXTENSION);
 	}
 
+	/** @return The PDF icons. */
+	public static final StdImageSet getPDFDocumentIcons() {
+		return getDocumentIcons(FileType.PDF_EXTENSION);
+	}
+
 	private static StdImageSet getDocumentIcons(String prefix) {
 		String name = prefix + "_doc";
 		StdImageSet set = StdImageSet.get(name);
@@ -181,6 +191,7 @@ public class GCSImages {
 				createIconFiles(getTemplateDocumentIcons(), dir, Template.EXTENSION, icns, ico);
 				createIconFiles(getSkillsDocumentIcons(), dir, SkillList.EXTENSION, icns, ico);
 				createIconFiles(getSpellsDocumentIcons(), dir, SpellList.EXTENSION, icns, ico);
+				createIconFiles(getPDFDocumentIcons(), dir, FileType.PDF_EXTENSION, icns, ico);
 			}
 		} catch (Exception exception) {
 			exception.printStackTrace(System.err);
