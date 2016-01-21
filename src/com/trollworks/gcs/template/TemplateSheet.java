@@ -36,6 +36,7 @@ import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.notification.BatchNotifierTarget;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Rectangle;
@@ -144,7 +145,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		if (Outline.CMD_POTENTIAL_CONTENT_SIZE_CHANGE.equals(command)) {
 			adjustSize();
 		} else if (NotesPanel.CMD_EDIT_NOTES.equals(command)) {
-			String notes = TextEditor.edit(NOTES, mTemplate.getNotes());
+			String notes = TextEditor.edit((Component) event.getSource(), NOTES, mTemplate.getNotes());
 			if (notes != null) {
 				mTemplate.setNotes(notes);
 				mNotesPanel.setNotes(notes);

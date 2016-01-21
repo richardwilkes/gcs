@@ -112,6 +112,7 @@ import javax.swing.JPanel;
 import javax.swing.RepaintManager;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -815,10 +816,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			markForRebuild();
 		} else if (NotesPanel.CMD_EDIT_NOTES.equals(command)) {
 			Profile description = mCharacter.getDescription();
-			String notes = TextEditor.edit(NOTES, description.getNotes());
+			String notes = TextEditor.edit((Component) event.getSource(), NOTES, description.getNotes());
 			if (notes != null) {
 				description.setNotes(notes);
 				rebuild();
+				SwingUtilities.invokeLater(() -> requestFocusInWindow());
 			}
 		}
 	}

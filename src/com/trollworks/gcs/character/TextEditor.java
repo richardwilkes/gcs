@@ -12,10 +12,12 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.WindowSizeEnforcer;
 import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -56,22 +58,22 @@ public class TextEditor extends JDialog implements ActionListener, WindowFocusLi
 	/**
 	 * Puts up a modal text editor.
 	 *
+	 * @param centeredOn The component to center the dialog on.
 	 * @param title The title for the dialog.
 	 * @param text The text to edit.
 	 * @return The new text, or <code>null</code> if changes were canceled.
 	 */
-	public static String edit(String title, String text) {
-		TextEditor editor = new TextEditor(title, text);
+	public static String edit(Component centeredOn, String title, String text) {
+		TextEditor editor = new TextEditor(centeredOn, title, text);
 		editor.setVisible(true);
 		return editor.mSet ? editor.mEditor.getText() : null;
 	}
 
-	private TextEditor(String title, String text) {
+	private TextEditor(Component centeredOn, String title, String text) {
 		super(JOptionPane.getRootFrame(), title, true);
 		setResizable(true);
 		setLayout(new BorderLayout());
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		setLocationByPlatform(true);
 
 		JPanel content = new JPanel(new BorderLayout());
 		content.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -91,8 +93,7 @@ public class TextEditor extends JDialog implements ActionListener, WindowFocusLi
 
 		WindowSizeEnforcer.monitor(this);
 		addWindowFocusListener(this);
-
-		pack();
+		GraphicsUtilities.packAndCenterWindowOn(this, centeredOn);
 	}
 
 	private JButton createButton(JPanel parent, String title) {
