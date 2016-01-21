@@ -260,23 +260,25 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		String focusKey = null;
 		PageAssembler pageAssembler;
 
-		if (focus instanceof PageField) {
-			focusKey = ((PageField) focus).getConsumedType();
+		if (UIUtilities.getSelfOrAncestorOfType(focus, CharacterSheet.class) == this) {
+			if (focus instanceof PageField) {
+				focusKey = ((PageField) focus).getConsumedType();
+				focus = null;
+			} else if (focus instanceof Outline) {
+				Outline outline = (Outline) focus;
+				Selection selection = outline.getModel().getSelection();
+
+				firstRow = outline.getFirstRowToDisplay();
+				int selRow = selection.nextSelectedIndex(firstRow);
+				if (selRow >= 0) {
+					firstRow = selRow;
+				}
+				focus = outline.getRealOutline();
+			}
+			focusMgr.clearFocusOwner();
+		} else {
 			focus = null;
 		}
-		if (focus instanceof Outline) {
-			Outline outline = (Outline) focus;
-			Selection selection = outline.getModel().getSelection();
-
-			firstRow = outline.getFirstRowToDisplay();
-			int selRow = selection.nextSelectedIndex(firstRow);
-			if (selRow >= 0) {
-				firstRow = selRow;
-			}
-			focus = outline.getRealOutline();
-		}
-
-		focusMgr.clearFocusOwner();
 
 		// Make sure our primary outlines exist
 		createAdvantageOutline();
@@ -310,7 +312,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		pageAssembler.addNotes();
 
 		// Ensure everything is laid out and register for notification
-		repaint();
 		validate();
 		OutlineSyncer.remove(mAdvantageOutline);
 		OutlineSyncer.remove(mSkillOutline);
@@ -322,7 +323,10 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			restoreFocusToKey(focusKey, this);
 		} else if (focus instanceof Outline) {
 			((Outline) focus).getBestOutlineForRowIndex(firstRow).requestFocusInWindow();
+		} else if (focus != null) {
+			focus.requestFocusInWindow();
 		}
+		repaint();
 	}
 
 	private boolean restoreFocusToKey(String key, Component panel) {
