@@ -13612,7 +13612,7 @@
 		<levels>1</levels>
 		<points_per_level>1</points_per_level>
 		<reference>B85</reference>
-		<notes>Gear is worth (starting wealth)/10 per level</notes>
+		<notes>For equipment normally bought with money, each point gives goods worth up to 50% of the average campaign starting wealth (but never cash).</notes>
 		<categories>
 			<category>Advantage</category>
 		</categories>
