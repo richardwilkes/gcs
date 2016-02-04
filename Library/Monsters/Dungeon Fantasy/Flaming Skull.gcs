@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<character unique_id="hrg3qxr3:1jh2kfpt324ij" version="2">
+	<created_date>Jan 18, 2016</created_date>
+	<modified_date>Jan 25, 2016 11:00 PM</modified_date>
+	<profile>
+		<name>Flaming Skull</name>
+		<age>0</age>
+		<SM>0</SM>
+		<race>Undead</race>
+		<notes>Flaming Skull (DF2:23)
+
+Flaming skulls are semi-corporeal undead that resemble flying human skills wreathed in fire. Streaking into close combat, they deliver flaming bites to their living prey. Owing to their size, speed, and diffuse nature, they're difficult targets, and can often inflict great damage before being destroyed. The jury is out on whether they're necromantic creations or freewilled evil spirits who loathe mortals.
+
+Notes: Unwilling to negotiate. Truly evil.
+
+Flaming Bite
+    Innate Attack, Base Cost (Burn): 5/die
+    Damage (0d+2): 0.6 dice
+    Melee Attack, Reach C, No Parry: -35%
+    Cosmic, Irresistible attack (Ignores DR): +300%
+    Cost = (5 * 0.6) @ (-35+300)% = 11 pts</notes>
+	</profile>
+	<HP>20</HP>
+	<FP>-10</FP>
+	<total_points>174</total_points>
+	<ST>0</ST>
+	<DX>14</DX>
+	<IQ>10</IQ>
+	<HT>10</HT>
+	<will>0</will>
+	<perception>0</perception>
+	<speed>0</speed>
+	<move>0</move>
+	<include_punch>false</include_punch>
+	<include_kick>false</include_kick>
+	<include_kick_with_boots>false</include_kick_with_boots>
+	<advantage_list>
+		<advantage version="2">
+			<name>Doesn't Breathe</name>
+			<type>Physical, Exotic</type>
+			<base_points>20</base_points>
+			<modifier version="1" enabled="no">
+				<name>Gills</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Gills</name>
+				<cost type="points">-20</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Suffocates in air</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Absorption</name>
+				<cost type="percentage">-25</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 25 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 50 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 100 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 200 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 300 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Combustion</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+			</modifier>
+			<reference>B49</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Doesn't Eat or Drink</name>
+			<type>Physical, Exotic</type>
+			<base_points>10</base_points>
+			<reference>B50</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Doesn't Sleep</name>
+			<type>Physical, Exotic</type>
+			<base_points>20</base_points>
+			<reference>B50</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>High Pain Threshold</name>
+			<type>Physical</type>
+			<base_points>10</base_points>
+			<reference>B59</reference>
+			<notes>Never suffer shock penalties when injured; +3 on all HT rolls to avoid knockdown and stunning; +3 to resist torture</notes>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Immunity to Metabolic Hazards</name>
+			<type>Physical</type>
+			<base_points>30</base_points>
+			<modifier version="1" enabled="no">
+				<name>@Very Common: Metabolic Hazards, etc.@</name>
+				<cost type="points">30</cost>
+				<affects>total</affects>
+				<reference>B80</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>@Common: Poison, Sickness, etc.@</name>
+				<cost type="points">15</cost>
+				<affects>total</affects>
+				<reference>B81</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>@Occasional: Disease, Ingested Poison, etc.@</name>
+				<cost type="points">10</cost>
+				<affects>total</affects>
+				<reference>B81</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>@Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.@</name>
+				<cost type="points">5</cost>
+				<affects>total</affects>
+				<reference>B81</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Immunity</name>
+				<cost type="multiplier">1</cost>
+				<reference>B81</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>+8 to all HT rolls to resist</name>
+				<cost type="multiplier">0.5</cost>
+				<reference>B81</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>+3 to all HT rolls to resist</name>
+				<cost type="multiplier">0.33</cost>
+				<reference>B81</reference>
+			</modifier>
+			<reference>B81</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Injury Tolerance (Diffuse)</name>
+			<type>Physical, Exotic</type>
+			<base_points>100</base_points>
+			<modifier version="1" enabled="no">
+				<name>Infiltration</name>
+				<cost type="percentage">40</cost>
+				<affects>total</affects>
+				<reference>P53</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Swarm</name>
+				<cost type="percentage">80</cost>
+				<affects>total</affects>
+				<reference>P53</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Swarm</name>
+				<cost type="percentage">160</cost>
+				<affects>total</affects>
+				<reference>P53</reference>
+				<notes>Can Affect Substantial</notes>
+			</modifier>
+			<reference>B60</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>No Fine Manipulators</name>
+			<type>Physical</type>
+			<base_points>-30</base_points>
+			<reference>B145</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+			<cost_reduction>
+				<attribute>st</attribute>
+				<percentage>40</percentage>
+			</cost_reduction>
+			<cost_reduction>
+				<attribute>dx</attribute>
+				<percentage>40</percentage>
+			</cost_reduction>
+		</advantage>
+		<advantage version="2">
+			<name>No Legs (Aerial)</name>
+			<type>Physical, Exotic</type>
+			<reference>B145</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+			<prereq_list all="yes">
+				<advantage_prereq has="yes">
+					<name compare="is">flight</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</advantage>
+		<advantage version="2">
+			<name>Flight</name>
+			<type>Physical, Exotic</type>
+			<base_points>40</base_points>
+			<modifier version="1" enabled="no">
+				<name>Newtonian Space Flight</name>
+				<cost type="percentage">25</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Space Flight</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cannot Hover</name>
+				<cost type="percentage">-15</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Controlled Gliding</name>
+				<cost type="percentage">-45</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Gliding</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Lighter Than Air</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Low Ceiling</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+				<notes>30'</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Low Ceiling</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+				<notes>10'</notes>
+			</modifier>
+			<modifier version="1">
+				<name>Low Ceiling</name>
+				<cost type="percentage">-25</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+				<notes>5'</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Small Wings</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Space Flight Only</name>
+				<cost type="percentage">-75</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Winged</name>
+				<cost type="percentage">-25</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Planetary</name>
+				<cost type="percentage">-5</cost>
+				<affects>total</affects>
+				<reference>P50</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Requires Surface</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>P50</reference>
+			</modifier>
+			<reference>B56</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Unfazeable</name>
+			<type>Mental</type>
+			<base_points>15</base_points>
+			<modifier version="1" enabled="no">
+				<name>Familiar Horrors</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>H20</reference>
+			</modifier>
+			<reference>B95</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Flaming Bite</name>
+			<type>Physical, Exotic</type>
+			<base_points>11</base_points>
+			<melee_weapon>
+				<damage>2 burn</damage>
+				<usage>Bite</usage>
+				<reach>C</reach>
+				<parry>No</parry>
+				<block>No</block>
+				<default>
+					<type>DX</type>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Brawling</name>
+					<modifier>0</modifier>
+				</default>
+			</melee_weapon>
+			<reference>D2:23</reference>
+			<notes>Cosmic, Ignores DR</notes>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+	</advantage_list>
+	<print_settings units="in">
+		<orientation>portrait</orientation>
+		<width>8.267716407775879</width>
+		<height>11.692913055419922</height>
+		<top_margin>0.5</top_margin>
+		<left_margin>0.5</left_margin>
+		<bottom_margin>0.5</bottom_margin>
+		<right_margin>0.5</right_margin>
+		<ink_chromaticity>monochrome</ink_chromaticity>
+		<sides>duplex</sides>
+		<quality>normal</quality>
+	</print_settings>
+</character>

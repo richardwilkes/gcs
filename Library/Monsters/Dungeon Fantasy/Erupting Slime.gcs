@@ -1,0 +1,551 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<character unique_id="hrg3qxr3:1jh2kfpt324ij" version="2">
+	<created_date>Jan 18, 2016</created_date>
+	<modified_date>Feb 4, 2016 11:39 AM</modified_date>
+	<profile>
+		<name>Erupting Slime</name>
+		<age>0</age>
+		<SM>0</SM>
+		<race>Slime</race>
+		<notes>Erupting Slime (DF2:23)
+
+Most slime is only dangerous if touched or if it drips on a careless delver. This one is unusual in that it oozes around, spewing globs of toxic gunk at anything that moves, with the goal of killing the target in order to engulf it and thus reproduce. Left undestroyed in an area with dead bodies, erupting slime will convert a body into a new slime in an hour. This doubling will continue until the slimes run out of corpses. Someone turned to slime cannot be resurrected!
+
+Notes: Nonsentient -- can't communicate or negotiate. Unaffected by Animal or Plant spells that don't specifically target slimes. A dead slime can be used (or sold) as one dose of Oozing Doom.
+
+Slimeball:
+    Innate Attack (Projectile), Base Cost (Toxic): 4/die
+    Damage (2d): 2 dice
+    Contact Agent: +150%
+    Cosmic, Irresistible attack (Ignores DR): +300%
+    Onset: DR seconds : -0%
+    Partial Resistance: Damage reduced by half with successful HT roll: -12.5%
+    Cost = (4 * 2) @ (+150+300-12.5)% = 43 pts</notes>
+	</profile>
+	<HP>10</HP>
+	<FP>0</FP>
+	<total_points>3</total_points>
+	<ST>0</ST>
+	<DX>12</DX>
+	<IQ>0</IQ>
+	<HT>12</HT>
+	<will>0</will>
+	<perception>10</perception>
+	<speed>0</speed>
+	<move>-5</move>
+	<include_punch>false</include_punch>
+	<include_kick>false</include_kick>
+	<include_kick_with_boots>false</include_kick_with_boots>
+	<advantage_list>
+		<advantage version="2">
+			<name>Amphibious</name>
+			<type>Physical, Exotic</type>
+			<base_points>10</base_points>
+			<reference>B40</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Doesn't Breathe</name>
+			<type>Physical, Exotic</type>
+			<base_points>20</base_points>
+			<modifier version="1" enabled="no">
+				<name>Gills</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Gills</name>
+				<cost type="points">-20</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Suffocates in air</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Absorption</name>
+				<cost type="percentage">-25</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 25 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 50 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 100 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 200 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 300 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Combustion</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+			</modifier>
+			<reference>B49</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Doesn't Sleep</name>
+			<type>Physical, Exotic</type>
+			<base_points>20</base_points>
+			<reference>B50</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>High Pain Threshold</name>
+			<type>Physical</type>
+			<base_points>10</base_points>
+			<reference>B59</reference>
+			<notes>Never suffer shock penalties when injured; +3 on all HT rolls to avoid knockdown and stunning; +3 to resist torture</notes>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Immunity to Metabolic Hazards</name>
+			<type>Physical</type>
+			<base_points>30</base_points>
+			<modifier version="1" enabled="no">
+				<name>@Very Common: Metabolic Hazards, etc.@</name>
+				<cost type="points">30</cost>
+				<affects>total</affects>
+				<reference>B80</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>@Common: Poison, Sickness, etc.@</name>
+				<cost type="points">15</cost>
+				<affects>total</affects>
+				<reference>B81</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>@Occasional: Disease, Ingested Poison, etc.@</name>
+				<cost type="points">10</cost>
+				<affects>total</affects>
+				<reference>B81</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>@Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.@</name>
+				<cost type="points">5</cost>
+				<affects>total</affects>
+				<reference>B81</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Immunity</name>
+				<cost type="multiplier">1</cost>
+				<reference>B81</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>+8 to all HT rolls to resist</name>
+				<cost type="multiplier">0.5</cost>
+				<reference>B81</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>+3 to all HT rolls to resist</name>
+				<cost type="multiplier">0.33</cost>
+				<reference>B81</reference>
+			</modifier>
+			<reference>B81</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Injury Tolerance (Diffuse)</name>
+			<type>Physical, Exotic</type>
+			<base_points>100</base_points>
+			<modifier version="1">
+				<name>Infiltration</name>
+				<cost type="percentage">40</cost>
+				<affects>total</affects>
+				<reference>P53</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Swarm</name>
+				<cost type="percentage">80</cost>
+				<affects>total</affects>
+				<reference>P53</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Swarm</name>
+				<cost type="percentage">160</cost>
+				<affects>total</affects>
+				<reference>P53</reference>
+				<notes>Can Affect Substantial</notes>
+			</modifier>
+			<reference>B60</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Invertebrate</name>
+			<type>Physical, Exotic</type>
+			<base_points>-20</base_points>
+			<reference>B140</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>No Legs (Slithers)</name>
+			<type>Physical, Exotic</type>
+			<reference>B145</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>No Manipulators</name>
+			<type>Physical</type>
+			<base_points>-50</base_points>
+			<reference>B145</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+			<cost_reduction>
+				<attribute>st</attribute>
+				<percentage>40</percentage>
+			</cost_reduction>
+			<cost_reduction>
+				<attribute>dx</attribute>
+				<percentage>40</percentage>
+			</cost_reduction>
+		</advantage>
+		<advantage version="2">
+			<name>Vibration Sense (Air)</name>
+			<type>Physical, Exotic</type>
+			<base_points>10</base_points>
+			<modifier version="1" enabled="no">
+				<name>Universal</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B96</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Sense of Perception</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>P86</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Targeting</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>P86</reference>
+			</modifier>
+			<reference>B96</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Slimeball</name>
+			<type>Physical, Exotic</type>
+			<base_points>43</base_points>
+			<ranged_weapon>
+				<damage>2d tox</damage>
+				<accuracy>3</accuracy>
+				<range>100/10</range>
+				<rate_of_fire>1</rate_of_fire>
+				<recoil>1</recoil>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<specialization>Projectile</specialization>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Innate Attack</name>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>DX</type>
+					<modifier>-4</modifier>
+				</default>
+			</ranged_weapon>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">100</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 sec</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>10 sec</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">40</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 min</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">20</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 hr</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">10</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 day</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 sec; Resistible</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">25</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>10 sec; Resistible</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">20</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 min; Resistible</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">10</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 hr; Resistible</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cyclic</name>
+				<cost type="percentage">5</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>1 day; Resistible</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Contagious</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>Mildly</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Contagious</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B103</reference>
+				<notes>Highly</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Double Blunt Trauma</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>1HP per 10 dmg</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Explosion</name>
+				<cost type="percentage">50</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fragmentation</name>
+				<cost type="percentage">15</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B104</reference>
+				<notes>Hot</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Radiation</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Surge</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>3</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">150</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">200</cost>
+				<affects>total</affects>
+				<reference>B102</reference>
+				<notes>10</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Side Effect</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Symptoms</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B109</reference>
+				<notes>@Effect@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.5</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.2</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Armor Divisor</name>
+				<cost type="percentage">-70</cost>
+				<affects>total</affects>
+				<reference>B110</reference>
+				<notes>0.1</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Wounding</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B111</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Incendiary</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B104</reference>
+			</modifier>
+			<reference>DF2:23</reference>
+			<notes>Penetrates armor in DR seconds, then delivers 2d tox, reduced to 1d tox with a HT roll</notes>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+	</advantage_list>
+	<skill_list>
+		<skill version="2">
+			<name>Innate Attack</name>
+			<specialization>Projectile</specialization>
+			<difficulty>DX/E</difficulty>
+			<points>1</points>
+			<reference>B201</reference>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Ranged Combat</category>
+			</categories>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Innate Attack</name>
+				<modifier>-2</modifier>
+			</default>
+		</skill>
+	</skill_list>
+	<print_settings printer="HP LaserJet M1536dnf MFP (C1388F)" units="in">
+		<orientation>portrait</orientation>
+		<width>8.267716407775879</width>
+		<height>11.692913055419922</height>
+		<top_margin>0.5</top_margin>
+		<left_margin>0.5</left_margin>
+		<bottom_margin>0.5</bottom_margin>
+		<right_margin>0.5</right_margin>
+		<ink_chromaticity>monochrome</ink_chromaticity>
+		<sides>duplex</sides>
+		<quality>normal</quality>
+	</print_settings>
+</character>

@@ -1,0 +1,638 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<character unique_id="hrg3qxr3:1jh2kfpt324ij" version="2">
+	<created_date>Jan 18, 2016</created_date>
+	<modified_date>Feb 4, 2016 12:06 PM</modified_date>
+	<profile>
+		<name>Peshkali</name>
+		<age>0</age>
+		<SM>0</SM>
+		<race>Demon</race>
+		<notes>Peshkali (DF2:25) 
+
+Peshkali are powerful demonic sentinels set to guard forgotten places. They have a muscular, vaguely humanoid torso with six arms, while their lower body is that of a great serpent. What they lack in sorcery or astonishing powers they make up in strength and martial prowess.
+
+Notes: Unwilling to negotiate. Truly evil.
+</notes>
+	</profile>
+	<HP>0</HP>
+	<FP>0</FP>
+	<total_points>760</total_points>
+	<ST>20</ST>
+	<DX>12</DX>
+	<IQ>10</IQ>
+	<HT>12</HT>
+	<will>4</will>
+	<perception>4</perception>
+	<speed>0</speed>
+	<move>0</move>
+	<include_punch>false</include_punch>
+	<include_kick>false</include_kick>
+	<include_kick_with_boots>false</include_kick_with_boots>
+	<advantage_list>
+		<advantage version="2">
+			<name>Damage Resistance</name>
+			<type>Physical, Exotic</type>
+			<levels>4</levels>
+			<points_per_level>5</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Force Field</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hardened</name>
+				<cost type="percentage">20</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Absorption</name>
+				<cost type="percentage">80</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>Enhances @Trait@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Absorption</name>
+				<cost type="percentage">80</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>Healing only</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Absorption</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>Enhances any trait</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Reflection</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Bane</name>
+				<cost type="points">-1</cost>
+				<affects>total</affects>
+				<reference>H14</reference>
+				<notes>@Rare@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Bane</name>
+				<cost type="percentage">-5</cost>
+				<affects>total</affects>
+				<reference>H14</reference>
+				<notes>@Occasional@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Bane</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>H14</reference>
+				<notes>@Common@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Bane</name>
+				<cost type="percentage">-15</cost>
+				<affects>total</affects>
+				<reference>H14</reference>
+				<notes>@Very Common@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Directional</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+				<notes>Front</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Flexible</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Very Common Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Semi-Ablative</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Can't wear armor</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Directional</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+				<notes>@Direction: Back, Right, Left, Top or Underside@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Common Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Tough Skin</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<notes>Effects that just require skin contact or a scratch ignore this DR</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-60</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Occasional Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Ablative</name>
+				<cost type="percentage">-80</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-80</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Rare Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Laminate</name>
+				<cost type="percentage">10</cost>
+				<affects>total</affects>
+				<reference>RSWL18</reference>
+			</modifier>
+			<reference>B47</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<dr_bonus>
+				<location>full body</location>
+				<amount per_level="yes">1</amount>
+			</dr_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Combat Reflexes</name>
+			<type>Mental</type>
+			<base_points>15</base_points>
+			<reference>B43</reference>
+			<notes>Never freeze; +6 on all IQ rolls to wake up or to recover from surprise or mental stun; Your side gets +1 to initiative rolls (+2 if you're the leader)</notes>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<skill_bonus>
+				<name compare="starts with">fast-draw</name>
+				<specialization compare="is anything"></specialization>
+				<amount>1</amount>
+			</skill_bonus>
+			<attribute_bonus>
+				<attribute>dodge</attribute>
+				<amount>1</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>parry</attribute>
+				<amount>1</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>block</attribute>
+				<amount>1</amount>
+			</attribute_bonus>
+			<attribute_bonus>
+				<attribute>fright check</attribute>
+				<amount>2</amount>
+			</attribute_bonus>
+			<prereq_list all="yes">
+				<advantage_prereq has="no">
+					<name compare="is">Enhanced Time Sense</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</advantage>
+		<advantage version="2">
+			<name>Constriction Attack</name>
+			<type>Physical, Exotic</type>
+			<base_points>15</base_points>
+			<modifier version="1" enabled="no">
+				<name>Engulfing</name>
+				<cost type="percentage">60</cost>
+				<affects>total</affects>
+				<reference>P45</reference>
+			</modifier>
+			<reference>B43</reference>
+			<notes>+2 to grapple and ST per arm used after first two</notes>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Doesn't Breathe</name>
+			<type>Physical, Exotic</type>
+			<base_points>20</base_points>
+			<modifier version="1" enabled="no">
+				<name>Gills</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Gills</name>
+				<cost type="points">-20</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Suffocates in air</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Absorption</name>
+				<cost type="percentage">-25</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 25 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 50 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 100 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 200 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 300 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Combustion</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+			</modifier>
+			<reference>B49</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Doesn't Eat or Drink</name>
+			<type>Physical, Exotic</type>
+			<base_points>10</base_points>
+			<reference>B50</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Doesn't Sleep</name>
+			<type>Physical, Exotic</type>
+			<base_points>20</base_points>
+			<reference>B50</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Flexibility (Double-Jointed)</name>
+			<type>Physical</type>
+			<base_points>15</base_points>
+			<reference>B56</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<skill_bonus>
+				<name compare="is">climbing</name>
+				<specialization compare="is anything"></specialization>
+				<amount>5</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">escape</name>
+				<specialization compare="is anything"></specialization>
+				<amount>5</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">erotic art</name>
+				<specialization compare="is anything"></specialization>
+				<amount>5</amount>
+			</skill_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Extra Arm</name>
+			<type>Physical, Exotic</type>
+			<levels>4</levels>
+			<points_per_level>10</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Extra-Flexible</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B53</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Long</name>
+				<cost type="percentage">100</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B53</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Foot Manipulators</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>B53</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>No Physical Attack</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B53</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Short</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B53</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Weak</name>
+				<cost type="percentage">-25</cost>
+				<affects>total</affects>
+				<reference>B53</reference>
+				<notes>Half body ST</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Weak</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B53</reference>
+				<notes>Quarter body ST</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Weapon Mount</name>
+				<cost type="percentage">-80</cost>
+				<affects>total</affects>
+				<reference>B53</reference>
+			</modifier>
+			<reference>B53</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Extra Attack</name>
+			<type>Physical</type>
+			<levels>5</levels>
+			<points_per_level>25</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Multi-Strike</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>P49</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Single Skill</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>P49</reference>
+				<notes>@Skill@</notes>
+			</modifier>
+			<reference>B53</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Immunity to Metabolic Hazards</name>
+			<type>Physical</type>
+			<base_points>30</base_points>
+			<reference>B81</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Indomitable</name>
+			<type>Mental</type>
+			<base_points>15</base_points>
+			<reference>B60</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Infravision</name>
+			<type>Physical, Exotic</type>
+			<base_points>10</base_points>
+			<modifier version="1" enabled="no">
+				<name>No normal vision</name>
+				<cost type="points">-10</cost>
+				<affects>total</affects>
+				<reference>B60</reference>
+			</modifier>
+			<reference>B60</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Injury Tolerance (No Blood, No Brain, No Neck, No Vitals)</name>
+			<type>Physical, Exotic</type>
+			<base_points>20</base_points>
+			<reference>B61</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>No Legs (Slithers)</name>
+			<type>Physical, Exotic</type>
+			<reference>B145</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Supernatural Durability</name>
+			<type>Physical, Supernatural</type>
+			<base_points>150</base_points>
+			<reference>B89</reference>
+			<notes>Can only be killed if all six arms are crippled</notes>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Unfazeable</name>
+			<type>Mental</type>
+			<base_points>15</base_points>
+			<modifier version="1" enabled="no">
+				<name>Familiar Horrors</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>H20</reference>
+			</modifier>
+			<reference>B95</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+	</advantage_list>
+	<skill_list>
+		<skill version="2">
+			<name>Spear</name>
+			<difficulty>DX/A</difficulty>
+			<points>24</points>
+			<reference>B208</reference>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Melee Combat</category>
+			</categories>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Polearm</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Staff</name>
+				<modifier>-2</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Wrestling</name>
+			<difficulty>DX/A</difficulty>
+			<points>16</points>
+			<reference>B228</reference>
+			<notes>+2 ST when grappling</notes>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Melee Combat</category>
+			</categories>
+		</skill>
+	</skill_list>
+	<equipment_list>
+		<equipment version="3" state="equipped">
+			<quantity>6</quantity>
+			<description>Spear</description>
+			<tech_level>0</tech_level>
+			<legality_class>4</legality_class>
+			<value>40</value>
+			<weight>4 lb</weight>
+			<reference>B273</reference>
+			<melee_weapon>
+				<damage>thr+2 imp</damage>
+				<strength>9</strength>
+				<usage>Thrust</usage>
+				<reach>1*</reach>
+				<parry>0</parry>
+				<block>No</block>
+				<default>
+					<type>DX</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Spear</name>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Polearm</name>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Staff</name>
+					<modifier>-2</modifier>
+				</default>
+			</melee_weapon>
+			<ranged_weapon>
+				<damage>thr+3 imp</damage>
+				<strength>9</strength>
+				<usage>Thrown</usage>
+				<accuracy>+2</accuracy>
+				<range>x1/x1.5</range>
+				<rate_of_fire>1</rate_of_fire>
+				<shots>T(1)</shots>
+				<bulk>-6</bulk>
+				<default>
+					<type>DX</type>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Thrown Weapon</name>
+					<specialization>Spear</specialization>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Spear Thrower</name>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Thrown Weapon</name>
+					<specialization>Harpoon</specialization>
+					<modifier>-2</modifier>
+				</default>
+			</ranged_weapon>
+			<categories>
+				<category>Melee Weapon</category>
+				<category>Missile Weapon</category>
+			</categories>
+		</equipment>
+	</equipment_list>
+	<print_settings printer="HP LaserJet M1536dnf MFP (C1388F)" units="in">
+		<orientation>portrait</orientation>
+		<width>8.267716407775879</width>
+		<height>11.692913055419922</height>
+		<top_margin>0.5</top_margin>
+		<left_margin>0.5</left_margin>
+		<bottom_margin>0.5</bottom_margin>
+		<right_margin>0.5</right_margin>
+		<ink_chromaticity>monochrome</ink_chromaticity>
+		<sides>duplex</sides>
+		<quality>normal</quality>
+	</print_settings>
+</character>

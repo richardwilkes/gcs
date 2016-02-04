@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<character unique_id="hrg3qxr3:1jh2kfpt324ij" version="2">
+	<created_date>Jan 18, 2016</created_date>
+	<modified_date>Jan 20, 2016 1:19 AM</modified_date>
+	<profile>
+		<name>Siege Beast</name>
+		<age>0</age>
+		<SM>2</SM>
+		<race>Mundane</race>
+		<notes>Siege Beast (DF2:25)
+
+These gigantic, stooped brutes are stupid, ill-tempered, and completely loyal to the dark forces that control whatever dungeon they're found in. Their purpose in life is to tow siege engines and guard gateways. They wade into battle with a massive hammer like a meat tenderizer riveted to one hand and steel bands nailed directly to their leathery hide. Fortunately for delvers, siege beasts are flesh-and-blood creatures, not constructs, and thus are subject to poison, strangulation, and blows to vital areas.
+
+Notes: Siege beasts aren't supernaturally bound and can be tricked or even negotiated with. Mind control also works -- but given a siege beast's Will (and the triple cost to cast spells on SM +2 targets), this isn't usually practical. A siege beast's "weapon" and "armor" consist of 180 lbs. of low-quality scrap.
+</notes>
+	</profile>
+	<HP>0</HP>
+	<FP>6</FP>
+	<total_points>279</total_points>
+	<ST>30</ST>
+	<DX>12</DX>
+	<IQ>8</IQ>
+	<HT>12</HT>
+	<will>0</will>
+	<perception>0</perception>
+	<speed>0</speed>
+	<move>-1</move>
+	<include_punch>false</include_punch>
+	<include_kick>false</include_kick>
+	<include_kick_with_boots>false</include_kick_with_boots>
+	<advantage_list>
+		<advantage version="2">
+			<name>Damage Resistance</name>
+			<type>Physical, Exotic</type>
+			<levels>10</levels>
+			<points_per_level>5</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Force Field</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hardened</name>
+				<cost type="percentage">20</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Absorption</name>
+				<cost type="percentage">80</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>Enhances @Trait@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Absorption</name>
+				<cost type="percentage">80</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>Healing only</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Absorption</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>Enhances any trait</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Reflection</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Bane</name>
+				<cost type="points">-1</cost>
+				<affects>total</affects>
+				<reference>H14</reference>
+				<notes>@Rare@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Bane</name>
+				<cost type="percentage">-5</cost>
+				<affects>total</affects>
+				<reference>H14</reference>
+				<notes>@Occasional@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Bane</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>H14</reference>
+				<notes>@Common@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Bane</name>
+				<cost type="percentage">-15</cost>
+				<affects>total</affects>
+				<reference>H14</reference>
+				<notes>@Very Common@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Directional</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+				<notes>Front</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Flexible</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Very Common Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Semi-Ablative</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Can't wear armor</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Directional</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+				<notes>@Direction: Back, Right, Left, Top or Underside@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Common Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Tough Skin</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<notes>Effects that just require skin contact or a scratch ignore this DR</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-60</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Occasional Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Ablative</name>
+				<cost type="percentage">-80</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-80</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Rare Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Laminate</name>
+				<cost type="percentage">10</cost>
+				<affects>total</affects>
+				<reference>RSWL18</reference>
+			</modifier>
+			<reference>B47</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<dr_bonus>
+				<location>full body</location>
+				<amount per_level="yes">1</amount>
+			</dr_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Bad Temper</name>
+			<type>Mental</type>
+			<base_points>-10</base_points>
+			<cr>12</cr>
+			<reference>B124</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Fanaticism (Guard the dungeon)</name>
+			<type>Mental</type>
+			<base_points>-15</base_points>
+			<modifier version="1" enabled="no">
+				<name>Extreme</name>
+				<cost type="percentage">0</cost>
+				<affects>total</affects>
+				<reference>B136</reference>
+			</modifier>
+			<reference>B136</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Hard to Kill</name>
+			<type>Physical</type>
+			<levels>4</levels>
+			<points_per_level>2</points_per_level>
+			<reference>B58</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>High Pain Threshold</name>
+			<type>Physical</type>
+			<base_points>10</base_points>
+			<reference>B59</reference>
+			<notes>Never suffer shock penalties when injured; +3 on all HT rolls to avoid knockdown and stunning; +3 to resist torture</notes>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Rapid Healing, Very</name>
+			<type>Physical</type>
+			<base_points>15</base_points>
+			<reference>B79</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<prereq_list all="yes">
+				<attribute_prereq has="yes" which="ht" compare="at least">12</attribute_prereq>
+			</prereq_list>
+		</advantage>
+		<advantage version="2">
+			<name>Mailed Fist</name>
+			<type>Physical, Exotic</type>
+			<melee_weapon>
+				<damage>thr:+0 cr</damage>
+				<reach>C</reach>
+				<parry>0</parry>
+				<block>No</block>
+				<default>
+					<type>DX</type>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Brawling</name>
+					<modifier>0</modifier>
+				</default>
+			</melee_weapon>
+			<reference>DF2:25</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Metal Boot</name>
+			<type>Physical, Exotic</type>
+			<melee_weapon>
+				<damage>thr+1 cr</damage>
+				<reach>C,1</reach>
+				<parry>0</parry>
+				<block>No</block>
+				<default>
+					<type>DX</type>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Brawling</name>
+					<modifier>0</modifier>
+				</default>
+			</melee_weapon>
+			<reference>DF2:25</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+	</advantage_list>
+	<skill_list>
+		<skill version="2">
+			<name>Axe/Mace</name>
+			<difficulty>DX/A</difficulty>
+			<points>16</points>
+			<reference>B208</reference>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Melee Combat</category>
+			</categories>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Two-Handed Axe/Mace</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Flail</name>
+				<modifier>-4</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Brawling</name>
+			<difficulty>DX/E</difficulty>
+			<points>12</points>
+			<reference>B182</reference>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Melee Combat</category>
+			</categories>
+			<weapon_bonus>
+				<name compare="is">Brawling</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at least">2</level>
+				<amount per_level="yes">1</amount>
+			</weapon_bonus>
+		</skill>
+	</skill_list>
+	<equipment_list>
+		<equipment version="3" state="equipped">
+			<quantity>1</quantity>
+			<description>Hammer</description>
+			<tech_level>2</tech_level>
+			<legality_class>4</legality_class>
+			<value>50</value>
+			<weight>5 lb</weight>
+			<reference>B271</reference>
+			<melee_weapon>
+				<damage>sw+3 cr</damage>
+				<strength>12</strength>
+				<usage>Swung</usage>
+				<reach>1</reach>
+				<parry>0</parry>
+				<block>No</block>
+				<default>
+					<type>DX</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Axe/Mace</name>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Flail</name>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Two-Handed Axe/Mace</name>
+					<modifier>-3</modifier>
+				</default>
+			</melee_weapon>
+			<notes>Cannot be dropped</notes>
+			<categories>
+				<category>Melee Weapon</category>
+				<category>Missile Weapon</category>
+			</categories>
+		</equipment>
+	</equipment_list>
+	<print_settings units="in">
+		<orientation>portrait</orientation>
+		<width>8.267716407775879</width>
+		<height>11.692913055419922</height>
+		<top_margin>0.5</top_margin>
+		<left_margin>0.5</left_margin>
+		<bottom_margin>0.5</bottom_margin>
+		<right_margin>0.5</right_margin>
+		<ink_chromaticity>monochrome</ink_chromaticity>
+		<sides>duplex</sides>
+		<quality>normal</quality>
+	</print_settings>
+</character>

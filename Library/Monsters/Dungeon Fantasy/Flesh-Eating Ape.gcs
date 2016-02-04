@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<character unique_id="hrg3qxr3:1jh2kfpt324ij" version="2">
+	<created_date>Jan 18, 2016</created_date>
+	<modified_date>Feb 4, 2016 11:59 AM</modified_date>
+	<profile>
+		<name>Flesh-Eating Ape</name>
+		<age>0</age>
+		<SM>1</SM>
+		<race>Dire Animal</race>
+		<notes>Flesh-Eating Ape (DF2:23)
+
+Flesh-eating apes superficially resemble the bananaeating kind, but have a mouth full of meat-tearing teeth and a predatory temperament. They're strong, combative, and have a nose for flesh, tracking tasty humans by scent. Due to their physical power, adventurers are advised to slay them before they get into close combat and grapple!
+
+Notes: Flesh-eating apes are smart enough that Animal spells won't work -- use Mind Control magic. Arm ST and Wrestling skill give effective ST 21 for grappling, and some apes like to use Neck Snap on grappled victims.
+</notes>
+	</profile>
+	<HP>0</HP>
+	<FP>2</FP>
+	<total_points>139</total_points>
+	<ST>17</ST>
+	<DX>12</DX>
+	<IQ>10</IQ>
+	<HT>10</HT>
+	<will>0</will>
+	<perception>0</perception>
+	<speed>0.5</speed>
+	<move>1</move>
+	<include_punch>false</include_punch>
+	<include_kick>false</include_kick>
+	<include_kick_with_boots>false</include_kick_with_boots>
+	<advantage_list>
+		<advantage version="2">
+			<name>Damage Resistance</name>
+			<type>Physical, Exotic</type>
+			<levels>1</levels>
+			<points_per_level>5</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Force Field</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Hardened</name>
+				<cost type="percentage">20</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Absorption</name>
+				<cost type="percentage">80</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>Enhances @Trait@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Absorption</name>
+				<cost type="percentage">80</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>Healing only</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Absorption</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>Enhances any trait</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Reflection</name>
+				<cost type="percentage">100</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Bane</name>
+				<cost type="points">-1</cost>
+				<affects>total</affects>
+				<reference>H14</reference>
+				<notes>@Rare@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Bane</name>
+				<cost type="percentage">-5</cost>
+				<affects>total</affects>
+				<reference>H14</reference>
+				<notes>@Occasional@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Bane</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>H14</reference>
+				<notes>@Common@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Bane</name>
+				<cost type="percentage">-15</cost>
+				<affects>total</affects>
+				<reference>H14</reference>
+				<notes>@Very Common@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Directional</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+				<notes>Front</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Flexible</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Very Common Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Semi-Ablative</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Can't wear armor</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Directional</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+				<notes>@Direction: Back, Right, Left, Top or Underside@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Common Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Tough Skin</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<notes>Effects that just require skin contact or a scratch ignore this DR</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-60</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Occasional Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Ablative</name>
+				<cost type="percentage">-80</cost>
+				<affects>total</affects>
+				<reference>B47</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Limited</name>
+				<cost type="percentage">-80</cost>
+				<affects>total</affects>
+				<reference>B46</reference>
+				<notes>@Rare Attack Form@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Laminate</name>
+				<cost type="percentage">10</cost>
+				<affects>total</affects>
+				<reference>RSWL18</reference>
+			</modifier>
+			<reference>B47</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<dr_bonus>
+				<location>full body</location>
+				<amount per_level="yes">1</amount>
+			</dr_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Arm ST</name>
+			<type>Physical</type>
+			<levels>2</levels>
+			<points_per_level>5</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>No fine manipulators</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B145</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Only one arm</name>
+				<cost type="points">-2</cost>
+				<affects>levels only</affects>
+				<reference>B40</reference>
+				<notes>@Which@</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Three arms</name>
+				<cost type="points">3</cost>
+				<affects>levels only</affects>
+				<reference>B40</reference>
+			</modifier>
+			<modifier version="1">
+				<name>Size</name>
+				<cost type="percentage">-10</cost>
+				<levels>1</levels>
+				<affects>total</affects>
+			</modifier>
+			<reference>B40</reference>
+			<notes>+2 ST when using arms for attacking</notes>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute limitation="lifting only">st</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Brachiator</name>
+			<type>Physical, Exotic</type>
+			<base_points>5</base_points>
+			<reference>B41</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<skill_bonus>
+				<name compare="is">climbing</name>
+				<specialization compare="is anything"></specialization>
+				<amount>2</amount>
+			</skill_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Discriminatory Smell</name>
+			<type>Physical, Exotic</type>
+			<base_points>15</base_points>
+			<modifier version="1" enabled="no">
+				<name>Emotion Sense</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Profiling</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>P47</reference>
+			</modifier>
+			<reference>B49</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Ham-Fisted</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<points_per_level>-5</points_per_level>
+			<reference>B138</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+			<skill_bonus>
+				<name compare="contains">artist</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-3</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">jeweler</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-3</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">knot-tying</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-3</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">leatherworking</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-3</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">lockpicking</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-3</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">pickpocket</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-3</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">sewing</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-3</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">sleight of hand</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-3</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">surgery</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-3</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">machinist</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-3</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="contains">mechanic</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-3</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="contains">fast-draw</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-3</amount>
+			</skill_bonus>
+			<prereq_list all="yes">
+				<advantage_prereq has="no">
+					<name compare="is">high manual dexterity</name>
+					<notes compare="is anything"></notes>
+				</advantage_prereq>
+			</prereq_list>
+		</advantage>
+		<advantage_container version="2" open="yes" type="meta trait">
+			<name>Meta-Trait: Wild Animal</name>
+			<reference>B263</reference>
+			<advantage version="2">
+				<name>Bestial</name>
+				<type>Mental, Exotic</type>
+				<base_points>-10</base_points>
+				<reference>B124</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Cannot Speak</name>
+				<type>Physical</type>
+				<base_points>-15</base_points>
+				<reference>B125</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Hidebound</name>
+				<type>Physical</type>
+				<base_points>-5</base_points>
+				<reference>B138</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Taboo Trait (Fixed IQ)</name>
+				<type>Physical</type>
+				<reference>B263</reference>
+			</advantage>
+		</advantage_container>
+		<advantage version="2">
+			<name>Bite</name>
+			<type>Physical, Exotic</type>
+			<base_points>1</base_points>
+			<melee_weapon>
+				<damage>thr-1 cut</damage>
+				<usage>Bite</usage>
+				<reach>C</reach>
+				<parry>No</parry>
+				<block>No</block>
+				<default>
+					<type>Skill</type>
+					<name>Brawling</name>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>DX</type>
+					<modifier>0</modifier>
+				</default>
+			</melee_weapon>
+			<reference>DF2:23</reference>
+			<categories>
+				<category>Perk</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Fist</name>
+			<type>Physical, Exotic</type>
+			<melee_weapon>
+				<damage>2d-2 cr</damage>
+				<reach>C</reach>
+				<parry>0</parry>
+				<block>No</block>
+				<default>
+					<type>DX</type>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Brawling</name>
+					<modifier>0</modifier>
+				</default>
+			</melee_weapon>
+			<reference>DF2:23</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+	</advantage_list>
+	<skill_list>
+		<skill version="2">
+			<name>Brawling</name>
+			<difficulty>DX/E</difficulty>
+			<points>4</points>
+			<reference>B182</reference>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Melee Combat</category>
+			</categories>
+			<weapon_bonus>
+				<name compare="is">Brawling</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at least">2</level>
+				<amount per_level="yes">1</amount>
+			</weapon_bonus>
+		</skill>
+		<skill version="2">
+			<name>Climbing</name>
+			<encumbrance_penalty_multiplier>1</encumbrance_penalty_multiplier>
+			<difficulty>DX/A</difficulty>
+			<points>2</points>
+			<reference>B183</reference>
+			<categories>
+				<category>Athletic</category>
+				<category>Criminal/Street</category>
+				<category>Outdoor/Exploration</category>
+			</categories>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+		</skill>
+		<skill version="2">
+			<name>Wrestling</name>
+			<difficulty>DX/A</difficulty>
+			<points>8</points>
+			<reference>B228</reference>
+			<notes>+2 ST when grappling</notes>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Melee Combat</category>
+			</categories>
+		</skill>
+		<technique version="2" limit="3">
+			<name>Neck Snap</name>
+			<difficulty>H</difficulty>
+			<points>1</points>
+			<melee_weapon>
+				<damage>4d-1</damage>
+				<usage>Neck Snap (requires grapple first; see B404)</usage>
+				<reach>C</reach>
+				<default>
+					<type>Skill</type>
+					<name>Neck Snap</name>
+					<modifier>4</modifier>
+				</default>
+			</melee_weapon>
+			<reference>B232,MA77</reference>
+			<default>
+				<type>ST</type>
+				<modifier>-4</modifier>
+			</default>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Melee Combat</category>
+				<category>Technique</category>
+			</categories>
+		</technique>
+	</skill_list>
+	<print_settings printer="HP LaserJet M1536dnf MFP (C1388F)" units="in">
+		<orientation>portrait</orientation>
+		<width>8.267716407775879</width>
+		<height>11.692913055419922</height>
+		<top_margin>0.5</top_margin>
+		<left_margin>0.5</left_margin>
+		<bottom_margin>0.5</bottom_margin>
+		<right_margin>0.5</right_margin>
+		<ink_chromaticity>monochrome</ink_chromaticity>
+		<sides>duplex</sides>
+		<quality>normal</quality>
+	</print_settings>
+</character>

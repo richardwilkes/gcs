@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<character unique_id="hrg3qxr3:1jh2kfpt324ij" version="2">
+	<created_date>Jan 18, 2016</created_date>
+	<modified_date>Feb 4, 2016 12:02 PM</modified_date>
+	<profile>
+		<name>Horde Zombie</name>
+		<age>0</age>
+		<SM>0</SM>
+		<race>Undead</race>
+		<notes>Horde Zombie (DF2:24)
+
+Horde zombies aren't necromantic servitors, but victims of a horrible curse. Anyone slain by a horde zombie will rise as one a minute later and try to eat any living person in sight.While capable of speech, horde zombies only ever moan the name of the body part they wish to eat: "Braaaain," "Spleeeen," "Skinnnn," etc. They're mostly weak fodder -- but if enough of them attack, the danger of being grappled, pinned, and eaten is real. On the other hand, they're easy to outrun, and usually forget about victims who duck out of sight (6 or less chance of staying on the trail).
+
+Notes: While "intelligent," horde zombies are uninterested in negotiation and immune to trickery. They just want to eat. They aren't truly evil -- they're more a force of nature.
+</notes>
+	</profile>
+	<HP>4</HP>
+	<FP>-12</FP>
+	<total_points>-25</total_points>
+	<ST>13</ST>
+	<DX>8</DX>
+	<IQ>8</IQ>
+	<HT>12</HT>
+	<will>0</will>
+	<perception>0</perception>
+	<speed>0</speed>
+	<move>-1</move>
+	<include_punch>false</include_punch>
+	<include_kick>false</include_kick>
+	<include_kick_with_boots>false</include_kick_with_boots>
+	<advantage_list>
+		<advantage version="2">
+			<name>Bad Smell</name>
+			<type>Physical</type>
+			<base_points>-10</base_points>
+			<reference>B128</reference>
+			<notes>-2 Reaction penalty</notes>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Cannot Learn</name>
+			<type>Mental</type>
+			<base_points>-30</base_points>
+			<reference>B125</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Doesn't Breathe</name>
+			<type>Physical, Exotic</type>
+			<base_points>20</base_points>
+			<modifier version="1" enabled="no">
+				<name>Gills</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Gills</name>
+				<cost type="points">-20</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Suffocates in air</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Absorption</name>
+				<cost type="percentage">-25</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 25 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-40</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 50 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-30</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 100 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 200 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Storage</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+				<notes>Can hold breath 300 times as long as normal</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Oxygen Combustion</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B49</reference>
+			</modifier>
+			<reference>B49</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Doesn't Sleep</name>
+			<type>Physical, Exotic</type>
+			<base_points>20</base_points>
+			<reference>B50</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Fragile (Unnatural)</name>
+			<type>Physical, Exotic</type>
+			<base_points>-50</base_points>
+			<reference>B137</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>High Pain Threshold</name>
+			<type>Physical</type>
+			<base_points>10</base_points>
+			<reference>B59</reference>
+			<notes>Never suffer shock penalties when injured; +3 on all HT rolls to avoid knockdown and stunning; +3 to resist torture</notes>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Immunity (All mind control)</name>
+			<type>Physical</type>
+			<base_points>30</base_points>
+			<reference>B81</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Immunity to Metabolic Hazards</name>
+			<type>Physical</type>
+			<base_points>30</base_points>
+			<reference>B81</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Incurious</name>
+			<type>Mental</type>
+			<base_points>-5</base_points>
+			<cr>6</cr>
+			<reference>B140</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Indomitable</name>
+			<type>Mental</type>
+			<base_points>15</base_points>
+			<reference>B60</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Infectious Attack</name>
+			<type>Physical, Supernatural</type>
+			<base_points>-5</base_points>
+			<reference>B140</reference>
+			<notes>Must kill victim</notes>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Injury Tolerance (No Blood, Unliving)</name>
+			<type>Physical, Exotic</type>
+			<base_points>25</base_points>
+			<reference>B61</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Temperature Tolerance</name>
+			<type>Physical</type>
+			<levels>10</levels>
+			<points_per_level>1</points_per_level>
+			<reference>B93</reference>
+			<notes>-115 to 60 degrees</notes>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Uncontrollable Appetite (Body parts)</name>
+			<type>Mental, Supernatural</type>
+			<base_points>-15</base_points>
+			<cr>6</cr>
+			<reference>B159</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Unfazeable</name>
+			<type>Mental</type>
+			<base_points>15</base_points>
+			<modifier version="1" enabled="no">
+				<name>Familiar Horrors</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>H20</reference>
+			</modifier>
+			<reference>B95</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Unhealing (Total)</name>
+			<type>Physical, Exotic</type>
+			<base_points>-30</base_points>
+			<reference>B160</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Bite</name>
+			<type>Physical, Exotic</type>
+			<melee_weapon>
+				<damage>thr-1 cr</damage>
+				<usage>Bite</usage>
+				<reach>C</reach>
+				<parry>No</parry>
+				<block>No</block>
+				<default>
+					<type>DX</type>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Brawling</name>
+					<modifier>0</modifier>
+				</default>
+			</melee_weapon>
+			<reference>B91</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Punch</name>
+			<type>Physical, Exotic</type>
+			<melee_weapon>
+				<damage>thr:-1 cr</damage>
+				<usage>Punch</usage>
+				<reach>C</reach>
+				<parry>0</parry>
+				<block>No</block>
+				<default>
+					<type>DX</type>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Brawling</name>
+					<modifier>0</modifier>
+				</default>
+			</melee_weapon>
+			<reference>B88</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+	</advantage_list>
+	<skill_list>
+		<skill version="2">
+			<name>Brawling</name>
+			<difficulty>DX/E</difficulty>
+			<points>12</points>
+			<reference>B182</reference>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Melee Combat</category>
+			</categories>
+			<weapon_bonus>
+				<name compare="is">Brawling</name>
+				<specialization compare="is anything"></specialization>
+				<level compare="at least">2</level>
+				<amount per_level="yes">1</amount>
+			</weapon_bonus>
+		</skill>
+		<skill version="2">
+			<name>Wrestling</name>
+			<difficulty>DX/A</difficulty>
+			<points>16</points>
+			<reference>B228</reference>
+			<categories>
+				<category>Combat/Weapon</category>
+				<category>Melee Combat</category>
+			</categories>
+		</skill>
+	</skill_list>
+	<print_settings printer="HP LaserJet M1536dnf MFP (C1388F)" units="in">
+		<orientation>portrait</orientation>
+		<width>8.267716407775879</width>
+		<height>11.692913055419922</height>
+		<top_margin>0.5</top_margin>
+		<left_margin>0.5</left_margin>
+		<bottom_margin>0.5</bottom_margin>
+		<right_margin>0.5</right_margin>
+		<ink_chromaticity>monochrome</ink_chromaticity>
+		<sides>duplex</sides>
+		<quality>normal</quality>
+	</print_settings>
+</character>
