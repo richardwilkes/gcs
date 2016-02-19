@@ -240,18 +240,18 @@ public class GCS {
 	 * @param fileProxyCreator The {@link FileProxyCreator} to use.
 	 */
 	public static void registerFileTypes(FileProxyCreator fileProxyCreator) {
-		FileType.register(GURPSCharacter.EXTENSION, GCSImages.getCharacterSheetDocumentIcons(), SHEET_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true);
-		FileType.register(AdvantageList.EXTENSION, GCSImages.getAdvantagesDocumentIcons(), ADVANTAGES_LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true);
-		FileType.register(EquipmentList.EXTENSION, GCSImages.getEquipmentDocumentIcons(), EQUIPMENT_LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true);
-		FileType.register(SkillList.EXTENSION, GCSImages.getSkillsDocumentIcons(), SKILLS_LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true);
-		FileType.register(SpellList.EXTENSION, GCSImages.getSpellsDocumentIcons(), SPELLS_LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true);
-		FileType.register(Template.EXTENSION, GCSImages.getTemplateDocumentIcons(), TEMPLATE_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true);
+		FileType.register(GURPSCharacter.EXTENSION, GCSImages.getCharacterSheetDocumentIcons(), SHEET_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true, true);
+		FileType.register(AdvantageList.EXTENSION, GCSImages.getAdvantagesDocumentIcons(), ADVANTAGES_LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true, true);
+		FileType.register(EquipmentList.EXTENSION, GCSImages.getEquipmentDocumentIcons(), EQUIPMENT_LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true, true);
+		FileType.register(SkillList.EXTENSION, GCSImages.getSkillsDocumentIcons(), SKILLS_LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true, true);
+		FileType.register(SpellList.EXTENSION, GCSImages.getSpellsDocumentIcons(), SPELLS_LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true, true);
+		FileType.register(Template.EXTENSION, GCSImages.getTemplateDocumentIcons(), TEMPLATE_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true, true);
 		// For legacy
-		FileType.register(LibraryFile.EXTENSION, GCSImages.getAdvantagesDocumentIcons(), LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true);
+		FileType.register(LibraryFile.EXTENSION, GCSImages.getAdvantagesDocumentIcons(), LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true, true);
 
-		FileType.registerPdf(GCSImages.getPDFDocumentIcons(), fileProxyCreator, true);
-		FileType.registerHtml(null, null, false);
-		FileType.registerPng(null, null, false);
+		FileType.registerPdf(GCSImages.getPDFDocumentIcons(), fileProxyCreator, true, false);
+		FileType.registerHtml(null, null, false, false);
+		FileType.registerPng(null, null, false, false);
 	}
 
 	private static int convert(CmdLine cmdLine) {

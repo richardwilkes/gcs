@@ -33,6 +33,7 @@ import com.trollworks.toolkit.utility.cmdline.CmdLine;
 
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Map;
 
 /** The main application user interface. */
 public class GCSApp extends App {
@@ -48,9 +49,9 @@ public class GCSApp extends App {
 	@Override
 	public void configureApplication(CmdLine cmdLine) {
 		if (Platform.isWindows()) {
-			HashMap<String, String> map = new HashMap<>();
+			Map<String, String> map = new HashMap<>();
 			for (FileType fileType : FileType.getAll()) {
-				if (fileType.allowOpen()) {
+				if (fileType.shouldRegisterAppForOpening()) {
 					map.put(fileType.getExtension(), fileType.getDescription());
 				}
 			}
