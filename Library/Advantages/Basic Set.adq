@@ -15219,6 +15219,125 @@
 		</skill_bonus>
 	</advantage>
 	<advantage version="2">
+		<name>Talent (Artificer)</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>10</points_per_level>
+		<modifier version="1">
+			<name>Reaction Bonus</name>
+			<cost type="percentage">0</cost>
+			<affects>total</affects>
+			<notes>Any employer</notes>
+		</modifier>
+		<reference>B90</reference>
+		<categories>
+			<category>Advantage</category>
+			<category>Talent</category>
+		</categories>
+		<skill_bonus>
+			<name compare="is">Armoury</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
+		<skill_bonus>
+			<name compare="is">Carpentry</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
+		<skill_bonus>
+			<name compare="is">Electrician</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
+		<skill_bonus>
+			<name compare="is">Electronics Repair</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
+		<skill_bonus>
+			<name compare="is">Engineer</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
+		<skill_bonus>
+			<name compare="is">Machinist</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
+		<skill_bonus>
+			<name compare="is">Masonry</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
+		<skill_bonus>
+			<name compare="is">Mechanic</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
+		<skill_bonus>
+			<name compare="is">Smith</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
+	</advantage>
+	<advantage version="2">
+		<name>Talent (Business Acumen)</name>
+		<type>Mental</type>
+		<levels>1</levels>
+		<points_per_level>10</points_per_level>
+		<modifier version="1">
+			<name>Reaction Bonus</name>
+			<cost type="percentage">0</cost>
+			<affects>total</affects>
+			<notes>Business partners</notes>
+		</modifier>
+		<reference>B90</reference>
+		<categories>
+			<category>Advantage</category>
+			<category>Talent</category>
+		</categories>
+		<skill_bonus>
+			<name compare="is">Accounting</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
+		<skill_bonus>
+			<name compare="is">Administration</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
+		<skill_bonus>
+			<name compare="is">Economics</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
+		<skill_bonus>
+			<name compare="is">Finance</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
+		<skill_bonus>
+			<name compare="is">Gambling</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
+		<skill_bonus>
+			<name compare="is">Market Analysis</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
+		<skill_bonus>
+			<name compare="is">Merchant</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
+		<skill_bonus>
+			<name compare="is">Propaganda</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
+	</advantage>
+	<advantage version="2">
 		<name>Talent (Gifted Artist)</name>
 		<type>Mental</type>
 		<levels>1</levels>
