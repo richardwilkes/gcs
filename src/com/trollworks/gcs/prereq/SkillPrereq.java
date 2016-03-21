@@ -142,7 +142,9 @@ public class SkillPrereq extends NameLevelPrereq {
 					String otherTL = skill.getTechLevel();
 					satisfied = otherTL == null || techLevel.equals(otherTL);
 				}
-				break;
+				if (satisfied) {
+					break;
+				}
 			}
 		}
 		if (!has()) {
