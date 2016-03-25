@@ -1,0 +1,979 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="im047917:-23oxr88xm1db" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes">
+			<name>Attributes</name>
+			<advantage version="2">
+				<name>Increased Intelligence</name>
+				<type>Mental</type>
+				<levels>3</levels>
+				<points_per_level>20</points_per_level>
+				<reference>B15</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>iq</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Perception</name>
+				<type>Mental/Physical</type>
+				<levels>1</levels>
+				<points_per_level>5</points_per_level>
+				<reference>B16</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>perception</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+		</advantage_container>
+		<advantage_container version="2" open="yes">
+			<name>Class Advantages</name>
+			<advantage_container version="2" open="yes">
+				<name>Psionics</name>
+				<advantage_container version="2" open="yes">
+					<name>ESP</name>
+					<advantage version="2">
+						<name>Detect</name>
+						<type>Mental/Physical, Exotic</type>
+						<modifier version="1" enabled="no">
+							<name>@Rare Substance/Condition@</name>
+							<cost type="points">5</cost>
+							<affects>total</affects>
+							<reference>B48</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Current psi use &amp; past psi residue</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B48</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Common Substance/Condition@</name>
+							<cost type="points">20</cost>
+							<affects>total</affects>
+							<reference>B48</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Very Common Substance/Condition@</name>
+							<cost type="points">30</cost>
+							<affects>total</affects>
+							<reference>B48</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Precise</name>
+							<cost type="percentage">100</cost>
+							<affects>total</affects>
+							<reference>B48</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Signal Detection</name>
+							<cost type="percentage">0</cost>
+							<affects>total</affects>
+							<reference>B48</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Vague</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B48</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Analyzing</name>
+							<cost type="percentage">100</cost>
+							<affects>total</affects>
+							<reference>P47</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Psionic</name>
+							<cost type="percentage">-10</cost>
+							<affects>total</affects>
+							<reference>B254</reference>
+						</modifier>
+						<reference>B48</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Psychometry</name>
+						<type>Mental, Supernatural</type>
+						<base_points>20</base_points>
+						<modifier version="1" enabled="no">
+							<name>Directed</name>
+							<cost type="percentage">50</cost>
+							<affects>total</affects>
+							<reference>P69</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Immersive</name>
+							<cost type="percentage">100</cost>
+							<affects>total</affects>
+							<reference>P69</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Sensitive</name>
+							<cost type="percentage">30</cost>
+							<affects>total</affects>
+							<reference>P69</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Active Only</name>
+							<cost type="percentage">-20</cost>
+							<affects>total</affects>
+							<reference>P69</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Hypersensory</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>P69</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Mundane</name>
+							<cost type="percentage">-30</cost>
+							<affects>total</affects>
+							<reference>P69</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Passive Only</name>
+							<cost type="percentage">-60</cost>
+							<affects>total</affects>
+							<reference>P69</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Psionic</name>
+							<cost type="percentage">-10</cost>
+							<affects>total</affects>
+							<reference>B254</reference>
+						</modifier>
+						<reference>B78</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+				</advantage_container>
+				<advantage_container version="2" open="yes">
+					<name>Telepathy</name>
+					<advantage version="2">
+						<name>Telepathy Talent</name>
+						<type>Mental</type>
+						<levels>2</levels>
+						<points_per_level>5</points_per_level>
+						<reference>PSI19</reference>
+						<categories>
+							<category>Communication</category>
+							<category>Control</category>
+							<category>Offense</category>
+							<category>Power</category>
+							<category>Sense and Defense</category>
+							<category>Telepathy</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">Borrow Skill</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Emotion Sense</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Telereceive</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Telesend</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Aspect</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Mental Surgery</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Mind Swap</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Mindwipe</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Sensory Control</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Suggestion</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Telecontrol</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Instill Fear</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Mental Blow</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Mental Stab</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Sleep (Telepathy)</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Mind Clouding</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Mind Shield</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Telepathy Sense</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">Telescan</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">1</amount>
+						</skill_bonus>
+						<prereq_list all="no">
+							<advantage_prereq has="no">
+								<name compare="is">Offense Talent</name>
+								<notes compare="is anything"></notes>
+								<level compare="at least">1</level>
+							</advantage_prereq>
+							<advantage_prereq has="no">
+								<name compare="is">Control Talent</name>
+								<notes compare="is anything"></notes>
+								<level compare="at least">1</level>
+							</advantage_prereq>
+							<advantage_prereq has="no">
+								<name compare="is">Sense and Defense Talent</name>
+								<notes compare="is anything"></notes>
+								<level compare="at least">1</level>
+							</advantage_prereq>
+							<advantage_prereq has="no">
+								<name compare="is">Communication Talent</name>
+								<notes compare="is anything"></notes>
+								<level compare="at least">1</level>
+							</advantage_prereq>
+						</prereq_list>
+					</advantage>
+					<advantage version="2">
+						<name>Mind Probe</name>
+						<type>Mental, Exotic</type>
+						<base_points>20</base_points>
+						<modifier version="1" enabled="no">
+							<name>Cybernetic</name>
+							<cost type="percentage">50</cost>
+							<affects>total</affects>
+							<reference>B69</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Sensory</name>
+							<cost type="percentage">20</cost>
+							<affects>total</affects>
+							<reference>B69</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Universal</name>
+							<cost type="percentage">50</cost>
+							<affects>total</affects>
+							<reference>B69</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Cybernetic Only</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B70</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Racial</name>
+							<cost type="percentage">-20</cost>
+							<affects>total</affects>
+							<reference>B70</reference>
+							<notes>@Race@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Sensory Only</name>
+							<cost type="percentage">-20</cost>
+							<affects>total</affects>
+							<reference>B70</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Telecommunication</name>
+							<cost type="percentage">-20</cost>
+							<affects>total</affects>
+							<reference>B70</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Invasive</name>
+							<cost type="percentage">75</cost>
+							<affects>total</affects>
+							<reference>P62</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Memory Bank</name>
+							<cost type="percentage">100</cost>
+							<affects>total</affects>
+							<reference>P62</reference>
+							<notes>IQ snapshots</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Memory Bank</name>
+							<cost type="percentage">150</cost>
+							<affects>total</affects>
+							<reference>P62</reference>
+							<notes>Unlimited snapshots</notes>
+						</modifier>
+						<modifier version="1">
+							<name>Psionic</name>
+							<cost type="percentage">-10</cost>
+							<affects>total</affects>
+							<reference>B254</reference>
+						</modifier>
+						<reference>B69</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Mind Reading</name>
+						<type>Mental, Exotic</type>
+						<base_points>30</base_points>
+						<modifier version="1" enabled="no">
+							<name>Cybernetic</name>
+							<cost type="percentage">50</cost>
+							<affects>total</affects>
+							<reference>B69</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Sensory</name>
+							<cost type="percentage">20</cost>
+							<affects>total</affects>
+							<reference>B69</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Universal</name>
+							<cost type="percentage">50</cost>
+							<affects>total</affects>
+							<reference>B69</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Cybernetic Only</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B70</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Racial</name>
+							<cost type="percentage">-20</cost>
+							<affects>total</affects>
+							<reference>B70</reference>
+							<notes>@Race@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Sensory Only</name>
+							<cost type="percentage">-20</cost>
+							<affects>total</affects>
+							<reference>B70</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Telecommunication</name>
+							<cost type="percentage">-20</cost>
+							<affects>total</affects>
+							<reference>B70</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Multiple Contacts</name>
+							<cost type="percentage">50</cost>
+							<affects>total</affects>
+							<reference>P62</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Psionic</name>
+							<cost type="percentage">-10</cost>
+							<affects>total</affects>
+							<reference>B254</reference>
+						</modifier>
+						<reference>B69</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Mind Shield</name>
+						<type>Mental, Exotic</type>
+						<levels>3</levels>
+						<points_per_level>4</points_per_level>
+						<modifier version="1" enabled="no">
+							<name>Cybernetic</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B70</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Limited</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>P62</reference>
+							<notes>@Source@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Limited</name>
+							<cost type="percentage">-75</cost>
+							<affects>total</affects>
+							<reference>P62</reference>
+							<notes>@Power/College/Focus@</notes>
+						</modifier>
+						<modifier version="1">
+							<name>Psionic</name>
+							<cost type="percentage">-10</cost>
+							<affects>total</affects>
+							<reference>B254</reference>
+						</modifier>
+						<reference>B70</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+				</advantage_container>
+			</advantage_container>
+		</advantage_container>
+		<advantage_container version="2" open="yes">
+			<name>Class Disadvantages</name>
+			<advantage version="2">
+				<name>Code of Honor (Private Investigator)</name>
+				<type>Mental</type>
+				<base_points>-10</base_points>
+				<reference>MYST109</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Sense of Duty (Client)</name>
+				<type>Mental</type>
+				<modifier version="1">
+					<name>Clients</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>MYST110</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Will commit illegal acts</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>MYST110</reference>
+				</modifier>
+				<reference>B153</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage_container version="2" open="yes">
+				<name>-25 points chosen from any appropriate physical disadvantages, and/or:</name>
+				<advantage version="2">
+					<name>Addiction (Chain-smoker)</name>
+					<type>Mental/Physical</type>
+					<modifier version="1">
+						<name>Cost: Cheap</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Cost: Expensive</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Cost: Very Expensive</name>
+						<cost type="points">-20</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Effects: Hallucinogenic</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<modifier version="1">
+						<name>Effects: Highly Addictive (-5 on withdrawal roll)</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Effects: Incapacitating</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Effects: Totally Addictive (-10 on withdrawal roll)</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Illegal</name>
+						<cost type="points">0</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<modifier version="1">
+						<name>Legal</name>
+						<cost type="points">5</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<reference>B122</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Bad Temper</name>
+					<type>Mental</type>
+					<base_points>-10</base_points>
+					<cr>12</cr>
+					<reference>B124</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Bully</name>
+					<type>Mental</type>
+					<base_points>-10</base_points>
+					<cr>12</cr>
+					<reference>B125</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Insomniac (Mild)</name>
+					<type>Physical</type>
+					<base_points>-10</base_points>
+					<reference>B140</reference>
+					<notes>GM secretly rolls 3d for the number of days between episodes</notes>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Insomniac (Severe)</name>
+					<type>Physical</type>
+					<base_points>-15</base_points>
+					<reference>B140</reference>
+					<notes>GM secretly rolls 2d-1 for the number of days between episodes</notes>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Intolerance (@Class, Ethnicity, Nationality, Religion, Sex, or Species@)</name>
+					<type>Mental</type>
+					<modifier version="1" enabled="no">
+						<name>Scope: Common</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B140</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Scope: Anyone unlike you</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B140</reference>
+					</modifier>
+					<reference>B140</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Overconfidence</name>
+					<type>Mental</type>
+					<base_points>-5</base_points>
+					<cr>12</cr>
+					<reference>B148</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Secret (Corrupt)</name>
+					<type>Social</type>
+					<modifier version="1" enabled="no">
+						<name>Serious Embarrassment</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B152</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Utter Rejection</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B152</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Imprisonment</name>
+						<cost type="points">-20</cost>
+						<affects>total</affects>
+						<reference>B152</reference>
+					</modifier>
+					<reference>B152</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Sense of Duty</name>
+					<type>Mental</type>
+					<modifier version="1" enabled="no">
+						<name>Friends and Companions</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B153</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>@Small Group@</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B153</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>@Large Group@</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B153</reference>
+					</modifier>
+					<reference>B153</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Stubbornness</name>
+					<type>Mental</type>
+					<base_points>-5</base_points>
+					<reference>B157</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+			</advantage_container>
+		</advantage_container>
+	</advantage_list>
+	<skill_list>
+		<skill_container version="2" open="yes">
+			<name>Primary Skills</name>
+			<skill version="2">
+				<name>Criminology</name>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B186</reference>
+				<categories>
+					<category>Police</category>
+					<category>Social Sciences/Humanities</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Psychology</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Detect Lies</name>
+				<difficulty>Per/H</difficulty>
+				<points>1</points>
+				<reference>B187</reference>
+				<categories>
+					<category>Police</category>
+					<category>Social</category>
+					<category>Spy</category>
+				</categories>
+				<default>
+					<type>Per</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Body Language</name>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Psychology</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Diplomacy</name>
+				<difficulty>IQ/H</difficulty>
+				<points>2</points>
+				<reference>B187</reference>
+				<categories>
+					<category>Business</category>
+					<category>Police</category>
+					<category>Social</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Politics</name>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Fast-Talk</name>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B195</reference>
+				<categories>
+					<category>Criminal/Street</category>
+					<category>Social</category>
+					<category>Spy</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Acting</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Secondary Skills</name>
+			<skill version="2">
+				<name>Brawling</name>
+				<difficulty>DX/E</difficulty>
+				<points>1</points>
+				<reference>B182</reference>
+				<categories>
+					<category>Combat/Weapon</category>
+					<category>Melee Combat</category>
+				</categories>
+				<weapon_bonus>
+					<name compare="is">Brawling</name>
+					<specialization compare="is anything"></specialization>
+					<level compare="at least">2</level>
+					<amount per_level="yes">1</amount>
+				</weapon_bonus>
+			</skill>
+			<skill version="2">
+				<name>Streetwise</name>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B223</reference>
+				<categories>
+					<category>Criminal/Street</category>
+					<category>Police</category>
+					<category>Social</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Background Skills</name>
+			<skill_container version="2" open="yes">
+				<name>3 points in:</name>
+				<skill version="2">
+					<name>Computer Operation</name>
+					<tech_level/>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B184</reference>
+					<categories>
+						<category>Everyman</category>
+						<category>Scholarly</category>
+						<category>Technical</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Area Knowledge</name>
+					<specialization>@City@</specialization>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B176</reference>
+					<notes>All important businesses, streets, citizens, leaders, etc.</notes>
+					<categories>
+						<category>Everyman</category>
+						<category>Knowledge</category>
+					</categories>
+					<default>
+						<type>Skill</type>
+						<name>Geography</name>
+						<specialization>@Specialty@</specialization>
+						<modifier>-3</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Administration</name>
+					<difficulty>IQ/A</difficulty>
+					<points>1</points>
+					<reference>B174</reference>
+					<categories>
+						<category>Business</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>Skill</type>
+						<name>Merchant</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Public Speaking</name>
+					<difficulty>IQ/A</difficulty>
+					<points>1</points>
+					<reference>B216</reference>
+					<categories>
+						<category>Business</category>
+						<category>Scholarly</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Acting</name>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Performance</name>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Politics</name>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Research</name>
+					<tech_level/>
+					<difficulty>IQ/A</difficulty>
+					<points>1</points>
+					<reference>B217</reference>
+					<categories>
+						<category>Scholarly</category>
+						<category>Spy</category>
+					</categories>
+					<prereq_list all="yes">
+						<prereq_list all="yes">
+							<when_tl compare="at least">8</when_tl>
+							<skill_prereq has="yes">
+								<name compare="is">Computer Operation</name>
+								<specialization compare="is anything"></specialization>
+							</skill_prereq>
+						</prereq_list>
+						<prereq_list all="no">
+							<advantage_prereq has="yes">
+								<name compare="starts with">Language</name>
+								<notes compare="contains">Written (Native</notes>
+							</advantage_prereq>
+							<advantage_prereq has="yes">
+								<name compare="starts with">Language</name>
+								<notes compare="contains">Written (Accented)</notes>
+							</advantage_prereq>
+							<advantage_prereq has="yes">
+								<name compare="starts with">Language</name>
+								<notes compare="contains">Written (Broken)</notes>
+							</advantage_prereq>
+						</prereq_list>
+					</prereq_list>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Writing</name>
+						<modifier>-3</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Law</name>
+					<specialization>@Specialty@</specialization>
+					<difficulty>IQ/H</difficulty>
+					<points>1</points>
+					<reference>B204</reference>
+					<categories>
+						<category>Business</category>
+						<category>Police</category>
+						<category>Social Sciences/Humanities</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-6</modifier>
+					</default>
+				</skill>
+			</skill_container>
+		</skill_container>
+	</skill_list>
+</template>

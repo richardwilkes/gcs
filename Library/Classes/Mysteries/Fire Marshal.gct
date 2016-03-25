@@ -1,0 +1,1571 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="ilzsl3fj:13pofh91m40gk" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes">
+			<name>Attributes</name>
+			<advantage version="2">
+				<name>Increased Intelligence</name>
+				<type>Mental</type>
+				<levels>2</levels>
+				<points_per_level>20</points_per_level>
+				<reference>B15</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>iq</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+		</advantage_container>
+		<advantage_container version="2" open="yes">
+			<name>Class Advantages</name>
+			<advantage version="2">
+				<name>Legal Enforcement Powers</name>
+				<type>Social</type>
+				<modifier version="1">
+					<name>Fire Marshal</name>
+					<cost type="points">5</cost>
+					<affects>total</affects>
+					<reference>B65</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@KGB@</name>
+					<cost type="points">15</cost>
+					<affects>total</affects>
+					<reference>B65</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@FBI agent@</name>
+					<cost type="points">10</cost>
+					<affects>total</affects>
+					<reference>B65</reference>
+				</modifier>
+				<reference>B65</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Rank</name>
+				<type>Physical</type>
+				<levels>2</levels>
+				<points_per_level>5</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>Replaces Status</name>
+					<cost type="points">5</cost>
+					<affects>levels only</affects>
+					<reference>B29</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Courtesy</name>
+					<cost type="points">-4</cost>
+					<affects>levels only</affects>
+					<reference>B29</reference>
+				</modifier>
+				<reference>B29</reference>
+				<notes>Police/Fire</notes>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage_container version="2" open="yes">
+				<name>10 points chosen from:</name>
+				<advantage version="2">
+					<name>Acute Vision</name>
+					<type>Physical</type>
+					<levels>1</levels>
+					<points_per_level>2</points_per_level>
+					<reference>B35</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>vision</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Acute Hearing</name>
+					<type>Physical</type>
+					<levels>1</levels>
+					<points_per_level>2</points_per_level>
+					<reference>B35</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>hearing</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Acute Taste &amp; Smell</name>
+					<type>Physical</type>
+					<levels>1</levels>
+					<points_per_level>2</points_per_level>
+					<reference>B35</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>taste smell</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Acute Touch</name>
+					<type>Physical</type>
+					<levels>1</levels>
+					<points_per_level>2</points_per_level>
+					<reference>B35</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>touch</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Contact (Street)</name>
+					<type>Social</type>
+					<modifier version="1">
+						<name>Effective skill</name>
+						<cost type="points">1</cost>
+						<affects>total</affects>
+						<notes>12</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Effective skill</name>
+						<cost type="points">2</cost>
+						<affects>total</affects>
+						<notes>15</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Effective skill</name>
+						<cost type="points">3</cost>
+						<affects>total</affects>
+						<notes>18</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Effective skill</name>
+						<cost type="points">4</cost>
+						<affects>total</affects>
+						<notes>21</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Can obtain information using supernatural talents</name>
+						<cost type="points">1</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Group</name>
+						<cost type="multiplier">5</cost>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Appears almost all the time</name>
+						<cost type="multiplier">3</cost>
+						<notes>15-</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Appears quite often</name>
+						<cost type="multiplier">2</cost>
+						<notes>12-</notes>
+					</modifier>
+					<modifier version="1">
+						<name>Appears fairly often</name>
+						<cost type="multiplier">1</cost>
+						<notes>9-</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Appears quite rarely</name>
+						<cost type="multiplier">0.5</cost>
+						<notes>6-</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Completely reliable</name>
+						<cost type="multiplier">3</cost>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Usually reliable</name>
+						<cost type="multiplier">2</cost>
+					</modifier>
+					<modifier version="1">
+						<name>Somewhat reliable</name>
+						<cost type="multiplier">1</cost>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Unreliable</name>
+						<cost type="multiplier">0.5</cost>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Favor</name>
+						<cost type="multiplier">0.2</cost>
+						<reference>B55</reference>
+					</modifier>
+					<reference>B44</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Patron</name>
+					<type>Social</type>
+					<modifier version="1">
+						<name>@Who: Individual with 150% of PC's starting points@</name>
+						<cost type="points">10</cost>
+						<affects>total</affects>
+						<reference>B72</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>@Who: Organization with assets of at least 1000 times starting wealth@</name>
+						<cost type="points">10</cost>
+						<affects>total</affects>
+						<reference>B72</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>@Who: Individual with twice the PC's starting points@</name>
+						<cost type="points">10</cost>
+						<affects>total</affects>
+						<reference>B72</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>@Who: Organization with assets of at least 10000 times starting wealth@</name>
+						<cost type="points">15</cost>
+						<affects>total</affects>
+						<reference>B72</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>@Who: An ultra-powerful individual@</name>
+						<cost type="points">20</cost>
+						<affects>total</affects>
+						<reference>B72</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>@Who: Organization with assets of at least 100000 times starting wealth@</name>
+						<cost type="points">20</cost>
+						<affects>total</affects>
+						<reference>B72</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>@Who: Organization with assets of at least 1000000 times starting wealth@</name>
+						<cost type="points">25</cost>
+						<affects>total</affects>
+						<reference>B72</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>@Who: A national government or giant multi-national organization@</name>
+						<cost type="points">30</cost>
+						<affects>total</affects>
+						<reference>B72</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>@Who: A diety@</name>
+						<cost type="points">30</cost>
+						<affects>total</affects>
+						<reference>B72</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Appears almost all the time</name>
+						<cost type="multiplier">3</cost>
+						<reference>B36</reference>
+						<notes>15-</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Appears quite often</name>
+						<cost type="multiplier">2</cost>
+						<reference>B36</reference>
+						<notes>12-</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Appears fairly often</name>
+						<cost type="multiplier">1</cost>
+						<reference>B36</reference>
+						<notes>9-</notes>
+					</modifier>
+					<modifier version="1">
+						<name>Appears quite rarely</name>
+						<cost type="multiplier">0.5</cost>
+						<reference>B36</reference>
+						<notes>6-</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Equipment</name>
+						<cost type="percentage">50</cost>
+						<affects>total</affects>
+						<reference>B73</reference>
+						<notes>@Equipment worth no more than average starting wealth@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Equipment</name>
+						<cost type="percentage">100</cost>
+						<affects>total</affects>
+						<reference>B73</reference>
+						<notes>@Equipment worth more than average starting wealth@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Highly Accessible</name>
+						<cost type="percentage">50</cost>
+						<affects>total</affects>
+						<reference>B73</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Special Abilities</name>
+						<cost type="percentage">50</cost>
+						<affects>total</affects>
+						<reference>B73</reference>
+						<notes>@Extensive social or political power@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Special Abilities</name>
+						<cost type="percentage">100</cost>
+						<affects>total</affects>
+						<reference>B73</reference>
+						<notes>@Magical powers in a non-magical world, higher TL equipment, grants special powers or is supernatural@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Minimal Interventions</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B73</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Secret</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B73</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Unwilling</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B74</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Favor</name>
+						<cost type="multiplier">0.2</cost>
+						<reference>B55</reference>
+					</modifier>
+					<reference>B72</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Increased Perception</name>
+					<type>Mental/Physical</type>
+					<levels>1</levels>
+					<points_per_level>5</points_per_level>
+					<reference>B16</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>perception</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Increased Will</name>
+					<type>Mental</type>
+					<levels>1</levels>
+					<points_per_level>5</points_per_level>
+					<reference>B16</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>will</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+			</advantage_container>
+		</advantage_container>
+		<advantage_container version="2" open="yes">
+			<name>Class Disadvantages</name>
+			<advantage version="2">
+				<name>Duty (Fire marshal)</name>
+				<type>Social</type>
+				<modifier version="1" enabled="no">
+					<name>FR: 6</name>
+					<cost type="points">-2</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>FR: 9</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>FR: 12</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1">
+					<name>FR: 15</name>
+					<cost type="points">-15</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Extremely Hazardous</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Involuntary</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Nonhazardous</name>
+					<cost type="points">5</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B133</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage_container version="2" open="yes">
+				<name>-5 points chosen from:</name>
+				<advantage version="2">
+					<name>Addiction (Chain-smoker)</name>
+					<type>Mental/Physical</type>
+					<modifier version="1">
+						<name>Cost: Cheap</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Cost: Expensive</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Cost: Very Expensive</name>
+						<cost type="points">-20</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Effects: Hallucinogenic</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<modifier version="1">
+						<name>Effects: Highly Addictive (-5 on withdrawal roll)</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Effects: Incapacitating</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Effects: Totally Addictive (-10 on withdrawal roll)</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Illegal</name>
+						<cost type="points">0</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<modifier version="1">
+						<name>Legal</name>
+						<cost type="points">5</cost>
+						<affects>total</affects>
+						<reference>B122</reference>
+					</modifier>
+					<reference>B122</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Bad Temper</name>
+					<type>Mental</type>
+					<base_points>-10</base_points>
+					<cr>12</cr>
+					<reference>B124</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Callous</name>
+					<type>Mental</type>
+					<base_points>-5</base_points>
+					<reference>B125</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+					<skill_bonus>
+						<name compare="is">psychology</name>
+						<specialization compare="is anything"></specialization>
+						<amount>-3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">teaching</name>
+						<specialization compare="is anything"></specialization>
+						<amount>-3</amount>
+					</skill_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Chronic Pain</name>
+					<type>Physical</type>
+					<modifier version="1" enabled="no">
+						<name>1 Hour</name>
+						<cost type="multiplier">0.5</cost>
+						<reference>B126</reference>
+					</modifier>
+					<modifier version="1">
+						<name>2 Hours</name>
+						<cost type="multiplier">1</cost>
+						<reference>B126</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>4 Hours</name>
+						<cost type="multiplier">1.5</cost>
+						<reference>B126</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>8 Hours</name>
+						<cost type="multiplier">2</cost>
+						<reference>B126</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>FR: 6</name>
+						<cost type="multiplier">0.5</cost>
+					</modifier>
+					<modifier version="1">
+						<name>FR: 9</name>
+						<cost type="multiplier">1</cost>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>FR: 12</name>
+						<cost type="multiplier">2</cost>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>FR: 15</name>
+						<cost type="multiplier">3</cost>
+					</modifier>
+					<modifier version="1">
+						<name>Mild</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B126</reference>
+						<notes>-2 to DX, IQ, and self-control rolls</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Severe</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B126</reference>
+						<notes>-4 to DX, IQ, and self-control rolls</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Agonizing</name>
+						<cost type="points">-15</cost>
+						<affects>total</affects>
+						<reference>B126</reference>
+						<notes>-6 to DX, IQ, and self-control rolls</notes>
+					</modifier>
+					<reference>B126</reference>
+					<notes>-2 to DX, IQ and self-control rolls</notes>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Insomniac (Mild)</name>
+					<type>Physical</type>
+					<base_points>-10</base_points>
+					<reference>B140</reference>
+					<notes>GM secretly rolls 3d for the number of days between episodes</notes>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Insomniac (Severe)</name>
+					<type>Physical</type>
+					<base_points>-15</base_points>
+					<reference>B140</reference>
+					<notes>GM secretly rolls 2d-1 for the number of days between episodes</notes>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Intolerance (@Class, Ethnicity, Nationality, Religion, Sex, or Species@)</name>
+					<type>Mental</type>
+					<modifier version="1" enabled="no">
+						<name>Scope: Common</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B140</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Scope: Occasional</name>
+						<cost type="points">-2</cost>
+						<affects>total</affects>
+						<reference>B140</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Scope: Rare</name>
+						<cost type="points">-1</cost>
+						<affects>total</affects>
+						<reference>B140</reference>
+					</modifier>
+					<reference>B140</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Overconfidence</name>
+					<type>Mental</type>
+					<base_points>-5</base_points>
+					<cr>12</cr>
+					<reference>B148</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Pacifism: Cannot Harm Innocents</name>
+					<type>Mental</type>
+					<base_points>-10</base_points>
+					<modifier version="1" enabled="no">
+						<name>Species-Specific</name>
+						<cost type="percentage">-80</cost>
+						<affects>total</affects>
+						<reference>UT32</reference>
+					</modifier>
+					<reference>B148</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Secret (Corrupt)</name>
+					<type>Social</type>
+					<modifier version="1">
+						<name>Serious Embarrassment</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B152</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Utter Rejection</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B152</reference>
+					</modifier>
+					<reference>B152</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Sense of Duty</name>
+					<type>Mental</type>
+					<modifier version="1" enabled="no">
+						<name>Friends and Companions</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B153</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>@Small Group@</name>
+						<cost type="points">-5</cost>
+						<affects>total</affects>
+						<reference>B153</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>@Large Group@</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B153</reference>
+					</modifier>
+					<reference>B153</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Stubbornness</name>
+					<type>Mental</type>
+					<base_points>-5</base_points>
+					<reference>B157</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Unfit</name>
+					<type>Physical</type>
+					<base_points>-5</base_points>
+					<reference>B160</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+			</advantage_container>
+		</advantage_container>
+	</advantage_list>
+	<skill_list>
+		<skill_container version="2" open="yes">
+			<name>Primary Skills</name>
+			<skill version="2">
+				<name>Architecture</name>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B176</reference>
+				<categories>
+					<category>Design/Invention</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Civil</specialization>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Chemistry</name>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>2</points>
+				<reference>B183</reference>
+				<categories>
+					<category>Natural Science</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Alchemy</name>
+					<modifier>-3</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Criminology</name>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B186</reference>
+				<categories>
+					<category>Police</category>
+					<category>Social Sciences/Humanities</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Psychology</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Explosives</name>
+				<specialization>Demolition</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B194</reference>
+				<categories>
+					<category>Criminal/Street</category>
+					<category>Military</category>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Combat</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Engineer</name>
+					<specialization>Mining</specialization>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Explosives</name>
+					<specialization>Underwater Demolition</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Explosives</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Explosives</name>
+				<specialization>Fireworks</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B194</reference>
+				<categories>
+					<category>Military</category>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Chemistry</name>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Explosives</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Forensics</name>
+				<tech_level/>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B196</reference>
+				<categories>
+					<category>Police</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Criminology</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Interrogation</name>
+				<difficulty>IQ/A</difficulty>
+				<points>2</points>
+				<reference>B202</reference>
+				<categories>
+					<category>Military</category>
+					<category>Police</category>
+					<category>Spy</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Intimidation</name>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Psychology</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Law</name>
+				<specialization>Police/Fire</specialization>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B204</reference>
+				<categories>
+					<category>Business</category>
+					<category>Police</category>
+					<category>Social Sciences/Humanities</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Professional Skill</name>
+				<specialization>Firefighting</specialization>
+				<difficulty>IQ/A</difficulty>
+				<points>4</points>
+				<reference>B215</reference>
+				<categories>
+					<category>Knowledge</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Writing</name>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B228</reference>
+				<categories>
+					<category>Arts/Entertainment</category>
+					<category>Scholarly</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Secondary Skills</name>
+			<skill version="2">
+				<name>Area Knowledge</name>
+				<specialization>@City@</specialization>
+				<difficulty>IQ/E</difficulty>
+				<points>1</points>
+				<reference>B176</reference>
+				<notes>All important businesses, streets, citizens, leaders, etc.</notes>
+				<categories>
+					<category>Everyman</category>
+					<category>Knowledge</category>
+				</categories>
+				<default>
+					<type>Skill</type>
+					<name>Geography</name>
+					<specialization>@Specialty@</specialization>
+					<modifier>-3</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Detect Lies</name>
+				<difficulty>Per/H</difficulty>
+				<points>1</points>
+				<reference>B187</reference>
+				<categories>
+					<category>Police</category>
+					<category>Social</category>
+					<category>Spy</category>
+				</categories>
+				<default>
+					<type>Per</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Body Language</name>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Psychology</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Fast-Talk</name>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B195</reference>
+				<categories>
+					<category>Criminal/Street</category>
+					<category>Social</category>
+					<category>Spy</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Acting</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Hazardous Materials</name>
+				<specialization>Chemical</specialization>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B199</reference>
+				<categories>
+					<category>Technical</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Intimidation</name>
+				<difficulty>Will/A</difficulty>
+				<points>1</points>
+				<reference>B202</reference>
+				<categories>
+					<category>Criminal/Street</category>
+					<category>Police</category>
+					<category>Social</category>
+				</categories>
+				<default>
+					<type>Per</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Acting</name>
+					<modifier>-3</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Psychology</name>
+				<difficulty>IQ/H</difficulty>
+				<points>1</points>
+				<reference>B216</reference>
+				<categories>
+					<category>Social Sciences/Humanities</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-6</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Sociology</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Streetwise</name>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B223</reference>
+				<categories>
+					<category>Criminal/Street</category>
+					<category>Police</category>
+					<category>Social</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Background Skills</name>
+			<skill_container version="2" open="yes">
+				<name>3 points in:</name>
+				<skill version="2">
+					<name>Computer Operation</name>
+					<tech_level/>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B184</reference>
+					<categories>
+						<category>Everyman</category>
+						<category>Scholarly</category>
+						<category>Technical</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>First Aid</name>
+					<tech_level/>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B195</reference>
+					<categories>
+						<category>Everyman</category>
+						<category>Medical</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Esoteric Medicine</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Physician</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Veterinary</name>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Administration</name>
+					<difficulty>IQ/A</difficulty>
+					<points>1</points>
+					<reference>B174</reference>
+					<categories>
+						<category>Business</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>Skill</type>
+						<name>Merchant</name>
+						<modifier>-3</modifier>
+					</default>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Public Speaking</name>
+					<difficulty>IQ/A</difficulty>
+					<points>1</points>
+					<reference>B216</reference>
+					<categories>
+						<category>Business</category>
+						<category>Scholarly</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Acting</name>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Performance</name>
+						<modifier>-2</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Politics</name>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Diplomacy</name>
+					<difficulty>IQ/H</difficulty>
+					<points>1</points>
+					<reference>B187</reference>
+					<categories>
+						<category>Business</category>
+						<category>Police</category>
+						<category>Social</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-6</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Politics</name>
+						<modifier>-6</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Brawling</name>
+					<difficulty>DX/E</difficulty>
+					<points>1</points>
+					<reference>B182</reference>
+					<categories>
+						<category>Combat/Weapon</category>
+						<category>Melee Combat</category>
+					</categories>
+					<weapon_bonus>
+						<name compare="is">Brawling</name>
+						<specialization compare="is anything"></specialization>
+						<level compare="at least">2</level>
+						<amount per_level="yes">1</amount>
+					</weapon_bonus>
+				</skill>
+				<skill version="2">
+					<name>Wrestling</name>
+					<difficulty>DX/A</difficulty>
+					<points>1</points>
+					<reference>B228</reference>
+					<categories>
+						<category>Combat/Weapon</category>
+						<category>Melee Combat</category>
+					</categories>
+				</skill>
+				<skill version="2">
+					<name>Running</name>
+					<difficulty>HT/A</difficulty>
+					<points>1</points>
+					<reference>B218</reference>
+					<categories>
+						<category>Athletic</category>
+					</categories>
+					<default>
+						<type>HT</type>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+			</skill_container>
+		</skill_container>
+	</skill_list>
+	<equipment_list>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Glock 22, .40 S&amp;W</description>
+			<tech_level>8</tech_level>
+			<legality_class>3</legality_class>
+			<value>310</value>
+			<weight>2.1 lb</weight>
+			<reference>MYST117</reference>
+			<ranged_weapon>
+				<damage>2d+2 pi+</damage>
+				<strength>8</strength>
+				<accuracy>2</accuracy>
+				<range>150/1,700</range>
+				<rate_of_fire>3</rate_of_fire>
+				<shots>15+1(3)</shots>
+				<bulk>-2</bulk>
+				<recoil>2</recoil>
+				<default>
+					<type>DX</type>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Pistol</specialization>
+					<modifier>0</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Rifle</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Shotgun</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Light Machine Gun</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Submachine Gun</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Musket</specialization>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Grenade Launcher</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Gyroc</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Guns</name>
+					<specialization>Light Anti-Armor Weapon</specialization>
+					<modifier>-4</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Gun!</name>
+					<modifier>0</modifier>
+				</default>
+			</ranged_weapon>
+			<categories>
+				<category>Missile Weapon</category>
+				<category>Semiautomatic Pistols</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Handcuffs, S&amp;W Model 10 Nickel Plated</description>
+			<tech_level>7</tech_level>
+			<legality_class>4</legality_class>
+			<value>40</value>
+			<reference>MYST116</reference>
+			<notes>Holdout +2. -5 to Escape skill.</notes>
+			<categories>
+				<category>Handcuffs</category>
+				<category>Law-Enforcement</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Radio, Hand</description>
+			<tech_level>7</tech_level>
+			<legality_class>4</legality_class>
+			<value>100</value>
+			<weight>1 lb</weight>
+			<reference>B288</reference>
+			<notes>Classic "walkie-talkie." 2-mile range. 12 hrs.</notes>
+			<categories>
+				<category>Communications and Information Gear</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Frisk Gloves</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>50</value>
+			<weight>0.5 lb</weight>
+			<reference>HT69</reference>
+			<notes>Flexible.</notes>
+			<categories>
+				<category>Defenses</category>
+			</categories>
+			<dr_bonus>
+				<location>hands</location>
+				<amount>1</amount>
+			</dr_bonus>
+		</equipment>
+		<equipment_container version="3" open="yes">
+			<description>Optional Equipment</description>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<equipment version="3">
+				<quantity>1</quantity>
+				<description>Cell Phone</description>
+				<tech_level>8</tech_level>
+				<legality_class>4</legality_class>
+				<value>250</value>
+				<weight>0.25 lb</weight>
+				<reference>B288</reference>
+				<notes>Only works in some areas; $20/month fee., 10 hrs.</notes>
+				<categories>
+					<category>Communications and Information Gear</category>
+				</categories>
+			</equipment>
+			<equipment_container version="3" open="no">
+				<description>Evidence Collection Kit</description>
+				<tech_level>7</tech_level>
+				<legality_class>4</legality_class>
+				<value>80</value>
+				<weight>8.75 lb</weight>
+				<reference>MYST114</reference>
+				<categories>
+					<category>Crime Scene</category>
+					<category>Law-Enforcement</category>
+				</categories>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Barrier Tape</description>
+					<tech_level>7</tech_level>
+					<legality_class>4</legality_class>
+					<value>10</value>
+					<weight>1 lb</weight>
+					<reference>MYST114</reference>
+					<notes>1,000' </notes>
+					<categories>
+						<category>Crime Scene</category>
+						<category>Law-Enforcement</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Tape Measure</description>
+					<tech_level>7</tech_level>
+					<legality_class>4</legality_class>
+					<value>0</value>
+					<categories>
+						<category>General Equipment</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Magnifying Glass</description>
+					<tech_level>5</tech_level>
+					<legality_class>4</legality_class>
+					<value>10</value>
+					<reference>HT57</reference>
+					<categories>
+						<category>General Equipment</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Evidence Tape</description>
+					<tech_level>7</tech_level>
+					<legality_class>4</legality_class>
+					<value>0</value>
+					<reference>MYST114</reference>
+					<categories>
+						<category>Crime Scene</category>
+						<category>Law-Enforcement</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Evidence Bags</description>
+					<tech_level>7</tech_level>
+					<legality_class>4</legality_class>
+					<value>20</value>
+					<weight>0.5 lb</weight>
+					<reference>MYST114</reference>
+					<notes>100 sealable plastic bags, 12" x 10"</notes>
+					<categories>
+						<category>Crime Scene</category>
+						<category>Law-Enforcement</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Evidence Bags</description>
+					<tech_level>7</tech_level>
+					<legality_class>4</legality_class>
+					<value>25</value>
+					<weight>0.5 lb</weight>
+					<reference>MYST114</reference>
+					<notes>100 sealable brown paper bags, 18" x 12"</notes>
+					<categories>
+						<category>Crime Scene</category>
+						<category>Law-Enforcement</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Evidence Tubes</description>
+					<tech_level>7</tech_level>
+					<legality_class>4</legality_class>
+					<value>0</value>
+					<reference>MYST114</reference>
+					<categories>
+						<category>Crime Scene</category>
+						<category>Law-Enforcement</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Evidence Cans</description>
+					<tech_level>7</tech_level>
+					<legality_class>4</legality_class>
+					<value>0</value>
+					<reference>MYST114</reference>
+					<categories>
+						<category>Crime Scene</category>
+						<category>Law-Enforcement</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Gloves</description>
+					<tech_level>8</tech_level>
+					<legality_class>4</legality_class>
+					<value>0</value>
+					<reference>MYST114</reference>
+					<categories>
+						<category>Crime Scene</category>
+						<category>Law-Enforcement</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Syringe Tube</description>
+					<tech_level>7</tech_level>
+					<legality_class>4</legality_class>
+					<value>0</value>
+					<reference>MYST114</reference>
+					<categories>
+						<category>Crime Scene</category>
+						<category>Law-Enforcement</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Scissors</description>
+					<tech_level>7</tech_level>
+					<legality_class>4</legality_class>
+					<value>0</value>
+					<categories>
+						<category>General Equipment</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Tweezers</description>
+					<tech_level>7</tech_level>
+					<legality_class>4</legality_class>
+					<value>0</value>
+					<categories>
+						<category>General Equipment</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Penlight</description>
+					<tech_level>7</tech_level>
+					<legality_class>4</legality_class>
+					<value>10</value>
+					<weight>0.25 lb</weight>
+					<reference>B288</reference>
+					<notes>15' beam, lasts 1 hour</notes>
+					<categories>
+						<category>Camping and Survival Gear</category>
+					</categories>
+				</equipment>
+				<equipment version="3">
+					<quantity>1</quantity>
+					<description>Evidence Markers</description>
+					<tech_level>7</tech_level>
+					<legality_class>4</legality_class>
+					<value>0</value>
+					<reference>MYST114</reference>
+					<categories>
+						<category>Crime Scene</category>
+						<category>Law-Enforcement</category>
+					</categories>
+				</equipment>
+			</equipment_container>
+		</equipment_container>
+	</equipment_list>
+</template>

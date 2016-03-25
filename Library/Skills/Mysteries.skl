@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<skill_list unique_id="ilyrxzd4:660bo4ac61kh" version="1">
+	<technique version="2">
+		<name>Handcuffing</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MYST112</reference>
+		<default>
+			<type>DX</type>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2">
+		<name>Handcuffing</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MYST112</reference>
+		<default>
+			<type>Skill</type>
+			<name>Judo</name>
+			<modifier>-1</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+	<technique version="2">
+		<name>Handcuffing</name>
+		<difficulty>A</difficulty>
+		<points>1</points>
+		<reference>MYST112</reference>
+		<default>
+			<type>Skill</type>
+			<name>Wrestling</name>
+			<modifier>-2</modifier>
+		</default>
+		<categories>
+			<category>Combat/Weapon</category>
+			<category>Melee Combat</category>
+			<category>Technique</category>
+		</categories>
+	</technique>
+</skill_list>

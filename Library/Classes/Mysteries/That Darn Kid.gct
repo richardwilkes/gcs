@@ -1,0 +1,851 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="im063f7w:-1w60nzt4rnhwa" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes">
+			<name>Attributes</name>
+			<advantage version="2">
+				<name>Increased Intelligence</name>
+				<type>Mental</type>
+				<levels>2</levels>
+				<points_per_level>20</points_per_level>
+				<reference>B15</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>iq</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Perception</name>
+				<type>Mental/Physical</type>
+				<levels>1</levels>
+				<points_per_level>5</points_per_level>
+				<reference>B16</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>perception</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+		</advantage_container>
+		<advantage_container version="2" open="yes">
+			<name>Class Advantages</name>
+			<advantage version="2">
+				<name>Patron</name>
+				<type>Social</type>
+				<modifier version="1">
+					<name>Parents (150% of PC's starting points)</name>
+					<cost type="points">10</cost>
+					<affects>total</affects>
+					<reference>B72</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Who: Organization with assets of at least 1000 times starting wealth@</name>
+					<cost type="points">10</cost>
+					<affects>total</affects>
+					<reference>B72</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Who: Individual with twice the PC's starting points@</name>
+					<cost type="points">10</cost>
+					<affects>total</affects>
+					<reference>B72</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Who: Organization with assets of at least 10000 times starting wealth@</name>
+					<cost type="points">15</cost>
+					<affects>total</affects>
+					<reference>B72</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Who: An ultra-powerful individual@</name>
+					<cost type="points">20</cost>
+					<affects>total</affects>
+					<reference>B72</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Who: Organization with assets of at least 100000 times starting wealth@</name>
+					<cost type="points">20</cost>
+					<affects>total</affects>
+					<reference>B72</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Who: Organization with assets of at least 1000000 times starting wealth@</name>
+					<cost type="points">25</cost>
+					<affects>total</affects>
+					<reference>B72</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Who: A national government or giant multi-national organization@</name>
+					<cost type="points">30</cost>
+					<affects>total</affects>
+					<reference>B72</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Who: A diety@</name>
+					<cost type="points">30</cost>
+					<affects>total</affects>
+					<reference>B72</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Appears almost all the time</name>
+					<cost type="multiplier">3</cost>
+					<reference>B36</reference>
+					<notes>15-</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Appears quite often</name>
+					<cost type="multiplier">2</cost>
+					<reference>B36</reference>
+					<notes>12-</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Appears fairly often</name>
+					<cost type="multiplier">1</cost>
+					<reference>B36</reference>
+					<notes>9-</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Appears quite rarely</name>
+					<cost type="multiplier">0.5</cost>
+					<reference>B36</reference>
+					<notes>6-</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Equipment</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>B73</reference>
+					<notes>@Equipment worth no more than average starting wealth@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Equipment</name>
+					<cost type="percentage">100</cost>
+					<affects>total</affects>
+					<reference>B73</reference>
+					<notes>@Equipment worth more than average starting wealth@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Highly Accessible</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>B73</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Special Abilities</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>B73</reference>
+					<notes>@Extensive social or political power@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Special Abilities</name>
+					<cost type="percentage">100</cost>
+					<affects>total</affects>
+					<reference>B73</reference>
+					<notes>@Magical powers in a non-magical world, higher TL equipment, grants special powers or is supernatural@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Minimal Interventions</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+					<reference>B73</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Secret</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+					<reference>B73</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Unwilling</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+					<reference>B74</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Favor</name>
+					<cost type="multiplier">0.2</cost>
+					<reference>B55</reference>
+				</modifier>
+				<reference>B72</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage_container version="2" open="yes">
+				<name>5 points chosen from:</name>
+				<advantage version="2">
+					<name>Appearance</name>
+					<type>Physical</type>
+					<modifier version="1" enabled="no">
+						<name>Universal</name>
+						<cost type="percentage">25</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Off-the-Shelf Looks</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Androgynous</name>
+						<cost type="points">0</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Impressive</name>
+						<cost type="points">0</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1">
+						<name>Attractive</name>
+						<cost type="points">4</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Average</name>
+						<cost type="points">0</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Horrific</name>
+						<cost type="points">-24</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Monstrous</name>
+						<cost type="points">-20</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Hideous</name>
+						<cost type="points">-16</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Ugly</name>
+						<cost type="points">-8</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Unattractive</name>
+						<cost type="points">-4</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Handsome</name>
+						<cost type="points">12</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Beautiful</name>
+						<cost type="points">12</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Very Handsome</name>
+						<cost type="points">16</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Very Beautiful</name>
+						<cost type="points">16</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Transcendent</name>
+						<cost type="points">20</cost>
+						<affects>total</affects>
+					</modifier>
+					<reference>B21</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Fit</name>
+					<type>Physical</type>
+					<base_points>5</base_points>
+					<reference>B55</reference>
+					<notes>+1 to all HT rolls to stay conscious, avoid death, resist disease, resist poison; recover FP at twice the normal rate (but not FP spent for spells or psi powers)</notes>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Honest Face</name>
+					<type>Physical</type>
+					<base_points>1</base_points>
+					<reference>B101</reference>
+					<categories>
+						<category>Perk</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Pitiable</name>
+					<type>Physical, Social</type>
+					<base_points>5</base_points>
+					<reference>B22</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+			</advantage_container>
+		</advantage_container>
+		<advantage_container version="2" open="yes">
+			<name>Class Disadvantages</name>
+			<advantage version="2">
+				<name>Wealth</name>
+				<type>Social</type>
+				<modifier version="1" enabled="no">
+					<name>Dead Broke</name>
+					<cost type="points">-25</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is $0</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Poor</name>
+					<cost type="points">-15</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 1/5 average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Struggling</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 1/2 average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Average</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Comfortable</name>
+					<cost type="points">10</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 2x average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Wealthy</name>
+					<cost type="points">20</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 5x average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Wealthy</name>
+					<cost type="points">30</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 20x average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Filthy Rich</name>
+					<cost type="points">50</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 100x average</notes>
+				</modifier>
+				<reference>B25</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Social Stigma (Minor)</name>
+				<type>Social</type>
+				<base_points>-5</base_points>
+				<reference>B155</reference>
+				<notes>-2 Reaction</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage_container version="2" open="yes">
+				<name>-10 points chosen from:</name>
+				<advantage version="2">
+					<name>Bad Sight (Farsighted)</name>
+					<type>Physical</type>
+					<base_points>-25</base_points>
+					<modifier version="1">
+						<name>Mitigator</name>
+						<cost type="percentage">-60</cost>
+						<affects>total</affects>
+						<notes>Glasses</notes>
+					</modifier>
+					<reference>B123</reference>
+					<notes>-6 to Vision rolls to spot items within 1 yd; -3 DX to any close manual task, including close combat</notes>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Bad Sight (Nearsighted)</name>
+					<type>Physical</type>
+					<base_points>-25</base_points>
+					<modifier version="1">
+						<name>Mitigator</name>
+						<cost type="percentage">-60</cost>
+						<affects>total</affects>
+						<notes>Glasses</notes>
+					</modifier>
+					<reference>B123</reference>
+					<notes> -6 to Vision rolls to spot items more than 1 yd away; -2 to all melee attacks; double actual distance to the target when calculating the range modifier for ranged attacks</notes>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Curious</name>
+					<type>Mental</type>
+					<base_points>-5</base_points>
+					<cr>12</cr>
+					<reference>B129</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Fearfulness</name>
+					<type>Mental</type>
+					<levels>1</levels>
+					<points_per_level>-2</points_per_level>
+					<reference>B136</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+					<prereq_list all="yes">
+						<advantage_prereq has="no">
+							<name compare="is">fearlessness</name>
+							<notes compare="is anything"></notes>
+						</advantage_prereq>
+					</prereq_list>
+				</advantage>
+				<advantage version="2">
+					<name>Ham-Fisted</name>
+					<type>Physical</type>
+					<base_points>-5</base_points>
+					<reference>B138</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+					<skill_bonus>
+						<name compare="contains">artist</name>
+						<specialization compare="is anything"></specialization>
+						<amount>-3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">jeweler</name>
+						<specialization compare="is anything"></specialization>
+						<amount>-3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">knot-tying</name>
+						<specialization compare="is anything"></specialization>
+						<amount>-3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">leatherworking</name>
+						<specialization compare="is anything"></specialization>
+						<amount>-3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">lockpicking</name>
+						<specialization compare="is anything"></specialization>
+						<amount>-3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">pickpocket</name>
+						<specialization compare="is anything"></specialization>
+						<amount>-3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">sewing</name>
+						<specialization compare="is anything"></specialization>
+						<amount>-3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">sleight of hand</name>
+						<specialization compare="is anything"></specialization>
+						<amount>-3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">surgery</name>
+						<specialization compare="is anything"></specialization>
+						<amount>-3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">machinist</name>
+						<specialization compare="is anything"></specialization>
+						<amount>-3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="contains">mechanic</name>
+						<specialization compare="is anything"></specialization>
+						<amount>-3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="contains">fast-draw</name>
+						<specialization compare="is anything"></specialization>
+						<amount>-3</amount>
+					</skill_bonus>
+					<prereq_list all="yes">
+						<advantage_prereq has="no">
+							<name compare="is">high manual dexterity</name>
+							<notes compare="is anything"></notes>
+						</advantage_prereq>
+					</prereq_list>
+				</advantage>
+				<advantage version="2">
+					<name>Honesty</name>
+					<type>Mental</type>
+					<base_points>-10</base_points>
+					<cr>12</cr>
+					<reference>B138</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Klutz</name>
+					<type>Physical</type>
+					<base_points>-5</base_points>
+					<modifier version="1" enabled="no">
+						<name>Total</name>
+						<cost type="points">-10</cost>
+						<affects>total</affects>
+						<reference>B141</reference>
+					</modifier>
+					<reference>B141</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+					<prereq_list all="yes">
+						<attribute_prereq has="yes" which="dx" compare="at most">13</attribute_prereq>
+					</prereq_list>
+				</advantage>
+				<advantage version="2">
+					<name>Overconfidence</name>
+					<type>Mental</type>
+					<base_points>-5</base_points>
+					<cr>12</cr>
+					<reference>B148</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Stubbornness</name>
+					<type>Mental</type>
+					<base_points>-5</base_points>
+					<reference>B157</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+			</advantage_container>
+		</advantage_container>
+	</advantage_list>
+	<skill_list>
+		<skill_container version="2" open="yes">
+			<name>Primary Skills</name>
+			<skill version="2">
+				<name>Criminology</name>
+				<tech_level/>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B186</reference>
+				<categories>
+					<category>Police</category>
+					<category>Social Sciences/Humanities</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Psychology</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Fast-Talk</name>
+				<difficulty>IQ/A</difficulty>
+				<points>1</points>
+				<reference>B195</reference>
+				<categories>
+					<category>Criminal/Street</category>
+					<category>Social</category>
+					<category>Spy</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-5</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Acting</name>
+					<modifier>-5</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Hobby Skill</name>
+				<specialization>Trivia</specialization>
+				<difficulty>IQ/E</difficulty>
+				<points>1</points>
+				<reference>B200</reference>
+				<categories>
+					<category>Knowledge</category>
+				</categories>
+				<default>
+					<type>IQ</type>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill version="2">
+				<name>Throwing</name>
+				<difficulty>DX/A</difficulty>
+				<points>2</points>
+				<reference>B226</reference>
+				<categories>
+					<category>Athletic</category>
+					<category>Combat/Weapon</category>
+					<category>Ranged Combat</category>
+				</categories>
+				<default>
+					<type>DX</type>
+					<modifier>-3</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Dropping</name>
+					<modifier>-4</modifier>
+				</default>
+			</skill>
+			<skill_container version="2" open="yes">
+				<name>Choose 1 of:</name>
+				<skill version="2">
+					<name>Climbing</name>
+					<encumbrance_penalty_multiplier>1</encumbrance_penalty_multiplier>
+					<difficulty>DX/A</difficulty>
+					<points>4</points>
+					<reference>B183</reference>
+					<categories>
+						<category>Athletic</category>
+						<category>Criminal/Street</category>
+						<category>Outdoor/Exploration</category>
+					</categories>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Stealth</name>
+					<encumbrance_penalty_multiplier>1</encumbrance_penalty_multiplier>
+					<difficulty>DX/A</difficulty>
+					<points>4</points>
+					<reference>B222</reference>
+					<categories>
+						<category>Criminal/Street</category>
+						<category>Police</category>
+						<category>Spy</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-5</modifier>
+					</default>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+			</skill_container>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Secondary Skills</name>
+			<skill version="2">
+				<name>Area Knowledge</name>
+				<specialization>@Urban Neighborhood@</specialization>
+				<difficulty>IQ/E</difficulty>
+				<points>1</points>
+				<reference>B176</reference>
+				<notes>The residents and buildings of a few city blocks</notes>
+				<categories>
+					<category>Everyman</category>
+					<category>Knowledge</category>
+				</categories>
+				<default>
+					<type>Skill</type>
+					<name>Geography</name>
+					<specialization>@Specialty@</specialization>
+					<modifier>-3</modifier>
+				</default>
+			</skill>
+			<skill_container version="2" open="yes">
+				<name>Choose 1 of:</name>
+				<skill version="2">
+					<name>Bicycling</name>
+					<difficulty>DX/E</difficulty>
+					<points>2</points>
+					<reference>B180</reference>
+					<categories>
+						<category>Athletic</category>
+						<category>Vehicle</category>
+					</categories>
+					<default>
+						<type>DX</type>
+						<modifier>-4</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Driving</name>
+						<specialization>Motorcycle</specialization>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Swimming</name>
+					<encumbrance_penalty_multiplier>2</encumbrance_penalty_multiplier>
+					<difficulty>HT/E</difficulty>
+					<points>2</points>
+					<reference>B224</reference>
+					<categories>
+						<category>Athletic</category>
+						<category>Outdoor/Exploration</category>
+					</categories>
+					<default>
+						<type>HT</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+			</skill_container>
+		</skill_container>
+		<skill_container version="2" open="yes">
+			<name>Background Skills</name>
+			<skill_container version="2" open="yes">
+				<name>3 points in:</name>
+				<skill version="2">
+					<name>Hobby Skill</name>
+					<specialization>@Mental Hobby@</specialization>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B200</reference>
+					<categories>
+						<category>Knowledge</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Hobby Skill</name>
+					<specialization>@Physical Hobby@</specialization>
+					<difficulty>DX/E</difficulty>
+					<points>1</points>
+					<reference>B200</reference>
+					<categories>
+						<category>Knowledge</category>
+					</categories>
+					<default>
+						<type>DX</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Musical Instrument</name>
+					<specialization>@Specialty@</specialization>
+					<difficulty>IQ/H</difficulty>
+					<points>1</points>
+					<reference>B211</reference>
+					<categories>
+						<category>Arts/Entertainment</category>
+					</categories>
+				</skill>
+				<skill version="2">
+					<name>Singing</name>
+					<difficulty>HT/E</difficulty>
+					<points>1</points>
+					<reference>B220</reference>
+					<categories>
+						<category>Arts/Entertainment</category>
+					</categories>
+					<default>
+						<type>HT</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Dancing</name>
+					<difficulty>DX/A</difficulty>
+					<points>1</points>
+					<reference>B187</reference>
+					<categories>
+						<category>Arts/Entertainment</category>
+					</categories>
+					<default>
+						<type>DX</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Sports</name>
+					<specialization>@Speciality@</specialization>
+					<difficulty>DX/A</difficulty>
+					<points>1</points>
+					<reference>B222</reference>
+					<categories>
+						<category>Athletic</category>
+					</categories>
+					<default>
+						<type>DX</type>
+						<modifier>-5</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Games</name>
+					<specialization>@Specialty@</specialization>
+					<difficulty>IQ/E</difficulty>
+					<points>1</points>
+					<reference>B197</reference>
+					<categories>
+						<category>Knowledge</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+				<skill version="2">
+					<name>Fishing</name>
+					<difficulty>Per/E</difficulty>
+					<points>1</points>
+					<reference>B195</reference>
+					<categories>
+						<category>Outdoor/Exploration</category>
+					</categories>
+					<default>
+						<type>Per</type>
+						<modifier>-4</modifier>
+					</default>
+				</skill>
+			</skill_container>
+		</skill_container>
+	</skill_list>
+</template>

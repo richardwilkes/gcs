@@ -1,0 +1,2153 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<equipment_list unique_id="ilyut8ux:6scfsiflrc0y" version="1">
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>"Spy" Camera</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>1450</value>
+		<reference>MYST114</reference>
+		<notes>Holdout +5. Photography -2.</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>AMT Back Up, .380 ACP</description>
+		<tech_level>8</tech_level>
+		<legality_class>3</legality_class>
+		<value>310</value>
+		<weight>1.4 lb</weight>
+		<reference>MYST117</reference>
+		<ranged_weapon>
+			<damage>2d-1 pi</damage>
+			<strength>8</strength>
+			<accuracy>1</accuracy>
+			<range>110/1,100</range>
+			<rate_of_fire>3</rate_of_fire>
+			<shots>5+1(3)</shots>
+			<bulk>-1</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+			<category>Semiautomatic Pistols</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Barrier Tape</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>1 lb</weight>
+		<reference>MYST114</reference>
+		<notes>1,000' </notes>
+		<categories>
+			<category>Crime Scene</category>
+			<category>Law-Enforcement</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Barrier Tape Dispenser</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>10</value>
+		<weight>1 lb</weight>
+		<reference>MYST114</reference>
+		<notes>Reusable</notes>
+		<categories>
+			<category>Crime Scene</category>
+			<category>Law-Enforcement</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Benelli M1 Super 90, 12G 2.75"</description>
+		<tech_level>8</tech_level>
+		<legality_class>3</legality_class>
+		<value>720</value>
+		<weight>8.5 lb</weight>
+		<reference>MYST117</reference>
+		<ranged_weapon>
+			<damage>1d+1 pi</damage>
+			<strength>12&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>50/450</range>
+			<rate_of_fire>3x9</rate_of_fire>
+			<shots>7+1(3i)</shots>
+			<bulk>-5</bulk>
+			<recoil>1</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+			<category>Shotguns</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Beretta Mod 92F, 9x19mm</description>
+		<tech_level>8</tech_level>
+		<legality_class>3</legality_class>
+		<value>380</value>
+		<weight>2.8 lb</weight>
+		<reference>MYST117</reference>
+		<ranged_weapon>
+			<damage>2d+2 pi</damage>
+			<strength>9</strength>
+			<accuracy>2</accuracy>
+			<range>160/1,800</range>
+			<rate_of_fire>3</rate_of_fire>
+			<shots>15+1(3)</shots>
+			<bulk>-2</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+			<category>Semiautomatic Pistols</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Binoculars</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>4 lb</weight>
+		<reference>MYST113</reference>
+		<notes>+3 to Vision rolls</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Binoculars, High-end commercial</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>5000</value>
+		<weight>4 lb</weight>
+		<reference>MYST113</reference>
+		<notes>+4 Vision. Reduce movement penalties by 3.</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Binoculars, High-end military</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>4000</value>
+		<weight>3.5 lb</weight>
+		<reference>MYST113</reference>
+		<notes>+3 Vision; negate -2 darkness. </notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+		<skill_bonus>
+			<name compare="is">Orienteering</name>
+			<specialization compare="is anything"></specialization>
+			<amount>1</amount>
+		</skill_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Binoculars, Low-end commercial</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<weight>0.4 lb</weight>
+		<reference>MYST113</reference>
+		<notes>+2 Vision.</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Binoculars, M22</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>800</value>
+		<weight>2.3 lb</weight>
+		<reference>MYST113</reference>
+		<notes>+3 to Vision rolls; further +1 to negate darkness penalty. </notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Binoculars, M24</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>400</value>
+		<weight>0.8 lb</weight>
+		<reference>MYST113</reference>
+		<notes>+3 to Vision rolls. Pocket-sized (Holdout -1)</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Camcorder, High-quality Mini DV</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>3000</value>
+		<weight>6 lb</weight>
+		<reference>MYST113</reference>
+		<notes>Holdout +1. 16x optical zoom (+4 Vision). Reduce movement penalty by 2. +1 Photography.</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Camcorder, Mini DV</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<weight>1 lb</weight>
+		<reference>MYST113</reference>
+		<notes>Holdout +1. 10x optical zoom (+3 Vision). </notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Camera, 35mm SLR</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>750</value>
+		<weight>1 lb</weight>
+		<reference>MYST113</reference>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Camera, 35mm SLR</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>2000</value>
+		<weight>2 lb</weight>
+		<reference>MYST113</reference>
+		<notes>+1 Photography (-1 if skill &lt; 12)</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Camera, 35mm SLR</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>5000</value>
+		<weight>2 lb</weight>
+		<reference>MYST113</reference>
+		<notes>+2 Photography (-2 if skill &lt; 12)</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Camera, 35mm SLR</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>10000</value>
+		<weight>3 lb</weight>
+		<reference>MYST113</reference>
+		<notes>+3 Photography (-3 if skill &lt; 12)</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Camera, 35mm SLR</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>20000</value>
+		<weight>3 lb</weight>
+		<reference>MYST113</reference>
+		<notes>+4 Photography (-4 if skill &lt; 12)</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Camera, 35mm SLR (Cheap)</description>
+		<tech_level>6</tech_level>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>1 lb</weight>
+		<reference>MYST113</reference>
+		<notes>-2 to Photography skill for surveillance purposes</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Camera, Digital</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>0.5 lb</weight>
+		<reference>MYST114</reference>
+		<notes>Compact (Holdout +2). -1 Photography for surveillance purposes.</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Camera, High-quality Digital</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>1000</value>
+		<weight>0.5 lb</weight>
+		<reference>MYST114</reference>
+		<notes>Compact (Holdout +2).</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Crime Scene Placards</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>2 lb</weight>
+		<reference>MYST114</reference>
+		<notes>Set of 15 numbers</notes>
+		<categories>
+			<category>Crime Scene</category>
+			<category>Law-Enforcement</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Crime Scene Placards</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>2 lb</weight>
+		<reference>MYST114</reference>
+		<notes>Set of 26 letters</notes>
+		<categories>
+			<category>Crime Scene</category>
+			<category>Law-Enforcement</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Defensive Spray</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>13</value>
+		<weight>0.15 lb</weight>
+		<reference>MYST115</reference>
+		<ranged_weapon>
+			<damage>special</damage>
+			<accuracy>3</accuracy>
+			<range>0/5</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>3</shots>
+			<bulk>0</bulk>
+			<recoil>0</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<notes>3-shot</notes>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Defensive Spray</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>16</value>
+		<weight>0.25 lb</weight>
+		<reference>MYST115</reference>
+		<ranged_weapon>
+			<damage>special</damage>
+			<accuracy>3</accuracy>
+			<range>0/5</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>12</shots>
+			<bulk>0</bulk>
+			<recoil>0</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<notes>12-shot</notes>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Evidence Bags</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>25</value>
+		<weight>0.5 lb</weight>
+		<reference>MYST114</reference>
+		<notes>100 sealable brown paper bags, 18" x 12"</notes>
+		<categories>
+			<category>Crime Scene</category>
+			<category>Law-Enforcement</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Evidence Bags</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<weight>0.5 lb</weight>
+		<reference>MYST114</reference>
+		<notes>100 sealable plastic bags, 12" x 10"</notes>
+		<categories>
+			<category>Crime Scene</category>
+			<category>Law-Enforcement</category>
+		</categories>
+	</equipment>
+	<equipment_container version="3" open="no">
+		<description>Evidence Collection Kit</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>80</value>
+		<weight>8.75 lb</weight>
+		<reference>MYST114</reference>
+		<categories>
+			<category>Crime Scene</category>
+			<category>Law-Enforcement</category>
+		</categories>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Barrier Tape</description>
+			<tech_level>7</tech_level>
+			<legality_class>4</legality_class>
+			<value>10</value>
+			<weight>1 lb</weight>
+			<reference>MYST114</reference>
+			<notes>1,000' </notes>
+			<categories>
+				<category>Crime Scene</category>
+				<category>Law-Enforcement</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Evidence Bags</description>
+			<tech_level>7</tech_level>
+			<legality_class>4</legality_class>
+			<value>25</value>
+			<weight>0.5 lb</weight>
+			<reference>MYST114</reference>
+			<notes>100 sealable brown paper bags, 18" x 12"</notes>
+			<categories>
+				<category>Crime Scene</category>
+				<category>Law-Enforcement</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Evidence Bags</description>
+			<tech_level>7</tech_level>
+			<legality_class>4</legality_class>
+			<value>20</value>
+			<weight>0.5 lb</weight>
+			<reference>MYST114</reference>
+			<notes>100 sealable plastic bags, 12" x 10"</notes>
+			<categories>
+				<category>Crime Scene</category>
+				<category>Law-Enforcement</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Evidence Cans</description>
+			<tech_level>7</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>MYST114</reference>
+			<categories>
+				<category>Crime Scene</category>
+				<category>Law-Enforcement</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Evidence Markers</description>
+			<tech_level>7</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>MYST114</reference>
+			<categories>
+				<category>Crime Scene</category>
+				<category>Law-Enforcement</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Evidence Tape</description>
+			<tech_level>7</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>MYST114</reference>
+			<categories>
+				<category>Crime Scene</category>
+				<category>Law-Enforcement</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Evidence Tubes</description>
+			<tech_level>7</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>MYST114</reference>
+			<categories>
+				<category>Crime Scene</category>
+				<category>Law-Enforcement</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>2</quantity>
+			<description>Latex Gloves</description>
+			<tech_level>8</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>MYST114</reference>
+			<categories>
+				<category>Crime Scene</category>
+				<category>Law-Enforcement</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Magnifying Glass</description>
+			<tech_level>5</tech_level>
+			<legality_class>4</legality_class>
+			<value>10</value>
+			<reference>HT57</reference>
+			<categories>
+				<category>General Equipment</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Penlight</description>
+			<tech_level>7</tech_level>
+			<legality_class>4</legality_class>
+			<value>10</value>
+			<weight>0.25 lb</weight>
+			<reference>B288</reference>
+			<notes>15' beam, lasts 1 hour</notes>
+			<categories>
+				<category>Camping and Survival Gear</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Scissors</description>
+			<tech_level>7</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<categories>
+				<category>General Equipment</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Syringe Tube</description>
+			<tech_level>7</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<reference>MYST114</reference>
+			<categories>
+				<category>Crime Scene</category>
+				<category>Law-Enforcement</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Tape Measure</description>
+			<tech_level>7</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<categories>
+				<category>General Equipment</category>
+			</categories>
+		</equipment>
+		<equipment version="3">
+			<quantity>1</quantity>
+			<description>Tweezers</description>
+			<tech_level>7</tech_level>
+			<legality_class>4</legality_class>
+			<value>0</value>
+			<categories>
+				<category>General Equipment</category>
+			</categories>
+		</equipment>
+	</equipment_container>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Evidence Tubes</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>15</value>
+		<weight>0.5 lb</weight>
+		<reference>MYST114</reference>
+		<notes>8 large (12" x 3") tubes.</notes>
+		<categories>
+			<category>Crime Scene</category>
+			<category>Law-Enforcement</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Evidence Tubes</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>15</value>
+		<weight>0.75 lb</weight>
+		<reference>MYST114</reference>
+		<notes>12 small (8" x 1.25") tubes.</notes>
+		<categories>
+			<category>Crime Scene</category>
+			<category>Law-Enforcement</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Flashlight Recharger</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>30</value>
+		<reference>MYST116</reference>
+		<notes>10 hours to recharge baton-style flashlight</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Flashlight, 4.75"</description>
+		<tech_level>8</tech_level>
+		<legality_class>4</legality_class>
+		<value>20</value>
+		<weight>0.25 lb</weight>
+		<reference>MYST116</reference>
+		<melee_weapon>
+			<damage>thr cr</damage>
+			<usage>Pommel</usage>
+			<reach>C</reach>
+			<parry>0</parry>
+			<block>No</block>
+			<default>
+				<type>DX</type>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Boxing</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Brawling</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Karate</name>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<notes>Holdout +2</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Flashlight, aluminum baton-style</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>2 lb</weight>
+		<reference>MYST116</reference>
+		<melee_weapon>
+			<damage>sw cr</damage>
+			<strength>6</strength>
+			<usage>Swung</usage>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>No</block>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Force Sword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Sword!</name>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr cr</damage>
+			<strength>6</strength>
+			<usage>Thrust</usage>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>No</block>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Force Sword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Sword!</name>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<notes>1.5 hour charge.</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Flashlight, polymer baton-style</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>80</value>
+		<weight>1 lb</weight>
+		<reference>MYST116</reference>
+		<melee_weapon>
+			<damage>sw cr</damage>
+			<strength>6</strength>
+			<usage>Swung</usage>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>No</block>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Force Sword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Sword!</name>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<melee_weapon>
+			<damage>thr cr</damage>
+			<strength>6</strength>
+			<usage>Thrust</usage>
+			<reach>1</reach>
+			<parry>0</parry>
+			<block>No</block>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Shortsword</name>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Broadsword</name>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Force Sword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Jitte/Sai</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Knife</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Saber</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Smallsword</name>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Tonfa</name>
+				<modifier>-3</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Sword!</name>
+				<modifier>0</modifier>
+			</default>
+		</melee_weapon>
+		<notes>1.5 hour charge.</notes>
+		<categories>
+			<category>Camping and Survival Gear</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Glock 22, .40 S&amp;W</description>
+		<tech_level>8</tech_level>
+		<legality_class>3</legality_class>
+		<value>310</value>
+		<weight>2.1 lb</weight>
+		<reference>MYST117</reference>
+		<ranged_weapon>
+			<damage>2d+2 pi+</damage>
+			<strength>8</strength>
+			<accuracy>2</accuracy>
+			<range>150/1,700</range>
+			<rate_of_fire>3</rate_of_fire>
+			<shots>15+1(3)</shots>
+			<bulk>-2</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+			<category>Semiautomatic Pistols</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Handcuff Key</description>
+		<tech_level>7</tech_level>
+		<legality_class>3</legality_class>
+		<value>3</value>
+		<reference>MYST116</reference>
+		<notes>Holdout +6 (+1 if X-ray or metal detector is used).</notes>
+		<categories>
+			<category>Handcuffs</category>
+			<category>Law-Enforcement</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Handcuffs, S&amp;W Model 10 Nickel Plated</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>40</value>
+		<reference>MYST116</reference>
+		<notes>Holdout +2. -5 to Escape skill.</notes>
+		<categories>
+			<category>Handcuffs</category>
+			<category>Law-Enforcement</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Latent Fingerprint Kit, large</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>50</value>
+		<weight>1.25 lb</weight>
+		<reference>MYST114</reference>
+		<categories>
+			<category>Crime Scene</category>
+			<category>Law-Enforcement</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Latent Fingerprint Kit, pocket sized</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>27</value>
+		<weight>0.625 lb</weight>
+		<reference>MYST114</reference>
+		<categories>
+			<category>Crime Scene</category>
+			<category>Law-Enforcement</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Lockpicks</description>
+		<tech_level>7</tech_level>
+		<legality_class>2</legality_class>
+		<value>140</value>
+		<reference>MYST114</reference>
+		<categories>
+			<category>Law-Enforcement</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Lockpicks, fine-quality</description>
+		<tech_level>7</tech_level>
+		<legality_class>2</legality_class>
+		<value>270</value>
+		<reference>MYST114</reference>
+		<notes>+1 to skill</notes>
+		<categories>
+			<category>Law-Enforcement</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Metal Detector, small</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>0.5 lb</weight>
+		<reference>MYST114</reference>
+		<notes>8" wand</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Metal Detector, standard</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>150</value>
+		<weight>1.5 lb</weight>
+		<reference>MYST114</reference>
+		<notes>16" wand</notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Mossberg Model 590, 12G 2.75"</description>
+		<tech_level>7</tech_level>
+		<legality_class>3</legality_class>
+		<value>310</value>
+		<weight>8.5 lb</weight>
+		<reference>MYST117</reference>
+		<ranged_weapon>
+			<damage>1d+1 pi</damage>
+			<strength>12&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>50/450</range>
+			<rate_of_fire>2x9</rate_of_fire>
+			<shots>9+1(3i)</shots>
+			<bulk>-5</bulk>
+			<recoil>1</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+			<category>Shotguns</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Remington Model 870P, 12G 2.75"</description>
+		<tech_level>7</tech_level>
+		<legality_class>3</legality_class>
+		<value>280</value>
+		<weight>7.9 lb</weight>
+		<reference>MYST117</reference>
+		<ranged_weapon>
+			<damage>1d+1 pi</damage>
+			<strength>12</strength>
+			<accuracy>3</accuracy>
+			<range>50/450</range>
+			<rate_of_fire>2x9</rate_of_fire>
+			<shots>7+1(3i)</shots>
+			<bulk>-5</bulk>
+			<recoil>1</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+			<category>Shotguns</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>S&amp;W Model 10 M&amp;P, .38 Special</description>
+		<tech_level>6</tech_level>
+		<legality_class>3</legality_class>
+		<value>200</value>
+		<weight>2 lb</weight>
+		<reference>MYST117</reference>
+		<ranged_weapon>
+			<damage>2d pi</damage>
+			<strength>8</strength>
+			<accuracy>2</accuracy>
+			<range>140/1,500</range>
+			<rate_of_fire>3</rate_of_fire>
+			<shots>6(3i)</shots>
+			<bulk>-2</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+			<category>Revolvers</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>S&amp;W Model 36 Chief's, .38 Special</description>
+		<tech_level>7</tech_level>
+		<legality_class>3</legality_class>
+		<value>160</value>
+		<weight>1.4 lb</weight>
+		<reference>MYST117</reference>
+		<ranged_weapon>
+			<damage>2d-1 pi</damage>
+			<strength>8</strength>
+			<accuracy>1</accuracy>
+			<range>120/1,300</range>
+			<rate_of_fire>3</rate_of_fire>
+			<shots>5(3i)</shots>
+			<bulk>-1</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+			<category>Revolvers</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>SIG-Sauer P226, 9x19mm</description>
+		<tech_level>8</tech_level>
+		<legality_class>3</legality_class>
+		<value>620</value>
+		<weight>2.4 lb</weight>
+		<reference>MYST117</reference>
+		<ranged_weapon>
+			<damage>2d+2 pi</damage>
+			<strength>9</strength>
+			<accuracy>2</accuracy>
+			<range>150/1,700</range>
+			<rate_of_fire>3</rate_of_fire>
+			<shots>15+1(3)</shots>
+			<bulk>-2</bulk>
+			<recoil>2</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<notes>Will not malfunction unless lack of maintenance lowers Malf. (see p. B407).</notes>
+		<categories>
+			<category>Missile Weapon</category>
+			<category>Semiautomatic Pistols</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Springfield M1911-A1 Bureau, .45 ACP</description>
+		<tech_level>8</tech_level>
+		<legality_class>3</legality_class>
+		<value>760</value>
+		<weight>3 lb</weight>
+		<reference>MYST117</reference>
+		<ranged_weapon>
+			<damage>2d pi+</damage>
+			<strength>10</strength>
+			<accuracy>2</accuracy>
+			<range>120/1,300</range>
+			<rate_of_fire>3</rate_of_fire>
+			<shots>8+1(3)</shots>
+			<bulk>-2</bulk>
+			<recoil>3</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<notes>Will not malfunction unless lack of maintenance lowers Malf. (see p. B407).</notes>
+		<categories>
+			<category>Missile Weapon</category>
+			<category>Semiautomatic Pistols</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Taser</description>
+		<tech_level>8</tech_level>
+		<legality_class>3</legality_class>
+		<value>160</value>
+		<weight>1.375 lb</weight>
+		<reference>MYST115</reference>
+		<ranged_weapon>
+			<damage>special</damage>
+			<accuracy>2</accuracy>
+			<range>7</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(10)</shots>
+			<bulk>0</bulk>
+			<recoil>0</recoil>
+			<default>
+				<type>DX</type>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Pistol</specialization>
+				<modifier>0</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Rifle</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Shotgun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Machine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Submachine Gun</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Musket</specialization>
+				<modifier>-2</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Grenade Launcher</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Gyroc</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Guns</name>
+				<specialization>Light Anti-Armor Weapon</specialization>
+				<modifier>-4</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Gun!</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Type IIA Armor</description>
+		<tech_level>8</tech_level>
+		<legality_class>2</legality_class>
+		<value>240</value>
+		<weight>1.5 lb</weight>
+		<reference>MYST113</reference>
+		<categories>
+			<category>Body Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>torso</location>
+			<amount>8</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Type IIA Armor (Concealable)</description>
+		<tech_level>8</tech_level>
+		<legality_class>2</legality_class>
+		<value>1100</value>
+		<weight>5 lb</weight>
+		<reference>MYST113</reference>
+		<notes>Holdout -1</notes>
+		<categories>
+			<category>Body Armor</category>
+		</categories>
+		<dr_bonus>
+			<location>torso</location>
+			<amount>8</amount>
+		</dr_bonus>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Video Camera, CCD (Black &amp; White)</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>90</value>
+		<reference>MYST114</reference>
+		<notes>Holdout +5. </notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Video Camera, CCD (Color)</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>225</value>
+		<reference>MYST114</reference>
+		<notes>Holdout +5. </notes>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Video Camera, Concealed in Fixture (Black &amp; White)</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<reference>MYST114</reference>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Video Camera, Concealed in Fixture (Color)</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>330</value>
+		<reference>MYST114</reference>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Video Camera, Pen/Glasses Mini-cam</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>700</value>
+		<reference>MYST114</reference>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Video Camera, Portable Mini-cam (Black &amp; White)</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<reference>MYST114</reference>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+	<equipment version="3">
+		<quantity>1</quantity>
+		<description>Video Camera, Portable Mini-cam (Color)</description>
+		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
+		<value>330</value>
+		<reference>MYST114</reference>
+		<categories>
+			<category>Optics and Sensors</category>
+		</categories>
+	</equipment>
+</equipment_list>
