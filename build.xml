@@ -81,7 +81,7 @@
 		<!-- Compile the code. -->
 		<javac srcdir="${src}" destdir="${gcs_build}" debug="no" optimize="yes"
 			target="${min_jdk}" source="${min_jdk}" deprecation="true"
-			includeantruntime="no" fork="yes">
+			includeantruntime="no" fork="yes" encoding="UTF-8">
 			<classpath>
 				<pathelement location="${toolkit_path}"/>
 				<pathelement location="${trove_path}"/>
