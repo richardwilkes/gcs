@@ -73,6 +73,8 @@ public class Advantage extends ListRow implements HasSourceReference {
 	private static final String			TYPE_EXOTIC					= "Exotic";											//$NON-NLS-1$
 	private static final String			TYPE_SUPERNATURAL			= "Supernatural";									//$NON-NLS-1$
 	private static final String			ATTR_ROUND_COST_DOWN		= "round_down";										//$NON-NLS-1$
+	private static final String			ATTR_ALLOW_HALF_LEVELS		= "allow_half_levels";								//$NON-NLS-1$
+	private static final String			ATTR_HALF_LEVEL				= "half_level";										//$NON-NLS-1$
 	/** The prefix used in front of all IDs for the advantages. */
 	public static final String			PREFIX						= GURPSCharacter.CHARACTER_PREFIX + "advantage.";	//$NON-NLS-1$
 	/** The field ID for type changes. */
@@ -85,8 +87,12 @@ public class Advantage extends ListRow implements HasSourceReference {
 	public static final String			ID_CR						= PREFIX + "CR";									//$NON-NLS-1$
 	/** The field ID for level changes. */
 	public static final String			ID_LEVELS					= PREFIX + "Levels";								//$NON-NLS-1$
+	/** The field ID for half level. */
+	public static final String			ID_HALF_LEVEL				= PREFIX + "HalfLevel";								//$NON-NLS-1$
 	/** The field ID for round cost down changes. */
 	public static final String			ID_ROUND_COST_DOWN			= PREFIX + "RoundCostDown";							//$NON-NLS-1$
+	/** The field ID for allowing half levels. */
+	public static final String			ID_ALLOW_HALF_LEVELS		= PREFIX + "AllowHalfLevels";						//$NON-NLS-1$
 	/** The field ID for point changes. */
 	public static final String			ID_POINTS					= PREFIX + "Points";								//$NON-NLS-1$
 	/** The field ID for page reference changes. */
@@ -114,6 +120,8 @@ public class Advantage extends ListRow implements HasSourceReference {
 	private SelfControlRoll				mCR;
 	private SelfControlRollAdjustments	mCRAdj;
 	private int							mLevels;
+	private boolean						mAllowHalfLevels;
+	private boolean						mHalfLevel;
 	private int							mPoints;
 	private int							mPointsPerLevel;
 	private String						mReference;
@@ -156,6 +164,8 @@ public class Advantage extends ListRow implements HasSourceReference {
 		mCR = advantage.mCR;
 		mCRAdj = advantage.mCRAdj;
 		mLevels = advantage.mLevels;
+		mHalfLevel = advantage.mHalfLevel;
+		mAllowHalfLevels = advantage.mAllowHalfLevels;
 		mPoints = advantage.mPoints;
 		mPointsPerLevel = advantage.mPointsPerLevel;
 		mRoundCostDown = advantage.mRoundCostDown;
@@ -201,7 +211,7 @@ public class Advantage extends ListRow implements HasSourceReference {
 		}
 		if (obj instanceof Advantage && super.isEquivalentTo(obj)) {
 			Advantage row = (Advantage) obj;
-			if (mType == row.mType && mLevels == row.mLevels && mPoints == row.mPoints && mPointsPerLevel == row.mPointsPerLevel && mRoundCostDown == row.mRoundCostDown && mContainerType == row.mContainerType && mCR == row.mCR && mCRAdj == row.mCRAdj && mName.equals(row.mName) && mReference.equals(row.mReference)) {
+			if (mType == row.mType && mLevels == row.mLevels && mHalfLevel == row.mHalfLevel && mPoints == row.mPoints && mPointsPerLevel == row.mPointsPerLevel && mRoundCostDown == row.mRoundCostDown && mAllowHalfLevels == row.mAllowHalfLevels && mContainerType == row.mContainerType && mCR == row.mCR && mCRAdj == row.mCRAdj && mName.equals(row.mName) && mReference.equals(row.mReference)) {
 				if (mWeapons.equals(row.mWeapons)) {
 					return mModifiers.equals(row.mModifiers);
 				}
@@ -228,6 +238,8 @@ public class Advantage extends ListRow implements HasSourceReference {
 		mCR = SelfControlRoll.NONE_REQUIRED;
 		mCRAdj = SelfControlRollAdjustments.NONE;
 		mLevels = -1;
+		mHalfLevel = false;
+		mAllowHalfLevels = false;
 		mReference = ""; //$NON-NLS-1$
 		mContainerType = AdvantageContainerType.GROUP;
 		mPoints = 0;
@@ -242,6 +254,7 @@ public class Advantage extends ListRow implements HasSourceReference {
 	protected void loadAttributes(XMLReader reader, LoadState state) {
 		super.loadAttributes(reader, state);
 		mRoundCostDown = reader.isAttributeSet(ATTR_ROUND_COST_DOWN);
+		mAllowHalfLevels = reader.isAttributeSet(ATTR_ALLOW_HALF_LEVELS);
 		if (canHaveChildren()) {
 			mContainerType = Enums.extract(reader.getAttribute(TAG_TYPE), AdvantageContainerType.values(), AdvantageContainerType.GROUP);
 		}
@@ -266,6 +279,8 @@ public class Advantage extends ListRow implements HasSourceReference {
 			if (TAG_TYPE.equals(name)) {
 				mType = getTypeFromText(reader.readText());
 			} else if (TAG_LEVELS.equals(name)) {
+				// Read the attribute first as next operation clears attribute map
+				mHalfLevel = mAllowHalfLevels && reader.isAttributeSet(ATTR_HALF_LEVEL);
 				mLevels = reader.readInteger(-1);
 			} else if (TAG_OLD_POINTS.equals(name)) {
 				mOldPointsString = reader.readText();
@@ -308,7 +323,7 @@ public class Advantage extends ListRow implements HasSourceReference {
 					mPointsPerLevel = 0;
 				}
 			}
-			if (mLevels >= 0 && mPointsPerLevel == 0) {
+			if (hasLevel() && mPointsPerLevel == 0) {
 				mPointsPerLevel = mPoints;
 				mPoints = 0;
 			}
@@ -339,6 +354,9 @@ public class Advantage extends ListRow implements HasSourceReference {
 		if (mRoundCostDown) {
 			out.writeAttribute(ATTR_ROUND_COST_DOWN, mRoundCostDown);
 		}
+		if (mAllowHalfLevels) {
+			out.writeAttribute(ATTR_ALLOW_HALF_LEVELS, mAllowHalfLevels);
+		}
 		if (canHaveChildren() && mContainerType != AdvantageContainerType.GROUP) {
 			out.writeAttribute(TAG_TYPE, Enums.toId(mContainerType));
 		}
@@ -350,7 +368,11 @@ public class Advantage extends ListRow implements HasSourceReference {
 		if (!canHaveChildren()) {
 			out.simpleTag(TAG_TYPE, getTypeAsText());
 			if (mLevels != -1) {
-				out.simpleTag(TAG_LEVELS, mLevels);
+				if (mAllowHalfLevels) {
+					out.simpleTagWithAttribute(TAG_LEVELS, mLevels, ATTR_HALF_LEVEL, mHalfLevel);
+				} else {
+					out.simpleTag(TAG_LEVELS, mLevels);
+				}
 			}
 			if (mPoints != 0) {
 				out.simpleTag(TAG_BASE_POINTS, mPoints);
@@ -488,6 +510,50 @@ public class Advantage extends ListRow implements HasSourceReference {
 		return false;
 	}
 
+	/** @return Whether there is at least half a level. */
+	public boolean hasLevel() {
+		return mLevels > 0 || mLevels == 0 && mHalfLevel && mAllowHalfLevels;
+	}
+
+	/** @return Whether there is a half level */
+	public boolean hasHalfLevel() {
+		return mHalfLevel;
+	}
+
+	/**
+	 * @param halfLevel The half level to set.
+	 * @return Whether it was modified.
+	 */
+	public boolean setHalfLevel(boolean halfLevel) {
+		if (mHalfLevel != halfLevel) {
+			mHalfLevel = halfLevel;
+			notifySingle(ID_HALF_LEVEL);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * @param factor The number of levels or half levels to set.
+	 * @return Whether it was modified.
+	 */
+	public boolean adjustLevel(int factor) {
+		if (factor == 0) {
+			return false;
+		}
+		// if no half levels then use setLevels()
+		if (!mAllowHalfLevels) {
+			return setLevels(mLevels + factor);
+		}
+		int halfLevels = mLevels * 2 + (mHalfLevel ? 1 : 0) + factor;
+		if (halfLevels < 1) {
+			halfLevels = 1;
+		}
+		boolean modified = setHalfLevel((halfLevels & 1) == 1);
+		modified |= setLevels(halfLevels / 2);
+		return modified;
+	}
+
 	/** @return The total points, taking levels into account. */
 	public int getAdjustedPoints() {
 		if (canHaveChildren()) {
@@ -518,7 +584,7 @@ public class Advantage extends ListRow implements HasSourceReference {
 			}
 			return points;
 		}
-		return getAdjustedPoints(mPoints, mLevels, mPointsPerLevel, mCR, getAllModifiers(), mRoundCostDown);
+		return getAdjustedPoints(mPoints, mLevels, mAllowHalfLevels && mHalfLevel, mPointsPerLevel, mCR, getAllModifiers(), mRoundCostDown);
 	}
 
 	private static int applyRounding(double value, boolean roundCostDown) {
@@ -528,6 +594,7 @@ public class Advantage extends ListRow implements HasSourceReference {
 	/**
 	 * @param basePoints The base point cost.
 	 * @param levels The number of levels.
+	 * @param halfLevel Whether a half level is present.
 	 * @param pointsPerLevel The point cost per level.
 	 * @param cr The {@link SelfControlRoll} to apply.
 	 * @param modifiers The {@link Modifier}s to apply.
@@ -535,7 +602,7 @@ public class Advantage extends ListRow implements HasSourceReference {
 	 *            normal for most GURPS rules.
 	 * @return The total points, taking levels and modifiers into account.
 	 */
-	public static int getAdjustedPoints(int basePoints, int levels, int pointsPerLevel, SelfControlRoll cr, Collection<Modifier> modifiers, boolean roundCostDown) {
+	public static int getAdjustedPoints(int basePoints, int levels, boolean halfLevel, int pointsPerLevel, SelfControlRoll cr, Collection<Modifier> modifiers, boolean roundCostDown) {
 		int baseEnh = 0;
 		int levelEnh = 0;
 		int baseLim = 0;
@@ -595,7 +662,7 @@ public class Advantage extends ListRow implements HasSourceReference {
 		}
 
 		double modifiedBasePoints = basePoints;
-		double leveledPoints = levels > 0 ? pointsPerLevel * levels : 0;
+		double leveledPoints = pointsPerLevel * (levels + (halfLevel ? 0.5 : 0));
 		if (baseEnh != 0 || baseLim != 0 || levelEnh != 0 || levelLim != 0) {
 			int baseMod = 0;
 			int levelMod = 0;
@@ -699,6 +766,11 @@ public class Advantage extends ListRow implements HasSourceReference {
 		return mRoundCostDown;
 	}
 
+	/** @return Whether half levels are allowed */
+	public boolean allowHalfLevels() {
+		return mAllowHalfLevels;
+	}
+
 	/**
 	 * @param shouldRoundDown Whether the point cost should be rounded down rather than up, as is
 	 *            normal for most GURPS rules.
@@ -708,6 +780,15 @@ public class Advantage extends ListRow implements HasSourceReference {
 		if (mRoundCostDown != shouldRoundDown) {
 			mRoundCostDown = shouldRoundDown;
 			notifySingle(ID_ROUND_COST_DOWN);
+			return true;
+		}
+		return false;
+	}
+
+	public boolean setAllowHalfLevels(boolean allowHalfLevels) {
+		if (mAllowHalfLevels != allowHalfLevels) {
+			mAllowHalfLevels = allowHalfLevels;
+			notifySingle(ID_ALLOW_HALF_LEVELS);
 			return true;
 		}
 		return false;
@@ -804,10 +885,15 @@ public class Advantage extends ListRow implements HasSourceReference {
 		StringBuilder builder = new StringBuilder();
 		builder.append(getName());
 		if (!canHaveChildren()) {
-			int levels = getLevels();
-			if (levels > 0) {
+			boolean halfLevel = mAllowHalfLevels && mHalfLevel;
+			if (mLevels > 0 || halfLevel) {
 				builder.append(' ');
-				builder.append(levels);
+				if (mLevels > 0) {
+					builder.append(mLevels);
+				}
+				if (halfLevel) {
+					builder.append('\u00bd');
+				}
 			}
 		}
 		return builder.toString();

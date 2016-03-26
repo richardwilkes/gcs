@@ -127,6 +127,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	@Localize(locale = "ru", value = "Уровень преимущества")
 	@Localize(locale = "es", value = "Nivel de la ventaja")
 	private static String	LEVEL_TOOLTIP;
+	@Localize("Add a half Level")
+	private static String	HALF_LEVEL_TOOLTIP;
 	@Localize("Categories")
 	@Localize(locale = "de", value = "Kategorie")
 	@Localize(locale = "ru", value = "Категории")
@@ -187,6 +189,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	@Localize(locale = "ru", value = "Имеет уровни")
 	@Localize(locale = "es", value = "Tiene niveles")
 	private static String	HAS_LEVELS;
+	@Localize("Has Half Levels")
+	private static String	HAS_HALF_LEVELS;
 	@Localize("Mental")
 	@Localize(locale = "de", value = "Mental")
 	@Localize(locale = "ru", value = "Ментальный")
@@ -222,6 +226,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	private JComboBox<String>						mLevelTypeCombo;
 	private EditorField								mBasePointsField;
 	private EditorField								mLevelField;
+	private JCheckBox								mHalfLevel;
 	private EditorField								mLevelPointsField;
 	private EditorField								mPointsField;
 	private EditorField								mNotesField;
@@ -236,6 +241,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	private ModifierListEditor						mModifiers;
 	private int										mLastLevel;
 	private int										mLastPointsPerLevel;
+	private boolean									mLastHalfLevel;
 	private JCheckBox								mMentalType;
 	private JCheckBox								mPhysicalType;
 	private JCheckBox								mSocialType;
@@ -272,9 +278,11 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		boolean notContainer = !advantage.canHaveChildren();
 		if (notContainer) {
 			mLastLevel = mRow.getLevels();
+			mLastHalfLevel = mRow.hasHalfLevel();
 			mLastPointsPerLevel = mRow.getPointsPerLevel();
 			if (mLastLevel < 0) {
 				mLastLevel = 1;
+				mLastHalfLevel = false;
 			}
 
 			FlexRow row = new FlexRow();
@@ -284,8 +292,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 			innerGrid.add(new FlexComponent(createLabel(BASE_POINTS, mBasePointsField), Alignment.RIGHT_BOTTOM, null), ri, 0);
 			innerGrid.add(row, ri++, 1);
 
-			mLevelTypeCombo = new JComboBox<>(new String[] { NO_LEVELS, HAS_LEVELS });
-			mLevelTypeCombo.setSelectedIndex(mRow.isLeveled() ? 1 : 0);
+			mLevelTypeCombo = new JComboBox<>(new String[] { NO_LEVELS, HAS_LEVELS, HAS_HALF_LEVELS });
+			mLevelTypeCombo.setSelectedIndex(mRow.isLeveled() ? mRow.allowHalfLevels() ? 2 : 1 : 0);
 			UIUtilities.setOnlySize(mLevelTypeCombo, mLevelTypeCombo.getPreferredSize());
 			mLevelTypeCombo.setEnabled(mIsEditable);
 			mLevelTypeCombo.addActionListener(this);
@@ -295,6 +303,15 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 			mLevelField = createField(0, 999, mLastLevel, LEVEL_TOOLTIP);
 			row.add(createLabel(LEVEL, mLevelField));
 			row.add(mLevelField);
+
+			mHalfLevel = new JCheckBox("+\u00bd"); //$NON-NLS-1$
+			mHalfLevel.setSelected(mLastHalfLevel);
+			mHalfLevel.setToolTipText(HALF_LEVEL_TOOLTIP);
+			mHalfLevel.setEnabled(mIsEditable && advantage.allowHalfLevels());
+			mHalfLevel.addActionListener(this);
+			UIUtilities.setOnlySize(mHalfLevel, mHalfLevel.getPreferredSize());
+			add(mHalfLevel);
+			row.add(mHalfLevel);
 
 			mLevelPointsField = createField(-9999, 9999, mLastPointsPerLevel, LEVEL_POINTS_TOOLTIP);
 			row.add(createLabel(LEVEL_POINTS, mLevelPointsField));
@@ -515,6 +532,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 			}
 			modified |= mRow.setType(type);
 			modified |= mRow.setShouldRoundCostDown(shouldRoundCostDown());
+			modified |= mRow.setAllowHalfLevels(allowHalfLevels());
 			modified |= mRow.setPoints(getBasePoints());
 			if (isLeveled()) {
 				modified |= mRow.setPointsPerLevel(getPointsPerLevel());
@@ -522,6 +540,11 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 			} else {
 				modified |= mRow.setPointsPerLevel(0);
 				modified |= mRow.setLevels(-1);
+			}
+			if (isLeveled() && allowHalfLevels()) {
+				modified |= mRow.setHalfLevel(getHalfLevel());
+			} else {
+				modified |= mRow.setHalfLevel(false);
 			}
 			if (mDefaults != null) {
 				modified |= mRow.setDefaults(mDefaults.getDefaults());
@@ -562,7 +585,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		Object src = event.getSource();
 		if (src == mLevelTypeCombo) {
 			levelTypeChanged();
-		} else if (src == mModifiers || src == mShouldRoundCostDown) {
+		} else if (src == mModifiers || src == mShouldRoundCostDown || src == mHalfLevel) {
 			updatePoints();
 		} else if (src == mCRCombo) {
 			SelfControlRoll cr = getCR();
@@ -577,23 +600,32 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	}
 
 	private boolean isLeveled() {
-		return mLevelTypeCombo.getSelectedItem() == HAS_LEVELS;
+		return mLevelTypeCombo.getSelectedItem() != NO_LEVELS;
+	}
+
+	private boolean allowHalfLevels() {
+		return mLevelTypeCombo.getSelectedItem() == HAS_HALF_LEVELS;
 	}
 
 	private void levelTypeChanged() {
 		boolean isLeveled = isLeveled();
+		boolean allowHalfLevels = allowHalfLevels();
 
 		if (isLeveled) {
 			mLevelField.setValue(new Integer(mLastLevel));
 			mLevelPointsField.setValue(new Integer(mLastPointsPerLevel));
+			mHalfLevel.setSelected(mLastHalfLevel && allowHalfLevels);
 		} else {
 			mLastLevel = getLevels();
+			mLastHalfLevel = getHalfLevel();
 			mLastPointsPerLevel = getPointsPerLevel();
 			mLevelField.setText(""); //$NON-NLS-1$
+			mHalfLevel.setSelected(false);
 			mLevelPointsField.setText(""); //$NON-NLS-1$
 		}
 		mLevelField.setEnabled(isLeveled);
 		mLevelPointsField.setEnabled(isLeveled);
+		mHalfLevel.setEnabled(isLeveled && allowHalfLevels);
 		updatePoints();
 	}
 
@@ -609,6 +641,10 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		return ((Integer) mLevelField.getValue()).intValue();
 	}
 
+	private boolean getHalfLevel() {
+		return mHalfLevel.isSelected();
+	}
+
 	private int getPointsPerLevel() {
 		return ((Integer) mLevelPointsField.getValue()).intValue();
 	}
@@ -621,7 +657,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		if (mModifiers == null) {
 			return 0;
 		}
-		return Advantage.getAdjustedPoints(getBasePoints(), isLeveled() ? getLevels() : 0, getPointsPerLevel(), getCR(), mModifiers.getAllModifiers(), shouldRoundCostDown());
+		return Advantage.getAdjustedPoints(getBasePoints(), isLeveled() ? getLevels() : 0, allowHalfLevels() && getHalfLevel(), getPointsPerLevel(), getCR(), mModifiers.getAllModifiers(), shouldRoundCostDown());
 	}
 
 	private void updatePoints() {
