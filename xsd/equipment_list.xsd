@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:include schemaLocation="common.xsd" />
+
+	<xs:element name="equipment_list">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element ref="equipment_container" />
+				<xs:element ref="equipment" />
+			</xs:choice>
+			<xs:attribute name="unique_id" type="xs:string" use="optional" />
+			<xs:attribute name="version" type="xs:unsignedShort" use="optional" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="equipment_container">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element ref="equipment_container" />
+				<xs:element ref="equipment" />
+				<xs:element ref="categories" />
+				<xs:element ref="prereq_list" />
+				<xs:element ref="melee_weapon" />
+				<xs:element ref="skill_bonus" />
+				<xs:element ref="dr_bonus" />
+				<xs:element name="description" type="xs:string" />
+				<xs:element name="legality_class" type="xs:string" />
+				<xs:element name="value" type="xs:string" />
+				<xs:element name="weight" type="xs:string" />
+				<xs:element name="tech_level" type="xs:string" />
+				<xs:element name="reference" type="xs:string" />
+				<xs:element name="notes" type="StringWithCompareAttribute" />
+			</xs:choice>
+			<xs:attribute name="version" type="xs:unsignedShort" use="required" />
+			<xs:attribute name="open" type="xs:string" use="required" />
+			<xs:attribute name="state" type="xs:string" use="optional" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="equipment">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element ref="categories" />
+				<xs:element ref="prereq_list" />
+				<xs:element ref="attribute_bonus" />
+				<xs:element ref="skill_bonus" />
+				<xs:element ref="spell_bonus" />
+				<xs:element ref="weapon_bonus" />
+				<xs:element ref="dr_bonus" />
+				<xs:element ref="melee_weapon" />
+				<xs:element ref="ranged_weapon" />
+				<xs:element name="quantity" type="IntegerWithCompareAttribute" />
+				<xs:element name="description" type="xs:string" />
+				<xs:element name="tech_level" type="xs:string" />
+				<xs:element name="legality_class" type="xs:string" />
+				<xs:element name="value" type="xs:string" />
+				<xs:element name="weight" type="xs:string" />
+				<xs:element name="reference" type="xs:string" />
+				<xs:element name="notes" type="StringWithCompareAttribute" />
+			</xs:choice>
+			<xs:attribute name="version" type="xs:unsignedShort" use="required" />
+			<xs:attribute name="state" type="xs:string" use="optional" />
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

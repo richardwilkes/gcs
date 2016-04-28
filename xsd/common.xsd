@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<!-- Bonuses -->
+
+	<xs:element name="skill_bonus">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element ref="amount" />
+				<xs:element name="name" type="StringWithCompareAttribute" />
+				<xs:element name="specialization" type="StringWithCompareAttribute" />
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="weapon_bonus" >
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element ref="amount" />
+				<xs:element name="name" type="StringWithCompareAttribute" />
+				<xs:element name="specialization" type="StringWithCompareAttribute" />
+				<xs:element name="level" type="IntegerWithCompareAttribute" />
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="spell_bonus">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element ref="amount" />
+				<xs:element name="spell_name" type="StringWithCompareAttribute" />
+				<xs:element name="college_name" type="StringWithCompareAttribute" />
+			</xs:choice>
+			<xs:attribute name="all_colleges" type="xs:string" use="optional" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="dr_bonus">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element ref="amount" />
+				<xs:element name="location" type="xs:string" />
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="attribute_bonus">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element ref="attribute" />
+				<xs:element ref="amount" />
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="attribute">
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="limitation" type="xs:string" use="optional" />
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+
+	<!-- Weapons -->
+
+	<xs:element name="ranged_weapon">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element ref="default" />
+				<xs:element name="damage" type="xs:string" />
+				<xs:element name="strength" type="xs:string" />
+				<xs:element name="usage" type="xs:string" />
+				<xs:element name="accuracy" type="xs:string" />
+				<xs:element name="range" type="xs:string" />
+				<xs:element name="rate_of_fire" type="xs:string" />
+				<xs:element name="recoil" type="xs:string" />
+				<xs:element name="shots" type="xs:string" />
+				<xs:element name="bulk" type="xs:string" />
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="melee_weapon">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element ref="default" />
+				<xs:element name="damage" type="xs:string" />
+				<xs:element name="strength" type="xs:string" />
+				<xs:element name="usage" type="xs:string" />
+				<xs:element name="reach" type="xs:string" />
+				<xs:element name="parry" type="xs:string" />
+				<xs:element name="block" type="xs:string" />
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+
+	<!-- Prerequisites -->
+
+	<xs:element name="prereq_list">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element ref="prereq_list" />
+				<xs:element ref="skill_prereq" />
+				<xs:element ref="spell_prereq" />
+				<xs:element ref="attribute_prereq" />
+				<xs:element ref="advantage_prereq" />
+				<xs:element ref="contained_weight_prereq" />
+				<xs:element name="when_tl" type="IntegerWithCompareAttribute" />
+				<xs:element name="college_count" type="IntegerWithCompareAttribute" />
+			</xs:choice>
+			<xs:attribute name="all" type="xs:string" use="required" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="skill_prereq">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element name="name" type="StringWithCompareAttribute" />
+				<xs:element name="level" type="IntegerWithCompareAttribute" />
+				<xs:element name="specialization" type="StringWithCompareAttribute" />
+			</xs:choice>
+			<xs:attribute name="has" type="xs:string" use="required" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="spell_prereq">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element name="name" type="StringWithCompareAttribute" />
+				<xs:element name="college" type="StringWithCompareAttribute" />
+				<xs:element name="college_count" type="IntegerWithCompareAttribute" />
+				<xs:element name="quantity" type="IntegerWithCompareAttribute" />
+				<xs:element name="any" type="xs:unsignedShort" default="0" />
+			</xs:choice>
+			<xs:attribute name="has" type="xs:string" use="required" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="attribute_prereq">
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:unsignedInt">
+					<xs:attribute name="has" type="xs:string" use="required" />
+					<xs:attribute name="which" type="xs:string" use="required" />
+					<xs:attribute name="compare" type="xs:string" use="required" />
+					<xs:attribute name="combined_with" type="xs:string" use="optional" />
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="contained_weight_prereq">
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="has" type="xs:string" use="required" />
+					<xs:attribute name="compare" type="xs:string" use="required" />
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="advantage_prereq">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element name="name" type="StringWithCompareAttribute" />
+				<xs:element name="notes" type="StringWithCompareAttribute" />
+				<xs:element name="level" type="IntegerWithCompareAttribute" />
+			</xs:choice>
+			<xs:attribute name="has" type="xs:string" use="required" />
+		</xs:complexType>
+	</xs:element>
+
+	<!-- Miscellaneous -->
+
+	<xs:element name="categories">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element name="category" type="xs:string" />
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="amount">
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:decimal">
+					<xs:attribute name="per_level" type="xs:string" use="optional" />
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="cost">
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:decimal">
+					<xs:attribute name="type" type="xs:string" use="required" />
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="cost_reduction">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element name="attribute" type="xs:string" />
+				<xs:element name="percentage" type="xs:integer" />
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="default">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element name="name" type="StringWithCompareAttribute" />
+				<xs:element name="specialization" type="StringWithCompareAttribute" />
+				<xs:element name="type" type="xs:string" />
+				<xs:element name="modifier" type="xs:short" />
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="modifier">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:choice maxOccurs="unbounded">
+					<xs:element ref="cost" />
+					<xs:element ref="skill_bonus" />
+					<xs:element ref="attribute_bonus" />
+					<xs:element name="name" type="StringWithCompareAttribute" />
+					<xs:element name="notes" type="StringWithCompareAttribute" />
+					<xs:element name="levels" type="xs:unsignedInt" />
+					<xs:element name="reference" type="xs:string" />
+					<xs:element name="affects" type="xs:string" />
+				</xs:choice>
+			</xs:choice>
+			<xs:attribute name="version" type="xs:unsignedShort" use="optional" />
+			<xs:attribute name="enabled" type="xs:string" use="optional" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:complexType name="StringWithCompareAttribute">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="compare" type="xs:string" use="optional" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+
+	<xs:complexType name="DecimalWithCompareAttribute">
+		<xs:simpleContent>
+			<xs:extension base="xs:decimal">
+				<xs:attribute name="compare" type="xs:string" use="optional" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+
+	<xs:complexType name="IntegerWithCompareAttribute">
+		<xs:simpleContent>
+			<xs:extension base="xs:integer">
+				<xs:attribute name="compare" type="xs:string" use="optional" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+</xs:schema>
