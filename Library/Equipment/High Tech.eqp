@@ -7940,7 +7940,6 @@
 		<quantity>1</quantity>
 		<description>Business Card</description>
 		<tech_level>5</tech_level>
-		<legality_class>-</legality_class>
 		<value>1</value>
 		<reference>HT18</reference>
 		<categories>
@@ -7951,7 +7950,6 @@
 		<quantity>1</quantity>
 		<description>Business Card Disc</description>
 		<tech_level>8</tech_level>
-		<legality_class>-</legality_class>
 		<value>0.5</value>
 		<reference>HT18</reference>
 		<categories>
@@ -47977,7 +47975,6 @@
 		<quantity>1</quantity>
 		<description>Towel</description>
 		<tech_level>5</tech_level>
-		<legality_class>-</legality_class>
 		<value>5</value>
 		<weight>1 lb</weight>
 		<reference>HT31</reference>

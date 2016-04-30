@@ -3,7 +3,6 @@
 	<equipment_container version="3" open="yes">
 		<description>@Metal@ Metal Box (1 Cup)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>18</value>
 		<weight>1 lb</weight>
 		<reference>LT34</reference>
@@ -19,7 +18,6 @@
 	<equipment_container version="3" open="yes">
 		<description>@Metal@ Metal Box (1 Gallon)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>115</value>
 		<weight>6.5 lb</weight>
 		<reference>LT34</reference>
@@ -35,7 +33,6 @@
 	<equipment_container version="3" open="yes">
 		<description>@Metal@ Metal Box (1 Quart)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>46</value>
 		<weight>2.5 lb</weight>
 		<reference>LT34</reference>
@@ -51,7 +48,6 @@
 	<equipment_container version="3" open="yes">
 		<description>@Metal@ Metal Box (1/4 Cup)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>7</value>
 		<weight>0.4 lb</weight>
 		<reference>LT34</reference>
@@ -67,7 +63,6 @@
 	<equipment_container version="3" open="yes">
 		<description>@Metal@ Metal Box (2 Gallon)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>367</value>
 		<weight>20 lb</weight>
 		<reference>LT34</reference>
@@ -83,7 +78,6 @@
 	<equipment_container version="3" open="yes">
 		<description>@Metal@ Metal Box (6 Gallon)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>761</value>
 		<weight>42 lb</weight>
 		<reference>LT34</reference>
@@ -99,7 +93,6 @@
 	<equipment_container version="3" open="yes">
 		<description>@Metal@ Metal Box (20 Gallon)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>1700</value>
 		<weight>94 lb</weight>
 		<reference>LT34</reference>
@@ -115,7 +108,6 @@
 	<equipment_container version="3" open="yes">
 		<description>@Metal@ Metal Box (40 Gallon)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>4050</value>
 		<weight>225 lb</weight>
 		<reference>LT34</reference>
@@ -131,7 +123,6 @@
 	<equipment_container version="3" open="yes">
 		<description>@Metal@ Metal Box (80 Gallon)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>6417</value>
 		<weight>356 lb</weight>
 		<reference>LT34</reference>
@@ -147,7 +138,6 @@
 	<equipment_container version="3" open="yes">
 		<description>@Metal@ Metal Box (120 Gallon)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>8409</value>
 		<weight>467 lb</weight>
 		<reference>LT34</reference>
@@ -690,7 +680,6 @@
 	<equipment_container version="3" open="no">
 		<description>Belt</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>5</value>
 		<weight>0.1 lb</weight>
 		<categories>
@@ -1707,7 +1696,6 @@
 				<quantity>4</quantity>
 				<description>Shirt (Long Sleeved) - Status 0</description>
 				<tech_level>0</tech_level>
-				<legality_class>-</legality_class>
 				<value>60</value>
 				<weight>1 lb</weight>
 				<reference>B266</reference>
@@ -1720,7 +1708,6 @@
 				<quantity>4</quantity>
 				<description>Skirt/Petticoat - Status 0</description>
 				<tech_level>0</tech_level>
-				<legality_class>-</legality_class>
 				<value>60</value>
 				<weight>1 lb</weight>
 				<reference>B266</reference>
@@ -1755,7 +1742,6 @@
 				<quantity>4</quantity>
 				<description>Shirt (Long Sleeved) - Status 0</description>
 				<tech_level>0</tech_level>
-				<legality_class>-</legality_class>
 				<value>60</value>
 				<weight>1 lb</weight>
 				<reference>B266</reference>
@@ -1768,7 +1754,6 @@
 				<quantity>4</quantity>
 				<description>Trousers/Pants - Status 0</description>
 				<tech_level>0</tech_level>
-				<legality_class>-</legality_class>
 				<value>60</value>
 				<weight>1 lb</weight>
 				<reference>B266</reference>
@@ -4164,7 +4149,6 @@
 		<equipment_container version="3" open="yes">
 			<description>Heavy Carrying Strap</description>
 			<tech_level>0</tech_level>
-			<legality_class>-</legality_class>
 			<value>5</value>
 			<weight>0.75 lb</weight>
 			<reference>LT36</reference>
@@ -4348,7 +4332,6 @@
 			<equipment_container version="3" open="yes">
 				<description>Leather Pouch (6 Gallon)</description>
 				<tech_level>0</tech_level>
-				<legality_class>-</legality_class>
 				<value>15</value>
 				<weight>2.5 lb</weight>
 				<reference>LT34</reference>
@@ -4363,7 +4346,6 @@
 				<equipment_container version="3" open="yes">
 					<description>Cloth Bag (2 Gallon)</description>
 					<tech_level>1</tech_level>
-					<legality_class>-</legality_class>
 					<value>2.75</value>
 					<weight>0.5 lb</weight>
 					<reference>LT34</reference>
@@ -4605,7 +4587,6 @@
 						<quantity>1</quantity>
 						<description>Shirt (Long Sleeved) - Status 0</description>
 						<tech_level>0</tech_level>
-						<legality_class>-</legality_class>
 						<value>60</value>
 						<weight>1 lb</weight>
 						<reference>B266</reference>
@@ -4706,7 +4687,6 @@
 							<quantity>1</quantity>
 							<description>Salt (oz.)</description>
 							<tech_level>0</tech_level>
-							<legality_class>-</legality_class>
 							<value>0.13</value>
 							<weight>0.065 lb</weight>
 							<notes>Historically the price of salt up to TL3/4 was roughly equivilant to that of wheat</notes>
@@ -5337,7 +5317,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Glass Bottle (1 Cup)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>1.5</value>
 		<weight>0.4 lb</weight>
 		<reference>LT34</reference>
@@ -5353,7 +5332,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Glass Bottle (1 Gallon)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>13.5</value>
 		<weight>4 lb</weight>
 		<reference>LT34</reference>
@@ -5369,7 +5347,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Glass Bottle (1 Pint)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>2.5</value>
 		<weight>0.75 lb</weight>
 		<reference>LT34</reference>
@@ -5385,7 +5362,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Glass Bottle (1 Quart)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>3.75</value>
 		<weight>1 lb</weight>
 		<reference>LT34</reference>
@@ -5401,7 +5377,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Glass Bottle (1/4 Cup)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>0.5</value>
 		<weight>0.15 lb</weight>
 		<reference>LT34</reference>
@@ -5417,7 +5392,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Glass Bottle (2 Gallon)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>21</value>
 		<weight>6 lb</weight>
 		<reference>LT34</reference>
@@ -5757,7 +5731,6 @@
 		<quantity>1</quantity>
 		<description>Hammer Stone</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>0</value>
 		<weight>2 lb</weight>
 		<reference>LT36</reference>
@@ -5894,7 +5867,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Heavy Carrying Strap</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>5</value>
 		<weight>0.75 lb</weight>
 		<reference>LT36</reference>
@@ -6302,7 +6274,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Hunter-Gatherer Kit</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>1</value>
 		<weight>0.5 lb</weight>
 		<reference>LT36</reference>
@@ -6317,7 +6288,6 @@
 			<quantity>1</quantity>
 			<description>Digging Sticks</description>
 			<tech_level>0</tech_level>
-			<legality_class>-</legality_class>
 			<value>1</value>
 			<weight>1.5 lb</weight>
 			<reference>LT36</reference>
@@ -6330,7 +6300,6 @@
 			<quantity>1</quantity>
 			<description>Fire Sticks</description>
 			<tech_level>0</tech_level>
-			<legality_class>-</legality_class>
 			<value>1</value>
 			<weight>0.5 lb</weight>
 			<reference>LT36</reference>
@@ -6344,7 +6313,6 @@
 			<quantity>2</quantity>
 			<description>Hammer Stone</description>
 			<tech_level>0</tech_level>
-			<legality_class>-</legality_class>
 			<value>0</value>
 			<weight>2 lb</weight>
 			<reference>LT36</reference>
@@ -6356,7 +6324,6 @@
 			<quantity>2</quantity>
 			<description>Punch</description>
 			<tech_level>0</tech_level>
-			<legality_class>-</legality_class>
 			<value>5</value>
 			<weight>0.25 lb</weight>
 			<reference>LT36</reference>
@@ -6368,7 +6335,6 @@
 			<quantity>1</quantity>
 			<description>Stone Core</description>
 			<tech_level>0</tech_level>
-			<legality_class>-</legality_class>
 			<value>12</value>
 			<weight>1 lb</weight>
 			<reference>LT36</reference>
@@ -6381,7 +6347,6 @@
 			<quantity>15</quantity>
 			<description>Thin Cord (Feet)</description>
 			<tech_level>0</tech_level>
-			<legality_class>-</legality_class>
 			<value>1</value>
 			<weight>0.01 lb</weight>
 			<reference>LT36</reference>
@@ -6989,7 +6954,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Leather Belt</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>5</value>
 		<weight>0.25 lb</weight>
 		<categories>
@@ -7003,7 +6967,6 @@
 		<quantity>1</quantity>
 		<description>Leather Boots</description>
 		<tech_level>2</tech_level>
-		<legality_class>-</legality_class>
 		<value>80</value>
 		<weight>3 lb</weight>
 		<reference>B284,LT98</reference>
@@ -7020,7 +6983,6 @@
 		<quantity>1</quantity>
 		<description>Leather Boots (Hobnailed)</description>
 		<tech_level>2</tech_level>
-		<legality_class>-</legality_class>
 		<value>105</value>
 		<weight>4 lb</weight>
 		<reference>B284,LT98</reference>
@@ -7042,7 +7004,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Leather Pouch (1 Cup)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>0.75</value>
 		<weight>0.1 lb</weight>
 		<reference>LT34</reference>
@@ -7058,7 +7019,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Leather Pouch (1 Gallon)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>4.5</value>
 		<weight>0.75 lb</weight>
 		<reference>LT34</reference>
@@ -7074,7 +7034,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Leather Pouch (1 Quart)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>2</value>
 		<weight>1 lb</weight>
 		<reference>LT34</reference>
@@ -7090,7 +7049,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Leather Pouch (1/4 Cup)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>0.25</value>
 		<weight>0.05 lb</weight>
 		<reference>LT34</reference>
@@ -7106,7 +7064,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Leather Pouch (2 Gallon)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>7.35</value>
 		<weight>1.25 lb</weight>
 		<reference>LT34</reference>
@@ -7122,7 +7079,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Leather Pouch (6 Gallon)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>15</value>
 		<weight>2.5 lb</weight>
 		<reference>LT34</reference>
@@ -7138,7 +7094,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Leather Pouch (20 Gallon)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>34</value>
 		<weight>5.5 lb</weight>
 		<reference>LT34</reference>
@@ -7154,7 +7109,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Leather Pouch (40 Gallon)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>53</value>
 		<weight>9 lb</weight>
 		<reference>LT34</reference>
@@ -7170,7 +7124,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Leather Pouch (80 Gallon)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>85</value>
 		<weight>14 lb</weight>
 		<reference>LT34</reference>
@@ -7186,7 +7139,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Leather Pouch (120 Gallon)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>111</value>
 		<weight>18.5 lb</weight>
 		<reference>LT34</reference>
@@ -7220,7 +7172,6 @@
 		<quantity>1</quantity>
 		<description>Leather Shoes (Hobnailed)</description>
 		<tech_level>2</tech_level>
-		<legality_class>-</legality_class>
 		<value>65</value>
 		<weight>3 lb</weight>
 		<reference>LT98</reference>
@@ -7348,7 +7299,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Light Carrying Strap</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>1</value>
 		<weight>0.25 lb</weight>
 		<reference>LT36</reference>
@@ -9564,7 +9514,6 @@
 		<quantity>1</quantity>
 		<description>Medicinal Spices</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>110</value>
 		<weight>1 lb</weight>
 		<notes>Urban price; discount by 50% at source</notes>
@@ -10139,7 +10088,6 @@
 		<quantity>1</quantity>
 		<description>Olive Oil (Gallon)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>11.25</value>
 		<weight>6 lb</weight>
 		<notes>Urban price; discount by 50% at source</notes>
@@ -10152,7 +10100,6 @@
 		<quantity>1</quantity>
 		<description>Olive Oil (oz.)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>0.25</value>
 		<weight>0.05 lb</weight>
 		<notes>Urban price</notes>
@@ -10165,7 +10112,6 @@
 		<quantity>1</quantity>
 		<description>Ordinary Clothing - Status @Status@</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>120</value>
 		<weight>2 lb</weight>
 		<reference>LT99,B266</reference>
@@ -10347,7 +10293,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Pilgrim Kit</description>
 		<tech_level>2</tech_level>
-		<legality_class>-</legality_class>
 		<value>0</value>
 		<reference>LT36</reference>
 		<notes>Value and weight of equipment list</notes>
@@ -10372,7 +10317,6 @@
 		<equipment_container version="3" open="yes">
 			<description>Cloth Bag (1 Gallon)</description>
 			<tech_level>1</tech_level>
-			<legality_class>-</legality_class>
 			<value>1.75</value>
 			<weight>0.25 lb</weight>
 			<reference>LT36</reference>
@@ -10387,7 +10331,6 @@
 				<quantity>5</quantity>
 				<description>Common Grain (@Grain@)</description>
 				<tech_level>0</tech_level>
-				<legality_class>-</legality_class>
 				<value>1</value>
 				<weight>1 lb</weight>
 				<notes>Urban price; discount by 50% at farm</notes>
@@ -10400,7 +10343,6 @@
 		<equipment_container version="3" open="yes">
 			<description>Cloth Bag (1 Gallon)</description>
 			<tech_level>1</tech_level>
-			<legality_class>-</legality_class>
 			<value>1.75</value>
 			<weight>0.25 lb</weight>
 			<reference>LT36</reference>
@@ -10415,7 +10357,6 @@
 				<quantity>1</quantity>
 				<description>Medicinal Spices</description>
 				<tech_level>0</tech_level>
-				<legality_class>-</legality_class>
 				<value>110</value>
 				<weight>1 lb</weight>
 				<notes>Urban price; discount by 50% at source</notes>
@@ -10428,7 +10369,6 @@
 		<equipment_container version="3" open="yes">
 			<description>Earthenware Jar (1 Quart)</description>
 			<tech_level>1</tech_level>
-			<legality_class>-</legality_class>
 			<value>1</value>
 			<weight>1 lb</weight>
 			<reference>LT34</reference>
@@ -10642,7 +10582,6 @@
 			<quantity>1</quantity>
 			<description>Straw Mattress</description>
 			<tech_level>0</tech_level>
-			<legality_class>-</legality_class>
 			<value>8</value>
 			<weight>20 lb</weight>
 			<reference>LT36</reference>
@@ -10654,7 +10593,6 @@
 			<quantity>1</quantity>
 			<description>Whetstone</description>
 			<tech_level>0</tech_level>
-			<legality_class>-</legality_class>
 			<value>1</value>
 			<weight>0.5 lb</weight>
 			<reference>LT36</reference>
@@ -10759,7 +10697,6 @@
 		<quantity>1</quantity>
 		<description>Prepared Block</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>3</value>
 		<weight>0.5 lb</weight>
 		<reference>LT35</reference>
@@ -11604,7 +11541,6 @@
 		<equipment_container version="3" open="yes">
 			<description>Leather Pouch with Flap</description>
 			<tech_level>0</tech_level>
-			<legality_class>-</legality_class>
 			<value>10</value>
 			<weight>1.25 lb</weight>
 			<reference>LT34</reference>
@@ -11620,7 +11556,6 @@
 		<equipment_container version="3" open="yes">
 			<description>Leather Pouch with Flap</description>
 			<tech_level>0</tech_level>
-			<legality_class>-</legality_class>
 			<value>10</value>
 			<weight>1.25 lb</weight>
 			<reference>LT34</reference>
@@ -11638,7 +11573,6 @@
 		<quantity>1</quantity>
 		<description>Salt (lb.)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>2</value>
 		<weight>1 lb</weight>
 		<notes>Historically the price of salt up to TL3/4 was roughly equivilant to that of wheat</notes>
@@ -11652,7 +11586,6 @@
 		<quantity>1</quantity>
 		<description>Salt (oz.)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>0.13</value>
 		<weight>0.065 lb</weight>
 		<notes>Historically the price of salt up to TL3/4 was roughly equivilant to that of wheat</notes>
@@ -11948,7 +11881,6 @@
 		<quantity>1</quantity>
 		<description>Shirt (Long Sleeved) - Status 0</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>60</value>
 		<weight>1 lb</weight>
 		<reference>B266</reference>
@@ -12371,7 +12303,6 @@
 		<quantity>1</quantity>
 		<description>Shovel (Metal Blade)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>25</value>
 		<weight>6 lb</weight>
 		<reference>LT30,B350</reference>
@@ -12385,7 +12316,6 @@
 		<quantity>1</quantity>
 		<description>Shovel (Metal Edged Wooden Blade)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>18</value>
 		<weight>5 lb</weight>
 		<reference>LT30,B350</reference>
@@ -12399,7 +12329,6 @@
 		<quantity>1</quantity>
 		<description>Shovel (Wooden Blade)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>12</value>
 		<weight>4 lb</weight>
 		<reference>LT30,B350</reference>
@@ -12439,7 +12368,6 @@
 		<quantity>1</quantity>
 		<description>Skirt/Petticoat - Status 0</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>60</value>
 		<weight>1 lb</weight>
 		<reference>B266</reference>
@@ -12911,7 +12839,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Smith's Kit</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>0</value>
 		<reference>LT30</reference>
 		<notes>Weight and value of contents</notes>
@@ -12952,7 +12879,6 @@
 			<quantity>1</quantity>
 			<description>Metalworking File</description>
 			<tech_level>2</tech_level>
-			<legality_class>-</legality_class>
 			<value>45</value>
 			<weight>1 lb</weight>
 			<reference>LT30</reference>
@@ -13708,7 +13634,6 @@
 		<quantity>1</quantity>
 		<description>Stone Core</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>12</value>
 		<weight>1 lb</weight>
 		<reference>LT36</reference>
@@ -13773,7 +13698,6 @@
 		<quantity>1</quantity>
 		<description>Straw Mattress</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>26.5</value>
 		<weight>20 lb</weight>
 		<reference>LT36</reference>
@@ -13785,7 +13709,6 @@
 		<quantity>1</quantity>
 		<description>Sugar</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>14</value>
 		<weight>1 lb</weight>
 		<notes>Urban price; discount by 50% at source</notes>
@@ -13798,7 +13721,6 @@
 		<quantity>1</quantity>
 		<description>Sulphur Matches</description>
 		<tech_level>3</tech_level>
-		<legality_class>-</legality_class>
 		<value>0.25</value>
 		<weight>0.012 lb</weight>
 		<reference>LT35</reference>
@@ -13812,7 +13734,6 @@
 		<quantity>1</quantity>
 		<description>Summer Clothing - Status @Status@</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>60</value>
 		<weight>1 lb</weight>
 		<reference>LT97,LT99</reference>
@@ -13853,7 +13774,6 @@
 			<quantity>5</quantity>
 			<description>Bandages</description>
 			<tech_level>1</tech_level>
-			<legality_class>-</legality_class>
 			<value>10</value>
 			<weight>2 lb</weight>
 			<reference>LT146</reference>
@@ -13868,7 +13788,6 @@
 			<quantity>1</quantity>
 			<description>Cord/Thread (1/32") Linen Fibre (1oz.)</description>
 			<tech_level>0</tech_level>
-			<legality_class>-</legality_class>
 			<value>0.14</value>
 			<weight>0.0625 lb</weight>
 			<reference>LT43</reference>
@@ -13883,7 +13802,6 @@
 			<quantity>1</quantity>
 			<description>Cord/Thread (1/64") Linen Fibre (1 oz.)</description>
 			<tech_level>0</tech_level>
-			<legality_class>-</legality_class>
 			<value>0.07</value>
 			<weight>0.0625 lb</weight>
 			<reference>LT43</reference>
@@ -13985,7 +13903,6 @@
 			<quantity>1</quantity>
 			<description>Whetstone</description>
 			<tech_level>0</tech_level>
-			<legality_class>-</legality_class>
 			<value>1</value>
 			<weight>0.5 lb</weight>
 			<reference>LT36</reference>
@@ -14209,7 +14126,6 @@
 				<quantity>1</quantity>
 				<description>Bandages</description>
 				<tech_level>1</tech_level>
-				<legality_class>-</legality_class>
 				<value>10</value>
 				<weight>2 lb</weight>
 				<reference>LT146</reference>
@@ -14224,7 +14140,6 @@
 				<quantity>1</quantity>
 				<description>Cord/Thread (1/32") Linen Fibre (1oz.)</description>
 				<tech_level>0</tech_level>
-				<legality_class>-</legality_class>
 				<value>0.14</value>
 				<weight>0.0625 lb</weight>
 				<reference>LT43</reference>
@@ -14239,7 +14154,6 @@
 				<quantity>1</quantity>
 				<description>Cord/Thread (1/64") Linen Fibre (1 oz.)</description>
 				<tech_level>0</tech_level>
-				<legality_class>-</legality_class>
 				<value>0.07</value>
 				<weight>0.0625 lb</weight>
 				<reference>LT43</reference>
@@ -14341,7 +14255,6 @@
 				<quantity>1</quantity>
 				<description>Whetstone</description>
 				<tech_level>0</tech_level>
-				<legality_class>-</legality_class>
 				<value>1</value>
 				<weight>0.5 lb</weight>
 				<reference>LT36</reference>
@@ -14600,7 +14513,6 @@
 		<quantity>1</quantity>
 		<description>Thin Cord (Yard)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>1</value>
 		<weight>0.01 lb</weight>
 		<reference>LT36</reference>
@@ -15138,7 +15050,6 @@
 		<quantity>1</quantity>
 		<description>Trousers/Pants - Status 0</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>60</value>
 		<weight>1 lb</weight>
 		<reference>B266</reference>
@@ -15278,7 +15189,6 @@
 		<quantity>1</quantity>
 		<description>Whetstone</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>1</value>
 		<weight>0.5 lb</weight>
 		<reference>LT36,DF1:24</reference>
@@ -15569,7 +15479,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wicker Basket (1 Cup)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>0.15</value>
 		<weight>0.07 lb</weight>
 		<reference>LT34</reference>
@@ -15585,7 +15494,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wicker Basket (1 Gallon)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>1.75</value>
 		<weight>1 lb</weight>
 		<reference>LT34</reference>
@@ -15601,7 +15509,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wicker Basket (1 Quart)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>0.5</value>
 		<weight>0.25 lb</weight>
 		<reference>LT34</reference>
@@ -15617,7 +15524,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wicker Basket (1/4 Cup)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>0.1</value>
 		<reference>LT34</reference>
 		<notes>3.5 cu. in.  Not suitable for fluid or grainular contents</notes>
@@ -15632,7 +15538,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wicker Basket (2 Gallon)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>3</value>
 		<weight>1.5 lb</weight>
 		<reference>LT34</reference>
@@ -15648,7 +15553,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wicker Basket (6 Gallon)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>7.5</value>
 		<weight>1.5 lb</weight>
 		<reference>LT34</reference>
@@ -15664,7 +15568,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wicker Basket (20 Gallon)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>16</value>
 		<weight>8 lb</weight>
 		<reference>LT34</reference>
@@ -15680,7 +15583,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wicker Basket (40 Gallon)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>39</value>
 		<weight>20 lb</weight>
 		<reference>LT34</reference>
@@ -15696,7 +15598,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wicker Basket (80 Gallon)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>62</value>
 		<weight>31 lb</weight>
 		<reference>LT34</reference>
@@ -15712,7 +15613,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wicker Basket (120 Gallon)</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>108</value>
 		<weight>54 lb</weight>
 		<reference>LT34</reference>
@@ -15768,7 +15668,6 @@
 		<quantity>1</quantity>
 		<description>Winter Clothing - Status @Status@</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>180</value>
 		<weight>4 lb</weight>
 		<reference>LT99,B266</reference>
@@ -15871,7 +15770,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wooden Barrel or Box (1 Cup)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>1</value>
 		<weight>0.1 lb</weight>
 		<reference>LT34</reference>
@@ -15887,7 +15785,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wooden Barrel or Box (1 Gallon)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>10</value>
 		<weight>1.5 lb</weight>
 		<reference>LT34</reference>
@@ -15903,7 +15800,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wooden Barrel or Box (1 Quart)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>3</value>
 		<weight>0.25 lb</weight>
 		<reference>LT34</reference>
@@ -15919,7 +15815,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wooden Barrel or Box (1/4 Cup)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>0.5</value>
 		<weight>0.05 lb</weight>
 		<reference>LT34</reference>
@@ -15935,7 +15830,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wooden Barrel or Box (2 Gallon)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>17</value>
 		<weight>2.5 lb</weight>
 		<reference>LT34</reference>
@@ -15951,7 +15845,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wooden Barrel or Box (6 Gallon)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>31</value>
 		<weight>8 lb</weight>
 		<reference>LT34</reference>
@@ -15967,7 +15860,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wooden Barrel or Box (20 Gallon)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>55</value>
 		<weight>11 lb</weight>
 		<reference>LT34</reference>
@@ -15983,7 +15875,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wooden Barrel or Box (40 Gallon)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>113</value>
 		<weight>32 lb</weight>
 		<reference>LT34</reference>
@@ -15999,7 +15890,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wooden Barrel or Box (80 Gallon)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>178</value>
 		<weight>50 lb</weight>
 		<reference>LT34</reference>
@@ -16015,7 +15905,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wooden Barrel or Box (120 Gallon)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>239</value>
 		<weight>88 lb</weight>
 		<reference>LT34</reference>
@@ -16031,7 +15920,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wooden Drinking Bowl (1 Cup)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>1</value>
 		<weight>0.1 lb</weight>
 		<reference>LT34</reference>
@@ -16047,7 +15935,6 @@
 	<equipment_container version="3" open="yes">
 		<description>Wooden Eating Bowl (1 Quart)</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>3</value>
 		<weight>0.25 lb</weight>
 		<reference>LT34</reference>

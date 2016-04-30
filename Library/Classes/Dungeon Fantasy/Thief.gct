@@ -2109,7 +2109,6 @@
 			<equipment version="3">
 				<quantity>1</quantity>
 				<description>Light Buckler</description>
-				<tech_level>-</tech_level>
 				<legality_class>4</legality_class>
 				<value>25</value>
 				<weight>2 lb</weight>
@@ -2200,7 +2199,6 @@
 				<quantity>1</quantity>
 				<description>Shoes</description>
 				<tech_level>1</tech_level>
-				<legality_class>-</legality_class>
 				<value>40</value>
 				<weight>2 lb</weight>
 				<reference>B284</reference>
@@ -2387,7 +2385,6 @@
 			<equipment version="3">
 				<quantity>1</quantity>
 				<description>Light Buckler</description>
-				<tech_level>-</tech_level>
 				<legality_class>4</legality_class>
 				<value>25</value>
 				<weight>2 lb</weight>
@@ -2752,7 +2749,6 @@
 				<quantity>1</quantity>
 				<description>Heavy Cloak, @Environment@ Camouflage</description>
 				<tech_level>1</tech_level>
-				<legality_class>-</legality_class>
 				<value>150</value>
 				<weight>5 lb</weight>
 				<reference>B287,DF13:25</reference>
@@ -2985,7 +2981,6 @@
 				<quantity>1</quantity>
 				<description>Shoes</description>
 				<tech_level>1</tech_level>
-				<legality_class>-</legality_class>
 				<value>40</value>
 				<weight>2 lb</weight>
 				<reference>B284</reference>
@@ -3026,7 +3021,6 @@
 				<quantity>1</quantity>
 				<description>Heavy Cloak, @Environment@ Camouflage</description>
 				<tech_level>1</tech_level>
-				<legality_class>-</legality_class>
 				<value>150</value>
 				<weight>5 lb</weight>
 				<reference>B287,DF13:25</reference>

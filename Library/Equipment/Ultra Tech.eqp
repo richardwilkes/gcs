@@ -1001,8 +1001,6 @@
 	<equipment version="3">
 		<quantity>1</quantity>
 		<description>Adult Human</description>
-		<tech_level>-</tech_level>
-		<legality_class>-</legality_class>
 		<value>100000</value>
 		<weight>150 lb</weight>
 		<reference>UT204</reference>
@@ -1375,7 +1373,6 @@
 		<quantity>1</quantity>
 		<description>Antirad</description>
 		<tech_level>9</tech_level>
-		<legality_class>-</legality_class>
 		<value>150</value>
 		<reference>UT205</reference>
 		<categories>
@@ -2303,7 +2300,6 @@
 		<quantity>1</quantity>
 		<description>Beam-Adaptive Armor (@Beam type@)</description>
 		<tech_level>10</tech_level>
-		<legality_class>-</legality_class>
 		<value>1000</value>
 		<reference>UT189</reference>
 		<notes>Per pound of armor weight.</notes>
@@ -2315,7 +2311,6 @@
 		<quantity>1</quantity>
 		<description>Beam-Adaptive Armor (@Four beam types@)</description>
 		<tech_level>10</tech_level>
-		<legality_class>-</legality_class>
 		<value>16000</value>
 		<reference>UT189</reference>
 		<notes>Per pound of armor weight.</notes>
@@ -2327,7 +2322,6 @@
 		<quantity>1</quantity>
 		<description>Beam-Adaptive Armor (@Two beam types@)</description>
 		<tech_level>10</tech_level>
-		<legality_class>-</legality_class>
 		<value>4000</value>
 		<reference>UT189</reference>
 		<notes>Per pound of armor weight.</notes>
@@ -2455,7 +2449,6 @@
 	<equipment_container version="3" open="no">
 		<description>Bionic Arm Mount</description>
 		<tech_level>9</tech_level>
-		<legality_class>-</legality_class>
 		<value>100</value>
 		<reference>UT212</reference>
 		<notes>Cost per pound of weapon weight. LC of weapon. Minor procedure.</notes>
@@ -2499,7 +2492,6 @@
 	<equipment_container version="3" open="no">
 		<description>Bionic Hand Mount</description>
 		<tech_level>9</tech_level>
-		<legality_class>-</legality_class>
 		<value>100</value>
 		<reference>UT212</reference>
 		<notes>Cost per pound of weapon weight. LC of weapon. Minor procedure.</notes>
@@ -2968,7 +2960,6 @@
 		<quantity>1</quantity>
 		<description>Bomb Implant</description>
 		<tech_level>9</tech_level>
-		<legality_class>-</legality_class>
 		<value>0</value>
 		<reference>UT210</reference>
 		<notes>Use the cost and LC of a smart grenade. Simple procedure.</notes>
@@ -3025,7 +3016,6 @@
 	<equipment_container version="3" open="no">
 		<description>Brain Case</description>
 		<tech_level>10</tech_level>
-		<legality_class>-</legality_class>
 		<value>40000</value>
 		<reference>UT219</reference>
 		<notes>Major procedure.</notes>
@@ -3033,7 +3023,6 @@
 	<equipment_container version="3" open="no">
 		<description>Brain Case</description>
 		<tech_level>9</tech_level>
-		<legality_class>-</legality_class>
 		<value>40000</value>
 		<reference>UT219</reference>
 		<notes>Radical procedure.</notes>
@@ -12344,7 +12333,6 @@
 	<equipment_container version="3" open="no">
 		<description>Heavy Weapon Arm</description>
 		<tech_level>9</tech_level>
-		<legality_class>-</legality_class>
 		<value>100</value>
 		<reference>UT212</reference>
 		<notes>Cost per pound of weapon weight. LC of weapon. Minor procedure.</notes>
@@ -13323,8 +13311,6 @@
 	<equipment version="3">
 		<quantity>1</quantity>
 		<description>Human Embryo</description>
-		<tech_level>-</tech_level>
-		<legality_class>-</legality_class>
 		<value>25000</value>
 		<weight>0.001 lb</weight>
 		<reference>UT204</reference>
@@ -19722,7 +19708,6 @@
 		<quantity>1</quantity>
 		<description>Morphwear</description>
 		<tech_level>10</tech_level>
-		<legality_class>-</legality_class>
 		<value>1000</value>
 		<reference>UT189</reference>
 		<notes>For biosuits and nanosuits.</notes>
@@ -19734,7 +19719,6 @@
 		<quantity>1</quantity>
 		<description>Morphwear</description>
 		<tech_level>10</tech_level>
-		<legality_class>-</legality_class>
 		<value>5000</value>
 		<reference>UT189</reference>
 		<notes>For smartsuits and cybersuits.</notes>
@@ -23618,7 +23602,6 @@
 		<quantity>1</quantity>
 		<description>Provisions Dispenser</description>
 		<tech_level>9</tech_level>
-		<legality_class>-</legality_class>
 		<value>50</value>
 		<weight>1 lb</weight>
 		<reference>UT187</reference>
@@ -29147,7 +29130,6 @@
 		<quantity>1</quantity>
 		<description>Suit Patches</description>
 		<tech_level>9</tech_level>
-		<legality_class>-</legality_class>
 		<value>10</value>
 		<weight>0.1 lb</weight>
 		<reference>UT188</reference>
@@ -30413,7 +30395,6 @@
 		<quantity>1</quantity>
 		<description>Telepathic Barrier</description>
 		<tech_level>9^</tech_level>
-		<legality_class>-</legality_class>
 		<value>1000</value>
 		<weight>0.5 lb</weight>
 		<reference>UT188</reference>
@@ -31590,7 +31571,6 @@
 		<quantity>1</quantity>
 		<description>Utility Fog</description>
 		<tech_level>12</tech_level>
-		<legality_class>-</legality_class>
 		<value>10000</value>
 		<reference>UT71</reference>
 		<notes>Per square yard.</notes>
@@ -33369,7 +33349,6 @@
 		<quantity>1</quantity>
 		<description>Waste-Relief System</description>
 		<tech_level>9</tech_level>
-		<legality_class>-</legality_class>
 		<value>1000</value>
 		<weight>2 lb</weight>
 		<reference>UT187</reference>

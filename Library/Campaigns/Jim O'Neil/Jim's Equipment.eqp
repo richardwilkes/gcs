@@ -335,7 +335,6 @@
 		<quantity>1</quantity>
 		<description>Leather Shoes</description>
 		<tech_level>2</tech_level>
-		<legality_class>-</legality_class>
 		<value>25</value>
 		<weight>1 lb</weight>
 		<categories>
@@ -346,7 +345,6 @@
 		<quantity>1</quantity>
 		<description>Linen Breeches</description>
 		<tech_level>2</tech_level>
-		<legality_class>-</legality_class>
 		<value>15</value>
 		<weight>1 lb</weight>
 		<categories>
@@ -571,7 +569,6 @@
 		<quantity>1</quantity>
 		<description>Sleeved Shirt</description>
 		<tech_level>2</tech_level>
-		<legality_class>-</legality_class>
 		<value>20</value>
 		<weight>0.5 lb</weight>
 		<categories>

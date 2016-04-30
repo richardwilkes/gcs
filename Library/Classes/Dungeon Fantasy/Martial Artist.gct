@@ -2718,7 +2718,6 @@
 				<quantity>1</quantity>
 				<description>Cloth Armor</description>
 				<tech_level>1</tech_level>
-				<legality_class>-</legality_class>
 				<value>30</value>
 				<weight>6 lb</weight>
 				<reference>B283</reference>
@@ -2784,7 +2783,6 @@
 				<quantity>1</quantity>
 				<description>Boots</description>
 				<tech_level>2</tech_level>
-				<legality_class>-</legality_class>
 				<value>80</value>
 				<weight>3 lb</weight>
 				<reference>B284</reference>

@@ -1925,7 +1925,6 @@
 				<quantity>1</quantity>
 				<description>Boots</description>
 				<tech_level>2</tech_level>
-				<legality_class>-</legality_class>
 				<value>80</value>
 				<weight>3 lb</weight>
 				<reference>B284</reference>
@@ -2186,7 +2185,6 @@
 			<equipment version="3">
 				<quantity>1</quantity>
 				<description>Small Shield</description>
-				<tech_level>-</tech_level>
 				<legality_class>4</legality_class>
 				<value>40</value>
 				<weight>8 lb</weight>
@@ -2259,7 +2257,6 @@
 				<quantity>1</quantity>
 				<description>Heavy Cloak, @Environment@ Camouflage</description>
 				<tech_level>1</tech_level>
-				<legality_class>-</legality_class>
 				<value>50</value>
 				<weight>5 lb</weight>
 				<reference>B287,DF13:25</reference>
@@ -2349,7 +2346,6 @@
 				<quantity>1</quantity>
 				<description>Leather Jacket</description>
 				<tech_level>1</tech_level>
-				<legality_class>-</legality_class>
 				<value>50</value>
 				<weight>4 lb</weight>
 				<reference>B283</reference>
@@ -2515,7 +2511,6 @@
 			<equipment version="3">
 				<quantity>1</quantity>
 				<description>Small Shield</description>
-				<tech_level>-</tech_level>
 				<legality_class>4</legality_class>
 				<value>40</value>
 				<weight>8 lb</weight>
@@ -2576,7 +2571,6 @@
 				<quantity>1</quantity>
 				<description>Boots</description>
 				<tech_level>2</tech_level>
-				<legality_class>-</legality_class>
 				<value>80</value>
 				<weight>3 lb</weight>
 				<reference>B284</reference>

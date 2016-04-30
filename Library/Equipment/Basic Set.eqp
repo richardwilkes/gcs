@@ -2716,7 +2716,6 @@
 		<quantity>1</quantity>
 		<description>Boots</description>
 		<tech_level>2</tech_level>
-		<legality_class>-</legality_class>
 		<value>80</value>
 		<weight>3 lb</weight>
 		<reference>B284</reference>
@@ -3492,7 +3491,6 @@
 		<quantity>1</quantity>
 		<description>Cloth Armor</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>30</value>
 		<weight>6 lb</weight>
 		<reference>B283</reference>
@@ -3512,7 +3510,6 @@
 		<quantity>1</quantity>
 		<description>Cloth Cap</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>5</value>
 		<reference>B284</reference>
 		<categories>
@@ -3527,7 +3524,6 @@
 		<quantity>1</quantity>
 		<description>Cloth Gloves</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>15</value>
 		<reference>B284</reference>
 		<categories>
@@ -3542,7 +3538,6 @@
 		<quantity>1</quantity>
 		<description>Cloth Sleeves</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>20</value>
 		<weight>2 lb</weight>
 		<reference>B283</reference>
@@ -5588,7 +5583,6 @@
 		<quantity>1</quantity>
 		<description>Fur Loincloth</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>10</value>
 		<reference>B283</reference>
 		<categories>
@@ -5603,7 +5597,6 @@
 		<quantity>1</quantity>
 		<description>Fur Tunic</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>25</value>
 		<weight>2 lb</weight>
 		<reference>B283</reference>
@@ -6581,7 +6574,6 @@
 		<quantity>1</quantity>
 		<description>Heavy Cloak</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>50</value>
 		<weight>5 lb</weight>
 		<reference>B287</reference>
@@ -6950,7 +6942,6 @@
 		<quantity>1</quantity>
 		<description>ICW Integral, 25mm</description>
 		<tech_level>9</tech_level>
-		<legality_class>-</legality_class>
 		<value>0</value>
 		<reference>B281</reference>
 		<ranged_weapon>
@@ -7268,7 +7259,6 @@
 		<quantity>1</quantity>
 		<description>Integral, 25mm</description>
 		<tech_level>9</tech_level>
-		<legality_class>-</legality_class>
 		<value>0</value>
 		<reference>B281</reference>
 		<ranged_weapon>
@@ -8365,7 +8355,6 @@
 		<quantity>1</quantity>
 		<description>Leather Gloves</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>30</value>
 		<reference>B284</reference>
 		<categories>
@@ -8400,7 +8389,6 @@
 		<quantity>1</quantity>
 		<description>Leather Jacket</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>50</value>
 		<weight>4 lb</weight>
 		<reference>B283</reference>
@@ -8420,7 +8408,6 @@
 		<quantity>1</quantity>
 		<description>Leather Leggings</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>40</value>
 		<weight>2 lb</weight>
 		<reference>B283</reference>
@@ -8436,7 +8423,6 @@
 		<quantity>1</quantity>
 		<description>Leather Pants</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>40</value>
 		<weight>3 lb</weight>
 		<reference>B283</reference>
@@ -8573,7 +8559,6 @@
 	<equipment version="3">
 		<quantity>1</quantity>
 		<description>Light Buckler</description>
-		<tech_level>-</tech_level>
 		<legality_class>4</legality_class>
 		<value>25</value>
 		<weight>2 lb</weight>
@@ -8680,7 +8665,6 @@
 		<quantity>1</quantity>
 		<description>Light Cloak</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>20</value>
 		<weight>2 lb</weight>
 		<reference>B287</reference>
@@ -8866,7 +8850,6 @@
 	<equipment version="3">
 		<quantity>1</quantity>
 		<description>Light Shield</description>
-		<tech_level>-</tech_level>
 		<legality_class>4</legality_class>
 		<value>25</value>
 		<weight>2 lb</weight>
@@ -12042,7 +12025,6 @@
 		<quantity>1</quantity>
 		<description>Reinforced Boots</description>
 		<tech_level>7</tech_level>
-		<legality_class>-</legality_class>
 		<value>75</value>
 		<weight>3 lb</weight>
 		<reference>B284</reference>
@@ -12785,7 +12767,6 @@
 		<quantity>1</quantity>
 		<description>Sandals</description>
 		<tech_level>0</tech_level>
-		<legality_class>-</legality_class>
 		<value>25</value>
 		<weight>0.5 lb</weight>
 		<reference>B284</reference>
@@ -13246,7 +13227,6 @@
 		<quantity>1</quantity>
 		<description>Shoes</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>40</value>
 		<weight>2 lb</weight>
 		<reference>B284</reference>
@@ -13693,7 +13673,6 @@
 	<equipment version="3">
 		<quantity>1</quantity>
 		<description>Small Buckler</description>
-		<tech_level>-</tech_level>
 		<legality_class>4</legality_class>
 		<value>40</value>
 		<weight>8 lb</weight>
@@ -13966,7 +13945,6 @@
 	<equipment version="3">
 		<quantity>1</quantity>
 		<description>Small Shield</description>
-		<tech_level>-</tech_level>
 		<legality_class>4</legality_class>
 		<value>40</value>
 		<weight>8 lb</weight>
@@ -15100,7 +15078,6 @@
 		<quantity>1</quantity>
 		<description>Studded Leather Skirt</description>
 		<tech_level>1</tech_level>
-		<legality_class>-</legality_class>
 		<value>60</value>
 		<weight>4 lb</weight>
 		<reference>B283</reference>

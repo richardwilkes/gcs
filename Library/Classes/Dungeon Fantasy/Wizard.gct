@@ -3688,7 +3688,6 @@
 				<quantity>1</quantity>
 				<description>Boots</description>
 				<tech_level>2</tech_level>
-				<legality_class>-</legality_class>
 				<value>80</value>
 				<weight>3 lb</weight>
 				<reference>B284</reference>
@@ -3767,7 +3766,6 @@
 				<quantity>1</quantity>
 				<description>Leather Pants</description>
 				<tech_level>1</tech_level>
-				<legality_class>-</legality_class>
 				<value>40</value>
 				<weight>3 lb</weight>
 				<reference>B283</reference>
@@ -3786,7 +3784,6 @@
 			<equipment version="3">
 				<quantity>1</quantity>
 				<description>Light Buckler</description>
-				<tech_level>-</tech_level>
 				<legality_class>4</legality_class>
 				<value>25</value>
 				<weight>2 lb</weight>
@@ -3908,7 +3905,6 @@
 				<quantity>1</quantity>
 				<description>Cloth Armor</description>
 				<tech_level>1</tech_level>
-				<legality_class>-</legality_class>
 				<value>30</value>
 				<weight>6 lb</weight>
 				<reference>B283</reference>
