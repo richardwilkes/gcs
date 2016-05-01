@@ -698,7 +698,7 @@
 		<reference>DF8:15</reference>
 		<notes>Seats three.</notes>
 		<categories>
-			<category>Furnature</category>
+			<category>Furniture</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -2454,7 +2454,7 @@
 		<reference>DF8:15</reference>
 		<notes>Chair with back and possibly arms. Seats one.</notes>
 		<categories>
-			<category>Furnature</category>
+			<category>Furniture</category>
 		</categories>
 	</equipment>
 	<equipment_container version="3" open="yes">
