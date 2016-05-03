@@ -1,20 +1,20 @@
 -		Decrement (Skill/Spell Points, Advantage Level, Equipment Qty)
 =		Increment (Skill/Spell Points, Advantage Level, Equipment Qty)
-,		Preferences
 '		Rotate Equipment State
+,		Preferences
 
 A		Select All
 B		New Spell
 C		Copy
-D		New ADQ
-E		New Carried Equipment
-F		New Equipment
+D		New Advantage
+E		New Equipment
+F
 G		Open Page Reference
-H
+H		Hide Application (Mac)
 I		Open Detail Editor
-J		Jump to Find Field
+J		Jump to Search
 K		New Skill
-L
+L		Export to GURPS Calculator
 M
 N		New Character Sheet
 O		Open
@@ -33,12 +33,12 @@ Z		Undo
 SHIFT+A	Apply Template to Character Sheet
 SHIFT+B	New Spell Container
 SHIFT+C Copy to Character Sheet
-SHIFT+D	New ADQ Container
-SHIFT+E	New Carried Equipment Container
-SHIFT+F	New Equipment Container
+SHIFT+D	New Advantage Container
+SHIFT+E	New Equipment Container
+SHIFT+F
 SHIFT+G Open Each Page Reference
 SHIFT+H
-SHIFT+I Randomize Name (Male)
+SHIFT+I Generate Random Female Name
 SHIFT+J
 SHIFT+K	New Skill Container
 SHIFT+L
@@ -48,10 +48,10 @@ SHIFT+O
 SHIFT+P	Page Setup
 SHIFT+Q
 SHIFT+R
-SHIFT+S
+SHIFT+S Save As
 SHIFT+T	Copy to Template
 SHIFT+U
-SHIFT+V Randomize Name (Female)
+SHIFT+V Generate Random Male Name
 SHIFT+W
 SHIFT+X
 SHIFT+Y

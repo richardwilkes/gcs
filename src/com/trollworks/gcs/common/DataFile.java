@@ -33,15 +33,16 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import javax.swing.undo.UndoableEdit;
 
 /** A common super class for all data file-based model objects. */
 public abstract class DataFile implements Undoable {
-	/** The 'unique ID' attribute. */
-	public static final String				ATTRIBUTE_UNIQUE_ID		= "unique_id";			//$NON-NLS-1$
+	/** The 'id' attribute. */
+	public static final String				ATTRIBUTE_ID			= "id";					//$NON-NLS-1$
 	private File							mFile;
-	private UniqueID						mUniqueID				= new UniqueID();
+	private UUID							mId				= UUID.randomUUID();
 	private Notifier						mNotifier				= new Notifier();
 	private boolean							mModified;
 	private StdUndoManager					mUndoManager			= new StdUndoManager();
@@ -82,7 +83,11 @@ public abstract class DataFile implements Undoable {
 	 * @param state The {@link LoadState} to use.
 	 */
 	public void load(XMLReader reader, LoadState state) throws IOException {
-		mUniqueID = new UniqueID(reader.getAttribute(ATTRIBUTE_UNIQUE_ID));
+		try {
+			mId = UUID.fromString(reader.getAttribute(ATTRIBUTE_ID));
+		} catch (Exception exception) {
+			mId = UUID.randomUUID();
+		}
 		state.mDataFileVersion = reader.getAttributeAsInteger(LoadState.ATTRIBUTE_VERSION, 0);
 		if (state.mDataFileVersion > getXMLTagVersion()) {
 			throw VersionException.createTooNew();
@@ -141,7 +146,7 @@ public abstract class DataFile implements Undoable {
 		if (!onlyIfNotEmpty || !isEmpty()) {
 			out.startTag(getXMLTagName());
 			if (includeUniqueID) {
-				out.writeAttribute(ATTRIBUTE_UNIQUE_ID, getUniqueID().toString());
+				out.writeAttribute(ATTRIBUTE_ID, mId.toString());
 			}
 			out.writeAttribute(LoadState.ATTRIBUTE_VERSION, getXMLTagVersion());
 			out.finishTagEOL();
@@ -198,9 +203,14 @@ public abstract class DataFile implements Undoable {
 		mFile = file;
 	}
 
-	/** @return The unique ID for this data file. */
-	public final UniqueID getUniqueID() {
-		return mUniqueID;
+	/** @return The ID for this data file. */
+	public UUID getId() {
+		return mId;
+	}
+
+	/** Replaces the existing ID with a new randomly generated one. */
+	public void generateNewId() {
+		mId = UUID.randomUUID();
 	}
 
 	/** @return <code>true</code> if the data has been modified. */

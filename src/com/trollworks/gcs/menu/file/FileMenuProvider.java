@@ -59,6 +59,7 @@ public class FileMenuProvider implements MenuProvider {
 		cmds.add(CloseCommand.INSTANCE);
 		cmds.add(SaveCommand.INSTANCE);
 		cmds.add(SaveAsCommand.INSTANCE);
+		cmds.add(ExportToGurpsCalculatorCommand.INSTANCE);
 		cmds.add(PageSetupCommand.INSTANCE);
 		cmds.add(PrintCommand.INSTANCE);
 		if (!Platform.isMacintosh()) {
@@ -84,6 +85,7 @@ public class FileMenuProvider implements MenuProvider {
 		menu.addSeparator();
 		menu.add(new DynamicMenuItem(SaveCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(SaveAsCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(ExportToGurpsCalculatorCommand.INSTANCE));
 		menu.addSeparator();
 		menu.add(new DynamicMenuItem(PageSetupCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(PrintCommand.INSTANCE));

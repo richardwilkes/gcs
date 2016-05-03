@@ -36,12 +36,16 @@ import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.units.LengthUnits;
 import com.trollworks.toolkit.utility.units.WeightUnits;
 
+import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -213,7 +217,10 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private static String	JPEG_FILES;
 	@Localize("GIF Files")
 	private static String	GIF_FILES;
-
+	@Localize("GURPS Calculator Key")
+	private static String	GURPS_CALCULATOR_KEY;
+	@Localize("Find mine")
+	private static String	WHERE_OBTAIN;
 	static {
 		Localization.initialize();
 	}
@@ -256,6 +263,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private static final int[]			DPI									= { 72, 96, 144, 150, 200, 300 };
 	private static final String			USE_HTML_TEMPLATE_OVERRIDE_KEY		= "UseHTMLTemplateOverride";									//$NON-NLS-1$
 	private static final String			HTML_TEMPLATE_OVERRIDE_KEY			= "HTMLTemplateOverride";										//$NON-NLS-1$
+	private static final String			GURPS_CALCULATOR_KEY_KEY			= "GurpsCalculatorKey";											//$NON-NLS-1$
+	public static final String			GURPS_CALCULATOR_URL				= "http://www.gurpscalculator.com/Character/ImportGCS";			//$NON-NLS-1$
 	private static final String			INITIAL_POINTS_KEY					= "InitialPoints";												//$NON-NLS-1$
 	private static final int			DEFAULT_INITIAL_POINTS				= 100;
 	private JTextField					mPlayerName;
@@ -269,6 +278,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private JCheckBox					mUseHTMLTemplateOverride;
 	private JTextField					mHTMLTemplatePath;
 	private JButton						mHTMLTemplatePicker;
+	private JButton						mGurpsCalculatorLink;
+	private JTextField					mGurpsCalculatorKey;
 	private JCheckBox					mUseOptionalDiceRules;
 	private JCheckBox					mUseOptionalIQRules;
 	private JCheckBox					mUseOptionalModifierRules;
@@ -353,6 +364,10 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	/** @return The default HTML template to use when exporting to HTML. */
 	public static String getDefaultHTMLTemplate() {
 		return App.getHomePath().resolve("Library").resolve("Output Templates").resolve("template.html").toString(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	}
+
+	public static String getGurpsCalculatorKey() {
+		return Preferences.getInstance().getStringValue(MODULE, GURPS_CALCULATOR_KEY_KEY);
 	}
 
 	/** @return The initial points to start a new character with. */
@@ -446,6 +461,16 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		mUseNativePrinter = createCheckBox(NATIVE_PRINTER, NATIVE_PRINTER_TOOLTIP, PrintManager.useNativeDialogs());
 		column.add(mUseNativePrinter);
 
+		row = new FlexRow();
+		row.add(createLabel(GURPS_CALCULATOR_KEY, GURPS_CALCULATOR_KEY));
+		mGurpsCalculatorKey = createTextField(GURPS_CALCULATOR_KEY, getGurpsCalculatorKey());
+		row.add(mGurpsCalculatorKey);
+		mGurpsCalculatorLink = createHyperlinkButton(WHERE_OBTAIN, GURPS_CALCULATOR_URL);
+		if (Desktop.isDesktopSupported()) {
+			row.add(mGurpsCalculatorLink);
+		}
+		column.add(row);
+
 		column.add(new FlexSpacer(0, 0, false, true));
 
 		column.apply(this);
@@ -482,6 +507,21 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		field.setMaximumSize(maxSize);
 		add(field);
 		return field;
+	}
+
+	private JButton createHyperlinkButton(String linkText, String tooltip) {
+		JButton button = new JButton(String.format("<HTML><FONT color=\"#000099\"><U>%s</U></FONT>", linkText)); //$NON-NLS-1$
+		button.setFocusPainted(false);
+		button.setMargin(new Insets(0, 0, 0, 0));
+		button.setContentAreaFilled(false);
+		button.setBorderPainted(false);
+		button.setOpaque(false);
+		button.setToolTipText(tooltip);
+		button.setBackground(Color.white);
+		button.addActionListener(this);
+		UIUtilities.setOnlySize(button, button.getPreferredSize());
+		add(button);
+		return button;
 	}
 
 	private JComboBox<String> createPNGResolutionPopup() {
@@ -568,6 +608,11 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 			if (file != null) {
 				mHTMLTemplatePath.setText(PathUtils.getFullPath(file));
 			}
+		} else if (source == mGurpsCalculatorLink && Desktop.isDesktopSupported()) {
+			try {
+				Desktop.getDesktop().browse(new URI(GURPS_CALCULATOR_URL));
+			} catch (Exception e) {
+				/*we'll just hide the exception for now*/}
 		}
 		adjustResetButton();
 	}
@@ -579,6 +624,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		mTechLevel.setText(Profile.DEFAULT_TECH_LEVEL);
 		mInitialPoints.setText(Integer.toString(DEFAULT_INITIAL_POINTS));
 		setPortrait(Profile.DEFAULT_PORTRAIT);
+		mGurpsCalculatorKey.setText(""); //$NON-NLS-1$
 		for (int i = 0; i < DPI.length; i++) {
 			if (DPI[i] == DEFAULT_PNG_RESOLUTION) {
 				mPNGResolutionCombo.setSelectedIndex(i);
@@ -599,7 +645,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 	@Override
 	public boolean isSetToDefaults() {
-		return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultCampaign().equals("") && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getInitialPoints() == DEFAULT_INITIAL_POINTS && getPNGResolution() == DEFAULT_PNG_RESOLUTION && isHTMLTemplateOverridden() == false && areOptionalDiceRulesUsed() == DEFAULT_OPTIONAL_DICE_RULES && areOptionalIQRulesUsed() == DEFAULT_OPTIONAL_IQ_RULES && areOptionalModifierRulesUsed() == DEFAULT_OPTIONAL_MODIFIER_RULES && isNewCharacterAutoNamed() == DEFAULT_AUTO_NAME && !PrintManager.useNativeDialogs(); //$NON-NLS-1$ //$NON-NLS-2$
+		return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultCampaign().equals("") && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getInitialPoints() == DEFAULT_INITIAL_POINTS && getPNGResolution() == DEFAULT_PNG_RESOLUTION && isHTMLTemplateOverridden() == false && areOptionalDiceRulesUsed() == DEFAULT_OPTIONAL_DICE_RULES && areOptionalIQRulesUsed() == DEFAULT_OPTIONAL_IQ_RULES && areOptionalModifierRulesUsed() == DEFAULT_OPTIONAL_MODIFIER_RULES && isNewCharacterAutoNamed() == DEFAULT_AUTO_NAME && !PrintManager.useNativeDialogs() && mGurpsCalculatorKey.getText().equals(""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 
 	private void setPortrait(String path) {
@@ -621,6 +667,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 			Preferences.getInstance().setValue(MODULE, INITIAL_POINTS_KEY, Numbers.extractInteger(mInitialPoints.getText(), 0, true));
 		} else if (mHTMLTemplatePath.getDocument() == document) {
 			Preferences.getInstance().setValue(MODULE, HTML_TEMPLATE_OVERRIDE_KEY, mHTMLTemplatePath.getText());
+		} else if (mGurpsCalculatorKey.getDocument() == document) {
+			Preferences.getInstance().setValue(MODULE, GURPS_CALCULATOR_KEY_KEY, mGurpsCalculatorKey.getText());
 		}
 		adjustResetButton();
 	}
