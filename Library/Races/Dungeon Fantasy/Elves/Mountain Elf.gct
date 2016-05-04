@@ -137,7 +137,7 @@
 					<amount per_level="yes">-1</amount>
 				</spell_bonus>
 				<spell_bonus>
-					<college_name compare="is">Druidic</college_name>
+					<college_name compare="is">Druid</college_name>
 					<amount per_level="yes">-1</amount>
 				</spell_bonus>
 				<spell_bonus>

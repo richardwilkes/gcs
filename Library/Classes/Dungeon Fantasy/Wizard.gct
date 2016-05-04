@@ -1470,7 +1470,7 @@
 					</spell>
 					<spell version="2">
 						<name>Blackout</name>
-						<college>Light</college>
+						<college>Light &amp; Darkness</college>
 						<power_source>Arcane</power_source>
 						<spell_class>Area</spell_class>
 						<casting_cost>2</casting_cost>
@@ -1489,7 +1489,7 @@
 					</spell>
 					<spell version="2">
 						<name>Blur</name>
-						<college>Light</college>
+						<college>Light &amp; Darkness</college>
 						<power_source>Arcane</power_source>
 						<spell_class>Regular</spell_class>
 						<casting_cost>1-5</casting_cost>
@@ -1511,7 +1511,7 @@
 					</spell>
 					<spell version="2">
 						<name>Colors</name>
-						<college>Light</college>
+						<college>Light &amp; Darkness</college>
 						<power_source>Arcane</power_source>
 						<spell_class>Regular</spell_class>
 						<casting_cost>2</casting_cost>
@@ -1552,7 +1552,7 @@
 					</spell>
 					<spell version="2">
 						<name>Continual Light</name>
-						<college>Light</college>
+						<college>Light &amp; Darkness</college>
 						<power_source>Arcane</power_source>
 						<spell_class>Regular</spell_class>
 						<casting_cost>2 moon, 4 torch, 6 day</casting_cost>
@@ -1571,7 +1571,7 @@
 					</spell>
 					<spell version="2">
 						<name>Darkness</name>
-						<college>Light</college>
+						<college>Light &amp; Darkness</college>
 						<power_source>Arcane</power_source>
 						<spell_class>Area</spell_class>
 						<casting_cost>2</casting_cost>
@@ -1628,7 +1628,7 @@
 					</spell>
 					<spell version="2">
 						<name>Flash</name>
-						<college>Light</college>
+						<college>Light &amp; Darkness</college>
 						<power_source>Arcane</power_source>
 						<spell_class>Regular</spell_class>
 						<casting_cost>4</casting_cost>
@@ -1685,7 +1685,7 @@
 					</spell>
 					<spell version="2">
 						<name>Hide</name>
-						<college>Light</college>
+						<college>Light &amp; Darkness</college>
 						<power_source>Arcane</power_source>
 						<spell_class>Regular</spell_class>
 						<casting_cost>1-5</casting_cost>
@@ -1805,7 +1805,7 @@
 					</spell>
 					<spell version="2">
 						<name>Invisibility</name>
-						<college>Light</college>
+						<college>Light &amp; Darkness</college>
 						<power_source>Arcane</power_source>
 						<spell_class>Regular</spell_class>
 						<casting_cost>4</casting_cost>
@@ -1819,7 +1819,7 @@
 						</categories>
 						<prereq_list all="yes">
 							<spell_prereq has="yes">
-								<college compare="is">light</college>
+								<college compare="is">Light</college>
 								<quantity compare="at least">6</quantity>
 							</spell_prereq>
 							<spell_prereq has="yes">
@@ -1829,7 +1829,7 @@
 					</spell>
 					<spell version="2">
 						<name>Light</name>
-						<college>Light</college>
+						<college>Light &amp; Darkness</college>
 						<power_source>Arcane</power_source>
 						<spell_class>Regular</spell_class>
 						<casting_cost>1</casting_cost>
@@ -1882,7 +1882,7 @@
 					</spell>
 					<spell version="2">
 						<name>Mirror</name>
-						<college>Light</college>
+						<college>Light &amp; Darkness</college>
 						<power_source>Arcane</power_source>
 						<spell_class>Regular</spell_class>
 						<casting_cost>2</casting_cost>
@@ -2139,7 +2139,7 @@
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
-								<college compare="contains">body control</college>
+								<college compare="contains">Body Control</college>
 								<quantity compare="at least">4</quantity>
 							</spell_prereq>
 							<spell_prereq has="yes">
@@ -2186,7 +2186,7 @@
 					</spell>
 					<spell version="2">
 						<name>Dark Vision</name>
-						<college>Light</college>
+						<college>Light &amp; Darkness</college>
 						<power_source>Arcane</power_source>
 						<spell_class>Regular</spell_class>
 						<casting_cost>5</casting_cost>
@@ -2432,7 +2432,7 @@
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
-								<college compare="contains">body control</college>
+								<college compare="contains">Body Control</college>
 								<quantity compare="at least">4</quantity>
 							</spell_prereq>
 							<spell_prereq has="yes">
@@ -2602,7 +2602,7 @@
 						</categories>
 						<prereq_list all="yes">
 							<spell_prereq has="yes">
-								<college compare="contains">necromancy</college>
+								<college compare="contains">Necromancy</college>
 								<quantity compare="at least">4</quantity>
 							</spell_prereq>
 						</prereq_list>
@@ -2933,7 +2933,7 @@
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
-								<college compare="contains">fire</college>
+								<college compare="contains">Fire</college>
 								<quantity compare="at least">5</quantity>
 							</spell_prereq>
 							<spell_prereq has="yes">
@@ -3413,7 +3413,7 @@
 								</advantage_prereq>
 							</prereq_list>
 							<spell_prereq has="yes">
-								<college compare="contains">air</college>
+								<college compare="contains">Air</college>
 								<quantity compare="at least">6</quantity>
 							</spell_prereq>
 						</prereq_list>

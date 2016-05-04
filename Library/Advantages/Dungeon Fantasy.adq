@@ -64,7 +64,7 @@
 			<amount per_level="yes">-1</amount>
 		</spell_bonus>
 		<spell_bonus>
-			<college_name compare="is">Druidic</college_name>
+			<college_name compare="is">Druid</college_name>
 			<amount per_level="yes">-1</amount>
 		</spell_bonus>
 		<spell_bonus>
@@ -270,7 +270,7 @@
 			<category>Power</category>
 		</categories>
 		<spell_bonus>
-			<college_name compare="is">Communication and Empathy</college_name>
+			<college_name compare="is">Communication &amp; Empathy</college_name>
 			<amount per_level="yes">1</amount>
 		</spell_bonus>
 		<spell_bonus>
@@ -383,7 +383,7 @@
 			<category>Advantage</category>
 		</categories>
 		<spell_bonus>
-			<college_name compare="is">druidic</college_name>
+			<college_name compare="is">Druid</college_name>
 			<amount>1</amount>
 		</spell_bonus>
 	</advantage>
@@ -754,7 +754,7 @@
 			<amount per_level="yes">-1</amount>
 		</spell_bonus>
 		<spell_bonus>
-			<college_name compare="is">Druidic</college_name>
+			<college_name compare="is">Druid</college_name>
 			<amount per_level="yes">-1</amount>
 		</spell_bonus>
 		<spell_bonus>

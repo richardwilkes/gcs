@@ -158,7 +158,7 @@
 		</spell>
 		<spell version="2">
 			<name>Invisibility</name>
-			<college>Light</college>
+			<college>Light &amp; Darkness</college>
 			<power_source>Arcane</power_source>
 			<spell_class>Regular</spell_class>
 			<casting_cost>4</casting_cost>
@@ -172,7 +172,7 @@
 			</categories>
 			<prereq_list all="yes">
 				<spell_prereq has="yes">
-					<college compare="is">light</college>
+					<college compare="is">Light</college>
 					<quantity compare="at least">6</quantity>
 				</spell_prereq>
 				<spell_prereq has="yes">

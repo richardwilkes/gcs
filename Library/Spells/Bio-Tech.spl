@@ -20,7 +20,7 @@
 	</spell>
 	<spell version="2">
 		<name>Alter Nanovirus</name>
-		<college>Technology</college>
+		<college>Technological</college>
 		<power_source>Arcane</power_source>
 		<spell_class>Regular</spell_class>
 		<casting_cost>10*(MAX(9,TL)-8)</casting_cost>
@@ -135,7 +135,7 @@
 	</spell>
 	<spell version="2" very_hard="yes">
 		<name>Manipulate DNA</name>
-		<college>Technology</college>
+		<college>Technological</college>
 		<power_source>Arcane</power_source>
 		<spell_class>Regular</spell_class>
 		<casting_cost>8</casting_cost>
@@ -201,7 +201,7 @@
 	</spell>
 	<spell version="2">
 		<name>Sense Nano</name>
-		<college>Technology</college>
+		<college>Technological</college>
 		<power_source>Arcane</power_source>
 		<spell_class>Area/Info</spell_class>
 		<casting_cost>1</casting_cost>
@@ -227,7 +227,7 @@
 	</spell>
 	<spell version="2" very_hard="yes">
 		<name>Sequence DNA</name>
-		<college>Technology</college>
+		<college>Technological</college>
 		<power_source>Arcane</power_source>
 		<spell_class>Information</spell_class>
 		<casting_cost>6</casting_cost>

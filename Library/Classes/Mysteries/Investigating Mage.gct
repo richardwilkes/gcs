@@ -763,7 +763,7 @@
 				</categories>
 				<prereq_list all="no">
 					<spell_prereq has="yes">
-						<college compare="contains">knowledge</college>
+						<college compare="contains">Knowledge</college>
 						<quantity compare="at least">6</quantity>
 					</spell_prereq>
 					<spell_prereq has="yes">
@@ -773,7 +773,7 @@
 			</spell>
 			<spell version="2">
 				<name>Persuasion</name>
-				<college>Communication</college>
+				<college>Communication &amp; Empathy</college>
 				<power_source>Arcane</power_source>
 				<spell_class>Regular</spell_class>
 				<casting_cost>Varies</casting_cost>
@@ -877,7 +877,7 @@
 			</spell>
 			<spell version="2">
 				<name>Sense Emotion</name>
-				<college>Communication</college>
+				<college>Communication &amp; Empathy</college>
 				<power_source>Arcane</power_source>
 				<spell_class>Regular</spell_class>
 				<casting_cost>2</casting_cost>
@@ -896,7 +896,7 @@
 			</spell>
 			<spell version="2">
 				<name>Sense Foes</name>
-				<college>Communication</college>
+				<college>Communication &amp; Empathy</college>
 				<power_source>Arcane</power_source>
 				<spell_class>Info/Area</spell_class>
 				<casting_cost>1/area, min 2</casting_cost>
@@ -978,7 +978,7 @@
 			</spell>
 			<spell version="2">
 				<name>Truthsayer</name>
-				<college>Communication</college>
+				<college>Communication &amp; Empathy</college>
 				<power_source>Arcane</power_source>
 				<spell_class>Info</spell_class>
 				<casting_cost>2</casting_cost>

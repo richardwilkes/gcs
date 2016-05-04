@@ -2,7 +2,7 @@
 <spell_list unique_id="icutifeh:-11yw84yd05780" version="1">
 	<spell version="2">
 		<name>Ball of Wood</name>
-		<college>Plant,</college>
+		<college>Plant</college>
 		<power_source>Arcane</power_source>
 		<spell_class>Missile</spell_class>
 		<casting_cost>1</casting_cost>

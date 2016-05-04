@@ -572,7 +572,7 @@
 								<category>Power</category>
 							</categories>
 							<spell_bonus>
-								<college_name compare="is">Communication and Empathy</college_name>
+								<college_name compare="is">Communication &amp; Empathy</college_name>
 								<amount per_level="yes">1</amount>
 							</spell_bonus>
 							<spell_bonus>
@@ -1061,7 +1061,7 @@
 						<category>Power</category>
 					</categories>
 					<spell_bonus>
-						<college_name compare="is">Communication and Empathy</college_name>
+						<college_name compare="is">Communication &amp; Empathy</college_name>
 						<amount per_level="yes">1</amount>
 					</spell_bonus>
 					<spell_bonus>
