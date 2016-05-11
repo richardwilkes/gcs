@@ -21,11 +21,14 @@ import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.text.MessageFormat;
 
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -41,6 +44,8 @@ public class ExportToGurpsCalculatorCommand extends Command {
 	private static String	ERROR_MESSAGE;
 	@Localize("You need to set a valid GURPS Calculator Key in sheet preferences.<br><a href='%s'>Click here</a> for more information.")
 	private static String	KEY_MISSING_MESSAGE;
+	@Localize("Unable to open {0}")
+	protected static String	UNABLE_TO_OPEN_URL;
 
 	static {
 		Localization.initialize();
@@ -98,11 +103,12 @@ public class ExportToGurpsCalculatorCommand extends Command {
 		messagePane.addHyperlinkListener(new HyperlinkListener() {
 			@Override
 			public void hyperlinkUpdate(HyperlinkEvent event) {
-				if (event.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED) && java.awt.Desktop.isDesktopSupported()) {
+				if (event.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED) && Desktop.isDesktopSupported()) {
+					URL url = event.getURL();
 					try {
-						java.awt.Desktop.getDesktop().browse(event.getURL().toURI());
+						Desktop.getDesktop().browse(url.toURI());
 					} catch (IOException | URISyntaxException exception) {
-						exception.printStackTrace();
+						WindowUtils.showError(null, MessageFormat.format(UNABLE_TO_OPEN_URL, url.toExternalForm()));
 					}
 				}
 			}

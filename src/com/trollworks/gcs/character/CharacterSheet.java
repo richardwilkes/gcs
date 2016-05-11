@@ -1078,7 +1078,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 	@Override
 	public boolean exportToGurpsCalculator() throws IOException, NotImplementedException {
-		WebServiceClient client = new WebServiceClient("http://www.gurpscalculator.com/"); //$NON-NLS-1$
+		WebServiceClient client = new WebServiceClient(SheetPreferences.BASE_GURPS_CALCULATOR_URL);
 		if (!showExistsDialogIfNecessary(client)) {
 			return false;
 		}

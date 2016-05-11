@@ -26,6 +26,7 @@ import com.trollworks.toolkit.ui.preferences.PreferencePanel;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.StdFileDialog;
+import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Dice;
 import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.Localization;
@@ -221,6 +222,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private static String	GURPS_CALCULATOR_KEY;
 	@Localize("Find mine")
 	private static String	WHERE_OBTAIN;
+	@Localize("Unable to open {0}")
+	private static String	UNABLE_TO_OPEN_URL;
+
 	static {
 		Localization.initialize();
 	}
@@ -264,7 +268,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private static final String			USE_HTML_TEMPLATE_OVERRIDE_KEY		= "UseHTMLTemplateOverride";									//$NON-NLS-1$
 	private static final String			HTML_TEMPLATE_OVERRIDE_KEY			= "HTMLTemplateOverride";										//$NON-NLS-1$
 	private static final String			GURPS_CALCULATOR_KEY_KEY			= "GurpsCalculatorKey";											//$NON-NLS-1$
-	public static final String			GURPS_CALCULATOR_URL				= "http://www.gurpscalculator.com/Character/ImportGCS";			//$NON-NLS-1$
+	public static final String			BASE_GURPS_CALCULATOR_URL			= "http://www.gurpscalculator.com";								//$NON-NLS-1$
+	public static final String			GURPS_CALCULATOR_URL				= BASE_GURPS_CALCULATOR_URL + "/Character/ImportGCS";			//$NON-NLS-1$
 	private static final String			INITIAL_POINTS_KEY					= "InitialPoints";												//$NON-NLS-1$
 	private static final int			DEFAULT_INITIAL_POINTS				= 100;
 	private JTextField					mPlayerName;
@@ -611,8 +616,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		} else if (source == mGurpsCalculatorLink && Desktop.isDesktopSupported()) {
 			try {
 				Desktop.getDesktop().browse(new URI(GURPS_CALCULATOR_URL));
-			} catch (Exception e) {
-				/*we'll just hide the exception for now*/}
+			} catch (Exception exception) {
+				WindowUtils.showError(this, MessageFormat.format(UNABLE_TO_OPEN_URL, GURPS_CALCULATOR_URL));
+			}
 		}
 		adjustResetButton();
 	}
