@@ -32,12 +32,15 @@ import java.text.MessageFormat;
 
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
 public class ExportToGurpsCalculatorCommand extends Command {
 	@Localize("Export to GURPS Calculator\u2026")
 	private static String	EXPORT_TO_GURPS_CALCULATOR;
+	@Localize("Success")
+	private static String	SUCCESS_TITLE;
 	@Localize("Export to GURPS Calculator was successful.")
 	private static String	SUCCESS_MESSAGE;
 	@Localize("There was an error exporting to GURPS Calculator. Please try again later.")
@@ -113,7 +116,7 @@ public class ExportToGurpsCalculatorCommand extends Command {
 				}
 			}
 		});
-		WindowUtils.showError(frame, messagePane);
+		JOptionPane.showMessageDialog(frame, messagePane, result ? SUCCESS_TITLE : WindowUtils.ERROR, result ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE);
 		return result;
 	}
 
