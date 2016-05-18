@@ -3117,7 +3117,7 @@
 								<points>2</points>
 								<reference>MH1:32</reference>
 								<categories>
-									<category>Occult/Magic</category>
+									<category>Occult/Magical</category>
 									<category>Ritual Path Magic</category>
 								</categories>
 								<prereq_list all="yes">
@@ -3138,7 +3138,7 @@
 								<points>2</points>
 								<reference>MH1:32</reference>
 								<categories>
-									<category>Occult/Magic</category>
+									<category>Occult/Magical</category>
 									<category>Ritual Path Magic</category>
 								</categories>
 								<prereq_list all="yes">
@@ -3159,7 +3159,7 @@
 								<points>2</points>
 								<reference>MH1:32</reference>
 								<categories>
-									<category>Occult/Magic</category>
+									<category>Occult/Magical</category>
 									<category>Ritual Path Magic</category>
 								</categories>
 								<prereq_list all="yes">
@@ -3180,7 +3180,7 @@
 								<points>2</points>
 								<reference>MH1:32</reference>
 								<categories>
-									<category>Occult/Magic</category>
+									<category>Occult/Magical</category>
 									<category>Ritual Path Magic</category>
 								</categories>
 								<prereq_list all="yes">
@@ -3201,7 +3201,7 @@
 								<points>2</points>
 								<reference>MH1:33</reference>
 								<categories>
-									<category>Occult/Magic</category>
+									<category>Occult/Magical</category>
 									<category>Ritual Path Magic</category>
 								</categories>
 								<prereq_list all="yes">
@@ -3222,7 +3222,7 @@
 								<points>2</points>
 								<reference>MH1:33</reference>
 								<categories>
-									<category>Occult/Magic</category>
+									<category>Occult/Magical</category>
 									<category>Ritual Path Magic</category>
 								</categories>
 								<prereq_list all="yes">
@@ -3243,7 +3243,7 @@
 								<points>2</points>
 								<reference>MH1:33</reference>
 								<categories>
-									<category>Occult/Magic</category>
+									<category>Occult/Magical</category>
 									<category>Ritual Path Magic</category>
 								</categories>
 								<prereq_list all="yes">
@@ -3264,7 +3264,7 @@
 								<points>2</points>
 								<reference>MH1:33</reference>
 								<categories>
-									<category>Occult/Magic</category>
+									<category>Occult/Magical</category>
 									<category>Ritual Path Magic</category>
 								</categories>
 								<prereq_list all="yes">
@@ -3285,7 +3285,7 @@
 								<points>2</points>
 								<reference>MH1:33</reference>
 								<categories>
-									<category>Occult/Magic</category>
+									<category>Occult/Magical</category>
 									<category>Ritual Path Magic</category>
 								</categories>
 								<prereq_list all="yes">

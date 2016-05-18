@@ -34,7 +34,7 @@
 		<points>1</points>
 		<categories>
 			<category>Medical</category>
-			<category>Plants</category>
+			<category>Plant</category>
 		</categories>
 		<prereq_list all="yes">
 			<skill_prereq has="yes">

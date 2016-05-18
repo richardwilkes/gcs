@@ -217,7 +217,7 @@
 		</modifier>
 		<reference>MYST108</reference>
 		<categories>
-			<category>Advantages</category>
+			<category>Advantage</category>
 			<category>Talent</category>
 		</categories>
 		<skill_bonus>
@@ -260,7 +260,7 @@
 		</modifier>
 		<reference>MYST108</reference>
 		<categories>
-			<category>Advantages</category>
+			<category>Advantage</category>
 			<category>Talent</category>
 		</categories>
 		<skill_bonus>
@@ -303,7 +303,7 @@
 		</modifier>
 		<reference>MYST108</reference>
 		<categories>
-			<category>Advantages</category>
+			<category>Advantage</category>
 			<category>Talent</category>
 		</categories>
 		<skill_bonus>
