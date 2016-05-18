@@ -1,0 +1,1376 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="ino5uuio:6duuumxput4q" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes" type="race">
+			<name>Housebot</name>
+			<reference>UT69</reference>
+			<categories>
+				<category>Race</category>
+				<category>Robot</category>
+			</categories>
+			<advantage_container version="2" open="no">
+				<name>Advantages</name>
+				<advantage version="2">
+					<name>Absolute Direction</name>
+					<type>Mental/Physical</type>
+					<base_points>5</base_points>
+					<modifier version="1">
+						<name>Requires signal</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B34</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>3D Spatial Sense</name>
+						<cost type="points">5</cost>
+						<affects>total</affects>
+						<reference>B34</reference>
+						<skill_bonus>
+							<name compare="starts with">piloting</name>
+							<specialization compare="is anything"></specialization>
+							<amount>1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">aerobatics</name>
+							<specialization compare="is anything"></specialization>
+							<amount>2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">free fall</name>
+							<specialization compare="is anything"></specialization>
+							<amount>2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">navigation</name>
+							<specialization compare="is">hyperspace</specialization>
+							<amount>2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">navigation</name>
+							<specialization compare="is">space</specialization>
+							<amount>2</amount>
+						</skill_bonus>
+					</modifier>
+					<reference>B34</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+					<skill_bonus>
+						<name compare="is">body sense</name>
+						<specialization compare="is anything"></specialization>
+						<amount>3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">navigation</name>
+						<specialization compare="is">air</specialization>
+						<amount>3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">navigation</name>
+						<specialization compare="is">land</specialization>
+						<amount>3</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">navigation</name>
+						<specialization compare="is">sea</specialization>
+						<amount>3</amount>
+					</skill_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Damage Resistance</name>
+					<type>Physical, Exotic</type>
+					<levels>5</levels>
+					<points_per_level>5</points_per_level>
+					<modifier version="1" enabled="no">
+						<name>Ablative</name>
+						<cost type="percentage">-80</cost>
+						<affects>total</affects>
+						<reference>B47</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Absorption</name>
+						<cost type="percentage">80</cost>
+						<affects>total</affects>
+						<reference>B46</reference>
+						<notes>Enhances @Trait@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Absorption</name>
+						<cost type="percentage">100</cost>
+						<affects>total</affects>
+						<reference>B46</reference>
+						<notes>Enhances any trait</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Absorption</name>
+						<cost type="percentage">80</cost>
+						<affects>total</affects>
+						<reference>B46</reference>
+						<notes>Healing only</notes>
+					</modifier>
+					<modifier version="1">
+						<name>Can't wear armor</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B47</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Directional</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B47</reference>
+						<notes>@Direction: Back, Right, Left, Top or Underside@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Directional</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B47</reference>
+						<notes>Front</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Flexible</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B47</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Hardened</name>
+						<cost type="percentage">20</cost>
+						<levels>1</levels>
+						<affects>total</affects>
+						<reference>B47</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Limited</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B46</reference>
+						<notes>@Common Attack Form@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Limited</name>
+						<cost type="percentage">-60</cost>
+						<affects>total</affects>
+						<reference>B46</reference>
+						<notes>@Occasional Attack Form@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Limited</name>
+						<cost type="percentage">-80</cost>
+						<affects>total</affects>
+						<reference>B46</reference>
+						<notes>@Rare Attack Form@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Limited</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B46</reference>
+						<notes>@Very Common Attack Form@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Reflection</name>
+						<cost type="percentage">100</cost>
+						<affects>total</affects>
+						<reference>B47</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Semi-Ablative</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B47</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Tough Skin</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B47</reference>
+					</modifier>
+					<reference>B47</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+					<dr_bonus>
+						<location>full body except eyes</location>
+						<amount per_level="yes">1</amount>
+					</dr_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Doesn't Breathe</name>
+					<type>Physical, Exotic</type>
+					<base_points>20</base_points>
+					<modifier version="1" enabled="no">
+						<name>Gills</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Gills</name>
+						<cost type="points">-20</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
+						<notes>Suffocates in air</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Oxygen Absorption</name>
+						<cost type="percentage">-25</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Oxygen Storage</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
+						<notes>Can hold breath 25 times as long as normal</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Oxygen Storage</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
+						<notes>Can hold breath 50 times as long as normal</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Oxygen Storage</name>
+						<cost type="percentage">-30</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
+						<notes>Can hold breath 100 times as long as normal</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Oxygen Storage</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
+						<notes>Can hold breath 200 times as long as normal</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Oxygen Storage</name>
+						<cost type="percentage">-10</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
+						<notes>Can hold breath 300 times as long as normal</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Oxygen Combustion</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B49</reference>
+					</modifier>
+					<reference>B49</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+				<advantage_container version="2" open="yes" type="meta trait">
+					<name>Meta-Trait: Machine</name>
+					<reference>B263</reference>
+					<advantage version="2">
+						<name>Eight-hour energy reserve, Refuel 3 times per day</name>
+						<type>Physical</type>
+						<reference>B263</reference>
+					</advantage>
+					<advantage version="2">
+						<name>Injury Tolerance (No Blood)</name>
+						<type>Physical, Exotic</type>
+						<base_points>5</base_points>
+						<reference>B61</reference>
+					</advantage>
+					<advantage version="2">
+						<name>Injury Tolerance (Unliving)</name>
+						<type>Physical, Exotic</type>
+						<base_points>20</base_points>
+						<reference>B61</reference>
+					</advantage>
+					<advantage version="2">
+						<name>No fatigue points, Don't spend fatigue points</name>
+						<type>Physical</type>
+						<reference>B263</reference>
+					</advantage>
+					<advantage version="2">
+						<name>Resistant (Immunity to Metabolic Hazards)</name>
+						<type>Physical</type>
+						<base_points>30</base_points>
+						<reference>B81</reference>
+					</advantage>
+					<advantage version="2">
+						<name>Unhealing (Total)</name>
+						<type>Physical, Exotic</type>
+						<base_points>-30</base_points>
+						<reference>B160</reference>
+					</advantage>
+					<advantage version="2">
+						<name>Wears out instead of aging</name>
+						<type>Physical</type>
+						<reference>B263</reference>
+					</advantage>
+				</advantage_container>
+				<advantage version="2">
+					<name>Payload (@Load@)</name>
+					<type>Physical, Exotic</type>
+					<levels>2</levels>
+					<points_per_level>1</points_per_level>
+					<modifier version="1" enabled="no">
+						<name>Exposed</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B74</reference>
+					</modifier>
+					<reference>B74</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Silence</name>
+					<type>Physical, Exotic</type>
+					<levels>2</levels>
+					<points_per_level>5</points_per_level>
+					<modifier version="1" enabled="no">
+						<name>Dynamic</name>
+						<cost type="percentage">40</cost>
+						<affects>total</affects>
+						<reference>P76</reference>
+					</modifier>
+					<reference>B85</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+					<skill_bonus>
+						<name compare="is">stealth</name>
+						<specialization compare="is anything"></specialization>
+						<amount>2</amount>
+					</skill_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Telecommunication</name>
+					<type>Mental/Physical, Exotic</type>
+					<modifier version="1">
+						<name>Infrared Communication</name>
+						<cost type="points">10</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Laser Communication</name>
+						<cost type="points">15</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Radio</name>
+						<cost type="points">10</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Telesend</name>
+						<cost type="points">30</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Broadcast</name>
+						<cost type="percentage">50</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Short Wave</name>
+						<cost type="percentage">50</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Universal</name>
+						<cost type="percentage">50</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Video</name>
+						<cost type="percentage">40</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Racial</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Receive Only</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Send Only</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Vague</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Directional Sound</name>
+						<cost type="points">5</cost>
+						<affects>total</affects>
+						<reference>P81</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Gravity Ripple</name>
+						<cost type="points">20</cost>
+						<affects>total</affects>
+						<reference>P81</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Neutrino</name>
+						<cost type="points">25</cost>
+						<affects>total</affects>
+						<reference>P81</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Sonar</name>
+						<cost type="points">10</cost>
+						<affects>total</affects>
+						<reference>P81</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Burst</name>
+						<cost type="percentage">30</cost>
+						<levels>1</levels>
+						<affects>total</affects>
+						<reference>P81</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>FTL</name>
+						<cost type="percentage">120</cost>
+						<affects>total</affects>
+						<reference>P82</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Secure</name>
+						<cost type="percentage">20</cost>
+						<affects>total</affects>
+						<reference>P82</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Sensie</name>
+						<cost type="percentage">80</cost>
+						<affects>total</affects>
+						<reference>P82</reference>
+					</modifier>
+					<modifier version="1">
+						<name>Reduced Range 5</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B115</reference>
+						<notes>100 yard range</notes>
+					</modifier>
+					<reference>B91</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Telecommunication</name>
+					<type>Mental/Physical, Exotic</type>
+					<modifier version="1" enabled="no">
+						<name>Infrared Communication</name>
+						<cost type="points">10</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Laser Communication</name>
+						<cost type="points">15</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1">
+						<name>Radio</name>
+						<cost type="points">10</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Telesend</name>
+						<cost type="points">30</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Broadcast</name>
+						<cost type="percentage">50</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Short Wave</name>
+						<cost type="percentage">50</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Universal</name>
+						<cost type="percentage">50</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Video</name>
+						<cost type="percentage">40</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Racial</name>
+						<cost type="percentage">-20</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Receive Only</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Send Only</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Vague</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B91</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Directional Sound</name>
+						<cost type="points">5</cost>
+						<affects>total</affects>
+						<reference>P81</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Gravity Ripple</name>
+						<cost type="points">20</cost>
+						<affects>total</affects>
+						<reference>P81</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Neutrino</name>
+						<cost type="points">25</cost>
+						<affects>total</affects>
+						<reference>P81</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Sonar</name>
+						<cost type="points">10</cost>
+						<affects>total</affects>
+						<reference>P81</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Burst</name>
+						<cost type="percentage">30</cost>
+						<levels>1</levels>
+						<affects>total</affects>
+						<reference>P81</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>FTL</name>
+						<cost type="percentage">120</cost>
+						<affects>total</affects>
+						<reference>P82</reference>
+					</modifier>
+					<modifier version="1">
+						<name>Secure</name>
+						<cost type="percentage">20</cost>
+						<affects>total</affects>
+						<reference>P82</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Sensie</name>
+						<cost type="percentage">80</cost>
+						<affects>total</affects>
+						<reference>P82</reference>
+					</modifier>
+					<reference>B91</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+				</advantage>
+			</advantage_container>
+			<advantage_container version="2" open="no">
+				<name>Attribute Modifiers</name>
+				<advantage version="2">
+					<name>Decreased Strength</name>
+					<type>Physical</type>
+					<levels>3</levels>
+					<points_per_level>-10</points_per_level>
+					<reference>B14</reference>
+					<categories>
+						<category>Attribute</category>
+						<category>Disadvantage</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>st</attribute>
+						<amount per_level="yes">-1</amount>
+					</attribute_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Increased Health</name>
+					<type>Physical</type>
+					<levels>2</levels>
+					<points_per_level>10</points_per_level>
+					<reference>B14</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>ht</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+			</advantage_container>
+			<advantage_container version="2" open="no">
+				<name>Disadvantages</name>
+				<advantage version="2">
+					<name>Electrical</name>
+					<type>Physical, Exotic</type>
+					<base_points>-20</base_points>
+					<reference>B134</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Reduced Striking ST</name>
+					<type>Physical, Exotic</type>
+					<levels>2</levels>
+					<points_per_level>-5</points_per_level>
+					<modifier version="1" enabled="no">
+						<name>No Fine Manipulators</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Size</name>
+						<cost type="percentage">-10</cost>
+						<levels>1</levels>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Super Effort</name>
+						<cost type="percentage">400</cost>
+						<affects>total</affects>
+						<reference>SU24</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>One Attack Only</name>
+						<cost type="percentage">-60</cost>
+						<affects>total</affects>
+						<reference>P79</reference>
+						<notes>@Attack@</notes>
+					</modifier>
+					<reference>B88</reference>
+					<categories>
+						<category>Advantage</category>
+					</categories>
+					<attribute_bonus>
+						<attribute limitation="striking only">st</attribute>
+						<amount per_level="yes">-1</amount>
+					</attribute_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Restricted Diet (Power Cells)</name>
+					<type>Physical</type>
+					<base_points>-10</base_points>
+					<modifier version="1" enabled="no">
+						<name>Substitution</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+					</modifier>
+					<reference>B151</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+			</advantage_container>
+			<advantage_container version="2" open="no">
+				<name>Perks</name>
+				<advantage version="2">
+					<name>Accessory (Cleaning equipment)</name>
+					<type>Physical, Exotic</type>
+					<base_points>1</base_points>
+					<reference>B100</reference>
+					<categories>
+						<category>Perk</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Accessory (Tiny computer)</name>
+					<type>Physical, Exotic</type>
+					<base_points>1</base_points>
+					<reference>B100</reference>
+					<categories>
+						<category>Perk</category>
+					</categories>
+				</advantage>
+			</advantage_container>
+			<advantage_container version="2" open="no">
+				<name>Secondary Characteristic Modifiers</name>
+				<advantage version="2">
+					<name>Decreased Size</name>
+					<type>Physical</type>
+					<levels>1</levels>
+					<categories>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>sm</attribute>
+						<amount>-1</amount>
+					</attribute_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Extra Hit Points</name>
+					<type>Physical</type>
+					<levels>5</levels>
+					<points_per_level>2</points_per_level>
+					<modifier version="1" enabled="no">
+						<name>Size</name>
+						<cost type="percentage">-10</cost>
+						<levels>1</levels>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>No Fine Manipulators</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+					</modifier>
+					<reference>B16</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>hp</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+			</advantage_container>
+			<advantage_container version="2" open="no">
+				<name>TL Lenses</name>
+				<advantage_container version="2" open="yes">
+					<name>Lens: TL9 Model</name>
+					<reference>UT69</reference>
+					<notes>$4,000. 20 lbs. C/8hr.</notes>
+					<categories>
+						<category>Lens</category>
+					</categories>
+					<advantage version="2">
+						<name>Bad Grip</name>
+						<type>Physical</type>
+						<levels>1</levels>
+						<points_per_level>-5</points_per_level>
+						<reference>B123</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+						<prereq_list all="yes">
+							<advantage_prereq has="no">
+								<name compare="is">no fine manipulators</name>
+								<notes compare="is anything"></notes>
+							</advantage_prereq>
+						</prereq_list>
+					</advantage>
+					<advantage version="2">
+						<name>Maintenance</name>
+						<type>Physical</type>
+						<modifier version="1">
+							<name>People Required: 1</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 2</name>
+							<cost type="points">-20</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 3-5</name>
+							<cost type="points">-30</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 6-10</name>
+							<cost type="points">-40</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 11-20</name>
+							<cost type="points">-50</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 21-50</name>
+							<cost type="points">-60</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 51-100</name>
+							<cost type="points">-70</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 101-200</name>
+							<cost type="points">-80</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 201-400</name>
+							<cost type="points">-90</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 401-800</name>
+							<cost type="points">-100</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 801-1600</name>
+							<cost type="points">-110</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 1601-3200</name>
+							<cost type="points">-120</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 3201-6400</name>
+							<cost type="points">-130</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 6401-12800</name>
+							<cost type="points">-140</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 12801-25600</name>
+							<cost type="points">-150</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Monthly</name>
+							<cost type="multiplier">0.2</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Bi-weekly</name>
+							<cost type="multiplier">0.33333</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Frequency: Weekly</name>
+							<cost type="multiplier">0.5</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Every other day</name>
+							<cost type="multiplier">0.75</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Daily</name>
+							<cost type="multiplier">1</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Twice daily</name>
+							<cost type="multiplier">2</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Three to five times daily</name>
+							<cost type="multiplier">3</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Constant</name>
+							<cost type="multiplier">5</cost>
+							<reference>B143</reference>
+						</modifier>
+						<reference>B143</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>No Legs (Wheeled)</name>
+						<type>Physical, Exotic</type>
+						<base_points>-20</base_points>
+						<reference>B145</reference>
+						<notes>4 wheels</notes>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+				</advantage_container>
+				<advantage_container version="2" open="yes">
+					<name>Lens: TL10 Model</name>
+					<reference>UT69</reference>
+					<notes>$1,000. 20 lbs. C/24hr.</notes>
+					<categories>
+						<category>Lens</category>
+					</categories>
+					<advantage version="2">
+						<name>Extra Legs</name>
+						<type>Physical, Exotic</type>
+						<modifier version="1">
+							<name>4</name>
+							<cost type="points">5</cost>
+							<affects>total</affects>
+							<reference>B54</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@5 or 6@</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B55</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@7+@</name>
+							<cost type="points">15</cost>
+							<affects>total</affects>
+							<reference>B55</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Long</name>
+							<cost type="percentage">100</cost>
+							<levels>1</levels>
+							<affects>total</affects>
+							<reference>B55</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Cannot Kick</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B55</reference>
+						</modifier>
+						<reference>B54</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Maintenance</name>
+						<type>Physical</type>
+						<modifier version="1">
+							<name>People Required: 1</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 2</name>
+							<cost type="points">-20</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 3-5</name>
+							<cost type="points">-30</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 6-10</name>
+							<cost type="points">-40</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 11-20</name>
+							<cost type="points">-50</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 21-50</name>
+							<cost type="points">-60</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 51-100</name>
+							<cost type="points">-70</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 101-200</name>
+							<cost type="points">-80</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 201-400</name>
+							<cost type="points">-90</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 401-800</name>
+							<cost type="points">-100</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 801-1600</name>
+							<cost type="points">-110</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 1601-3200</name>
+							<cost type="points">-120</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 3201-6400</name>
+							<cost type="points">-130</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 6401-12800</name>
+							<cost type="points">-140</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 12801-25600</name>
+							<cost type="points">-150</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Monthly</name>
+							<cost type="multiplier">0.2</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Frequency: Bi-weekly</name>
+							<cost type="multiplier">0.33333</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Weekly</name>
+							<cost type="multiplier">0.5</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Every other day</name>
+							<cost type="multiplier">0.75</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Daily</name>
+							<cost type="multiplier">1</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Twice daily</name>
+							<cost type="multiplier">2</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Three to five times daily</name>
+							<cost type="multiplier">3</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Constant</name>
+							<cost type="multiplier">5</cost>
+							<reference>B143</reference>
+						</modifier>
+						<reference>B143</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Reduced Consumption</name>
+						<type>Physical</type>
+						<levels>2</levels>
+						<points_per_level>2</points_per_level>
+						<modifier version="1" enabled="no">
+							<name>Cast-Iron Stomach</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B80</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Food Only</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B80</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Water Only</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B80</reference>
+						</modifier>
+						<reference>B80</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+				</advantage_container>
+				<advantage_container version="2" open="yes">
+					<name>Lens: TL11 Model</name>
+					<reference>UT69</reference>
+					<notes>$1,000. 20lbs. C/1 week.</notes>
+					<categories>
+						<category>Lens</category>
+					</categories>
+					<advantage version="2">
+						<name>Extra Legs</name>
+						<type>Physical, Exotic</type>
+						<modifier version="1">
+							<name>4</name>
+							<cost type="points">5</cost>
+							<affects>total</affects>
+							<reference>B54</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@5 or 6@</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B55</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@7+@</name>
+							<cost type="points">15</cost>
+							<affects>total</affects>
+							<reference>B55</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Long</name>
+							<cost type="percentage">100</cost>
+							<levels>1</levels>
+							<affects>total</affects>
+							<reference>B55</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Cannot Kick</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B55</reference>
+						</modifier>
+						<reference>B54</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Maintenance</name>
+						<type>Physical</type>
+						<modifier version="1">
+							<name>People Required: 1</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 2</name>
+							<cost type="points">-20</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 3-5</name>
+							<cost type="points">-30</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 6-10</name>
+							<cost type="points">-40</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 11-20</name>
+							<cost type="points">-50</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 21-50</name>
+							<cost type="points">-60</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 51-100</name>
+							<cost type="points">-70</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 101-200</name>
+							<cost type="points">-80</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 201-400</name>
+							<cost type="points">-90</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 401-800</name>
+							<cost type="points">-100</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 801-1600</name>
+							<cost type="points">-110</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 1601-3200</name>
+							<cost type="points">-120</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 3201-6400</name>
+							<cost type="points">-130</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 6401-12800</name>
+							<cost type="points">-140</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Required: 12801-25600</name>
+							<cost type="points">-150</cost>
+							<affects>total</affects>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Frequency: Monthly</name>
+							<cost type="multiplier">0.2</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Bi-weekly</name>
+							<cost type="multiplier">0.33333</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Weekly</name>
+							<cost type="multiplier">0.5</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Every other day</name>
+							<cost type="multiplier">0.75</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Daily</name>
+							<cost type="multiplier">1</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Twice daily</name>
+							<cost type="multiplier">2</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Three to five times daily</name>
+							<cost type="multiplier">3</cost>
+							<reference>B143</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Frequency: Constant</name>
+							<cost type="multiplier">5</cost>
+							<reference>B143</reference>
+						</modifier>
+						<reference>B143</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Reduced Consumption</name>
+						<type>Physical</type>
+						<levels>2</levels>
+						<points_per_level>2</points_per_level>
+						<modifier version="1" enabled="no">
+							<name>Cast-Iron Stomach</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B80</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Food Only</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B80</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Water Only</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B80</reference>
+						</modifier>
+						<reference>B80</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+				</advantage_container>
+			</advantage_container>
+		</advantage_container>
+	</advantage_list>
+</template>
