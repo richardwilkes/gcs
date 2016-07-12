@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.common;
 
+import com.trollworks.gcs.app.GCS;
 import com.trollworks.toolkit.collections.Stack;
 import com.trollworks.toolkit.io.Log;
-import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.text.NumericComparator;
@@ -35,7 +35,6 @@ import java.util.List;
 /** A thread that periodically updates the set of available list files. */
 public class ListCollectionThread extends Thread implements FileVisitor<Path>, Comparator<Object> {
 	private static final ListCollectionThread	INSTANCE;
-	private Path								mListDir;
 	private List<Object>						mLists;
 	private List<Object>						mCurrent;
 	private Stack<List<Object>>					mStack;
@@ -55,7 +54,6 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path>, C
 		super("List Collection"); //$NON-NLS-1$
 		setPriority(NORM_PRIORITY);
 		setDaemon(true);
-		mListDir = App.getHomePath().resolve("Library"); //$NON-NLS-1$
 		mListeners = new ArrayList<>();
 	}
 
@@ -117,7 +115,7 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path>, C
 		mCurrent = new ArrayList<>();
 		mStack = new Stack<>();
 		try {
-			Files.walkFileTree(mListDir, EnumSet.of(FileVisitOption.FOLLOW_LINKS), 5, this);
+			Files.walkFileTree(GCS.getLibraryRootPath(), EnumSet.of(FileVisitOption.FOLLOW_LINKS), 5, this);
 		} catch (Exception exception) {
 			Log.error(exception);
 		}

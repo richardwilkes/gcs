@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.preferences;
 
+import com.trollworks.gcs.app.GCS;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.Alignment;
@@ -368,7 +368,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 	/** @return The default HTML template to use when exporting to HTML. */
 	public static String getDefaultHTMLTemplate() {
-		return App.getHomePath().resolve("Library").resolve("Output Templates").resolve("template.html").toString(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		return GCS.getLibraryRootPath().resolve("Output Templates").resolve("template.html").toString(); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	public static String getGurpsCalculatorKey() {

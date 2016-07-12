@@ -40,6 +40,8 @@ import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.units.LengthUnits;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -232,6 +234,15 @@ public class GCS {
 		Fonts.loadFromPreferences();
 		App.setAboutPanel(AboutPanel.class);
 		registerFileTypes(new GCSFileProxyCreator());
+	}
+
+	/** @return The path to the GCS library files. */
+	public static Path getLibraryRootPath() {
+		String library = System.getenv("GCS_LIBRARY"); //$NON-NLS-1$
+		if (library != null) {
+			return Paths.get(library);
+		}
+		return App.getHomePath().resolve("Library"); //$NON-NLS-1$
 	}
 
 	/**
