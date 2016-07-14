@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<spell_list unique_id="hv8ipoh5:-e0dxvovo3f2v" version="1">
+<spell_list id="b387cd95-5a8b-4c01-9ef2-a4d72d7a4337" version="1">
 	<spell version="2" very_hard="yes">
 		<name>Accelerate Time</name>
 		<college>Gate</college>
@@ -6612,7 +6612,7 @@
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">Food</college>
-				<quantity compare="at least">5</quantity>
+				<quantity compare="at least">6</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<name compare="is">create food</name>
