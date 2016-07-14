@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<advantage_list unique_id="hv8id3uc:-e6u7xnrpfa9n" version="1">
+<advantage_list id="a4f148b7-60ec-4948-98ed-7adc3d998440" version="1">
 	<advantage version="2">
 		<name>360&#176; Vision</name>
 		<type>Physical, Exotic</type>
@@ -13440,98 +13440,248 @@
 			<cost type="points">-5</cost>
 			<affects>total</affects>
 			<reference>B154</reference>
+			<skill_bonus>
+				<name compare="is">acting</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">carousing</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">diplomacy</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">fast-talk</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">intimidation</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">leadership</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">merchant</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">panhandling</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">performance</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">politics</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">public speaking</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="contains">savoir-faire</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">sex appeal</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">streetwise</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">teaching</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Severe</name>
 			<cost type="points">-10</cost>
 			<affects>total</affects>
 			<reference>B154</reference>
+			<skill_bonus>
+				<name compare="is">acting</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-2</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">carousing</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-2</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">diplomacy</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-2</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">fast-talk</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-2</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">intimidation</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-2</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">leadership</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-2</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">merchant</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-2</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">panhandling</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-2</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">performance</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-2</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">politics</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-2</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">public speaking</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-2</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="contains">savoir-faire</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-2</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">sex appeal</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-2</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">streetwise</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-2</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">teaching</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-2</amount>
+			</skill_bonus>
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>Crippling</name>
-			<cost type="points">-15</cost>
+			<cost type="points">-20</cost>
 			<affects>total</affects>
 			<reference>B154</reference>
+			<skill_bonus>
+				<name compare="is">acting</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-4</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">carousing</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-4</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">diplomacy</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-4</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">fast-talk</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-4</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">intimidation</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-4</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">leadership</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-4</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">merchant</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-4</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">panhandling</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-4</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">performance</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-4</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">politics</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-4</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">public speaking</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-4</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="contains">savoir-faire</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-4</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">sex appeal</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-4</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">streetwise</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-4</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">teaching</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-4</amount>
+			</skill_bonus>
 		</modifier>
 		<reference>B154</reference>
 		<categories>
 			<category>Disadvantage</category>
 		</categories>
-		<skill_bonus>
-			<name compare="is">acting</name>
-			<specialization compare="is anything"></specialization>
-			<amount>-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">carousing</name>
-			<specialization compare="is anything"></specialization>
-			<amount>-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">diplomacy</name>
-			<specialization compare="is anything"></specialization>
-			<amount>-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">fast-talk</name>
-			<specialization compare="is anything"></specialization>
-			<amount>-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">intimidation</name>
-			<specialization compare="is anything"></specialization>
-			<amount>-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">leadership</name>
-			<specialization compare="is anything"></specialization>
-			<amount>-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">merchant</name>
-			<specialization compare="is anything"></specialization>
-			<amount>-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">panhandling</name>
-			<specialization compare="is anything"></specialization>
-			<amount>-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">performance</name>
-			<specialization compare="is anything"></specialization>
-			<amount>-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">politics</name>
-			<specialization compare="is anything"></specialization>
-			<amount>-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">public speaking</name>
-			<specialization compare="is anything"></specialization>
-			<amount>-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="contains">savoir-faire</name>
-			<specialization compare="is anything"></specialization>
-			<amount>-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">sex appeal</name>
-			<specialization compare="is anything"></specialization>
-			<amount>-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">streetwise</name>
-			<specialization compare="is anything"></specialization>
-			<amount>-1</amount>
-		</skill_bonus>
-		<skill_bonus>
-			<name compare="is">teaching</name>
-			<specialization compare="is anything"></specialization>
-			<amount>-1</amount>
-		</skill_bonus>
 	</advantage>
 	<advantage version="2">
 		<name>Sign Language: @Language@</name>
