@@ -12722,7 +12722,7 @@
 	</skill>
 	<skill version="2">
 		<name>Piloting</name>
-		<specialization>High-Performance Spaecraft</specialization>
+		<specialization>High-Performance Spacecraft</specialization>
 		<tech_level/>
 		<difficulty>DX/A</difficulty>
 		<points>1</points>
