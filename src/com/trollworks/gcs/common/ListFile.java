@@ -25,6 +25,10 @@ import java.util.TreeSet;
 public abstract class ListFile extends DataFile {
 	private OutlineModel mModel = new OutlineModel();
 
+	public ListFile() {
+		setSortingMarksDirty(false);
+	}
+
 	@Override
 	protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
 		loadList(reader, state);

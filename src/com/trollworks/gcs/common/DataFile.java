@@ -42,11 +42,12 @@ public abstract class DataFile implements Undoable {
 	/** The 'id' attribute. */
 	public static final String				ATTRIBUTE_ID			= "id";					//$NON-NLS-1$
 	private File							mFile;
-	private UUID							mId				= UUID.randomUUID();
+	private UUID							mId						= UUID.randomUUID();
 	private Notifier						mNotifier				= new Notifier();
 	private boolean							mModified;
 	private StdUndoManager					mUndoManager			= new StdUndoManager();
 	private ArrayList<DataModifiedListener>	mDataModifiedListeners	= new ArrayList<>();
+	private boolean							mSortingMarksDirty		= true;
 
 	/** @param file The file to load. */
 	public void load(File file) throws IOException {
@@ -350,5 +351,21 @@ public abstract class DataFile implements Undoable {
 	/** @param edit The {@link UndoableEdit} to add. */
 	public final void addEdit(UndoableEdit edit) {
 		mUndoManager.addEdit(edit);
+	}
+
+	/**
+	 * @return <code>true</code> if sorting a list should be considered a change that marks the file
+	 *         dirty.
+	 */
+	public final boolean sortingMarksDirty() {
+		return mSortingMarksDirty;
+	}
+
+	/**
+	 * @param markDirty <code>true</code> if sorting a list should be considered a change that marks
+	 *            the file dirty.
+	 */
+	public final void setSortingMarksDirty(boolean markDirty) {
+		mSortingMarksDirty = markDirty;
 	}
 }

@@ -270,7 +270,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 	@Override
 	public void sorted(OutlineModel model, boolean restoring) {
 		super.sorted(model, restoring);
-		if (!restoring) {
+		if (!restoring && mDataFile.sortingMarksDirty()) {
 			mDataFile.setModified(true);
 		}
 	}
