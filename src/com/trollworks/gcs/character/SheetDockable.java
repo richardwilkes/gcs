@@ -116,6 +116,15 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 	}
 
 	@Override
+	public boolean attemptClose() {
+		boolean closed = super.attemptClose();
+		if (closed) {
+			mSheet.dispose();
+		}
+		return closed;
+	}
+
+	@Override
 	public Component getRetargetedFocus() {
 		return mSheet;
 	}
