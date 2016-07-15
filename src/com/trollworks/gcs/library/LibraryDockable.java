@@ -17,6 +17,7 @@ import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.ui.Fonts;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.menu.RetargetableFocus;
 import com.trollworks.toolkit.ui.menu.edit.JumpToSearchTarget;
@@ -28,6 +29,7 @@ import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowFilter;
 import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.PrintProxy;
 import com.trollworks.toolkit.utility.notification.BatchNotifierTarget;
 
@@ -108,6 +110,16 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 		mScroller.setBorder(null);
 		mScroller.setColumnHeaderView(mOutline.getHeaderPanel());
 		add(mScroller, BorderLayout.CENTER);
+		Preferences.getInstance().getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY);
+	}
+
+	@Override
+	public boolean attemptClose() {
+		boolean closed = super.attemptClose();
+		if (closed) {
+			Preferences.getInstance().getNotifier().remove(this);
+		}
+		return closed;
 	}
 
 	@Override
@@ -264,7 +276,9 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 
 	@Override
 	public void handleNotification(Object producer, String name, Object data) {
-		if (Advantage.ID_TYPE.equals(name)) {
+		if (Fonts.FONT_NOTIFICATION_KEY.equals(name)) {
+			mOutline.updateRowHeights();
+		} else if (Advantage.ID_TYPE.equals(name)) {
 			getOutline().repaint();
 		} else {
 			adjustCategoryCombo();

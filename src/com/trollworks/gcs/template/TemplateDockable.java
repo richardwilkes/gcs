@@ -23,6 +23,7 @@ import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowItemRenderer;
 import com.trollworks.gcs.widgets.outline.RowPostProcessor;
 import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.ui.Fonts;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.menu.RetargetableFocus;
 import com.trollworks.toolkit.ui.widget.Toolbar;
@@ -92,7 +93,16 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
 		StdUndoManager undoManager = getUndoManager();
 		undoManager.discardAllEdits();
 		dataFile.setUndoManager(undoManager);
-		Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY);
+		Preferences.getInstance().getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY, SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY);
+	}
+
+	@Override
+	public boolean attemptClose() {
+		boolean closed = super.attemptClose();
+		if (closed) {
+			Preferences.getInstance().getNotifier().remove(this);
+		}
+		return closed;
 	}
 
 	@Override
@@ -155,7 +165,15 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
 
 	@Override
 	public void handleNotification(Object producer, String name, Object data) {
-		getDataFile().notifySingle(Advantage.ID_LIST_CHANGED, null);
+		if (Fonts.FONT_NOTIFICATION_KEY.equals(name)) {
+			mTemplate.revalidate();
+			mTemplate.getAdvantageOutline().updateRowHeights();
+			mTemplate.getSkillOutline().updateRowHeights();
+			mTemplate.getSpellOutline().updateRowHeights();
+			mTemplate.getEquipmentOutline().updateRowHeights();
+		} else {
+			getDataFile().notifySingle(Advantage.ID_LIST_CHANGED, null);
+		}
 	}
 
 	@Override

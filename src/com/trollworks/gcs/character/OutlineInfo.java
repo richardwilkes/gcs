@@ -42,6 +42,7 @@ public class OutlineInfo {
 		boolean hasRowDividers = outline.shouldDrawRowDividers();
 
 		ColumnUtils.pack(outline, contentWidth - (insets.left + insets.right));
+		outline.updateRowHeights();
 
 		mRowIndex = -1;
 		mHeights = new int[count];
