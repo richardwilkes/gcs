@@ -16,6 +16,8 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.HasSourceReference;
 import com.trollworks.gcs.common.LoadState;
+import com.trollworks.gcs.feature.ContainedWeightReduction;
+import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
@@ -32,6 +34,7 @@ import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.Enums;
+import com.trollworks.toolkit.utility.units.WeightUnits;
 import com.trollworks.toolkit.utility.units.WeightValue;
 
 import java.io.IOException;
@@ -455,9 +458,37 @@ public class Equipment extends ListRow implements HasSourceReference {
 	private boolean updateExtendedWeight(boolean okToNotify) {
 		WeightValue saved = mExtendedWeight;
 		int count = getChildCount();
-		mExtendedWeight = new WeightValue(mWeight.getValue() * mQuantity, mWeight.getUnits());
+		WeightUnits units = mWeight.getUnits();
+		mExtendedWeight = new WeightValue(mWeight.getValue() * mQuantity, units);
+		WeightValue contained = new WeightValue(0, units);
 		for (int i = 0; i < count; i++) {
-			mExtendedWeight.add(((Equipment) getChild(i)).mExtendedWeight);
+			Equipment one = (Equipment) getChild(i);
+			if (one.isCarried()) {
+				contained.add(one.mExtendedWeight);
+			}
+		}
+		int percentage = 0;
+		WeightValue reduction = new WeightValue(0, units);
+		for (Feature feature : getFeatures()) {
+			if (feature instanceof ContainedWeightReduction) {
+				ContainedWeightReduction cwr = (ContainedWeightReduction) feature;
+				if (cwr.isPercentage()) {
+					percentage += cwr.getPercentageReduction();
+				} else {
+					reduction.add(cwr.getAbsoluteReduction());
+				}
+			}
+		}
+		if (percentage > 0) {
+			if (percentage >= 100) {
+				contained = new WeightValue(0, units);
+			} else {
+				contained.subtract(new WeightValue(contained.getNormalizedValue() * percentage / 100, units));
+			}
+		}
+		contained.subtract(reduction);
+		if (contained.getNormalizedValue() > 0) {
+			mExtendedWeight.add(contained);
 		}
 		if (!saved.equals(mExtendedWeight)) {
 			if (okToNotify) {
@@ -542,6 +573,10 @@ public class Equipment extends ListRow implements HasSourceReference {
 				for (Row child : getChildren()) {
 					((Equipment) child).setState(state);
 				}
+			}
+			Row parent = getParent();
+			if (parent != null) {
+				((Equipment) parent).updateContainingWeights(true);
 			}
 			endNotify();
 			return true;

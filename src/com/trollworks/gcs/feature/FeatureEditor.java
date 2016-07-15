@@ -12,6 +12,7 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.common.EditorPanel;
+import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
@@ -27,6 +28,8 @@ import com.trollworks.toolkit.utility.text.IntegerFormatter;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -56,6 +59,8 @@ public abstract class FeatureEditor extends EditorPanel {
 	@Localize(locale = "ru", value = "Снижает стоимость атрибута")
 	@Localize(locale = "es", value = "Reduce el coste del atributo en ")
 	private static String	COST_REDUCTION;
+	@Localize("Reduces the contained weight by")
+	private static String	CONTAINED_WEIGHT_REDUCTION;
 	@Localize("Gives a DR bonus of")
 	@Localize(locale = "de", value = "Gibt einen SR-Bonus von")
 	@Localize(locale = "ru", value = "Даёт премию СП")
@@ -91,9 +96,9 @@ public abstract class FeatureEditor extends EditorPanel {
 		Localization.initialize();
 	}
 
-	private static final String		CHANGE_BASE_TYPE	= "ChangeBaseType";																														//$NON-NLS-1$
-	private static final String		BLANK				= " ";																																	//$NON-NLS-1$
-	private static final Class<?>[]	BASE_TYPES			= new Class<?>[] { AttributeBonus.class, DRBonus.class, SkillBonus.class, SpellBonus.class, WeaponBonus.class, CostReduction.class };
+	private static final String		CHANGE_BASE_TYPE	= "ChangeBaseType";																																						//$NON-NLS-1$
+	private static final String		BLANK				= " ";																																									//$NON-NLS-1$
+	private static final Class<?>[]	BASE_TYPES			= new Class<?>[] { AttributeBonus.class, DRBonus.class, SkillBonus.class, SpellBonus.class, WeaponBonus.class, CostReduction.class, ContainedWeightReduction.class };
 	private static Class<?>			LAST_ITEM_TYPE		= SkillBonus.class;
 	private ListRow					mRow;
 	private Feature					mFeature;
@@ -125,6 +130,9 @@ public abstract class FeatureEditor extends EditorPanel {
 		}
 		if (feature instanceof CostReduction) {
 			return new CostReductionEditor(row, (CostReduction) feature);
+		}
+		if (feature instanceof ContainedWeightReduction) {
+			return new ContainedWeightReductionEditor(row, (ContainedWeightReduction) feature);
 		}
 		return null;
 	}
@@ -172,16 +180,26 @@ public abstract class FeatureEditor extends EditorPanel {
 
 	/** @return The {@link JComboBox} that allows the base feature type to be changed. */
 	protected JComboBox<Object> addChangeBaseTypeCombo() {
-		Object[] choices = new Object[] { ATTRIBUTE_BONUS, DR_BONUS, SKILL_BONUS, SPELL_BONUS, WEAPON_BONUS, COST_REDUCTION };
+		List<String> choices = new ArrayList<>();
+		choices.add(ATTRIBUTE_BONUS);
+		choices.add(DR_BONUS);
+		choices.add(SKILL_BONUS);
+		choices.add(SPELL_BONUS);
+		choices.add(WEAPON_BONUS);
+		choices.add(COST_REDUCTION);
+		if (mRow instanceof Equipment) {
+			choices.add(CONTAINED_WEIGHT_REDUCTION);
+		}
 		Class<?> type = mFeature.getClass();
-		Object current = choices[0];
-		for (int i = 0; i < BASE_TYPES.length; i++) {
+		Object current = choices.get(0);
+		int length = choices.size();
+		for (int i = 0; i < length; i++) {
 			if (type.equals(BASE_TYPES[i])) {
-				current = choices[i];
+				current = choices.get(i);
 				break;
 			}
 		}
-		mBaseTypeCombo = addComboBox(CHANGE_BASE_TYPE, choices, current);
+		mBaseTypeCombo = addComboBox(CHANGE_BASE_TYPE, choices.toArray(), current);
 		return mBaseTypeCombo;
 	}
 

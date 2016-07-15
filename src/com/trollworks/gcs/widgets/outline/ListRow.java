@@ -15,6 +15,7 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.feature.AttributeBonus;
+import com.trollworks.gcs.feature.ContainedWeightReduction;
 import com.trollworks.gcs.feature.CostReduction;
 import com.trollworks.gcs.feature.DRBonus;
 import com.trollworks.gcs.feature.Feature;
@@ -267,6 +268,8 @@ public abstract class ListRow extends Row {
 					mFeatures.add(new WeaponBonus(reader));
 				} else if (CostReduction.TAG_ROOT.equals(name)) {
 					mFeatures.add(new CostReduction(reader));
+				} else if (ContainedWeightReduction.TAG_ROOT.equals(name)) {
+					mFeatures.add(new ContainedWeightReduction(reader));
 				} else if (PrereqList.TAG_ROOT.equals(name)) {
 					mPrereqList = new PrereqList(null, reader);
 				} else if (!(this instanceof Technique) && SkillDefault.TAG_ROOT.equals(name)) {

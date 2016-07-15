@@ -45,6 +45,7 @@ import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.ui.print.PageOrientation;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
+import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.utility.Dice;
 import com.trollworks.toolkit.utility.FileType;
@@ -1488,10 +1489,11 @@ public class GURPSCharacter extends DataFile {
 		double savedWealth = mCachedWealthCarried;
 		mCachedWeightCarried = new WeightValue(0, SheetPreferences.getWeightUnits());
 		mCachedWealthCarried = 0.0;
-		for (Equipment equipment : getEquipmentIterator()) {
+		for (Row one : mEquipment.getTopLevelRows()) {
+			Equipment equipment = (Equipment) one;
 			int quantity = equipment.getQuantity();
 			if (equipment.isCarried()) {
-				WeightValue weight = new WeightValue(equipment.getWeight());
+				WeightValue weight = new WeightValue(equipment.getExtendedWeight());
 				if (SheetPreferences.areGurpsMetricRulesUsed()) {
 					if (SheetPreferences.getWeightUnits().isMetric()) {
 						weight = GURPSCharacter.convertToGurpsMetric(weight);
@@ -1502,7 +1504,7 @@ public class GURPSCharacter extends DataFile {
 				weight.setValue(weight.getValue() * quantity);
 				mCachedWeightCarried.add(weight);
 			}
-			mCachedWealthCarried += quantity * equipment.getValue();
+			mCachedWealthCarried += quantity * equipment.getExtendedValue();
 		}
 		if (notify) {
 			if (!savedWeight.equals(mCachedWeightCarried)) {
