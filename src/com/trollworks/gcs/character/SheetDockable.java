@@ -37,6 +37,7 @@ import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.PrintProxy;
+import com.trollworks.toolkit.utility.notification.NotifierTarget;
 import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;
@@ -49,12 +50,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.swing.JComboBox;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
 
 /** A list of advantages and disadvantages from a library. */
-public class SheetDockable extends CommonDockable implements SearchTarget, RetargetableFocus {
+public class SheetDockable extends CommonDockable implements SearchTarget, RetargetableFocus, NotifierTarget {
 	@Localize("Untitled Sheet")
 	@Localize(locale = "de", value = "Unbenanntes Charakterblatt")
 	@Localize(locale = "ru", value = "Лист без названия")
@@ -85,21 +87,19 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 		Localization.initialize();
 	}
 
-	private static SheetDockable	LAST_ACTIVATED;
-	private CharacterSheet			mSheet;
-	private Toolbar					mToolbar;
-	private Search					mSearch;
-	private PrerequisitesThread		mPrereqThread;
+	private static SheetDockable		LAST_ACTIVATED;
+	private CharacterSheet				mSheet;
+	private Toolbar						mToolbar;
+	private Search						mSearch;
+	private JComboBox<HitLocationTable>	mHitLocationTableCombo;
+	private PrerequisitesThread			mPrereqThread;
 
 	/** Creates a new {@link SheetDockable}. */
 	public SheetDockable(GURPSCharacter character) {
 		super(character);
 		GURPSCharacter dataFile = getDataFile();
-		mToolbar = new Toolbar();
-		mSearch = new Search(this);
-		mToolbar.add(mSearch, Toolbar.LAYOUT_FILL);
-		add(mToolbar, BorderLayout.NORTH);
 		mSheet = new CharacterSheet(dataFile);
+		createToolbar();
 		JScrollPane scroller = new JScrollPane(mSheet);
 		scroller.setBorder(null);
 		scroller.getViewport().setBackground(Color.LIGHT_GRAY);
@@ -113,6 +113,18 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 		StdUndoManager undoManager = getUndoManager();
 		undoManager.discardAllEdits();
 		dataFile.setUndoManager(undoManager);
+		dataFile.addTarget(this, Profile.ID_BODY_TYPE);
+	}
+
+	private void createToolbar() {
+		mToolbar = new Toolbar();
+		mSearch = new Search(this);
+		mToolbar.add(mSearch, Toolbar.LAYOUT_FILL);
+		mHitLocationTableCombo = new JComboBox<>(HitLocationTable.ALL);
+		mHitLocationTableCombo.setSelectedItem(getDataFile().getDescription().getHitLocationTable());
+		mHitLocationTableCombo.addActionListener((event) -> getDataFile().getDescription().setHitLocationTable((HitLocationTable) mHitLocationTableCombo.getSelectedItem()));
+		mToolbar.add(mHitLocationTableCombo);
+		add(mToolbar, BorderLayout.NORTH);
 	}
 
 	@Override
@@ -406,5 +418,17 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 	/** Notify background threads of prereq or feature modifications. */
 	public void notifyOfPrereqOrFeatureModification() {
 		mPrereqThread.markForUpdate();
+	}
+
+	@Override
+	public int getNotificationPriority() {
+		return 0;
+	}
+
+	@Override
+	public void handleNotification(Object producer, String name, Object data) {
+		if (Profile.ID_BODY_TYPE.equals(name)) {
+			mHitLocationTableCombo.setSelectedItem(getDataFile().getDescription().getHitLocationTable());
+		}
 	}
 }

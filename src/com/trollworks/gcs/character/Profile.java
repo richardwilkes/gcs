@@ -291,6 +291,8 @@ public class Profile {
 	@Localize(locale = "ru", value = "Смена заметки")
 	@Localize(locale = "es", value = "Cambiar Notas")
 	private static String	NOTES_UNDO;
+	@Localize("Body Type Change")
+	private static String	BODY_TYPE_UNDO;
 
 	static {
 		Localization.initialize();
@@ -340,6 +342,8 @@ public class Profile {
 	public static final String		ID_TECH_LEVEL		= PROFILE_PREFIX + "TechLevel";																//$NON-NLS-1$
 	/** The field ID for size modifier changes. */
 	public static final String		ID_SIZE_MODIFIER	= PROFILE_PREFIX + BonusAttributeType.SM.name();
+	/** The field ID for body type changes. */
+	public static final String		ID_BODY_TYPE		= PROFILE_PREFIX + "BodyType";																//$NON-NLS-1$
 	/** The default portrait marker. */
 	public static final String		DEFAULT_PORTRAIT	= "!\000";																					//$NON-NLS-1$
 	/** The default Tech Level. */
@@ -366,6 +370,7 @@ public class Profile {
 	private static final String		TAG_RELIGION		= "religion";																				//$NON-NLS-1$
 	private static final String		TAG_PORTRAIT		= "portrait";																				//$NON-NLS-1$
 	private static final String		TAG_NOTES			= "notes";																					//$NON-NLS-1$
+	private static final String		TAG_BODY_TYPE		= "body_type";																				//$NON-NLS-1$
 	private static final String		EMPTY				= "";																						//$NON-NLS-1$
 	private static final Random		RANDOM				= new Random();
 	private static final String[]	EYE_OPTIONS			= new String[] { BROWN, BROWN, BLUE, BLUE, GREEN, GREY, VIOLET };
@@ -395,6 +400,7 @@ public class Profile {
 	private String					mCampaign;
 	private String					mTechLevel;
 	private String					mNotes;
+	private HitLocationTable		mHitLocationTable;
 
 	Profile(GURPSCharacter character, boolean full) {
 		mCharacter = character;
@@ -418,6 +424,7 @@ public class Profile {
 		mCampaign = full ? getDefaultCampaign() : EMPTY;
 		mNotes = EMPTY;
 		mPortrait = createPortrait(getPortraitFromPortraitPath(getDefaultPortraitPath()));
+		mHitLocationTable = HitLocationTable.HUMANOID;
 	}
 
 	void load(XMLReader reader) throws IOException {
@@ -465,6 +472,11 @@ public class Profile {
 			mGender = reader.readText();
 		} else if (TAG_RACE.equals(tag)) {
 			mRace = reader.readText();
+		} else if (TAG_BODY_TYPE.equals(tag)) {
+			mHitLocationTable = HitLocationTable.MAP.get(reader.readText());
+			if (mHitLocationTable == null) {
+				mHitLocationTable = HitLocationTable.HUMANOID;
+			}
 		} else if (TAG_TECH_LEVEL.equals(tag)) {
 			mTechLevel = reader.readText();
 		} else if (TAG_RELIGION.equals(tag)) {
@@ -503,6 +515,7 @@ public class Profile {
 		out.simpleTag(BonusAttributeType.SM.getXMLTag(), mSizeModifier);
 		out.simpleTagNotEmpty(TAG_GENDER, mGender);
 		out.simpleTagNotEmpty(TAG_RACE, mRace);
+		out.simpleTag(TAG_BODY_TYPE, mHitLocationTable.getKey());
 		out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
 		out.simpleTagNotEmpty(TAG_RELIGION, mReligion);
 		out.simpleTagNotEmpty(TAG_NOTES, mNotes);
@@ -1001,6 +1014,8 @@ public class Profile {
 				return getTechLevel();
 			} else if (ID_SIZE_MODIFIER.equals(id)) {
 				return new Integer(getSizeModifier());
+			} else if (ID_BODY_TYPE.equals(id)) {
+				return mHitLocationTable;
 			}
 		}
 		return null;
@@ -1052,6 +1067,8 @@ public class Profile {
 				}
 			} else if (ID_SIZE_MODIFIER.equals(id)) {
 				setSizeModifier(((Integer) value).intValue());
+			} else if (ID_BODY_TYPE.equals(id)) {
+				setHitLocationTable((HitLocationTable) value);
 			}
 		}
 	}
@@ -1228,5 +1245,19 @@ public class Profile {
 	/** @param path The default portrait path. */
 	public static void setDefaultPortraitPath(String path) {
 		Preferences.getInstance().setValue(MODULE, Profile.ID_PORTRAIT, path);
+	}
+
+	/** @return The hit location table. */
+	public HitLocationTable getHitLocationTable() {
+		return mHitLocationTable;
+	}
+
+	/** @param table The hit location table. */
+	public void setHitLocationTable(HitLocationTable table) {
+		if (mHitLocationTable != table) {
+			mCharacter.postUndoEdit(BODY_TYPE_UNDO, ID_BODY_TYPE, mHitLocationTable, table);
+			mHitLocationTable = table;
+			mCharacter.notifySingle(ID_BODY_TYPE, mHitLocationTable);
+		}
 	}
 }

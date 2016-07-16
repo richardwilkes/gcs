@@ -16,6 +16,7 @@ import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.Wrapper;
 import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.text.Text;
 
 import java.awt.Color;
 import java.awt.Container;
@@ -69,82 +70,10 @@ public class HitLocationPanel extends DropPanel {
 	@Localize(locale = "ru", value = "<html><body>Суммарное СП, защищающее зону попадания: <b>{0}</b></body></html>")
 	@Localize(locale = "es", value = "Total de RD ue protege la localización <b>{0}</b>")
 	private static String	DR_TOOLTIP;
-	@Localize("Eye")
-	@Localize(locale = "de", value = "Auge")
-	@Localize(locale = "ru", value = "Глаз")
-	@Localize(locale = "es", value = "Ojo")
-	private static String	EYE;
-	@Localize("Skull")
-	@Localize(locale = "de", value = "Schädel")
-	@Localize(locale = "ru", value = "Череп")
-	@Localize(locale = "es", value = "Cráneo")
-	private static String	SKULL;
-	@Localize("Face")
-	@Localize(locale = "de", value = "Gesicht")
-	@Localize(locale = "ru", value = "Лицо")
-	private static String	FACE;
-	@Localize("R. Leg")
-	@Localize(locale = "de", value = "R. Bein")
-	@Localize(locale = "ru", value = "Пр. нога")
-	@Localize(locale = "es", value = "Pierna D.")
-	private static String	RIGHT_LEG;
-	@Localize("R. Arm")
-	@Localize(locale = "de", value = "R. Arm")
-	@Localize(locale = "ru", value = "Пр. рука")
-	@Localize(locale = "es", value = "Brazo D.")
-	private static String	RIGHT_ARM;
-	@Localize("Torso")
-	@Localize(locale = "de", value = "Torso")
-	@Localize(locale = "ru", value = "Туловище")
-	private static String	TORSO;
-	@Localize("Groin")
-	@Localize(locale = "de", value = "Leiste")
-	@Localize(locale = "ru", value = "Пах")
-	@Localize(locale = "es", value = "Ingle")
-	private static String	GROIN;
-	@Localize("L. Arm")
-	@Localize(locale = "de", value = "L. Arm")
-	@Localize(locale = "ru", value = "Л. рука")
-	@Localize(locale = "es", value = "Brazo I.")
-	private static String	LEFT_ARM;
-	@Localize("L. Leg")
-	@Localize(locale = "de", value = "L. Bein")
-	@Localize(locale = "ru", value = "Л. нога")
-	@Localize(locale = "es", value = "Pierna I.")
-	private static String	LEFT_LEG;
-	@Localize("Hand")
-	@Localize(locale = "de", value = "Hand")
-	@Localize(locale = "ru", value = "Рука")
-	@Localize(locale = "es", value = "Mano")
-	private static String	HAND;
-	@Localize("Foot")
-	@Localize(locale = "de", value = "Fuß")
-	@Localize(locale = "ru", value = "Нога")
-	@Localize(locale = "es", value = "Pie")
-	private static String	FOOT;
-	@Localize("Neck")
-	@Localize(locale = "de", value = "Hals")
-	@Localize(locale = "ru", value = "Шея")
-	@Localize(locale = "es", value = "Cuello")
-	private static String	NECK;
-	@Localize("Vitals")
-	@Localize(locale = "de", value = "Organe")
-	@Localize(locale = "ru", value = "Жиз.орг.")
-	@Localize(locale = "es", value = "Organos V.")
-	private static String	VITALS;
 
 	static {
 		Localization.initialize();
 	}
-
-	/** The various hit locations. */
-	public static final String[]	LOCATIONS	= new String[] { EYE, SKULL, FACE, RIGHT_LEG, RIGHT_ARM, TORSO, GROIN, LEFT_ARM, LEFT_LEG, HAND, FOOT, NECK, VITALS };
-	/** The rolls needed for various hit locations. */
-	public static final String[]	ROLLS		= new String[] { "-", "3-4", "5", "6-7", "8", "9-10", "11", "12", "13-14", "15", "16", "17-18", "-" };																																						//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$ //$NON-NLS-13$
-	/** The to hit penalties for various hit locations. */
-	public static final String[]	PENALTIES	= new String[] { "-9", "-7", "-5", "-2", "-2", "0", "-3", "-2", "-2", "-4", "-4", "-5", "-3" };																																								//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$ //$NON-NLS-13$
-	/** The DR for various hit locations. */
-	public static final String[]	DR_KEYS		= new String[] { Armor.ID_EYES_DR, Armor.ID_SKULL_DR, Armor.ID_FACE_DR, Armor.ID_LEG_DR, Armor.ID_ARM_DR, Armor.ID_TORSO_DR, Armor.ID_GROIN_DR, Armor.ID_ARM_DR, Armor.ID_LEG_DR, Armor.ID_HAND_DR, Armor.ID_FOOT_DR, Armor.ID_NECK_DR, Armor.ID_TORSO_DR };
 
 	/**
 	 * Creates a new hit location panel.
@@ -154,13 +83,13 @@ public class HitLocationPanel extends DropPanel {
 	public HitLocationPanel(GURPSCharacter character) {
 		super(new ColumnLayout(7, 2, 0), HIT_LOCATION);
 
-		int i;
+		HitLocationTable table = character.getDescription().getHitLocationTable();
 
 		Wrapper wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
 		PageHeader header = createHeader(wrapper, ROLL, null);
 		addHorizontalBackground(header, Color.black);
-		for (i = 0; i < LOCATIONS.length; i++) {
-			createLabel(wrapper, ROLLS[i], MessageFormat.format(ROLL_TOOLTIP, LOCATIONS[i]), SwingConstants.CENTER);
+		for (HitLocationTableEntry entry : table.getEntries()) {
+			createLabel(wrapper, entry.getRoll(), MessageFormat.format(ROLL_TOOLTIP, entry.getName()), SwingConstants.CENTER);
 		}
 		wrapper.setAlignmentY(TOP_ALIGNMENT);
 		add(wrapper);
@@ -169,8 +98,8 @@ public class HitLocationPanel extends DropPanel {
 
 		wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
 		header = createHeader(wrapper, LOCATION, null);
-		for (i = 0; i < LOCATIONS.length; i++) {
-			wrapper.add(new PageLabel(LOCATIONS[i], header, SwingConstants.CENTER));
+		for (HitLocationTableEntry entry : table.getEntries()) {
+			createLabel(wrapper, entry.getName(), Text.wrapPlainTextForToolTip(entry.getLocation().getDescription()), SwingConstants.CENTER);
 		}
 		wrapper.setAlignmentY(TOP_ALIGNMENT);
 		add(wrapper);
@@ -179,8 +108,8 @@ public class HitLocationPanel extends DropPanel {
 
 		wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
 		header = createHeader(wrapper, PENALTY, PENALTY_TITLE_TOOLTIP);
-		for (i = 0; i < LOCATIONS.length; i++) {
-			createLabel(wrapper, PENALTIES[i], MessageFormat.format(PENALTY_TOOLTIP, LOCATIONS[i]), SwingConstants.RIGHT);
+		for (HitLocationTableEntry entry : table.getEntries()) {
+			createLabel(wrapper, Integer.toString(entry.getHitPenalty()), MessageFormat.format(PENALTY_TOOLTIP, entry.getName()), SwingConstants.RIGHT);
 		}
 		wrapper.setAlignmentY(TOP_ALIGNMENT);
 		add(wrapper);
@@ -189,8 +118,8 @@ public class HitLocationPanel extends DropPanel {
 
 		wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
 		header = createHeader(wrapper, DR, null);
-		for (i = 0; i < LOCATIONS.length; i++) {
-			createDisabledField(wrapper, character, DR_KEYS[i], MessageFormat.format(DR_TOOLTIP, LOCATIONS[i]), SwingConstants.RIGHT);
+		for (HitLocationTableEntry entry : table.getEntries()) {
+			createDisabledField(wrapper, character, entry.getKey(), MessageFormat.format(DR_TOOLTIP, entry.getName()), SwingConstants.RIGHT);
 		}
 		wrapper.setAlignmentY(TOP_ALIGNMENT);
 		add(wrapper);

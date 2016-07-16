@@ -71,6 +71,7 @@ import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.PrintProxy;
 import com.trollworks.toolkit.utility.notification.BatchNotifierTarget;
+import com.trollworks.toolkit.utility.notification.NotifierTarget;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
@@ -117,6 +118,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Scanner;
 
 import javax.swing.JOptionPane;
@@ -313,7 +315,13 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 		// Clear out the old pages
 		removeAll();
-		mCharacter.resetNotifier(PrerequisitesThread.getThread(mCharacter));
+		List<NotifierTarget> targets = new ArrayList<>();
+		targets.add(PrerequisitesThread.getThread(mCharacter));
+		SheetDockable sheetDockable = UIUtilities.getAncestorOfType(this, SheetDockable.class);
+		if (sheetDockable != null) {
+			targets.add(sheetDockable);
+		}
+		mCharacter.resetNotifier(targets.toArray(new NotifierTarget[targets.size()]));
 
 		// Create the first page, which holds stuff that has a fixed vertical size.
 		pageAssembler = new PageAssembler(this);
@@ -714,7 +722,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 	@Override
 	public void handleNotification(Object producer, String type, Object data) {
-		if (SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY.equals(type) || Fonts.FONT_NOTIFICATION_KEY.equals(type) || SheetPreferences.WEIGHT_UNITS_PREF_KEY.equals(type) || SheetPreferences.GURPS_METRIC_RULES_PREF_KEY.equals(type)) {
+		if (SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY.equals(type) || Fonts.FONT_NOTIFICATION_KEY.equals(type) || SheetPreferences.WEIGHT_UNITS_PREF_KEY.equals(type) || SheetPreferences.GURPS_METRIC_RULES_PREF_KEY.equals(type) || Profile.ID_BODY_TYPE.equals(type)) {
 			markForRebuild();
 		} else {
 			if (type.startsWith(Advantage.PREFIX)) {
@@ -1495,7 +1503,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		int length = contents.length();
 		StringBuilder keyBuffer = new StringBuilder();
 		boolean lookForKeyMarker = true;
-		for (int which = 0; which < HitLocationPanel.DR_KEYS.length; which++) {
+		HitLocationTable table = mCharacter.getDescription().getHitLocationTable();
+		for (HitLocationTableEntry entry : table.getEntries()) {
 			for (int i = 0; i < length; i++) {
 				char ch = contents.charAt(i);
 				if (lookForKeyMarker) {
@@ -1513,13 +1522,13 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 						keyBuffer.setLength(0);
 						lookForKeyMarker = true;
 						if (key.equals("ROLL")) { //$NON-NLS-1$
-							writeXMLText(out, HitLocationPanel.ROLLS[which]);
+							writeXMLText(out, entry.getRoll());
 						} else if (key.equals("WHERE")) { //$NON-NLS-1$
-							writeXMLText(out, HitLocationPanel.LOCATIONS[which]);
+							writeXMLText(out, entry.getName());
 						} else if (key.equals("PENALTY")) { //$NON-NLS-1$
-							writeXMLText(out, HitLocationPanel.PENALTIES[which]);
+							writeXMLText(out, Numbers.format(entry.getHitPenalty()));
 						} else if (key.equals("DR")) { //$NON-NLS-1$
-							writeXMLText(out, Numbers.format(((Integer) mCharacter.getValueForID(HitLocationPanel.DR_KEYS[which])).intValue()));
+							writeXMLText(out, Numbers.format(((Integer) mCharacter.getValueForID(entry.getKey())).intValue()));
 						} else {
 							writeXMLText(out, UNIDENTIFIED_KEY);
 						}

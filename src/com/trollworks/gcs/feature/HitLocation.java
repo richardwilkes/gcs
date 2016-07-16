@@ -100,6 +100,34 @@ public enum HitLocation {
 			return FEET_TITLE;
 		}
 	},
+	/** The tail hit location. */
+	TAIL {
+		@Override
+		public String toString() {
+			return TAIL_TITLE;
+		}
+	},
+	/** The wing hit location. */
+	WINGS {
+		@Override
+		public String toString() {
+			return WINGS_TITLE;
+		}
+	},
+	/** The fin hit location. */
+	FINS {
+		@Override
+		public String toString() {
+			return FINS_TITLE;
+		}
+	},
+	/** The brain hit location. */
+	BRAIN {
+		@Override
+		public String toString() {
+			return BRAIN_TITLE;
+		}
+	},
 	/** The full body hit location. */
 	FULL_BODY {
 		@Override
@@ -170,6 +198,14 @@ public enum HitLocation {
 	@Localize(locale = "ru", value = "стопам")
 	@Localize(locale = "es", value = "en los pies")
 	static String	FEET_TITLE;
+	@Localize("to the tail")
+	static String	TAIL_TITLE;
+	@Localize("to the wings")
+	static String	WINGS_TITLE;
+	@Localize("to the fins")
+	static String	FINS_TITLE;
+	@Localize("to the brain")
+	static String	BRAIN_TITLE;
 	@Localize("to the full body")
 	@Localize(locale = "de", value = "auf den gesamten Körper")
 	@Localize(locale = "ru", value = "всему телу")

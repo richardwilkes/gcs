@@ -41,7 +41,17 @@ public class Armor {
 	public static final String	ID_LEG_DR					= DR_PREFIX + HitLocation.LEGS.name();
 	/** The foot hit location's DR. */
 	public static final String	ID_FOOT_DR					= DR_PREFIX + HitLocation.FEET.name();
+	/** The tail hit location's DR. */
+	public static final String	ID_TAIL_DR					= DR_PREFIX + HitLocation.TAIL.name();
+	/** The wing hit location's DR. */
+	public static final String	ID_WING_DR					= DR_PREFIX + HitLocation.WINGS.name();
+	/** The fin hit location's DR. */
+	public static final String	ID_FIN_DR					= DR_PREFIX + HitLocation.FINS.name();
+	/** The brain hit location's DR. */
+	public static final String	ID_BRAIN_DR					= DR_PREFIX + HitLocation.BRAIN.name();
+
 	private GURPSCharacter		mCharacter;
+	private int					mBrainDR;
 	private int					mSkullDR;
 	private int					mEyesDR;
 	private int					mFaceDR;
@@ -50,9 +60,12 @@ public class Armor {
 	private int					mVitalsDR;
 	private int					mGroinDR;
 	private int					mArmDR;
+	private int					mWingDR;
 	private int					mHandDR;
+	private int					mFinDR;
 	private int					mLegDR;
 	private int					mFootDR;
+	private int					mTailDR;
 
 	Armor(GURPSCharacter character) {
 		mCharacter = character;
@@ -60,21 +73,51 @@ public class Armor {
 	}
 
 	void update() {
-		int fullBodyDR = mCharacter.getIntegerBonusFor(ID_FULL_BODY_DR);
-		int fullBodyNoEyesDR = mCharacter.getIntegerBonusFor(ID_FULL_BODY_EXCEPT_EYES_DR);
+		int extra = mCharacter.getIntegerBonusFor(ID_FULL_BODY_DR);
 		mCharacter.startNotify();
-		setSkullDR(2 + mCharacter.getIntegerBonusFor(ID_SKULL_DR) + fullBodyDR + fullBodyNoEyesDR);
-		setEyesDR(mCharacter.getIntegerBonusFor(ID_EYES_DR) + fullBodyDR);
-		setFaceDR(mCharacter.getIntegerBonusFor(ID_FACE_DR) + fullBodyDR + fullBodyNoEyesDR);
-		setNeckDR(mCharacter.getIntegerBonusFor(ID_NECK_DR) + fullBodyDR + fullBodyNoEyesDR);
-		setTorsoDR(mCharacter.getIntegerBonusFor(ID_TORSO_DR) + fullBodyDR + fullBodyNoEyesDR);
-		setVitalsDR(mCharacter.getIntegerBonusFor(ID_VITALS_DR) + fullBodyDR + fullBodyNoEyesDR);
-		setGroinDR(mCharacter.getIntegerBonusFor(ID_GROIN_DR) + fullBodyDR + fullBodyNoEyesDR);
-		setArmDR(mCharacter.getIntegerBonusFor(ID_ARM_DR) + fullBodyDR + fullBodyNoEyesDR);
-		setHandDR(mCharacter.getIntegerBonusFor(ID_HAND_DR) + fullBodyDR + fullBodyNoEyesDR);
-		setLegDR(mCharacter.getIntegerBonusFor(ID_LEG_DR) + fullBodyDR + fullBodyNoEyesDR);
-		setFootDR(mCharacter.getIntegerBonusFor(ID_FOOT_DR) + fullBodyDR + fullBodyNoEyesDR);
+		setEyesDR(getBonusDR(ID_EYES_DR) + extra);
+		extra += mCharacter.getIntegerBonusFor(ID_FULL_BODY_EXCEPT_EYES_DR);
+		setBrainDR(getBonusDR(ID_BRAIN_DR) + extra);
+		setSkullDR(getBonusDR(ID_SKULL_DR) + extra);
+		setFaceDR(getBonusDR(ID_FACE_DR) + extra);
+		setNeckDR(getBonusDR(ID_NECK_DR) + extra);
+		setTorsoDR(getBonusDR(ID_TORSO_DR) + extra);
+		setVitalsDR(getBonusDR(ID_VITALS_DR) + extra);
+		setGroinDR(getBonusDR(ID_GROIN_DR) + extra);
+		setArmDR(getBonusDR(ID_ARM_DR) + extra);
+		setWingDR(getBonusDR(ID_WING_DR) + extra);
+		setHandDR(getBonusDR(ID_HAND_DR) + extra);
+		setFinDR(getBonusDR(ID_FIN_DR) + extra);
+		setLegDR(getBonusDR(ID_LEG_DR) + extra);
+		setFootDR(getBonusDR(ID_FOOT_DR) + extra);
+		setTailDR(getBonusDR(ID_TAIL_DR) + extra);
 		mCharacter.endNotify();
+	}
+
+	private int getBonusDR(String key) {
+		int bonus = mCharacter.getIntegerBonusFor(key);
+		com.trollworks.gcs.character.HitLocation hitLocation = com.trollworks.gcs.character.HitLocation.MAP.get(key);
+		if (hitLocation != null) {
+			bonus += hitLocation.getDRBonus();
+		}
+		return bonus;
+	}
+
+	/** @return The brain hit location's DR. */
+	public int getBrainDR() {
+		return mBrainDR;
+	}
+
+	/**
+	 * Sets the brain hit location's DR.
+	 *
+	 * @param dr The DR amount.
+	 */
+	public void setBrainDR(int dr) {
+		if (mBrainDR != dr) {
+			mBrainDR = dr;
+			mCharacter.notifySingle(ID_BRAIN_DR, new Integer(mBrainDR));
+		}
 	}
 
 	/** @return The skull hit location's DR. */
@@ -84,7 +127,7 @@ public class Armor {
 
 	/**
 	 * Sets the skull hit location's DR.
-	 * 
+	 *
 	 * @param dr The DR amount.
 	 */
 	public void setSkullDR(int dr) {
@@ -101,7 +144,7 @@ public class Armor {
 
 	/**
 	 * Sets the eyes hit location's DR.
-	 * 
+	 *
 	 * @param dr The DR amount.
 	 */
 	public void setEyesDR(int dr) {
@@ -118,7 +161,7 @@ public class Armor {
 
 	/**
 	 * Sets the face hit location's DR.
-	 * 
+	 *
 	 * @param dr The DR amount.
 	 */
 	public void setFaceDR(int dr) {
@@ -135,7 +178,7 @@ public class Armor {
 
 	/**
 	 * Sets the neck hit location's DR.
-	 * 
+	 *
 	 * @param dr The DR amount.
 	 */
 	public void setNeckDR(int dr) {
@@ -152,7 +195,7 @@ public class Armor {
 
 	/**
 	 * Sets the torso hit location's DR.
-	 * 
+	 *
 	 * @param dr The DR amount.
 	 */
 	public void setTorsoDR(int dr) {
@@ -169,7 +212,7 @@ public class Armor {
 
 	/**
 	 * Sets the vitals hit location's DR.
-	 * 
+	 *
 	 * @param dr The DR amount.
 	 */
 	public void setVitalsDR(int dr) {
@@ -186,7 +229,7 @@ public class Armor {
 
 	/**
 	 * Sets the groin hit location's DR.
-	 * 
+	 *
 	 * @param dr The DR amount.
 	 */
 	public void setGroinDR(int dr) {
@@ -203,13 +246,30 @@ public class Armor {
 
 	/**
 	 * Sets the arm hit location's DR.
-	 * 
+	 *
 	 * @param dr The DR amount.
 	 */
 	public void setArmDR(int dr) {
 		if (mArmDR != dr) {
 			mArmDR = dr;
 			mCharacter.notifySingle(ID_ARM_DR, new Integer(mArmDR));
+		}
+	}
+
+	/** @return The wing hit location's DR. */
+	public int getWingDR() {
+		return mWingDR;
+	}
+
+	/**
+	 * Sets the wing hit location's DR.
+	 *
+	 * @param dr The DR amount.
+	 */
+	public void setWingDR(int dr) {
+		if (mWingDR != dr) {
+			mWingDR = dr;
+			mCharacter.notifySingle(ID_WING_DR, new Integer(mWingDR));
 		}
 	}
 
@@ -220,13 +280,30 @@ public class Armor {
 
 	/**
 	 * Sets the hand hit location's DR.
-	 * 
+	 *
 	 * @param dr The DR amount.
 	 */
 	public void setHandDR(int dr) {
 		if (mHandDR != dr) {
 			mHandDR = dr;
 			mCharacter.notifySingle(ID_HAND_DR, new Integer(mHandDR));
+		}
+	}
+
+	/** @return The fin hit location's DR. */
+	public int getFinDR() {
+		return mFinDR;
+	}
+
+	/**
+	 * Sets the fin hit location's DR.
+	 *
+	 * @param dr The DR amount.
+	 */
+	public void setFinDR(int dr) {
+		if (mFinDR != dr) {
+			mFinDR = dr;
+			mCharacter.notifySingle(ID_FIN_DR, new Integer(mFinDR));
 		}
 	}
 
@@ -237,7 +314,7 @@ public class Armor {
 
 	/**
 	 * Sets the leg hit location's DR.
-	 * 
+	 *
 	 * @param dr The DR amount.
 	 */
 	public void setLegDR(int dr) {
@@ -254,7 +331,7 @@ public class Armor {
 
 	/**
 	 * Sets the foot hit location's DR.
-	 * 
+	 *
 	 * @param dr The DR amount.
 	 */
 	public void setFootDR(int dr) {
@@ -264,13 +341,32 @@ public class Armor {
 		}
 	}
 
+	/** @return The tail hit location's DR. */
+	public int getTailDR() {
+		return mTailDR;
+	}
+
+	/**
+	 * Sets the tail hit location's DR.
+	 *
+	 * @param dr The DR amount.
+	 */
+	public void setTailDR(int dr) {
+		if (mTailDR != dr) {
+			mTailDR = dr;
+			mCharacter.notifySingle(ID_TAIL_DR, new Integer(mTailDR));
+		}
+	}
+
 	/**
 	 * @param id The field ID to retrieve the data for.
 	 * @return The value of the specified field ID, or <code>null</code> if the field ID is invalid.
 	 */
 	public Object getValueForID(String id) {
 		if (id != null && id.startsWith(DR_PREFIX)) {
-			if (ID_SKULL_DR.equals(id)) {
+			if (ID_BRAIN_DR.equals(id)) {
+				return new Integer(getBrainDR());
+			} else if (ID_SKULL_DR.equals(id)) {
 				return new Integer(getSkullDR());
 			} else if (ID_EYES_DR.equals(id)) {
 				return new Integer(getEyesDR());
@@ -286,12 +382,18 @@ public class Armor {
 				return new Integer(getGroinDR());
 			} else if (ID_ARM_DR.equals(id)) {
 				return new Integer(getArmDR());
+			} else if (ID_WING_DR.equals(id)) {
+				return new Integer(getWingDR());
 			} else if (ID_HAND_DR.equals(id)) {
 				return new Integer(getHandDR());
+			} else if (ID_FIN_DR.equals(id)) {
+				return new Integer(getFinDR());
 			} else if (ID_LEG_DR.equals(id)) {
 				return new Integer(getLegDR());
 			} else if (ID_FOOT_DR.equals(id)) {
 				return new Integer(getFootDR());
+			} else if (ID_TAIL_DR.equals(id)) {
+				return new Integer(getTailDR());
 			}
 		}
 		return null;
@@ -303,7 +405,9 @@ public class Armor {
 	 */
 	public void setValueForID(String id, Object value) {
 		if (id != null && id.startsWith(DR_PREFIX)) {
-			if (ID_SKULL_DR.equals(id)) {
+			if (ID_BRAIN_DR.equals(id)) {
+				setBrainDR(((Integer) value).intValue());
+			} else if (ID_SKULL_DR.equals(id)) {
 				setSkullDR(((Integer) value).intValue());
 			} else if (ID_EYES_DR.equals(id)) {
 				setEyesDR(((Integer) value).intValue());
@@ -319,12 +423,18 @@ public class Armor {
 				setGroinDR(((Integer) value).intValue());
 			} else if (ID_ARM_DR.equals(id)) {
 				setArmDR(((Integer) value).intValue());
+			} else if (ID_WING_DR.equals(id)) {
+				setWingDR(((Integer) value).intValue());
 			} else if (ID_HAND_DR.equals(id)) {
 				setHandDR(((Integer) value).intValue());
+			} else if (ID_FIN_DR.equals(id)) {
+				setFinDR(((Integer) value).intValue());
 			} else if (ID_LEG_DR.equals(id)) {
 				setLegDR(((Integer) value).intValue());
 			} else if (ID_FOOT_DR.equals(id)) {
 				setFootDR(((Integer) value).intValue());
+			} else if (ID_TAIL_DR.equals(id)) {
+				setTailDR(((Integer) value).intValue());
 			}
 		}
 	}
