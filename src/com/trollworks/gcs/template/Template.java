@@ -45,7 +45,7 @@ import java.util.Iterator;
 public class Template extends DataFile {
 	/** The extension for templates. */
 	public static final String	EXTENSION				= "gct";							//$NON-NLS-1$
-	private static final int	CURRENT_VERSION			= 1;
+	private static final int	CURRENT_VERSION			= 2;
 	private static final String	TAG_ROOT				= "template";						//$NON-NLS-1$
 	private static final String	TAG_OLD_NOTES			= "notes";							//$NON-NLS-1$
 	/** The prefix for all template IDs. */

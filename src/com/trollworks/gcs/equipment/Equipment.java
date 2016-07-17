@@ -56,7 +56,7 @@ public class Equipment extends ListRow implements HasSourceReference {
 		Localization.initialize();
 	}
 
-	private static final int		CURRENT_VERSION				= 3;
+	private static final int		CURRENT_VERSION				= 4;
 	private static final String		NEWLINE						= "\n";												//$NON-NLS-1$
 	private static final String		SPACE						= " ";												//$NON-NLS-1$
 	private static final String		DEFAULT_LEGALITY_CLASS		= "4";												//$NON-NLS-1$

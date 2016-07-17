@@ -171,7 +171,7 @@ public class GURPSCharacter extends DataFile {
 
 	/** The extension for character sheets. */
 	public static final String					EXTENSION								= "gcs";														//$NON-NLS-1$
-	private static final int					CURRENT_VERSION							= 2;
+	private static final int					CURRENT_VERSION							= 3;
 	private static final String					EMPTY									= "";															//$NON-NLS-1$
 	private static final String					TAG_ROOT								= "character";													//$NON-NLS-1$
 	private static final String					TAG_CREATED_DATE						= "created_date";												//$NON-NLS-1$
