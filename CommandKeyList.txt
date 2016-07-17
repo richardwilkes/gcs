@@ -15,7 +15,7 @@ I		Open Detail Editor
 J		Jump to Search
 K		New Skill
 L		Export to GURPS Calculator
-M
+M		New Note
 N		New Character Sheet
 O		Open
 P		Print
@@ -42,7 +42,7 @@ SHIFT+I Generate Random Female Name
 SHIFT+J
 SHIFT+K	New Skill Container
 SHIFT+L
-SHIFT+M
+SHIFT+M Note Note Container
 SHIFT+N
 SHIFT+O
 SHIFT+P	Page Setup

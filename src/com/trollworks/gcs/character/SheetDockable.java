@@ -14,6 +14,7 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.common.CommonDockable;
 import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
@@ -247,6 +248,7 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 		searchOne(mSheet.getSkillOutline(), filter, list);
 		searchOne(mSheet.getSpellOutline(), filter, list);
 		searchOne(mSheet.getEquipmentOutline(), filter, list);
+		searchOne(mSheet.getNoteOutline(), filter, list);
 		return list;
 	}
 
@@ -268,6 +270,7 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 		mSheet.getSkillOutline().getModel().deselect();
 		mSheet.getSpellOutline().getModel().deselect();
 		mSheet.getEquipmentOutline().getModel().deselect();
+		mSheet.getNoteOutline().getModel().deselect();
 
 		for (Object obj : selection) {
 			Row row = (Row) obj;
@@ -295,6 +298,12 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 						primary = mSheet.getSpellOutline();
 						if (model != primary.getModel()) {
 							primary = mSheet.getEquipmentOutline();
+							if (model != primary.getModel()) {
+								primary = mSheet.getNoteOutline();
+								if (model != primary.getModel()) {
+									primary = null;
+								}
+							}
 						}
 					}
 				}
@@ -358,6 +367,13 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 					map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
 				}
 				row = new Equipment(getDataFile(), (Equipment) row, true);
+				addCompleteRow(outline, row, selMap);
+			} else if (row instanceof Note) {
+				outline = mSheet.getNoteOutline();
+				if (!map.containsKey(outline)) {
+					map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
+				}
+				row = new Note(getDataFile(), (Note) row, true);
 				addCompleteRow(outline, row, selMap);
 			} else {
 				row = null;

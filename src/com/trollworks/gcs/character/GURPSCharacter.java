@@ -28,6 +28,8 @@ import com.trollworks.gcs.feature.SkillBonus;
 import com.trollworks.gcs.feature.SpellBonus;
 import com.trollworks.gcs.feature.WeaponBonus;
 import com.trollworks.gcs.modifier.Modifier;
+import com.trollworks.gcs.notes.Note;
+import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillList;
@@ -363,6 +365,7 @@ public class GURPSCharacter extends DataFile {
 	private OutlineModel						mSkills;
 	private OutlineModel						mSpells;
 	private OutlineModel						mEquipment;
+	private OutlineModel						mNotes;
 	private boolean								mDidModify;
 	private boolean								mNeedAttributePointCalculation;
 	private boolean								mNeedAdvantagesPointCalculation;
@@ -410,6 +413,7 @@ public class GURPSCharacter extends DataFile {
 		mSkills = new OutlineModel();
 		mSpells = new OutlineModel();
 		mEquipment = new OutlineModel();
+		mNotes = new OutlineModel();
 		mTotalPoints = SheetPreferences.getInitialPoints();
 		mStrength = 10;
 		mDexterity = 10;
@@ -513,6 +517,8 @@ public class GURPSCharacter extends DataFile {
 					loadSpellList(reader, state);
 				} else if (EquipmentList.TAG_ROOT.equals(name)) {
 					loadEquipmentList(reader, state);
+				} else if (NoteList.TAG_ROOT.equals(name)) {
+					loadNoteList(reader, state);
 				} else if (PrintManager.TAG_ROOT.equals(name)) {
 					if (mPageSettings != null) {
 						mPageSettings.load(reader);
@@ -588,6 +594,20 @@ public class GURPSCharacter extends DataFile {
 		} while (reader.withinMarker(marker));
 	}
 
+	private void loadNoteList(XMLReader reader, LoadState state) throws IOException {
+		String marker = reader.getMarker();
+		do {
+			if (reader.next() == XMLNodeType.START_TAG) {
+				String name = reader.getName();
+				if (Note.TAG_NOTE.equals(name) || Note.TAG_NOTE_CONTAINER.equals(name)) {
+					mNotes.addRow(new Note(this, reader, state), true);
+				} else {
+					reader.skipTag(name);
+				}
+			}
+		} while (reader.withinMarker(marker));
+	}
+
 	private void calculateAll() {
 		calculateAttributePoints();
 		calculateAdvantagePoints();
@@ -632,6 +652,7 @@ public class GURPSCharacter extends DataFile {
 		saveList(SkillList.TAG_ROOT, mSkills, out);
 		saveList(SpellList.TAG_ROOT, mSpells, out);
 		saveList(EquipmentList.TAG_ROOT, mEquipment, out);
+		saveList(NoteList.TAG_ROOT, mNotes, out);
 
 		if (mPageSettings != null) {
 			mPageSettings.save(out, LengthUnits.IN);
@@ -2466,6 +2487,16 @@ public class GURPSCharacter extends DataFile {
 	/** @return A recursive iterator over the character's equipment. */
 	public RowIterator<Equipment> getEquipmentIterator() {
 		return new RowIterator<>(mEquipment);
+	}
+
+	/** @return The outline model for the character's notes. */
+	public OutlineModel getNotesRoot() {
+		return mNotes;
+	}
+
+	/** @return A recursive iterator over the character's notes. */
+	public RowIterator<Note> getNoteIterator() {
+		return new RowIterator<>(mNotes);
 	}
 
 	/** @param map The new feature map. */

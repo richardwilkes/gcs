@@ -14,10 +14,10 @@ package com.trollworks.gcs.template;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageOutline;
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.character.NotesPanel;
-import com.trollworks.gcs.character.TextEditor;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentOutline;
+import com.trollworks.gcs.notes.Note;
+import com.trollworks.gcs.notes.NoteOutline;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.Spell;
@@ -36,7 +36,6 @@ import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.notification.BatchNotifierTarget;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Rectangle;
@@ -87,15 +86,14 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		Localization.initialize();
 	}
 
-	private static final EmptyBorder	NORMAL_BORDER		= new EmptyBorder(5, 5, 5, 5);
-	private static final int			NOTES_WRAP_WIDTH	= 520;
+	private static final EmptyBorder	NORMAL_BORDER	= new EmptyBorder(5, 5, 5, 5);
 	private Template					mTemplate;
 	private boolean						mBatchMode;
 	private AdvantageOutline			mAdvantageOutline;
 	private SkillOutline				mSkillOutline;
 	private SpellOutline				mSpellOutline;
 	private EquipmentOutline			mEquipmentOutline;
-	private NotesPanel					mNotesPanel;
+	private NoteOutline					mNoteOutline;
 	/** Used to determine whether an edit cell is pending. */
 	protected boolean					mStartEditingPending;
 	/** Used to determine whether a resize action is pending. */
@@ -118,18 +116,17 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		mSkillOutline = new SkillOutline(mTemplate);
 		mSpellOutline = new SpellOutline(mTemplate);
 		mEquipmentOutline = new EquipmentOutline(mTemplate);
-		mNotesPanel = new NotesPanel(template.getNotes(), false);
-		mNotesPanel.setWrapWidth(NOTES_WRAP_WIDTH);
+		mNoteOutline = new NoteOutline(mTemplate);
 		add(new TemplateOutlinePanel(mAdvantageOutline, ADVANTAGES));
 		add(new TemplateOutlinePanel(mSkillOutline, SKILLS));
 		add(new TemplateOutlinePanel(mSpellOutline, SPELLS));
 		add(new TemplateOutlinePanel(mEquipmentOutline, EQUIPMENT));
-		add(mNotesPanel);
+		add(new TemplateOutlinePanel(mNoteOutline, NOTES));
 		mAdvantageOutline.addActionListener(this);
 		mSkillOutline.addActionListener(this);
 		mSpellOutline.addActionListener(this);
 		mEquipmentOutline.addActionListener(this);
-		mNotesPanel.addActionListener(this);
+		mNoteOutline.addActionListener(this);
 
 		// Ensure everything is laid out and register for notification
 		revalidate();
@@ -141,16 +138,8 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
-
 		if (Outline.CMD_POTENTIAL_CONTENT_SIZE_CHANGE.equals(command)) {
 			adjustSize();
-		} else if (NotesPanel.CMD_EDIT_NOTES.equals(command)) {
-			String notes = TextEditor.edit((Component) event.getSource(), NOTES, mTemplate.getNotes());
-			if (notes != null) {
-				mTemplate.setNotes(notes);
-				mNotesPanel.setNotes(notes);
-				mNotesPanel.setWrapWidth(NOTES_WRAP_WIDTH);
-			}
 		}
 	}
 
@@ -198,9 +187,14 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		return mSpellOutline;
 	}
 
-	/** @return The outline containing the carried equipment. */
+	/** @return The outline containing the equipment. */
 	public EquipmentOutline getEquipmentOutline() {
 		return mEquipmentOutline;
+	}
+
+	/** @return The outline containing the notes equipment. */
+	public NoteOutline getNoteOutline() {
+		return mNoteOutline;
 	}
 
 	@Override
@@ -224,8 +218,9 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 			OutlineSyncer.add(mSpellOutline);
 		} else if (type.startsWith(Equipment.PREFIX)) {
 			OutlineSyncer.add(mEquipmentOutline);
+		} else if (type.startsWith(Note.PREFIX)) {
+			OutlineSyncer.add(mNoteOutline);
 		}
-
 		if (!mBatchMode) {
 			validate();
 		}

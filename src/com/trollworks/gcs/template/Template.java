@@ -18,13 +18,14 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentList;
+import com.trollworks.gcs.notes.Note;
+import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
@@ -34,33 +35,19 @@ import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.utility.FileType;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.text.Text;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Hashtable;
 import java.util.Iterator;
 
-import javax.swing.undo.StateEdit;
-import javax.swing.undo.StateEditable;
-
 /** A template. */
-public class Template extends DataFile implements StateEditable {
-	@Localize("Notes Change")
-	@Localize(locale = "de", value = "Notizen ändern")
-	@Localize(locale = "ru", value = "Смена заметки")
-	@Localize(locale = "es", value = "Modificar Notas")
-	private static String NOTES_UNDO;
-
-	static {
-		Localization.initialize();
-	}
-
+public class Template extends DataFile {
 	/** The extension for templates. */
 	public static final String	EXTENSION				= "gct";							//$NON-NLS-1$
 	private static final int	CURRENT_VERSION			= 1;
 	private static final String	TAG_ROOT				= "template";						//$NON-NLS-1$
-	private static final String	TAG_NOTES				= "notes";							//$NON-NLS-1$
+	private static final String	TAG_OLD_NOTES			= "notes";							//$NON-NLS-1$
 	/** The prefix for all template IDs. */
 	public static final String	TEMPLATE_PREFIX			= "gct.";							//$NON-NLS-1$
 	/**
@@ -79,13 +66,11 @@ public class Template extends DataFile implements StateEditable {
 	public static final String	ID_SKILL_POINTS			= POINTS_PREFIX + "Skills";			//$NON-NLS-1$
 	/** The field ID for spell point summary changes. */
 	public static final String	ID_SPELL_POINTS			= POINTS_PREFIX + "Spells";			//$NON-NLS-1$
-	/** The field ID for notes changes. */
-	public static final String	ID_NOTES				= TEMPLATE_PREFIX + "Notes";		//$NON-NLS-1$
 	private OutlineModel		mAdvantages;
 	private OutlineModel		mSkills;
 	private OutlineModel		mSpells;
 	private OutlineModel		mEquipment;
-	private String				mNotes;
+	private OutlineModel		mNotes;
 	private boolean				mNeedAdvantagesPointCalculation;
 	private boolean				mNeedSkillPointCalculation;
 	private boolean				mNeedSpellPointCalculation;
@@ -102,7 +87,7 @@ public class Template extends DataFile implements StateEditable {
 		mSkills = new OutlineModel();
 		mSpells = new OutlineModel();
 		mEquipment = new OutlineModel();
-		mNotes = ""; //$NON-NLS-1$
+		mNotes = new OutlineModel();
 	}
 
 	/**
@@ -141,8 +126,12 @@ public class Template extends DataFile implements StateEditable {
 					loadSpellList(reader, state);
 				} else if (EquipmentList.TAG_ROOT.equals(name)) {
 					loadEquipmentList(reader, state);
-				} else if (TAG_NOTES.equals(name)) {
-					mNotes = reader.readText();
+				} else if (NoteList.TAG_ROOT.equals(name)) {
+					loadNotesList(reader, state);
+				} else if (TAG_OLD_NOTES.equals(name)) {
+					Note note = new Note(this, false);
+					note.setDescription(Text.standardizeLineEndings(reader.readText()));
+					mNotes.addRow(note, false);
 				} else {
 					reader.skipTag(name);
 				}
@@ -211,6 +200,20 @@ public class Template extends DataFile implements StateEditable {
 		} while (reader.withinMarker(marker));
 	}
 
+	private void loadNotesList(XMLReader reader, LoadState state) throws IOException {
+		String marker = reader.getMarker();
+		do {
+			if (reader.next() == XMLNodeType.START_TAG) {
+				String name = reader.getName();
+				if (Note.TAG_NOTE.equals(name) || Note.TAG_NOTE_CONTAINER.equals(name)) {
+					mNotes.addRow(new Note(this, reader, state), true);
+				} else {
+					reader.skipTag(name);
+				}
+			}
+		} while (reader.withinMarker(marker));
+	}
+
 	@Override
 	public int getXMLTagVersion() {
 		return CURRENT_VERSION;
@@ -256,7 +259,14 @@ public class Template extends DataFile implements StateEditable {
 			}
 			out.endTagEOL(EquipmentList.TAG_ROOT, true);
 		}
-		out.simpleTagNotEmpty(TAG_NOTES, mNotes);
+
+		if (mNotes.getRowCount() > 0) {
+			out.startSimpleTagEOL(NoteList.TAG_ROOT);
+			for (iterator = mNotes.getTopLevelRows().iterator(); iterator.hasNext();) {
+				((Note) iterator.next()).save(out, false);
+			}
+			out.endTagEOL(NoteList.TAG_ROOT, true);
+		}
 	}
 
 	/**
@@ -427,37 +437,13 @@ public class Template extends DataFile implements StateEditable {
 		return new RowIterator<>(mEquipment);
 	}
 
-	/** @return The notes. */
-	public String getNotes() {
+	/** @return The outline model for the notes. */
+	public OutlineModel getNotesModel() {
 		return mNotes;
 	}
 
-	/**
-	 * Sets the notes.
-	 *
-	 * @param notes The new notes.
-	 */
-	public void setNotes(String notes) {
-		if (!mNotes.equals(notes)) {
-			StateEdit edit = new StateEdit(this, NOTES_UNDO);
-			mNotes = notes;
-			edit.end();
-			addEdit(edit);
-			notifySingle(ID_NOTES, mNotes);
-		}
-	}
-
-	@Override
-	public void storeState(Hashtable<Object, Object> state) {
-		state.put(ID_NOTES, mNotes);
-	}
-
-	@Override
-	public void restoreState(Hashtable<?, ?> state) {
-		String notes = (String) state.get(ID_NOTES);
-		if (notes != null) {
-			mNotes = notes;
-			notifySingle(ID_NOTES, mNotes);
-		}
+	/** @return A recursive iterator over the notes. */
+	public RowIterator<Note> getNoteIterator() {
+		return new RowIterator<>(mNotes);
 	}
 }

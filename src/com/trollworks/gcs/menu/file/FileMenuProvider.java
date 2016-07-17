@@ -53,6 +53,7 @@ public class FileMenuProvider implements MenuProvider {
 		cmds.add(NewCharacterTemplateCommand.INSTANCE);
 		cmds.add(NewAdvantagesLibraryCommand.INSTANCE);
 		cmds.add(NewEquipmentLibraryCommand.INSTANCE);
+		cmds.add(NewNoteLibraryCommand.INSTANCE);
 		cmds.add(NewSkillsLibraryCommand.INSTANCE);
 		cmds.add(NewSpellsLibraryCommand.INSTANCE);
 		cmds.add(OpenCommand.INSTANCE);
@@ -76,6 +77,7 @@ public class FileMenuProvider implements MenuProvider {
 		menu.add(new DynamicMenuItem(NewCharacterTemplateCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(NewAdvantagesLibraryCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(NewEquipmentLibraryCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(NewNoteLibraryCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(NewSkillsLibraryCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(NewSpellsLibraryCommand.INSTANCE));
 		menu.addSeparator();

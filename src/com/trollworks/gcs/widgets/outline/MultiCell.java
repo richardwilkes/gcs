@@ -17,6 +17,7 @@ import com.trollworks.toolkit.ui.TextDrawing;
 import com.trollworks.toolkit.ui.widget.outline.Cell;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
+import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.text.NumericComparator;
 
@@ -182,7 +183,9 @@ public class MultiCell implements Cell {
 			}
 			width = mMaxPreferredWidth;
 		}
-		return TextDrawing.wrapToPixelWidth(font, text, width - (row.getOwner().getIndentWidth(row, column) + H_MARGIN * 2));
+		OutlineModel owner = row.getOwner();
+		int indent = owner != null ? owner.getIndentWidth(row, column) : 0;
+		return TextDrawing.wrapToPixelWidth(font, text, width - (indent + H_MARGIN * 2));
 	}
 
 	@Override

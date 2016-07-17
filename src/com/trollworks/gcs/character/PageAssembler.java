@@ -40,29 +40,6 @@ public class PageAssembler {
 		addPageInternal();
 	}
 
-	/** Adds the notes field to the sheet. */
-	public void addNotes() {
-		NotesPanel notes = new NotesPanel(mSheet.getCharacter().getDescription().getNotes(), false);
-		Insets insets = notes.getInsets();
-		int width = mContentWidth - (insets.left + insets.right);
-		boolean addPage = mRemaining < notes.getMinimumSize().height;
-		notes.addActionListener(mSheet);
-		notes.setWrapWidth(width);
-		while (true) {
-			if (addPage) {
-				addPageInternal();
-			}
-			String text = notes.setMaxHeight(mRemaining);
-			addPage = !addToContent(notes, null, null);
-			if (text == null) {
-				break;
-			}
-			notes = new NotesPanel(text, true);
-			notes.addActionListener(mSheet);
-			notes.setWrapWidth(width);
-		}
-	}
-
 	/** @return The content width. */
 	public int getContentWidth() {
 		return mContentWidth;

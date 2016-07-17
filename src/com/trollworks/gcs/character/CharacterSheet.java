@@ -25,6 +25,8 @@ import com.trollworks.gcs.common.TemporaryFile;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.equipment.EquipmentOutline;
+import com.trollworks.gcs.notes.Note;
+import com.trollworks.gcs.notes.NoteOutline;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.services.HttpMethodType;
 import com.trollworks.gcs.services.NotImplementedException;
@@ -126,7 +128,6 @@ import javax.swing.JPanel;
 import javax.swing.RepaintManager;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -233,6 +234,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private SkillOutline		mSkillOutline;
 	private SpellOutline		mSpellOutline;
 	private EquipmentOutline	mEquipmentOutline;
+	private NoteOutline			mNoteOutline;
 	private Outline				mMeleeWeaponOutline;
 	private Outline				mRangedWeaponOutline;
 	private boolean				mRebuildPending;
@@ -312,6 +314,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		createMeleeWeaponOutline();
 		createRangedWeaponOutline();
 		createEquipmentOutline();
+		createNoteOutline();
 
 		// Clear out the old pages
 		removeAll();
@@ -339,8 +342,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		addOutline(pageAssembler, mMeleeWeaponOutline, MELEE_WEAPONS);
 		addOutline(pageAssembler, mRangedWeaponOutline, RANGED_WEAPONS);
 		addOutline(pageAssembler, mEquipmentOutline, EQUIPMENT);
-
-		pageAssembler.addNotes();
+		addOutline(pageAssembler, mNoteOutline, NOTES);
 
 		// Ensure everything is laid out and register for notification
 		validate();
@@ -348,6 +350,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		OutlineSyncer.remove(mSkillOutline);
 		OutlineSyncer.remove(mSpellOutline);
 		OutlineSyncer.remove(mEquipmentOutline);
+		OutlineSyncer.remove(mNoteOutline);
 		mCharacter.addTarget(this, GURPSCharacter.CHARACTER_PREFIX);
 		mCharacter.calculateWeightAndWealthCarried(true);
 		if (focusKey != null) {
@@ -466,6 +469,20 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			initOutline(mSpellOutline);
 		} else {
 			resetOutline(mSpellOutline);
+		}
+	}
+
+	/** @return The outline containing the notes. */
+	public NoteOutline getNoteOutline() {
+		return mNoteOutline;
+	}
+
+	private void createNoteOutline() {
+		if (mNoteOutline == null) {
+			mNoteOutline = new NoteOutline(mCharacter);
+			initOutline(mNoteOutline);
+		} else {
+			resetOutline(mNoteOutline);
 		}
 	}
 
@@ -733,6 +750,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				OutlineSyncer.add(mSpellOutline);
 			} else if (type.startsWith(Equipment.PREFIX)) {
 				OutlineSyncer.add(mEquipmentOutline);
+			} else if (type.startsWith(Note.PREFIX)) {
+				OutlineSyncer.add(mNoteOutline);
 			}
 
 			if (GURPSCharacter.ID_LAST_MODIFIED.equals(type)) {
@@ -844,14 +863,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		if (Outline.CMD_POTENTIAL_CONTENT_SIZE_CHANGE.equals(command)) {
 			mRootsToSync.add(((Outline) event.getSource()).getRealOutline());
 			markForRebuild();
-		} else if (NotesPanel.CMD_EDIT_NOTES.equals(command)) {
-			Profile description = mCharacter.getDescription();
-			String notes = TextEditor.edit((Component) event.getSource(), NOTES, description.getNotes());
-			if (notes != null) {
-				description.setNotes(notes);
-				rebuild();
-				SwingUtilities.invokeLater(() -> requestFocusInWindow());
-			}
 		}
 	}
 
@@ -1408,8 +1419,17 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			writeXMLText(out, "$" + Numbers.format(mCharacter.getWealthCarried())); //$NON-NLS-1$
 		} else if (key.startsWith("EQUIPMENT_LOOP_START")) { //$NON-NLS-1$
 			processEquipmentLoop(out, extractUpToMarker(in, "EQUIPMENT_LOOP_END")); //$NON-NLS-1$
+		} else if (key.startsWith("NOTES_LOOP_START")) { //$NON-NLS-1$
+			processNotesLoop(out, extractUpToMarker(in, "NOTES_LOOP_END")); //$NON-NLS-1$
 		} else if (key.equals("NOTES")) { //$NON-NLS-1$
-			writeXMLText(out, description.getNotes());
+			StringBuilder buffer = new StringBuilder();
+			for (Note note : mCharacter.getNoteIterator()) {
+				if (buffer.length() > 0) {
+					buffer.append("\n\n"); //$NON-NLS-1$
+				}
+				buffer.append(note.getDescription());
+			}
+			writeXMLText(out, buffer.toString());
 		} else {
 			writeXMLText(out, String.format(UNIDENTIFIED_KEY, key));
 		}
@@ -1986,6 +2006,46 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 								} else {
 									writeXMLText(out, UNIDENTIFIED_KEY);
 								}
+							}
+						}
+					}
+				}
+			}
+			odd = !odd;
+		}
+	}
+
+	private void processNotesLoop(BufferedWriter out, String contents) throws IOException {
+		int length = contents.length();
+		StringBuilder keyBuffer = new StringBuilder();
+		boolean lookForKeyMarker = true;
+		int counter = 0;
+		boolean odd = true;
+		for (Note note : mCharacter.getNoteIterator()) {
+			counter++;
+			for (int i = 0; i < length; i++) {
+				char ch = contents.charAt(i);
+				if (lookForKeyMarker) {
+					if (ch == '@') {
+						lookForKeyMarker = false;
+					} else {
+						out.append(ch);
+					}
+				} else {
+					if (ch == '_' || Character.isLetterOrDigit(ch)) {
+						keyBuffer.append(ch);
+					} else {
+						String key = keyBuffer.toString();
+						i--;
+						keyBuffer.setLength(0);
+						lookForKeyMarker = true;
+						if (!processStyleIndentWarning(key, out, note, odd)) {
+							if (key.equals("NOTE")) { //$NON-NLS-1$
+								writeXMLText(out, note.getDescription());
+							} else if (key.equals("ID")) { //$NON-NLS-1$
+								writeXMLText(out, Integer.toString(counter));
+							} else {
+								writeXMLText(out, UNIDENTIFIED_KEY);
 							}
 						}
 					}

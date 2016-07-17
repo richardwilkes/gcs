@@ -14,6 +14,7 @@ package com.trollworks.gcs.app;
 import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.equipment.EquipmentList;
+import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.template.Template;
@@ -103,6 +104,11 @@ public class GCSImages {
 		return StdImageSet.getOrLoad(EquipmentList.EXTENSION);
 	}
 
+	/** @return The note icons. */
+	public static final StdImageSet getNoteIcons() {
+		return StdImageSet.getOrLoad(NoteList.EXTENSION);
+	}
+
 	/** @return The character sheet icons. */
 	public static final StdImageSet getCharacterSheetDocumentIcons() {
 		return getDocumentIcons(GURPSCharacter.EXTENSION);
@@ -131,6 +137,11 @@ public class GCSImages {
 	/** @return The equipment icons. */
 	public static final StdImageSet getEquipmentDocumentIcons() {
 		return getDocumentIcons(EquipmentList.EXTENSION);
+	}
+
+	/** @return The note icons. */
+	public static final StdImageSet getNoteDocumentIcons() {
+		return getDocumentIcons(NoteList.EXTENSION);
 	}
 
 	/** @return The PDF icons. */

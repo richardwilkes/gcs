@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.menu.item;
 
-import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateDockable;
@@ -70,21 +69,13 @@ public class ApplyTemplateCommand extends Command {
 				Template template = templateDockable.getDataFile();
 				MultipleUndo edit = new MultipleUndo(UNDO);
 				ArrayList<Row> rows = new ArrayList<>();
-				String notes = template.getNotes().trim();
 				template.addEdit(edit);
 				rows.addAll(template.getAdvantagesModel().getTopLevelRows());
 				rows.addAll(template.getSkillsModel().getTopLevelRows());
 				rows.addAll(template.getSpellsModel().getTopLevelRows());
 				rows.addAll(template.getEquipmentModel().getTopLevelRows());
+				rows.addAll(template.getNotesModel().getTopLevelRows());
 				sheetDockable.addRows(rows);
-				if (notes.length() > 0) {
-					Profile description = sheetDockable.getDataFile().getDescription();
-					String prevNotes = description.getNotes().trim();
-					if (prevNotes.length() > 0) {
-						notes = prevNotes + "\n\n" + notes; //$NON-NLS-1$
-					}
-					description.setNotes(notes);
-				}
 				edit.end();
 			}
 		}

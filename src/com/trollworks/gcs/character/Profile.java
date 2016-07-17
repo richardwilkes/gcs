@@ -14,6 +14,7 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.feature.BonusAttributeType;
+import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
@@ -286,11 +287,6 @@ public class Profile {
 	@Localize(locale = "ru", value = "Не удалось записать изображение.")
 	@Localize(locale = "es", value = "No se puede escribir el retrato")
 	private static String	PORTRAIT_WRITE_ERROR;
-	@Localize("Notes Change")
-	@Localize(locale = "de", value = "Notizen ändern")
-	@Localize(locale = "ru", value = "Смена заметки")
-	@Localize(locale = "es", value = "Cambiar Notas")
-	private static String	NOTES_UNDO;
 	@Localize("Body Type Change")
 	private static String	BODY_TYPE_UNDO;
 
@@ -308,8 +304,6 @@ public class Profile {
 	public static final String		ID_PORTRAIT			= PROFILE_PREFIX + "Portrait";																//$NON-NLS-1$
 	/** The field ID for name changes. */
 	public static final String		ID_NAME				= PROFILE_PREFIX + "Name";																	//$NON-NLS-1$
-	/** The field ID for notes changes. */
-	public static final String		ID_NOTES			= PROFILE_PREFIX + "Notes";																	//$NON-NLS-1$
 	/** The field ID for title changes. */
 	public static final String		ID_TITLE			= PROFILE_PREFIX + "Title";																	//$NON-NLS-1$
 	/** The field ID for age changes. */
@@ -369,7 +363,7 @@ public class Profile {
 	private static final String		TAG_TECH_LEVEL		= "tech_level";																				//$NON-NLS-1$
 	private static final String		TAG_RELIGION		= "religion";																				//$NON-NLS-1$
 	private static final String		TAG_PORTRAIT		= "portrait";																				//$NON-NLS-1$
-	private static final String		TAG_NOTES			= "notes";																					//$NON-NLS-1$
+	private static final String		TAG_OLD_NOTES		= "notes";																					//$NON-NLS-1$
 	private static final String		TAG_BODY_TYPE		= "body_type";																				//$NON-NLS-1$
 	private static final String		EMPTY				= "";																						//$NON-NLS-1$
 	private static final Random		RANDOM				= new Random();
@@ -399,7 +393,6 @@ public class Profile {
 	private String					mPlayerName;
 	private String					mCampaign;
 	private String					mTechLevel;
-	private String					mNotes;
 	private HitLocationTable		mHitLocationTable;
 
 	Profile(GURPSCharacter character, boolean full) {
@@ -422,7 +415,6 @@ public class Profile {
 		mReligion = EMPTY;
 		mPlayerName = full ? getDefaultPlayerName() : EMPTY;
 		mCampaign = full ? getDefaultCampaign() : EMPTY;
-		mNotes = EMPTY;
 		mPortrait = createPortrait(getPortraitFromPortraitPath(getDefaultPortraitPath()));
 		mHitLocationTable = HitLocationTable.HUMANOID;
 	}
@@ -446,8 +438,10 @@ public class Profile {
 			mCampaign = reader.readText();
 		} else if (TAG_NAME.equals(tag)) {
 			mName = reader.readText();
-		} else if (TAG_NOTES.equals(tag)) {
-			mNotes = Text.standardizeLineEndings(reader.readText());
+		} else if (TAG_OLD_NOTES.equals(tag)) {
+			Note note = new Note(mCharacter, false);
+			note.setDescription(Text.standardizeLineEndings(reader.readText()));
+			mCharacter.getNotesRoot().addRow(note, false);
 		} else if (TAG_TITLE.equals(tag)) {
 			mTitle = reader.readText();
 		} else if (TAG_AGE.equals(tag)) {
@@ -518,7 +512,6 @@ public class Profile {
 		out.simpleTag(TAG_BODY_TYPE, mHitLocationTable.getKey());
 		out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
 		out.simpleTagNotEmpty(TAG_RELIGION, mReligion);
-		out.simpleTagNotEmpty(TAG_NOTES, mNotes);
 		if (mCustomPortrait && mPortrait != null) {
 			try {
 				try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
@@ -909,24 +902,6 @@ public class Profile {
 		}
 	}
 
-	/** @return The notes. */
-	public String getNotes() {
-		return mNotes;
-	}
-
-	/**
-	 * Sets the notes.
-	 *
-	 * @param notes The new notes.
-	 */
-	public void setNotes(String notes) {
-		if (!mNotes.equals(notes)) {
-			mCharacter.postUndoEdit(NOTES_UNDO, ID_NOTES, mNotes, notes);
-			mNotes = notes;
-			mCharacter.notifySingle(ID_NOTES, mNotes);
-		}
-	}
-
 	/** @return The multiplier compared to average weight for this character. */
 	public double getWeightMultiplier() {
 		if (mCharacter.hasAdvantageNamed("Very Fat")) { //$NON-NLS-1$
@@ -980,8 +955,6 @@ public class Profile {
 		if (id != null && id.startsWith(PROFILE_PREFIX)) {
 			if (ID_NAME.equals(id)) {
 				return getName();
-			} else if (ID_NOTES.equals(id)) {
-				return getNotes();
 			} else if (ID_TITLE.equals(id)) {
 				return getTitle();
 			} else if (ID_AGE.equals(id)) {
@@ -1029,8 +1002,6 @@ public class Profile {
 		if (id != null && id.startsWith(PROFILE_PREFIX)) {
 			if (ID_NAME.equals(id)) {
 				setName((String) value);
-			} else if (ID_NOTES.equals(id)) {
-				setNotes((String) value);
 			} else if (ID_TITLE.equals(id)) {
 				setTitle((String) value);
 			} else if (ID_AGE.equals(id)) {
