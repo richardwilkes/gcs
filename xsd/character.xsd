@@ -54,6 +54,7 @@
 				<xs:element name="SM" type="xs:short" />
 				<xs:element name="gender" type="xs:string" />
 				<xs:element name="race" type="xs:string" />
+				<xs:element name="body_type" type="xs:string" />
 				<xs:element name="notes" type="xs:string" />
 				<xs:element name="tech_level" type="xs:string" />
 				<xs:element name="portrait" type="xs:string" />
