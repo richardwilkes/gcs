@@ -53,6 +53,7 @@ import java.util.List;
 
 import javax.swing.JComboBox;
 import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
 
@@ -103,8 +104,9 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 		createToolbar();
 		JScrollPane scroller = new JScrollPane(mSheet);
 		scroller.setBorder(null);
-		scroller.getViewport().setBackground(Color.LIGHT_GRAY);
-		scroller.getViewport().addChangeListener(mSheet);
+		JViewport viewport = scroller.getViewport();
+		viewport.setBackground(Color.LIGHT_GRAY);
+		viewport.addChangeListener(mSheet);
 		add(scroller, BorderLayout.CENTER);
 		mSheet.rebuild();
 		mPrereqThread = new PrerequisitesThread(mSheet);
