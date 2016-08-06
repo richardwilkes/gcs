@@ -33052,7 +33052,7 @@
 		<description>Vortex Pistol</description>
 		<tech_level>9</tech_level>
 		<legality_class>4</legality_class>
-		<value>10</value>
+		<value>100</value>
 		<weight>1.8 lb</weight>
 		<reference>UT134</reference>
 		<ranged_weapon>
