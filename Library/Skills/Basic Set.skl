@@ -8495,7 +8495,7 @@
 		<prereq_list all="yes">
 			<skill_prereq has="yes">
 				<name compare="contains">naturalist</name>
-				<specialization compare="is"></specialization>
+				<specialization compare="is anything"></specialization>
 			</skill_prereq>
 		</prereq_list>
 	</skill>
