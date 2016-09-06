@@ -6062,6 +6062,11 @@
 			<specialization compare="is anything"></specialization>
 			<amount per_level="yes">1</amount>
 		</skill_bonus>
+		<skill_bonus>
+			<name compare="is">Acting</name>
+			<specialization compare="is anything"></specialization>
+			<amount per_level="yes">1</amount>
+		</skill_bonus>
 	</advantage>
 	<advantage version="2">
 		<name>Talent (Cultural Chameleon)</name>
