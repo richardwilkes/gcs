@@ -1505,7 +1505,7 @@
 		</prereq_list>
 	</spell>
 	<spell version="2">
-		<name>Bless Plant</name>
+		<name>Bless Plants</name>
 		<college>Plant</college>
 		<power_source>Arcane</power_source>
 		<spell_class>Area</spell_class>
@@ -1868,7 +1868,7 @@
 		</prereq_list>
 	</spell>
 	<spell version="2" very_hard="yes">
-		<name>Body of Shadows</name>
+		<name>Body of Shadow</name>
 		<college>Light &amp; Darkness</college>
 		<power_source>Arcane</power_source>
 		<spell_class>Regular/R-HT</spell_class>
@@ -4132,7 +4132,7 @@
 		</prereq_list>
 	</spell>
 	<spell version="2">
-		<name>Create Plants</name>
+		<name>Create Plant</name>
 		<college>Plant</college>
 		<power_source>Arcane</power_source>
 		<spell_class>Area</spell_class>
@@ -5607,7 +5607,7 @@
 		</prereq_list>
 	</spell>
 	<spell version="2" very_hard="yes">
-		<name>Doppleganger</name>
+		<name>Doppelganger</name>
 		<college>Enchantment</college>
 		<power_source>Arcane</power_source>
 		<spell_class>Enchantment</spell_class>
@@ -14199,7 +14199,7 @@
 		</prereq_list>
 	</spell>
 	<spell version="2">
-		<name>Rain Ice Daggers</name>
+		<name>Rain of Ice Daggers</name>
 		<college>Water</college>
 		<power_source>Arcane</power_source>
 		<spell_class>Area</spell_class>
@@ -14948,7 +14948,7 @@
 		</prereq_list>
 	</spell>
 	<spell version="2">
-		<name>Remove Enchant</name>
+		<name>Remove Enchantment</name>
 		<college>Enchantment</college>
 		<power_source>Arcane</power_source>
 		<spell_class>Enchantment</spell_class>
@@ -15908,7 +15908,7 @@
 		</prereq_list>
 	</spell>
 	<spell version="2">
-		<name>Rooted Feed</name>
+		<name>Rooted Feet</name>
 		<college>Body Control</college>
 		<power_source>Arcane</power_source>
 		<spell_class>Regular</spell_class>
@@ -18851,7 +18851,7 @@
 		</prereq_list>
 	</spell>
 	<spell version="2">
-		<name>Steel Wraith</name>
+		<name>Steelwraith</name>
 		<college>Earth</college>
 		<power_source>Arcane</power_source>
 		<spell_class>Regular</spell_class>
