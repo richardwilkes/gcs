@@ -41,16 +41,8 @@ public class HelpMenuProvider implements MenuProvider {
 	@Localize(locale = "ru", value = "Примечания к выпуску")
 	@Localize(locale = "es", value = "Notas de la versión")
 	private static String	RELEASE_NOTES;
-	@Localize("Bug Reports")
-	@Localize(locale = "de", value = "Fehlerberichte")
-	@Localize(locale = "ru", value = "Отчет об ошибках")
-	@Localize(locale = "es", value = "Reportar errores")
-	private static String	BUGS;
-	@Localize("Feature Requests")
-	@Localize(locale = "de", value = "Programmwünsche")
-	@Localize(locale = "ru", value = "Заявки на добавление новых функций")
-	@Localize(locale = "es", value = "Solicitar mejoras")
-	private static String	FEATURES;
+	@Localize("Bug Reports & Feature Requests")
+	private static String	JIRA;
 	@Localize("License")
 	@Localize(locale = "de", value = "Lizenz")
 	@Localize(locale = "ru", value = "Лицензия")
@@ -93,8 +85,7 @@ public class HelpMenuProvider implements MenuProvider {
 		menu.addSeparator();
 		menu.add(new JMenuItem(new OpenURICommand(WEB_SITE, GCSApp.WEB_SITE)));
 		menu.add(new JMenuItem(new OpenURICommand(MAILING_LISTS, GCSApp.WEB_SITE + "/mailing_lists.php"))); //$NON-NLS-1$
-		menu.add(new JMenuItem(new OpenURICommand(FEATURES, "https://gurpscharactersheet.atlassian.net/issues/?filter=10000"))); //$NON-NLS-1$
-		menu.add(new JMenuItem(new OpenURICommand(BUGS, "https://gurpscharactersheet.atlassian.net/issues/?filter=10001"))); //$NON-NLS-1$
+		menu.add(new JMenuItem(new OpenURICommand(JIRA, "https://gurpscharactersheet.atlassian.net"))); //$NON-NLS-1$
 		DynamicMenuEnabler.add(menu);
 		return menu;
 	}
