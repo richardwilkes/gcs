@@ -279,7 +279,7 @@ public enum SpellColumn {
 				if (level == Integer.MIN_VALUE) {
 					return "-"; //$NON-NLS-1$
 				}
-				return "IQ" + Numbers.formatWithForcedSign(level); //$NON-NLS-1$
+				return spell.getAttribute().toString() + Numbers.formatWithForcedSign(level);
 			}
 			return ""; //$NON-NLS-1$
 		}

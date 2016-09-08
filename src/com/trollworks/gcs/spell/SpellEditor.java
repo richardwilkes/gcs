@@ -216,6 +216,8 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 	@Localize(locale = "ru", value = "Уровень заклинания и относительный уровень заклинания для повторного броска")
 	@Localize(locale = "es", value = "Nivel y nivel relativo del sortilegio a superar con la tirada")
 	private static String	EDITOR_LEVEL_TOOLTIP;
+	@Localize("The attribute this spell is based on")
+	private static String	ATTRIBUTE_POPUP_TOOLTIP;
 	@Localize("Difficulty")
 	@Localize(locale = "de", value = "Schwierigkeit")
 	@Localize(locale = "ru", value = "Сложность")
@@ -249,6 +251,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 	private JTextField			mMaintenanceField;
 	private JTextField			mCastingTimeField;
 	private JTextField			mDurationField;
+	private JComboBox<Object>	mAttributePopup;
 	private JComboBox<Object>	mDifficultyCombo;
 	private JTextField			mNotesField;
 	private JTextField			mCategoriesField;
@@ -424,35 +427,46 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 	private Container createPointsFields() {
 		boolean forCharacter = mRow.getCharacter() != null;
 		boolean forTemplate = mRow.getTemplate() != null;
-		JPanel panel = new JPanel(new ColumnLayout(forCharacter ? 8 : forTemplate ? 6 : 4));
+		JPanel panel = new JPanel(new ColumnLayout(forCharacter ? 10 : forTemplate ? 8 : 6));
 
-		mDifficultyCombo = new JComboBox<>(new Object[] { SkillDifficulty.H.toString(), SkillDifficulty.VH.toString() });
-		mDifficultyCombo.setSelectedIndex(mRow.isVeryHard() ? 1 : 0);
-		mDifficultyCombo.setToolTipText(DIFFICULTY_TOOLTIP);
-		UIUtilities.setOnlySize(mDifficultyCombo, mDifficultyCombo.getPreferredSize());
-		mDifficultyCombo.addActionListener(this);
-		mDifficultyCombo.setEnabled(mIsEditable);
-		panel.add(new LinkedLabel(DIFFICULTY, mDifficultyCombo));
-		panel.add(mDifficultyCombo);
+		JLabel label = new JLabel(DIFFICULTY, SwingConstants.RIGHT);
+		label.setToolTipText(DIFFICULTY_TOOLTIP);
+		panel.add(label);
 
-		if (forCharacter || mRow.getTemplate() != null) {
+		mAttributePopup = createComboBox(panel, SkillAttribute.values(), mRow.getAttribute(), ATTRIBUTE_POPUP_TOOLTIP);
+		panel.add(new JLabel(" /")); //$NON-NLS-1$
+		mDifficultyCombo = createComboBox(panel, new Object[] { SkillDifficulty.H, SkillDifficulty.VH }, mRow.isVeryHard() ? SkillDifficulty.VH : SkillDifficulty.H, DIFFICULTY_TOOLTIP);
+
+		if (forCharacter || forTemplate) {
 			mPointsField = createField(panel, panel, EDITOR_POINTS, Integer.toString(mRow.getPoints()), EDITOR_POINTS_TOOLTIP, 4);
 			new NumberFilter(mPointsField, false, false, false, 4);
 			mPointsField.addActionListener(this);
 
 			if (forCharacter) {
-				mLevelField = createField(panel, panel, EDITOR_LEVEL, getDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel()), EDITOR_LEVEL_TOOLTIP, 5);
+				mLevelField = createField(panel, panel, EDITOR_LEVEL, getDisplayLevel(mRow.getAttribute(), mRow.getLevel(), mRow.getRelativeLevel()), EDITOR_LEVEL_TOOLTIP, 7);
 				mLevelField.setEnabled(false);
 			}
 		}
 		return panel;
 	}
 
-	private static String getDisplayLevel(int level, int relativeLevel) {
+	private JComboBox<Object> createComboBox(Container parent, Object[] items, Object selection, String tooltip) {
+		JComboBox<Object> combo = new JComboBox<>(items);
+		combo.setToolTipText(tooltip);
+		combo.setSelectedItem(selection);
+		combo.addActionListener(this);
+		combo.setMaximumRowCount(items.length);
+		UIUtilities.setOnlySize(combo, combo.getPreferredSize());
+		combo.setEnabled(mIsEditable);
+		parent.add(combo);
+		return combo;
+	}
+
+	private static String getDisplayLevel(SkillAttribute attribute, int level, int relativeLevel) {
 		if (level < 0) {
 			return "-"; //$NON-NLS-1$
 		}
-		return Numbers.format(level) + "/" + SkillAttribute.IQ + Numbers.formatWithForcedSign(relativeLevel); //$NON-NLS-1$
+		return Numbers.format(level) + "/" + attribute + Numbers.formatWithForcedSign(relativeLevel); //$NON-NLS-1$
 	}
 
 	private JTextField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
@@ -500,7 +514,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 			modified |= mRow.setMaintenance(mMaintenanceField.getText());
 			modified |= mRow.setCastingTime(mCastingTimeField.getText());
 			modified |= mRow.setDuration(mDurationField.getText());
-			modified |= mRow.setIsVeryHard(isVeryHard());
+			modified |= mRow.setDifficulty(getAttribute(), isVeryHard());
 			if (mRow.getCharacter() != null || mRow.getTemplate() != null) {
 				modified |= mRow.setPoints(getSpellPoints());
 			}
@@ -540,15 +554,16 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 				mSavedTechLevel = mTechLevel.getText();
 				mTechLevel.setText(""); //$NON-NLS-1$
 			}
-		} else if (src == mPointsField || src == mDifficultyCombo) {
+		} else if (src == mPointsField || src == mAttributePopup || src == mDifficultyCombo) {
 			recalculateLevel();
 		}
 	}
 
 	private void recalculateLevel() {
 		if (mLevelField != null) {
-			SkillLevel level = Spell.calculateLevel(mRow.getCharacter(), getSpellPoints(), isVeryHard(), mCollegeField.getText(), mPowerSourceField.getText(), mNameField.getText());
-			mLevelField.setText(getDisplayLevel(level.mLevel, level.mRelativeLevel));
+			SkillAttribute attribute = getAttribute();
+			SkillLevel level = Spell.calculateLevel(mRow.getCharacter(), getSpellPoints(), attribute, isVeryHard(), mCollegeField.getText(), mPowerSourceField.getText(), mNameField.getText());
+			mLevelField.setText(getDisplayLevel(attribute, level.mLevel, level.mRelativeLevel));
 		}
 	}
 
@@ -556,8 +571,12 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		return Numbers.extractInteger(mPointsField.getText(), 0, true);
 	}
 
+	private SkillAttribute getAttribute() {
+		return (SkillAttribute) mAttributePopup.getSelectedItem();
+	}
+
 	private boolean isVeryHard() {
-		return mDifficultyCombo.getSelectedIndex() == 1;
+		return mDifficultyCombo.getSelectedItem() == SkillDifficulty.VH;
 	}
 
 	@Override

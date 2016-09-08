@@ -18,6 +18,7 @@ import com.trollworks.gcs.common.HasSourceReference;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.library.LibraryFile;
+import com.trollworks.gcs.skill.SkillAttribute;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillLevel;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
@@ -120,7 +121,7 @@ public class Spell extends ListRow implements HasSourceReference {
 	/** The field ID for page reference changes. */
 	public static final String		ID_REFERENCE				= PREFIX + "Reference";							//$NON-NLS-1$
 	/** The field ID for difficulty changes. */
-	public static final String		ID_IS_VERY_HARD				= PREFIX + "Difficulty";						//$NON-NLS-1$
+	public static final String		ID_DIFFICULTY				= PREFIX + "Difficulty";						//$NON-NLS-1$
 	/** The field ID for when the categories change. */
 	public static final String		ID_CATEGORY					= PREFIX + "Category";							//$NON-NLS-1$
 	/** The field ID for when the row hierarchy changes. */
@@ -142,6 +143,7 @@ public class Spell extends ListRow implements HasSourceReference {
 	private int						mPoints;
 	private int						mLevel;
 	private int						mRelativeLevel;
+	private SkillAttribute			mAttribute;
 	private String					mReference;
 	private boolean					mIsVeryHard;
 	private ArrayList<WeaponStats>	mWeapons;
@@ -155,6 +157,7 @@ public class Spell extends ListRow implements HasSourceReference {
 	public Spell(DataFile dataFile, boolean isContainer) {
 		super(dataFile, isContainer);
 		mName = DEFAULT_NAME;
+		mAttribute = SkillAttribute.IQ;
 		mTechLevel = null;
 		mCollege = EMPTY;
 		mPowerSource = isContainer ? EMPTY : DEFAULT_POWER_SOURCE;
@@ -181,6 +184,7 @@ public class Spell extends ListRow implements HasSourceReference {
 	public Spell(DataFile dataFile, Spell spell, boolean deep, boolean forSheet) {
 		super(dataFile, spell);
 		mName = spell.mName;
+		mAttribute = spell.mAttribute;
 		mTechLevel = spell.mTechLevel;
 		mCollege = spell.mCollege;
 		mPowerSource = spell.mPowerSource;
@@ -238,7 +242,7 @@ public class Spell extends ListRow implements HasSourceReference {
 		}
 		if (obj instanceof Spell && super.isEquivalentTo(obj)) {
 			Spell row = (Spell) obj;
-			if (mIsVeryHard == row.mIsVeryHard && mPoints == row.mPoints && mLevel == row.mLevel && mRelativeLevel == row.mRelativeLevel) {
+			if (mIsVeryHard == row.mIsVeryHard && mPoints == row.mPoints && mLevel == row.mLevel && mAttribute == row.mAttribute && mRelativeLevel == row.mRelativeLevel) {
 				if (mTechLevel == null ? row.mTechLevel == null : mTechLevel.equals(row.mTechLevel)) {
 					if (mName.equals(row.mName) && mCollege.equals(row.mCollege) && mPowerSource.equals(row.mPowerSource) && mSpellClass.equals(row.mSpellClass) && mReference.equals(row.mReference)) {
 						if (mCastingCost.equals(row.mCastingCost) && mMaintenance.equals(row.mMaintenance) && mCastingTime.equals(row.mCastingTime) && mDuration.equals(row.mDuration)) {
@@ -281,6 +285,7 @@ public class Spell extends ListRow implements HasSourceReference {
 		boolean isContainer = canHaveChildren();
 		super.prepareForLoad(state);
 		mName = DEFAULT_NAME;
+		mAttribute = SkillAttribute.IQ;
 		mTechLevel = null;
 		mCollege = EMPTY;
 		mPowerSource = isContainer ? EMPTY : DEFAULT_POWER_SOURCE;
@@ -451,7 +456,7 @@ public class Spell extends ListRow implements HasSourceReference {
 	public void updateLevel(boolean notify) {
 		int savedLevel = mLevel;
 		int savedRelativeLevel = mRelativeLevel;
-		SkillLevel level = calculateLevel(getCharacter(), mPoints, mIsVeryHard, mCollege, mPowerSource, mName);
+		SkillLevel level = calculateLevel(getCharacter(), mPoints, mAttribute, mIsVeryHard, mCollege, mPowerSource, mName);
 
 		mLevel = level.mLevel;
 		mRelativeLevel = level.mRelativeLevel;
@@ -472,12 +477,12 @@ public class Spell extends ListRow implements HasSourceReference {
 	 * @param name The name of the spell.
 	 * @return The calculated spell level.
 	 */
-	public static SkillLevel calculateLevel(GURPSCharacter character, int points, boolean isVeryHard, String college, String powerSource, String name) {
+	public static SkillLevel calculateLevel(GURPSCharacter character, int points, SkillAttribute attribute, boolean isVeryHard, String college, String powerSource, String name) {
 		int relativeLevel = isVeryHard ? -3 : -2;
 		int level;
 
 		if (character != null) {
-			level = character.getIntelligence();
+			level = attribute.getBaseSkillLevel(character);
 			if (points < 1) {
 				level = -1;
 				relativeLevel = 0;
@@ -735,20 +740,27 @@ public class Spell extends ListRow implements HasSourceReference {
 		return GCSImages.getSpellsIcons().getImage(large ? 64 : 16);
 	}
 
+	/** @return The attribute. */
+	public SkillAttribute getAttribute() {
+		return mAttribute;
+	}
+
 	/** @return Whether this is a "Very Hard" spell or not. */
 	public boolean isVeryHard() {
 		return mIsVeryHard;
 	}
 
 	/**
-	 * @param isVeryHard Whether this is a "Very Hard" spell or not.
+	 * @param attribute The attribute to use.
+	 * @param veryHard Whether this is a "Very Hard" spell or not.
 	 * @return Whether it was modified.
 	 */
-	public boolean setIsVeryHard(boolean isVeryHard) {
-		if (mIsVeryHard != isVeryHard) {
-			mIsVeryHard = isVeryHard;
+	public boolean setDifficulty(SkillAttribute attribute, boolean veryHard) {
+		if (mAttribute != attribute || mIsVeryHard != veryHard) {
+			mAttribute = attribute;
+			mIsVeryHard = veryHard;
 			startNotify();
-			notify(ID_IS_VERY_HARD, this);
+			notify(ID_DIFFICULTY, this);
 			updateLevel(true);
 			endNotify();
 			return true;
