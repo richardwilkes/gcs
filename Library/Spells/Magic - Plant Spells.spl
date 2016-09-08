@@ -19,7 +19,7 @@
 				<name compare="is">Fungus Control</name>
 			</spell_prereq>
 			<spell_prereq has="yes">
-				<college compare="is">Fungus</college>
+				<college compare="contains">Fungus</college>
 				<quantity compare="at least">7</quantity>
 			</spell_prereq>
 		</prereq_list>
@@ -104,7 +104,7 @@
 				<level compare="at least">1</level>
 			</advantage_prereq>
 			<spell_prereq has="yes">
-				<college compare="is">Plant</college>
+				<college compare="contains">Plant</college>
 				<quantity compare="at least">6</quantity>
 			</spell_prereq>
 		</prereq_list>
@@ -635,7 +635,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<college compare="is">Fungus</college>
+				<college compare="contains">Fungus</college>
 				<quantity compare="at least">6</quantity>
 			</spell_prereq>
 		</prereq_list>
@@ -655,7 +655,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<college compare="is">Fungus</college>
+				<college compare="contains">Fungus</college>
 				<quantity compare="at least">6</quantity>
 			</spell_prereq>
 			<prereq_list all="no">
@@ -1559,7 +1559,7 @@
 				<level compare="at least">1</level>
 			</advantage_prereq>
 			<spell_prereq has="yes">
-				<college compare="is">Plant</college>
+				<college compare="contains">Plant</college>
 				<quantity compare="at least">7</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
@@ -1782,7 +1782,7 @@
 				<level compare="at least">1</level>
 			</advantage_prereq>
 			<spell_prereq has="yes">
-				<college compare="is">Plant</college>
+				<college compare="contains">Plant</college>
 				<quantity compare="at least">6</quantity>
 			</spell_prereq>
 		</prereq_list>

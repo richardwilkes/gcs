@@ -766,7 +766,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<college compare="is">Plant</college>
+				<college compare="contains">Plant</college>
 				<quantity compare="at least">7</quantity>
 			</spell_prereq>
 		</prereq_list>
@@ -1897,7 +1897,7 @@
 				<name compare="is">shape darkness</name>
 			</spell_prereq>
 			<spell_prereq has="yes">
-				<college compare="is">Movement</college>
+				<college compare="contains">Movement</college>
 				<quantity compare="at least">3</quantity>
 			</spell_prereq>
 		</prereq_list>
@@ -2420,7 +2420,7 @@
 					<name compare="is">keen vision</name>
 				</spell_prereq>
 				<spell_prereq has="yes">
-					<college compare="is">Light</college>
+					<college compare="contains">Light</college>
 					<quantity compare="at least">5</quantity>
 				</spell_prereq>
 			</prereq_list>
@@ -4828,7 +4828,7 @@
 				<name compare="is">destroy water</name>
 			</spell_prereq>
 			<spell_prereq has="yes">
-				<college compare="is">Water</college>
+				<college compare="contains">Water</college>
 				<quantity compare="at least">5</quantity>
 			</spell_prereq>
 		</prereq_list>
@@ -6100,7 +6100,7 @@
 				</advantage_prereq>
 			</prereq_list>
 			<spell_prereq has="yes">
-				<college compare="is">Earth</college>
+				<college compare="contains">Earth</college>
 				<quantity compare="at least">5</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
@@ -6445,7 +6445,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<college compare="is">Earth</college>
+				<college compare="contains">Earth</college>
 				<quantity compare="at least">5</quantity>
 			</spell_prereq>
 			<prereq_list all="no">
@@ -6565,7 +6565,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<college compare="is">Earth</college>
+				<college compare="contains">Earth</college>
 				<quantity compare="at least">6</quantity>
 			</spell_prereq>
 		</prereq_list>
@@ -6656,7 +6656,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<college compare="is">Water</college>
+				<college compare="contains">Water</college>
 				<quantity compare="at least">6</quantity>
 			</spell_prereq>
 		</prereq_list>
@@ -6676,7 +6676,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<college compare="is">Plant</college>
+				<college compare="contains">Plant</college>
 				<quantity compare="at least">6</quantity>
 			</spell_prereq>
 		</prereq_list>
@@ -7847,7 +7847,7 @@
 				<notes compare="is anything"></notes>
 			</advantage_prereq>
 			<spell_prereq has="yes">
-				<college compare="is">Plant</college>
+				<college compare="contains">Plant</college>
 				<quantity compare="at least">4</quantity>
 			</spell_prereq>
 		</prereq_list>
@@ -7959,7 +7959,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<college compare="is">Protection &amp; Warning</college>
+				<college compare="contains">Protection &amp; Warning</college>
 				<quantity compare="at least">3</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
@@ -8136,16 +8136,16 @@
 		<prereq_list all="yes">
 			<prereq_list all="no">
 				<spell_prereq has="yes">
-					<college compare="is">fire</college>
+					<college compare="contains">fire</college>
 					<quantity compare="at least">4</quantity>
 				</spell_prereq>
 				<spell_prereq has="yes">
-					<college compare="is">Earth</college>
+					<college compare="contains">Earth</college>
 					<quantity compare="at least">4</quantity>
 				</spell_prereq>
 			</prereq_list>
 			<spell_prereq has="yes">
-				<college compare="is">Water</college>
+				<college compare="contains">Water</college>
 				<quantity compare="at least">6</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
@@ -8905,7 +8905,7 @@
 					<name compare="is">keen vision</name>
 				</spell_prereq>
 				<spell_prereq has="yes">
-					<college compare="is">Light</college>
+					<college compare="contains">Light</college>
 					<quantity compare="at least">5</quantity>
 				</spell_prereq>
 			</prereq_list>
@@ -9541,7 +9541,7 @@
 				</advantage_prereq>
 			</prereq_list>
 			<spell_prereq has="yes">
-				<college compare="is">Water</college>
+				<college compare="contains">Water</college>
 				<quantity compare="at least">4</quantity>
 			</spell_prereq>
 		</prereq_list>
@@ -9831,7 +9831,7 @@
 				<name compare="is">keen vision</name>
 			</spell_prereq>
 			<spell_prereq has="yes">
-				<college compare="is">Light</college>
+				<college compare="contains">Light</college>
 				<quantity compare="at least">5</quantity>
 			</spell_prereq>
 		</prereq_list>
@@ -10026,7 +10026,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<college compare="is">Light</college>
+				<college compare="contains">Light</college>
 				<quantity compare="at least">6</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
@@ -12345,7 +12345,7 @@
 				<name compare="is">keen vision</name>
 			</spell_prereq>
 			<spell_prereq has="yes">
-				<college compare="is">Light</college>
+				<college compare="contains">Light</college>
 				<quantity compare="at least">5</quantity>
 			</spell_prereq>
 		</prereq_list>
@@ -13372,7 +13372,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<college compare="is">Plant</college>
+				<college compare="contains">Plant</college>
 				<quantity compare="at least">6</quantity>
 			</spell_prereq>
 			<prereq_list all="no">
@@ -13703,7 +13703,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<college compare="is">Earth</college>
+				<college compare="contains">Earth</college>
 				<quantity compare="at least">4</quantity>
 			</spell_prereq>
 		</prereq_list>
@@ -13891,7 +13891,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<college compare="is">Animal</college>
+				<college compare="contains">Animal</college>
 				<quantity compare="at least">3</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
@@ -14333,7 +14333,7 @@
 				<name compare="is">shape plant</name>
 			</spell_prereq>
 			<spell_prereq has="yes">
-				<college compare="is">Plant</college>
+				<college compare="contains">Plant</college>
 				<quantity compare="at least">5</quantity>
 			</spell_prereq>
 			<prereq_list all="no">
@@ -15049,7 +15049,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<college compare="is">Movement</college>
+				<college compare="contains">Movement</college>
 				<quantity compare="at least">3</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
@@ -17803,7 +17803,7 @@
 					<name compare="is">keen vision</name>
 				</spell_prereq>
 				<spell_prereq has="yes">
-					<college compare="is">Light</college>
+					<college compare="contains">Light</college>
 					<quantity compare="at least">5</quantity>
 				</spell_prereq>
 			</prereq_list>
@@ -18413,7 +18413,7 @@
 				</advantage_prereq>
 			</prereq_list>
 			<spell_prereq has="yes">
-				<college compare="is">Animal</college>
+				<college compare="contains">Animal</college>
 				<quantity compare="at least">2</quantity>
 			</spell_prereq>
 		</prereq_list>
@@ -18968,7 +18968,7 @@
 		</categories>
 		<prereq_list all="no">
 			<spell_prereq has="yes">
-				<college compare="is">Earth</college>
+				<college compare="contains">Earth</college>
 				<quantity compare="at least">4</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
@@ -19668,7 +19668,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<college compare="is">Light</college>
+				<college compare="contains">Light</college>
 				<quantity compare="at least">6</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
@@ -21071,7 +21071,7 @@
 		</categories>
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
-				<college compare="is">fire</college>
+				<college compare="contains">fire</college>
 				<quantity compare="at least">6</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">

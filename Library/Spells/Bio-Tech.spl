@@ -94,10 +94,10 @@
 				<name compare="is">Analyze Heredity</name>
 			</spell_prereq>
 			<spell_prereq has="yes">
-				<college compare="is">Healing</college>
+				<college compare="contains">Healing</college>
 			</spell_prereq>
 			<spell_prereq has="yes">
-				<college compare="is">Body Control</college>
+				<college compare="contains">Body Control</college>
 			</spell_prereq>
 		</prereq_list>
 	</spell>
@@ -194,7 +194,7 @@
 				<name compare="is">Sense Life</name>
 			</spell_prereq>
 			<spell_prereq has="yes">
-				<college compare="is">Healing</college>
+				<college compare="contains">Healing</college>
 				<quantity compare="at least">2</quantity>
 			</spell_prereq>
 		</prereq_list>

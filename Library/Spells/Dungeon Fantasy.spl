@@ -172,7 +172,7 @@
 			</categories>
 			<prereq_list all="yes">
 				<spell_prereq has="yes">
-					<college compare="is">Light</college>
+					<college compare="contains">Light</college>
 					<quantity compare="at least">6</quantity>
 				</spell_prereq>
 				<spell_prereq has="yes">
