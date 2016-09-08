@@ -44,7 +44,6 @@ import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImageSet;
-import com.trollworks.toolkit.ui.print.PageOrientation;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
@@ -427,18 +426,14 @@ public class GURPSCharacter extends DataFile {
 		mIncludeKick = true;
 		mIncludeKickBoots = true;
 		mCachedWeightCarried = new WeightValue(0, SheetPreferences.getWeightUnits());
-		try {
-			mPageSettings = new PrintManager(PageOrientation.PORTRAIT, 0.5, LengthUnits.IN);
-		} catch (Exception exception) {
-			mPageSettings = null;
-		}
+		mPageSettings = SheetPreferences.getDefaultPageSettings();
 		mLastModified = System.currentTimeMillis();
 		mCreatedOn = mLastModified;
 		// This will force the long value to match the string value.
 		setCreatedOn(getCreatedOn());
 	}
 
-	/** @return The page settings. May return <code>null</code> if not printer has been defined. */
+	/** @return The page settings. May return <code>null</code> if no printer has been defined. */
 	public PrintManager getPageSettings() {
 		return mPageSettings;
 	}

@@ -14,6 +14,10 @@ package com.trollworks.gcs.preferences;
 import com.trollworks.gcs.app.GCS;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.io.Log;
+import com.trollworks.toolkit.io.xml.XMLNodeType;
+import com.trollworks.toolkit.io.xml.XMLReader;
+import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.Alignment;
@@ -24,6 +28,7 @@ import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.preferences.PreferencePanel;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
+import com.trollworks.toolkit.ui.print.PageOrientation;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.StdFileDialog;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
@@ -45,8 +50,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -272,6 +281,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	public static final String			GURPS_CALCULATOR_URL				= BASE_GURPS_CALCULATOR_URL + "/Character/ImportGCS";			//$NON-NLS-1$
 	private static final String			INITIAL_POINTS_KEY					= "InitialPoints";												//$NON-NLS-1$
 	private static final int			DEFAULT_INITIAL_POINTS				= 100;
+	private static final String			DEFAULT_PAGE_SETTINGS_KEY			= "DefaultPageSettings";										//$NON-NLS-1$
 	private JTextField					mPlayerName;
 	private JTextField					mCampaign;
 	private JTextField					mTechLevel;
@@ -378,6 +388,61 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	/** @return The initial points to start a new character with. */
 	public static int getInitialPoints() {
 		return Preferences.getInstance().getIntValue(MODULE, INITIAL_POINTS_KEY, DEFAULT_INITIAL_POINTS);
+	}
+
+	/**
+	 * @return The default page settings to use. May return <code>null</code> if no printer has been
+	 *         defined.
+	 */
+	public static PrintManager getDefaultPageSettings() {
+		String settings = Preferences.getInstance().getStringValue(MODULE, DEFAULT_PAGE_SETTINGS_KEY);
+		if (settings != null && !settings.isEmpty()) {
+			try (XMLReader in = new XMLReader(new StringReader(settings))) {
+				XMLNodeType type = in.next();
+				boolean found = false;
+				while (type != XMLNodeType.END_DOCUMENT) {
+					if (type == XMLNodeType.START_TAG) {
+						String name = in.getName();
+						if (PrintManager.TAG_ROOT.equals(name)) {
+							if (!found) {
+								found = true;
+								return new PrintManager(in);
+							}
+							throw new IOException();
+						}
+						in.skipTag(name);
+						type = in.getType();
+					} else {
+						type = in.next();
+					}
+				}
+			} catch (Exception exception) {
+				Log.error(exception);
+			}
+		}
+		try {
+			return new PrintManager(PageOrientation.PORTRAIT, 0.5, LengthUnits.IN);
+		} catch (Exception exception) {
+			return null;
+		}
+	}
+
+	/** @param mgr The {@Link PrintManager} to record the settings for. */
+	public static void setDefaultPageSettings(PrintManager mgr) {
+		String value = null;
+		if (mgr != null) {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			try (XMLWriter out = new XMLWriter(baos)) {
+				out.writeHeader();
+				mgr.save(out, LengthUnits.IN);
+			} catch (Exception exception) {
+				Log.error(exception);
+			}
+			if (baos.size() > 0) {
+				value = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+			}
+		}
+		Preferences.getInstance().setValue(MODULE, DEFAULT_PAGE_SETTINGS_KEY, value);
 	}
 
 	/**

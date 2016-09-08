@@ -2137,6 +2137,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 	@Override
 	public void adjustToPageSetupChanges() {
+		SheetPreferences.setDefaultPageSettings(getPrintManager());
 		rebuild();
 	}
 
