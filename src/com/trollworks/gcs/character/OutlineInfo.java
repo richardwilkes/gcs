@@ -59,7 +59,7 @@ public class OutlineInfo {
 		}
 
 		mOverheadHeight = insets.top + insets.bottom + outline.getHeaderPanel().getPreferredSize().height;
-		mMinimumHeight = mOverheadHeight + 15;
+		mMinimumHeight = mOverheadHeight + (count > 0 ? mHeights[0] : 0);
 	}
 
 	/**
