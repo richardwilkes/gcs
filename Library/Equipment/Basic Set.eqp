@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="US-ASCII" ?>
-<equipment_list unique_id="hv8irnjw:-jks2hyo6kqxr" version="1">
-	<equipment version="3">
+<equipment_list id="af0a8002-3e47-47e2-b735-2df689bb5fd0" version="1">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Antibiotic</description>
 		<tech_level>6</tech_level>
@@ -12,7 +12,7 @@
 			<category>Medical Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Antitoxin Kit</description>
 		<tech_level>6</tech_level>
@@ -25,7 +25,7 @@
 			<category>Medical Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Arrow</description>
 		<tech_level>0</tech_level>
@@ -37,7 +37,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Arrow, Bodkin</description>
 		<tech_level>3</tech_level>
@@ -50,7 +50,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Assault Boots</description>
 		<tech_level>9</tech_level>
@@ -66,7 +66,7 @@
 			<amount>6</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Assault Boots</description>
 		<tech_level>10</tech_level>
@@ -82,7 +82,7 @@
 			<amount>9</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Assault Boots</description>
 		<tech_level>11</tech_level>
@@ -98,7 +98,7 @@
 			<amount>12</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Assault Carbine, 5.56mm</description>
 		<tech_level>8</tech_level>
@@ -183,7 +183,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Assault Rifle, 5.56mm</description>
 		<tech_level>7</tech_level>
@@ -268,7 +268,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Assault Rifle, 7.62mmS</description>
 		<tech_level>7</tech_level>
@@ -353,7 +353,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>ATGM, 115mm</description>
 		<tech_level>7</tech_level>
@@ -385,7 +385,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Atlatl w/Dart</description>
 		<tech_level>0</tech_level>
@@ -420,7 +420,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Atlatl w/Javelin</description>
 		<tech_level>0</tech_level>
@@ -455,7 +455,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Auto Pistol, .40</description>
 		<tech_level>8</tech_level>
@@ -540,7 +540,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Auto Pistol, .44M</description>
 		<tech_level>8</tech_level>
@@ -625,7 +625,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Auto Pistol, .45</description>
 		<tech_level>6</tech_level>
@@ -710,7 +710,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Auto Pistol, 9mm</description>
 		<tech_level>6</tech_level>
@@ -795,7 +795,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Auto Pistol, 9mm</description>
 		<tech_level>7</tech_level>
@@ -880,7 +880,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Auto Pistol, 9mm</description>
 		<tech_level>8</tech_level>
@@ -965,7 +965,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Auto Rifle, 7.62mm</description>
 		<tech_level>6</tech_level>
@@ -1050,7 +1050,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Auto Shotgun, 12G</description>
 		<tech_level>7</tech_level>
@@ -1135,7 +1135,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Axe</description>
 		<tech_level>0</tech_level>
@@ -1174,7 +1174,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Backpack, Frame</description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
@@ -1188,7 +1188,7 @@
 			<contained_weight_prereq has="yes" compare="at most">100 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Backpack, Small</description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
@@ -1202,7 +1202,7 @@
 			<contained_weight_prereq has="yes" compare="at most">40 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Balance and Weights</description>
 		<tech_level>1</tech_level>
@@ -1215,7 +1215,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Gloves</description>
 		<tech_level>9</tech_level>
@@ -1230,7 +1230,7 @@
 			<amount>8</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Gloves</description>
 		<tech_level>10</tech_level>
@@ -1245,7 +1245,7 @@
 			<amount>12</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Gloves</description>
 		<tech_level>11</tech_level>
@@ -1260,7 +1260,7 @@
 			<amount>16</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Helmet</description>
 		<tech_level>8</tech_level>
@@ -1276,7 +1276,7 @@
 			<amount>12</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Helmet</description>
 		<tech_level>9</tech_level>
@@ -1292,7 +1292,7 @@
 			<amount>18</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Helmet</description>
 		<tech_level>10</tech_level>
@@ -1308,7 +1308,7 @@
 			<amount>24</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Helmet</description>
 		<tech_level>11</tech_level>
@@ -1324,7 +1324,7 @@
 			<amount>36</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Helmet Visor</description>
 		<tech_level>8</tech_level>
@@ -1344,7 +1344,7 @@
 			<amount>10</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Helmet Visor</description>
 		<tech_level>9</tech_level>
@@ -1364,7 +1364,7 @@
 			<amount>15</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Helmet Visor</description>
 		<tech_level>10</tech_level>
@@ -1384,7 +1384,7 @@
 			<amount>20</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Helmet Visor</description>
 		<tech_level>11</tech_level>
@@ -1404,7 +1404,7 @@
 			<amount>30</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Suit</description>
 		<tech_level>9</tech_level>
@@ -1428,7 +1428,7 @@
 			<amount>12</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Suit</description>
 		<tech_level>10</tech_level>
@@ -1452,7 +1452,7 @@
 			<amount>18</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Suit</description>
 		<tech_level>11</tech_level>
@@ -1476,7 +1476,7 @@
 			<amount>24</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Vest</description>
 		<tech_level>8</tech_level>
@@ -1492,7 +1492,7 @@
 			<amount>8</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Vest</description>
 		<tech_level>9</tech_level>
@@ -1508,7 +1508,7 @@
 			<amount>12</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Vest</description>
 		<tech_level>10</tech_level>
@@ -1524,7 +1524,7 @@
 			<amount>16</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ballistic Vest</description>
 		<tech_level>11</tech_level>
@@ -1540,7 +1540,7 @@
 			<amount>24</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Bandages</description>
 		<legality_class>4</legality_class>
@@ -1552,7 +1552,7 @@
 			<category>Medical Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Barrel Helm</description>
 		<tech_level>3</tech_level>
@@ -1572,7 +1572,7 @@
 			<amount>6</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Bastard Sword</description>
 		<tech_level>3</tech_level>
@@ -1678,7 +1678,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Bastard Sword</description>
 		<tech_level>3</tech_level>
@@ -1755,7 +1755,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Baton</description>
 		<tech_level>0</tech_level>
@@ -1881,7 +1881,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Batteries</description>
 		<tech_level>6</tech_level>
@@ -1892,7 +1892,7 @@
 			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Battle Rifle, 7.62mm</description>
 		<tech_level>7</tech_level>
@@ -1977,7 +1977,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Battle Suit</description>
 		<tech_level>9</tech_level>
@@ -2031,7 +2031,7 @@
 			</skill_prereq>
 		</prereq_list>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Battle Suit</description>
 		<tech_level>10</tech_level>
@@ -2085,7 +2085,7 @@
 			</skill_prereq>
 		</prereq_list>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Battle Suit</description>
 		<tech_level>11</tech_level>
@@ -2139,7 +2139,7 @@
 			</skill_prereq>
 		</prereq_list>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Battle Suit Helmet</description>
 		<tech_level>9</tech_level>
@@ -2163,7 +2163,7 @@
 			<amount>50</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Battle Suit Helmet</description>
 		<tech_level>10</tech_level>
@@ -2187,7 +2187,7 @@
 			<amount>75</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Battle Suit Helmet</description>
 		<tech_level>11</tech_level>
@@ -2211,7 +2211,7 @@
 			<amount>100</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Bazooka, 60mm</description>
 		<tech_level>7</tech_level>
@@ -2296,7 +2296,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Binoculars</description>
 		<tech_level>6</tech_level>
@@ -2309,7 +2309,7 @@
 			<category>Optics and Sensors</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Bit and Bridle</description>
 		<tech_level>1</tech_level>
@@ -2322,7 +2322,7 @@
 			<category>Equestrian Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Blackjack</description>
 		<tech_level>1</tech_level>
@@ -2351,7 +2351,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Blanket</description>
 		<tech_level>1</tech_level>
@@ -2363,7 +2363,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Blaster Pistol</description>
 		<tech_level>11</tech_level>
@@ -2418,7 +2418,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Blaster Rifle</description>
 		<tech_level>11</tech_level>
@@ -2473,7 +2473,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Blowpipe</description>
 		<tech_level>0</tech_level>
@@ -2503,7 +2503,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Blowpipe Darts</description>
 		<tech_level>0</tech_level>
@@ -2516,7 +2516,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Blunderbuss, 8G</description>
 		<tech_level>4</tech_level>
@@ -2601,7 +2601,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Bolas</description>
 		<tech_level>0</tech_level>
@@ -2627,7 +2627,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Bolt-Action Rifle, 7.62mm</description>
 		<tech_level>6</tech_level>
@@ -2712,10 +2712,11 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Boots</description>
 		<tech_level>2</tech_level>
+		<legality_class>4</legality_class>
 		<value>80</value>
 		<weight>3 lb</weight>
 		<reference>B284</reference>
@@ -2727,7 +2728,7 @@
 			<amount>2</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Bottle, Ceramic</description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
@@ -2741,7 +2742,7 @@
 			<contained_weight_prereq has="yes" compare="at most">2 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Brass Knuckles</description>
 		<tech_level>1</tech_level>
@@ -2779,7 +2780,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Broadsword</description>
 		<tech_level>2</tech_level>
@@ -2885,7 +2886,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Bronze Armbands</description>
 		<tech_level>1</tech_level>
@@ -2901,7 +2902,7 @@
 			<amount>3</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Bronze Breastplate</description>
 		<tech_level>1</tech_level>
@@ -2917,7 +2918,7 @@
 			<amount>4</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Bronze Corselet</description>
 		<tech_level>1</tech_level>
@@ -2937,7 +2938,7 @@
 			<amount>5</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Bronze Greaves</description>
 		<tech_level>1</tech_level>
@@ -2953,7 +2954,7 @@
 			<amount>3</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Bronze Helmet</description>
 		<tech_level>1</tech_level>
@@ -2973,7 +2974,7 @@
 			<amount>3</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Bronze Pot-Helm</description>
 		<tech_level>1</tech_level>
@@ -2989,7 +2990,7 @@
 			<amount>3</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Buff Coat</description>
 		<tech_level>4</tech_level>
@@ -3013,7 +3014,7 @@
 			<amount>2</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Bug Stomper</description>
 		<tech_level>7</tech_level>
@@ -3024,11 +3025,11 @@
 		<notes>Jams bugs in 10-yard radius. 8 hrs.</notes>
 		<categories>
 			<category>Law-Enforcement</category>
-			<category>Thief</category>
 			<category>Spy Gear</category>
+			<category>Thief</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Bug, Audio</description>
 		<tech_level>7</tech_level>
@@ -3038,11 +3039,11 @@
 		<notes>-7 to spot, 1/4-mile range, transmits for 1 week.</notes>
 		<categories>
 			<category>Law-Enforcement</category>
-			<category>Thief</category>
 			<category>Spy Gear</category>
+			<category>Thief</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Cable, Steel, 1.5", 10 yards</description>
 		<tech_level>5</tech_level>
@@ -3055,7 +3056,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Cable, Steel, 1.5", 20 yards</description>
 		<tech_level>5</tech_level>
@@ -3068,7 +3069,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Camcorder</description>
 		<tech_level>8</tech_level>
@@ -3081,7 +3082,7 @@
 			<category>Optics and Sensors</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Camera, 35mm</description>
 		<tech_level>6</tech_level>
@@ -3094,7 +3095,7 @@
 			<category>Optics and Sensors</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Camera-Film</description>
 		<tech_level>6</tech_level>
@@ -3106,7 +3107,7 @@
 			<category>Optics and Sensors</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Camp Stove, Small</description>
 		<tech_level>6</tech_level>
@@ -3119,7 +3120,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Candle, Tallow</description>
 		<tech_level>1</tech_level>
@@ -3132,7 +3133,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Canteen</description>
 		<tech_level>5</tech_level>
 		<legality_class>4</legality_class>
@@ -3146,7 +3147,7 @@
 			<contained_weight_prereq has="yes" compare="at most">2 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Cartridge Rifle, .45</description>
 		<tech_level>5</tech_level>
@@ -3231,7 +3232,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Cattle Prod</description>
 		<tech_level>7</tech_level>
@@ -3300,7 +3301,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Cavalry Saber</description>
 		<tech_level>4</tech_level>
@@ -3406,7 +3407,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Cell Phone</description>
 		<tech_level>8</tech_level>
@@ -3419,7 +3420,7 @@
 			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Chainsaw</description>
 		<tech_level>6</tech_level>
@@ -3462,7 +3463,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Cigarette Lighter</description>
 		<tech_level>6</tech_level>
@@ -3474,7 +3475,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Climbing Gear</description>
 		<tech_level>2</tech_level>
@@ -3487,10 +3488,11 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Cloth Armor</description>
 		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
 		<value>30</value>
 		<weight>6 lb</weight>
 		<reference>B283</reference>
@@ -3506,10 +3508,11 @@
 			<amount>1</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Cloth Cap</description>
 		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
 		<value>5</value>
 		<reference>B284</reference>
 		<categories>
@@ -3520,10 +3523,11 @@
 			<amount>1</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Cloth Gloves</description>
 		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
 		<value>15</value>
 		<reference>B284</reference>
 		<categories>
@@ -3534,10 +3538,11 @@
 			<amount>1</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Cloth Sleeves</description>
 		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
 		<value>20</value>
 		<weight>2 lb</weight>
 		<reference>B283</reference>
@@ -3549,7 +3554,7 @@
 			<amount>1</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Combat Hardsuit</description>
 		<tech_level>9</tech_level>
@@ -3595,7 +3600,7 @@
 			</skill_prereq>
 		</prereq_list>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Combat Hardsuit</description>
 		<tech_level>10</tech_level>
@@ -3641,7 +3646,7 @@
 			</skill_prereq>
 		</prereq_list>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Combat Hardsuit</description>
 		<tech_level>11</tech_level>
@@ -3687,7 +3692,7 @@
 			</skill_prereq>
 		</prereq_list>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Combat Hardsuit Helmet</description>
 		<tech_level>9</tech_level>
@@ -3711,7 +3716,7 @@
 			<amount>12</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Combat Hardsuit Helmet</description>
 		<tech_level>10</tech_level>
@@ -3735,7 +3740,7 @@
 			<amount>18</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Combat Hardsuit Helmet</description>
 		<tech_level>11</tech_level>
@@ -3759,7 +3764,7 @@
 			<amount>24</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Compass</description>
 		<tech_level>6</tech_level>
@@ -3776,19 +3781,19 @@
 			<amount>1</amount>
 		</skill_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
-		<description>Composite Bow</description>
+		<description>Composite Bow (ST10)</description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
 		<value>900</value>
 		<weight>4 lb</weight>
 		<reference>B275</reference>
 		<ranged_weapon>
-			<damage>thr+3 imp</damage>
+			<damage>1d+1 imp</damage>
 			<strength>10&#8224;</strength>
 			<accuracy>3</accuracy>
-			<range>x20/x25</range>
+			<range>200/250</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(2)</shots>
 			<bulk>-7</bulk>
@@ -3806,7 +3811,307 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Composite Bow (ST11)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>990</value>
+		<weight>4 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+2 imp</damage>
+			<strength>11&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>220/275</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Composite Bow (ST12)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>1080</value>
+		<weight>4 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+2 imp</damage>
+			<strength>12&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>240/300</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Composite Bow (ST13)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>1170</value>
+		<weight>4 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+3 imp</damage>
+			<strength>13&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>260/325</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Composite Bow (ST14)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>1260</value>
+		<weight>4 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+3 imp</damage>
+			<strength>14&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>280/350</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Composite Bow (ST15)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>1350</value>
+		<weight>4 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+4 imp</damage>
+			<strength>15&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>300/375</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Composite Bow (ST16)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>1440</value>
+		<weight>4 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+4 imp</damage>
+			<strength>16&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>320/400</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Composite Bow (ST17)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>1530</value>
+		<weight>4 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+5 imp</damage>
+			<strength>17&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>340/425</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Composite Bow (ST18)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>1620</value>
+		<weight>4 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+5 imp</damage>
+			<strength>18&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>360/450</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Composite Bow (ST19)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>1710</value>
+		<weight>4 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>2d+2 imp</damage>
+			<strength>19&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>380/475</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Composite Bow (ST20)</description>
+		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
+		<value>1800</value>
+		<weight>4 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>2d+2 imp</damage>
+			<strength>20&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>400/500</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Computer, Laptop</description>
 		<tech_level>8</tech_level>
@@ -3819,7 +4124,7 @@
 			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Computer, Wearable</description>
 		<tech_level>8</tech_level>
@@ -3832,7 +4137,7 @@
 			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Copper Farthing</description>
 		<legality_class>4</legality_class>
@@ -3843,7 +4148,7 @@
 			<category>Money: GURPS Standard Medieval Coins</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Cord, 3/16", 10 yards</description>
 		<tech_level>0</tech_level>
@@ -3856,7 +4161,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Cord, 3/16", 20 yards</description>
 		<tech_level>0</tech_level>
@@ -3869,7 +4174,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crash Kit/TL0-5</description>
 		<tech_level>0-5</tech_level>
@@ -3887,7 +4192,7 @@
 			<amount>2</amount>
 		</skill_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crash Kit/TL6+</description>
 		<tech_level>6+</tech_level>
@@ -3905,7 +4210,7 @@
 			<amount>2</amount>
 		</skill_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crossbow (ST7)</description>
 		<tech_level>2</tech_level>
@@ -3935,12 +4240,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crossbow (ST8)</description>
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
-		<value>155</value>
+		<value>165</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -3965,12 +4270,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crossbow (ST9)</description>
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
-		<value>160</value>
+		<value>180</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -3995,12 +4300,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crossbow (ST10)</description>
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
-		<value>165</value>
+		<value>195</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -4025,12 +4330,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crossbow (ST11)</description>
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
-		<value>170</value>
+		<value>210</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -4055,12 +4360,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crossbow (ST12)</description>
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
-		<value>175</value>
+		<value>225</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -4085,12 +4390,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crossbow (ST13)</description>
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
-		<value>185</value>
+		<value>240</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -4115,12 +4420,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crossbow (ST14)</description>
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
-		<value>195</value>
+		<value>255</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -4145,12 +4450,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crossbow (ST15)</description>
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
-		<value>205</value>
+		<value>270</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -4175,12 +4480,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crossbow (ST16)</description>
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
-		<value>215</value>
+		<value>285</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -4205,12 +4510,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crossbow (ST17)</description>
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
-		<value>230</value>
+		<value>300</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -4235,12 +4540,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crossbow (ST18)</description>
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
-		<value>245</value>
+		<value>315</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -4265,12 +4570,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crossbow (ST19)</description>
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
-		<value>260</value>
+		<value>330</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -4295,12 +4600,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crossbow (ST20)</description>
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
-		<value>275</value>
+		<value>345</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -4325,7 +4630,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crossbow Bolt</description>
 		<tech_level>2</tech_level>
@@ -4338,7 +4643,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Crowbar, 3'</description>
 		<tech_level>2</tech_level>
@@ -4399,7 +4704,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Cutlass</description>
 		<tech_level>4</tech_level>
@@ -4525,7 +4830,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Cutting Torch</description>
 		<tech_level>6</tech_level>
@@ -4538,7 +4843,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Cutting Torch Gas Bottle</description>
 		<tech_level>6</tech_level>
@@ -4551,7 +4856,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Dagger</description>
 		<tech_level>1</tech_level>
@@ -4621,7 +4926,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Dart Rifle, 11mm</description>
 		<tech_level>8</tech_level>
@@ -4706,7 +5011,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Derringer, .41</description>
 		<tech_level>5</tech_level>
@@ -4791,7 +5096,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Disguise Kit</description>
 		<tech_level>5</tech_level>
@@ -4801,8 +5106,8 @@
 		<reference>B289</reference>
 		<categories>
 			<category>Law-Enforcement</category>
-			<category>Thief</category>
 			<category>Spy Gear</category>
+			<category>Thief</category>
 		</categories>
 		<skill_bonus>
 			<name compare="is">Disguise</name>
@@ -4810,7 +5115,7 @@
 			<amount>1</amount>
 		</skill_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Double Shotgun, 10G</description>
 		<tech_level>5</tech_level>
@@ -4895,7 +5200,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Douple Mail Hauberk</description>
 		<tech_level>3</tech_level>
@@ -4915,7 +5220,7 @@
 			<amount>5</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Drum</description>
 		<tech_level>0</tech_level>
@@ -4928,7 +5233,7 @@
 			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Ear Muffs</description>
 		<tech_level>6</tech_level>
@@ -4941,7 +5246,7 @@
 			<category>Weapon and Combat Accessories</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Electrolaser Carbine</description>
 		<tech_level>9</tech_level>
@@ -4996,7 +5301,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Electrolaser Pistol</description>
 		<tech_level>9</tech_level>
@@ -5051,7 +5356,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Electronic "Lockpicks"</description>
 		<tech_level>7</tech_level>
@@ -5062,11 +5367,11 @@
 		<notes>+2 to pick electronic locks</notes>
 		<categories>
 			<category>Law-Enforcement</category>
-			<category>Thief</category>
 			<category>Spy Gear</category>
+			<category>Thief</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Face Mask</description>
 		<tech_level>3</tech_level>
@@ -5082,7 +5387,7 @@
 			<amount>4</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>First Aid Kit</description>
 		<legality_class>4</legality_class>
@@ -5099,7 +5404,7 @@
 			<amount>1</amount>
 		</skill_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Fishhooks &amp; Line</description>
 		<tech_level>0</tech_level>
@@ -5111,7 +5416,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Flail</description>
 		<tech_level>2</tech_level>
@@ -5155,7 +5460,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Flak Jacket</description>
 		<tech_level>6</tech_level>
@@ -5171,7 +5476,7 @@
 			<amount>7</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Flamethrower</description>
 		<tech_level>6</tech_level>
@@ -5221,7 +5526,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Flashlight, Heavy</description>
 		<tech_level>6</tech_level>
@@ -5234,7 +5539,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Flashlight, Mini</description>
 		<tech_level>7</tech_level>
@@ -5247,7 +5552,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Flintlock Musket, .75</description>
 		<tech_level>4</tech_level>
@@ -5332,7 +5637,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Flintlock Pistol, .51</description>
 		<tech_level>4</tech_level>
@@ -5417,7 +5722,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Force Shield</description>
 		<tech_level>^</tech_level>
@@ -5448,7 +5753,7 @@
 			<amount>3</amount>
 		</attribute_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Force Sword</description>
 		<tech_level>^</tech_level>
@@ -5507,7 +5812,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Frag Helmet</description>
 		<tech_level>7</tech_level>
@@ -5523,7 +5828,7 @@
 			<amount>5</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Frag Helmet Visor</description>
 		<tech_level>7</tech_level>
@@ -5543,7 +5848,7 @@
 			<amount>1</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Frag Vest</description>
 		<tech_level>7</tech_level>
@@ -5563,7 +5868,7 @@
 			<amount>5</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Frag Vest Plate Inserts</description>
 		<tech_level>7</tech_level>
@@ -5579,10 +5884,11 @@
 			<amount>20</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Fur Loincloth</description>
 		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
 		<value>10</value>
 		<reference>B283</reference>
 		<categories>
@@ -5593,10 +5899,11 @@
 			<amount>1</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Fur Tunic</description>
 		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
 		<value>25</value>
 		<weight>2 lb</weight>
 		<reference>B283</reference>
@@ -5608,7 +5915,7 @@
 			<amount>1</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Garrote</description>
 		<tech_level>0</tech_level>
@@ -5635,7 +5942,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Gas Mask</description>
 		<tech_level>6</tech_level>
@@ -5655,7 +5962,7 @@
 			<amount>2</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Gasoline, 1 Gallon</description>
 		<tech_level>6</tech_level>
@@ -5667,7 +5974,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Gauntlets</description>
 		<tech_level>2</tech_level>
@@ -5683,7 +5990,7 @@
 			<amount>4</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Gauss PDW, 4mm</description>
 		<tech_level>10</tech_level>
@@ -5768,7 +6075,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Gauss Rifle, 4mm</description>
 		<tech_level>10</tech_level>
@@ -5853,7 +6160,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Glaive</description>
 		<tech_level>1</tech_level>
@@ -5929,7 +6236,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Gold Coin</description>
 		<legality_class>4</legality_class>
@@ -5940,7 +6247,7 @@
 			<category>Money: GURPS Standard Medieval Coins</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>GPS Receiver</description>
 		<tech_level>8</tech_level>
@@ -5953,7 +6260,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Grapnel</description>
 		<tech_level>5</tech_level>
@@ -5966,7 +6273,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Great Axe</description>
 		<tech_level>1</tech_level>
@@ -6010,7 +6317,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Great Helm</description>
 		<tech_level>3</tech_level>
@@ -6034,7 +6341,7 @@
 			<amount>7</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Greatsword</description>
 		<tech_level>3</tech_level>
@@ -6110,7 +6417,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Group Basics</description>
 		<tech_level>0</tech_level>
@@ -6123,7 +6430,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Gyroc Pistol, 15mm</description>
 		<tech_level>9</tech_level>
@@ -6208,7 +6515,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Halberd</description>
 		<tech_level>3</tech_level>
@@ -6316,7 +6623,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Handcuffs</description>
 		<tech_level>5</tech_level>
@@ -6326,8 +6633,8 @@
 		<reference>B289</reference>
 		<categories>
 			<category>Law-Enforcement</category>
-			<category>Thief</category>
 			<category>Spy Gear</category>
+			<category>Thief</category>
 		</categories>
 		<skill_bonus>
 			<name compare="is">Escape</name>
@@ -6335,7 +6642,7 @@
 			<amount>-5</amount>
 		</skill_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Handgonne, .90</description>
 		<tech_level>3</tech_level>
@@ -6420,7 +6727,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Harpoon</description>
 		<tech_level>2</tech_level>
@@ -6455,7 +6762,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Hatchet</description>
 		<tech_level>0</tech_level>
@@ -6515,7 +6822,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Heavy Blaster</description>
 		<tech_level>11</tech_level>
@@ -6570,10 +6877,11 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Heavy Cloak</description>
 		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>5 lb</weight>
 		<reference>B287</reference>
@@ -6634,7 +6942,7 @@
 			<amount>2</amount>
 		</attribute_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Heavy Gauntlets</description>
 		<tech_level>3</tech_level>
@@ -6650,7 +6958,7 @@
 			<amount>5</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Heavy Leather Leggings</description>
 		<tech_level>1</tech_level>
@@ -6666,7 +6974,7 @@
 			<amount>2</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Heavy Leather Sleeves</description>
 		<tech_level>1</tech_level>
@@ -6682,7 +6990,7 @@
 			<amount>2</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Heavy Plate Arms</description>
 		<tech_level>3</tech_level>
@@ -6698,7 +7006,7 @@
 			<amount>7</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Heavy Plate Legs</description>
 		<tech_level>3</tech_level>
@@ -6714,7 +7022,7 @@
 			<amount>7</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Heavy Steel Corselet</description>
 		<tech_level>3</tech_level>
@@ -6734,7 +7042,7 @@
 			<amount>7</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Hip Quiver</description>
 		<tech_level>0</tech_level>
 		<legality_class>4</legality_class>
@@ -6746,7 +7054,7 @@
 			<category>Weapon and Combat Accessories</category>
 		</categories>
 	</equipment_container>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>HMG, .50</description>
 		<tech_level>6</tech_level>
@@ -6802,7 +7110,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Holdout Pistol, .380</description>
 		<tech_level>7</tech_level>
@@ -6887,7 +7195,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Holster, Belt</description>
 		<tech_level>5</tech_level>
 		<legality_class>4</legality_class>
@@ -6899,7 +7207,7 @@
 			<category>Weapon and Combat Accessories</category>
 		</categories>
 	</equipment_container>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Holster, Shoulder</description>
 		<tech_level>5</tech_level>
 		<legality_class>4</legality_class>
@@ -6911,7 +7219,7 @@
 			<category>Weapon and Combat Accessories</category>
 		</categories>
 	</equipment_container>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Homing Beacon</description>
 		<tech_level>7</tech_level>
@@ -6921,11 +7229,11 @@
 		<notes>Scanner tracks at 1-mile range. 12 hrs.</notes>
 		<categories>
 			<category>Law-Enforcement</category>
-			<category>Thief</category>
 			<category>Spy Gear</category>
+			<category>Thief</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Horseshoes, Set</description>
 		<tech_level>3</tech_level>
@@ -6938,10 +7246,11 @@
 			<category>Equestrian Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>ICW Integral, 25mm</description>
 		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
 		<value>0</value>
 		<reference>B281</reference>
 		<ranged_weapon>
@@ -7170,7 +7479,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>ICW, 6.8mm</description>
 		<tech_level>9</tech_level>
@@ -7255,10 +7564,11 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Integral, 25mm</description>
 		<tech_level>9</tech_level>
+		<legality_class>4</legality_class>
 		<value>0</value>
 		<reference>B281</reference>
 		<ranged_weapon>
@@ -7338,7 +7648,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Iron Spike/Piton</description>
 		<tech_level>2</tech_level>
@@ -7350,7 +7660,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Javelin</description>
 		<tech_level>1</tech_level>
@@ -7421,7 +7731,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Katana</description>
 		<tech_level>3</tech_level>
@@ -7527,7 +7837,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Katana</description>
 		<tech_level>3</tech_level>
@@ -7604,7 +7914,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Kerosene, 1 Gallon</description>
 		<tech_level>6</tech_level>
@@ -7616,7 +7926,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Knitting Needles, Pair</description>
 		<tech_level>3</tech_level>
@@ -7627,7 +7937,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Kusari</description>
 		<tech_level>3</tech_level>
@@ -7671,7 +7981,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Lance</description>
 		<tech_level>2</tech_level>
@@ -7705,7 +8015,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Lantern</description>
 		<tech_level>2</tech_level>
@@ -7718,7 +8028,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Lanyard, Leather</description>
 		<tech_level>0</tech_level>
 		<legality_class>4</legality_class>
@@ -7729,7 +8039,7 @@
 			<category>Weapon and Combat Accessories</category>
 		</categories>
 	</equipment_container>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Lanyard, Woven Steel</description>
 		<tech_level>6</tech_level>
 		<legality_class>4</legality_class>
@@ -7740,7 +8050,7 @@
 			<category>Weapon and Combat Accessories</category>
 		</categories>
 	</equipment_container>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Large Knife</description>
 		<tech_level>0</tech_level>
@@ -7847,7 +8157,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Large Net</description>
 		<tech_level>0</tech_level>
@@ -7878,7 +8188,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Large Shield</description>
 		<tech_level>1</tech_level>
@@ -7932,7 +8242,7 @@
 			<amount>3</amount>
 		</attribute_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Large Shield with Spike</description>
 		<tech_level>1</tech_level>
@@ -7986,7 +8296,7 @@
 			<amount>3</amount>
 		</attribute_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Lariat</description>
 		<tech_level>1</tech_level>
@@ -8012,7 +8322,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Laser Microphone</description>
 		<tech_level>8</tech_level>
@@ -8023,11 +8333,11 @@
 		<notes>Eavesdrop through glass. 300-yd. range.</notes>
 		<categories>
 			<category>Law-Enforcement</category>
-			<category>Thief</category>
 			<category>Spy Gear</category>
+			<category>Thief</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Laser Pistol</description>
 		<tech_level>10</tech_level>
@@ -8082,7 +8392,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Laser Rifle</description>
 		<tech_level>10</tech_level>
@@ -8137,7 +8447,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Laser Sight</description>
 		<tech_level>8</tech_level>
@@ -8149,7 +8459,7 @@
 			<category>Weapon and Combat Accessories</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Laser Sniper Rifle</description>
 		<tech_level>9</tech_level>
@@ -8204,7 +8514,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>LAW, 84mm</description>
 		<tech_level>8</tech_level>
@@ -8289,7 +8599,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Lead Pellet (Prodd)</description>
 		<tech_level>2</tech_level>
@@ -8302,7 +8612,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Lead Pellet (Sling)</description>
 		<tech_level>2</tech_level>
@@ -8316,7 +8626,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Leather Armor</description>
 		<tech_level>1</tech_level>
@@ -8336,7 +8646,7 @@
 			<amount>2</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Leather Cap</description>
 		<tech_level>1</tech_level>
@@ -8351,10 +8661,11 @@
 			<amount>1</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Leather Gloves</description>
 		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
 		<value>30</value>
 		<reference>B284</reference>
 		<categories>
@@ -8365,7 +8676,7 @@
 			<amount>2</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Leather Helm</description>
 		<tech_level>1</tech_level>
@@ -8385,10 +8696,11 @@
 			<amount>2</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Leather Jacket</description>
 		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>4 lb</weight>
 		<reference>B283</reference>
@@ -8404,10 +8716,11 @@
 			<amount>1</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Leather Leggings</description>
 		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
 		<value>40</value>
 		<weight>2 lb</weight>
 		<reference>B283</reference>
@@ -8419,10 +8732,11 @@
 			<amount>1</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Leather Pants</description>
 		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
 		<value>40</value>
 		<weight>3 lb</weight>
 		<reference>B283</reference>
@@ -8438,7 +8752,7 @@
 			<amount>1</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Legionary Helmet</description>
 		<tech_level>2</tech_level>
@@ -8458,7 +8772,7 @@
 			<amount>4</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Lever-Action Carbine, .30</description>
 		<tech_level>5</tech_level>
@@ -8543,7 +8857,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Life Jacket</description>
 		<tech_level>6</tech_level>
@@ -8556,7 +8870,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Light Buckler</description>
 		<legality_class>4</legality_class>
@@ -8608,7 +8922,7 @@
 			<amount>1</amount>
 		</attribute_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Light Buckler with Spike</description>
 		<tech_level>1</tech_level>
@@ -8661,10 +8975,11 @@
 			<amount>1</amount>
 		</attribute_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Light Cloak</description>
 		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
 		<value>20</value>
 		<weight>2 lb</weight>
 		<reference>B287</reference>
@@ -8725,7 +9040,7 @@
 			<amount>1</amount>
 		</attribute_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Light Club</description>
 		<tech_level>0</tech_level>
@@ -8831,7 +9146,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Light Scale Armor</description>
 		<tech_level>2</tech_level>
@@ -8847,7 +9162,7 @@
 			<amount>3</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Light Shield</description>
 		<legality_class>4</legality_class>
@@ -8900,7 +9215,7 @@
 			<amount>1</amount>
 		</attribute_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Light Shield with Spike</description>
 		<tech_level>1</tech_level>
@@ -8954,7 +9269,7 @@
 			<amount>2</amount>
 		</attribute_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>LMG, 7.62mm</description>
 		<tech_level>6</tech_level>
@@ -9039,7 +9354,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Lockpicks</description>
 		<tech_level>3</tech_level>
@@ -9049,11 +9364,11 @@
 		<notes>Basic equipment for Lockpicking skill</notes>
 		<categories>
 			<category>Law-Enforcement</category>
-			<category>Thief</category>
 			<category>Spy Gear</category>
+			<category>Thief</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Long Spear</description>
 		<tech_level>2</tech_level>
@@ -9119,19 +9434,19 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
-		<description>Longbow</description>
+		<description>Longbow (ST11)</description>
 		<tech_level>0</tech_level>
 		<legality_class>4</legality_class>
 		<value>200</value>
 		<weight>3 lb</weight>
 		<reference>B275</reference>
 		<ranged_weapon>
-			<damage>thr+2 imp</damage>
+			<damage>1d+1 imp</damage>
 			<strength>11&#8224;</strength>
 			<accuracy>3</accuracy>
-			<range>x15/x20</range>
+			<range>165/220</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(2)</shots>
 			<bulk>-8</bulk>
@@ -9149,7 +9464,277 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Longbow (ST12)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>220</value>
+		<weight>3 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+1 imp</damage>
+			<strength>12&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>180/240</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-8</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Longbow (ST13)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>240</value>
+		<weight>3 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+2 imp</damage>
+			<strength>13&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>195/260</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-8</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Longbow (ST14)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>260</value>
+		<weight>3 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+2 imp</damage>
+			<strength>14&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>210/280</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-8</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Longbow (ST15)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>280</value>
+		<weight>3 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+3 imp</damage>
+			<strength>15&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>225/300</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-8</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Longbow (ST16)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>300</value>
+		<weight>3 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+3 imp</damage>
+			<strength>16&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>240/320</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-8</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Longbow (ST17)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>320</value>
+		<weight>3 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+4 imp</damage>
+			<strength>17&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>255/340</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-8</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Longbow (ST18)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>340</value>
+		<weight>3 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+4 imp</damage>
+			<strength>18&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>270/360</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-8</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Longbow (ST19)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>360</value>
+		<weight>3 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>2d+1 imp</damage>
+			<strength>19&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>285/380</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-8</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Longbow (ST20)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>380</value>
+		<weight>3 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>2d+1 imp</damage>
+			<strength>20&#8224;</strength>
+			<accuracy>3</accuracy>
+			<range>300/400</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-8</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Lorcia Segmentata</description>
 		<tech_level>2</tech_level>
@@ -9165,7 +9750,7 @@
 			<amount>5</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Mace</description>
 		<tech_level>2</tech_level>
@@ -9224,7 +9809,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Machine Pistol, 9mm</description>
 		<tech_level>7</tech_level>
@@ -9309,7 +9894,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Mail Coif</description>
 		<tech_level>2</tech_level>
@@ -9329,7 +9914,7 @@
 			<amount>4</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Mail Hauberk</description>
 		<tech_level>2</tech_level>
@@ -9349,7 +9934,7 @@
 			<amount>4</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Mail Leggings</description>
 		<tech_level>2</tech_level>
@@ -9365,7 +9950,7 @@
 			<amount>4</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Mail Shirt</description>
 		<tech_level>2</tech_level>
@@ -9381,7 +9966,7 @@
 			<amount>4</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Mail Sleeves</description>
 		<tech_level>2</tech_level>
@@ -9397,7 +9982,7 @@
 			<amount>4</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Match, Single, Waterproof</description>
 		<tech_level>6</tech_level>
@@ -9409,7 +9994,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Matches, Waterproof</description>
 		<tech_level>6</tech_level>
@@ -9422,7 +10007,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Matchlock Musket, .80</description>
 		<tech_level>4</tech_level>
@@ -9507,7 +10092,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Maul</description>
 		<tech_level>0</tech_level>
@@ -9551,7 +10136,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Medium Buckler</description>
 		<tech_level>1</tech_level>
@@ -9604,7 +10189,7 @@
 			<amount>2</amount>
 		</attribute_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Medium Buckler with Spike</description>
 		<tech_level>1</tech_level>
@@ -9657,7 +10242,7 @@
 			<amount>2</amount>
 		</attribute_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Medium Shield</description>
 		<tech_level>1</tech_level>
@@ -9711,7 +10296,7 @@
 			<amount>2</amount>
 		</attribute_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Medium Shield with Spike</description>
 		<tech_level>1</tech_level>
@@ -9765,7 +10350,7 @@
 			<amount>2</amount>
 		</attribute_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Melee Net</description>
 		<tech_level>2</tech_level>
@@ -9796,7 +10381,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Metal Detector Wand</description>
 		<tech_level>7</tech_level>
@@ -9809,7 +10394,7 @@
 			<category>Optics and Sensors</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Mini-Camera, Digital</description>
 		<tech_level>8</tech_level>
@@ -9821,7 +10406,7 @@
 			<category>Optics and Sensors</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Mini-Recorder</description>
 		<tech_level>7</tech_level>
@@ -9834,7 +10419,7 @@
 			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Mini-Recorder, Digital</description>
 		<tech_level>8</tech_level>
@@ -9846,7 +10431,7 @@
 			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Mini-Recorder-Tape</description>
 		<tech_level>7</tech_level>
@@ -9858,7 +10443,7 @@
 			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Monowire Whip</description>
 		<tech_level>^</tech_level>
@@ -9896,7 +10481,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Morningstar</description>
 		<tech_level>3</tech_level>
@@ -9935,7 +10520,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Naginata</description>
 		<tech_level>2</tech_level>
@@ -10011,7 +10596,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Naginata</description>
 		<tech_level>2</tech_level>
@@ -10078,7 +10663,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Naginata</description>
 		<tech_level>2</tech_level>
@@ -10155,7 +10740,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Nanobug</description>
 		<tech_level>8</tech_level>
@@ -10165,11 +10750,11 @@
 		<notes>Pinhead-sized audio-visual bug (-10 to spot)</notes>
 		<categories>
 			<category>Law-Enforcement</category>
-			<category>Thief</category>
 			<category>Spy Gear</category>
+			<category>Thief</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>NBC Suit</description>
 		<tech_level>7</tech_level>
@@ -10219,7 +10804,7 @@
 			</skill_prereq>
 		</prereq_list>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Night Vision Goggles</description>
 		<tech_level>8</tech_level>
@@ -10232,7 +10817,7 @@
 			<category>Optics and Sensors</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Nunchaku</description>
 		<tech_level>3</tech_level>
@@ -10271,7 +10856,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Oil, Lantern, 1 Pint</description>
 		<tech_level>2</tech_level>
@@ -10283,7 +10868,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Parachute</description>
 		<tech_level>6</tech_level>
@@ -10295,7 +10880,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>PDW, 4.6mm</description>
 		<tech_level>8</tech_level>
@@ -10380,7 +10965,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Personal Basics</description>
 		<tech_level>0</tech_level>
@@ -10393,7 +10978,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pick</description>
 		<tech_level>3</tech_level>
@@ -10433,7 +11018,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pickaxe</description>
 		<tech_level>2</tech_level>
@@ -10446,7 +11031,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pistol Crossbow (ST7)</description>
 		<tech_level>3</tech_level>
@@ -10476,12 +11061,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pistol Crossbow (ST8)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>155</value>
+		<value>165</value>
 		<weight>4 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -10506,12 +11091,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pistol Crossbow (ST9)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>160</value>
+		<value>180</value>
 		<weight>4 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -10536,12 +11121,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pistol Crossbow (ST10)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>165</value>
+		<value>195</value>
 		<weight>4 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -10566,12 +11151,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pistol Crossbow (ST11)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>170</value>
+		<value>210</value>
 		<weight>4 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -10596,12 +11181,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pistol Crossbow (ST12)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>175</value>
+		<value>225</value>
 		<weight>4 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -10626,12 +11211,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pistol Crossbow (ST13)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>185</value>
+		<value>240</value>
 		<weight>4 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -10656,12 +11241,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pistol Crossbow (ST14)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>195</value>
+		<value>255</value>
 		<weight>4 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -10686,12 +11271,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pistol Crossbow (ST15)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>205</value>
+		<value>270</value>
 		<weight>4 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -10716,12 +11301,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pistol Crossbow (ST16)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>215</value>
+		<value>285</value>
 		<weight>4 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -10746,12 +11331,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pistol Crossbow (ST17)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>230</value>
+		<value>300</value>
 		<weight>4 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -10776,12 +11361,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pistol Crossbow (ST18)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>245</value>
+		<value>315</value>
 		<weight>4 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -10806,12 +11391,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pistol Crossbow (ST19)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>260</value>
+		<value>330</value>
 		<weight>4 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -10836,12 +11421,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pistol Crossbow (ST20)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>275</value>
+		<value>345</value>
 		<weight>4 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -10866,7 +11451,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Plate Arms</description>
 		<tech_level>3</tech_level>
@@ -10882,7 +11467,7 @@
 			<amount>6</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Plate Legs</description>
 		<tech_level>3</tech_level>
@@ -10898,7 +11483,7 @@
 			<amount>6</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Plow, Iron</description>
 		<tech_level>2</tech_level>
@@ -10911,7 +11496,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Plow, Wooden</description>
 		<tech_level>1</tech_level>
@@ -10924,7 +11509,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pole, 6'</description>
 		<tech_level>0</tech_level>
@@ -10936,7 +11521,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pole, 10'</description>
 		<tech_level>0</tech_level>
@@ -10948,7 +11533,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Poleaxe</description>
 		<tech_level>3</tech_level>
@@ -11024,7 +11609,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Portable Tool Kit, Armoury</description>
 		<tech_level>1</tech_level>
@@ -11036,7 +11621,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Portable Tool Kit, Carpentry</description>
 		<tech_level>1</tech_level>
@@ -11048,7 +11633,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Portable Tool Kit, Electrician</description>
 		<tech_level>6</tech_level>
@@ -11060,7 +11645,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Portable Tool Kit, Electronics Repair</description>
 		<tech_level>6</tech_level>
@@ -11072,7 +11657,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Portable Tool Kit, Explosives</description>
 		<tech_level>5</tech_level>
@@ -11084,7 +11669,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Portable Tool Kit, Machinist</description>
 		<tech_level>5</tech_level>
@@ -11096,7 +11681,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Portable Tool Kit, Mechanic</description>
 		<tech_level>5</tech_level>
@@ -11108,7 +11693,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pot-Helm</description>
 		<tech_level>3</tech_level>
@@ -11124,7 +11709,7 @@
 			<amount>4</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Pouch, Small</description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
@@ -11138,7 +11723,7 @@
 			<contained_weight_prereq has="yes" compare="at most">3 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Prodd (ST7)</description>
 		<tech_level>3</tech_level>
@@ -11168,12 +11753,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Prodd (ST8)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>155</value>
+		<value>165</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -11198,12 +11783,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Prodd (ST9)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>160</value>
+		<value>180</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -11228,12 +11813,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Prodd (ST10)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>165</value>
+		<value>195</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -11258,12 +11843,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Prodd (ST11)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>170</value>
+		<value>210</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -11288,12 +11873,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Prodd (ST12)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>175</value>
+		<value>225</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -11318,12 +11903,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Prodd (ST13)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>185</value>
+		<value>240</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -11348,12 +11933,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Prodd (ST14)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>195</value>
+		<value>255</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -11378,12 +11963,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Prodd (ST15)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>205</value>
+		<value>270</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -11408,12 +11993,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Prodd (ST16)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>215</value>
+		<value>285</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -11438,12 +12023,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Prodd (ST17)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>230</value>
+		<value>300</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -11468,12 +12053,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Prodd (ST18)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>245</value>
+		<value>315</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -11498,12 +12083,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Prodd (ST19)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>260</value>
+		<value>330</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -11528,12 +12113,12 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Prodd (ST20)</description>
 		<tech_level>3</tech_level>
 		<legality_class>4</legality_class>
-		<value>275</value>
+		<value>345</value>
 		<weight>6 lb</weight>
 		<reference>B276</reference>
 		<ranged_weapon>
@@ -11558,7 +12143,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Pump Shotgun, 12G</description>
 		<tech_level>6</tech_level>
@@ -11643,7 +12228,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Purse, Small</description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
@@ -11657,7 +12242,7 @@
 			<contained_weight_prereq has="yes" compare="at most">1 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Quarterstaff</description>
 		<tech_level>0</tech_level>
@@ -11723,7 +12308,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Quarterstaff</description>
 		<tech_level>0</tech_level>
@@ -11800,7 +12385,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Radio, Backpack</description>
 		<tech_level>7</tech_level>
@@ -11813,7 +12398,7 @@
 			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Radio, Hand</description>
 		<tech_level>7</tech_level>
@@ -11826,7 +12411,7 @@
 			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Radio, Headset</description>
 		<tech_level>8</tech_level>
@@ -11839,7 +12424,7 @@
 			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Radio, Headset, secure</description>
 		<tech_level>8</tech_level>
@@ -11852,7 +12437,7 @@
 			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Rapier</description>
 		<tech_level>4</tech_level>
@@ -11906,19 +12491,19 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
-		<description>Regular Bow</description>
+		<description>Regular Bow (ST10)</description>
 		<tech_level>0</tech_level>
 		<legality_class>4</legality_class>
 		<value>100</value>
 		<weight>2 lb</weight>
 		<reference>B275</reference>
 		<ranged_weapon>
-			<damage>thr+1 imp</damage>
+			<damage>1d-1 imp</damage>
 			<strength>10&#8224;</strength>
 			<accuracy>2</accuracy>
-			<range>x15/x20</range>
+			<range>150/200</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(2)</shots>
 			<bulk>-7</bulk>
@@ -11936,7 +12521,307 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Regular Bow (ST11)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>110</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d imp</damage>
+			<strength>11&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>165/220</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Regular Bow (ST12)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>120</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d imp</damage>
+			<strength>12&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>180/240</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Regular Bow (ST13)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>130</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+1 imp</damage>
+			<strength>13&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>195/260</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Regular Bow (ST14)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>140</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+1 imp</damage>
+			<strength>14&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>210/280</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Regular Bow (ST15)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>150</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+2 imp</damage>
+			<strength>15&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>225/300</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Regular Bow (ST16)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>160</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+2 imp</damage>
+			<strength>16&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>240/320</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Regular Bow (ST17)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>170</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+3 imp</damage>
+			<strength>17&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>255/340</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Regular Bow (ST18)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>180</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+3 imp</damage>
+			<strength>18&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>270/360</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Regular Bow (ST19)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>190</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>2d imp</damage>
+			<strength>19&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>285/380</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Regular Bow (ST20)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>200</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>2d imp</damage>
+			<strength>20&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>300/400</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-7</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Reich 2 .338 Tungsten Sniper</description>
 		<tech_level>9</tech_level>
@@ -12021,10 +12906,11 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Reinforced Boots</description>
 		<tech_level>7</tech_level>
+		<legality_class>4</legality_class>
 		<value>75</value>
 		<weight>3 lb</weight>
 		<reference>B284</reference>
@@ -12036,7 +12922,7 @@
 			<amount>2</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Revolver, .36</description>
 		<tech_level>5</tech_level>
@@ -12121,7 +13007,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Revolver, .38</description>
 		<tech_level>6</tech_level>
@@ -12206,7 +13092,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Revolver, .44M</description>
 		<tech_level>7</tech_level>
@@ -12291,7 +13177,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Revolver, .357M</description>
 		<tech_level>7</tech_level>
@@ -12376,7 +13262,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Rifle-Musket, .577</description>
 		<tech_level>5</tech_level>
@@ -12461,7 +13347,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Rope, 3/4", 10 yards</description>
 		<tech_level>1</tech_level>
@@ -12474,7 +13360,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Rope, 3/4", 20 yards</description>
 		<tech_level>1</tech_level>
@@ -12487,7 +13373,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Rope, 3/8", 10 yards</description>
 		<tech_level>0</tech_level>
@@ -12500,7 +13386,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Rope, 3/8", 20 yards</description>
 		<tech_level>0</tech_level>
@@ -12513,7 +13399,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>RPG, 85mm</description>
 		<tech_level>7</tech_level>
@@ -12598,7 +13484,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Saber</description>
 		<tech_level>4</tech_level>
@@ -12704,7 +13590,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Saddle and Tack</description>
 		<tech_level>2</tech_level>
@@ -12717,7 +13603,7 @@
 			<category>Equestrian Gear</category>
 		</categories>
 	</equipment>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Saddlebags</description>
 		<tech_level>1</tech_level>
 		<legality_class>4</legality_class>
@@ -12731,7 +13617,7 @@
 			<contained_weight_prereq has="yes" compare="at most">40 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>SAM, 70mm</description>
 		<tech_level>8</tech_level>
@@ -12763,10 +13649,11 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Sandals</description>
 		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
 		<value>25</value>
 		<weight>0.5 lb</weight>
 		<reference>B284</reference>
@@ -12774,7 +13661,7 @@
 			<category>Footwear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Sap</description>
 		<tech_level>1</tech_level>
@@ -12803,7 +13690,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Satellite Phone</description>
 		<tech_level>8</tech_level>
@@ -12816,7 +13703,7 @@
 			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Saw</description>
 		<tech_level>0</tech_level>
@@ -12829,7 +13716,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>SAW, 5.56mm</description>
 		<tech_level>7</tech_level>
@@ -12914,7 +13801,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Scale Armor</description>
 		<tech_level>2</tech_level>
@@ -12934,7 +13821,7 @@
 			<amount>4</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Scale Leggings</description>
 		<tech_level>2</tech_level>
@@ -12950,7 +13837,7 @@
 			<amount>4</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Scale Sleeves</description>
 		<tech_level>2</tech_level>
@@ -12966,7 +13853,7 @@
 			<amount>4</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Scope, 4x</description>
 		<tech_level>6</tech_level>
@@ -12979,7 +13866,7 @@
 			<category>Weapon and Combat Accessories</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Scope, 4x, Thermal Imaging</description>
 		<tech_level>8</tech_level>
@@ -12992,7 +13879,7 @@
 			<category>Weapon and Combat Accessories</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Scorpion</description>
 		<tech_level>2</tech_level>
@@ -13048,7 +13935,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Scuba Gear</description>
 		<tech_level>6</tech_level>
@@ -13061,7 +13948,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Scythe</description>
 		<tech_level>1</tech_level>
@@ -13138,7 +14025,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Self-Loading Rifle, 7.62mm</description>
 		<tech_level>6</tech_level>
@@ -13223,10 +14110,11 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Shoes</description>
 		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
 		<value>40</value>
 		<weight>2 lb</weight>
 		<reference>B284</reference>
@@ -13238,19 +14126,19 @@
 			<amount>1</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
-		<description>Short Bow</description>
+		<description>Short Bow (ST7)</description>
 		<tech_level>0</tech_level>
 		<legality_class>4</legality_class>
 		<value>50</value>
 		<weight>2 lb</weight>
 		<reference>B275</reference>
 		<ranged_weapon>
-			<damage>thr imp</damage>
+			<damage>1d-3 imp</damage>
 			<strength>7&#8224;</strength>
-			<accuracy>1</accuracy>
-			<range>x10/x15</range>
+			<accuracy>2</accuracy>
+			<range>70/105</range>
 			<rate_of_fire>1</rate_of_fire>
 			<shots>1(2)</shots>
 			<bulk>-6</bulk>
@@ -13268,7 +14156,397 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Short Bow (ST8)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>55</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d-3 imp</damage>
+			<strength>8&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>80/120</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-6</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Short Bow (ST9)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>60</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d-2 imp</damage>
+			<strength>9&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>90/135</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-6</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Short Bow (ST10)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>65</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d-2 imp</damage>
+			<strength>10&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>100/150</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-6</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Short Bow (ST11)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>70</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d-1 imp</damage>
+			<strength>11&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>110/165</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-6</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Short Bow (ST12)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>75</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d-1 imp</damage>
+			<strength>12&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>120/180</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-6</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Short Bow (ST13)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>80</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d imp</damage>
+			<strength>13&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>130/195</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-6</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Short Bow (ST14)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>85</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d imp</damage>
+			<strength>14&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>140/210</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-6</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Short Bow (ST15)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>90</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+1 imp</damage>
+			<strength>15&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>150/225</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-6</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Short Bow (ST16)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>95</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+1 imp</damage>
+			<strength>16&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>160/240</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-6</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Short Bow (ST17)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>100</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+2 imp</damage>
+			<strength>17&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>170/255</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-6</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Short Bow (ST18)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>105</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>1d+2 imp</damage>
+			<strength>18&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>180/270</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-6</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Short Bow (ST19)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>110</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>2d-1 imp</damage>
+			<strength>19&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>190/285</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-6</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
+		<quantity>1</quantity>
+		<description>Short Bow (ST20)</description>
+		<tech_level>0</tech_level>
+		<legality_class>4</legality_class>
+		<value>115</value>
+		<weight>2 lb</weight>
+		<reference>B275</reference>
+		<ranged_weapon>
+			<damage>2d-1 imp</damage>
+			<strength>20&#8224;</strength>
+			<accuracy>2</accuracy>
+			<range>200/300</range>
+			<rate_of_fire>1</rate_of_fire>
+			<shots>1(2)</shots>
+			<bulk>-6</bulk>
+			<default>
+				<type>DX</type>
+				<modifier>-5</modifier>
+			</default>
+			<default>
+				<type>Skill</type>
+				<name>Bow</name>
+				<modifier>0</modifier>
+			</default>
+		</ranged_weapon>
+		<categories>
+			<category>Missile Weapon</category>
+		</categories>
+	</equipment>
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Short Staff</description>
 		<tech_level>0</tech_level>
@@ -13364,7 +14642,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Shortsword</description>
 		<tech_level>2</tech_level>
@@ -13490,7 +14768,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Shotgun Mike</description>
 		<tech_level>6</tech_level>
@@ -13501,11 +14779,11 @@
 		<notes>Gives (TL-5) levels of Parabolic Hearing.</notes>
 		<categories>
 			<category>Law-Enforcement</category>
-			<category>Thief</category>
 			<category>Spy Gear</category>
+			<category>Thief</category>
 		</categories>
 	</equipment>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Shoulder Quiver</description>
 		<tech_level>0</tech_level>
 		<legality_class>4</legality_class>
@@ -13517,7 +14795,7 @@
 			<category>Weapon and Combat Accessories</category>
 		</categories>
 	</equipment_container>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Shovel</description>
 		<tech_level>1</tech_level>
@@ -13530,7 +14808,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Shuriken</description>
 		<tech_level>3</tech_level>
@@ -13566,7 +14844,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Silencer, Pistol or SMG</description>
 		<tech_level>6</tech_level>
@@ -13579,7 +14857,7 @@
 			<category>Weapon and Combat Accessories</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Silver Coin</description>
 		<legality_class>4</legality_class>
@@ -13590,7 +14868,7 @@
 			<category>Money: GURPS Standard Medieval Coins</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Sleeping Bag</description>
 		<tech_level>6</tech_level>
@@ -13602,7 +14880,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Sleeping Bag, Insulated</description>
 		<tech_level>7</tech_level>
@@ -13615,7 +14893,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Sleeping Fur</description>
 		<tech_level>0</tech_level>
@@ -13627,7 +14905,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Sling</description>
 		<tech_level>0</tech_level>
@@ -13657,7 +14935,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Sling Stone</description>
 		<tech_level>0</tech_level>
@@ -13670,7 +14948,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Small Buckler</description>
 		<legality_class>4</legality_class>
@@ -13722,7 +15000,7 @@
 			<amount>1</amount>
 		</attribute_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Small Buckler with Spike</description>
 		<tech_level>1</tech_level>
@@ -13775,7 +15053,7 @@
 			<amount>1</amount>
 		</attribute_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Small Knife</description>
 		<tech_level>0</tech_level>
@@ -13882,7 +15160,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Small Mace</description>
 		<tech_level>2</tech_level>
@@ -13942,7 +15220,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Small Shield</description>
 		<legality_class>4</legality_class>
@@ -13995,7 +15273,7 @@
 			<amount>1</amount>
 		</attribute_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Small Shield with Spike</description>
 		<tech_level>1</tech_level>
@@ -14049,7 +15327,7 @@
 			<amount>1</amount>
 		</attribute_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Smallsword</description>
 		<tech_level>4</tech_level>
@@ -14103,7 +15381,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>SMG, .45</description>
 		<tech_level>6</tech_level>
@@ -14188,7 +15466,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>SMG, 9mm</description>
 		<tech_level>6</tech_level>
@@ -14273,7 +15551,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>SMG, 9mm</description>
 		<tech_level>7</tech_level>
@@ -14358,7 +15636,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Sniper Rifle, .338</description>
 		<tech_level>8</tech_level>
@@ -14443,7 +15721,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Snub Revolver, .38</description>
 		<tech_level>6</tech_level>
@@ -14528,7 +15806,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Sollerets</description>
 		<tech_level>3</tech_level>
@@ -14544,7 +15822,7 @@
 			<amount>4</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Space Armor</description>
 		<tech_level>9</tech_level>
@@ -14590,7 +15868,7 @@
 			</skill_prereq>
 		</prereq_list>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Space Armor</description>
 		<tech_level>10</tech_level>
@@ -14636,7 +15914,7 @@
 			</skill_prereq>
 		</prereq_list>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Space Armor</description>
 		<tech_level>11</tech_level>
@@ -14682,7 +15960,7 @@
 			</skill_prereq>
 		</prereq_list>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Space Armor Helmet</description>
 		<tech_level>9</tech_level>
@@ -14706,7 +15984,7 @@
 			<amount>30</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Space Armor Helmet</description>
 		<tech_level>10</tech_level>
@@ -14730,7 +16008,7 @@
 			<amount>45</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Space Armor Helmet</description>
 		<tech_level>11</tech_level>
@@ -14754,7 +16032,7 @@
 			<amount>60</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Space Helmet</description>
 		<tech_level>7</tech_level>
@@ -14778,7 +16056,7 @@
 			<amount>3</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Space Suit</description>
 		<tech_level>7</tech_level>
@@ -14824,7 +16102,7 @@
 			</skill_prereq>
 		</prereq_list>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Spear</description>
 		<tech_level>0</tech_level>
@@ -14922,7 +16200,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Spinning Wheel</description>
 		<tech_level>3</tech_level>
@@ -14935,7 +16213,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Spurs</description>
 		<tech_level>2</tech_level>
@@ -14947,7 +16225,7 @@
 			<category>Equestrian Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Spy Camera</description>
 		<tech_level>6</tech_level>
@@ -14959,7 +16237,7 @@
 			<category>Optics and Sensors</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Staff Sling</description>
 		<tech_level>1</tech_level>
@@ -14989,7 +16267,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Steel Breastplate</description>
 		<tech_level>3</tech_level>
@@ -15005,7 +16283,7 @@
 			<amount>5</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Steel Corselet</description>
 		<tech_level>3</tech_level>
@@ -15025,7 +16303,7 @@
 			<amount>6</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Steel Laminate Plate</description>
 		<tech_level>3</tech_level>
@@ -15045,7 +16323,7 @@
 			<amount>5</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Steel Pot</description>
 		<tech_level>6</tech_level>
@@ -15061,7 +16339,7 @@
 			<amount>4</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Stirrups</description>
 		<tech_level>3</tech_level>
@@ -15074,10 +16352,11 @@
 			<category>Equestrian Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Studded Leather Skirt</description>
 		<tech_level>1</tech_level>
+		<legality_class>4</legality_class>
 		<value>60</value>
 		<weight>4 lb</weight>
 		<reference>B283</reference>
@@ -15093,7 +16372,7 @@
 			<amount>3</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Stun Gun</description>
 		<tech_level>8</tech_level>
@@ -15121,7 +16400,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Suitcase Lab</description>
 		<legality_class>4</legality_class>
@@ -15133,7 +16412,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Suitcase, Hard</description>
 		<tech_level>5</tech_level>
 		<legality_class>4</legality_class>
@@ -15148,7 +16427,7 @@
 			<contained_weight_prereq has="yes" compare="at most">100 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Surgical Instruments</description>
 		<legality_class>4</legality_class>
@@ -15160,7 +16439,7 @@
 			<category>Medical Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Tactical Suit</description>
 		<tech_level>9</tech_level>
@@ -15210,7 +16489,7 @@
 			</skill_prereq>
 		</prereq_list>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Tactical Suit</description>
 		<tech_level>10</tech_level>
@@ -15260,7 +16539,7 @@
 			</skill_prereq>
 		</prereq_list>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Tactical Suit</description>
 		<tech_level>11</tech_level>
@@ -15310,7 +16589,7 @@
 			</skill_prereq>
 		</prereq_list>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Tactical Vest</description>
 		<tech_level>8</tech_level>
@@ -15330,7 +16609,7 @@
 			<amount>12</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Tactical Vest</description>
 		<tech_level>9</tech_level>
@@ -15350,7 +16629,7 @@
 			<amount>18</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Tactical Vest</description>
 		<tech_level>10</tech_level>
@@ -15370,7 +16649,7 @@
 			<amount>24</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Tactical Vest</description>
 		<tech_level>11</tech_level>
@@ -15390,7 +16669,7 @@
 			<amount>32</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Tactical Vest Trauma Plates</description>
 		<tech_level>8</tech_level>
@@ -15406,7 +16685,7 @@
 			<amount>23</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Telescope</description>
 		<tech_level>4</tech_level>
@@ -15419,7 +16698,7 @@
 			<category>Optics and Sensors</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Tent, 1-Man</description>
 		<tech_level>0</tech_level>
@@ -15432,7 +16711,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Tent, 2-Man</description>
 		<tech_level>0</tech_level>
@@ -15445,7 +16724,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Tent, 4-Man</description>
 		<tech_level>0</tech_level>
@@ -15458,7 +16737,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Tent, 20-Man</description>
 		<tech_level>1</tech_level>
@@ -15471,7 +16750,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Thermos Bottle</description>
 		<tech_level>5</tech_level>
 		<legality_class>4</legality_class>
@@ -15486,7 +16765,7 @@
 			<contained_weight_prereq has="yes" compare="at most">1 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Throwing Axe</description>
 		<tech_level>0</tech_level>
@@ -15546,7 +16825,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Thrusting Bastard Sword</description>
 		<tech_level>3</tech_level>
@@ -15652,7 +16931,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Thrusting Bastard Sword</description>
 		<tech_level>3</tech_level>
@@ -15729,7 +17008,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Thrusting Broadsword</description>
 		<tech_level>2</tech_level>
@@ -15835,7 +17114,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Thrusting Greatsword</description>
 		<tech_level>3</tech_level>
@@ -15911,7 +17190,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Torch</description>
 		<tech_level>0</tech_level>
@@ -15924,7 +17203,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Transistor Radio</description>
 		<tech_level>7</tech_level>
@@ -15937,7 +17216,7 @@
 			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Traveler's Rations</description>
 		<tech_level>0</tech_level>
@@ -15950,7 +17229,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>TV Set, Mini</description>
 		<tech_level>7</tech_level>
@@ -15963,7 +17242,7 @@
 			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Typewriter, Manual</description>
 		<tech_level>6</tech_level>
@@ -15975,7 +17254,7 @@
 			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Under-Barrel, 40mm</description>
 		<tech_level>7</tech_level>
@@ -16060,7 +17339,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Vacc Suit</description>
 		<tech_level>9</tech_level>
@@ -16106,7 +17385,7 @@
 			</skill_prereq>
 		</prereq_list>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Vacc Suit</description>
 		<tech_level>10</tech_level>
@@ -16152,7 +17431,7 @@
 			</skill_prereq>
 		</prereq_list>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Vacc Suit</description>
 		<tech_level>11</tech_level>
@@ -16198,7 +17477,7 @@
 			</skill_prereq>
 		</prereq_list>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Vacc Suit Helmet</description>
 		<tech_level>9</tech_level>
@@ -16222,7 +17501,7 @@
 			<amount>6</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Vacc Suit Helmet</description>
 		<tech_level>10</tech_level>
@@ -16246,7 +17525,7 @@
 			<amount>9</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Vacc Suit Helmet</description>
 		<tech_level>11</tech_level>
@@ -16270,7 +17549,7 @@
 			<amount>12</amount>
 		</dr_bonus>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>War Saddle</description>
 		<tech_level>3</tech_level>
@@ -16283,7 +17562,7 @@
 			<category>Equestrian Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Warhammer</description>
 		<tech_level>3</tech_level>
@@ -16328,7 +17607,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Water Purification Tablets</description>
 		<tech_level>6</tech_level>
@@ -16341,7 +17620,7 @@
 			<category>Camping and Survival Gear</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Wax Tablet</description>
 		<tech_level>1</tech_level>
@@ -16354,7 +17633,7 @@
 			<category>Communications and Information Gear</category>
 		</categories>
 	</equipment>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Web Gear</description>
 		<tech_level>6</tech_level>
 		<legality_class>4</legality_class>
@@ -16366,7 +17645,7 @@
 			<category>Weapon and Combat Accessories</category>
 		</categories>
 	</equipment_container>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Wheel-Lock Pistol, .60</description>
 		<tech_level>4</tech_level>
@@ -16451,7 +17730,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Wheelbarrow</description>
 		<tech_level>2</tech_level>
 		<legality_class>4</legality_class>
@@ -16466,7 +17745,7 @@
 			<contained_weight_prereq has="yes" compare="at most">350 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Whetstone</description>
 		<tech_level>1</tech_level>
@@ -16479,7 +17758,7 @@
 			<category>Tools</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Whip, 1 yard long</description>
 		<tech_level>1</tech_level>
@@ -16517,7 +17796,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Whip, 2 yards long</description>
 		<tech_level>1</tech_level>
@@ -16555,7 +17834,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Whip, 3 yards long</description>
 		<tech_level>1</tech_level>
@@ -16593,7 +17872,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Whip, 4 yards long</description>
 		<tech_level>1</tech_level>
@@ -16631,7 +17910,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Whip, 5 yards long</description>
 		<tech_level>1</tech_level>
@@ -16669,7 +17948,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Whip, 6 yards long</description>
 		<tech_level>1</tech_level>
@@ -16707,7 +17986,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Whip, 7 yards long</description>
 		<tech_level>1</tech_level>
@@ -16745,7 +18024,7 @@
 			<category>Melee Weapon</category>
 		</categories>
 	</equipment>
-	<equipment_container version="3" open="yes">
+	<equipment_container version="4" open="yes">
 		<description>Wineskin</description>
 		<tech_level>0</tech_level>
 		<legality_class>4</legality_class>
@@ -16759,7 +18038,7 @@
 			<contained_weight_prereq has="yes" compare="at most">8 lb</contained_weight_prereq>
 		</prereq_list>
 	</equipment_container>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Wooden Stake</description>
 		<tech_level>0</tech_level>
@@ -16829,7 +18108,7 @@
 			<category>Missile Weapon</category>
 		</categories>
 	</equipment>
-	<equipment version="3">
+	<equipment version="4">
 		<quantity>1</quantity>
 		<description>Wristwatch</description>
 		<tech_level>6</tech_level>
