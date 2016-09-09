@@ -3025,7 +3025,7 @@
 		<categories>
 			<category>Law-Enforcement</category>
 			<category>Thief</category>
-			<category>and Spy Gear</category>
+			<category>Spy Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -3039,7 +3039,7 @@
 		<categories>
 			<category>Law-Enforcement</category>
 			<category>Thief</category>
-			<category>and Spy Gear</category>
+			<category>Spy Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -4802,7 +4802,7 @@
 		<categories>
 			<category>Law-Enforcement</category>
 			<category>Thief</category>
-			<category>and Spy Gear</category>
+			<category>Spy Gear</category>
 		</categories>
 		<skill_bonus>
 			<name compare="is">Disguise</name>
@@ -5063,7 +5063,7 @@
 		<categories>
 			<category>Law-Enforcement</category>
 			<category>Thief</category>
-			<category>and Spy Gear</category>
+			<category>Spy Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -6327,7 +6327,7 @@
 		<categories>
 			<category>Law-Enforcement</category>
 			<category>Thief</category>
-			<category>and Spy Gear</category>
+			<category>Spy Gear</category>
 		</categories>
 		<skill_bonus>
 			<name compare="is">Escape</name>
@@ -6922,7 +6922,7 @@
 		<categories>
 			<category>Law-Enforcement</category>
 			<category>Thief</category>
-			<category>and Spy Gear</category>
+			<category>Spy Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -8024,7 +8024,7 @@
 		<categories>
 			<category>Law-Enforcement</category>
 			<category>Thief</category>
-			<category>and Spy Gear</category>
+			<category>Spy Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -9050,7 +9050,7 @@
 		<categories>
 			<category>Law-Enforcement</category>
 			<category>Thief</category>
-			<category>and Spy Gear</category>
+			<category>Spy Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -10166,7 +10166,7 @@
 		<categories>
 			<category>Law-Enforcement</category>
 			<category>Thief</category>
-			<category>and Spy Gear</category>
+			<category>Spy Gear</category>
 		</categories>
 	</equipment>
 	<equipment version="3">
@@ -13502,7 +13502,7 @@
 		<categories>
 			<category>Law-Enforcement</category>
 			<category>Thief</category>
-			<category>and Spy Gear</category>
+			<category>Spy Gear</category>
 		</categories>
 	</equipment>
 	<equipment_container version="3" open="yes">
