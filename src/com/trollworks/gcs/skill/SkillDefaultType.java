@@ -28,7 +28,7 @@ public enum SkillDefaultType {
 
 		@Override
 		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
-			return finalLevel(skillDefault, SkillAttribute.ST.getBaseSkillLevel(character));
+			return finalLevel(skillDefault, Math.min(SkillAttribute.ST.getBaseSkillLevel(character), 20));
 		}
 	},
 	/** The type for DX-based defaults. */
@@ -40,7 +40,7 @@ public enum SkillDefaultType {
 
 		@Override
 		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
-			return finalLevel(skillDefault, SkillAttribute.DX.getBaseSkillLevel(character));
+			return finalLevel(skillDefault, Math.min(SkillAttribute.DX.getBaseSkillLevel(character), 20));
 		}
 	},
 	/** The type for IQ-based defaults. */
@@ -52,7 +52,7 @@ public enum SkillDefaultType {
 
 		@Override
 		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
-			return finalLevel(skillDefault, SkillAttribute.IQ.getBaseSkillLevel(character));
+			return finalLevel(skillDefault, Math.min(SkillAttribute.IQ.getBaseSkillLevel(character), 20));
 		}
 	},
 	/** The type for HT-based defaults. */
@@ -64,7 +64,7 @@ public enum SkillDefaultType {
 
 		@Override
 		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
-			return finalLevel(skillDefault, SkillAttribute.HT.getBaseSkillLevel(character));
+			return finalLevel(skillDefault, Math.min(SkillAttribute.HT.getBaseSkillLevel(character), 20));
 		}
 	},
 	/** The type for Will-based defaults. */
@@ -76,7 +76,7 @@ public enum SkillDefaultType {
 
 		@Override
 		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
-			return finalLevel(skillDefault, SkillAttribute.Will.getBaseSkillLevel(character));
+			return finalLevel(skillDefault, Math.min(SkillAttribute.Will.getBaseSkillLevel(character), 20));
 		}
 	},
 	/** The type for Perception-based defaults. */
@@ -88,7 +88,7 @@ public enum SkillDefaultType {
 
 		@Override
 		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
-			return finalLevel(skillDefault, SkillAttribute.Per.getBaseSkillLevel(character));
+			return finalLevel(skillDefault, Math.min(SkillAttribute.Per.getBaseSkillLevel(character), 20));
 		}
 	},
 	/** The type for Skill-based defaults. */
