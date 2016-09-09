@@ -109,6 +109,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		setOpaque(true);
 		setBackground(Color.WHITE);
 		setBorder(NORMAL_BORDER);
+
 		mTemplate = template;
 
 		// Make sure our primary outlines exist
@@ -133,6 +134,8 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		mTemplate.addTarget(this, Template.TEMPLATE_PREFIX, GURPSCharacter.CHARACTER_PREFIX);
 
 		setDropTarget(new DropTarget(this, this));
+
+		runAdjustSize();
 	}
 
 	@Override
@@ -149,11 +152,21 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 			EventQueue.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					mSizePending = false;
-					setSize(getPreferredSize());
+					runAdjustSize();
 				}
 			});
 		}
+	}
+	
+	void runAdjustSize() {
+		mSizePending = false;
+		Dimension size = getLayout().preferredLayoutSize(TemplateSheet.this);
+		size.width = 576; // Equivalent to an 8-inch span
+		if (size.height < 300) {
+			size.height = 300;
+		}
+		UIUtilities.setOnlySize(TemplateSheet.this, size);
+		setSize(size);
 	}
 
 	/**
