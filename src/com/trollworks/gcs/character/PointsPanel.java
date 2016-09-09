@@ -146,7 +146,6 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
 	@Override
 	public Dimension getMaximumSize() {
 		Dimension size = super.getMaximumSize();
-
 		size.width = getPreferredSize().width;
 		return size;
 	}

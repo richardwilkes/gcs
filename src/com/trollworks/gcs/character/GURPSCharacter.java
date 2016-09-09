@@ -896,6 +896,9 @@ public class GURPSCharacter extends DataFile {
 		if (Equipment.ID_QUANTITY.equals(type) || Equipment.ID_WEIGHT.equals(type) || Equipment.ID_EXTENDED_WEIGHT.equals(type) || Equipment.ID_LIST_CHANGED.equals(type)) {
 			mNeedEquipmentCalculation = true;
 		}
+		if (Profile.ID_SIZE_MODIFIER.equals(type)) {
+			mNeedAttributePointCalculation = true;
+		}
 	}
 
 	@Override
