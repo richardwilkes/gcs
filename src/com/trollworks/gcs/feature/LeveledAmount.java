@@ -28,7 +28,7 @@ public class LeveledAmount {
 
 	/**
 	 * Creates a new leveled amount.
-	 * 
+	 *
 	 * @param amount The initial amount.
 	 */
 	public LeveledAmount(double amount) {
@@ -40,7 +40,7 @@ public class LeveledAmount {
 
 	/**
 	 * Creates a new leveled amount.
-	 * 
+	 *
 	 * @param amount The initial amount.
 	 */
 	public LeveledAmount(int amount) {
@@ -50,7 +50,7 @@ public class LeveledAmount {
 
 	/**
 	 * Creates a new leveled amount.
-	 * 
+	 *
 	 * @param other A {@link LeveledAmount} to clone.
 	 */
 	public LeveledAmount(LeveledAmount other) {
@@ -85,7 +85,7 @@ public class LeveledAmount {
 
 	/**
 	 * Saves this object as XML to a stream.
-	 * 
+	 *
 	 * @param out The XML writer to use.
 	 * @param tag The tag to use.
 	 */
@@ -173,9 +173,13 @@ public class LeveledAmount {
 	/** @return The amount, adjusted for level, if requested. */
 	public double getAdjustedAmount() {
 		double amt = mAmount;
-
 		if (isPerLevel()) {
-			amt *= getLevel();
+			int level = getLevel();
+			if (level < 0) {
+				amt = 0;
+			} else {
+				amt *= level;
+			}
 		}
 		return amt;
 	}
@@ -183,9 +187,13 @@ public class LeveledAmount {
 	/** @return The amount, adjusted for level, if requested. */
 	public int getIntegerAdjustedAmount() {
 		int amt = getIntegerAmount();
-
 		if (isPerLevel()) {
-			amt *= getLevel();
+			int level = getLevel();
+			if (level < 0) {
+				amt = 0;
+			} else {
+				amt *= level;
+			}
 		}
 		return amt;
 	}
