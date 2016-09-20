@@ -1445,6 +1445,14 @@ public class GURPSCharacter extends DataFile {
 		return Encumbrance.EXTRA_HEAVY;
 	}
 
+	/**
+	 * @return <code>true</code> if the carried weight is greater than the maximum allowed for an
+	 *         extra-heavy load.
+	 */
+	public boolean isCarryingGreaterThanMaxLoad() {
+		return getWeightCarried().getNormalizedValue() > getMaximumCarry(Encumbrance.EXTRA_HEAVY).getNormalizedValue();
+	}
+
 	/** @return The current weight being carried. */
 	public WeightValue getWeightCarried() {
 		return mCachedWeightCarried;

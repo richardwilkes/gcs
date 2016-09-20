@@ -84,7 +84,8 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 		Localization.initialize();
 	}
 
-	private static final Color	CURRENT_ENCUMBRANCE_COLOR	= new Color(252, 242, 196);
+	private static final Color	CURRENT_ENCUMBRANCE_COLOR				= new Color(252, 242, 196);
+	private static final Color	CURRENT_ENCUMBRANCE_OVERLOADED_COLOR	= new Color(255, 192, 192);
 	private GURPSCharacter		mCharacter;
 	private PageLabel[]			mMarkers;
 
@@ -112,7 +113,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 			mMarkers[index] = new PageLabel(getMarkerText(encumbrance, current), header);
 			add(mMarkers[index]);
 			if (current == encumbrance) {
-				addHorizontalBackground(mMarkers[index], CURRENT_ENCUMBRANCE_COLOR);
+				addHorizontalBackground(mMarkers[index], character.isCarryingGreaterThanMaxLoad() ? CURRENT_ENCUMBRANCE_OVERLOADED_COLOR : CURRENT_ENCUMBRANCE_COLOR);
 			}
 			createDivider();
 			createDisabledField(this, character, GURPSCharacter.MAXIMUM_CARRY_PREFIX + index, MAX_CARRY_TOOLTIP, SwingConstants.RIGHT);
@@ -141,7 +142,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 		for (Encumbrance encumbrance : Encumbrance.values()) {
 			int index = encumbrance.ordinal();
 			if (encumbrance == current) {
-				addHorizontalBackground(mMarkers[index], CURRENT_ENCUMBRANCE_COLOR);
+				addHorizontalBackground(mMarkers[index], mCharacter.isCarryingGreaterThanMaxLoad() ? CURRENT_ENCUMBRANCE_OVERLOADED_COLOR : CURRENT_ENCUMBRANCE_COLOR);
 			} else {
 				removeHorizontalBackground(mMarkers[index]);
 			}
