@@ -48,20 +48,20 @@ import javax.swing.event.DocumentListener;
 
 /** The detailed editor for {@link Equipment}s. */
 public class EquipmentEditor extends RowEditor<Equipment> implements ActionListener, DocumentListener, FocusListener {
-	@Localize("A reference to the book and page this equipment appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize("A reference to the book and page this equipment appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
 	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der diese Ausrüstung beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
-	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая снаряжение\n (например B22 - книга \"Базовые правила\", страница 22)")
-	@Localize(locale = "es", value = "Referencia al libro y página donde se menciona el equipo\n (p.e. B22 se refiere al \"Manual Básico\", página 22).")
+	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая снаряжение (например B22 - книга \"Базовые правила\", страница 22)")
+	@Localize(locale = "es", value = "Referencia al libro y página donde se menciona el equipo (p.e. B22 se refiere al \"Manual Básico\", página 22).")
 	private static String	REFERENCE_TOOLTIP;
 	@Localize("The value of one of these pieces of equipment")
 	@Localize(locale = "de", value = "Der Wert eines einzelnen Ausrüstungsgegenstandes")
 	@Localize(locale = "ru", value = "Цена снаряжения")
 	@Localize(locale = "es", value = "Valor unitario de cada pieza de equipo.")
 	private static String	VALUE_TOOLTIP;
-	@Localize("The value of all of these pieces of equipment,\nplus the value of any contained equipment")
-	@Localize(locale = "de", value = "Der Wert aller dieser Ausrüstungsgegenstände\nund der Wert der darin enthaltenen Ausrüstung")
-	@Localize(locale = "ru", value = "Цена всего снаряжения,\nплюс цена любого входящего в него снаряжения")
-	@Localize(locale = "es", value = "Valor de todas las piezas de equipo,\n más el valor de lo que contengan.")
+	@Localize("The value of all of these pieces of equipment, plus the value of any contained equipment")
+	@Localize(locale = "de", value = "Der Wert aller dieser Ausrüstungsgegenstände und der Wert der darin enthaltenen Ausrüstung")
+	@Localize(locale = "ru", value = "Цена всего снаряжения, плюс цена любого входящего в него снаряжения")
+	@Localize(locale = "es", value = "Valor de todas las piezas de equipo, más el valor de lo que contengan.")
 	private static String	EXT_VALUE_TOOLTIP;
 	@Localize("Name")
 	@Localize(locale = "de", value = "Name")
@@ -133,7 +133,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 	@Localize(locale = "es", value = "Peso ampliado")
 	private static String	EDITOR_EXTENDED_WEIGHT;
 	@Localize("The total weight of this quantity of equipment, plus everything contained by it")
-	@Localize(locale = "de", value = "Das Gewicht aller dieser Ausrüstungsgegenstände\nund das Gewicht der darin enthaltenen Ausrüstung")
+	@Localize(locale = "de", value = "Das Gewicht aller dieser Ausrüstungsgegenstände und das Gewicht der darin enthaltenen Ausrüstung")
 	@Localize(locale = "ru", value = "Общий вес имеющегося снаряжения и его содержимого")
 	@Localize(locale = "es", value = "Peso total de todo el equipo, más el peso de lo que contengan")
 	private static String	EDITOR_EXTENDED_WEIGHT_TOOLTIP;
@@ -162,9 +162,9 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 	@Localize(locale = "ru", value = "Ссылка на страницу")
 	@Localize(locale = "es", value = "Página de referencia")
 	private static String	EDITOR_REFERENCE;
-	@Localize("Items that are not equipped do not apply any features they may\nnormally contribute to the character.")
+	@Localize("Items that are not equipped do not apply any features they may normally contribute to the character.")
 	@Localize(locale = "de", value = "Gegenstände, die nicht ausgerüstet sind, haben keine Auswirkungen auf den Charakter.")
-	@Localize(locale = "ru", value = "Не экипированные предметы не добавляют свойств, которые обычно\n может использовать персонаж.")
+	@Localize(locale = "ru", value = "Не экипированные предметы не добавляют свойств, которые обычно может использовать персонаж.")
 	@Localize(locale = "es", value = "Los objetos no equipados no aplican sus características como harían normalmente al personaje.")
 	private static String	STATE_TOOLTIP;
 
@@ -256,7 +256,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 			mStateCombo.setSelectedItem(mRow.getState());
 			UIUtilities.setOnlySize(mStateCombo, mStateCombo.getPreferredSize());
 			mStateCombo.setEnabled(mIsEditable);
-			mStateCombo.setToolTipText(STATE_TOOLTIP);
+			mStateCombo.setToolTipText(Text.wrapPlainTextForToolTip(STATE_TOOLTIP));
 			wrapper.add(mStateCombo);
 		}
 		wrapper.add(new JPanel());
@@ -299,7 +299,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
 	private JTextField createCorrectableField(Container parent, String title, String text, String tooltip) {
 		JTextField field = new JTextField(text);
-		field.setToolTipText(tooltip);
+		field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		field.setEnabled(mIsEditable);
 		field.getDocument().addDocumentListener(this);
 		field.addFocusListener(this);
@@ -318,7 +318,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 			UIUtilities.setOnlySize(field, field.getPreferredSize());
 			field.setText(text);
 		}
-		field.setToolTipText(tooltip);
+		field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		field.setEnabled(mIsEditable);
 		field.addFocusListener(this);
 		labelParent.add(new LinkedLabel(title, field));
@@ -331,7 +331,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ','));
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
 		field.setText(Numbers.format(value));
-		field.setToolTipText(tooltip);
+		field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		field.setEnabled(mIsEditable);
 		new NumberFilter(field, false, false, true, maxDigits);
 		field.addActionListener(this);
@@ -346,7 +346,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + "."); //$NON-NLS-1$
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
 		field.setText(Numbers.format(value));
-		field.setToolTipText(tooltip);
+		field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		field.setEnabled(mIsEditable);
 		new NumberFilter(field, true, false, true, maxDigits);
 		field.addActionListener(this);
@@ -360,7 +360,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 		JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + "."); //$NON-NLS-1$
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
 		field.setText(value.toString());
-		field.setToolTipText(tooltip);
+		field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		field.setEnabled(mIsEditable);
 		field.addActionListener(this);
 		field.addFocusListener(this);

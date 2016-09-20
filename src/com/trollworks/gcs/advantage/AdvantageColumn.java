@@ -279,10 +279,10 @@ public enum AdvantageColumn {
 	@Localize(locale = "ru", value = "Ссыл")
 	@Localize(locale = "es", value = "Ref")
 	static String	REFERENCE_TITLE;
-	@Localize("A reference to the book and page this advantage appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize("A reference to the book and page this advantage appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
 	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Vorteil beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
-	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая преимущество\n (например, B22 - книга \"Базовые правила\", страница 22)")
-	@Localize(locale = "es", value = "Referencia al libro y página en donde aparece la ventaja\n(p.e. B22 se refiere al \"Manual Básico\", página 22)")
+	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая преимущество (например, B22 - книга \"Базовые правила\", страница 22)")
+	@Localize(locale = "es", value = "Referencia al libro y página en donde aparece la ventaja (p.e. B22 se refiere al \"Manual Básico\", página 22)")
 	static String	REFERENCE_TOOLTIP;
 
 	static {

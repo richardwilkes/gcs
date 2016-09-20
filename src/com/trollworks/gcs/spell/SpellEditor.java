@@ -71,9 +71,9 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 	@Localize(locale = "ru", value = "Технологический уровень")
 	@Localize(locale = "es", value = "Nivel Tecnológico")
 	private static String	TECH_LEVEL;
-	@Localize("Whether this spell requires tech level specialization,\nand, if so, at what tech level it was learned")
-	@Localize(locale = "de", value = "Ob dieser Zauber auf einen bestimmten Techlevel spezialisiert ist\nund wenn, mit welchem Techlevel er gelernt wurde")
-	@Localize(locale = "ru", value = "Для заклинания необходима специализация с технологическим уровнем \nс указанием уровня изучения")
+	@Localize("Whether this spell requires tech level specialization, and, if so, at what tech level it was learned")
+	@Localize(locale = "de", value = "Ob dieser Zauber auf einen bestimmten Techlevel spezialisiert ist und wenn, mit welchem Techlevel er gelernt wurde")
+	@Localize(locale = "ru", value = "Для заклинания необходима специализация с технологическим уровнем с указанием уровня изучения")
 	@Localize(locale = "es", value = "Si el sortilegio requiere especialización por nivel tecnológico, este es para el que se ha aprendido")
 	private static String	TECH_LEVEL_TOOLTIP;
 	@Localize("Tech Level Required")
@@ -233,9 +233,9 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 	@Localize(locale = "ru", value = "Ссылка на страницу")
 	@Localize(locale = "es", value = "Página de referencia")
 	private static String	EDITOR_REFERENCE;
-	@Localize("A reference to the book and page this spell appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize("A reference to the book and page this spell appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
 	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Zauber beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
-	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая заклинание\n (например B22 - книга \"Базовые правила\", страница 22)")
+	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая заклинание (например B22 - книга \"Базовые правила\", страница 22)")
 	@Localize(locale = "es", value = "Referencia al libro y página en donde se menciona el sortilegio (p.e. B22 se refiere al \"Manual Básico\", página 22)")
 	private static String	REFERENCE_TOOLTIP;
 
@@ -397,7 +397,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 			JPanel wrapper = new JPanel(new ColumnLayout(2));
 
 			mHasTechLevel = new JCheckBox(TECH_LEVEL, hasTL);
-			mHasTechLevel.setToolTipText(TECH_LEVEL_TOOLTIP);
+			mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(TECH_LEVEL_TOOLTIP));
 			mHasTechLevel.setEnabled(enabled);
 			mHasTechLevel.addActionListener(this);
 			wrapper.add(mHasTechLevel);
@@ -405,7 +405,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 			mTechLevel = new JTextField("9999"); //$NON-NLS-1$
 			UIUtilities.setOnlySize(mTechLevel, mTechLevel.getPreferredSize());
 			mTechLevel.setText(mSavedTechLevel);
-			mTechLevel.setToolTipText(TECH_LEVEL_TOOLTIP);
+			mTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(TECH_LEVEL_TOOLTIP));
 			mTechLevel.setEnabled(enabled && hasTL);
 			wrapper.add(mTechLevel);
 			parent.add(wrapper);
@@ -416,7 +416,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		} else {
 			mTechLevel = new JTextField(mSavedTechLevel);
 			mHasTechLevel = new JCheckBox(TECH_LEVEL_REQUIRED, hasTL);
-			mHasTechLevel.setToolTipText(TECH_LEVEL_REQUIRED_TOOLTIP);
+			mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(TECH_LEVEL_REQUIRED_TOOLTIP));
 			mHasTechLevel.setEnabled(enabled);
 			mHasTechLevel.addActionListener(this);
 			parent.add(mHasTechLevel);
@@ -430,7 +430,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 		JPanel panel = new JPanel(new ColumnLayout(forCharacter ? 10 : forTemplate ? 8 : 6));
 
 		JLabel label = new JLabel(DIFFICULTY, SwingConstants.RIGHT);
-		label.setToolTipText(DIFFICULTY_TOOLTIP);
+		label.setToolTipText(Text.wrapPlainTextForToolTip(DIFFICULTY_TOOLTIP));
 		panel.add(label);
 
 		mAttributePopup = createComboBox(panel, SkillAttribute.values(), mRow.getAttribute(), ATTRIBUTE_POPUP_TOOLTIP);
@@ -452,7 +452,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 
 	private JComboBox<Object> createComboBox(Container parent, Object[] items, Object selection, String tooltip) {
 		JComboBox<Object> combo = new JComboBox<>(items);
-		combo.setToolTipText(tooltip);
+		combo.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		combo.setSelectedItem(selection);
 		combo.addActionListener(this);
 		combo.setMaximumRowCount(items.length);
@@ -471,7 +471,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 
 	private JTextField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
 		JTextField field = new JTextField(text);
-		field.setToolTipText(tooltip);
+		field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		field.setEnabled(mIsEditable);
 		field.getDocument().addDocumentListener(this);
 
@@ -490,7 +490,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 			UIUtilities.setOnlySize(field, field.getPreferredSize());
 			field.setText(text);
 		}
-		field.setToolTipText(tooltip);
+		field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		field.setEnabled(mIsEditable);
 		labelParent.add(new LinkedLabel(title, field));
 		fieldParent.add(field);

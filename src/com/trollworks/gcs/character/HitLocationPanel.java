@@ -142,7 +142,7 @@ public class HitLocationPanel extends DropPanel {
 	private static void createLabel(Container panel, String title, String tooltip, int alignment) {
 		PageLabel label = new PageLabel(title, null);
 		label.setHorizontalAlignment(alignment);
-		label.setToolTipText(tooltip);
+		label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		panel.add(label);
 	}
 }

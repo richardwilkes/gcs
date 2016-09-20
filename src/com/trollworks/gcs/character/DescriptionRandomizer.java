@@ -15,6 +15,7 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.Numbers;
+import com.trollworks.toolkit.utility.text.Text;
 import com.trollworks.toolkit.utility.undo.MultipleUndo;
 import com.trollworks.toolkit.utility.units.LengthValue;
 import com.trollworks.toolkit.utility.units.WeightValue;
@@ -92,11 +93,11 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
 
 	private void addField(Container wrapper, String title, String tooltip, int which, String value) {
 		mCheckBoxes[which] = new JCheckBox(title, true);
-		mCheckBoxes[which].setToolTipText(tooltip);
+		String wrappedTooltip = Text.wrapPlainTextForToolTip(tooltip);
+		mCheckBoxes[which].setToolTipText(wrappedTooltip);
 		wrapper.add(mCheckBoxes[which]);
-
 		mFields[which] = new JTextField(value, 20);
-		mFields[which].setToolTipText(tooltip);
+		mFields[which].setToolTipText(wrappedTooltip);
 		mFields[which].setEnabled(false);
 		wrapper.add(mFields[which]);
 	}

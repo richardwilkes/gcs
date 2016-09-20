@@ -32,6 +32,7 @@ import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.PrintProxy;
 import com.trollworks.toolkit.utility.notification.BatchNotifierTarget;
+import com.trollworks.toolkit.utility.text.Text;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -173,7 +174,7 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 	private void createFilterField() {
 		mFilterField = new JTextField(10);
 		mFilterField.getDocument().addDocumentListener(this);
-		mFilterField.setToolTipText(SEARCH_FIELD_TOOLTIP);
+		mFilterField.setToolTipText(Text.wrapPlainTextForToolTip(SEARCH_FIELD_TOOLTIP));
 		// This client property is specific to Mac OS X
 		mFilterField.putClientProperty("JTextField.variant", "search"); //$NON-NLS-1$ //$NON-NLS-2$
 		mFilterField.setMinimumSize(new Dimension(60, mFilterField.getPreferredSize().height));

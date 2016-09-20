@@ -117,10 +117,10 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 	@Localize(locale = "de", value = "Ref.")
 	@Localize(locale = "ru", value = "Ссыл")
 	private static String	REFERENCE;
-	@Localize("A reference to the book and page this modifier appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize("A reference to the book and page this modifier appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
 	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Modifikator beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
-	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая модификатор\n (например B22 - \"Базовые правила\", страница 22)")
-	@Localize(locale = "es", value = "Referencia al libro y página donde se menciona el modificador\n(p.e. B22 se refiere al \"Manual Básico\", página 22).")
+	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая модификатор (например B22 - \"Базовые правила\", страница 22)")
+	@Localize(locale = "es", value = "Referencia al libro y página donde se menciona el modificador (p.e. B22 se refiere al \"Manual Básico\", página 22).")
 	private static String	REFERENCE_TOOLTIP;
 
 	static {
@@ -162,7 +162,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 		JPanel wrapper = new JPanel(new ColumnLayout(2));
 		mNameField = createCorrectableField(fields, wrapper, NAME, modifier.getName(), NAME_TOOLTIP);
 		mEnabledField = new JCheckBox(ENABLED, modifier.isEnabled());
-		mEnabledField.setToolTipText(ENABLED_TOOLTIP);
+		mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(ENABLED_TOOLTIP));
 		mEnabledField.setEnabled(mIsEditable);
 		wrapper.add(mEnabledField);
 		fields.add(wrapper);
@@ -228,13 +228,11 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 
 	private JTextField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
 		JTextField field = new JTextField(text);
-		field.setToolTipText(tooltip);
+		field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		field.setEnabled(mIsEditable);
 		field.getDocument().addDocumentListener(this);
-
 		LinkedLabel label = new LinkedLabel(title);
 		label.setLink(field);
-
 		labelParent.add(label);
 		fieldParent.add(field);
 		return field;
@@ -252,12 +250,11 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 
 	private JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
 		JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
-
 		if (maxChars > 0) {
 			UIUtilities.setOnlySize(field, field.getPreferredSize());
 			field.setText(text);
 		}
-		field.setToolTipText(tooltip);
+		field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		field.setEnabled(mIsEditable);
 		labelParent.add(new LinkedLabel(title, field));
 		fieldParent.add(field);
@@ -277,10 +274,9 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 	@SuppressWarnings("unused")
 	private JTextField createNumberField(Container labelParent, Container fieldParent, String title, boolean allowSign, int value, String tooltip, int maxDigits) {
 		JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + (allowSign ? "-" : EMPTY)); //$NON-NLS-1$
-
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
 		field.setText(Numbers.format(value));
-		field.setToolTipText(tooltip);
+		field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		field.setEnabled(mIsEditable);
 		new NumberFilter(field, false, allowSign, true, maxDigits);
 		field.addActionListener(this);
@@ -292,10 +288,9 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 	@SuppressWarnings("unused")
 	private JTextField createNumberField(Container labelParent, Container fieldParent, String title, double value, String tooltip, int maxDigits) {
 		JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + '.');
-
 		UIUtilities.setOnlySize(field, field.getPreferredSize());
 		field.setText(Numbers.format(value));
-		field.setToolTipText(tooltip);
+		field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		field.setEnabled(mIsEditable);
 		new NumberFilter(field, true, false, true, maxDigits);
 		field.addActionListener(this);
@@ -306,7 +301,6 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 
 	private void createCostModifierFields(Container parent) {
 		JPanel wrapper = new JPanel(new ColumnLayout(7));
-
 		mLastLevel = mRow.getLevels();
 		if (mLastLevel < 1) {
 			mLastLevel = 1;

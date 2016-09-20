@@ -100,9 +100,9 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 	@Localize(locale = "ru", value = "Технологический уровень")
 	@Localize(locale = "es", value = "Nivel tecnológico")
 	private static String	TECH_LEVEL;
-	@Localize("Whether this skill requires tech level specialization,\nand, if so, at what tech level it was learned")
-	@Localize(locale = "de", value = "Ob diese Fertigkeit auf einen bestimmten Techlevel spezialisiert ist\nund wenn, mit welchem Techlevel sie gelernt wurde")
-	@Localize(locale = "ru", value = "Для умения необходима специализации с технологическим уровнем \nс указанием уровня изучения")
+	@Localize("Whether this skill requires tech level specialization, and, if so, at what tech level it was learned")
+	@Localize(locale = "de", value = "Ob diese Fertigkeit auf einen bestimmten Techlevel spezialisiert ist und wenn, mit welchem Techlevel sie gelernt wurde")
+	@Localize(locale = "ru", value = "Для умения необходима специализации с технологическим уровнем с указанием уровня изучения")
 	@Localize(locale = "es", value = "Si la habilidad requiere especialización por nivel tecnológico, este es para el que se ha aprendido")
 	private static String	TECH_LEVEL_TOOLTIP;
 	@Localize("Tech Level Required")
@@ -160,9 +160,9 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 	@Localize(locale = "ru", value = "Ссылка на страницу")
 	@Localize(locale = "es", value = "Página de referencia")
 	private static String	EDITOR_REFERENCE;
-	@Localize("A reference to the book and page this skill appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize("A reference to the book and page this skill appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
 	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der diese Fertigkeit beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
-	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая умение\n (например B22 - книга \"Базовые правила\", страница 22)")
+	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая умение (например B22 - книга \"Базовые правила\", страница 22)")
 	@Localize(locale = "es", value = "Referencia al libro y página en donde se menciona la habilidad (p.e. B22 se refiere al \"Manual Básico\", página 22)")
 	private static String	REFERENCE_TOOLTIP;
 	@Localize("Encumbrance")
@@ -288,7 +288,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
 	private JTextField createCorrectableField(Container parent, String title, String text, String tooltip) {
 		JTextField field = new JTextField(text);
-		field.setToolTipText(tooltip);
+		field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		field.setEnabled(mIsEditable);
 		field.getDocument().addDocumentListener(this);
 
@@ -307,7 +307,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 			UIUtilities.setOnlySize(field, field.getPreferredSize());
 			field.setText(text);
 		}
-		field.setToolTipText(tooltip);
+		field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		field.setEnabled(mIsEditable);
 		labelParent.add(new LinkedLabel(title, field));
 		fieldParent.add(field);
@@ -342,7 +342,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 			JPanel wrapper = new JPanel(new ColumnLayout(2));
 
 			mHasTechLevel = new JCheckBox(TECH_LEVEL, hasTL);
-			mHasTechLevel.setToolTipText(TECH_LEVEL_TOOLTIP);
+			mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(TECH_LEVEL_TOOLTIP));
 			mHasTechLevel.setEnabled(enabled);
 			mHasTechLevel.addActionListener(this);
 			wrapper.add(mHasTechLevel);
@@ -350,7 +350,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 			mTechLevel = new JTextField("9999"); //$NON-NLS-1$
 			UIUtilities.setOnlySize(mTechLevel, mTechLevel.getPreferredSize());
 			mTechLevel.setText(mSavedTechLevel);
-			mTechLevel.setToolTipText(TECH_LEVEL_TOOLTIP);
+			mTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(TECH_LEVEL_TOOLTIP));
 			mTechLevel.setEnabled(enabled && hasTL);
 			wrapper.add(mTechLevel);
 			parent.add(wrapper);
@@ -361,7 +361,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 		} else {
 			mTechLevel = new JTextField(mSavedTechLevel);
 			mHasTechLevel = new JCheckBox(TECH_LEVEL_REQUIRED, hasTL);
-			mHasTechLevel.setToolTipText(TECH_LEVEL_REQUIRED_TOOLTIP);
+			mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(TECH_LEVEL_REQUIRED_TOOLTIP));
 			mHasTechLevel.setEnabled(enabled);
 			mHasTechLevel.addActionListener(this);
 			parent.add(mHasTechLevel);
@@ -388,7 +388,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 		JLabel label = new JLabel(EDITOR_DIFFICULTY, SwingConstants.RIGHT);
 		JPanel wrapper = new JPanel(new ColumnLayout(forCharacterOrTemplate ? character != null ? 10 : 8 : 6));
 
-		label.setToolTipText(EDITOR_DIFFICULTY_TOOLTIP);
+		label.setToolTipText(Text.wrapPlainTextForToolTip(EDITOR_DIFFICULTY_TOOLTIP));
 
 		mAttributePopup = createComboBox(wrapper, SkillAttribute.values(), mRow.getAttribute(), ATTRIBUTE_POPUP_TOOLTIP);
 		wrapper.add(new JLabel(" /")); //$NON-NLS-1$
@@ -406,7 +406,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
 	private JComboBox<Object> createComboBox(Container parent, Object[] items, Object selection, String tooltip) {
 		JComboBox<Object> combo = new JComboBox<>(items);
-		combo.setToolTipText(tooltip);
+		combo.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		combo.setSelectedItem(selection);
 		combo.addActionListener(this);
 		combo.setMaximumRowCount(items.length);

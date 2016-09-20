@@ -60,7 +60,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
 	private static String	ENCUMBRANCE_TOOLTIP;
 	@Localize("The maximum load a character can carry and still remain within a specific encumbrance level")
 	@Localize(locale = "de", value = "Das maximale Gewicht, das ein Charakter tragen und immer noch in einer bestimmten Belastungsstufe bleiben kann")
-	@Localize(locale = "ru", value = "Максимальная нагрузка, которую персонаж может нести, \nоставаясь в пределах указанного уровня нагрузки")
+	@Localize(locale = "ru", value = "Максимальная нагрузка, которую персонаж может нести, оставаясь в пределах указанного уровня нагрузки")
 	@Localize(locale = "es", value = "Carga máxima que un personaje puede soportar y mantenerse todavia en el nivel actual de carga")
 	private static String	MAX_CARRY_TOOLTIP;
 	@Localize("The character's ground movement rate for a specific encumbrance level")

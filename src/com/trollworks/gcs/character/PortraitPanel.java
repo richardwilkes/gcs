@@ -23,6 +23,7 @@ import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.notification.NotifierTarget;
+import com.trollworks.toolkit.utility.text.Text;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -76,7 +77,7 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 		mCharacter = character;
 		Insets insets = getInsets();
 		UIUtilities.setOnlySize(this, new Dimension(insets.left + insets.right + Profile.PORTRAIT_WIDTH, insets.top + insets.bottom + Profile.PORTRAIT_HEIGHT));
-		setToolTipText(MessageFormat.format(PORTRAIT_TOOLTIP, new Integer(Profile.PORTRAIT_WIDTH * 2), new Integer(Profile.PORTRAIT_HEIGHT * 2)));
+		setToolTipText(Text.wrapPlainTextForToolTip(MessageFormat.format(PORTRAIT_TOOLTIP, new Integer(Profile.PORTRAIT_WIDTH * 2), new Integer(Profile.PORTRAIT_HEIGHT * 2))));
 		mCharacter.addTarget(this, Profile.ID_PORTRAIT);
 		addMouseListener(new MouseAdapter() {
 			@Override

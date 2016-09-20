@@ -32,6 +32,7 @@ import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
+import com.trollworks.toolkit.utility.text.Text;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -112,9 +113,9 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	@Localize(locale = "ru", value = "Количество очков за уровень")
 	@Localize(locale = "es", value = "Coste por nivel")
 	private static String	LEVEL_POINTS;
-	@Localize("The per level cost of this advantage. If this is set to zero\nand there is a value other than zero in the level field, then the\nvalue in the base points field will be used")
-	@Localize(locale = "de", value = "Die Kosten pro Stufe dieses Vorteils.  Wenn dieses Feld leer ist\nund im Stufen-Feld etwas anderes als Null steht, dann wird\nder Wert im Grundkosten-Feld verwendet")
-	@Localize(locale = "ru", value = "Стоимость одного уровня преимущества. Если этот параметр установлен в ноль\n и есть значение, отличное от нуля в поле Уровень, то\nбудет использоваться значение из поля Базовая стоимость")
+	@Localize("The per level cost of this advantage. If this is set to zero and there is a value other than zero in the level field, then the value in the base points field will be used")
+	@Localize(locale = "de", value = "Die Kosten pro Stufe dieses Vorteils.  Wenn dieses Feld leer ist und im Stufen-Feld etwas anderes als Null steht, dann wird der Wert im Grundkosten-Feld verwendet")
+	@Localize(locale = "ru", value = "Стоимость одного уровня преимущества. Если этот параметр установлен в ноль и есть значение, отличное от нуля в поле Уровень, то будет использоваться значение из поля Базовая стоимость")
 	@Localize(locale = "es", value = "Coste por nivel de la ventaja. Si está a cero pero el campo por nivel no, entonces se usa el coste base en su lugar")
 	private static String	LEVEL_POINTS_TOOLTIP;
 	@Localize("Level")
@@ -306,7 +307,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
 			mHalfLevel = new JCheckBox("+\u00bd"); //$NON-NLS-1$
 			mHalfLevel.setSelected(mLastHalfLevel);
-			mHalfLevel.setToolTipText(HALF_LEVEL_TOOLTIP);
+			mHalfLevel.setToolTipText(Text.wrapPlainTextForToolTip(HALF_LEVEL_TOOLTIP));
 			mHalfLevel.setEnabled(mIsEditable && advantage.allowHalfLevels());
 			mHalfLevel.addActionListener(this);
 			UIUtilities.setOnlySize(mHalfLevel, mHalfLevel.getPreferredSize());
@@ -319,7 +320,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
 			mShouldRoundCostDown = new JCheckBox(SHOULD_ROUND_COST_DOWN_TITLE);
 			mShouldRoundCostDown.setSelected(advantage.shouldRoundCostDown());
-			mShouldRoundCostDown.setToolTipText(SHOULD_ROUND_COST_DOWN_TOOLTIP);
+			mShouldRoundCostDown.setToolTipText(Text.wrapPlainTextForToolTip(SHOULD_ROUND_COST_DOWN_TOOLTIP));
 			mShouldRoundCostDown.setEnabled(mIsEditable);
 			mShouldRoundCostDown.addActionListener(this);
 			UIUtilities.setOnlySize(mShouldRoundCostDown, mShouldRoundCostDown.getPreferredSize());
@@ -356,7 +357,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		mCRCombo.addActionListener(this);
 		add(mCRCombo);
 		mCRAdjCombo = new JComboBox<>(SelfControlRollAdjustments.values());
-		mCRAdjCombo.setToolTipText(CR_ADJ_TOOLTIP);
+		mCRAdjCombo.setToolTipText(Text.wrapPlainTextForToolTip(CR_ADJ_TOOLTIP));
 		mCRAdjCombo.setSelectedIndex(mRow.getCRAdj().ordinal());
 		UIUtilities.setOnlySize(mCRAdjCombo, mCRAdjCombo.getPreferredSize());
 		mCRAdjCombo.setEnabled(mIsEditable && mRow.getCR() != SelfControlRoll.NONE_REQUIRED);
@@ -371,7 +372,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		innerGrid.add(row, ri, 1);
 		if (notContainer) {
 			JLabel label = new JLabel(TYPE, SwingConstants.RIGHT);
-			label.setToolTipText(TYPE_TOOLTIP);
+			label.setToolTipText(Text.wrapPlainTextForToolTip(TYPE_TOOLTIP));
 			add(label);
 			innerGrid.add(new FlexComponent(label, Alignment.RIGHT_BOTTOM, null), ri++, 0);
 
@@ -398,7 +399,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 			mContainerTypeCombo = new JComboBox<>(AdvantageContainerType.values());
 			mContainerTypeCombo.setSelectedItem(mRow.getContainerType());
 			UIUtilities.setOnlySize(mContainerTypeCombo, mContainerTypeCombo.getPreferredSize());
-			mContainerTypeCombo.setToolTipText(CONTAINER_TYPE_TOOLTIP);
+			mContainerTypeCombo.setToolTipText(Text.wrapPlainTextForToolTip(CONTAINER_TYPE_TOOLTIP));
 			add(mContainerTypeCombo);
 			row.add(mContainerTypeCombo);
 			innerGrid.add(new FlexComponent(new LinkedLabel(CONTAINER_TYPE, mContainerTypeCombo), Alignment.RIGHT_BOTTOM, null), ri++, 0);
@@ -452,7 +453,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	private JCheckBox createTypeCheckBox(boolean selected, String tooltip) {
 		JCheckBox button = new JCheckBox();
 		button.setSelected(selected);
-		button.setToolTipText(tooltip);
+		button.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		button.setEnabled(mIsEditable);
 		UIUtilities.setOnlySize(button, button.getPreferredSize());
 		add(button);

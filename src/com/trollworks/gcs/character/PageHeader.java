@@ -12,6 +12,7 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.toolkit.utility.text.Text;
 
 import java.awt.Color;
 
@@ -23,7 +24,7 @@ import javax.swing.UIManager;
 public class PageHeader extends JLabel {
 	/**
 	 * Creates a new {@link PageHeader}.
-	 * 
+	 *
 	 * @param title The title to use.
 	 * @param tooltip The tooltip to use.
 	 */
@@ -31,6 +32,6 @@ public class PageHeader extends JLabel {
 		super(title, SwingConstants.CENTER);
 		setFont(UIManager.getFont(GCSFonts.KEY_LABEL));
 		setForeground(Color.white);
-		setToolTipText(tooltip);
+		setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 	}
 }

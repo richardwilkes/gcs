@@ -39,6 +39,7 @@ import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.text.Enums;
 import com.trollworks.toolkit.utility.text.Numbers;
+import com.trollworks.toolkit.utility.text.Text;
 import com.trollworks.toolkit.utility.units.LengthUnits;
 import com.trollworks.toolkit.utility.units.WeightUnits;
 
@@ -549,7 +550,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private JButton createButton(String title, String tooltip) {
 		JButton button = new JButton(title);
 		button.setOpaque(false);
-		button.setToolTipText(tooltip);
+		button.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		button.addActionListener(this);
 		add(button);
 		return button;
@@ -568,7 +569,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 	private JTextField createHTMLTemplatePathField() {
 		JTextField field = new JTextField(getHTMLTemplate());
-		field.setToolTipText(HTML_TEMPLATE_OVERRIDE_TOOLTIP);
+		field.setToolTipText(Text.wrapPlainTextForToolTip(HTML_TEMPLATE_OVERRIDE_TOOLTIP));
 		field.setEnabled(isHTMLTemplateOverridden());
 		field.getDocument().addDocumentListener(this);
 		Dimension size = field.getPreferredSize();
@@ -586,7 +587,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		button.setContentAreaFilled(false);
 		button.setBorderPainted(false);
 		button.setOpaque(false);
-		button.setToolTipText(tooltip);
+		button.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		button.setBackground(Color.white);
 		button.addActionListener(this);
 		UIUtilities.setOnlySize(button, button.getPreferredSize());
@@ -640,7 +641,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 	private JTextField createTextField(String tooltip, String value) {
 		JTextField field = new JTextField(value);
-		field.setToolTipText(tooltip);
+		field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		field.getDocument().addDocumentListener(this);
 		Dimension size = field.getPreferredSize();
 		Dimension maxSize = field.getMaximumSize();

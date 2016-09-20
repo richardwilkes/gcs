@@ -114,9 +114,9 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 	@Localize(locale = "ru", value = "Потрачено на технику количество очков")
 	@Localize(locale = "es", value = "Puntos consumidos en la técnica")
 	private static String	TECHNIQUE_POINTS_TOOLTIP;
-	@Localize("A reference to the book and page this technique appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize("A reference to the book and page this technique appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
 	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der diese Technik beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
-	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая технику\n (например B22 - книга \"Базовые правила\", страница 22)")
+	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая технику (например B22 - книга \"Базовые правила\", страница 22)")
 	@Localize(locale = "es", value = "Referencia al libro y página en donde se menciona la técnica (p.e. B22 se refiere al \"Manual Básico\", página 22)")
 	private static String	TECHNIQUE_REFERENCE_TOOLTIP;
 	@Localize("Defaults To")
@@ -302,7 +302,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 		JPanel wrapper = new JPanel(new ColumnLayout(3));
 
 		mLimitCheckbox = new JCheckBox(LIMIT, mRow.isLimited());
-		mLimitCheckbox.setToolTipText(LIMIT_TOOLTIP);
+		mLimitCheckbox.setToolTipText(Text.wrapPlainTextForToolTip(LIMIT_TOOLTIP));
 		mLimitCheckbox.addActionListener(this);
 		mLimitCheckbox.setEnabled(mIsEditable);
 
@@ -330,7 +330,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 
 	private JTextField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
 		JTextField field = new JTextField(text);
-		field.setToolTipText(tooltip);
+		field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		field.setEnabled(mIsEditable);
 		field.getDocument().addDocumentListener(this);
 
@@ -351,7 +351,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 			UIUtilities.setOnlySize(field, field.getPreferredSize());
 			field.setText(text);
 		}
-		field.setToolTipText(tooltip);
+		field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 		field.setEnabled(mIsEditable);
 		field.addActionListener(this);
 		if (labelParent != null) {
@@ -386,10 +386,10 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 		JLabel label = new JLabel(EDITOR_DIFFICULTY, SwingConstants.RIGHT);
 		JPanel wrapper = new JPanel(new ColumnLayout(forCharacterOrTemplate ? character != null ? 8 : 6 : 4));
 
-		label.setToolTipText(TECHNIQUE_DIFFICULTY_TOOLTIP);
+		label.setToolTipText(Text.wrapPlainTextForToolTip(TECHNIQUE_DIFFICULTY_TOOLTIP));
 
 		mDifficultyCombo = createComboBox(wrapper, new Object[] { SkillDifficulty.A, SkillDifficulty.H }, mRow.getDifficulty());
-		mDifficultyCombo.setToolTipText(TECHNIQUE_DIFFICULTY_POPUP_TOOLTIP);
+		mDifficultyCombo.setToolTipText(Text.wrapPlainTextForToolTip(TECHNIQUE_DIFFICULTY_POPUP_TOOLTIP));
 		mDifficultyCombo.setEnabled(mIsEditable);
 
 		if (forCharacterOrTemplate) {

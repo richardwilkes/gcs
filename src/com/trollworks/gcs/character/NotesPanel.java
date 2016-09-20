@@ -76,7 +76,7 @@ public class NotesPanel extends ActionPanel {
 		setBackground(Color.WHITE);
 		setForeground(Color.BLACK);
 		setActionCommand(CMD_EDIT_NOTES);
-		setToolTipText(NOTES_TOOLTIP);
+		setToolTipText(Text.wrapPlainTextForToolTip(NOTES_TOOLTIP));
 		mNotes = Text.standardizeLineEndings(notes);
 		addMouseListener(new MouseAdapter() {
 			@Override

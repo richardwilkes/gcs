@@ -171,10 +171,10 @@ public enum ModifierColumnID {
 	@Localize(locale = "de", value = "Ref.")
 	@Localize(locale = "ru", value = "Ссыл")
 	static String	REFERENCE_TITLE;
-	@Localize("A reference to the book and page this modifier appears\non (e.g. B22 would refer to \"Basic Set\", page 22)")
+	@Localize("A reference to the book and page this modifier appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
 	@Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Modifikator beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
-	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая модификатор\n (например B22 - \"Базовые правила\", страница 22)")
-	@Localize(locale = "es", value = "Referencia al libro y página donde se menciona el modificador\n(p.e. B22 se refiere al \"Manual Básico\", página 22).")
+	@Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая модификатор (например B22 - \"Базовые правила\", страница 22)")
+	@Localize(locale = "es", value = "Referencia al libro y página donde se menciona el modificador (p.e. B22 se refiere al \"Manual Básico\", página 22).")
 	static String	REFERENCE_TOOLTIP;
 
 	static {

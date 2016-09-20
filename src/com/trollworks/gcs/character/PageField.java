@@ -22,6 +22,7 @@ import com.trollworks.toolkit.utility.text.DoubleFormatter;
 import com.trollworks.toolkit.utility.text.HeightFormatter;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
 import com.trollworks.toolkit.utility.text.Numbers;
+import com.trollworks.toolkit.utility.text.Text;
 import com.trollworks.toolkit.utility.text.WeightFormatter;
 
 import java.awt.Color;
@@ -113,7 +114,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		setEnabled(editable);
 		setForeground(editable ? Color.BLACK : Color.GRAY);
 		if (tooltip != null) {
-			setToolTipText(tooltip);
+			setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
 			if (tooltip.indexOf("{") != -1) { //$NON-NLS-1$
 				mCustomToolTip = tooltip;
 			}
@@ -144,7 +145,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 	@Override
 	public String getToolTipText() {
 		if (mCustomToolTip != null) {
-			return MessageFormat.format(mCustomToolTip, Numbers.format(((Integer) mCharacter.getValueForID(GURPSCharacter.POINTS_PREFIX + mConsumedType)).intValue()));
+			return Text.wrapPlainTextForToolTip(MessageFormat.format(mCustomToolTip, Numbers.format(((Integer) mCharacter.getValueForID(GURPSCharacter.POINTS_PREFIX + mConsumedType)).intValue())));
 		}
 		return super.getToolTipText();
 	}
