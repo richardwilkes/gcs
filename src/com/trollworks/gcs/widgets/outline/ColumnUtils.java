@@ -21,7 +21,7 @@ import java.util.ArrayList;
 public class ColumnUtils {
 	/**
 	 * Packs the columns to their preferred sizes.
-	 * 
+	 *
 	 * @param outline The {@link Outline} to pack.
 	 * @param width The width available for all columns.
 	 */
@@ -40,7 +40,19 @@ public class ColumnUtils {
 			width -= widths[i];
 		}
 		if (width >= 0) {
-			widths[0] += width;
+			if (width > 0) {
+				for (int i = 0; i < count; i++) {
+					column = outlineModel.getColumnAtIndex(i);
+					if (outlineModel.isHierarchyColumn(column)) {
+						widths[i] += width;
+						width = 0;
+						break;
+					}
+				}
+				if (width > 0) {
+					widths[0] += width;
+				}
+			}
 		} else {
 			int pos = 0;
 			int[] list = new int[count];
