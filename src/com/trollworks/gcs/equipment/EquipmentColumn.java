@@ -36,52 +36,36 @@ import javax.swing.SwingConstants;
 
 /** Definitions for equipment columns. */
 public enum EquipmentColumn {
-	/** The equipment name/description. */
-	DESCRIPTION {
+	/** The quantity. */
+	QUANTITY {
 		@Override
 		public String toString() {
-			return DESCRIPTION_TITLE;
+			return QUANTITY_TITLE;
 		}
 
 		@Override
 		public String getToolTip() {
-			return DESCRIPTION_TOOLTIP;
-		}
-
-		@Override
-		public String toString(GURPSCharacter character) {
-			if (character != null) {
-				return MessageFormat.format(DESCRIPTION_TOTALS, character.getWeightCarried().toString(), Numbers.format(character.getWealthCarried()));
-			}
-			return super.toString(character);
+			return QUANTITY_TOOLTIP;
 		}
 
 		@Override
 		public Cell getCell() {
-			return new MultiCell();
+			return new ListTextCell(SwingConstants.RIGHT, false);
 		}
 
 		@Override
 		public boolean shouldDisplay(DataFile dataFile) {
-			return true;
+			return !(dataFile instanceof ListFile) && !(dataFile instanceof LibraryFile);
 		}
 
 		@Override
 		public Object getData(Equipment equipment) {
-			return getDataAsText(equipment);
+			return new Integer(equipment.getQuantity());
 		}
 
 		@Override
 		public String getDataAsText(Equipment equipment) {
-			StringBuilder builder = new StringBuilder();
-			String notes = equipment.getNotes();
-
-			builder.append(equipment.toString());
-			if (notes.length() > 0) {
-				builder.append(" - "); //$NON-NLS-1$
-				builder.append(notes);
-			}
-			return builder.toString();
+			return Numbers.format(equipment.getQuantity());
 		}
 	},
 	/** The current equipment state. */
@@ -116,36 +100,57 @@ public enum EquipmentColumn {
 			return equipment.getState().toShortName();
 		}
 	},
-	/** The quantity. */
-	QUANTITY {
+	/** The equipment name/description. */
+	DESCRIPTION {
 		@Override
 		public String toString() {
-			return QUANTITY_TITLE;
+			return DESCRIPTION_TITLE;
 		}
 
 		@Override
 		public String getToolTip() {
-			return QUANTITY_TOOLTIP;
+			return DESCRIPTION_TOOLTIP;
+		}
+
+		@Override
+		public String toString(GURPSCharacter character) {
+			if (character != null) {
+				return MessageFormat.format(DESCRIPTION_TOTALS, character.getWeightCarried().toString(), Numbers.format(character.getWealthCarried()));
+			}
+			return super.toString(character);
 		}
 
 		@Override
 		public Cell getCell() {
-			return new ListTextCell(SwingConstants.RIGHT, false);
+			return new MultiCell();
 		}
 
 		@Override
 		public boolean shouldDisplay(DataFile dataFile) {
-			return !(dataFile instanceof ListFile) && !(dataFile instanceof LibraryFile);
+			return true;
+		}
+
+		@Override
+		public boolean isHierarchyColumn() {
+			return true;
 		}
 
 		@Override
 		public Object getData(Equipment equipment) {
-			return new Integer(equipment.getQuantity());
+			return getDataAsText(equipment);
 		}
 
 		@Override
 		public String getDataAsText(Equipment equipment) {
-			return Numbers.format(equipment.getQuantity());
+			StringBuilder builder = new StringBuilder();
+			String notes = equipment.getNotes();
+
+			builder.append(equipment.toString());
+			if (notes.length() > 0) {
+				builder.append(" - "); //$NON-NLS-1$
+				builder.append(notes);
+			}
+			return builder.toString();
 		}
 	},
 	/** The tech level. */
@@ -552,6 +557,12 @@ public enum EquipmentColumn {
 	 */
 	public abstract boolean shouldDisplay(DataFile dataFile);
 
+	/** @return Whether this column should contain the hierarchy controls. */
+	@SuppressWarnings("static-method")
+	public boolean isHierarchyColumn() {
+		return false;
+	}
+
 	/**
 	 * Adds all relevant {@link Column}s to a {@link Outline}.
 	 *
@@ -562,13 +573,14 @@ public enum EquipmentColumn {
 		GURPSCharacter character = dataFile instanceof GURPSCharacter ? (GURPSCharacter) dataFile : null;
 		boolean sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
 		OutlineModel model = outline.getModel();
-
 		for (EquipmentColumn one : values()) {
 			if (one.shouldDisplay(dataFile)) {
 				Column column = new Column(one.ordinal(), one.toString(character), one.getToolTip(), one.getCell());
-
 				column.setHeaderCell(new ListHeaderCell(sheetOrTemplate));
 				model.addColumn(column);
+				if (one.isHierarchyColumn()) {
+					model.setHierarchyColumn(column);
+				}
 			}
 		}
 	}
