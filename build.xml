@@ -1,81 +1,58 @@
 <?xml version="1.0"?>
 <project name="gcs" default="build_jar" xmlns:if="ant:if" xmlns:unless="ant:unless">
-	<condition property="platform.mac" else="false">
-		<os family="mac"/>
-	</condition>
-	<condition property="platform.windows" else="false">
-		<os family="windows"/>
-	</condition>
-	<condition property="platform.linux" else="false">
-		<and>
-			<os family="unix"/>
-			<not>
-				<os family="mac"/>
-			</not>
-		</and>
-	</condition>
-	<property if:true="${platform.mac}" name="platform" value="mac"/>
-	<property if:true="${platform.windows}" name="platform" value="windows"/>
-	<property if:true="${platform.linux}" name="platform" value="linux"/>
-	<condition property="platformWithBits" value="${platform}-32" else="${platform}">
-		<and>
-			<os arch="i386"/>
-			<or>
-				<os family="unix"/>
-				<os family="windows"/>
-			</or>
-		</and>
-	</condition>
+	<import file="../toolkit/props.xml"/>
 
-	<property name="app" value="gcs"/>
-	<property if:true="${platform.windows}" name="app.exe" value="${app}.exe"/>
-	<property unless:true="${platform.windows}" name="app.exe" value="${app}"/>
-	<property if:true="${platform.mac}" name="app.signature" value="RWGS"/>
-	<property name="src" value="src"/>
-	<property name="lib" value="libraries"/>
-	<property name="toolkit" value="toolkit-4.4.1.jar"/>
-	<property name="toolkit_lib" value="../toolkit/libraries"/>
-	<property name="toolkit_path" value="${toolkit_lib}/${toolkit}"/>
-	<property name="apple_stubs" value="apple_stubs.jar"/>
-	<property name="apple_stubs_path" value="../apple_stubs/${apple_stubs}"/>
-	<property name="trove" value="trove-3.0.3.jar"/>
-	<property name="trove_path" value="${toolkit_lib}/trove-3.0.3.jar"/>
-	<property name="iText" value="iText-2.1.7.jar"/>
-	<property name="iText_path" value="${lib}/${iText}"/>
-	<property name="commons_logging" value="commons-logging-1.2.jar"/>
-	<property name="commons_logging_path" value="${lib}/${commons_logging}"/>
-	<property name="fontbox" value="fontbox-2.0.0-RC3.jar"/>
-	<property name="fontbox_path" value="${lib}/${fontbox}"/>
-	<property name="pdfbox" value="pdfbox-2.0.0-RC3.jar"/>
-	<property name="pdfbox_path" value="${lib}/${pdfbox}"/>
-	<property name="build_root" value="ant_build"/>
-	<property name="gcs_build" value="${build_root}/${app}"/>
-	<property name="dist.build" value="${build_root}/dist"/>
-	<property name="min_jdk" value="1.8"/>
-	<property name="app_name" value="GURPS Character Sheet"/>
-	<property name="copyright_owner" value="Richard A. Wilkes"/>
-	<property name="primary_version" value="4.4.1"/>
-	<property name="dist_name" value="GCS-${primary_version}"/>
-	<property name="dist_root" value="${dist.build}/${dist_name}"/>
-	<property name="build_app_bundle" value="${dist_root}/${app_name}.app/Contents"/>
-	<property name="bundle_res" value="${build_app_bundle}/Resources"/>
-	<property name="java_bundle_dir" value="${build_app_bundle}/Java"/>
+	<target name="setup" depends="platform_props">
+		<property name="app" value="gcs"/>
+		<property if:true="${platform.windows}" name="app.exe" value="${app}.exe"/>
+		<property unless:true="${platform.windows}" name="app.exe" value="${app}"/>
+		<property if:true="${platform.mac}" name="app.signature" value="RWGS"/>
+		<property name="src" value="src"/>
+		<property name="lib" value="libraries"/>
+		<property name="toolkit" value="toolkit-4.4.1.jar"/>
+		<property name="toolkit_lib" value="../toolkit/libraries"/>
+		<property name="toolkit_path" value="${toolkit_lib}/${toolkit}"/>
+		<property name="apple_stubs" value="apple_stubs.jar"/>
+		<property name="apple_stubs_path" value="../apple_stubs/${apple_stubs}"/>
+		<property name="trove" value="trove-3.0.3.jar"/>
+		<property name="trove_path" value="${toolkit_lib}/trove-3.0.3.jar"/>
+		<property name="iText" value="iText-2.1.7.jar"/>
+		<property name="iText_path" value="${lib}/${iText}"/>
+		<property name="commons_logging" value="commons-logging-1.2.jar"/>
+		<property name="commons_logging_path" value="${lib}/${commons_logging}"/>
+		<property name="fontbox" value="fontbox-2.0.0-RC3.jar"/>
+		<property name="fontbox_path" value="${lib}/${fontbox}"/>
+		<property name="pdfbox" value="pdfbox-2.0.0-RC3.jar"/>
+		<property name="pdfbox_path" value="${lib}/${pdfbox}"/>
+		<property name="build_root" value="ant_build"/>
+		<property name="gcs_build" value="${build_root}/${app}"/>
+		<property name="dist.build" value="${build_root}/dist"/>
+		<property name="min_jdk" value="1.8"/>
+		<property name="app_name" value="GURPS Character Sheet"/>
+		<property name="copyright_owner" value="Richard A. Wilkes"/>
+		<property name="primary_version" value="4.4.1"/>
+		<property name="dist_name" value="GCS-${primary_version}"/>
+		<property name="dist_root" value="${dist.build}/${dist_name}"/>
+		<property name="build_app_bundle" value="${dist_root}/${app_name}.app/Contents"/>
+		<property name="bundle_res" value="${build_app_bundle}/Resources"/>
+		<property name="java_bundle_dir" value="${build_app_bundle}/Java"/>
 
-	<tstamp>
-		<format property="version" pattern="${primary_version}.yyyyMMddHHmmss"/>
-	</tstamp>
-	<tstamp>
-		<format property="year" pattern="yyyy"/>
-	</tstamp>
+		<tstamp>
+			<format property="version" pattern="${primary_version}.yyyyMMddHHmmss"/>
+		</tstamp>
+		<tstamp>
+			<format property="year" pattern="yyyy"/>
+		</tstamp>
+	</target>
 
-	<target name="clean" description="Clean up after a GCS jar build">
+	<target name="clean" depends="setup" description="Clean up after a GCS jar build">
 		<delete dir="${build_root}"/>
 		<delete>
 			<fileset dir="${lib}" includes="${app}-*.jar"/>
 		</delete>
 	</target>
 
-	<target name="build_jar" description="Build the GCS jar" depends="clean">
+	<target name="build_jar" depends="clean" description="Build the GCS jar">
 		<mkdir dir="${gcs_build}"/>
 
 		<!-- Compile the code. -->
@@ -118,14 +95,14 @@
 		</jar>
 	</target>
 
-	<target name="clean_bundle" description="Cleans up after a bundle build">
+	<target name="clean_bundle" depends="setup" description="Cleans up after a bundle build">
 		<delete dir="${build_root}"/>
 		<delete>
 			<fileset dir="." includes="${app}-*-${platformWithBits}.zip"/>
 		</delete>
 	</target>
 	
-	<target name="bundle" description="Create a distribution bundle" depends="clean_bundle">
+	<target name="bundle" depends="clean_bundle" description="Create a distribution bundle">
 		<property name="dist.name" value="${app}-${primary_version}-${platformWithBits}"/>
 		<property name="dist.root" value="${dist.build}/${dist.name}"/>
 		<property if:true="${platform.mac}" name="mac.bundle" value="${dist.root}/${app_name}.app/Contents"/>
@@ -200,7 +177,7 @@
 			includes="${dist.name}/**"/>
 	</target>
 
-	<target name="build_launcher_exe" description="Build the native launcher">
+	<target name="build_launcher_exe" depends="setup" description="Build the native launcher">
 		<mkdir dir="launcher/${platformWithBits}"/>
 		<ant dir="../toolkit" target="launcher" inheritall="false">
 			<property name="platform.mac" value="${platform.mac}"/>
@@ -221,30 +198,35 @@
 			<param name="platform.windows" value="false"/>
 			<param name="platform.linux" value="false"/>
 			<param name="platformWithBits" value="mac"/>
+			<param name="platformWithArch" value="macosx-x64"/>
 		</antcall>
 		<antcall target="bundle" inheritall="no">
 			<param name="platform.mac" value="false"/>
 			<param name="platform.windows" value="true"/>
 			<param name="platform.linux" value="false"/>
 			<param name="platformWithBits" value="windows"/>
+			<param name="platformWithArch" value="windows-x64"/>
 		</antcall>
 		<antcall target="bundle" inheritall="no">
 			<param name="platform.mac" value="false"/>
 			<param name="platform.windows" value="true"/>
 			<param name="platform.linux" value="false"/>
 			<param name="platformWithBits" value="windows-32"/>
+			<param name="platformWithArch" value="windows-i586"/>
 		</antcall>
 		<antcall target="bundle" inheritall="no">
 			<param name="platform.mac" value="false"/>
 			<param name="platform.windows" value="false"/>
 			<param name="platform.linux" value="true"/>
 			<param name="platformWithBits" value="linux"/>
+			<param name="platformWithArch" value="linux-x64"/>
 		</antcall>
 		<antcall target="bundle" inheritall="no">
 			<param name="platform.mac" value="false"/>
 			<param name="platform.windows" value="false"/>
 			<param name="platform.linux" value="true"/>
 			<param name="platformWithBits" value="linux-32"/>
+			<param name="platformWithArch" value="linux-i586"/>
 		</antcall>
 	</target>
 </project>
