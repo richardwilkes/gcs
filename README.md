@@ -34,13 +34,7 @@ The code is compiled with Java 8. Ant is used to build the product and produce t
 
   If you want to build a distribution package, you'll also need to:
 
-3. Download one (or all) of the JRE packages I've already prepared for use and place them into the launcher directory of the toolkit:
-
-  - [JRE for Mac OS X](http://gcs.trollworks.com/dev_artifacts/jre-mac.zip)  
-  - [JRE for 64-bit Windows](http://gcs.trollworks.com/dev_artifacts/jre-windows.zip)  
-  - [JRE for 32-bit Windows](http://gcs.trollworks.com/dev_artifacts/jre-windows-32.zip)  
-  - [JRE for 64-bit Linux](http://gcs.trollworks.com/dev_artifacts/jre-linux.zip)  
-  - [JRE for 32-bit Linux](http://gcs.trollworks.com/dev_artifacts/jre-linux-32.zip)  
+3. Download one (or all) of the JRE packages from Oracle. Click the button to download the JRE from the [main download page](http://www.oracle.com/technetwork/java/javase/downloads/index.html). This will take you to a form where you can download the packages for each platform.
 
 4. Build a distribution package for your platform:
 
