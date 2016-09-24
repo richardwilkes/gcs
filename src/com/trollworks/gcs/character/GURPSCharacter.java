@@ -1518,7 +1518,6 @@ public class GURPSCharacter extends DataFile {
 		mCachedWealthCarried = 0.0;
 		for (Row one : mEquipment.getTopLevelRows()) {
 			Equipment equipment = (Equipment) one;
-			int quantity = equipment.getQuantity();
 			if (equipment.isCarried()) {
 				WeightValue weight = new WeightValue(equipment.getExtendedWeight());
 				if (SheetPreferences.areGurpsMetricRulesUsed()) {
@@ -1528,10 +1527,9 @@ public class GURPSCharacter extends DataFile {
 						weight = GURPSCharacter.convertFromGurpsMetric(weight);
 					}
 				}
-				weight.setValue(weight.getValue() * quantity);
 				mCachedWeightCarried.add(weight);
 			}
-			mCachedWealthCarried += quantity * equipment.getExtendedValue();
+			mCachedWealthCarried += equipment.getExtendedValue();
 		}
 		if (notify) {
 			if (!savedWeight.equals(mCachedWeightCarried)) {
