@@ -541,13 +541,12 @@ public class Advantage extends ListRow implements HasSourceReference {
 		if (factor == 0) {
 			return false;
 		}
-		// if no half levels then use setLevels()
 		if (!mAllowHalfLevels) {
-			return setLevels(mLevels + factor);
+			return setLevels(Math.max(mLevels + factor, 0));
 		}
 		int halfLevels = mLevels * 2 + (mHalfLevel ? 1 : 0) + factor;
-		if (halfLevels < 1) {
-			halfLevels = 1;
+		if (halfLevels < 0) {
+			halfLevels = 0;
 		}
 		boolean modified = setHalfLevel((halfLevels & 1) == 1);
 		modified |= setLevels(halfLevels / 2);
