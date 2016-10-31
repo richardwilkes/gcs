@@ -22,8 +22,8 @@
 	</technique>
 	<technique version="2" limit="0">
 		<name>Aggressive Parry</name>
-		<difficulty>A</difficulty>
-		<points>1</points>
+		<difficulty>H</difficulty>
+		<points>2</points>
 		<reference>MA65</reference>
 		<default>
 			<type>Parry</type>
@@ -38,8 +38,8 @@
 	</technique>
 	<technique version="2" limit="0">
 		<name>Aggressive Parry</name>
-		<difficulty>A</difficulty>
-		<points>1</points>
+		<difficulty>H</difficulty>
+		<points>2</points>
 		<reference>MA65</reference>
 		<default>
 			<type>Parry</type>
@@ -54,8 +54,8 @@
 	</technique>
 	<technique version="2" limit="0">
 		<name>Aggressive Parry</name>
-		<difficulty>A</difficulty>
-		<points>1</points>
+		<difficulty>H</difficulty>
+		<points>2</points>
 		<reference>MA65</reference>
 		<default>
 			<type>Parry</type>
@@ -309,8 +309,8 @@
 	</technique>
 	<technique version="2" limit="0">
 		<name>Cavalry Training</name>
-		<difficulty>A</difficulty>
-		<points>1</points>
+		<difficulty>H</difficulty>
+		<points>2</points>
 		<reference>MA69</reference>
 		<default>
 			<type>Skill</type>
@@ -442,8 +442,8 @@
 	</technique>
 	<technique version="2" limit="0">
 		<name>Counterattack</name>
-		<difficulty>A</difficulty>
-		<points>1</points>
+		<difficulty>H</difficulty>
+		<points>2</points>
 		<reference>MA70</reference>
 		<default>
 			<type>Skill</type>
@@ -552,8 +552,8 @@
 	</technique>
 	<technique version="2" limit="-1">
 		<name>Ear Clap</name>
-		<difficulty>H</difficulty>
-		<points>2</points>
+		<difficulty>A</difficulty>
+		<points>1</points>
 		<reference>MA70</reference>
 		<default>
 			<type>Skill</type>
@@ -663,7 +663,7 @@
 	<technique version="2" limit="5">
 		<name>Evade</name>
 		<difficulty>A</difficulty>
-		<points>2</points>
+		<points>1</points>
 		<reference>MA71</reference>
 		<default>
 			<type>Skill</type>
@@ -685,7 +685,7 @@
 	<technique version="2" limit="5">
 		<name>Evade</name>
 		<difficulty>A</difficulty>
-		<points>2</points>
+		<points>1</points>
 		<reference>MA71</reference>
 		<default>
 			<type>Skill</type>
@@ -706,8 +706,8 @@
 	</technique>
 	<technique version="2" limit="0">
 		<name>Exotic Hand Strike</name>
-		<difficulty>H</difficulty>
-		<points>2</points>
+		<difficulty>A</difficulty>
+		<points>1</points>
 		<reference>MA71</reference>
 		<default>
 			<type>Skill</type>
@@ -1016,8 +1016,8 @@
 	</technique>
 	<technique version="2">
 		<name>Grand Disarm</name>
-		<difficulty>A</difficulty>
-		<points>1</points>
+		<difficulty>H</difficulty>
+		<points>2</points>
 		<reference>MA84</reference>
 		<default>
 			<type>Skill</type>
@@ -2239,8 +2239,8 @@
 	</technique>
 	<technique version="2" limit="0">
 		<name>Triangle Choke</name>
-		<difficulty>A</difficulty>
-		<points>1</points>
+		<difficulty>H</difficulty>
+		<points>2</points>
 		<reference>MA79</reference>
 		<default>
 			<type>Skill</type>
@@ -2255,8 +2255,8 @@
 	</technique>
 	<technique version="2" limit="0">
 		<name>Triangle Choke</name>
-		<difficulty>A</difficulty>
-		<points>1</points>
+		<difficulty>H</difficulty>
+		<points>2</points>
 		<reference>MA79</reference>
 		<default>
 			<type>Skill</type>
