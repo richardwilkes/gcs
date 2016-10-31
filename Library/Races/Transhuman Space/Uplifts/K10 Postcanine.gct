@@ -1,0 +1,610 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template id="84737330-b8ab-4d6a-8380-21b9b19592e0" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="no" type="race">
+			<name>K-10A Postcanine</name>
+			<reference>TS118</reference>
+			<notes>2033; $24,000; Biotech Euphrates</notes>
+			<categories>
+				<category>Social</category>
+				<category>Uplift</category>
+			</categories>
+			<advantage version="2">
+				<name>Increased DX</name>
+				<type>Physical</type>
+				<levels>3</levels>
+				<points_per_level>20</points_per_level>
+				<attribute_bonus>
+					<attribute>dx</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Decreased IQ</name>
+				<type>Mental</type>
+				<levels>3</levels>
+				<points_per_level>-20</points_per_level>
+				<attribute_bonus>
+					<attribute>iq</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased HT</name>
+				<type>Physical</type>
+				<levels>2</levels>
+				<points_per_level>10</points_per_level>
+				<attribute_bonus>
+					<attribute>ht</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Perception</name>
+				<type>Mental/Physical</type>
+				<levels>7</levels>
+				<points_per_level>5</points_per_level>
+				<reference>B16</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>perception</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Combat Reflexes</name>
+				<type>Mental</type>
+				<base_points>15</base_points>
+				<reference>B43</reference>
+				<notes>Never freeze; +6 on all IQ rolls to wake up or to recover from surprise or mental stun; Your side gets +1 to initiative rolls (+2 if you're the leader)</notes>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="starts with">fast-draw</name>
+					<specialization compare="is anything"></specialization>
+					<amount>1</amount>
+				</skill_bonus>
+				<attribute_bonus>
+					<attribute>dodge</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>parry</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>block</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>fright check</attribute>
+					<amount>2</amount>
+				</attribute_bonus>
+				<prereq_list all="yes">
+					<advantage_prereq has="no">
+						<name compare="is">Enhanced Time Sense</name>
+						<notes compare="is anything"></notes>
+					</advantage_prereq>
+				</prereq_list>
+			</advantage>
+			<advantage version="2">
+				<name>Discriminatory Smell</name>
+				<type>Physical, Exotic</type>
+				<base_points>15</base_points>
+				<modifier version="1">
+					<name>Emotion Sense</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>B49</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Profiling</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>P47</reference>
+				</modifier>
+				<reference>B49</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Enhanced Move (Ground)</name>
+				<type>Physical, Exotic</type>
+				<levels>1</levels>
+				<points_per_level>20</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>Handling Bonus</name>
+					<cost type="percentage">5</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+					<reference>B52</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Handling Penalty</name>
+					<cost type="percentage">-5</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+					<reference>B52</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Newtonian</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+					<reference>B52</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Road-Bound</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+					<reference>B52</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>All-Out</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>P49</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Cosmic</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>SU26</reference>
+					<notes>Instantaneous Acceleration</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Cosmic</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>SU27</reference>
+					<notes>Complete Maneuverability</notes>
+				</modifier>
+				<reference>B52</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Teeth, Sharp</name>
+				<type>Physical, Exotic</type>
+				<base_points>1</base_points>
+				<melee_weapon>
+					<damage>thr-1 cut</damage>
+					<usage>Bite</usage>
+					<reach>C</reach>
+					<parry>No</parry>
+					<block>No</block>
+					<default>
+						<type>Skill</type>
+						<name>Brawling</name>
+						<modifier>0</modifier>
+					</default>
+					<default>
+						<type>DX</type>
+						<modifier>0</modifier>
+					</default>
+				</melee_weapon>
+				<reference>B91</reference>
+				<categories>
+					<category>Perk</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Ultrahearing</name>
+				<type>Physical, Exotic</type>
+				<base_points>5</base_points>
+				<modifier version="1" enabled="no">
+					<name>No normal hearing</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B94</reference>
+				</modifier>
+				<reference>B94</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Fur</name>
+				<type>Physical, Exotic</type>
+				<base_points>1</base_points>
+				<reference>B101</reference>
+				<categories>
+					<category>Perk</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Chummy</name>
+				<type>Mental</type>
+				<base_points>-5</base_points>
+				<reference>B126</reference>
+				<notes>React to others at +2; -1 to IQ-based skills when alone</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Colorblindness</name>
+				<type>Physical</type>
+				<base_points>-10</base_points>
+				<reference>B127</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="contains">artist</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="contains">chemistry</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="contains">driving</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">merchant</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="contains">piloting</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="contains">tracking</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-1</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Disturbing Voice</name>
+				<type>Physical</type>
+				<base_points>-10</base_points>
+				<reference>B132</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+				<prereq_list all="yes">
+					<advantage_prereq has="no">
+						<name compare="is">voice</name>
+						<notes compare="is anything"></notes>
+					</advantage_prereq>
+				</prereq_list>
+			</advantage>
+			<advantage version="2">
+				<name>Innumerate</name>
+				<type>Mental</type>
+				<base_points>-5</base_points>
+				<reference>B140</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+				<prereq_list all="yes">
+					<skill_prereq has="no">
+						<name compare="contains">physics</name>
+						<specialization compare="is anything"></specialization>
+					</skill_prereq>
+					<skill_prereq has="no">
+						<name compare="contains">mathematics</name>
+						<specialization compare="is anything"></specialization>
+					</skill_prereq>
+					<skill_prereq has="no">
+						<name compare="is">market analysis</name>
+						<specialization compare="is anything"></specialization>
+					</skill_prereq>
+					<skill_prereq has="no">
+						<name compare="is">finance</name>
+						<specialization compare="is anything"></specialization>
+					</skill_prereq>
+					<skill_prereq has="no">
+						<name compare="contains">engineer</name>
+						<specialization compare="is anything"></specialization>
+					</skill_prereq>
+					<skill_prereq has="no">
+						<name compare="is">cryptography</name>
+						<specialization compare="is anything"></specialization>
+					</skill_prereq>
+					<skill_prereq has="no">
+						<name compare="is">astronomy</name>
+						<specialization compare="is anything"></specialization>
+					</skill_prereq>
+					<skill_prereq has="no">
+						<name compare="is">accounting</name>
+						<specialization compare="is anything"></specialization>
+					</skill_prereq>
+					<skill_prereq has="no">
+						<name compare="is">economics</name>
+						<specialization compare="is anything"></specialization>
+					</skill_prereq>
+					<skill_prereq has="no">
+						<name compare="is">computer programming</name>
+						<specialization compare="is anything"></specialization>
+					</skill_prereq>
+				</prereq_list>
+			</advantage>
+			<advantage version="2">
+				<name>Native language: Written reduced to broken</name>
+				<type>Physical</type>
+				<base_points>-2</base_points>
+			</advantage>
+			<advantage_container version="2" open="no">
+				<name>Quadruped</name>
+				<advantage version="2">
+					<name>Horizontal</name>
+					<type>Physical, Exotic</type>
+					<base_points>-10</base_points>
+					<modifier version="1">
+						<name>No penalty to kick</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+					</modifier>
+					<reference>B139</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>No Fine Manipulators</name>
+					<type>Physical</type>
+					<base_points>-30</base_points>
+					<reference>B145</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+					<cost_reduction>
+						<attribute>st</attribute>
+						<percentage>40</percentage>
+					</cost_reduction>
+					<cost_reduction>
+						<attribute>dx</attribute>
+						<percentage>40</percentage>
+					</cost_reduction>
+				</advantage>
+			</advantage_container>
+			<advantage version="2">
+				<name>Sense of Duty</name>
+				<type>Mental</type>
+				<modifier version="1" enabled="no">
+					<name>Friends and Companions</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Small Group@</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Master</name>
+					<cost type="points">-2</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Large Group@</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Entire Race@</name>
+					<cost type="points">-15</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Every Living Being</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+					<reference>B153</reference>
+				</modifier>
+				<reference>B153</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Short arms</name>
+				<type>Physical</type>
+				<base_points>-10</base_points>
+			</advantage>
+			<advantage version="2">
+				<name>Short Lifespan</name>
+				<type>Physical, Exotic</type>
+				<levels>1</levels>
+				<points_per_level>-10</points_per_level>
+				<reference>B154</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Sleepy</name>
+				<type>Physical, Exotic</type>
+				<modifier version="1">
+					<name>1/2 time</name>
+					<cost type="points">-8</cost>
+					<affects>total</affects>
+					<reference>B154</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>2/3 time</name>
+					<cost type="points">-16</cost>
+					<affects>total</affects>
+					<reference>B154</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>3/4 time</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+					<reference>B154</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>7/8 time</name>
+					<cost type="points">-26</cost>
+					<affects>total</affects>
+					<reference>B154</reference>
+				</modifier>
+				<reference>B154</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Stress Atavism</name>
+				<type>Mental, Exotic</type>
+				<cr>12</cr>
+				<modifier version="1">
+					<name>Mild</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B156</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Moderate</name>
+					<cost type="points">-15</cost>
+					<affects>total</affects>
+					<reference>B156</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Severe</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+					<reference>B156</reference>
+				</modifier>
+				<reference>B156</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Wealth</name>
+				<type>Social</type>
+				<modifier version="1">
+					<name>Dead Broke</name>
+					<cost type="points">-25</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is $0</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Poor</name>
+					<cost type="points">-15</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 1/5 average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Struggling</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 1/2 average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Average</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Comfortable</name>
+					<cost type="points">10</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 2x average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Wealthy</name>
+					<cost type="points">20</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 5x average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Wealthy</name>
+					<cost type="points">30</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 20x average</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Filthy Rich</name>
+					<cost type="points">50</cost>
+					<affects>total</affects>
+					<reference>B25</reference>
+					<notes>Starting wealth is 100x average</notes>
+				</modifier>
+				<reference>B25</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Proud</name>
+				<type>Mental</type>
+				<base_points>-1</base_points>
+				<reference>B164</reference>
+				<categories>
+					<category>Quirk</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Responsive</name>
+				<type>Mental</type>
+				<base_points>-1</base_points>
+				<reference>B164</reference>
+				<categories>
+					<category>Quirk</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Early maturation</name>
+				<type>Physical</type>
+				<modifier version="1">
+					<name>9 years</name>
+					<cost type="percentage">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>4 years</name>
+					<cost type="percentage">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>2 years</name>
+					<cost type="percentage">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>1 year</name>
+					<cost type="percentage">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>6 months</name>
+					<cost type="percentage">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<categories>
+					<category>Bioroid</category>
+					<category>Trait</category>
+					<category>Upgrade</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+</template>

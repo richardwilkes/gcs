@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template id="85cb7204-1241-491f-ad1e-b05e5648c3d3" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="no" type="race">
+			<name>Europan</name>
+			<reference>DB112</reference>
+			<notes>2090; $69,000; Avatar Klusterkorp</notes>
+			<categories>
+				<category>Aquatic</category>
+				<category>Bioroid</category>
+				<category>Space</category>
+			</categories>
+			<advantage version="2">
+				<name>Extra Fatigue Points</name>
+				<type>Physical</type>
+				<levels>3</levels>
+				<points_per_level>3</points_per_level>
+				<reference>B16</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Attribute</category>
+				</categories>
+				<attribute_bonus>
+					<attribute>fp</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2" allow_half_levels="yes">
+				<name>Enhanced Move (Water)</name>
+				<type>Physical, Exotic</type>
+				<levels half_level="yes">0</levels>
+				<points_per_level>20</points_per_level>
+				<modifier version="1" enabled="no">
+					<name>Handling Bonus</name>
+					<cost type="percentage">5</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+					<reference>B52</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Handling Penalty</name>
+					<cost type="percentage">-5</cost>
+					<levels>1</levels>
+					<affects>total</affects>
+					<reference>B52</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Newtonian</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+					<reference>B52</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Road-Bound</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+					<reference>B52</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>All-Out</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>P49</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Cosmic</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>SU26</reference>
+					<notes>Instantaneous Acceleration</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Cosmic</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>SU27</reference>
+					<notes>Complete Maneuverability</notes>
+				</modifier>
+				<reference>B52</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Fit</name>
+				<type>Physical</type>
+				<base_points>5</base_points>
+				<reference>B55</reference>
+				<notes>+1 to all HT rolls to stay conscious, avoid death, resist disease, resist poison; recover FP at twice the normal rate (but not FP spent for spells or psi powers)</notes>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Longevity</name>
+				<type>Physical</type>
+				<base_points>2</base_points>
+				<reference>B66</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Nictitating Membrane</name>
+				<type>Physical, Exotic</type>
+				<levels>1</levels>
+				<points_per_level>1</points_per_level>
+				<reference>B71</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Night Vision</name>
+				<type>Physical</type>
+				<levels>8</levels>
+				<points_per_level>1</points_per_level>
+				<reference>B71</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Vibration Sense</name>
+				<type>Physical, Exotic</type>
+				<base_points>10</base_points>
+				<modifier version="1" enabled="no">
+					<name>Universal</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>B96</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Sense of Perception</name>
+					<cost type="percentage">100</cost>
+					<affects>total</affects>
+					<reference>P86</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Targeting</name>
+					<cost type="percentage">20</cost>
+					<affects>total</affects>
+					<reference>P86</reference>
+				</modifier>
+				<reference>B96</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Temperature Tolerance</name>
+				<type>Physical</type>
+				<levels>4</levels>
+				<points_per_level>1</points_per_level>
+				<reference>B93</reference>
+				<notes>-5&#176; through 55&#176; Farenheight / -20&#176; through 15&#176; Celsius</notes>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage_container version="2" open="no" type="meta trait">
+				<name>Bioroid Body</name>
+				<reference>TS131</reference>
+				<categories>
+					<category>Bioroid</category>
+					<category>Meta-Trait</category>
+				</categories>
+				<advantage version="2">
+					<name>No degeneration in zero G</name>
+					<type>Physical</type>
+					<base_points>1</base_points>
+					<reference>TS132</reference>
+					<categories>
+						<category>Perk</category>
+						<category>Space</category>
+						<category>Upgrade</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Unusual Biochemistry</name>
+					<type>Physical</type>
+					<base_points>-5</base_points>
+					<reference>B160</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Early maturation</name>
+					<type>Physical</type>
+					<modifier version="1" enabled="no">
+						<name>9 years</name>
+						<cost type="percentage">0</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>4 years</name>
+						<cost type="percentage">0</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>2 years</name>
+						<cost type="percentage">0</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1">
+						<name>1 year</name>
+						<cost type="percentage">0</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>6 months</name>
+						<cost type="percentage">0</cost>
+						<affects>total</affects>
+					</modifier>
+					<categories>
+						<category>Bioroid</category>
+						<category>Trait</category>
+						<category>Upgrade</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Intron messages</name>
+					<type>Physical</type>
+				</advantage>
+				<advantage version="2">
+					<name>Clostely resembles others of the same model</name>
+					<type>Physical</type>
+				</advantage>
+			</advantage_container>
+			<advantage version="2">
+				<name>Sanitized Metabolism</name>
+				<type>Physical</type>
+				<base_points>1</base_points>
+				<reference>B101</reference>
+				<categories>
+					<category>Perk</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Doesn't Breathe</name>
+				<type>Physical, Exotic</type>
+				<base_points>20</base_points>
+				<modifier version="1" enabled="no">
+					<name>Gills</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+					<reference>B49</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Gills</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+					<reference>B49</reference>
+					<notes>Suffocates in air</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Oxygen Absorption</name>
+					<cost type="percentage">-25</cost>
+					<affects>total</affects>
+					<reference>B49</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Oxygen Storage</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+					<reference>B49</reference>
+					<notes>Can hold breath 25 times as long as normal</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Oxygen Storage</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B49</reference>
+					<notes>Can hold breath 50 times as long as normal</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Oxygen Storage</name>
+					<cost type="percentage">-30</cost>
+					<affects>total</affects>
+					<reference>B49</reference>
+					<notes>Can hold breath 100 times as long as normal</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Oxygen Storage</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B49</reference>
+					<notes>Can hold breath 200 times as long as normal</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Oxygen Storage</name>
+					<cost type="percentage">-10</cost>
+					<affects>total</affects>
+					<reference>B49</reference>
+					<notes>Can hold breath 300 times as long as normal</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Oxygen Combustion</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+					<reference>B49</reference>
+				</modifier>
+				<reference>B49</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Transgenic features</name>
+				<type>Physical</type>
+				<notes>Flippers instead of feet</notes>
+				<categories>
+					<category>Trait</category>
+					<category>Upgrade</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>No Legs (Semi-Aquatic)</name>
+				<type>Physical, Exotic</type>
+				<modifier version="1">
+					<name>Skill penalties on land instead of water</name>
+					<cost type="percentage">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B145</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Bioluminescent Skin</name>
+				<type>Physical</type>
+				<base_points>1</base_points>
+				<categories>
+					<category>Perk</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+</template>

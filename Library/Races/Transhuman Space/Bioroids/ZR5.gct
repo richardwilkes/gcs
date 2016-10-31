@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template id="7a1a1eb4-7d74-4c6b-9b48-10c375d30f52" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="no" type="race">
+			<name>ZR-5</name>
+			<reference>TS117</reference>
+			<notes>2075; $102,000; Xiao Chu</notes>
+			<categories>
+				<category>Bioroid</category>
+				<category>Space</category>
+			</categories>
+			<advantage version="2">
+				<name>Decreased ST</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>-10</points_per_level>
+				<attribute_bonus>
+					<attribute>st</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage_container version="2" open="no" type="meta trait">
+				<name>Bioroid Body</name>
+				<reference>TS131</reference>
+				<categories>
+					<category>Bioroid</category>
+					<category>Meta-Trait</category>
+				</categories>
+				<advantage version="2">
+					<name>No degeneration in zero G</name>
+					<type>Physical</type>
+					<base_points>1</base_points>
+					<reference>TS132</reference>
+					<categories>
+						<category>Perk</category>
+						<category>Space</category>
+						<category>Upgrade</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Unusual Biochemistry</name>
+					<type>Physical</type>
+					<base_points>-5</base_points>
+					<reference>B160</reference>
+					<categories>
+						<category>Disadvantage</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Early maturation</name>
+					<type>Physical</type>
+					<modifier version="1" enabled="no">
+						<name>9 years</name>
+						<cost type="percentage">0</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>4 years</name>
+						<cost type="percentage">0</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>2 years</name>
+						<cost type="percentage">0</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1">
+						<name>1 year</name>
+						<cost type="percentage">0</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>6 months</name>
+						<cost type="percentage">0</cost>
+						<affects>total</affects>
+					</modifier>
+					<categories>
+						<category>Bioroid</category>
+						<category>Trait</category>
+						<category>Upgrade</category>
+					</categories>
+				</advantage>
+				<advantage version="2">
+					<name>Intron messages</name>
+					<type>Physical</type>
+				</advantage>
+				<advantage version="2">
+					<name>Clostely resembles others of the same model</name>
+					<type>Physical</type>
+				</advantage>
+			</advantage_container>
+			<advantage version="2">
+				<name>Absolute Direction</name>
+				<type>Mental/Physical</type>
+				<base_points>5</base_points>
+				<modifier version="1" enabled="no">
+					<name>Requires signal</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B34</reference>
+				</modifier>
+				<modifier version="1">
+					<name>3D Spatial Sense</name>
+					<cost type="points">5</cost>
+					<affects>total</affects>
+					<reference>B34</reference>
+					<skill_bonus>
+						<name compare="starts with">piloting</name>
+						<specialization compare="is anything"></specialization>
+						<amount>1</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">aerobatics</name>
+						<specialization compare="is anything"></specialization>
+						<amount>2</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">free fall</name>
+						<specialization compare="is anything"></specialization>
+						<amount>2</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">navigation</name>
+						<specialization compare="is">hyperspace</specialization>
+						<amount>2</amount>
+					</skill_bonus>
+					<skill_bonus>
+						<name compare="is">navigation</name>
+						<specialization compare="is">space</specialization>
+						<amount>2</amount>
+					</skill_bonus>
+				</modifier>
+				<reference>B34</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">body sense</name>
+					<specialization compare="is anything"></specialization>
+					<amount>3</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">navigation</name>
+					<specialization compare="is">air</specialization>
+					<amount>3</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">navigation</name>
+					<specialization compare="is">land</specialization>
+					<amount>3</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">navigation</name>
+					<specialization compare="is">sea</specialization>
+					<amount>3</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Appearance</name>
+				<type>Physical</type>
+				<modifier version="1" enabled="no">
+					<name>Universal</name>
+					<cost type="percentage">25</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Off-the-Shelf Looks</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Androgynous</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Impressive</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1">
+					<name>Attractive</name>
+					<cost type="points">4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Average</name>
+					<cost type="points">0</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Horrific</name>
+					<cost type="points">-24</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Monstrous</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Hideous</name>
+					<cost type="points">-16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Ugly</name>
+					<cost type="points">-8</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Unattractive</name>
+					<cost type="points">-4</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Handsome</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Beautiful</name>
+					<cost type="points">12</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Handsome</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Very Beautiful</name>
+					<cost type="points">16</cost>
+					<affects>total</affects>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Transcendent</name>
+					<cost type="points">20</cost>
+					<affects>total</affects>
+				</modifier>
+				<reference>B21</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Clinging</name>
+				<type>Physical, Exotic</type>
+				<base_points>20</base_points>
+				<modifier version="1" enabled="no">
+					<name>Specific</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B43</reference>
+					<notes>@Common Material@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specific</name>
+					<cost type="percentage">-60</cost>
+					<affects>total</affects>
+					<reference>B43</reference>
+					<notes>@Uncommon Material@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specific</name>
+					<cost type="percentage">-80</cost>
+					<affects>total</affects>
+					<reference>B43</reference>
+					<notes>@Absurd Material@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Attraction</name>
+					<cost type="percentage">25</cost>
+					<affects>total</affects>
+					<reference>P45</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Requires Low Gravity</name>
+					<cost type="percentage">-5</cost>
+					<levels>8</levels>
+					<affects>total</affects>
+					<reference>P45</reference>
+					<notes>0.2 G or less</notes>
+				</modifier>
+				<reference>B43</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Prehensile toes</name>
+				<type>Physical, Exotic</type>
+				<base_points>4</base_points>
+				<reference>TS132</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Upgrade</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Radiation Tolerance</name>
+				<type>Physical, Exotic</type>
+				<modifier version="1" enabled="no">
+					<name>Extended</name>
+					<cost type="percentage">30</cost>
+					<affects>total</affects>
+					<reference>P70</reference>
+					<notes>@Type@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>PF: 2</name>
+					<cost type="points">5</cost>
+					<affects>total</affects>
+					<reference>B79</reference>
+				</modifier>
+				<modifier version="1">
+					<name>PF: 5</name>
+					<cost type="points">10</cost>
+					<affects>total</affects>
+					<reference>B79</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>PF: 10</name>
+					<cost type="points">15</cost>
+					<affects>total</affects>
+					<reference>B79</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>PF: 20</name>
+					<cost type="points">20</cost>
+					<affects>total</affects>
+					<reference>B79</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>PF: 50</name>
+					<cost type="points">25</cost>
+					<affects>total</affects>
+					<reference>B79</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>PF: 100</name>
+					<cost type="points">30</cost>
+					<affects>total</affects>
+					<reference>B79</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>PF: 200</name>
+					<cost type="points">35</cost>
+					<affects>total</affects>
+					<reference>B79</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>PF: 500</name>
+					<cost type="points">40</cost>
+					<affects>total</affects>
+					<reference>B79</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>PF: 1000</name>
+					<cost type="points">45</cost>
+					<affects>total</affects>
+					<reference>B79</reference>
+				</modifier>
+				<reference>B79</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Resistant</name>
+				<type>Physical</type>
+				<modifier version="1" enabled="no">
+					<name>@Very Common: Metabolic Hazards, etc.@</name>
+					<cost type="points">30</cost>
+					<affects>total</affects>
+					<reference>B80</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Common: Poison, Sickness, etc.@</name>
+					<cost type="points">15</cost>
+					<affects>total</affects>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Disease</name>
+					<cost type="points">10</cost>
+					<affects>total</affects>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.@</name>
+					<cost type="points">5</cost>
+					<affects>total</affects>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Immunity</name>
+					<cost type="multiplier">1</cost>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1">
+					<name>+8 to all HT rolls to resist</name>
+					<cost type="multiplier">0.5</cost>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>+3 to all HT rolls to resist</name>
+					<cost type="multiplier">0.33</cost>
+					<reference>B81</reference>
+				</modifier>
+				<reference>B81</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Skinny</name>
+				<type>Physical</type>
+				<base_points>-5</base_points>
+				<reference>B18</reference>
+				<notes>-2 ST vs. knockback</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">disguise</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">shadowing</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-2</amount>
+				</skill_bonus>
+				<prereq_list all="yes">
+					<attribute_prereq has="yes" which="ht" compare="at most">14</attribute_prereq>
+				</prereq_list>
+			</advantage>
+			<advantage version="2">
+				<name>Workaholic</name>
+				<type>Physical</type>
+				<base_points>-5</base_points>
+				<reference>B162</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Skill bonus (Free fall)</name>
+				<type>Mental</type>
+				<levels>3</levels>
+				<points_per_level>2</points_per_level>
+				<skill_bonus>
+					<name compare="is">Free Fall</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Taboo trait: Genetic defects</name>
+				<type>Physical</type>
+				<reference>TS135</reference>
+				<categories>
+					<category>Trait</category>
+					<category>Upgrade</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Taller but lighter than ST indicates</name>
+				<type>Physical</type>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+</template>

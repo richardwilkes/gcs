@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template id="dce97f21-354c-40bd-a65c-2650c9a68d73" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="no" type="race">
+			<name>Yousheng</name>
+			<reference>TS117</reference>
+			<notes>2068; $100,000; Xiao Chu</notes>
+			<categories>
+				<category>China</category>
+				<category>Mars</category>
+				<category>Parahuman</category>
+			</categories>
+			<advantage version="2">
+				<name>Decreased ST</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>-10</points_per_level>
+				<attribute_bonus>
+					<attribute>st</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased DX</name>
+				<type>Physical</type>
+				<levels>1</levels>
+				<points_per_level>20</points_per_level>
+				<attribute_bonus>
+					<attribute>dx</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Increased HT</name>
+				<type>Physical</type>
+				<levels>2</levels>
+				<points_per_level>10</points_per_level>
+				<attribute_bonus>
+					<attribute>ht</attribute>
+					<amount per_level="yes">1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Longevity</name>
+				<type>Physical</type>
+				<base_points>2</base_points>
+				<reference>B66</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage_container version="2" open="no" type="meta trait">
+				<name>Mars-Adapted</name>
+				<reference>TS131</reference>
+				<categories>
+					<category>Meta-Trait</category>
+					<category>Upgrade</category>
+				</categories>
+				<advantage version="2">
+					<name>Filter Lungs</name>
+					<type>Physical, Exotic</type>
+					<base_points>5</base_points>
+					<modifier version="1">
+						<name>Co&#178; only</name>
+						<cost type="percentage">-70</cost>
+						<affects>total</affects>
+					</modifier>
+					<modifier version="1">
+						<name>Demporary disadvantage: Increased consumption 1</name>
+						<cost type="percentage">-10</cost>
+						<affects>total</affects>
+					</modifier>
+					<reference>B55</reference>
+				</advantage>
+				<advantage version="2">
+					<name>Reduced Consumption</name>
+					<type>Physical, Exotic</type>
+					<levels>2</levels>
+					<points_per_level>2</points_per_level>
+					<modifier version="1" enabled="no">
+						<name>Cast-Iron Stomach</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B80</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Food Only</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B80</reference>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Water Only</name>
+						<cost type="percentage">-50</cost>
+						<affects>total</affects>
+						<reference>B80</reference>
+					</modifier>
+					<modifier version="1">
+						<name>Air only</name>
+						<cost type="percentage">100</cost>
+						<affects>total</affects>
+					</modifier>
+					<reference>B80</reference>
+				</advantage>
+				<advantage version="2">
+					<name>Low-Preassure lungs</name>
+					<type>Physical, Exotic</type>
+				</advantage>
+			</advantage_container>
+			<advantage version="2">
+				<name>Resistant</name>
+				<type>Physical</type>
+				<modifier version="1" enabled="no">
+					<name>@Very Common: Metabolic Hazards, etc.@</name>
+					<cost type="points">30</cost>
+					<affects>total</affects>
+					<reference>B80</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Common: Poison, Sickness, etc.@</name>
+					<cost type="points">15</cost>
+					<affects>total</affects>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Disease</name>
+					<cost type="points">10</cost>
+					<affects>total</affects>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.@</name>
+					<cost type="points">5</cost>
+					<affects>total</affects>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Immunity</name>
+					<cost type="multiplier">1</cost>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1">
+					<name>+8 to all HT rolls to resist</name>
+					<cost type="multiplier">0.5</cost>
+					<reference>B81</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>+3 to all HT rolls to resist</name>
+					<cost type="multiplier">0.33</cost>
+					<reference>B81</reference>
+				</modifier>
+				<reference>B81</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Altered Sex Ratio</name>
+				<type>Physical</type>
+				<reference>BT58</reference>
+				<notes>2:1 female births</notes>
+				<categories>
+					<category>Species</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Increased Ferundancy</name>
+				<type>Physical</type>
+				<reference>BT59</reference>
+				<notes>75% twin births</notes>
+				<categories>
+					<category>Species</category>
+					<category>Upgrade</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Sexual Orientation</name>
+				<type>Physical</type>
+				<reference>BT59</reference>
+				<notes>Heterosexual</notes>
+				<categories>
+					<category>Species</category>
+					<category>Upgrade</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Taboo trait: Genetic defects</name>
+				<type>Physical</type>
+				<reference>TS135</reference>
+				<categories>
+					<category>Trait</category>
+					<category>Upgrade</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Taboo trait: Mental instability</name>
+				<type>Physical</type>
+				<reference>TS135</reference>
+				<categories>
+					<category>Trait</category>
+					<category>Upgrade</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Taboo trait: Unattractiveness</name>
+				<type>Physical</type>
+				<reference>TS135</reference>
+				<categories>
+					<category>Trait</category>
+					<category>Upgrade</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+</template>

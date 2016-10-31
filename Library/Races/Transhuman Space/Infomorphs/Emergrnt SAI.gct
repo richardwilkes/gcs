@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template id="0077b459-1348-46e4-bec3-808ac9aa066c" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="no" type="race">
+			<name>Sapient AI (Emergent)</name>
+			<reference>TS120</reference>
+			<notes>2066; $50,000; Complexity 7</notes>
+			<categories>
+				<category>Infomorph</category>
+			</categories>
+			<advantage version="2">
+				<name>Decreased IQ</name>
+				<type>Mental</type>
+				<levels>1</levels>
+				<points_per_level>-20</points_per_level>
+				<attribute_bonus>
+					<attribute>iq</attribute>
+					<amount per_level="yes">-1</amount>
+				</attribute_bonus>
+			</advantage>
+			<advantage_container version="2" open="no" type="meta trait">
+				<name>Meta-Trait: Artificial Intelligence</name>
+				<reference>B263</reference>
+				<advantage version="2">
+					<name>Absolute Timing</name>
+					<type>Mental</type>
+					<base_points>2</base_points>
+					<reference>B35</reference>
+				</advantage>
+				<advantage version="2">
+					<name>Digital Mind</name>
+					<type>Physical, Exotic</type>
+					<base_points>5</base_points>
+					<reference>B49</reference>
+				</advantage>
+				<advantage version="2">
+					<name>Doesn't Sleep</name>
+					<type>Physical, Exotic</type>
+					<base_points>20</base_points>
+					<reference>B50</reference>
+				</advantage>
+				<advantage version="2">
+					<name>Eidetic Memory (Photographic)</name>
+					<type>Mental</type>
+					<base_points>10</base_points>
+					<reference>B51</reference>
+				</advantage>
+				<advantage version="2">
+					<name>Lightning Calculator (Intuitive Mathematician)</name>
+					<type>Mental</type>
+					<base_points>5</base_points>
+					<reference>B66</reference>
+				</advantage>
+			</advantage_container>
+			<advantage version="2">
+				<name>Enhanced Time Sense</name>
+				<type>Mental, Exotic</type>
+				<base_points>45</base_points>
+				<reference>B52</reference>
+				<notes>You immediately act in combat before those without Enhanced Time Sense; Never freeze; +6 on all IQ rolls to wake up or to recover from surprise or mental stun; Your side gets +1 to initiative rolls (+2 if you're the leader)</notes>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="contains">fast-draw</name>
+					<specialization compare="is anything"></specialization>
+					<amount>1</amount>
+				</skill_bonus>
+				<attribute_bonus>
+					<attribute>dodge</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>parry</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>block</attribute>
+					<amount>1</amount>
+				</attribute_bonus>
+				<attribute_bonus>
+					<attribute>fright check</attribute>
+					<amount>2</amount>
+				</attribute_bonus>
+				<prereq_list all="yes">
+					<advantage_prereq has="no">
+						<name compare="is">Combat Reflexes</name>
+						<notes compare="is anything"></notes>
+					</advantage_prereq>
+				</prereq_list>
+			</advantage>
+			<advantage version="2">
+				<name>Extra Life</name>
+				<type>Mental, Exotic</type>
+				<levels>1</levels>
+				<points_per_level>25</points_per_level>
+				<modifier version="1">
+					<name>Copy</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B55</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Requires Body</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B55</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Requires Body</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B55</reference>
+					<notes>@Illegal, rare or expensive body@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Brain Pod</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>RSWL19</reference>
+				</modifier>
+				<reference>B55</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Fearlessness</name>
+				<type>Mental</type>
+				<levels>1</levels>
+				<points_per_level>2</points_per_level>
+				<reference>B55</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Talent (Memetics)</name>
+				<type>Mental</type>
+				<levels>1</levels>
+				<points_per_level>10</points_per_level>
+				<modifier version="1">
+					<name>Reaction Bonus</name>
+					<cost type="percentage">0</cost>
+					<affects>total</affects>
+					<notes>Memeticists</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Alternate Benefit</name>
+					<cost type="percentage">0</cost>
+					<affects>total</affects>
+					<notes>@Alternate Benefit@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Alternative Cost</name>
+					<cost type="points">0</cost>
+					<affects>levels only</affects>
+				</modifier>
+				<reference>B89</reference>
+				<categories>
+					<category>Advantage</category>
+					<category>Talent</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">Current Affairs</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">Propaganda</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">Psychology</name>
+					<specialization compare="is anything">Applied</specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">Area Knowledge</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">Sociology</name>
+					<specialization compare="is anything">Memetics</specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">Brainwashing</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">Expert Skill</name>
+					<specialization compare="is anything">Memetics</specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is"></name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is"></name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is"></name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is"></name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is"></name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Possession</name>
+				<type>Mental, Exotic</type>
+				<base_points>100</base_points>
+				<modifier version="1" enabled="no">
+					<name>Assimilation</name>
+					<cost type="percentage">10</cost>
+					<affects>total</affects>
+					<reference>B76</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Chronic</name>
+					<cost type="percentage">20</cost>
+					<affects>total</affects>
+					<reference>B76</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Mind Swap</name>
+					<cost type="percentage">10</cost>
+					<affects>total</affects>
+					<reference>B76</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Telecontrol</name>
+					<cost type="percentage">50</cost>
+					<affects>total</affects>
+					<reference>B76</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Digital</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B76</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Magical</name>
+					<cost type="percentage">-10</cost>
+					<affects>total</affects>
+					<reference>B76</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Mindlink Required</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B76</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>No Memory Access</name>
+					<cost type="percentage">-10</cost>
+					<affects>total</affects>
+					<reference>B76</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Parasitic</name>
+					<cost type="percentage">-60</cost>
+					<affects>total</affects>
+					<reference>B76</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Puppet Only</name>
+					<cost type="percentage">-30</cost>
+					<affects>total</affects>
+					<reference>B76</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Spiritual</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>B76</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Full Memory Access</name>
+					<cost type="percentage">10</cost>
+					<affects>total</affects>
+					<reference>P67</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Telecontrol 2</name>
+					<cost type="percentage">100</cost>
+					<affects>total</affects>
+					<reference>P67</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-10</cost>
+					<affects>total</affects>
+					<reference>P67</reference>
+					<notes>@Basis: Carbon Based@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-20</cost>
+					<affects>total</affects>
+					<reference>P67</reference>
+					<notes>@Planet of Origin: Terran@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-25</cost>
+					<affects>total</affects>
+					<reference>P67</reference>
+					<notes>@Kingdom: Animalia@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-30</cost>
+					<affects>total</affects>
+					<reference>P67</reference>
+					<notes>@Class: Mammalia@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>P67</reference>
+					<notes>@Species: Canis Lupus@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-35</cost>
+					<affects>total</affects>
+					<notes>@Family: Canidae@</notes>
+				</modifier>
+				<reference>B75</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Unaging</name>
+				<type>Physical, Exotic</type>
+				<base_points>15</base_points>
+				<modifier version="1" enabled="no">
+					<name>Age Control</name>
+					<cost type="percentage">20</cost>
+					<affects>total</affects>
+					<reference>B95</reference>
+				</modifier>
+				<modifier version="1">
+					<name>IQ Only</name>
+					<cost type="percentage">-75</cost>
+					<affects>total</affects>
+					<reference>RSWL24</reference>
+				</modifier>
+				<reference>B95</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Visualization</name>
+				<type>Mental, Supernatural</type>
+				<base_points>10</base_points>
+				<modifier version="1" enabled="no">
+					<name>Blessing</name>
+					<cost type="percentage">100</cost>
+					<affects>total</affects>
+					<reference>P87</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Blessing</name>
+					<cost type="percentage">0</cost>
+					<affects>total</affects>
+					<reference>P87</reference>
+					<notes>Others Only</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Cursing</name>
+					<cost type="percentage">100</cost>
+					<affects>total</affects>
+					<reference>P87</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Reliable</name>
+					<cost type="percentage">5</cost>
+					<levels>4</levels>
+					<affects>total</affects>
+				</modifier>
+				<reference>B96</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Skill bonus: Computer Operation</name>
+				<type>Mental</type>
+				<levels>4</levels>
+				<points_per_level>2</points_per_level>
+				<skill_bonus>
+					<name compare="is">Computer Operation</name>
+					<specialization compare="is anything"></specialization>
+					<amount per_level="yes">1</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Taboo trait: Mental instability</name>
+				<type>Physical</type>
+				<reference>TS135</reference>
+				<categories>
+					<category>Trait</category>
+					<category>Upgrade</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Program</name>
+				<type>Physical</type>
+				<notes>Complexity 7</notes>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+</template>
