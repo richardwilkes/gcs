@@ -575,6 +575,9 @@ public class Skill extends ListRow implements HasSourceReference {
 		if (getName().toLowerCase().indexOf(text) != -1) {
 			return true;
 		}
+		if (getSpecialization().toLowerCase().indexOf(text) != -1) {
+			return true;
+		}
 		return super.contains(text, lowerCaseOnly);
 	}
 
