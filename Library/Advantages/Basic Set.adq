@@ -11377,7 +11377,7 @@
 		</modifier>
 		<modifier version="1" enabled="no">
 			<name>@Who: Individual with twice the PC's starting points@</name>
-			<cost type="points">10</cost>
+			<cost type="points">15</cost>
 			<affects>total</affects>
 			<reference>B72</reference>
 		</modifier>
