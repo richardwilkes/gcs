@@ -1,0 +1,1073 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<advantage_list id="696738c7-5fd0-4af9-8fe1-310f7204002a" version="1">
+	<advantage version="2">
+		<name>Academic or Guild Rank (@School)</name>
+		<type>Social</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>TMS21</reference>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Adjustable Spell, Enhanced Spell (@Spell@/@Enhancement@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS21</reference>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Adjustable Spell, Spell Enhancement (@Enhancement@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS21</reference>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Adjustable Spell, Spell Variation (@Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS21</reference>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Afflicted Casting (Flagellant's Blessing)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS22</reference>
+		<notes>Lower penalty to casting and bonuses to Will to avoid distraction from Pain and Shock</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Afflicted Casting (Mystic's Stupor)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS22</reference>
+		<notes>Lower penalty to casting and bonuses to Will to avoid distraction from being tipsy, drunk or euphoric</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Area Spell Mastery (@Area Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS22</reference>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Attribute Substitution (@Spell@/@Attribute@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS22</reference>
+		<notes>Base a single spell on an attribute other than IQ</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Better Magic Items (@School@/@Type of Magic Items@)</name>
+		<type>Social, Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS22</reference>
+		<notes>enchanted items obtained through school are 50% of cost better</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Blocking Spell Mastery (@Blocking Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS23</reference>
+		<notes>Can cast Blocking spells (p. B241) multiple times per turn, with penalties</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Combat Ceremony (@Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS23</reference>
+		<notes>Can cast ceremonial spell in combat; must know spell at 15+</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Continuous Ritual (@Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS23</reference>
+		<notes>Can keep Concentrating on the spell for multiple turns</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Convenience Casting (@Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS23</reference>
+		<notes>Can cast a spell with no risk if doing mundane tasks</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Covenant of Rest</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS23</reference>
+		<notes>Cannot be summoned, reanimated or resurrected after death</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Elixir Resistance (@Elixir@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS24</reference>
+		<notes>Can resist an elixir or get Magery bonus to resistance if it already has one</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Extra Option, Astrological Ceremonies (@School@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS24</reference>
+		<notes>Use Astrological Modifiers (Thau p. 83-86) for all spells</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Extra Option, Blood Magic</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS24</reference>
+		<notes>Can use Self-Sacrifice (Thau p. 246)</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Extra Option, Brute-Force Spell (@Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS24</reference>
+		<notes>Invoke Increased Effect Skill option (Thau 39) for one spell</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Extra Option, Fast Casting (@Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS24</reference>
+		<notes>Can use Faster Casting option (Thau 39)</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Extra Option, Flexible Ritual (@Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS24</reference>
+		<notes>Can use Flexible Rituals rules (Thau 37) for a single spell</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Extra Option, Intimidating Curses</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS24</reference>
+		<notes>Can use Announcing Curses (Thau 226-227) with baneful Resisted spells</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Extra Option, Knower of Names</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS24</reference>
+		<notes>Can use bonuses for Names (Thau 245) when casting ceremonially</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Extra Option, Mass Magician</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS24</reference>
+		<notes>Can use Mass Magic rules (Thau 51)</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Extra Option, Secret Material (@Material@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS24</reference>
+		<notes>Can use Materials for Wizards (Thau 96-98) for casting spells</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Extra Option, Speedy Enchantment</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS24</reference>
+		<notes>Can use variant enchantment scheme in Time and Reliability (Thau 108-109)</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Extra Option, Stabilizing Skill (@Skill@, @College@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS24</reference>
+		<notes>Can use mundane skill to avoid critical failures for one college (see Thau 40), must have skill at 15+</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Far-Casting (@Spell@)</name>
+		<type>Supernatural</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>TMS24</reference>
+		<notes>Each level removes -1 of range penalty for that spell</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Frightening Side Effects (@Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS25</reference>
+		<notes>Can use Intimidation against witnesses when spell incapacitates or kills someone</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Huge Subjects (@Spell@)</name>
+		<type>Supernatural</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>TMS25</reference>
+		<notes>Subtract 1/level from target's SM (minimum 0) before multiplying cost</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Immunity to @Specific Hazard@</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS25</reference>
+		<notes>Immune to a very specific, damaging magical effect</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Improvised Items</name>
+		<type>Supernatural</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>TMS25</reference>
+		<notes>Can use one Gizmo (B57) per game session for a single-use magic item containing a spell you know</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Improvised Magic (@School@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS25</reference>
+		<notes>Switches on Spell Defaults (Thau 38) for the magic style</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Aid</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS25</reference>
+		<notes>Can perform First Aid without a kit</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Avatar</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS25</reference>
+		<notes>When sending a message via spells, accompanied by clear image of yourself</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Boost Enchantment</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS25</reference>
+		<notes>When casting spell using enchanted item, +1 to Power</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Controlled @Disadvantage@</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS25</reference>
+		<notes>Can curse yourself with a specific disadvantage</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Corpse Smart</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS26</reference>
+		<notes>Recognize undead on sight</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Eye of the Storm</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS26</reference>
+		<notes>Bad weather affects you as one step less severe</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Filter</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS26</reference>
+		<notes>+1 to HT rolls to resist respiratory agents, +2 if you only have to avoid distraction</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Friendly Undergrowth</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS26</reference>
+		<notes>+1 in mundane Quick Contest when someone seeking your trail or hiding place in overgrown area</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Gate Experience</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS26</reference>
+		<notes>Know when you've been teleported, traveled in time or entered another dimension</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Good with @Animal@</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS26</reference>
+		<notes>Animal Empathy advantage for one specific species</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Gut of the Dragon</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS26</reference>
+		<notes>Receive Reduced Consumption 1 (Cast-Iron Stomach)</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Intuitive Illusionist</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS26</reference>
+		<notes>+1 on mundane Will rolls to disbelieve magical illusions, illusion Fight Checks and on IQ + Magery to sense permanent illusions</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Kindle</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS26</reference>
+		<notes>Produce time flame with a touch</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Magical Analysis</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS26</reference>
+		<notes>+1 to mundane attribute or skill rolls to analyze information from Information spell</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Muffle</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS26</reference>
+		<notes>Ignore -1 in hearing penalties due to noise and +1 to HT to resist deafening effects</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Mystic Gesture</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS26</reference>
+		<notes>Can open or close a door, light switch, tap or similar item with gesture and spend 1 FP</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Pebbles</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS26</reference>
+		<notes>Can pull a small stone of appropriate size from soil, sand or rubble</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Reinforce</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS26</reference>
+		<notes>Can shield personal possessions from magical destruction</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Rinse</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS26</reference>
+		<notes>Can negate ongoing damage from Cyclic contact effects and extinguish flame by spending 1 FP</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Screen</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS27</reference>
+		<notes>Ignore -1 in Vision penalties due to bright light and +1 to HT rolls to resist dazzling effects</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Intuitive Cantrip, Spark</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS27</reference>
+		<notes>+1 to mundane repair skills when maintaining or repairing technological items entirely through magic</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Kill Switch (@Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS27</reference>
+		<notes>Can turn off ongoing spell with no cost</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>License (@Name of License@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS27</reference>
+		<notes>Has License per PU2 18</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Life-Force Burn</name>
+		<type>Supernatural</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>TMS27</reference>
+		<notes>Ignore -1 per level of penalty when using Burning HP (B 237)</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Limited Energy Reserve (@School@)</name>
+		<type>Supernatural</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>TMS27</reference>
+		<notes>Can use Energy Reserve (Pow 119) for your style's spells</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Magic School Familiarity (@School@)</name>
+		<type>Social</type>
+		<base_points>1</base_points>
+		<reference>TMS20</reference>
+		<categories>
+			<category>Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Magical Style Adaptation (@School@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS27</reference>
+		<notes>Can buy spells, perks, etc. of another style</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Magical Weapon Bond (@Specific Weapon Type@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS27</reference>
+		<notes>+1 to effective combat skill with attuned weapon</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Mana Compensation (@School@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS27</reference>
+		<notes>Penalty for casting in low mana area is 1 less</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Melee Spell Mastery (@Melee Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS27</reference>
+		<notes>Can cast other spells while maintaining a Melee Spell at -3</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Mighty Spell (@Melee or Missle Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS27</reference>
+		<notes>+2 damage or +1 damage per die when casting spell, costs 1 FP</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Missle Spell Mastery (@Missle Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS28</reference>
+		<notes>Can cast other spells while holding missile spell, at -3 penalty as if Concentrating</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Mundane Magic (@Spell@ as @Skill@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS28</reference>
+		<notes>Can cast spell that appears to be use of mundane skill</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Named Possession (@Item@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS28</reference>
+		<notes>Item has potential to gain magical properties when you perform deeds of thaumatological significance</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>No Gestures (@Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS28</reference>
+		<notes>Can cast spell without gestures</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>No Incantations (@Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS28</reference>
+		<notes>Can cast spell silently</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Obscure True Name</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS28</reference>
+		<notes>Others cannot find your True Name through magical means</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Permit (@Class of Forbidden Spells@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS28</reference>
+		<notes>Allowed to use Forbidden Spells</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Power Casting (@Spell@)</name>
+		<type>Supernatural</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>TMS29</reference>
+		<notes>Add Power Casting level to Magery level for determining maximum energy expenditures</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Psychic Guidance (@Missle Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS29</reference>
+		<notes>Can control spell with effective skill of spell instead of Innate Attack</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Quick and Focused</name>
+		<type>Supernatural</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>TMS29</reference>
+		<notes>Ingore -1 penalty/level for using assistants or having non-assistants within 10 yds during Quick and Dirty enchantment (B481)</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Reduced Footprint (@Spell@)</name>
+		<type>Supernatural</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>TMS29</reference>
+		<notes>Can ignore an instance of chosen spell as being 'on'</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Rote Alchemy (@Elixir@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS29</reference>
+		<notes>Can brew one specific elixir without knowing Alchemy</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Rule of 17 (@Resisted Spell@)</name>
+		<type>Supernatural</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>TMS29</reference>
+		<notes>Can use effective skill higher than 16 when someone is resisting spell</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Rules Exemption, Armored Casting (@Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS29</reference>
+		<notes>Allows spellcaster to ignore penalties for armor (see Thau 28) for specific spell</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Rules Exemption, Fearless Magic (@School or Spell@))</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS29</reference>
+		<notes>Can ignore rules for Fearsome Magic (Thau 32) for a school or no Fright Check for spell when casting</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Sacrificial Blocking Spell (@Blocking Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS30</reference>
+		<notes>Can use Blocking spell to shield an ally</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Sanctum</name>
+		<type>Supernatural</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>TMS30</reference>
+		<notes>Personal residence is a place of power</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Scroll-Reading (@Language@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS30</reference>
+		<notes>Can read and speak magical words of seleted language</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Secret Mage</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS30</reference>
+		<notes>When detected, your Magery and associated magical advantages and perks are "secret" traits</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Secret Spell (@Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS30</reference>
+		<notes>Allows you to learn a spell that isn't on world's standard spell list</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Secret Words</name>
+		<type>Supernatural</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>TMS30</reference>
+		<notes>Can use Secret Word(s) to give +1 to skill for a single casting per day</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Shaman's Trance</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS30</reference>
+		<notes>Can acquire Autotrance (B101) as a perk, giving +2 to all spells that deal with spirits, -2 to resist their powers and spells</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Shortcut to Power (@Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS30</reference>
+		<notes>Waives spell prerequisites for chosen spell</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Special Exercises (IQ)</name>
+		<type>Supernatural</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>TMS31</reference>
+		<notes>Each level lets you exceed your racial maximum IQ by one</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Special Exercises (Magery)</name>
+		<type>Supernatural</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>TMS31</reference>
+		<notes>May exceed campaign limit on Magery by 1/level</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Special Exercises (Mana Enhancer)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS31</reference>
+		<notes>Permits wizard to buy Mana Enhancer I (B68)</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Special Exercises (Wild Talent)</name>
+		<type>Supernatural</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>TMS31</reference>
+		<notes>Allows caster to purchase Wild Talent (B99)</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Special Exercises, (FP can exceed HT by 100%)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS31</reference>
+		<notes>Max FP limit is raised to 100% of HT</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Spell Bond (@Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS31</reference>
+		<notes>+1 to cast a spell, but easier to detect</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Spell Duelist (@School@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS31</reference>
+		<notes>+1 to counter-magic for selected style</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Spell Hardiness (@Damaging Spell@)</name>
+		<type>Supernatural</type>
+		<levels>1</levels>
+		<points_per_level>1</points_per_level>
+		<reference>TMS31</reference>
+		<notes>DR1/level against spell chosen</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Spell Resistance (@Resisted Spell@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS31</reference>
+		<notes>+3 to resistance rolls for selected spells</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Spirit Contract (@Spirit@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS32</reference>
+		<notes>Contract with a suitable spirit per Thau 90-94</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Staff Attunement</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS32</reference>
+		<notes>Any suitable item treated as if carrying Staff spell</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Staff Bond (@Specific Staff@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS32</reference>
+		<notes>When readied, may ignore -1 of current total penalty for spells 'on', if at least one was cast through bonded item</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Standard Operating Procedure, Magical Lawyer</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS32</reference>
+		<notes>Always use airtight wording with spells that require it</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Standard Operating Procedure, Paraphernalia Pro</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS32</reference>
+		<notes>Half ready time for Long Actions (see B383) that require items</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Standard Operating Procedure, Precision Recharger</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS32</reference>
+		<notes>Always park Powerstones far enough apart to allow them to recharge</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Super-Sympathy (@Area of Inanimate Object@)</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS33</reference>
+		<notes>May ignore up to -5 in total penalties for distance, being unable to see or touch subject and general unfamiliarity</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Thaumatological Doublespeak</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS33</reference>
+		<notes>May use Thaumatology skill as if it were Fast-Talk or Intimidation in some situations; requires Magery and Thaumatology 12+</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Willful Casting</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS33</reference>
+		<notes>Use Will-based spell roll to resist your magic being dispelled; requires Will greater than IQ</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Wizardly Dabbler</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS33</reference>
+		<notes>Able to cast up to 8 Hard Spells without learning them</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+	<advantage version="2">
+		<name>Wizardly Garb</name>
+		<type>Supernatural</type>
+		<base_points>1</base_points>
+		<reference>TMS33</reference>
+		<notes>Nonmagical ritual trappings aren't affected by damage or size changes</notes>
+		<categories>
+			<category>Magic Perk</category>
+		</categories>
+	</advantage>
+</advantage_list>
