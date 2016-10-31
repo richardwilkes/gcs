@@ -609,7 +609,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 		addBuiltInWeapons(weaponClass, weaponMap);
 
-		for (Advantage advantage : mCharacter.getAdvantagesIterator()) {
+		for (Advantage advantage : mCharacter.getAdvantagesIterator(false)) {
 			for (WeaponStats weapon : advantage.getWeapons()) {
 				if (weaponClass.isInstance(weapon)) {
 					weaponMap.put(new HashedWeapon(weapon), new WeaponDisplayRow(weapon));
@@ -766,7 +766,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 					bounds.height = insets.bottom;
 					repaint(bounds);
 				}
-			} else if (Equipment.ID_STATE.equals(type) || Equipment.ID_QUANTITY.equals(type) || Equipment.ID_WEAPON_STATUS_CHANGED.equals(type) || Advantage.ID_WEAPON_STATUS_CHANGED.equals(type) || Spell.ID_WEAPON_STATUS_CHANGED.equals(type) || Skill.ID_WEAPON_STATUS_CHANGED.equals(type) || GURPSCharacter.ID_INCLUDE_PUNCH.equals(type) || GURPSCharacter.ID_INCLUDE_KICK.equals(type) || GURPSCharacter.ID_INCLUDE_BOOTS.equals(type)) {
+			} else if (Advantage.ID_DISABLED.equals(type) || Equipment.ID_STATE.equals(type) || Equipment.ID_QUANTITY.equals(type) || Equipment.ID_WEAPON_STATUS_CHANGED.equals(type) || Advantage.ID_WEAPON_STATUS_CHANGED.equals(type) || Spell.ID_WEAPON_STATUS_CHANGED.equals(type) || Skill.ID_WEAPON_STATUS_CHANGED.equals(type) || GURPSCharacter.ID_INCLUDE_PUNCH.equals(type) || GURPSCharacter.ID_INCLUDE_KICK.equals(type) || GURPSCharacter.ID_INCLUDE_BOOTS.equals(type)) {
 				mSyncWeapons = true;
 				markForRebuild();
 			} else if (GURPSCharacter.ID_PARRY_BONUS.equals(type) || Skill.ID_LEVEL.equals(type)) {
@@ -1017,7 +1017,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 	private HashSet<Row> expandAllContainers() {
 		HashSet<Row> changed = new HashSet<>();
-		expandAllContainers(mCharacter.getAdvantagesIterator(), changed);
+		expandAllContainers(mCharacter.getAdvantagesIterator(true), changed);
 		expandAllContainers(mCharacter.getSkillsIterator(), changed);
 		expandAllContainers(mCharacter.getSpellsIterator(), changed);
 		expandAllContainers(mCharacter.getEquipmentIterator(), changed);
@@ -1611,7 +1611,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		boolean lookForKeyMarker = true;
 		int counter = 0;
 		boolean odd = true;
-		for (Advantage advantage : mCharacter.getAdvantagesIterator()) {
+		for (Advantage advantage : mCharacter.getAdvantagesIterator(false)) {
 			if (loopType.shouldInclude(advantage)) {
 				counter++;
 				for (int i = 0; i < length; i++) {

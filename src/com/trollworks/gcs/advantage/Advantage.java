@@ -25,12 +25,14 @@ import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.gcs.widgets.outline.Switchable;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Column;
+import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.Enums;
 
@@ -43,7 +45,7 @@ import java.util.HashSet;
 import java.util.List;
 
 /** A GURPS Advantage. */
-public class Advantage extends ListRow implements HasSourceReference {
+public class Advantage extends ListRow implements HasSourceReference, Switchable {
 	@Localize("Advantage")
 	@Localize(locale = "de", value = "Vorteil")
 	@Localize(locale = "ru", value = "Преимущество")
@@ -72,6 +74,7 @@ public class Advantage extends ListRow implements HasSourceReference {
 	private static final String			TYPE_SOCIAL					= "Social";											//$NON-NLS-1$
 	private static final String			TYPE_EXOTIC					= "Exotic";											//$NON-NLS-1$
 	private static final String			TYPE_SUPERNATURAL			= "Supernatural";									//$NON-NLS-1$
+	private static final String			ATTR_DISABLED				= "disabled";										//$NON-NLS-1$
 	private static final String			ATTR_ROUND_COST_DOWN		= "round_down";										//$NON-NLS-1$
 	private static final String			ATTR_ALLOW_HALF_LEVELS		= "allow_half_levels";								//$NON-NLS-1$
 	private static final String			ATTR_HALF_LEVEL				= "half_level";										//$NON-NLS-1$
@@ -91,6 +94,8 @@ public class Advantage extends ListRow implements HasSourceReference {
 	public static final String			ID_HALF_LEVEL				= PREFIX + "HalfLevel";								//$NON-NLS-1$
 	/** The field ID for round cost down changes. */
 	public static final String			ID_ROUND_COST_DOWN			= PREFIX + "RoundCostDown";							//$NON-NLS-1$
+	/** The field ID for disabled changes. */
+	public static final String			ID_DISABLED					= PREFIX + "Disabled";								//$NON-NLS-1$
 	/** The field ID for allowing half levels. */
 	public static final String			ID_ALLOW_HALF_LEVELS		= PREFIX + "AllowHalfLevels";						//$NON-NLS-1$
 	/** The field ID for point changes. */
@@ -130,6 +135,7 @@ public class Advantage extends ListRow implements HasSourceReference {
 	private ArrayList<WeaponStats>		mWeapons;
 	private ArrayList<Modifier>			mModifiers;
 	private boolean						mRoundCostDown;
+	private boolean						mDisabled;
 
 	/**
 	 * Creates a new advantage.
@@ -169,6 +175,7 @@ public class Advantage extends ListRow implements HasSourceReference {
 		mPoints = advantage.mPoints;
 		mPointsPerLevel = advantage.mPointsPerLevel;
 		mRoundCostDown = advantage.mRoundCostDown;
+		mDisabled = advantage.mDisabled;
 		mReference = advantage.mReference;
 		mContainerType = advantage.mContainerType;
 		mWeapons = new ArrayList<>(advantage.mWeapons.size());
@@ -211,7 +218,7 @@ public class Advantage extends ListRow implements HasSourceReference {
 		}
 		if (obj instanceof Advantage && super.isEquivalentTo(obj)) {
 			Advantage row = (Advantage) obj;
-			if (mType == row.mType && mLevels == row.mLevels && mHalfLevel == row.mHalfLevel && mPoints == row.mPoints && mPointsPerLevel == row.mPointsPerLevel && mRoundCostDown == row.mRoundCostDown && mAllowHalfLevels == row.mAllowHalfLevels && mContainerType == row.mContainerType && mCR == row.mCR && mCRAdj == row.mCRAdj && mName.equals(row.mName) && mReference.equals(row.mReference)) {
+			if (mType == row.mType && mLevels == row.mLevels && mHalfLevel == row.mHalfLevel && mPoints == row.mPoints && mPointsPerLevel == row.mPointsPerLevel && mDisabled == row.mDisabled && mRoundCostDown == row.mRoundCostDown && mAllowHalfLevels == row.mAllowHalfLevels && mContainerType == row.mContainerType && mCR == row.mCR && mCRAdj == row.mCRAdj && mName.equals(row.mName) && mReference.equals(row.mReference)) {
 				if (mWeapons.equals(row.mWeapons)) {
 					return mModifiers.equals(row.mModifiers);
 				}
@@ -245,6 +252,7 @@ public class Advantage extends ListRow implements HasSourceReference {
 		mPoints = 0;
 		mPointsPerLevel = 0;
 		mRoundCostDown = false;
+		mDisabled = false;
 		mOldPointsString = null;
 		mWeapons = new ArrayList<>();
 		mModifiers = new ArrayList<>();
@@ -254,6 +262,7 @@ public class Advantage extends ListRow implements HasSourceReference {
 	protected void loadAttributes(XMLReader reader, LoadState state) {
 		super.loadAttributes(reader, state);
 		mRoundCostDown = reader.isAttributeSet(ATTR_ROUND_COST_DOWN);
+		mDisabled = reader.isAttributeSet(ATTR_DISABLED);
 		mAllowHalfLevels = reader.isAttributeSet(ATTR_ALLOW_HALF_LEVELS);
 		if (canHaveChildren()) {
 			mContainerType = Enums.extract(reader.getAttribute(TAG_TYPE), AdvantageContainerType.values(), AdvantageContainerType.GROUP);
@@ -356,6 +365,9 @@ public class Advantage extends ListRow implements HasSourceReference {
 		}
 		if (mAllowHalfLevels) {
 			out.writeAttribute(ATTR_ALLOW_HALF_LEVELS, mAllowHalfLevels);
+		}
+		if (mDisabled) {
+			out.writeAttribute(ATTR_DISABLED, mDisabled);
 		}
 		if (canHaveChildren() && mContainerType != AdvantageContainerType.GROUP) {
 			out.writeAttribute(TAG_TYPE, Enums.toId(mContainerType));
@@ -555,6 +567,9 @@ public class Advantage extends ListRow implements HasSourceReference {
 
 	/** @return The total points, taking levels into account. */
 	public int getAdjustedPoints() {
+		if (isDisabled()) {
+			return 0;
+		}
 		if (canHaveChildren()) {
 			int points = 0;
 			if (mContainerType == AdvantageContainerType.ALTERNATIVE_ABILITIES) {
@@ -588,6 +603,47 @@ public class Advantage extends ListRow implements HasSourceReference {
 
 	private static int applyRounding(double value, boolean roundCostDown) {
 		return (int) (roundCostDown ? Math.floor(value) : Math.ceil(value));
+	}
+
+	/** @return <code>true</code> if this {@link Advantage} is disabled. */
+	public boolean isDisabled() {
+		return !isEnabled();
+	}
+
+	/** @return <code>true</code> if this {@link Advantage} is enabled. */
+	@Override
+	public boolean isEnabled() {
+		if (mDisabled) {
+			return false;
+		}
+		Row parent = getParent();
+		if (parent != null && parent instanceof Advantage) {
+			return ((Advantage) parent).isEnabled();
+		}
+		return true;
+	}
+
+	/**
+	 * @return <code>true</code> if this {@link Advantage} is enabled, regardless of parent nodes.
+	 */
+	public boolean isSelfEnabled() {
+		return !mDisabled;
+	}
+
+	/**
+	 * @param enabled Whether the {@link Advantage} should be enabled or not.
+	 * @return Whether it was modified.
+	 */
+	public boolean setEnabled(boolean enabled) {
+		if (mDisabled == enabled) {
+			mDisabled = !enabled;
+			startNotify();
+			notify(ID_DISABLED, this);
+			notify(ID_POINTS, this);
+			endNotify();
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -765,11 +821,6 @@ public class Advantage extends ListRow implements HasSourceReference {
 		return mRoundCostDown;
 	}
 
-	/** @return Whether half levels are allowed */
-	public boolean allowHalfLevels() {
-		return mAllowHalfLevels;
-	}
-
 	/**
 	 * @param shouldRoundDown Whether the point cost should be rounded down rather than up, as is
 	 *            normal for most GURPS rules.
@@ -782,6 +833,11 @@ public class Advantage extends ListRow implements HasSourceReference {
 			return true;
 		}
 		return false;
+	}
+
+	/** @return Whether half levels are allowed */
+	public boolean allowHalfLevels() {
+		return mAllowHalfLevels;
 	}
 
 	public boolean setAllowHalfLevels(boolean allowHalfLevels) {

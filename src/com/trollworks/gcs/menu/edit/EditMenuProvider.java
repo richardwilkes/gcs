@@ -61,7 +61,7 @@ public class EditMenuProvider implements MenuProvider {
 		cmds.add(SelectAllCommand.INSTANCE);
 		cmds.add(IncrementCommand.INSTANCE);
 		cmds.add(DecrementCommand.INSTANCE);
-		cmds.add(RotateEquipmentStateCommand.INSTANCE);
+		cmds.add(RotateStateCommand.INSTANCE);
 		cmds.add(JumpToSearchCommand.INSTANCE);
 		cmds.add(RandomizeDescriptionCommand.INSTANCE);
 		cmds.add(RandomizeNameCommand.FEMALE_INSTANCE);
@@ -92,7 +92,7 @@ public class EditMenuProvider implements MenuProvider {
 		menu.addSeparator();
 		menu.add(new DynamicMenuItem(IncrementCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(DecrementCommand.INSTANCE));
-		menu.add(new DynamicMenuItem(RotateEquipmentStateCommand.INSTANCE));
+		menu.add(new DynamicMenuItem(RotateStateCommand.INSTANCE));
 		menu.add(new DynamicMenuItem(SwapDefaultsCommand.INSTANCE));
 		menu.addSeparator();
 		menu.add(new DynamicMenuItem(JumpToSearchCommand.INSTANCE));

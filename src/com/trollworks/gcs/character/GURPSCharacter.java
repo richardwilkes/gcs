@@ -2380,9 +2380,17 @@ public class GURPSCharacter extends DataFile {
 		return mAdvantages;
 	}
 
-	/** @return A recursive iterator over the character's advantages. */
-	public RowIterator<Advantage> getAdvantagesIterator() {
-		return new RowIterator<>(mAdvantages);
+	/**
+	 * @param includeDisabled <code>true</code> if disabled entries should be included.
+	 * @return A recursive iterator over the character's advantages.
+	 */
+	public RowIterator<Advantage> getAdvantagesIterator(boolean includeDisabled) {
+		if (includeDisabled) {
+			return new RowIterator<>(mAdvantages);
+		}
+		return new RowIterator<>(mAdvantages, (row) -> {
+			return row.isEnabled();
+		});
 	}
 
 	/**
@@ -2392,7 +2400,7 @@ public class GURPSCharacter extends DataFile {
 	 * @return The advantage, if present, or <code>null</code>.
 	 */
 	public Advantage getAdvantageNamed(String name) {
-		for (Advantage advantage : getAdvantagesIterator()) {
+		for (Advantage advantage : getAdvantagesIterator(false)) {
 			if (advantage.getName().equals(name)) {
 				return advantage;
 			}

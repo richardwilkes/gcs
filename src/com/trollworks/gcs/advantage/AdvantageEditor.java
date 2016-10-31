@@ -217,6 +217,10 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	@Localize(locale = "ru", value = "Сверхъестественное")
 	@Localize(locale = "es", value = "Sobrenatural")
 	private static String	SUPERNATURAL;
+	@Localize("Enabled")
+	private static String	ENABLED_TITLE;
+	@Localize("If checked, this advantage is treated normally. If not checked, it is treated as if it didn't exist.")
+	private static String	ENABLED_TOOLTIP;
 
 	static {
 		Localization.initialize();
@@ -248,6 +252,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	private JCheckBox								mSocialType;
 	private JCheckBox								mExoticType;
 	private JCheckBox								mSupernaturalType;
+	private JCheckBox								mEnabledCheckBox;
 	private JComboBox<AdvantageContainerType>		mContainerTypeCombo;
 	private JComboBox<SelfControlRoll>				mCRCombo;
 	private JComboBox<SelfControlRollAdjustments>	mCRAdjCombo;
@@ -271,10 +276,22 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		int ri = 0;
 		outerGrid.add(innerGrid, 0, 1);
 
+		FlexRow row = new FlexRow();
+
 		mNameField = createField(advantage.getName(), null, NAME_TOOLTIP);
 		mNameField.getDocument().addDocumentListener(this);
 		innerGrid.add(new FlexComponent(createLabel(NAME, mNameField), Alignment.RIGHT_BOTTOM, null), ri, 0);
-		innerGrid.add(mNameField, ri++, 1);
+		innerGrid.add(row, ri++, 1);
+		row.add(mNameField);
+
+		mEnabledCheckBox = new JCheckBox(ENABLED_TITLE);
+		mEnabledCheckBox.setSelected(advantage.isSelfEnabled());
+		mEnabledCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(ENABLED_TOOLTIP));
+		mEnabledCheckBox.setEnabled(mIsEditable);
+		mEnabledCheckBox.addActionListener(this);
+		UIUtilities.setOnlySize(mEnabledCheckBox, mEnabledCheckBox.getPreferredSize());
+		add(mEnabledCheckBox);
+		row.add(mEnabledCheckBox);
 
 		boolean notContainer = !advantage.canHaveChildren();
 		if (notContainer) {
@@ -286,7 +303,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 				mLastHalfLevel = false;
 			}
 
-			FlexRow row = new FlexRow();
+			row = new FlexRow();
 
 			mBasePointsField = createField(-9999, 9999, mRow.getPoints(), BASE_POINTS_TOOLTIP);
 			row.add(mBasePointsField);
@@ -363,7 +380,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		mCRAdjCombo.setEnabled(mIsEditable && mRow.getCR() != SelfControlRoll.NONE_REQUIRED);
 		add(mCRAdjCombo);
 		innerGrid.add(new FlexComponent(createLabel(CR, mCRCombo), Alignment.RIGHT_BOTTOM, null), ri, 0);
-		FlexRow row = new FlexRow();
+		row = new FlexRow();
 		row.add(mCRCombo);
 		row.add(mCRAdjCombo);
 		innerGrid.add(row, ri++, 1);
@@ -511,6 +528,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	@Override
 	public boolean applyChangesSelf() {
 		boolean modified = mRow.setName((String) mNameField.getValue());
+		modified |= mRow.setEnabled(enabled());
 		if (mRow.canHaveChildren()) {
 			modified |= mRow.setContainerType((AdvantageContainerType) mContainerTypeCombo.getSelectedItem());
 		} else {
@@ -586,7 +604,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 		Object src = event.getSource();
 		if (src == mLevelTypeCombo) {
 			levelTypeChanged();
-		} else if (src == mModifiers || src == mShouldRoundCostDown || src == mHalfLevel) {
+		} else if (src == mModifiers || src == mShouldRoundCostDown || src == mHalfLevel || src == mEnabledCheckBox) {
 			updatePoints();
 		} else if (src == mCRCombo) {
 			SelfControlRoll cr = getCR();
@@ -655,7 +673,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 	}
 
 	private int getPoints() {
-		if (mModifiers == null) {
+		if (mModifiers == null || !enabled()) {
 			return 0;
 		}
 		return Advantage.getAdjustedPoints(getBasePoints(), isLeveled() ? getLevels() : 0, allowHalfLevels() && getHalfLevel(), getPointsPerLevel(), getCR(), mModifiers.getAllModifiers(), shouldRoundCostDown());
@@ -669,6 +687,10 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
 	private boolean shouldRoundCostDown() {
 		return mShouldRoundCostDown.isSelected();
+	}
+
+	private boolean enabled() {
+		return mEnabledCheckBox.isSelected();
 	}
 
 	@Override

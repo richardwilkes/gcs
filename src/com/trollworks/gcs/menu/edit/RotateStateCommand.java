@@ -11,10 +11,13 @@
 
 package com.trollworks.gcs.menu.edit;
 
+import com.trollworks.gcs.advantage.Advantage;
+import com.trollworks.gcs.advantage.AdvantageOutline;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentOutline;
 import com.trollworks.gcs.equipment.EquipmentState;
+import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.MultipleRowUndo;
 import com.trollworks.gcs.widgets.outline.RowUndo;
 import com.trollworks.toolkit.annotation.Localize;
@@ -28,12 +31,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
-/** Provides the "Rotate Equipment State" command. */
-public class RotateEquipmentStateCommand extends Command {
-	@Localize("Rotate Equipment State")
-	@Localize(locale = "de", value = "Ausrüstungszustand wechseln")
-	@Localize(locale = "ru", value = "Смена статуса снаряжения")
-	@Localize(locale = "es", value = "Rotar el estado del Equipo")
+/** Provides the "Rotate State" command. */
+public class RotateStateCommand extends Command {
+	@Localize("Rotate State")
 	private static String TITLE;
 
 	static {
@@ -41,13 +41,13 @@ public class RotateEquipmentStateCommand extends Command {
 	}
 
 	/** The action command this command will issue. */
-	public static final String						CMD_ROTATE_EQUIPMENT_STATE	= "RotateEquipmentState";			//$NON-NLS-1$
+	public static final String				CMD_ROTATE_STATE	= "RotateState";			//$NON-NLS-1$
 
-	/** The singleton {@link RotateEquipmentStateCommand}. */
-	public static final RotateEquipmentStateCommand	INSTANCE					= new RotateEquipmentStateCommand();
+	/** The singleton {@link RotateStateCommand}. */
+	public static final RotateStateCommand	INSTANCE			= new RotateStateCommand();
 
-	private RotateEquipmentStateCommand() {
-		super(TITLE, CMD_ROTATE_EQUIPMENT_STATE, KeyEvent.VK_QUOTE);
+	private RotateStateCommand() {
+		super(TITLE, CMD_ROTATE_STATE, KeyEvent.VK_QUOTE);
 	}
 
 	@Override
@@ -56,8 +56,8 @@ public class RotateEquipmentStateCommand extends Command {
 		if (focus instanceof OutlineProxy) {
 			focus = ((OutlineProxy) focus).getRealOutline();
 		}
-		if (focus instanceof EquipmentOutline) {
-			EquipmentOutline outline = (EquipmentOutline) focus;
+		if (focus instanceof EquipmentOutline || focus instanceof AdvantageOutline) {
+			ListOutline outline = (ListOutline) focus;
 			setEnabled(outline.getDataFile() instanceof GURPSCharacter && outline.getModel().hasSelection());
 		} else {
 			setEnabled(false);
@@ -71,22 +71,33 @@ public class RotateEquipmentStateCommand extends Command {
 		if (focus instanceof OutlineProxy) {
 			focus = ((OutlineProxy) focus).getRealOutline();
 		}
-		EquipmentOutline outline = (EquipmentOutline) focus;
 		ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
-		for (Equipment equipment : new FilteredIterator<Equipment>(outline.getModel().getSelectionAsList(), Equipment.class)) {
-			RowUndo undo = new RowUndo(equipment);
-			EquipmentState[] values = EquipmentState.values();
-			int index = equipment.getState().ordinal() - 1;
-			if (index < 0) {
-				index = values.length - 1;
+		if (focus instanceof EquipmentOutline) {
+			EquipmentOutline outline = (EquipmentOutline) focus;
+			for (Equipment equipment : new FilteredIterator<Equipment>(outline.getModel().getSelectionAsList(), Equipment.class)) {
+				RowUndo undo = new RowUndo(equipment);
+				EquipmentState[] values = EquipmentState.values();
+				int index = equipment.getState().ordinal() - 1;
+				if (index < 0) {
+					index = values.length - 1;
+				}
+				equipment.setState(values[index]);
+				if (undo.finish()) {
+					undos.add(undo);
+				}
 			}
-			equipment.setState(values[index]);
-			if (undo.finish()) {
-				undos.add(undo);
+		} else if (focus instanceof AdvantageOutline) {
+			AdvantageOutline outline = (AdvantageOutline) focus;
+			for (Advantage adq : new FilteredIterator<Advantage>(outline.getModel().getSelectionAsList(), Advantage.class)) {
+				RowUndo undo = new RowUndo(adq);
+				adq.setEnabled(!adq.isSelfEnabled());
+				if (undo.finish()) {
+					undos.add(undo);
+				}
 			}
 		}
 		if (!undos.isEmpty()) {
-			outline.repaintSelection();
+			((ListOutline) focus).repaintSelection();
 			new MultipleRowUndo(undos);
 		}
 	}

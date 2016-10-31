@@ -117,7 +117,7 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 						sleep(500);
 					} else {
 						processFeatures();
-						processRows(mCharacter.getAdvantagesIterator());
+						processRows(mCharacter.getAdvantagesIterator(false));
 						processRows(mCharacter.getSkillsIterator());
 						processRows(mCharacter.getSpellsIterator());
 						processRows(mCharacter.getEquipmentIterator());
@@ -155,7 +155,7 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 
 	private void processFeatures() throws Exception {
 		HashMap<String, ArrayList<Feature>> map = new HashMap<>();
-		buildFeatureMap(map, mCharacter.getAdvantagesIterator());
+		buildFeatureMap(map, mCharacter.getAdvantagesIterator(false));
 		buildFeatureMap(map, mCharacter.getSkillsIterator());
 		buildFeatureMap(map, mCharacter.getSpellsIterator());
 		buildFeatureMap(map, mCharacter.getEquipmentIterator());

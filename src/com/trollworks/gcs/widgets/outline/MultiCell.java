@@ -122,7 +122,8 @@ public class MultiCell implements Cell {
 		int pos;
 		gc.setColor(getColor(selected, active, row, column));
 		gc.setFont(font);
-		pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP);
+		Color strikeThru = row instanceof Switchable && !((Switchable) row).isEnabled() ? Color.RED : null;
+		pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP, strikeThru);
 		if (notes.trim().length() > 0) {
 			insetBounds.height -= pos - insetBounds.y;
 			insetBounds.y = pos;

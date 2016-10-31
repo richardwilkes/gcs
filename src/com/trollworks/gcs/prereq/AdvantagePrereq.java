@@ -131,7 +131,7 @@ public class AdvantagePrereq extends NameLevelPrereq {
 		StringCriteria nameCriteria = getNameCriteria();
 		IntegerCriteria levelCriteria = getLevelCriteria();
 
-		for (Advantage advantage : character.getAdvantagesIterator()) {
+		for (Advantage advantage : character.getAdvantagesIterator(false)) {
 			if (exclude != advantage && nameCriteria.matches(advantage.getName())) {
 				String notes = advantage.getNotes();
 				String modifierNotes = advantage.getModifierNotes();
