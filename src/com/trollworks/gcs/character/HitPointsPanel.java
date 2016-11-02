@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.widget.Wrapper;
@@ -179,33 +179,32 @@ public class HitPointsPanel extends DropPanel {
 	/**
 	 * Creates a new hit points panel.
 	 *
-	 * @param character The character to display the data for.
+	 * @param sheet The sheet to display the data for.
 	 */
-	public HitPointsPanel(GURPSCharacter character) {
+	public HitPointsPanel(CharacterSheet sheet) {
 		super(new ColumnLayout(2, 2, 0, RowDistribution.DISTRIBUTE_HEIGHT), FP_HP);
-		createLabelAndField(this, character, GURPSCharacter.ID_CURRENT_FATIGUE_POINTS, FP_CURRENT, FP_CURRENT_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndField(this, character, GURPSCharacter.ID_FATIGUE_POINTS, FP, FP_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndField(this, sheet, GURPSCharacter.ID_CURRENT_FATIGUE_POINTS, FP_CURRENT, FP_CURRENT_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndField(this, sheet, GURPSCharacter.ID_FATIGUE_POINTS, FP, FP_TOOLTIP, SwingConstants.RIGHT);
 		createDivider();
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_TIRED_FATIGUE_POINTS, FP_TIRED, FP_TIRED_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS, FP_UNCONSCIOUS_CHECKS, FP_UNCONSCIOUS_CHECKS_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_UNCONSCIOUS_FATIGUE_POINTS, FP_UNCONSCIOUS, FP_UNCONSCIOUS_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_TIRED_FATIGUE_POINTS, FP_TIRED, FP_TIRED_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS, FP_UNCONSCIOUS_CHECKS, FP_UNCONSCIOUS_CHECKS_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_UNCONSCIOUS_FATIGUE_POINTS, FP_UNCONSCIOUS, FP_UNCONSCIOUS_TOOLTIP, SwingConstants.RIGHT);
 		createDivider();
-		createLabelAndField(this, character, GURPSCharacter.ID_CURRENT_HIT_POINTS, HP_CURRENT, HP_CURRENT_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndField(this, character, GURPSCharacter.ID_HIT_POINTS, HP, HP_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndField(this, sheet, GURPSCharacter.ID_CURRENT_HIT_POINTS, HP_CURRENT, HP_CURRENT_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndField(this, sheet, GURPSCharacter.ID_HIT_POINTS, HP, HP_TOOLTIP, SwingConstants.RIGHT);
 		createDivider();
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_REELING_HIT_POINTS, HP_REELING, HP_REELING_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_UNCONSCIOUS_CHECKS_HIT_POINTS, HP_UNCONSCIOUS_CHECKS, HP_UNCONSCIOUS_CHECKS_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_DEATH_CHECK_1_HIT_POINTS, HP_DEATH_CHECK_1, HP_DEATH_CHECK_1_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_DEATH_CHECK_2_HIT_POINTS, HP_DEATH_CHECK_2, HP_DEATH_CHECK_2_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_DEATH_CHECK_3_HIT_POINTS, HP_DEATH_CHECK_3, HP_DEATH_CHECK_3_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_DEATH_CHECK_4_HIT_POINTS, HP_DEATH_CHECK_4, HP_DEATH_CHECK_4_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_DEAD_HIT_POINTS, HP_DEAD, HP_DEAD_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_REELING_HIT_POINTS, HP_REELING, HP_REELING_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_UNCONSCIOUS_CHECKS_HIT_POINTS, HP_UNCONSCIOUS_CHECKS, HP_UNCONSCIOUS_CHECKS_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_DEATH_CHECK_1_HIT_POINTS, HP_DEATH_CHECK_1, HP_DEATH_CHECK_1_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_DEATH_CHECK_2_HIT_POINTS, HP_DEATH_CHECK_2, HP_DEATH_CHECK_2_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_DEATH_CHECK_3_HIT_POINTS, HP_DEATH_CHECK_3, HP_DEATH_CHECK_3_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_DEATH_CHECK_4_HIT_POINTS, HP_DEATH_CHECK_4, HP_DEATH_CHECK_4_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_DEAD_HIT_POINTS, HP_DEAD, HP_DEAD_TOOLTIP, SwingConstants.RIGHT);
 	}
 
 	@Override
 	public Dimension getMaximumSize() {
 		Dimension size = super.getMaximumSize();
-
 		size.width = getPreferredSize().width;
 		return size;
 	}
@@ -219,7 +218,7 @@ public class HitPointsPanel extends DropPanel {
 
 	private Container createOneByOnePanel() {
 		Wrapper panel = new Wrapper();
-		UIUtilities.setOnlySize(panel, new Dimension(1, 1));
+		panel.setOnlySize(1, 1);
 		add(panel);
 		return panel;
 	}

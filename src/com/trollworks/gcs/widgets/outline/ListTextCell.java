@@ -28,7 +28,7 @@ import javax.swing.UIManager;
 public class ListTextCell extends TextCell {
 	/**
 	 * Create a new text cell.
-	 * 
+	 *
 	 * @param alignment The horizontal text alignment to use.
 	 * @param wrapped Pass in <code>true</code> to enable wrapping.
 	 */
@@ -50,9 +50,9 @@ public class ListTextCell extends TextCell {
 	}
 
 	@Override
-	public String getToolTipText(MouseEvent event, Rectangle bounds, Row row, Column column) {
+	public String getToolTipText(Outline outline, MouseEvent event, Rectangle bounds, Row row, Column column) {
 		if (!(row instanceof ListRow) || ((ListRow) row).isSatisfied()) {
-			return super.getToolTipText(event, bounds, row, column);
+			return super.getToolTipText(outline, event, bounds, row, column);
 		}
 		return ((ListRow) row).getReasonForUnsatisfied();
 	}

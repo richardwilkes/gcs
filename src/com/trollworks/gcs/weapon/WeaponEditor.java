@@ -17,6 +17,7 @@ import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.Selection;
 import com.trollworks.toolkit.ui.UIUtilities;
+import com.trollworks.toolkit.ui.border.EmptyBorder;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.PrecisionLayout;
@@ -45,7 +46,6 @@ import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 
@@ -167,7 +167,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 
 	private Container createEditorPanel() {
 		JPanel wrapper = new JPanel(new ColumnLayout(4));
-		wrapper.setBorder(new EmptyBorder(5, 5, 5, 5));
+		wrapper.setBorder(new EmptyBorder(5));
 		mEditorPanel = new JPanel(new ColumnLayout(1, RowDistribution.GIVE_EXCESS_TO_LAST));
 		mEditorPanel.add(wrapper);
 		mUsage = createTextField(wrapper, USAGE, EMPTY);

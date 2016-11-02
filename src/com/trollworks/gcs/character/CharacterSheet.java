@@ -27,6 +27,9 @@ import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.equipment.EquipmentOutline;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.notes.NoteOutline;
+import com.trollworks.gcs.page.Page;
+import com.trollworks.gcs.page.PageField;
+import com.trollworks.gcs.page.PageOwner;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.services.HttpMethodType;
 import com.trollworks.gcs.services.NotImplementedException;
@@ -56,6 +59,9 @@ import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.print.PrintManager;
+import com.trollworks.toolkit.ui.scale.Scale;
+import com.trollworks.toolkit.ui.scale.ScaleRoot;
+import com.trollworks.toolkit.ui.scale.Scales;
 import com.trollworks.toolkit.ui.widget.Wrapper;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.ui.widget.outline.Column;
@@ -133,7 +139,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /** The character sheet. */
-public class CharacterSheet extends JPanel implements ChangeListener, Scrollable, BatchNotifierTarget, PageOwner, PrintProxy, ActionListener, Runnable, DropTargetListener, GurpsCalculatorExportable {
+public class CharacterSheet extends JPanel implements ChangeListener, Scrollable, BatchNotifierTarget, PageOwner, PrintProxy, ActionListener, Runnable, DropTargetListener, GurpsCalculatorExportable, ScaleRoot {
 	@Localize("Page {0} of {1}")
 	@Localize(locale = "de", value = "Seite {0} von {1}")
 	@Localize(locale = "ru", value = "Стр. {0} из {1}")
@@ -227,6 +233,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private static final String	BOXING_SKILL_NAME	= "Boxing";		//$NON-NLS-1$
 	private static final String	KARATE_SKILL_NAME	= "Karate";		//$NON-NLS-1$
 	private static final String	BRAWLING_SKILL_NAME	= "Brawling";	//$NON-NLS-1$
+	private static final int	GAP					= 2;
+	private Scale				mScale;
 	private GURPSCharacter		mCharacter;
 	private int					mLastPage;
 	private boolean				mBatchMode;
@@ -251,8 +259,10 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	 * @param character The character to display the data for.
 	 */
 	public CharacterSheet(GURPSCharacter character) {
-		super(new CharacterSheetLayout());
+		super();
+		setLayout(new CharacterSheetLayout(this));
 		setOpaque(false);
+		mScale = Scales.ACTUAL_SIZE.getScale();
 		mCharacter = character;
 		mLastPage = -1;
 		mRootsToSync = new HashSet<>();
@@ -272,6 +282,19 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	/** @return Whether the sheet has had {@link #dispose()} called on it. */
 	public boolean hasBeenDisposed() {
 		return mDisposed;
+	}
+
+	@Override
+	public Scale getScale() {
+		return mScale;
+	}
+
+	@Override
+	public void setScale(Scale scale) {
+		if (mScale.getScale() != scale.getScale()) {
+			mScale = scale;
+			markForRebuild();
+		}
 	}
 
 	/** @return Whether a rebuild is pending. */
@@ -328,8 +351,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 		// Create the first page, which holds stuff that has a fixed vertical size.
 		pageAssembler = new PageAssembler(this);
-		pageAssembler.addToContent(hwrap(new PortraitPanel(mCharacter), vwrap(hwrap(new IdentityPanel(mCharacter), new PlayerInfoPanel(mCharacter)), new DescriptionPanel(mCharacter), RowDistribution.GIVE_EXCESS_TO_LAST), new PointsPanel(mCharacter)), null, null);
-		pageAssembler.addToContent(hwrap(new AttributesPanel(mCharacter), vwrap(new EncumbrancePanel(mCharacter), new LiftPanel(mCharacter)), new HitLocationPanel(mCharacter), new HitPointsPanel(mCharacter)), null, null);
+		pageAssembler.addToContent(hwrap(new PortraitPanel(this), vwrap(hwrap(new IdentityPanel(this), new PlayerInfoPanel(this)), new DescriptionPanel(this)), new PointsPanel(this)), null, null);
+		pageAssembler.addToContent(hwrap(new AttributesPanel(this), vwrap(new EncumbrancePanel(this), new LiftPanel(this)), new HitLocationPanel(this), new HitPointsPanel(this)), null, null);
 
 		// Add our outlines
 		if (mAdvantageOutline.getModel().getRowCount() > 0 && mSkillOutline.getModel().getRowCount() > 0) {
@@ -343,6 +366,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		addOutline(pageAssembler, mRangedWeaponOutline, RANGED_WEAPONS);
 		addOutline(pageAssembler, mEquipmentOutline, EQUIPMENT);
 		addOutline(pageAssembler, mNoteOutline, NOTES);
+		pageAssembler.finish();
 
 		// Ensure everything is laid out and register for notification
 		validate();
@@ -351,6 +375,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		OutlineSyncer.remove(mSpellOutline);
 		OutlineSyncer.remove(mEquipmentOutline);
 		OutlineSyncer.remove(mNoteOutline);
+		OutlineSyncer.remove(mMeleeWeaponOutline);
+		OutlineSyncer.remove(mRangedWeaponOutline);
 		mCharacter.addTarget(this, GURPSCharacter.CHARACTER_PREFIX);
 		mCharacter.calculateWeightAndWealthCarried(true);
 		if (focusKey != null) {
@@ -360,6 +386,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		} else if (focus != null) {
 			focus.requestFocusInWindow();
 		}
+		setSize(getPreferredSize());
 		repaint();
 	}
 
@@ -385,12 +412,12 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		return false;
 	}
 
-	private static void addOutline(PageAssembler pageAssembler, Outline outline, String title) {
+	private void addOutline(PageAssembler pageAssembler, Outline outline, String title) {
 		if (outline.getModel().getRowCount() > 0) {
 			OutlineInfo info = new OutlineInfo(outline, pageAssembler.getContentWidth());
 			boolean useProxy = false;
 
-			while (pageAssembler.addToContent(new SingleOutlinePanel(outline, title, useProxy), info, null)) {
+			while (pageAssembler.addToContent(new SingleOutlinePanel(mScale, outline, title, useProxy), info, null)) {
 				if (!useProxy) {
 					title = MessageFormat.format(CONTINUED, title);
 					useProxy = true;
@@ -399,13 +426,13 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		}
 	}
 
-	private static void addOutline(PageAssembler pageAssembler, Outline leftOutline, String leftTitle, Outline rightOutline, String rightTitle) {
+	private void addOutline(PageAssembler pageAssembler, Outline leftOutline, String leftTitle, Outline rightOutline, String rightTitle) {
 		int width = pageAssembler.getContentWidth() / 2 - 1;
 		OutlineInfo infoLeft = new OutlineInfo(leftOutline, width);
 		OutlineInfo infoRight = new OutlineInfo(rightOutline, width);
 		boolean useProxy = false;
 
-		while (pageAssembler.addToContent(new DoubleOutlinePanel(leftOutline, leftTitle, rightOutline, rightTitle, useProxy), infoLeft, infoRight)) {
+		while (pageAssembler.addToContent(new DoubleOutlinePanel(mScale, leftOutline, leftTitle, rightOutline, rightTitle, useProxy), infoLeft, infoRight)) {
 			if (!useProxy) {
 				leftTitle = MessageFormat.format(CONTINUED, leftTitle);
 				rightTitle = MessageFormat.format(CONTINUED, rightTitle);
@@ -656,7 +683,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	private static Container hwrap(Component left, Component right) {
-		Wrapper wrapper = new Wrapper(new ColumnLayout(2, 2, 2));
+		Wrapper wrapper = new Wrapper(new ColumnLayout(2, GAP, GAP));
 		wrapper.add(left);
 		wrapper.add(right);
 		wrapper.setAlignmentY(-1f);
@@ -664,7 +691,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	private static Container hwrap(Component left, Component center, Component right) {
-		Wrapper wrapper = new Wrapper(new ColumnLayout(3, 2, 2));
+		Wrapper wrapper = new Wrapper(new ColumnLayout(3, GAP, GAP));
 		wrapper.add(left);
 		wrapper.add(center);
 		wrapper.add(right);
@@ -673,7 +700,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	private static Container hwrap(Component left, Component center, Component center2, Component right) {
-		Wrapper wrapper = new Wrapper(new ColumnLayout(4, 2, 2));
+		Wrapper wrapper = new Wrapper(new ColumnLayout(4, GAP, GAP));
 		wrapper.add(left);
 		wrapper.add(center);
 		wrapper.add(center2);
@@ -683,15 +710,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	private static Container vwrap(Component top, Component bottom) {
-		Wrapper wrapper = new Wrapper(new ColumnLayout(1, 2, 2));
-		wrapper.add(top);
-		wrapper.add(bottom);
-		wrapper.setAlignmentY(-1f);
-		return wrapper;
-	}
-
-	private static Container vwrap(Component top, Component bottom, RowDistribution distribution) {
-		Wrapper wrapper = new Wrapper(new ColumnLayout(1, 2, 2, distribution));
+		Wrapper wrapper = new Wrapper(new ColumnLayout(1, GAP, GAP, RowDistribution.GIVE_EXCESS_TO_LAST));
 		wrapper.add(top);
 		wrapper.add(bottom);
 		wrapper.setAlignmentY(-1f);
@@ -794,8 +813,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		BundleInfo bundleInfo = BundleInfo.getDefault();
 		String copyright1 = bundleInfo.getCopyright();
 		String copyright2 = bundleInfo.getReservedRights();
-		Font font1 = UIManager.getFont(GCSFonts.KEY_SECONDARY_FOOTER);
-		Font font2 = UIManager.getFont(GCSFonts.KEY_PRIMARY_FOOTER);
+		Font font1 = mScale.scale(UIManager.getFont(GCSFonts.KEY_SECONDARY_FOOTER));
+		Font font2 = mScale.scale(UIManager.getFont(GCSFonts.KEY_PRIMARY_FOOTER));
 		FontMetrics fm1 = gc.getFontMetrics(font1);
 		FontMetrics fm2 = gc.getFontMetrics(font2);
 		int y = bounds.y + bounds.height + fm2.getAscent();
@@ -843,7 +862,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	public Insets getPageAdornmentsInsets(Page page) {
 		FontMetrics fm1 = Fonts.getFontMetrics(UIManager.getFont(GCSFonts.KEY_SECONDARY_FOOTER));
 		FontMetrics fm2 = Fonts.getFontMetrics(UIManager.getFont(GCSFonts.KEY_PRIMARY_FOOTER));
-
 		return new Insets(0, 0, fm1.getAscent() + fm1.getDescent() + fm2.getAscent() + fm2.getDescent(), 0);
 	}
 

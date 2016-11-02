@@ -11,8 +11,10 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.page.Page;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
+import com.trollworks.toolkit.ui.scale.Scale;
 import com.trollworks.toolkit.ui.widget.Wrapper;
 
 import java.awt.Container;
@@ -21,8 +23,7 @@ import java.awt.Insets;
 
 /** Assembles pages in a sheet. */
 public class PageAssembler {
-	private static final int	VERTICAL_SLOP	= 4;	// Shouldn't be necessary, but prevents
-														// cut-offs
+	private static final int	GAP	= 2;
 	private CharacterSheet		mSheet;
 	private Page				mPage;
 	private Wrapper				mContent;
@@ -37,6 +38,7 @@ public class PageAssembler {
 	 */
 	PageAssembler(CharacterSheet sheet) {
 		mSheet = sheet;
+		Scale.setOverride(mSheet.getScale());
 		addPageInternal();
 	}
 
@@ -52,9 +54,9 @@ public class PageAssembler {
 			Insets insets = mPage.getInsets();
 			Dimension size = mPage.getSize();
 			mContentWidth = size.width - (insets.left + insets.right);
-			mContentHeight = size.height - (insets.top + insets.bottom + VERTICAL_SLOP);
+			mContentHeight = size.height - (insets.top + insets.bottom);
 		}
-		mContent = new Wrapper(new ColumnLayout(1, 2, 2, RowDistribution.GIVE_EXCESS_TO_LAST));
+		mContent = new Wrapper(new ColumnLayout(1, GAP, GAP, RowDistribution.GIVE_EXCESS_TO_LAST));
 		mContent.setAlignmentY(-1f);
 		mRemaining = mContentHeight;
 		mPage.add(mContent);
@@ -73,6 +75,10 @@ public class PageAssembler {
 		int height = 0;
 		int minLeft = 0;
 		int minRight = 0;
+
+		if (mContent.getComponentCount() > 0) {
+			mRemaining -= Scale.get(mContent).scale(GAP);
+		}
 
 		if (isOutline) {
 			minLeft = leftInfo.getMinimumHeight();
@@ -138,5 +144,10 @@ public class PageAssembler {
 		}
 		addPageInternal();
 		return true;
+	}
+
+	@SuppressWarnings("static-method")
+	public void finish() {
+		Scale.setOverride(null);
 	}
 }

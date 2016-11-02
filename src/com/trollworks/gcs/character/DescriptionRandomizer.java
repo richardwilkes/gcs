@@ -12,6 +12,7 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.ui.border.EmptyBorder;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.Numbers;
@@ -29,7 +30,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.border.EmptyBorder;
 
 /** A character description randomizer. */
 public class DescriptionRandomizer extends JPanel implements ActionListener {
@@ -74,7 +74,7 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
 		mCheckBoxes = new JCheckBox[COUNT];
 		mFields = new JTextField[COUNT];
 		JPanel wrapper = new JPanel(new ColumnLayout(2));
-		wrapper.setBorder(new EmptyBorder(10, 10, 10, 10));
+		wrapper.setBorder(new EmptyBorder(10));
 		Profile description = mCharacter.getDescription();
 		addField(wrapper, DescriptionPanel.GENDER, null, GENDER_INDEX, description.getGender());
 		addField(wrapper, DescriptionPanel.AGE, null, AGE_INDEX, Numbers.format(description.getAge()));

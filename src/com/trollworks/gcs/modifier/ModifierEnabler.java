@@ -15,6 +15,8 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.SelfControlRoll;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
+import com.trollworks.toolkit.ui.border.EmptyBorder;
+import com.trollworks.toolkit.ui.border.LineBorder;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
@@ -37,8 +39,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 
 /** Asks the user to enable/disable modifiers. */
 public class ModifierEnabler extends JPanel {
@@ -145,7 +145,7 @@ public class ModifierEnabler extends JPanel {
 			}
 			top.add(new JLabel(msg, SwingConstants.CENTER));
 		}
-		label.setBorder(new CompoundBorder(LineBorder.createBlackLineBorder(), new EmptyBorder(0, 2, 0, 2)));
+		label.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 2, 0, 2)));
 		label.setOpaque(true);
 		top.add(new JPanel());
 		top.add(label);

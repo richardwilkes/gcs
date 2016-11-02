@@ -21,6 +21,8 @@ import com.trollworks.toolkit.ui.Fonts;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.menu.RetargetableFocus;
 import com.trollworks.toolkit.ui.menu.edit.JumpToSearchTarget;
+import com.trollworks.toolkit.ui.scale.Scale;
+import com.trollworks.toolkit.ui.scale.Scales;
 import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.ui.widget.Toolbar;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
@@ -81,6 +83,7 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 	}
 
 	private Toolbar				mToolbar;
+	private JComboBox<Scales>	mScaleCombo;
 	private JTextField			mFilterField;
 	private JComboBox<Object>	mCategoryCombo;
 	private IconButton			mLockButton;
@@ -96,6 +99,10 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 		outlineModel.applySortConfig(outlineModel.getSortConfig());
 		outlineModel.setRowFilter(this);
 		mToolbar = new Toolbar();
+		mScaleCombo = new JComboBox<>(Scales.values());
+		mScaleCombo.setSelectedItem(Scales.ACTUAL_SIZE);
+		mScaleCombo.addActionListener((event) -> applyScale(((Scales) mScaleCombo.getSelectedItem()).getScale()));
+		mToolbar.add(mScaleCombo);
 		createFilterField();
 		createCategoryCombo();
 		mLockButton = new IconButton(outlineModel.isLocked() ? StdImage.LOCKED : StdImage.UNLOCKED, TOGGLE_EDIT_MODE_TOOLTIP, () -> {
@@ -113,6 +120,8 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 		add(mScroller, BorderLayout.CENTER);
 		Preferences.getInstance().getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY);
 	}
+
+	public abstract void applyScale(Scale scale);
 
 	@Override
 	public boolean attemptClose() {

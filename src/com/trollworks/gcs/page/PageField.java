@@ -9,9 +9,14 @@
  * by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.character;
+package com.trollworks.gcs.page;
 
 import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.gcs.character.Armor;
+import com.trollworks.gcs.character.CharacterSheet;
+import com.trollworks.gcs.character.Encumbrance;
+import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.character.Profile;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.widget.Commitable;
 import com.trollworks.toolkit.utility.Platform;
@@ -48,62 +53,62 @@ import javax.swing.text.DefaultFormatterFactory;
 
 /** A generic field for a page. */
 public class PageField extends JFormattedTextField implements NotifierTarget, PropertyChangeListener, ActionListener, Commitable {
-	private GURPSCharacter	mCharacter;
+	private CharacterSheet	mSheet;
 	private String			mConsumedType;
 	private String			mCustomToolTip;
 
 	/**
 	 * Creates a new, left-aligned, text input field.
 	 *
-	 * @param character The character to listen to.
+	 * @param sheet The sheet to listen to.
 	 * @param consumedType The field to listen to.
 	 */
-	public PageField(GURPSCharacter character, String consumedType) {
-		this(character, consumedType, SwingConstants.LEFT, true, null);
+	public PageField(CharacterSheet sheet, String consumedType) {
+		this(sheet, consumedType, SwingConstants.LEFT, true, null);
 	}
 
 	/**
 	 * Creates a new, left-aligned, text input field.
 	 *
-	 * @param character The character to listen to.
+	 * @param sheet The sheet to listen to.
 	 * @param consumedType The field to listen to.
 	 * @param tooltip The tooltip to set.
 	 */
-	public PageField(GURPSCharacter character, String consumedType, String tooltip) {
-		this(character, consumedType, SwingConstants.LEFT, true, tooltip);
+	public PageField(CharacterSheet sheet, String consumedType, String tooltip) {
+		this(sheet, consumedType, SwingConstants.LEFT, true, tooltip);
 	}
 
 	/**
 	 * Creates a new text input field.
 	 *
-	 * @param character The character to listen to.
+	 * @param sheet The sheet to listen to.
 	 * @param consumedType The field to listen to.
 	 * @param alignment The alignment of the field.
 	 * @param tooltip The tooltip to set.
 	 */
-	public PageField(GURPSCharacter character, String consumedType, int alignment, String tooltip) {
-		this(character, consumedType, alignment, true, tooltip);
+	public PageField(CharacterSheet sheet, String consumedType, int alignment, String tooltip) {
+		this(sheet, consumedType, alignment, true, tooltip);
 	}
 
 	/**
 	 * Creates a new text input field.
 	 *
-	 * @param character The character to listen to.
+	 * @param sheet The sheet to listen to.
 	 * @param consumedType The field to listen to.
 	 * @param alignment The alignment of the field.
 	 * @param editable Whether or not the user can edit this field.
 	 * @param tooltip The tooltip to set.
 	 */
-	public PageField(GURPSCharacter character, String consumedType, int alignment, boolean editable, String tooltip) {
-		super(getFormatterFactoryForType(consumedType), character.getValueForID(consumedType));
+	public PageField(CharacterSheet sheet, String consumedType, int alignment, boolean editable, String tooltip) {
+		super(getFormatterFactoryForType(consumedType), sheet.getCharacter().getValueForID(consumedType));
 		if (Platform.isLinux()) {
 			// I override the UI here since the GTK UI on Linux has no way to turn off the border
 			// around text fields.
 			setUI(new BasicTextFieldUI());
 		}
-		mCharacter = character;
+		mSheet = sheet;
 		mConsumedType = consumedType;
-		setFont(UIManager.getFont(GCSFonts.KEY_FIELD));
+		setFont(sheet.getScale().scale(UIManager.getFont(GCSFonts.KEY_FIELD)));
 		setBorder(null);
 		setOpaque(false);
 		// Just setting opaque to false isn't enough for some reason, so I'm also setting the
@@ -119,7 +124,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 				mCustomToolTip = tooltip;
 			}
 		}
-		mCharacter.addTarget(this, mConsumedType);
+		mSheet.getCharacter().addTarget(this, mConsumedType);
 		addPropertyChangeListener("value", this); //$NON-NLS-1$
 		addActionListener(this);
 		setFocusLostBehavior(COMMIT_OR_REVERT);
@@ -138,14 +143,14 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 		Dimension size = super.getPreferredSize();
 		// Don't know why this is needed, but it seems to be. Without it, text is being truncated by
 		// about 2 pixels.
-		size.width += 2;
+		size.width += mSheet.getScale().scale(2);
 		return size;
 	}
 
 	@Override
 	public String getToolTipText() {
 		if (mCustomToolTip != null) {
-			return Text.wrapPlainTextForToolTip(MessageFormat.format(mCustomToolTip, Numbers.format(((Integer) mCharacter.getValueForID(GURPSCharacter.POINTS_PREFIX + mConsumedType)).intValue())));
+			return Text.wrapPlainTextForToolTip(MessageFormat.format(mCustomToolTip, Numbers.format(((Integer) mSheet.getCharacter().getValueForID(GURPSCharacter.POINTS_PREFIX + mConsumedType)).intValue())));
 		}
 		return super.getToolTipText();
 	}
@@ -172,7 +177,8 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 			bounds.x = 0;
 			bounds.y = 0;
 			gc.setColor(Color.lightGray);
-			gc.drawLine(bounds.x, bounds.y + bounds.height - 1, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
+			int height = mSheet.getScale().scale(1);
+			gc.fillRect(bounds.x, bounds.y + bounds.height - height, bounds.width, height);
 			gc.setColor(getForeground());
 		}
 		super.paintComponent(GraphicsUtilities.prepare(gc));
@@ -186,7 +192,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 	@Override
 	public void propertyChange(PropertyChangeEvent event) {
 		if (isEditable()) {
-			mCharacter.setValueForID(mConsumedType, getValue());
+			mSheet.getCharacter().setValueForID(mConsumedType, getValue());
 		}
 	}
 

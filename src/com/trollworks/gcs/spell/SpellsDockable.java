@@ -14,6 +14,7 @@ package com.trollworks.gcs.spell;
 import com.trollworks.gcs.library.LibraryDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.ui.scale.Scale;
 import com.trollworks.toolkit.utility.Localization;
 
 /** A list of spells from a library. */
@@ -48,5 +49,10 @@ public class SpellsDockable extends LibraryDockable {
 		SpellList list = getDataFile();
 		list.addTarget(this, Spell.ID_CATEGORY);
 		return new SpellOutline(list, list.getModel());
+	}
+
+	@Override
+	public void applyScale(Scale scale) {
+		// RAW: Implement me
 	}
 }

@@ -9,21 +9,25 @@
  * by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.character;
+package com.trollworks.gcs.page;
 
 import com.trollworks.toolkit.ui.print.PrintManager;
+import com.trollworks.toolkit.ui.scale.Scale;
 
 import java.awt.Graphics;
 import java.awt.Insets;
 
 /** Objects which control printable pages must implement this interface. */
 public interface PageOwner {
+	/** @return The scale to use. */
+	public Scale getScale();
+
 	/** @return The page settings. */
 	public PrintManager getPageSettings();
 
 	/**
 	 * Called so the page owner can draw headers, footers, etc.
-	 * 
+	 *
 	 * @param page The page to work on.
 	 * @param gc The graphics object to work with.
 	 */
@@ -31,7 +35,7 @@ public interface PageOwner {
 
 	/**
 	 * @param page The page to work on.
-	 * @return The insets required for the page adornments.
+	 * @return The unscaled insets required for the page adornments.
 	 */
 	public Insets getPageAdornmentsInsets(Page page);
 }

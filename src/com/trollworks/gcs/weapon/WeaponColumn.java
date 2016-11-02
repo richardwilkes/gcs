@@ -566,11 +566,9 @@ public enum WeaponColumn {
 	 */
 	public static void addColumns(Outline outline, Class<? extends WeaponStats> weaponClass, boolean forEditor) {
 		OutlineModel model = outline.getModel();
-
 		for (WeaponColumn one : values()) {
 			if (one.isValidFor(weaponClass, forEditor)) {
 				Column column = new Column(one.ordinal(), one.toString(weaponClass), one.getToolTip(), one.getCell(forEditor));
-
 				if (!forEditor) {
 					column.setHeaderCell(new ListHeaderCell(true));
 				}

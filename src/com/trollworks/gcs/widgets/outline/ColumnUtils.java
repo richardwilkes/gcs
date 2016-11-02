@@ -60,7 +60,7 @@ public class ColumnUtils {
 			for (int i = 0; i < count; i++) {
 				column = outlineModel.getColumnAtIndex(i);
 				if (column.getRowCell(null).participatesInDynamicRowLayout()) {
-					int min = column.getPreferredHeaderWidth();
+					int min = column.getPreferredHeaderWidth(outline);
 
 					if (min < widths[i]) {
 						list[pos] = i;
@@ -105,7 +105,7 @@ public class ColumnUtils {
 		for (int i = 0; i < count; i++) {
 			column = outlineModel.getColumnAtIndex(i);
 			if (widths[i] != column.getWidth()) {
-				column.setWidth(widths[i]);
+				column.setWidth(outline, widths[i]);
 				changed.add(column);
 			}
 		}

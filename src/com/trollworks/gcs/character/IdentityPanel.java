@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.utility.Localization;
@@ -47,12 +48,12 @@ public class IdentityPanel extends DropPanel {
 	/**
 	 * Creates a new identity panel.
 	 *
-	 * @param character The character to display the data for.
+	 * @param sheet The sheet to display the data for.
 	 */
-	public IdentityPanel(GURPSCharacter character) {
+	public IdentityPanel(CharacterSheet sheet) {
 		super(new ColumnLayout(2, 2, 0), IDENTITY);
-		createLabelAndField(this, character, Profile.ID_NAME, NAME, null, SwingConstants.LEFT);
-		createLabelAndField(this, character, Profile.ID_TITLE, TITLE, null, SwingConstants.LEFT);
-		createLabelAndField(this, character, Profile.ID_RELIGION, RELIGION, null, SwingConstants.LEFT);
+		createLabelAndField(this, sheet, Profile.ID_NAME, NAME, null, SwingConstants.LEFT);
+		createLabelAndField(this, sheet, Profile.ID_TITLE, TITLE, null, SwingConstants.LEFT);
+		createLabelAndField(this, sheet, Profile.ID_RELIGION, RELIGION, null, SwingConstants.LEFT);
 	}
 }

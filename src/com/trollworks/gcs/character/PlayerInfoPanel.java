@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.utility.Localization;
@@ -47,12 +48,12 @@ public class PlayerInfoPanel extends DropPanel {
 	/**
 	 * Creates a new player info panel.
 	 *
-	 * @param character The character to display the data for.
+	 * @param sheet The sheet to display the data for.
 	 */
-	public PlayerInfoPanel(GURPSCharacter character) {
+	public PlayerInfoPanel(CharacterSheet sheet) {
 		super(new ColumnLayout(2, 2, 0), PLAYER_INFO);
-		createLabelAndField(this, character, Profile.ID_PLAYER_NAME, PLAYER_NAME, null, SwingConstants.LEFT);
-		createLabelAndField(this, character, Profile.ID_CAMPAIGN, CAMPAIGN, null, SwingConstants.LEFT);
-		createLabelAndField(this, character, GURPSCharacter.ID_CREATED_ON, CREATED_ON, null, SwingConstants.LEFT);
+		createLabelAndField(this, sheet, Profile.ID_PLAYER_NAME, PLAYER_NAME, null, SwingConstants.LEFT);
+		createLabelAndField(this, sheet, Profile.ID_CAMPAIGN, CAMPAIGN, null, SwingConstants.LEFT);
+		createLabelAndField(this, sheet, GURPSCharacter.ID_CREATED_ON, CREATED_ON, null, SwingConstants.LEFT);
 	}
 }

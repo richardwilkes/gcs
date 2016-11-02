@@ -9,37 +9,38 @@
  * by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.character;
+package com.trollworks.gcs.page;
 
 import com.trollworks.gcs.app.GCSFonts;
-import com.trollworks.toolkit.ui.widget.LinkedLabel;
-
-import java.awt.Color;
+import com.trollworks.toolkit.ui.widget.Label;
 
 import javax.swing.JComponent;
+import javax.swing.UIManager;
 
 /** A label for a field in a page. */
-public class PageLabel extends LinkedLabel {
+public class PageLabel extends Label {
 	/**
 	 * Creates a new label for the specified field.
-	 * 
+	 *
 	 * @param title The title of the field.
 	 * @param field The field.
 	 */
 	public PageLabel(String title, JComponent field) {
-		super(title, GCSFonts.KEY_LABEL, field);
-		setForeground(Color.BLACK);
+		super(title);
+		setFont(UIManager.getFont(GCSFonts.KEY_LABEL));
+		setRefersTo(field);
 	}
 
 	/**
 	 * Creates a new label for the specified field.
-	 * 
+	 *
 	 * @param title The title of the field.
 	 * @param field The field.
 	 * @param alignment The horizontal alignment to use.
 	 */
 	public PageLabel(String title, JComponent field, int alignment) {
-		super(title, GCSFonts.KEY_LABEL, field, alignment);
-		setForeground(Color.BLACK);
+		super(title, alignment);
+		setFont(UIManager.getFont(GCSFonts.KEY_LABEL));
+		setRefersTo(field);
 	}
 }

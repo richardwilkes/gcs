@@ -19,6 +19,7 @@ import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.criteria.WeightCriteria;
 import com.trollworks.toolkit.ui.UIUtilities;
+import com.trollworks.toolkit.ui.border.EmptyBorder;
 import com.trollworks.toolkit.ui.widget.ActionPanel;
 import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.utility.text.DoubleFormatter;
@@ -34,7 +35,6 @@ import java.util.ArrayList;
 
 import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 

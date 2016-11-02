@@ -11,14 +11,13 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.Wrapper;
 import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Color;
-import java.awt.Dimension;
 
 import javax.swing.SwingConstants;
 
@@ -127,40 +126,40 @@ public class DescriptionPanel extends DropPanel {
 	/**
 	 * Creates a new description panel.
 	 *
-	 * @param character The character to display the data for.
+	 * @param sheet The sheet to display the data for.
 	 */
-	public DescriptionPanel(GURPSCharacter character) {
+	public DescriptionPanel(CharacterSheet sheet) {
 		super(new ColumnLayout(5, 2, 0), DESCRIPTION);
 
 		Wrapper wrapper = new Wrapper(new ColumnLayout(2, 2, 0));
-		createLabelAndField(wrapper, character, Profile.ID_RACE, RACE, null, SwingConstants.LEFT);
-		createLabelAndField(wrapper, character, Profile.ID_GENDER, GENDER, null, SwingConstants.LEFT);
-		createLabelAndField(wrapper, character, Profile.ID_AGE, AGE, null, SwingConstants.LEFT);
-		createLabelAndField(wrapper, character, Profile.ID_BIRTHDAY, BIRTHDAY, null, SwingConstants.LEFT);
+		createLabelAndField(wrapper, sheet, Profile.ID_RACE, RACE, null, SwingConstants.LEFT);
+		createLabelAndField(wrapper, sheet, Profile.ID_GENDER, GENDER, null, SwingConstants.LEFT);
+		createLabelAndField(wrapper, sheet, Profile.ID_AGE, AGE, null, SwingConstants.LEFT);
+		createLabelAndField(wrapper, sheet, Profile.ID_BIRTHDAY, BIRTHDAY, null, SwingConstants.LEFT);
 		add(wrapper);
 
 		createDivider();
 
 		wrapper = new Wrapper(new ColumnLayout(2, 2, 0));
-		createLabelAndField(wrapper, character, Profile.ID_HEIGHT, HEIGHT_FIELD, null, SwingConstants.LEFT);
-		createLabelAndField(wrapper, character, Profile.ID_WEIGHT, WEIGHT, null, SwingConstants.LEFT);
-		createLabelAndField(wrapper, character, Profile.ID_SIZE_MODIFIER, SIZE_MODIFIER, SIZE_MODIFIER_TOOLTIP, SwingConstants.LEFT);
-		createLabelAndField(wrapper, character, Profile.ID_TECH_LEVEL, TECH_LEVEL, TECH_LEVEL_TOOLTIP, SwingConstants.LEFT);
+		createLabelAndField(wrapper, sheet, Profile.ID_HEIGHT, HEIGHT_FIELD, null, SwingConstants.LEFT);
+		createLabelAndField(wrapper, sheet, Profile.ID_WEIGHT, WEIGHT, null, SwingConstants.LEFT);
+		createLabelAndField(wrapper, sheet, Profile.ID_SIZE_MODIFIER, SIZE_MODIFIER, SIZE_MODIFIER_TOOLTIP, SwingConstants.LEFT);
+		createLabelAndField(wrapper, sheet, Profile.ID_TECH_LEVEL, TECH_LEVEL, TECH_LEVEL_TOOLTIP, SwingConstants.LEFT);
 		add(wrapper);
 
 		createDivider();
 
 		wrapper = new Wrapper(new ColumnLayout(2, 2, 0));
-		createLabelAndField(wrapper, character, Profile.ID_HAIR, HAIR, HAIR_TOOLTIP, SwingConstants.LEFT);
-		createLabelAndField(wrapper, character, Profile.ID_EYE_COLOR, EYE_COLOR, EYE_COLOR_TOOLTIP, SwingConstants.LEFT);
-		createLabelAndField(wrapper, character, Profile.ID_SKIN_COLOR, SKIN_COLOR, SKIN_COLOR_TOOLTIP, SwingConstants.LEFT);
-		createLabelAndField(wrapper, character, Profile.ID_HANDEDNESS, HANDEDNESS, HANDEDNESS_TOOLTIP, SwingConstants.LEFT);
+		createLabelAndField(wrapper, sheet, Profile.ID_HAIR, HAIR, HAIR_TOOLTIP, SwingConstants.LEFT);
+		createLabelAndField(wrapper, sheet, Profile.ID_EYE_COLOR, EYE_COLOR, EYE_COLOR_TOOLTIP, SwingConstants.LEFT);
+		createLabelAndField(wrapper, sheet, Profile.ID_SKIN_COLOR, SKIN_COLOR, SKIN_COLOR_TOOLTIP, SwingConstants.LEFT);
+		createLabelAndField(wrapper, sheet, Profile.ID_HANDEDNESS, HANDEDNESS, HANDEDNESS_TOOLTIP, SwingConstants.LEFT);
 		add(wrapper);
 	}
 
 	private void createDivider() {
 		Wrapper panel = new Wrapper();
-		UIUtilities.setOnlySize(panel, new Dimension(1, 1));
+		panel.setOnlySize(1, 1);
 		add(panel);
 		addVerticalBackground(panel, Color.black);
 	}

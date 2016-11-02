@@ -9,10 +9,11 @@
  * by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.character;
+package com.trollworks.gcs.page;
 
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.UIUtilities;
+import com.trollworks.toolkit.ui.border.EmptyBorder;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.utility.units.LengthUnits;
 
@@ -23,7 +24,6 @@ import java.awt.Graphics;
 import java.awt.Insets;
 
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 
 /** A printer page. */
 public class Page extends JPanel {
@@ -31,7 +31,7 @@ public class Page extends JPanel {
 
 	/**
 	 * Creates a new page.
-	 * 
+	 *
 	 * @param owner The page owner.
 	 */
 	public Page(PageOwner owner) {
@@ -41,9 +41,9 @@ public class Page extends JPanel {
 		setBackground(Color.white);
 		PrintManager pageSettings = mOwner.getPageSettings();
 		Insets insets = mOwner.getPageAdornmentsInsets(this);
-		double[] size = pageSettings != null ? pageSettings.getPageSize(LengthUnits.PT) : new double[] { 8.5 * 72.0, 11.0 * 72.0 };
 		double[] margins = pageSettings != null ? pageSettings.getPageMargins(LengthUnits.PT) : new double[] { 36.0, 36.0, 36.0, 36.0 };
 		setBorder(new EmptyBorder(insets.top + (int) margins[0], insets.left + (int) margins[1], insets.bottom + (int) margins[2], insets.right + (int) margins[3]));
+		double[] size = mOwner.getScale().scale(pageSettings != null ? pageSettings.getPageSize(LengthUnits.PT) : new double[] { 8.5 * 72.0, 11.0 * 72.0 });
 		Dimension pageSize = new Dimension((int) size[0], (int) size[1]);
 		UIUtilities.setOnlySize(this, pageSize);
 		setSize(pageSize);

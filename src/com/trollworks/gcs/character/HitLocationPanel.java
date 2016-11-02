@@ -11,8 +11,10 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.page.DropPanel;
+import com.trollworks.gcs.page.PageHeader;
+import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.Wrapper;
 import com.trollworks.toolkit.utility.Localization;
@@ -75,14 +77,18 @@ public class HitLocationPanel extends DropPanel {
 		Localization.initialize();
 	}
 
+	private CharacterSheet mSheet;
+
 	/**
 	 * Creates a new hit location panel.
 	 *
-	 * @param character The character to display the data for.
+	 * @param sheet The sheet to display the data for.
 	 */
-	public HitLocationPanel(GURPSCharacter character) {
+	public HitLocationPanel(CharacterSheet sheet) {
 		super(new ColumnLayout(7, 2, 0), HIT_LOCATION);
+		mSheet = sheet;
 
+		GURPSCharacter character = mSheet.getCharacter();
 		HitLocationTable table = character.getDescription().getHitLocationTable();
 
 		Wrapper wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
@@ -119,7 +125,7 @@ public class HitLocationPanel extends DropPanel {
 		wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
 		header = createHeader(wrapper, DR, null);
 		for (HitLocationTableEntry entry : table.getEntries()) {
-			createDisabledField(wrapper, character, entry.getKey(), MessageFormat.format(DR_TOOLTIP, entry.getName()), SwingConstants.RIGHT);
+			createDisabledField(wrapper, mSheet, entry.getKey(), MessageFormat.format(DR_TOOLTIP, entry.getName()), SwingConstants.RIGHT);
 		}
 		wrapper.setAlignmentY(TOP_ALIGNMENT);
 		add(wrapper);
@@ -134,12 +140,13 @@ public class HitLocationPanel extends DropPanel {
 
 	private void createDivider() {
 		Wrapper panel = new Wrapper();
-		UIUtilities.setOnlySize(panel, new Dimension(1, 1));
+		panel.setOnlySize(1, 1);
 		add(panel);
 		addVerticalBackground(panel, Color.black);
 	}
 
-	private static void createLabel(Container panel, String title, String tooltip, int alignment) {
+	@SuppressWarnings("static-method")
+	private void createLabel(Container panel, String title, String tooltip, int alignment) {
 		PageLabel label = new PageLabel(title, null);
 		label.setHorizontalAlignment(alignment);
 		label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));

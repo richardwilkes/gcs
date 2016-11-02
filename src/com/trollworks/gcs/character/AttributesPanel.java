@@ -11,8 +11,10 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.page.DropPanel;
+import com.trollworks.gcs.page.PageField;
+import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.Alignment;
 import com.trollworks.toolkit.ui.layout.FlexComponent;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
@@ -22,7 +24,6 @@ import com.trollworks.toolkit.ui.widget.Wrapper;
 import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Color;
-import java.awt.Dimension;
 
 import javax.swing.SwingConstants;
 
@@ -163,43 +164,46 @@ public class AttributesPanel extends DropPanel {
 		Localization.initialize();
 	}
 
+	private CharacterSheet mSheet;
+
 	/**
 	 * Creates a new attributes panel.
 	 *
-	 * @param character The character to display the data for.
+	 * @param sheet The sheet to display the data for.
 	 */
-	public AttributesPanel(GURPSCharacter character) {
+	public AttributesPanel(CharacterSheet sheet) {
 		super(null, ATTRIBUTES, true);
+		mSheet = sheet;
 		FlexGrid grid = new FlexGrid();
 		grid.setVerticalGap(0);
 		int row = 0;
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_STRENGTH, ST, ST_TOOLTIP, SwingConstants.RIGHT, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_DEXTERITY, DX, DX_TOOLTIP, SwingConstants.RIGHT, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_INTELLIGENCE, IQ, IQ_TOOLTIP, SwingConstants.RIGHT, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_HEALTH, HT, HT_TOOLTIP, SwingConstants.RIGHT, true);
+		createLabelAndField(grid, row++, GURPSCharacter.ID_STRENGTH, ST, ST_TOOLTIP, SwingConstants.RIGHT, true);
+		createLabelAndField(grid, row++, GURPSCharacter.ID_DEXTERITY, DX, DX_TOOLTIP, SwingConstants.RIGHT, true);
+		createLabelAndField(grid, row++, GURPSCharacter.ID_INTELLIGENCE, IQ, IQ_TOOLTIP, SwingConstants.RIGHT, true);
+		createLabelAndField(grid, row++, GURPSCharacter.ID_HEALTH, HT, HT_TOOLTIP, SwingConstants.RIGHT, true);
 		createDivider(grid, row++, false);
 		createDivider(grid, row++, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_WILL, WILL, WILL_TOOLTIP, SwingConstants.RIGHT, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_FRIGHT_CHECK, FRIGHT_CHECK, null, SwingConstants.RIGHT, false);
+		createLabelAndField(grid, row++, GURPSCharacter.ID_WILL, WILL, WILL_TOOLTIP, SwingConstants.RIGHT, true);
+		createLabelAndField(grid, row++, GURPSCharacter.ID_FRIGHT_CHECK, FRIGHT_CHECK, null, SwingConstants.RIGHT, false);
 		createDivider(grid, row++, false);
 		createDivider(grid, row++, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_BASIC_SPEED, BASIC_SPEED, BASIC_SPEED_TOOLTIP, SwingConstants.RIGHT, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_BASIC_MOVE, BASIC_MOVE, BASIC_MOVE_TOOLTIP, SwingConstants.RIGHT, true);
+		createLabelAndField(grid, row++, GURPSCharacter.ID_BASIC_SPEED, BASIC_SPEED, BASIC_SPEED_TOOLTIP, SwingConstants.RIGHT, true);
+		createLabelAndField(grid, row++, GURPSCharacter.ID_BASIC_MOVE, BASIC_MOVE, BASIC_MOVE_TOOLTIP, SwingConstants.RIGHT, true);
 		createDivider(grid, row++, false);
 		createDivider(grid, row++, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_PERCEPTION, PERCEPTION, PERCEPTION_TOOLTIP, SwingConstants.RIGHT, true);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_VISION, VISION, null, SwingConstants.RIGHT, false);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_HEARING, HEARING, null, SwingConstants.RIGHT, false);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_TASTE_AND_SMELL, TASTE_SMELL, null, SwingConstants.RIGHT, false);
-		createLabelAndField(grid, row++, character, GURPSCharacter.ID_TOUCH, TOUCH, null, SwingConstants.RIGHT, false);
+		createLabelAndField(grid, row++, GURPSCharacter.ID_PERCEPTION, PERCEPTION, PERCEPTION_TOOLTIP, SwingConstants.RIGHT, true);
+		createLabelAndField(grid, row++, GURPSCharacter.ID_VISION, VISION, null, SwingConstants.RIGHT, false);
+		createLabelAndField(grid, row++, GURPSCharacter.ID_HEARING, HEARING, null, SwingConstants.RIGHT, false);
+		createLabelAndField(grid, row++, GURPSCharacter.ID_TASTE_AND_SMELL, TASTE_SMELL, null, SwingConstants.RIGHT, false);
+		createLabelAndField(grid, row++, GURPSCharacter.ID_TOUCH, TOUCH, null, SwingConstants.RIGHT, false);
 		createDivider(grid, row++, false);
 		createDivider(grid, row++, true);
-		createDamageFields(grid, row++, character);
+		createDamageFields(grid, row++);
 		grid.apply(this);
 	}
 
-	private void createLabelAndField(FlexGrid grid, int row, GURPSCharacter character, String key, String title, String tooltip, int alignment, boolean enabled) {
-		PageField field = new PageField(character, key, alignment, enabled, tooltip);
+	private void createLabelAndField(FlexGrid grid, int row, String key, String title, String tooltip, int alignment, boolean enabled) {
+		PageField field = new PageField(mSheet, key, alignment, enabled, tooltip);
 		PageLabel label = new PageLabel(title, field);
 		add(label);
 		add(field);
@@ -207,17 +211,17 @@ public class AttributesPanel extends DropPanel {
 		grid.add(field, row, 1);
 	}
 
-	private void createDamageFields(FlexGrid grid, int rowIndex, GURPSCharacter character) {
+	private void createDamageFields(FlexGrid grid, int rowIndex) {
 		FlexRow row = new FlexRow();
 		row.setHorizontalAlignment(Alignment.CENTER);
-		createDamageLabelAndField(row, character, GURPSCharacter.ID_BASIC_THRUST, BASIC_THRUST, BASIC_THRUST_TOOLTIP);
+		createDamageLabelAndField(row, GURPSCharacter.ID_BASIC_THRUST, BASIC_THRUST, BASIC_THRUST_TOOLTIP);
 		row.add(new FlexSpacer(0, 0, false, false));
-		createDamageLabelAndField(row, character, GURPSCharacter.ID_BASIC_SWING, BASIC_SWING, BASIC_SWING_TOOLTIP);
+		createDamageLabelAndField(row, GURPSCharacter.ID_BASIC_SWING, BASIC_SWING, BASIC_SWING_TOOLTIP);
 		grid.add(row, rowIndex, 0, 1, 2);
 	}
 
-	private void createDamageLabelAndField(FlexRow row, GURPSCharacter character, String key, String title, String tooltip) {
-		PageField field = new PageField(character, key, SwingConstants.RIGHT, false, tooltip);
+	private void createDamageLabelAndField(FlexRow row, String key, String title, String tooltip) {
+		PageField field = new PageField(mSheet, key, SwingConstants.RIGHT, false, tooltip);
 		PageLabel label = new PageLabel(title, field);
 		add(label);
 		add(field);
@@ -227,7 +231,7 @@ public class AttributesPanel extends DropPanel {
 
 	private void createDivider(FlexGrid grid, int row, boolean black) {
 		Wrapper panel = new Wrapper();
-		UIUtilities.setOnlySize(panel, new Dimension(1, 1));
+		panel.setOnlySize(1, 1);
 		add(panel);
 		if (black) {
 			addHorizontalBackground(panel, Color.black);

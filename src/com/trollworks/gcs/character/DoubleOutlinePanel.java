@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.toolkit.ui.scale.Scale;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 
 import java.awt.Component;
@@ -36,11 +37,11 @@ public class DoubleOutlinePanel extends JPanel implements LayoutManager2 {
 	 * @param rightTitle The localized title for the right panel.
 	 * @param useProxy <code>true</code> if a proxy of the outlines should be used.
 	 */
-	public DoubleOutlinePanel(Outline leftOutline, String leftTitle, Outline rightOutline, String rightTitle, boolean useProxy) {
+	public DoubleOutlinePanel(Scale scale, Outline leftOutline, String leftTitle, Outline rightOutline, String rightTitle, boolean useProxy) {
 		super();
 		setLayout(this);
-		mLeftPanel = new SingleOutlinePanel(leftOutline, leftTitle, useProxy);
-		mRightPanel = new SingleOutlinePanel(rightOutline, rightTitle, useProxy);
+		mLeftPanel = new SingleOutlinePanel(scale, leftOutline, leftTitle, useProxy);
+		mRightPanel = new SingleOutlinePanel(scale, rightOutline, rightTitle, useProxy);
 		add(mLeftPanel);
 		add(mRightPanel);
 	}
@@ -88,33 +89,37 @@ public class DoubleOutlinePanel extends JPanel implements LayoutManager2 {
 
 	@Override
 	public Dimension preferredLayoutSize(Container parent) {
-		return getLayoutSize(mLeftPanel.getPreferredSize(), mRightPanel.getPreferredSize());
+		return getLayoutSize(parent, mLeftPanel.getPreferredSize(), mRightPanel.getPreferredSize());
 	}
 
 	@Override
 	public Dimension minimumLayoutSize(Container parent) {
-		return getLayoutSize(mLeftPanel.getMinimumSize(), mRightPanel.getMinimumSize());
+		return getLayoutSize(parent, mLeftPanel.getMinimumSize(), mRightPanel.getMinimumSize());
 	}
 
 	@Override
-	public Dimension maximumLayoutSize(Container target) {
-		return getLayoutSize(mLeftPanel.getMaximumSize(), mRightPanel.getMaximumSize());
+	public Dimension maximumLayoutSize(Container parent) {
+		return getLayoutSize(parent, mLeftPanel.getMaximumSize(), mRightPanel.getMaximumSize());
 	}
 
 	@Override
 	public void layoutContainer(Container parent) {
 		Insets insets = getInsets();
 		Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
-		int right = bounds.width / 2 - 1;
-		int left = bounds.width - (2 + right);
+		Scale scale = Scale.get(parent);
+		int one = scale.scale(1);
+		int two = one + one;
+		int right = bounds.width / 2 - one;
+		int left = bounds.width - (two + right);
 		mLeftPanel.setBounds(bounds.x, bounds.y, left, bounds.height);
-		mRightPanel.setBounds(bounds.x + left + 2, bounds.y, right, bounds.height);
+		mRightPanel.setBounds(bounds.x + left + two, bounds.y, right, bounds.height);
 	}
 
-	private Dimension getLayoutSize(Dimension leftSize, Dimension rightSize) {
+	private Dimension getLayoutSize(Container parent, Dimension leftSize, Dimension rightSize) {
 		Dimension size = new Dimension(leftSize.width + rightSize.width, Math.max(leftSize.height, rightSize.height));
 		Insets insets = getInsets();
-		size.width += 2 + insets.left + insets.right;
+		int one = Scale.get(parent).scale(1);
+		size.width += insets.left + one + one + insets.right;
 		size.height += insets.top + insets.bottom;
 		return size;
 	}

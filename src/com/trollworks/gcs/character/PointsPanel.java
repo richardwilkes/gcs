@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.widget.Wrapper;
@@ -120,26 +120,26 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
 		Localization.initialize();
 	}
 
-	private GURPSCharacter mCharacter;
+	private CharacterSheet mSheet;
 
 	/**
 	 * Creates a new points panel.
 	 *
-	 * @param character The character to display the data for.
+	 * @param sheet The sheet to display the data for.
 	 */
-	public PointsPanel(GURPSCharacter character) {
-		super(new ColumnLayout(2, 2, 0, RowDistribution.DISTRIBUTE_HEIGHT), getTitle(character));
-		mCharacter = character;
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_RACE_POINTS, RACE_POINTS, RACE_POINTS_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_ATTRIBUTE_POINTS, ATTRIBUTE_POINTS, ATTRIBUTE_POINTS_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_ADVANTAGE_POINTS, ADVANTAGE_POINTS, ADVANTAGE_POINTS_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_DISADVANTAGE_POINTS, DISADVANTAGE_POINTS, DISADVANTAGE_POINTS_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_QUIRK_POINTS, QUIRK_POINTS, QUIRK_POINTS_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_SKILL_POINTS, SKILL_POINTS, SKILL_POINTS_TOOLTIP, SwingConstants.RIGHT);
-		createLabelAndDisabledField(this, character, GURPSCharacter.ID_SPELL_POINTS, SPELL_POINTS, SPELL_POINTS_TOOLTIP, SwingConstants.RIGHT);
+	public PointsPanel(CharacterSheet sheet) {
+		super(new ColumnLayout(2, 2, 0, RowDistribution.DISTRIBUTE_HEIGHT), getTitle(sheet.getCharacter()));
+		mSheet = sheet;
+		createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_RACE_POINTS, RACE_POINTS, RACE_POINTS_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_ATTRIBUTE_POINTS, ATTRIBUTE_POINTS, ATTRIBUTE_POINTS_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_ADVANTAGE_POINTS, ADVANTAGE_POINTS, ADVANTAGE_POINTS_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_DISADVANTAGE_POINTS, DISADVANTAGE_POINTS, DISADVANTAGE_POINTS_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_QUIRK_POINTS, QUIRK_POINTS, QUIRK_POINTS_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_SKILL_POINTS, SKILL_POINTS, SKILL_POINTS_TOOLTIP, SwingConstants.RIGHT);
+		createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_SPELL_POINTS, SPELL_POINTS, SPELL_POINTS_TOOLTIP, SwingConstants.RIGHT);
 		createDivider();
-		createLabelAndField(this, character, GURPSCharacter.ID_EARNED_POINTS, EARNED_POINTS, EARNED_POINTS_TOOLTIP, SwingConstants.RIGHT);
-		mCharacter.addTarget(this, GURPSCharacter.ID_TOTAL_POINTS);
+		createLabelAndField(this, sheet, GURPSCharacter.ID_EARNED_POINTS, EARNED_POINTS, EARNED_POINTS_TOOLTIP, SwingConstants.RIGHT);
+		sheet.getCharacter().addTarget(this, GURPSCharacter.ID_TOTAL_POINTS);
 		Preferences.getInstance().getNotifier().add(this, SheetPreferences.TOTAL_POINTS_DISPLAY_PREF_KEY);
 	}
 
@@ -152,17 +152,17 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
 
 	private void createDivider() {
 		Wrapper panel = new Wrapper();
-		UIUtilities.setOnlySize(panel, new Dimension(1, 1));
+		panel.setOnlySize(1, 1);
 		add(panel);
 		addHorizontalBackground(panel, Color.black);
 		panel = new Wrapper();
-		UIUtilities.setOnlySize(panel, new Dimension(1, 1));
+		panel.setOnlySize(1, 1);
 		add(panel);
 	}
 
 	@Override
 	public void handleNotification(Object producer, String type, Object data) {
-		getTitledBorder().setTitle(getTitle(mCharacter));
+		getTitledBorder().setTitle(getTitle(mSheet.getCharacter()));
 		invalidate();
 		repaint();
 	}

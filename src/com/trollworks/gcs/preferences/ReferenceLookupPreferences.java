@@ -14,6 +14,8 @@ package com.trollworks.gcs.preferences;
 import com.trollworks.gcs.pdfview.PdfRef;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
+import com.trollworks.toolkit.ui.border.EmptyBorder;
+import com.trollworks.toolkit.ui.border.LineBorder;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.preferences.PreferencePanel;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
@@ -32,8 +34,6 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.text.DefaultFormatterFactory;
 
 /** The page reference lookup preferences panel. */
@@ -82,13 +82,13 @@ public class ReferenceLookupPreferences extends PreferencePanel {
 			});
 			mPanel.add(button);
 			JLabel idLabel = new JLabel(ref.getId(), SwingConstants.CENTER);
-			idLabel.setBorder(new CompoundBorder(new LineBorder(Color.BLACK), new EmptyBorder(1, 4, 1, 4)));
+			idLabel.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(1, 4, 1, 4)));
 			idLabel.setOpaque(true);
 			idLabel.setBackground(Color.YELLOW);
 			mPanel.add(idLabel);
 			EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-9999, 9999, true)), event -> {
 				ref.setPageToIndexOffset(((Integer) event.getNewValue()).intValue());
-			} , SwingConstants.RIGHT, Integer.valueOf(ref.getPageToIndexOffset()), Integer.valueOf(-9999), OFFSET_FIELD_TOOLTIP);
+			}, SwingConstants.RIGHT, Integer.valueOf(ref.getPageToIndexOffset()), Integer.valueOf(-9999), OFFSET_FIELD_TOOLTIP);
 			mPanel.add(field);
 			mPanel.add(new JLabel(ref.getFile().getAbsolutePath()));
 		}

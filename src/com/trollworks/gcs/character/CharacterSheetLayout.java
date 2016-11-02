@@ -19,7 +19,12 @@ import java.awt.LayoutManager2;
 
 /** A layout for the character sheet that dynamically does n-up presentation. */
 class CharacterSheetLayout implements LayoutManager2 {
-	private static final int MARGIN = 1;
+	private static final int	MARGIN	= 1;
+	private CharacterSheet		mSheet;
+
+	public CharacterSheetLayout(CharacterSheet sheet) {
+		mSheet = sheet;
+	}
 
 	@Override
 	public Dimension minimumLayoutSize(Container target) {
@@ -33,7 +38,7 @@ class CharacterSheetLayout implements LayoutManager2 {
 		int across = 1;
 		int width = 0;
 		int height = 0;
-
+		int margin = mSheet.getScale().scale(MARGIN);
 		if (children.length > 0) {
 			Dimension size = children[0].getPreferredSize();
 			Container parent = target.getParent();
@@ -42,7 +47,7 @@ class CharacterSheetLayout implements LayoutManager2 {
 				int avail = parent.getWidth() - (parentInsets.left + parentInsets.right);
 				int pageWidth = size.width;
 				avail -= insets.left + insets.right + pageWidth;
-				pageWidth += MARGIN;
+				pageWidth += margin;
 				while (true) {
 					avail -= pageWidth;
 					if (avail >= 0) {
@@ -52,12 +57,12 @@ class CharacterSheetLayout implements LayoutManager2 {
 					}
 				}
 			}
-			width = (size.width + MARGIN) * across - MARGIN;
+			width = (size.width + margin) * across - margin;
 			int pagesDown = children.length / across;
 			if (children.length % across != 0) {
 				pagesDown++;
 			}
-			height = (size.height + MARGIN) * pagesDown - MARGIN;
+			height = (size.height + margin) * pagesDown - margin;
 		}
 		return new Dimension(insets.left + insets.right + width, insets.top + insets.bottom + height);
 	}
@@ -76,12 +81,13 @@ class CharacterSheetLayout implements LayoutManager2 {
 			Insets insets = target.getInsets();
 			int x = insets.left;
 			int y = insets.top;
+			int margin = mSheet.getScale().scale(MARGIN);
 			for (Component child : children) {
 				child.setBounds(x, y, size.width, size.height);
-				x += size.width + MARGIN;
+				x += size.width + margin;
 				if (x + size.width + insets.right > avail.width) {
 					x = insets.left;
-					y += size.height + MARGIN;
+					y += size.height + margin;
 				}
 			}
 		}

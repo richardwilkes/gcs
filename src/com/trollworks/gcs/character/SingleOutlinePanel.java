@@ -11,8 +11,9 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.widgets.outline.ColumnUtils;
-import com.trollworks.toolkit.ui.border.TitledBorder;
+import com.trollworks.toolkit.ui.scale.Scale;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineHeader;
@@ -34,18 +35,19 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
 	/**
 	 * Creates a new outline panel.
 	 *
+	 * @param scale The scale to use.
 	 * @param outline The outline to display.
 	 * @param title The localized title for the panel.
 	 * @param useProxy <code>true</code> if a proxy of the outline should be used.
 	 */
-	public SingleOutlinePanel(Outline outline, String title, boolean useProxy) {
-		super(null, title, false);
+	public SingleOutlinePanel(Scale scale, Outline outline, String title, boolean useProxy) {
+		super(null);
 		mOutline = useProxy ? new OutlineProxy(outline) : outline;
 		mHeader = mOutline.getHeaderPanel();
 		CharacterSheet.prepOutline(mOutline);
 		add(mHeader);
 		add(mOutline);
-		setBorder(new TitledBorder());
+		setBorder(getTitledBorder());
 		setLayout(this);
 	}
 
@@ -67,7 +69,7 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
 		OutlineModel outlineModel = mOutline.getModel();
 		int count = outlineModel.getColumnCount();
 		if (mOutline.shouldDrawColumnDividers()) {
-			width += count - 1;
+			width += (count - 1) * Scale.get(this).scale(1);
 		}
 		for (int i = 0; i < count; i++) {
 			Column column = outlineModel.getColumnAtIndex(i);

@@ -26,7 +26,10 @@ import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.ui.UIUtilities;
+import com.trollworks.toolkit.ui.border.EmptyBorder;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
+import com.trollworks.toolkit.ui.scale.Scale;
+import com.trollworks.toolkit.ui.scale.ScaleRoot;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineHeader;
 import com.trollworks.toolkit.ui.widget.outline.OutlineSyncer;
@@ -52,10 +55,9 @@ import java.util.ArrayList;
 import javax.swing.JPanel;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
 
 /** The template sheet. */
-public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTarget, DropTargetListener, ActionListener {
+public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTarget, DropTargetListener, ActionListener, ScaleRoot {
 	@Localize("Advantages, Disadvantages & Quirks")
 	@Localize(locale = "de", value = "Vorteile, Nachteile & Marotten")
 	@Localize(locale = "ru", value = "Преимущества, недостатки и причуды")
@@ -86,7 +88,8 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		Localization.initialize();
 	}
 
-	private static final EmptyBorder	NORMAL_BORDER	= new EmptyBorder(5, 5, 5, 5);
+	private static final EmptyBorder	NORMAL_BORDER	= new EmptyBorder(5);
+	private Scale						mScale;
 	private Template					mTemplate;
 	private boolean						mBatchMode;
 	private AdvantageOutline			mAdvantageOutline;
@@ -110,6 +113,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		setBackground(Color.WHITE);
 		setBorder(NORMAL_BORDER);
 
+		mScale = new Scale(1);
 		mTemplate = template;
 
 		// Make sure our primary outlines exist
@@ -139,6 +143,20 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 	}
 
 	@Override
+	public Scale getScale() {
+		return mScale;
+	}
+
+	@Override
+	public void setScale(Scale scale) {
+		if (mScale.getScale() != scale.getScale()) {
+			mScale = scale;
+			revalidate();
+			repaint();
+		}
+	}
+
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		String command = event.getActionCommand();
 		if (Outline.CMD_POTENTIAL_CONTENT_SIZE_CHANGE.equals(command)) {
@@ -157,7 +175,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 			});
 		}
 	}
-	
+
 	void runAdjustSize() {
 		mSizePending = false;
 		Dimension size = getLayout().preferredLayoutSize(TemplateSheet.this);

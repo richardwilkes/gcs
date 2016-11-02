@@ -12,13 +12,14 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.RetinaIcon;
-import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.border.TitledBorder;
 import com.trollworks.toolkit.ui.image.StdImage;
+import com.trollworks.toolkit.ui.scale.Scale;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
@@ -29,7 +30,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
-import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -64,21 +64,19 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 		Localization.initialize();
 	}
 
-	private GURPSCharacter mCharacter;
+	private CharacterSheet mSheet;
 
 	/**
 	 * Creates a new character portrait.
 	 *
-	 * @param character The owning character.
+	 * @param sheet The owning sheet.
 	 */
-	public PortraitPanel(GURPSCharacter character) {
+	public PortraitPanel(CharacterSheet sheet) {
 		super(null, true);
 		setBorder(new TitledBorder(UIManager.getFont(GCSFonts.KEY_LABEL), PORTRAIT));
-		mCharacter = character;
-		Insets insets = getInsets();
-		UIUtilities.setOnlySize(this, new Dimension(insets.left + insets.right + Profile.PORTRAIT_WIDTH, insets.top + insets.bottom + Profile.PORTRAIT_HEIGHT));
+		mSheet = sheet;
 		setToolTipText(Text.wrapPlainTextForToolTip(MessageFormat.format(PORTRAIT_TOOLTIP, new Integer(Profile.PORTRAIT_WIDTH * 2), new Integer(Profile.PORTRAIT_HEIGHT * 2))));
-		mCharacter.addTarget(this, Profile.ID_PORTRAIT);
+		sheet.getCharacter().addTarget(this, Profile.ID_PORTRAIT);
 		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent event) {
@@ -94,7 +92,7 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 		File file = SheetPreferences.choosePortrait();
 		if (file != null) {
 			try {
-				mCharacter.getDescription().setPortrait(StdImage.loadImage(file));
+				mSheet.getCharacter().getDescription().setPortrait(StdImage.loadImage(file));
 			} catch (Exception exception) {
 				WindowUtils.showError(this, MessageFormat.format(BAD_IMAGE, PathUtils.getFullPath(file)));
 			}
@@ -105,12 +103,10 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 	protected void paintComponent(Graphics g) {
 		Graphics2D gc = GraphicsUtilities.prepare(g);
 		super.paintComponent(gc);
-		RetinaIcon portrait = mCharacter.getDescription().getPortrait();
+		RetinaIcon portrait = mSheet.getCharacter().getDescription().getPortrait();
 		if (portrait != null) {
 			Insets insets = getInsets();
-			RenderingHints saved = GraphicsUtilities.setMaximumQualityForGraphics(gc);
 			portrait.paintIcon(this, gc, insets.left, insets.top);
-			gc.setRenderingHints(saved);
 		}
 	}
 
@@ -122,5 +118,22 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
 	@Override
 	public int getNotificationPriority() {
 		return 0;
+	}
+
+	@Override
+	public Dimension getMinimumSize() {
+		return getPreferredSize();
+	}
+
+	@Override
+	public Dimension getPreferredSize() {
+		Scale scale = Scale.get(this);
+		Insets insets = getInsets();
+		return new Dimension(insets.left + scale.scale(Profile.PORTRAIT_WIDTH) + insets.right, insets.top + scale.scale(Profile.PORTRAIT_HEIGHT) + insets.bottom);
+	}
+
+	@Override
+	public Dimension getMaximumSize() {
+		return getPreferredSize();
 	}
 }

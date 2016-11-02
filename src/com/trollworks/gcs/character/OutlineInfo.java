@@ -13,6 +13,7 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.widgets.outline.ColumnUtils;
 import com.trollworks.toolkit.ui.border.TitledBorder;
+import com.trollworks.toolkit.ui.scale.Scale;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
@@ -35,7 +36,8 @@ public class OutlineInfo {
 	 * @param contentWidth The content width.
 	 */
 	public OutlineInfo(Outline outline, int contentWidth) {
-		Insets insets = new TitledBorder().getBorderInsets(null);
+		int one = Scale.get(outline).scale(1);
+		Insets insets = new TitledBorder().getBorderInsets(outline);
 		OutlineModel outlineModel = outline.getModel();
 		int count = outlineModel.getRowCount();
 		List<Column> columns = outlineModel.getColumns();
@@ -51,10 +53,10 @@ public class OutlineInfo {
 			Row row = outlineModel.getRowAtIndex(i);
 			mHeights[i] = row.getHeight();
 			if (mHeights[i] == -1) {
-				mHeights[i] = row.getPreferredHeight(columns);
+				mHeights[i] = row.getPreferredHeight(outline, columns);
 			}
 			if (hasRowDividers) {
-				mHeights[i]++;
+				mHeights[i] += one;
 			}
 		}
 
@@ -69,7 +71,6 @@ public class OutlineInfo {
 	public int determineHeightForOutline(int remaining) {
 		int total = mOverheadHeight;
 		int start = mRowIndex++;
-
 		while (mRowIndex < mHeights.length) {
 			int tmp = total + mHeights[mRowIndex];
 			if (tmp > remaining) {

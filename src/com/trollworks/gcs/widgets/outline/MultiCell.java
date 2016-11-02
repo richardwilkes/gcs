@@ -14,6 +14,7 @@ package com.trollworks.gcs.widgets.outline;
 import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.toolkit.ui.Colors;
 import com.trollworks.toolkit.ui.TextDrawing;
+import com.trollworks.toolkit.ui.scale.Scale;
 import com.trollworks.toolkit.ui.widget.outline.Cell;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
@@ -54,6 +55,17 @@ public class MultiCell implements Cell {
 		this(250, forEditor);
 	}
 
+	/**
+	 * Creates a new {@link MultiCell}.
+	 *
+	 * @param maxPreferredWidth The maximum preferred width to use. Pass in -1 for no limit.
+	 * @param forEditor Whether this is for an editor dialog or for a character sheet.
+	 */
+	public MultiCell(int maxPreferredWidth, boolean forEditor) {
+		mMaxPreferredWidth = maxPreferredWidth;
+		mForEditor = forEditor;
+	}
+
 	/** @return The primary font. */
 	public Font getPrimaryFont() {
 		return UIManager.getFont(mForEditor ? "TextField.font" : GCSFonts.KEY_FIELD); //$NON-NLS-1$
@@ -66,17 +78,6 @@ public class MultiCell implements Cell {
 			return font.deriveFont(font.getSize() * 7f / 8f);
 		}
 		return UIManager.getFont(GCSFonts.KEY_FIELD_NOTES);
-	}
-
-	/**
-	 * Creates a new {@link MultiCell}.
-	 *
-	 * @param maxPreferredWidth The maximum preferred width to use. Pass in -1 for no limit.
-	 * @param forEditor Whether this is for an editor dialog or for a character sheet.
-	 */
-	public MultiCell(int maxPreferredWidth, boolean forEditor) {
-		mMaxPreferredWidth = maxPreferredWidth;
-		mForEditor = forEditor;
 	}
 
 	/**
@@ -115,19 +116,21 @@ public class MultiCell implements Cell {
 
 	@Override
 	public void drawCell(Outline outline, Graphics gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
+		Scale scale = Scale.get(outline);
 		ListRow theRow = (ListRow) row;
-		Rectangle insetBounds = new Rectangle(bounds.x + H_MARGIN, bounds.y, bounds.width - H_MARGIN * 2, bounds.height);
+		int hMargin = scale.scale(H_MARGIN);
+		Rectangle insetBounds = new Rectangle(bounds.x + hMargin, bounds.y, bounds.width - hMargin * 2, bounds.height);
 		String notes = getSecondaryText(theRow);
-		Font font = getPrimaryFont();
+		Font font = scale.scale(getPrimaryFont());
 		int pos;
 		gc.setColor(getColor(selected, active, row, column));
 		gc.setFont(font);
 		Color strikeThru = row instanceof Switchable && !((Switchable) row).isEnabled() ? Color.RED : null;
-		pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP, strikeThru);
+		pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP, strikeThru, scale.scale(1));
 		if (notes.trim().length() > 0) {
 			insetBounds.height -= pos - insetBounds.y;
 			insetBounds.y = pos;
-			gc.setFont(getSecondaryFont());
+			gc.setFont(scale.scale(getSecondaryFont()));
 			TextDrawing.draw(gc, insetBounds, notes, SwingConstants.LEFT, SwingConstants.TOP);
 		}
 	}
@@ -148,45 +151,48 @@ public class MultiCell implements Cell {
 	}
 
 	@Override
-	public int getPreferredWidth(Row row, Column column) {
+	public int getPreferredWidth(Outline outline, Row row, Column column) {
+		Scale scale = Scale.get(outline);
 		ListRow theRow = (ListRow) row;
-		int width = TextDrawing.getWidth(getPrimaryFont(), getPrimaryText(theRow));
+		int width = TextDrawing.getWidth(scale.scale(getPrimaryFont()), getPrimaryText(theRow));
 		String notes = getSecondaryText(theRow);
 		if (notes.trim().length() > 0) {
-			int notesWidth = TextDrawing.getWidth(getSecondaryFont(), notes);
+			int notesWidth = TextDrawing.getWidth(scale.scale(getSecondaryFont()), notes);
 
 			if (notesWidth > width) {
 				width = notesWidth;
 			}
 		}
-		width += H_MARGIN * 2;
-		return mMaxPreferredWidth != -1 && mMaxPreferredWidth < width ? mMaxPreferredWidth : width;
+		width += scale.scale(H_MARGIN) * 2;
+		int scaledMax = scale.scale(mMaxPreferredWidth);
+		return mMaxPreferredWidth != -1 && scaledMax < width ? scaledMax : width;
 	}
 
 	@Override
-	public int getPreferredHeight(Row row, Column column) {
+	public int getPreferredHeight(Outline outline, Row row, Column column) {
+		Scale scale = Scale.get(outline);
 		ListRow theRow = (ListRow) row;
-		Font font = getPrimaryFont();
-		int height = TextDrawing.getPreferredSize(font, wrap(theRow, column, getPrimaryText(theRow), font)).height;
+		Font font = scale.scale(getPrimaryFont());
+		int height = TextDrawing.getPreferredSize(font, wrap(scale, theRow, column, getPrimaryText(theRow), font)).height;
 		String notes = getSecondaryText(theRow);
 		if (notes.trim().length() > 0) {
-			font = getSecondaryFont();
-			height += TextDrawing.getPreferredSize(font, wrap(theRow, column, notes, font)).height;
+			font = scale.scale(getSecondaryFont());
+			height += TextDrawing.getPreferredSize(font, wrap(scale, theRow, column, notes, font)).height;
 		}
 		return height;
 	}
 
-	private String wrap(ListRow row, Column column, String text, Font font) {
+	private String wrap(Scale scale, ListRow row, Column column, String text, Font font) {
 		int width = column.getWidth();
 		if (width == -1) {
 			if (mMaxPreferredWidth == -1) {
 				return text;
 			}
-			width = mMaxPreferredWidth;
+			width = scale.scale(mMaxPreferredWidth);
 		}
 		OutlineModel owner = row.getOwner();
-		int indent = owner != null ? owner.getIndentWidth(row, column) : 0;
-		return TextDrawing.wrapToPixelWidth(font, text, width - (indent + H_MARGIN * 2));
+		int indent = owner != null ? scale.scale(owner.getIndentWidth(row, column)) : 0;
+		return TextDrawing.wrapToPixelWidth(font, text, width - (indent + scale.scale(H_MARGIN) * 2));
 	}
 
 	@Override
@@ -200,9 +206,8 @@ public class MultiCell implements Cell {
 	}
 
 	@Override
-	public String getToolTipText(MouseEvent event, Rectangle bounds, Row row, Column column) {
+	public String getToolTipText(Outline outline, MouseEvent event, Rectangle bounds, Row row, Column column) {
 		ListRow theRow = (ListRow) row;
-
 		return theRow.isSatisfied() ? null : theRow.getReasonForUnsatisfied();
 	}
 

@@ -9,11 +9,13 @@
  * by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.character;
+package com.trollworks.gcs.page;
 
 import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.UIUtilities;
+import com.trollworks.toolkit.ui.border.EmptyBorder;
 import com.trollworks.toolkit.ui.border.TitledBorder;
 
 import java.awt.Color;
@@ -26,20 +28,20 @@ import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Rectangle;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
 
 /** A standard panel with a drop shadow. */
 public class DropPanel extends JPanel {
-	private boolean						mOnlyReportPreferredSize;
-	private HashMap<Component, Color>	mHorizontalBackgrounds;
-	private HashMap<Component, Color>	mVerticalBackgrounds;
-	private boolean						mPaintVerticalFirst;
-	private TitledBorder				mTitledBorder;
+	private Map<Component, Color>	mHorizontalBackgrounds	= new HashMap<>();
+	private Map<Component, Color>	mVerticalBackgrounds	= new HashMap<>();
+	private boolean					mPaintVerticalFirst;
+	private TitledBorder			mTitledBorder;
+	private boolean					mOnlyReportPreferredSize;
 
 	/**
 	 * Creates a standard panel with a drop shadow.
@@ -100,8 +102,6 @@ public class DropPanel extends JPanel {
 		setBorder(new CompoundBorder(mTitledBorder, new EmptyBorder(0, 2, 1, 2)));
 		setAlignmentY(TOP_ALIGNMENT);
 		mOnlyReportPreferredSize = onlyReportPreferredSize;
-		mHorizontalBackgrounds = new HashMap<>();
-		mVerticalBackgrounds = new HashMap<>();
 	}
 
 	@Override
@@ -157,10 +157,8 @@ public class DropPanel extends JPanel {
 	@Override
 	protected void paintComponent(Graphics gc) {
 		super.paintComponent(GraphicsUtilities.prepare(gc));
-
 		Insets insets = mTitledBorder.getBorderInsets(this);
 		Rectangle localBounds = getBounds();
-
 		localBounds.x = insets.left;
 		localBounds.y = insets.top;
 		localBounds.width -= insets.left + insets.right;
@@ -179,7 +177,6 @@ public class DropPanel extends JPanel {
 			Component panel = entry.getKey();
 			Rectangle bounds = panel.getBounds();
 			Container parent = panel.getParent();
-
 			if (parent != null) {
 				if (parent != this) {
 					UIUtilities.convertRectangle(bounds, parent, this);
@@ -195,7 +192,6 @@ public class DropPanel extends JPanel {
 			Component panel = entry.getKey();
 			Rectangle bounds = panel.getBounds();
 			Container parent = panel.getParent();
-
 			if (parent != null) {
 				if (parent != this) {
 					UIUtilities.convertRectangle(bounds, parent, this);
@@ -223,7 +219,7 @@ public class DropPanel extends JPanel {
 
 	/**
 	 * @param parent The parent to use.
-	 * @param character The {@link GURPSCharacter} to use.
+	 * @param sheet The {@link CharacterSheet} to use.
 	 * @param key The notification ID to use.
 	 * @param title The title to use.
 	 * @param tooltip The tooltip to use.
@@ -231,8 +227,8 @@ public class DropPanel extends JPanel {
 	 * @return The newly created field.
 	 */
 	@SuppressWarnings("static-method")
-	protected PageField createLabelAndField(Container parent, GURPSCharacter character, String key, String title, String tooltip, int alignment) {
-		PageField field = new PageField(character, key, alignment, true, tooltip);
+	protected PageField createLabelAndField(Container parent, CharacterSheet sheet, String key, String title, String tooltip, int alignment) {
+		PageField field = new PageField(sheet, key, alignment, true, tooltip);
 		parent.add(new PageLabel(title, field));
 		parent.add(field);
 		return field;
@@ -240,7 +236,7 @@ public class DropPanel extends JPanel {
 
 	/**
 	 * @param parent The parent to use.
-	 * @param character The {@link GURPSCharacter} to use.
+	 * @param sheet The {@link CharacterSheet} to use.
 	 * @param key The notification ID to use.
 	 * @param title The title to use.
 	 * @param tooltip The tooltip to use.
@@ -248,8 +244,8 @@ public class DropPanel extends JPanel {
 	 * @return The newly created field.
 	 */
 	@SuppressWarnings("static-method")
-	protected PageField createLabelAndDisabledField(Container parent, GURPSCharacter character, String key, String title, String tooltip, int alignment) {
-		PageField field = new PageField(character, key, alignment, false, tooltip);
+	protected PageField createLabelAndDisabledField(Container parent, CharacterSheet sheet, String key, String title, String tooltip, int alignment) {
+		PageField field = new PageField(sheet, key, alignment, false, tooltip);
 		parent.add(new PageLabel(title, field));
 		parent.add(field);
 		return field;
@@ -257,30 +253,30 @@ public class DropPanel extends JPanel {
 
 	/**
 	 * @param parent The parent to use.
-	 * @param character The {@link GURPSCharacter} to use.
+	 * @param sheet The {@link CharacterSheet} to use.
 	 * @param key The notification ID to use.
 	 * @param tooltip The tooltip to use.
 	 * @param alignment The horizontal field alignment to use.
 	 * @return The newly created field.
 	 */
 	@SuppressWarnings("static-method")
-	protected PageField createField(Container parent, GURPSCharacter character, String key, String tooltip, int alignment) {
-		PageField field = new PageField(character, key, alignment, true, tooltip);
+	protected PageField createField(Container parent, CharacterSheet sheet, String key, String tooltip, int alignment) {
+		PageField field = new PageField(sheet, key, alignment, true, tooltip);
 		parent.add(field);
 		return field;
 	}
 
 	/**
 	 * @param parent The parent to use.
-	 * @param character The {@link GURPSCharacter} to use.
+	 * @param sheet The {@link CharacterSheet} to use.
 	 * @param key The notification ID to use.
 	 * @param tooltip The tooltip to use.
 	 * @param alignment The horizontal field alignment to use.
 	 * @return The newly created field.
 	 */
 	@SuppressWarnings("static-method")
-	protected PageField createDisabledField(Container parent, GURPSCharacter character, String key, String tooltip, int alignment) {
-		PageField field = new PageField(character, key, alignment, false, tooltip);
+	protected PageField createDisabledField(Container parent, CharacterSheet sheet, String key, String tooltip, int alignment) {
+		PageField field = new PageField(sheet, key, alignment, false, tooltip);
 		parent.add(field);
 		return field;
 	}

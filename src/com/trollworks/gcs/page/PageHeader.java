@@ -9,19 +9,19 @@
  * by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.character;
+package com.trollworks.gcs.page;
 
 import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.toolkit.ui.widget.Label;
 import com.trollworks.toolkit.utility.text.Text;
 
 import java.awt.Color;
 
-import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
 /** A header within the page. */
-public class PageHeader extends JLabel {
+public class PageHeader extends Label {
 	/**
 	 * Creates a new {@link PageHeader}.
 	 *

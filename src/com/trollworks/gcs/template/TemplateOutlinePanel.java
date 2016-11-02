@@ -12,7 +12,7 @@
 package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.app.GCSFonts;
-import com.trollworks.gcs.character.DropPanel;
+import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.toolkit.ui.TextDrawing;
 import com.trollworks.toolkit.ui.border.TitledBorder;
 import com.trollworks.toolkit.ui.widget.outline.Column;
@@ -103,7 +103,7 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
 			if (column.getID() != 0) {
 				int prefWidth = column.getPreferredWidth(mOutline);
 				if (prefWidth != column.getWidth()) {
-					column.setWidth(prefWidth);
+					column.setWidth(mOutline, prefWidth);
 					changed.add(column);
 				}
 				width -= prefWidth;
@@ -115,7 +115,7 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
 		}
 		column = outlineModel.getColumnWithID(0);
 		if (column.getWidth() != width) {
-			column.setWidth(width);
+			column.setWidth(mOutline, width);
 			changed.add(column);
 		}
 		mOutline.updateRowHeightsIfNeeded(changed);

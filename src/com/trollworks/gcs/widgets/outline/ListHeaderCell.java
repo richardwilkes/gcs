@@ -12,6 +12,7 @@
 package com.trollworks.gcs.widgets.outline;
 
 import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.toolkit.ui.scale.Scale;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.HeaderCell;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
@@ -30,7 +31,7 @@ public class ListHeaderCell extends HeaderCell {
 
 	/**
 	 * Create a new header cell.
-	 * 
+	 *
 	 * @param forSheet Whether the header will be displayed in the sheet or not.
 	 */
 	public ListHeaderCell(boolean forSheet) {
@@ -53,11 +54,12 @@ public class ListHeaderCell extends HeaderCell {
 	}
 
 	@Override
-	public int getPreferredWidth(Row row, Column column) {
-		int width = super.getPreferredWidth(row, column);
-
+	public int getPreferredWidth(Outline outline, Row row, Column column) {
+		int width = super.getPreferredWidth(outline, row, column);
 		if (mForSheet) {
-			width -= SORTER_WIDTH + 4;
+			Scale scale = Scale.get(outline);
+			int margin = scale.scale(2);
+			width -= margin + scale.scale(SORTER_WIDTH) + margin;
 		}
 		return width;
 	}

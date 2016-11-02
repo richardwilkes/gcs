@@ -25,6 +25,7 @@ import com.trollworks.gcs.widgets.outline.RowPostProcessor;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.menu.RetargetableFocus;
+import com.trollworks.toolkit.ui.scale.Scales;
 import com.trollworks.toolkit.ui.widget.Toolbar;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.ui.widget.dock.Dock;
@@ -92,6 +93,7 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 	private static SheetDockable		LAST_ACTIVATED;
 	private CharacterSheet				mSheet;
 	private Toolbar						mToolbar;
+	private JComboBox<Scales>			mScaleCombo;
 	private Search						mSearch;
 	private JComboBox<HitLocationTable>	mHitLocationTableCombo;
 	private PrerequisitesThread			mPrereqThread;
@@ -121,6 +123,10 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 
 	private void createToolbar() {
 		mToolbar = new Toolbar();
+		mScaleCombo = new JComboBox<>(Scales.values());
+		mScaleCombo.setSelectedItem(Scales.ACTUAL_SIZE);
+		mScaleCombo.addActionListener((event) -> mSheet.setScale(((Scales) mScaleCombo.getSelectedItem()).getScale()));
+		mToolbar.add(mScaleCombo);
 		mSearch = new Search(this);
 		mToolbar.add(mSearch, Toolbar.LAYOUT_FILL);
 		mHitLocationTableCombo = new JComboBox<>(HitLocationTable.ALL);
