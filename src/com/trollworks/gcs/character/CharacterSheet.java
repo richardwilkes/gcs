@@ -2194,6 +2194,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			if (mSavedScale != null && mSavedScale.getScale() != mScale.getScale()) {
 				mScale = mSavedScale;
 				rebuild();
+			} else {
+				repaint();
 			}
 		}
 	}
