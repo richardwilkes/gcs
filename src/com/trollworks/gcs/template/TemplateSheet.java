@@ -30,6 +30,7 @@ import com.trollworks.toolkit.ui.border.EmptyBorder;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.scale.Scale;
 import com.trollworks.toolkit.ui.scale.ScaleRoot;
+import com.trollworks.toolkit.ui.scale.Scales;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineHeader;
 import com.trollworks.toolkit.ui.widget.outline.OutlineSyncer;
@@ -113,7 +114,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 		setBackground(Color.WHITE);
 		setBorder(NORMAL_BORDER);
 
-		mScale = new Scale(1);
+		mScale = Scales.ACTUAL_SIZE.getScale();
 		mTemplate = template;
 
 		// Make sure our primary outlines exist
@@ -177,11 +178,13 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 	}
 
 	void runAdjustSize() {
+		Scale scale = Scale.get(this);
 		mSizePending = false;
 		Dimension size = getLayout().preferredLayoutSize(TemplateSheet.this);
-		size.width = 576; // Equivalent to an 8-inch span
-		if (size.height < 300) {
-			size.height = 300;
+		size.width = scale.scale(8 * 72);
+		int min = scale.scale(4 * 72);
+		if (size.height < min) {
+			size.height = min;
 		}
 		UIUtilities.setOnlySize(TemplateSheet.this, size);
 		setSize(size);

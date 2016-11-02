@@ -26,6 +26,7 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.Fonts;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.menu.RetargetableFocus;
+import com.trollworks.toolkit.ui.scale.Scales;
 import com.trollworks.toolkit.ui.widget.Toolbar;
 import com.trollworks.toolkit.ui.widget.dock.Dock;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
@@ -50,6 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.swing.JComboBox;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
@@ -74,17 +76,22 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
 	private static TemplateDockable	LAST_ACTIVATED;
 	private TemplateSheet			mTemplate;
 	private Toolbar					mToolbar;
+	private JComboBox<Scales>		mScaleCombo;
 	private Search					mSearch;
 
 	/** Creates a new {@link TemplateDockable}. */
 	public TemplateDockable(Template template) {
 		super(template);
 		Template dataFile = getDataFile();
+		mTemplate = new TemplateSheet(dataFile);
 		mToolbar = new Toolbar();
+		mScaleCombo = new JComboBox<>(Scales.values());
+		mScaleCombo.setSelectedItem(Scales.ACTUAL_SIZE);
+		mScaleCombo.addActionListener((event) -> mTemplate.setScale(((Scales) mScaleCombo.getSelectedItem()).getScale()));
+		mToolbar.add(mScaleCombo);
 		mSearch = new Search(this);
 		mToolbar.add(mSearch, Toolbar.LAYOUT_FILL);
 		add(mToolbar, BorderLayout.NORTH);
-		mTemplate = new TemplateSheet(dataFile);
 		JScrollPane scroller = new JScrollPane(mTemplate);
 		scroller.setBorder(null);
 		scroller.getViewport().setBackground(Color.LIGHT_GRAY);
