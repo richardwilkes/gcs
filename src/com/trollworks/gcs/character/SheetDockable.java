@@ -15,6 +15,7 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.common.CommonDockable;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.notes.Note;
+import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
@@ -124,7 +125,7 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 	private void createToolbar() {
 		mToolbar = new Toolbar();
 		mScaleCombo = new JComboBox<>(Scales.values());
-		mScaleCombo.setSelectedItem(Scales.ACTUAL_SIZE);
+		mScaleCombo.setSelectedItem(SheetPreferences.getInitialUIScale());
 		mScaleCombo.addActionListener((event) -> mSheet.setScale(((Scales) mScaleCombo.getSelectedItem()).getScale()));
 		mToolbar.add(mScaleCombo);
 		mSearch = new Search(this);

@@ -265,7 +265,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		super();
 		setLayout(new CharacterSheetLayout(this));
 		setOpaque(false);
-		mScale = Scales.ACTUAL_SIZE.getScale();
+		mScale = SheetPreferences.getInitialUIScale().getScale();
 		mCharacter = character;
 		mLastPage = -1;
 		mRootsToSync = new HashSet<>();

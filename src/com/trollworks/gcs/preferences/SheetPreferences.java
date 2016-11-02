@@ -30,6 +30,7 @@ import com.trollworks.toolkit.ui.preferences.PreferencePanel;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
 import com.trollworks.toolkit.ui.print.PageOrientation;
 import com.trollworks.toolkit.ui.print.PrintManager;
+import com.trollworks.toolkit.ui.scale.Scales;
 import com.trollworks.toolkit.ui.widget.StdFileDialog;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Dice;
@@ -138,6 +139,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	@Localize(locale = "ru", value = "Использовать необязательное правило \"Замена модификаторов кубиками\" из B269")
 	@Localize(locale = "es", value = "Usar regla opcional: \"Modificando dado + incrementos\", véase B269")
 	private static String	OPTIONAL_DICE_RULES;
+	@Localize("for the initial scale opening character sheets and templates")
+	private static String	UI_SCALE_POST;
 	@Localize("when saving sheets to PNG")
 	@Localize(locale = "de", value = "beim Export als PNG-Datei")
 	@Localize(locale = "ru", value = "при сохранении листов в формате PNG")
@@ -272,6 +275,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	/** The GURPS Metric preference key. */
 	public static final String			GURPS_METRIC_RULES_PREF_KEY			= Preferences.getModuleKey(MODULE, GURPS_METRIC_RULES_KEY);
 	private static final boolean		DEFAULT_GURPS_METRIC_RULES			= true;
+	private static final Scales			DEFAULT_SCALE						= Scales.ACTUAL_SIZE;
+	private static final String			SCALE_KEY							= "UIScale";													//$NON-NLS-1$
 	private static final int			DEFAULT_PNG_RESOLUTION				= 200;
 	private static final String			PNG_RESOLUTION_KEY					= "PNGResolution";												//$NON-NLS-1$
 	private static final int[]			DPI									= { 72, 96, 144, 150, 200, 300 };
@@ -288,6 +293,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private JTextField					mTechLevel;
 	private JTextField					mInitialPoints;
 	private PortraitPreferencePanel		mPortrait;
+	private JComboBox<Scales>			mUIScaleCombo;
 	private JComboBox<String>			mPNGResolutionCombo;
 	private JComboBox<String>			mLengthUnitsCombo;
 	private JComboBox<String>			mWeightUnitsCombo;
@@ -356,6 +362,17 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	/** @return Whether a new character should be automatically named. */
 	public static boolean isNewCharacterAutoNamed() {
 		return Preferences.getInstance().getBooleanValue(MODULE, AUTO_NAME_KEY, DEFAULT_AUTO_NAME);
+	}
+
+	/** @return The {@link Scales} to use when opening a new scalable file. */
+	public static Scales getInitialUIScale() {
+		double value = Preferences.getInstance().getDoubleValue(MODULE, SCALE_KEY, DEFAULT_SCALE.getScale().getScale());
+		for (Scales one : Scales.values()) {
+			if (one.getScale().getScale() == value) {
+				return one;
+			}
+		}
+		return Scales.ACTUAL_SIZE;
 	}
 
 	/** @return The resolution to use when saving the sheet as a PNG. */
@@ -533,6 +550,13 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		column.add(mUseNativePrinter);
 
 		row = new FlexRow();
+		row.add(createLabel(USE, null));
+		mUIScaleCombo = createUIScalePopup();
+		row.add(mUIScaleCombo);
+		row.add(createLabel(UI_SCALE_POST, null, SwingConstants.LEFT));
+		column.add(row);
+
+		row = new FlexRow();
 		row.add(createLabel(GURPS_CALCULATOR_KEY, GURPS_CALCULATOR_KEY));
 		mGurpsCalculatorKey = createTextField(GURPS_CALCULATOR_KEY, getGurpsCalculatorKey());
 		row.add(mGurpsCalculatorKey);
@@ -593,6 +617,16 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		UIUtilities.setOnlySize(button, button.getPreferredSize());
 		add(button);
 		return button;
+	}
+
+	private JComboBox<Scales> createUIScalePopup() {
+		JComboBox<Scales> combo = new JComboBox<>(Scales.values());
+		setupCombo(combo, null);
+		combo.setSelectedItem(getInitialUIScale());
+		combo.addActionListener(this);
+		combo.setMaximumRowCount(combo.getItemCount());
+		UIUtilities.setOnlySize(combo, combo.getPreferredSize());
+		return combo;
 	}
 
 	private JComboBox<String> createPNGResolutionPopup() {
@@ -670,6 +704,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 			}
 		} else if (source == mPNGResolutionCombo) {
 			Preferences.getInstance().setValue(MODULE, PNG_RESOLUTION_KEY, DPI[mPNGResolutionCombo.getSelectedIndex()]);
+		} else if (source == mUIScaleCombo) {
+			Preferences.getInstance().setValue(MODULE, SCALE_KEY, ((Scales) mUIScaleCombo.getSelectedItem()).getScale().getScale());
 		} else if (source == mLengthUnitsCombo) {
 			Preferences.getInstance().setValue(MODULE, LENGTH_UNITS_KEY, Enums.toId(LengthUnits.values()[mLengthUnitsCombo.getSelectedIndex()]));
 		} else if (source == mWeightUnitsCombo) {

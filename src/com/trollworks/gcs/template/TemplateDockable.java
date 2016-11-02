@@ -86,7 +86,7 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
 		mTemplate = new TemplateSheet(dataFile);
 		mToolbar = new Toolbar();
 		mScaleCombo = new JComboBox<>(Scales.values());
-		mScaleCombo.setSelectedItem(Scales.ACTUAL_SIZE);
+		mScaleCombo.setSelectedItem(SheetPreferences.getInitialUIScale());
 		mScaleCombo.addActionListener((event) -> mTemplate.setScale(((Scales) mScaleCombo.getSelectedItem()).getScale()));
 		mToolbar.add(mScaleCombo);
 		mSearch = new Search(this);
