@@ -128,6 +128,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -246,8 +247,10 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	private Outline				mMeleeWeaponOutline;
 	private Outline				mRangedWeaponOutline;
 	private boolean				mRebuildPending;
-	private HashSet<Outline>	mRootsToSync;
+	private Set<Outline>		mRootsToSync;
 	private PrintManager		mPrintManager;
+	private Scale				mSavedScale;
+	private boolean				mOkToPaint			= true;
 	private boolean				mIsPrinting;
 	private boolean				mSyncWeapons;
 	private boolean				mDisposed;
@@ -723,6 +726,13 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	@Override
+	public void paint(Graphics g) {
+		if (mOkToPaint) {
+			super.paint(g);
+		}
+	}
+
+	@Override
 	public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) {
 		if (pageIndex >= getComponentCount()) {
 			mLastPage = -1;
@@ -739,7 +749,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			RepaintManager mgr = RepaintManager.currentManager(comp);
 			boolean saved = mgr.isDoubleBufferingEnabled();
 			mgr.setDoubleBufferingEnabled(false);
+			mOkToPaint = true;
 			comp.print(graphics);
+			mOkToPaint = false;
 			mgr.setDoubleBufferingEnabled(saved);
 		}
 		return PAGE_EXISTS;
@@ -1077,6 +1089,10 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			Paper paper = format.getPaper();
 			float width = (float) paper.getWidth();
 			float height = (float) paper.getHeight();
+
+			adjustToPageSetupChanges(true);
+			setPrinting(true);
+
 			com.lowagie.text.Document pdfDoc = new com.lowagie.text.Document(new com.lowagie.text.Rectangle(width, height));
 			try (FileOutputStream out = new FileOutputStream(file)) {
 				PdfWriter writer = PdfWriter.getInstance(pdfDoc, out);
@@ -1097,9 +1113,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 						pdfDoc.newPage();
 					}
 					g2d.setClip(0, 0, (int) width, (int) height);
-					setPrinting(true);
 					print(g2d, format, pageNum++);
-					setPrinting(false);
 					g2d.dispose();
 					cb.addTemplate(template, 0, 0);
 				}
@@ -1109,6 +1123,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		} catch (Exception exception) {
 			return false;
 		} finally {
+			setPrinting(false);
 			closeContainers(changed);
 		}
 	}
@@ -2093,6 +2108,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 			file = file.getParentFile();
 
+			adjustToPageSetupChanges(true);
+			setPrinting(true);
+
 			while (true) {
 				File pngFile;
 
@@ -2105,9 +2123,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 				gc.setBackground(Color.WHITE);
 				gc.clearRect(0, 0, width, height);
 				gc.scale(dpi / 72.0, dpi / 72.0);
-				setPrinting(true);
 				print(gc, format, pageNum++);
-				setPrinting(false);
 				gc.dispose();
 				pngFile = new File(file, PathUtils.enforceExtension(name + (pageNum > 1 ? " " + pageNum : ""), FileType.PNG_EXTENSION)); //$NON-NLS-1$ //$NON-NLS-2$
 				if (!StdImage.writePNG(pngFile, buffer, dpi)) {
@@ -2119,6 +2135,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 		} catch (Exception exception) {
 			return false;
 		} finally {
+			setPrinting(false);
 			closeContainers(changed);
 		}
 	}
@@ -2154,8 +2171,13 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	@Override
-	public void adjustToPageSetupChanges() {
+	public void adjustToPageSetupChanges(boolean willPrint) {
 		SheetPreferences.setDefaultPageSettings(getPrintManager());
+		if (willPrint) {
+			mSavedScale = mScale;
+			mScale = Scales.ACTUAL_SIZE.getScale();
+			mOkToPaint = false;
+		}
 		rebuild();
 	}
 
@@ -2167,5 +2189,12 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	@Override
 	public void setPrinting(boolean printing) {
 		mIsPrinting = printing;
+		if (!printing) {
+			mOkToPaint = true;
+			if (mSavedScale != null && mSavedScale.getScale() != mScale.getScale()) {
+				mScale = mSavedScale;
+				rebuild();
+			}
+		}
 	}
 }
