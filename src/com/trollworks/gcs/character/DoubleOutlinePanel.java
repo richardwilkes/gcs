@@ -14,6 +14,7 @@ package com.trollworks.gcs.character;
 import com.trollworks.toolkit.ui.scale.Scale;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -40,6 +41,7 @@ public class DoubleOutlinePanel extends JPanel implements LayoutManager2 {
 	public DoubleOutlinePanel(Scale scale, Outline leftOutline, String leftTitle, Outline rightOutline, String rightTitle, boolean useProxy) {
 		super();
 		setLayout(this);
+		setBackground(Color.WHITE);
 		mLeftPanel = new SingleOutlinePanel(scale, leftOutline, leftTitle, useProxy);
 		mRightPanel = new SingleOutlinePanel(scale, rightOutline, rightTitle, useProxy);
 		add(mLeftPanel);
@@ -107,19 +109,16 @@ public class DoubleOutlinePanel extends JPanel implements LayoutManager2 {
 		Insets insets = getInsets();
 		Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
 		Scale scale = Scale.get(parent);
-		int one = scale.scale(1);
-		int two = one + one;
-		int right = bounds.width / 2 - one;
-		int left = bounds.width - (two + right);
-		mLeftPanel.setBounds(bounds.x, bounds.y, left, bounds.height);
-		mRightPanel.setBounds(bounds.x + left + two, bounds.y, right, bounds.height);
+		int gap = scale.scale(2);
+		int width = (bounds.width - gap) / 2;
+		mLeftPanel.setBounds(bounds.x, bounds.y, width, bounds.height);
+		mRightPanel.setBounds(bounds.x + bounds.width - width, bounds.y, width, bounds.height);
 	}
 
 	private Dimension getLayoutSize(Container parent, Dimension leftSize, Dimension rightSize) {
 		Dimension size = new Dimension(leftSize.width + rightSize.width, Math.max(leftSize.height, rightSize.height));
 		Insets insets = getInsets();
-		int one = Scale.get(parent).scale(1);
-		size.width += insets.left + one + one + insets.right;
+		size.width += insets.left + Scale.get(parent).scale(2) + insets.right;
 		size.height += insets.top + insets.bottom;
 		return size;
 	}
