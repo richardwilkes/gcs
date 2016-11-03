@@ -14,6 +14,7 @@ package com.trollworks.gcs.library;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.common.CommonDockable;
 import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
@@ -98,10 +99,16 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 		OutlineModel outlineModel = mOutline.getModel();
 		outlineModel.applySortConfig(outlineModel.getSortConfig());
 		outlineModel.setRowFilter(this);
+		LibraryContent content = new LibraryContent(mOutline);
+		LibraryHeader header = new LibraryHeader(mOutline.getHeaderPanel());
 		mToolbar = new Toolbar();
 		mScaleCombo = new JComboBox<>(Scales.values());
-		mScaleCombo.setSelectedItem(Scales.ACTUAL_SIZE);
-		mScaleCombo.addActionListener((event) -> applyScale(((Scales) mScaleCombo.getSelectedItem()).getScale()));
+		mScaleCombo.setSelectedItem(SheetPreferences.getInitialUIScale());
+		mScaleCombo.addActionListener((event) -> {
+			Scale scale = ((Scales) mScaleCombo.getSelectedItem()).getScale();
+			header.setScale(scale);
+			content.setScale(scale);
+		});
 		mToolbar.add(mScaleCombo);
 		createFilterField();
 		createCategoryCombo();
@@ -114,9 +121,9 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 		mToolbar.add(new IconButton(StdImage.TOGGLE_OPEN, TOGGLE_ROWS_OPEN_TOOLTIP, () -> mOutline.getModel().toggleRowOpenState()));
 		mToolbar.add(new IconButton(StdImage.SIZE_TO_FIT, SIZE_COLUMNS_TO_FIT_TOOLTIP, () -> mOutline.sizeColumnsToFit()));
 		add(mToolbar, BorderLayout.NORTH);
-		mScroller = new JScrollPane(mOutline);
+		mScroller = new JScrollPane(content);
 		mScroller.setBorder(null);
-		mScroller.setColumnHeaderView(mOutline.getHeaderPanel());
+		mScroller.setColumnHeaderView(header);
 		add(mScroller, BorderLayout.CENTER);
 		Preferences.getInstance().getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY);
 	}
