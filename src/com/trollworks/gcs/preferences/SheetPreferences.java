@@ -139,7 +139,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	@Localize(locale = "ru", value = "Использовать необязательное правило \"Замена модификаторов кубиками\" из B269")
 	@Localize(locale = "es", value = "Usar regla opcional: \"Modificando dado + incrementos\", véase B269")
 	private static String	OPTIONAL_DICE_RULES;
-	@Localize("for the initial scale opening character sheets and templates")
+	@Localize("for the initial scale when opening character sheets, templates and lists")
 	private static String	UI_SCALE_POST;
 	@Localize("when saving sheets to PNG")
 	@Localize(locale = "de", value = "beim Export als PNG-Datei")
