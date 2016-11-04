@@ -39,6 +39,10 @@ public class GCSImages {
 		StdImage.addLocation(GCSImages.class.getResource("images/")); //$NON-NLS-1$
 	}
 
+	public static final RetinaIcon getGCalcLogo() {
+		return new RetinaIcon("gcalc_logo");
+	}
+
 	/** @return The exotic type icon. */
 	public static final RetinaIcon getExoticTypeIcon() {
 		return new RetinaIcon("exotic_type");

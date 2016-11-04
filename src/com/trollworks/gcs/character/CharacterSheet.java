@@ -30,6 +30,7 @@ import com.trollworks.gcs.notes.NoteOutline;
 import com.trollworks.gcs.page.Page;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageOwner;
+import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.services.HttpMethodType;
 import com.trollworks.gcs.services.NotImplementedException;
@@ -1130,7 +1131,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 	@Override
 	public boolean exportToGurpsCalculator() throws IOException, NotImplementedException {
-		WebServiceClient client = new WebServiceClient(SheetPreferences.BASE_GURPS_CALCULATOR_URL);
+		WebServiceClient client = new WebServiceClient(OutputPreferences.BASE_GURPS_CALCULATOR_URL);
 		if (!showExistsDialogIfNecessary(client)) {
 			return false;
 		}
@@ -1146,7 +1147,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 					} catch (FileNotFoundException exception) {
 						exception.printStackTrace();
 					}
-					String key = SheetPreferences.getGurpsCalculatorKey();
+					String key = OutputPreferences.getGurpsCalculatorKey();
 					String path = String.format("api/SaveCharacter/%s/%s", mCharacter.getId(), key); //$NON-NLS-1$
 					String n = client.sendRequest(HttpMethodType.POST, path, null, result);
 					if (!n.equals("")) { //$NON-NLS-1$
@@ -1174,7 +1175,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	}
 
 	private boolean showExistsDialogIfNecessary(WebServiceClient client) throws MalformedURLException, IOException, NotImplementedException {
-		String key = SheetPreferences.getGurpsCalculatorKey();
+		String key = OutputPreferences.getGurpsCalculatorKey();
 		String path = String.format("api/GetCharacterExists/%s/%s", mCharacter.getId(), key); //$NON-NLS-1$
 		String response = client.sendRequest(HttpMethodType.GET, path);
 		if (response.equals("true")) { //$NON-NLS-1$
@@ -1206,9 +1207,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			StringBuilder keyBuffer = new StringBuilder();
 
 			if (template == null || !template.isFile() || !template.canRead()) {
-				template = new File(SheetPreferences.getHTMLTemplate());
+				template = new File(OutputPreferences.getHTMLTemplate());
 				if (!template.isFile() || !template.canRead()) {
-					template = new File(SheetPreferences.getDefaultHTMLTemplate());
+					template = new File(OutputPreferences.getDefaultHTMLTemplate());
 				}
 			}
 			if (templateUsed != null) {
@@ -2096,7 +2097,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	public boolean saveAsPNG(File file, ArrayList<File> createdFiles) {
 		HashSet<Row> changed = expandAllContainers();
 		try {
-			int dpi = SheetPreferences.getPNGResolution();
+			int dpi = OutputPreferences.getPNGResolution();
 			PrintManager settings = mCharacter.getPageSettings();
 			PageFormat format = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
 			Paper paper = format.getPaper();
@@ -2172,7 +2173,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
 	@Override
 	public void adjustToPageSetupChanges(boolean willPrint) {
-		SheetPreferences.setDefaultPageSettings(getPrintManager());
+		OutputPreferences.setDefaultPageSettings(getPrintManager());
 		if (willPrint) {
 			mSavedScale = mScale;
 			mScale = Scales.ACTUAL_SIZE.getScale();

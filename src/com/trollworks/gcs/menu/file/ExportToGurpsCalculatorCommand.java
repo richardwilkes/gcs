@@ -12,7 +12,7 @@
 package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.common.GurpsCalculatorExportable;
-import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.services.NotImplementedException;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
@@ -96,9 +96,9 @@ public class ExportToGurpsCalculatorCommand extends Command {
 		}
 		Component frame = getFocusOwner();
 		String message = result ? SUCCESS_MESSAGE : ERROR_MESSAGE;
-		String key = SheetPreferences.getGurpsCalculatorKey();
+		String key = OutputPreferences.getGurpsCalculatorKey();
 		if (key == null || !key.matches("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89ab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")) { //$NON-NLS-1$
-			message = String.format(KEY_MISSING_MESSAGE, SheetPreferences.GURPS_CALCULATOR_URL);
+			message = String.format(KEY_MISSING_MESSAGE, OutputPreferences.GURPS_CALCULATOR_URL);
 		}
 		JEditorPane messagePane = new JEditorPane("text/html", String.format("<html><body style='%s'>%s</body></html>", getStyle(), message)); //$NON-NLS-1$//$NON-NLS-2$
 		messagePane.setEditable(false);

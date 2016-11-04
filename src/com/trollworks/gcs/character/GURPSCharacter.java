@@ -30,6 +30,7 @@ import com.trollworks.gcs.feature.WeaponBonus;
 import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.notes.NoteList;
+import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillList;
@@ -426,7 +427,7 @@ public class GURPSCharacter extends DataFile {
 		mIncludeKick = true;
 		mIncludeKickBoots = true;
 		mCachedWeightCarried = new WeightValue(0, SheetPreferences.getWeightUnits());
-		mPageSettings = SheetPreferences.getDefaultPageSettings();
+		mPageSettings = OutputPreferences.getDefaultPageSettings();
 		mLastModified = System.currentTimeMillis();
 		mCreatedOn = mLastModified;
 		// This will force the long value to match the string value.
