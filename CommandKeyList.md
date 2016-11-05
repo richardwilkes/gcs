@@ -5,6 +5,8 @@
 | = | Increment (Skill/Spell Points, Advantage Level, Equipment Qty) |
 | ' | Rotate Equipment State |
 | , | Preferences |
+| [ | Decrement Tech Level |
+| ] | Increment Tech Level |
 | A | Select All |
 | B | New Spell |
 | C | Copy |

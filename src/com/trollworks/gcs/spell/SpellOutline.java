@@ -16,6 +16,7 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
+import com.trollworks.gcs.menu.edit.TechLevelIncrementable;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
@@ -27,6 +28,7 @@ import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.awt.EventQueue;
 import java.awt.dnd.DropTargetDragEvent;
@@ -34,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** An outline specifically for spells. */
-public class SpellOutline extends ListOutline implements Incrementable {
+public class SpellOutline extends ListOutline implements Incrementable, TechLevelIncrementable {
 	@Localize("Increment Points")
 	@Localize(locale = "de", value = "Punkte erhöhen")
 	@Localize(locale = "ru", value = "Увеличить очки")
@@ -115,15 +117,12 @@ public class SpellOutline extends ListOutline implements Incrementable {
 	@SuppressWarnings("unused")
 	@Override
 	public void decrement() {
-		ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
-
-		for (Spell spell : new FilteredIterator<Spell>(getModel().getSelectionAsList(), Spell.class)) {
+		List<RowUndo> undos = new ArrayList<RowUndo>();
+		for (Spell spell : new FilteredIterator<>(getModel().getSelectionAsList(), Spell.class)) {
 			if (!spell.canHaveChildren()) {
 				int points = spell.getPoints();
-
 				if (points > 0) {
 					RowUndo undo = new RowUndo(spell);
-
 					spell.setPoints(points - 1);
 					if (undo.finish()) {
 						undos.add(undo);
@@ -140,15 +139,92 @@ public class SpellOutline extends ListOutline implements Incrementable {
 	@SuppressWarnings("unused")
 	@Override
 	public void increment() {
-		ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
-
+		List<RowUndo> undos = new ArrayList<RowUndo>();
 		for (Spell spell : new FilteredIterator<Spell>(getModel().getSelectionAsList(), Spell.class)) {
 			if (!spell.canHaveChildren()) {
 				RowUndo undo = new RowUndo(spell);
-
 				spell.setPoints(spell.getPoints() + 1);
 				if (undo.finish()) {
 					undos.add(undo);
+				}
+			}
+		}
+		if (!undos.isEmpty()) {
+			repaintSelection();
+			new MultipleRowUndo(undos);
+		}
+	}
+
+	@Override
+	public boolean canIncrementTechLevel() {
+		return checkTechLevel(0);
+	}
+
+	@Override
+	public boolean canDecrementTechLevel() {
+		return checkTechLevel(1);
+	}
+
+	private boolean checkTechLevel(int minLevel) {
+		for (Spell spell : new FilteredIterator<>(getModel().getSelectionAsList(), Spell.class)) {
+			if (!spell.canHaveChildren() && getCurrentTechLevel(spell) >= minLevel) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static int getCurrentTechLevel(Spell spell) {
+		String tl = spell.getTechLevel();
+		if (tl != null) {
+			tl = tl.trim();
+			if (!tl.isEmpty()) {
+				for (int i = tl.length(); --i >= 0;) {
+					if (!Character.isDigit(tl.charAt(i))) {
+						return -1;
+					}
+				}
+				return Numbers.extractInteger(tl, -1, 0, Integer.MAX_VALUE, false);
+			}
+		}
+		return -1;
+	}
+
+	@SuppressWarnings("unused")
+	@Override
+	public void incrementTechLevel() {
+		List<RowUndo> undos = new ArrayList<>();
+		for (Spell spell : new FilteredIterator<>(getModel().getSelectionAsList(), Spell.class)) {
+			if (!spell.canHaveChildren()) {
+				int tl = getCurrentTechLevel(spell);
+				if (tl >= 0) {
+					RowUndo undo = new RowUndo(spell);
+					spell.setTechLevel(Integer.toString(tl + 1));
+					if (undo.finish()) {
+						undos.add(undo);
+					}
+				}
+			}
+		}
+		if (!undos.isEmpty()) {
+			repaintSelection();
+			new MultipleRowUndo(undos);
+		}
+	}
+
+	@SuppressWarnings("unused")
+	@Override
+	public void decrementTechLevel() {
+		List<RowUndo> undos = new ArrayList<>();
+		for (Spell spell : new FilteredIterator<>(getModel().getSelectionAsList(), Spell.class)) {
+			if (!spell.canHaveChildren()) {
+				int tl = getCurrentTechLevel(spell);
+				if (tl >= 1) {
+					RowUndo undo = new RowUndo(spell);
+					spell.setTechLevel(Integer.toString(tl - 1));
+					if (undo.finish()) {
+						undos.add(undo);
+					}
 				}
 			}
 		}

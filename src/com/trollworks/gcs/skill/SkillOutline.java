@@ -16,6 +16,7 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
+import com.trollworks.gcs.menu.edit.TechLevelIncrementable;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
@@ -27,6 +28,7 @@ import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.awt.EventQueue;
 import java.awt.dnd.DropTargetDragEvent;
@@ -34,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** An outline specifically for skills. */
-public class SkillOutline extends ListOutline implements Incrementable {
+public class SkillOutline extends ListOutline implements Incrementable, TechLevelIncrementable {
 	@Localize("Increment Points")
 	@Localize(locale = "de", value = "Punkte erhöhen")
 	@Localize(locale = "ru", value = "Увеличить очки")
@@ -115,8 +117,8 @@ public class SkillOutline extends ListOutline implements Incrementable {
 	@SuppressWarnings("unused")
 	@Override
 	public void decrement() {
-		ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
-		for (Skill skill : new FilteredIterator<Skill>(getModel().getSelectionAsList(), Skill.class)) {
+		List<RowUndo> undos = new ArrayList<>();
+		for (Skill skill : new FilteredIterator<>(getModel().getSelectionAsList(), Skill.class)) {
 			if (!skill.canHaveChildren()) {
 				int points = skill.getPoints();
 				if (points > 0) {
@@ -138,13 +140,92 @@ public class SkillOutline extends ListOutline implements Incrementable {
 	@SuppressWarnings("unused")
 	@Override
 	public void increment() {
-		ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
-		for (Skill skill : new FilteredIterator<Skill>(getModel().getSelectionAsList(), Skill.class)) {
+		List<RowUndo> undos = new ArrayList<>();
+		for (Skill skill : new FilteredIterator<>(getModel().getSelectionAsList(), Skill.class)) {
 			if (!skill.canHaveChildren()) {
 				RowUndo undo = new RowUndo(skill);
 				skill.setPoints(skill.getPoints() + 1);
 				if (undo.finish()) {
 					undos.add(undo);
+				}
+			}
+		}
+		if (!undos.isEmpty()) {
+			repaintSelection();
+			new MultipleRowUndo(undos);
+		}
+	}
+
+	@Override
+	public boolean canIncrementTechLevel() {
+		return checkTechLevel(0);
+	}
+
+	@Override
+	public boolean canDecrementTechLevel() {
+		return checkTechLevel(1);
+	}
+
+	private boolean checkTechLevel(int minLevel) {
+		for (Skill skill : new FilteredIterator<>(getModel().getSelectionAsList(), Skill.class)) {
+			if (!skill.canHaveChildren() && getCurrentTechLevel(skill) >= minLevel) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static int getCurrentTechLevel(Skill skill) {
+		String tl = skill.getTechLevel();
+		if (tl != null) {
+			tl = tl.trim();
+			if (!tl.isEmpty()) {
+				for (int i = tl.length(); --i >= 0;) {
+					if (!Character.isDigit(tl.charAt(i))) {
+						return -1;
+					}
+				}
+				return Numbers.extractInteger(tl, -1, 0, Integer.MAX_VALUE, false);
+			}
+		}
+		return -1;
+	}
+
+	@SuppressWarnings("unused")
+	@Override
+	public void incrementTechLevel() {
+		List<RowUndo> undos = new ArrayList<>();
+		for (Skill skill : new FilteredIterator<>(getModel().getSelectionAsList(), Skill.class)) {
+			if (!skill.canHaveChildren()) {
+				int tl = getCurrentTechLevel(skill);
+				if (tl >= 0) {
+					RowUndo undo = new RowUndo(skill);
+					skill.setTechLevel(Integer.toString(tl + 1));
+					if (undo.finish()) {
+						undos.add(undo);
+					}
+				}
+			}
+		}
+		if (!undos.isEmpty()) {
+			repaintSelection();
+			new MultipleRowUndo(undos);
+		}
+	}
+
+	@SuppressWarnings("unused")
+	@Override
+	public void decrementTechLevel() {
+		List<RowUndo> undos = new ArrayList<>();
+		for (Skill skill : new FilteredIterator<>(getModel().getSelectionAsList(), Skill.class)) {
+			if (!skill.canHaveChildren()) {
+				int tl = getCurrentTechLevel(skill);
+				if (tl >= 1) {
+					RowUndo undo = new RowUndo(skill);
+					skill.setTechLevel(Integer.toString(tl - 1));
+					if (undo.finish()) {
+						undos.add(undo);
+					}
 				}
 			}
 		}
@@ -260,5 +341,4 @@ public class SkillOutline extends ListOutline implements Incrementable {
 			EventQueue.invokeLater(new RowPostProcessor(this, process));
 		}
 	}
-
 }
