@@ -1130,6 +1130,13 @@ public class GURPSCharacter extends DataFile {
 	 * @return The basic thrusting damage.
 	 */
 	public static Dice getThrust(int strength) {
+		if (SheetPreferences.areOptionalStrengthRulesUsed()) {
+			if (strength < 12) {
+				return new Dice(1, strength - 12);
+			}
+			return new Dice((strength - 7) / 4, (strength + 1) % 4 - 1);
+		}
+
 		int value = strength;
 
 		if (value < 19) {
@@ -1156,6 +1163,13 @@ public class GURPSCharacter extends DataFile {
 	 * @return The basic thrusting damage.
 	 */
 	public static Dice getSwing(int strength) {
+		if (SheetPreferences.areOptionalStrengthRulesUsed()) {
+			if (strength < 10) {
+				return new Dice(1, strength - 10);
+			}
+			return new Dice((strength - 5) / 4, (strength - 1) % 4 - 1);
+		}
+
 		int value = strength;
 
 		if (value < 10) {
@@ -1186,21 +1200,34 @@ public class GURPSCharacter extends DataFile {
 	private WeightValue getBasicLift(WeightUnits desiredUnits) {
 		WeightUnits units;
 		double divisor;
+		double multiplier;
 		double roundAt;
 		if (SheetPreferences.areGurpsMetricRulesUsed() && SheetPreferences.getWeightUnits().isMetric()) {
 			units = WeightUnits.KG;
 			divisor = 10;
+			multiplier = 1;
 			roundAt = 5;
 		} else {
 			units = WeightUnits.LB;
 			divisor = 5;
+			multiplier = 2;
 			roundAt = 10;
 		}
 		int strength = getStrength() + mLiftingStrengthBonus;
-		double value = strength * strength / divisor;
-		if (value >= roundAt) {
-			value = Math.round(value);
+		double value;
+		if (strength < 1) {
+			value = 0;
+		} else {
+			if (SheetPreferences.areOptionalStrengthRulesUsed()) {
+				value = Math.pow(10.0, strength / 10.0) * multiplier;
+			} else {
+				value = strength * strength / divisor;
+			}
+			if (value >= roundAt) {
+				value = Math.round(value);
+			}
 		}
+		value = Math.floor(value * 10.0) / 10.0;
 		return new WeightValue(desiredUnits.convert(units, value), desiredUnits);
 	}
 
@@ -1247,7 +1274,7 @@ public class GURPSCharacter extends DataFile {
 	public WeightValue getMaximumCarry(Encumbrance encumbrance) {
 		WeightUnits calcUnits = SheetPreferences.areGurpsMetricRulesUsed() && SheetPreferences.getWeightUnits().isMetric() ? WeightUnits.KG : WeightUnits.LB;
 		WeightValue lift = getBasicLift(calcUnits);
-		lift.setValue(Math.floor(lift.getValue() * encumbrance.getWeightMultiplier() * 10.0) / 10.0);
+		lift.setValue(lift.getValue() * encumbrance.getWeightMultiplier());
 		WeightUnits desiredUnits = SheetPreferences.getWeightUnits();
 		return new WeightValue(desiredUnits.convert(calcUnits, lift.getValue()), desiredUnits);
 	}
