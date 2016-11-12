@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="i3ou2jf1:y7fabm9ypju8" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes">
+			<name>Chimera Halfling Meta-Trait</name>
+			<advantage version="2">
+				<name>Speak With Animals</name>
+				<type>Mental, Exotic</type>
+				<base_points>25</base_points>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B87</reference>
+					<notes>All aquatic animals</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B87</reference>
+					<notes>All land animals</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+					<reference>B87</reference>
+					<notes>@One class: Mammals, Birds, etc.@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-60</cost>
+					<affects>total</affects>
+					<reference>B87</reference>
+					<notes>Chimera Type</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Hawks</name>
+					<cost type="percentage">-80</cost>
+					<affects>total</affects>
+					<reference>B87</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Sapience</name>
+					<cost type="percentage">40</cost>
+					<affects>total</affects>
+					<reference>P77</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Universal</name>
+					<cost type="percentage">20</cost>
+					<affects>total</affects>
+					<reference>P77</reference>
+				</modifier>
+				<reference>B87</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Social Stigma (Minority Group)</name>
+				<type>Social</type>
+				<base_points>-10</base_points>
+				<reference>B155</reference>
+				<notes>-2 Reaction from others; +2 Reaction in own group</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Vulnerability</name>
+				<type>Physical, Exotic</type>
+				<modifier version="1" enabled="no">
+					<name>Silver and DN</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B161</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Occasional attack@</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B161</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Silver</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B161</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Very common attack@</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+					<reference>B161</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Wounding x2</name>
+					<cost type="multiplier">2</cost>
+					<reference>B161</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Wounding x3</name>
+					<cost type="multiplier">3</cost>
+					<reference>B161</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Wounding x4</name>
+					<cost type="multiplier">4</cost>
+					<reference>B161</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Fatigue Only</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+					<reference>B161</reference>
+				</modifier>
+				<reference>B161</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+		<advantage version="2">
+			<name>Distinctive Features</name>
+			<type>Physical</type>
+			<base_points>-1</base_points>
+			<reference>B165</reference>
+			<notes>All hair replaced by feathers.</notes>
+			<categories>
+				<category>Quirk</category>
+			</categories>
+			<skill_bonus>
+				<name compare="is">disguise</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">shadowing</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Acute Vision</name>
+			<type>Physical</type>
+			<levels>1</levels>
+			<points_per_level>2</points_per_level>
+			<reference>B35</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>vision</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Absolute Direction</name>
+			<type>Mental/Physical</type>
+			<base_points>5</base_points>
+			<modifier version="1" enabled="no">
+				<name>Requires signal</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B34</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>3D Spatial Sense</name>
+				<cost type="points">5</cost>
+				<affects>total</affects>
+				<reference>B34</reference>
+				<skill_bonus>
+					<name compare="starts with">piloting</name>
+					<specialization compare="is anything"></specialization>
+					<amount>1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">aerobatics</name>
+					<specialization compare="is anything"></specialization>
+					<amount>2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">free fall</name>
+					<specialization compare="is anything"></specialization>
+					<amount>2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">navigation</name>
+					<specialization compare="is">hyperspace</specialization>
+					<amount>2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">navigation</name>
+					<specialization compare="is">space</specialization>
+					<amount>2</amount>
+				</skill_bonus>
+			</modifier>
+			<reference>B34</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<skill_bonus>
+				<name compare="is">body sense</name>
+				<specialization compare="is anything"></specialization>
+				<amount>3</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">navigation</name>
+				<specialization compare="is">air</specialization>
+				<amount>3</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">navigation</name>
+				<specialization compare="is">land</specialization>
+				<amount>3</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">navigation</name>
+				<specialization compare="is">sea</specialization>
+				<amount>3</amount>
+			</skill_bonus>
+		</advantage>
+	</advantage_list>
+</template>

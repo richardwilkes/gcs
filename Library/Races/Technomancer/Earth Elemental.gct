@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="i3ovkukx:oq2f4l8tdtoo" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes">
+			<name>Elemental Meta-Trait</name>
+			<advantage version="2">
+				<name>Doesn't Breathe</name>
+				<type>Physical, Exotic</type>
+				<base_points>20</base_points>
+				<reference>B49</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Doesn't Eat or Drink</name>
+				<type>Physical, Exotic</type>
+				<base_points>10</base_points>
+				<reference>B50</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>High Pain Threshold</name>
+				<type>Physical</type>
+				<base_points>10</base_points>
+				<reference>B59</reference>
+				<notes>Never suffer shock penalties when injured; +3 on all HT rolls to avoid knockdown and stunning; +3 to resist torture</notes>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Unaging</name>
+				<type>Physical, Exotic</type>
+				<base_points>15</base_points>
+				<modifier version="1" enabled="no">
+					<name>Age Control</name>
+					<cost type="percentage">20</cost>
+					<affects>total</affects>
+					<reference>B95</reference>
+				</modifier>
+				<reference>B95</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Callous</name>
+				<type>Mental</type>
+				<base_points>-5</base_points>
+				<reference>B125</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+				<skill_bonus>
+					<name compare="is">psychology</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-3</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">teaching</name>
+					<specialization compare="is anything"></specialization>
+					<amount>-3</amount>
+				</skill_bonus>
+			</advantage>
+			<advantage version="2">
+				<name>Dependency (Mana)</name>
+				<type>Physical, Exotic</type>
+				<modifier version="1" enabled="no">
+					<name>Rarity: Rare</name>
+					<cost type="points">-30</cost>
+					<affects>total</affects>
+					<reference>B130</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Rarity: Occasional</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+					<reference>B130</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Rarity: Common</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B130</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Rarity: Very Common</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B130</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Illegal</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B130</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Frequency: Constantly</name>
+					<cost type="multiplier">5</cost>
+					<reference>B130</reference>
+					<notes>Lose 1 HP per minute without it</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Frequency: Hourly</name>
+					<cost type="multiplier">4</cost>
+					<reference>B130</reference>
+					<notes>Lose 1 HP per 10 minutes after missing a hourly dose</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Frequency: Daily</name>
+					<cost type="multiplier">3</cost>
+					<reference>B130</reference>
+					<notes>Lose 1 HP per hour after missing a daily dose</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Frequency: Weekly</name>
+					<cost type="multiplier">2</cost>
+					<reference>B130</reference>
+					<notes>Lose 1 HP per six hours after missing a weekly dose</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Frequency: Monthly</name>
+					<cost type="multiplier">1</cost>
+					<reference>B130</reference>
+					<notes>Lose 1 HP per day after missing a monthly dose</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Frequency: Seasonally</name>
+					<cost type="multiplier">0.33333</cost>
+					<reference>B130</reference>
+					<notes>Lose 1 HP per 3 days after missing a seasonal dose</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Frequency: Yearly</name>
+					<cost type="multiplier">0.1</cost>
+					<reference>B130</reference>
+					<notes>Lose 1 HP per 2 weeks after missing a yearly dose</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Aging</name>
+					<cost type="percentage">30</cost>
+					<affects>total</affects>
+					<reference>B130</reference>
+					<notes>Age 2 years for each HP lost due to this dependency</notes>
+				</modifier>
+				<reference>B130</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Fragile (Unnatural)</name>
+				<type>Physical, Exotic</type>
+				<base_points>-50</base_points>
+				<reference>B137</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Social Stigma (Uneducated)</name>
+				<type>Social</type>
+				<base_points>-5</base_points>
+				<reference>B156</reference>
+				<notes>-1 Reaction</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Status -</name>
+				<type>Social</type>
+				<levels>3</levels>
+				<points_per_level>-5</points_per_level>
+				<reference>B28</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+		<advantage_container version="2" open="yes" type="metatrait">
+			<name>Meta-Trait: Body of Earth</name>
+			<reference>B262</reference>
+			<advantage version="2">
+				<name>Damage Resistance</name>
+				<type>Physical, Exotic</type>
+				<levels>2</levels>
+				<points_per_level>5</points_per_level>
+				<reference>B47</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Invertebrate</name>
+				<type>Physical, Exotic</type>
+				<base_points>-20</base_points>
+				<reference>B140</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Pressure Support 3 (Immune to high pressure)</name>
+				<type>Physical, Exotic</type>
+				<base_points>15</base_points>
+				<reference>B77</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Resistant (Immunity to Metabolic Hazards)</name>
+				<type>Physical</type>
+				<base_points>30</base_points>
+				<reference>B81</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Sealed</name>
+				<type>Physical, Exotic</type>
+				<base_points>15</base_points>
+				<reference>B82</reference>
+			</advantage>
+			<advantage version="2">
+				<name>Vacuum Support</name>
+				<type>Physical, Exotic</type>
+				<base_points>5</base_points>
+				<reference>B96</reference>
+			</advantage>
+		</advantage_container>
+		<advantage version="2">
+			<name>Social Stigma (Valuable Property)</name>
+			<type>Social</type>
+			<base_points>-10</base_points>
+			<reference>B156</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Sensitive Touch</name>
+			<type>Physical, Exotic</type>
+			<base_points>10</base_points>
+			<modifier version="1" enabled="no">
+				<name>Stethoscopic</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>P73</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Ultra-Fine</name>
+				<cost type="percentage">30</cost>
+				<affects>total</affects>
+				<reference>P73</reference>
+			</modifier>
+			<modifier version="1">
+				<name>Vibrations Only</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+			</modifier>
+			<reference>B83</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Tunneling ()</name>
+			<type>Physical, Exotic</type>
+			<levels>2</levels>
+			<base_points>30</base_points>
+			<points_per_level>5</points_per_level>
+			<modifier version="1" enabled="no">
+				<name>Hands Free</name>
+				<cost type="percentage">20</cost>
+				<affects>total</affects>
+				<reference>P86</reference>
+			</modifier>
+			<reference>B94</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Fearlessness</name>
+			<type>Mental</type>
+			<levels>5</levels>
+			<points_per_level>2</points_per_level>
+			<reference>B55</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Injury Tolerance (Homogenous)</name>
+			<type>Physical, Exotic</type>
+			<base_points>40</base_points>
+			<reference>B60</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Dependency (Contact with ground)</name>
+			<type>Physical, Exotic</type>
+			<modifier version="1" enabled="no">
+				<name>Rarity: Rare</name>
+				<cost type="points">-30</cost>
+				<affects>total</affects>
+				<reference>B130</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Rarity: Occasional</name>
+				<cost type="points">-20</cost>
+				<affects>total</affects>
+				<reference>B130</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Rarity: Common</name>
+				<cost type="points">-10</cost>
+				<affects>total</affects>
+				<reference>B130</reference>
+			</modifier>
+			<modifier version="1">
+				<name>Rarity: Very Common</name>
+				<cost type="points">-5</cost>
+				<affects>total</affects>
+				<reference>B130</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Illegal</name>
+				<cost type="points">-5</cost>
+				<affects>total</affects>
+				<reference>B130</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Frequency: Constantly</name>
+				<cost type="multiplier">5</cost>
+				<reference>B130</reference>
+				<notes>Lose 1 HP per minute without it</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Frequency: Hourly</name>
+				<cost type="multiplier">4</cost>
+				<reference>B130</reference>
+				<notes>Lose 1 HP per 10 minutes after missing a hourly dose</notes>
+			</modifier>
+			<modifier version="1">
+				<name>Frequency: Daily</name>
+				<cost type="multiplier">3</cost>
+				<reference>B130</reference>
+				<notes>Lose 1 HP per hour after missing a daily dose</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Frequency: Weekly</name>
+				<cost type="multiplier">2</cost>
+				<reference>B130</reference>
+				<notes>Lose 1 HP per six hours after missing a weekly dose</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Frequency: Monthly</name>
+				<cost type="multiplier">1</cost>
+				<reference>B130</reference>
+				<notes>Lose 1 HP per day after missing a monthly dose</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Frequency: Seasonally</name>
+				<cost type="multiplier">0.33333</cost>
+				<reference>B130</reference>
+				<notes>Lose 1 HP per 3 days after missing a seasonal dose</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Frequency: Yearly</name>
+				<cost type="multiplier">0.1</cost>
+				<reference>B130</reference>
+				<notes>Lose 1 HP per 2 weeks after missing a yearly dose</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Aging</name>
+				<cost type="percentage">30</cost>
+				<affects>total</affects>
+				<reference>B130</reference>
+				<notes>Age 2 years for each HP lost due to this dependency</notes>
+			</modifier>
+			<reference>B130</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Intolerance (All)</name>
+			<type>Mental</type>
+			<modifier version="1" enabled="no">
+				<name>Scope: Common</name>
+				<cost type="points">-5</cost>
+				<affects>total</affects>
+				<reference>B140</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Scope: Occassional</name>
+				<cost type="points">-2</cost>
+				<affects>total</affects>
+				<reference>B140</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Scope: Rare</name>
+				<cost type="points">-1</cost>
+				<affects>total</affects>
+				<reference>B140</reference>
+			</modifier>
+			<modifier version="1">
+				<name>Scope: Anyone unlike you</name>
+				<cost type="points">-10</cost>
+				<affects>total</affects>
+				<reference>B140</reference>
+			</modifier>
+			<reference>B140</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Oblivious</name>
+			<type>Mental</type>
+			<base_points>-5</base_points>
+			<reference>B146</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+			<skill_bonus>
+				<name compare="is">diplomacy</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">fast-talk</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">intimidation</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="starts with">savoir-faire</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">sex appeal</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">streetwise</name>
+				<specialization compare="is anything"></specialization>
+				<amount>-1</amount>
+			</skill_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Stubbornness</name>
+			<type>Mental</type>
+			<base_points>-5</base_points>
+			<reference>B157</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+	</advantage_list>
+</template>

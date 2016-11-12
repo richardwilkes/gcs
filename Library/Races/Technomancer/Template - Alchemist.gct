@@ -1,0 +1,1271 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="i3qc2j0m:-1i9fpuq9wns50" version="1">
+	<advantage_list>
+		<advantage_container version="2" open="yes">
+			<name>Alchemist</name>
+			<advantage_container version="2" open="yes">
+				<name>Attributes</name>
+				<advantage version="2">
+					<name>Increased Intelligence</name>
+					<type>Mental</type>
+					<levels>4</levels>
+					<points_per_level>20</points_per_level>
+					<reference>B15</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>iq</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+			</advantage_container>
+			<advantage_container version="2" open="yes">
+				<name>Secondary Characteristics</name>
+			</advantage_container>
+			<advantage_container version="2" open="yes">
+				<name>Class Advantages</name>
+				<advantage_container version="2" open="yes">
+					<name>30 points from</name>
+					<advantage version="2">
+						<name>Acute Taste &amp; Smell</name>
+						<type>Physical</type>
+						<levels>1</levels>
+						<points_per_level>2</points_per_level>
+						<reference>B35</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>taste_smell</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Contact (Street)</name>
+						<type>Social</type>
+						<modifier version="1" enabled="no">
+							<name>Effective skill</name>
+							<cost type="points">1</cost>
+							<affects>total</affects>
+							<notes>12</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Effective skill</name>
+							<cost type="points">2</cost>
+							<affects>total</affects>
+							<notes>15</notes>
+						</modifier>
+						<modifier version="1">
+							<name>Effective skill</name>
+							<cost type="points">3</cost>
+							<affects>total</affects>
+							<notes>18</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Effective skill</name>
+							<cost type="points">4</cost>
+							<affects>total</affects>
+							<notes>21</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Can obtain information using supernatural talents</name>
+							<cost type="points">1</cost>
+							<affects>total</affects>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Group</name>
+							<cost type="multiplier">5</cost>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Appears almost all the time</name>
+							<cost type="multiplier">3</cost>
+							<notes>15-</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Appears quite often</name>
+							<cost type="multiplier">2</cost>
+							<notes>12-</notes>
+						</modifier>
+						<modifier version="1">
+							<name>Appears fairly often</name>
+							<cost type="multiplier">1</cost>
+							<notes>9-</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Appears quite rarely</name>
+							<cost type="multiplier">0.5</cost>
+							<notes>6-</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Completely reliable</name>
+							<cost type="multiplier">3</cost>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Usually reliable</name>
+							<cost type="multiplier">2</cost>
+						</modifier>
+						<modifier version="1">
+							<name>Somewhat reliable</name>
+							<cost type="multiplier">1</cost>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Unreliable</name>
+							<cost type="multiplier">0.5</cost>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Favor</name>
+							<cost type="multiplier">0.2</cost>
+							<reference>B55</reference>
+						</modifier>
+						<reference>B44</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Magic Resistance</name>
+						<type>Physical</type>
+						<levels>1</levels>
+						<points_per_level>2</points_per_level>
+						<modifier version="1" enabled="no">
+							<name>Improved</name>
+							<cost type="percentage">150</cost>
+							<affects>total</affects>
+							<reference>B67</reference>
+						</modifier>
+						<reference>B67</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Patron</name>
+						<type>Social</type>
+						<modifier version="1" enabled="no">
+							<name>@Who: Individual with 150% of PC's starting points@</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Who: Organization with assets of at least 1000 times starting wealth@</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Who: Individual with twice the PC's starting points@</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Who: Organization with assets of at least 10000 times starting wealth@</name>
+							<cost type="points">15</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Who: An ultra-powerful individual@</name>
+							<cost type="points">20</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Alchemical Corporation</name>
+							<cost type="points">20</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Who: Organization with assets of at least 1000000 times starting wealth@</name>
+							<cost type="points">25</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Who: A national government or giant multi-national organization@</name>
+							<cost type="points">30</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Who: A diety@</name>
+							<cost type="points">30</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Appears almost all the time</name>
+							<cost type="multiplier">3</cost>
+							<reference>B36</reference>
+							<notes>15-</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Appears quite often</name>
+							<cost type="multiplier">2</cost>
+							<reference>B36</reference>
+							<notes>12-</notes>
+						</modifier>
+						<modifier version="1">
+							<name>Appears fairly often</name>
+							<cost type="multiplier">1</cost>
+							<reference>B36</reference>
+							<notes>9-</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Appears quite rarely</name>
+							<cost type="multiplier">0.5</cost>
+							<reference>B36</reference>
+							<notes>6-</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Equipment</name>
+							<cost type="percentage">50</cost>
+							<affects>total</affects>
+							<reference>B73</reference>
+							<notes>@Equipment worth no more than average starting wealth@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Equipment</name>
+							<cost type="percentage">100</cost>
+							<affects>total</affects>
+							<reference>B73</reference>
+							<notes>@Equipment worth more than average starting wealth@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Highly Accessible</name>
+							<cost type="percentage">50</cost>
+							<affects>total</affects>
+							<reference>B73</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Special Abilities</name>
+							<cost type="percentage">50</cost>
+							<affects>total</affects>
+							<reference>B73</reference>
+							<notes>@Extensive social or political power@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Special Abilities</name>
+							<cost type="percentage">100</cost>
+							<affects>total</affects>
+							<reference>B73</reference>
+							<notes>@Magical powers in a non-magical world, higher TL equipment, grants special powers or is supernatural@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Minimal Interventions</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B73</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Secret</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B73</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Unwilling</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B74</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Favor</name>
+							<cost type="multiplier">0.2</cost>
+							<reference>B55</reference>
+						</modifier>
+						<reference>B72</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Patron</name>
+						<type>Social</type>
+						<modifier version="1" enabled="no">
+							<name>@Who: Individual with 150% of PC's starting points@</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Who: Organization with assets of at least 1000 times starting wealth@</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Who: Individual with twice the PC's starting points@</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Who: Organization with assets of at least 10000 times starting wealth@</name>
+							<cost type="points">15</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Who: An ultra-powerful individual@</name>
+							<cost type="points">20</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Alchemical Corporation</name>
+							<cost type="points">20</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Who: Organization with assets of at least 1000000 times starting wealth@</name>
+							<cost type="points">25</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Who: A national government or giant multi-national organization@</name>
+							<cost type="points">30</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Who: A diety@</name>
+							<cost type="points">30</cost>
+							<affects>total</affects>
+							<reference>B72</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Appears almost all the time</name>
+							<cost type="multiplier">3</cost>
+							<reference>B36</reference>
+							<notes>15-</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Appears quite often</name>
+							<cost type="multiplier">2</cost>
+							<reference>B36</reference>
+							<notes>12-</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Appears fairly often</name>
+							<cost type="multiplier">1</cost>
+							<reference>B36</reference>
+							<notes>9-</notes>
+						</modifier>
+						<modifier version="1">
+							<name>Appears quite rarely</name>
+							<cost type="multiplier">0.5</cost>
+							<reference>B36</reference>
+							<notes>6-</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Equipment</name>
+							<cost type="percentage">50</cost>
+							<affects>total</affects>
+							<reference>B73</reference>
+							<notes>@Equipment worth no more than average starting wealth@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Equipment</name>
+							<cost type="percentage">100</cost>
+							<affects>total</affects>
+							<reference>B73</reference>
+							<notes>@Equipment worth more than average starting wealth@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Highly Accessible</name>
+							<cost type="percentage">50</cost>
+							<affects>total</affects>
+							<reference>B73</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Special Abilities</name>
+							<cost type="percentage">50</cost>
+							<affects>total</affects>
+							<reference>B73</reference>
+							<notes>@Extensive social or political power@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Special Abilities</name>
+							<cost type="percentage">100</cost>
+							<affects>total</affects>
+							<reference>B73</reference>
+							<notes>@Magical powers in a non-magical world, higher TL equipment, grants special powers or is supernatural@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Minimal Interventions</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B73</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Secret</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B73</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Unwilling</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B74</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Favor</name>
+							<cost type="multiplier">0.2</cost>
+							<reference>B55</reference>
+						</modifier>
+						<reference>B72</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Resistant</name>
+						<type>Physical</type>
+						<modifier version="1" enabled="no">
+							<name>@Very Common: Metabolic Hazards, etc.@</name>
+							<cost type="points">30</cost>
+							<affects>total</affects>
+							<reference>B80</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Poison</name>
+							<cost type="points">15</cost>
+							<affects>total</affects>
+							<reference>B81</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Occasional: Disease, Ingested Poison, etc.@</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B81</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.@</name>
+							<cost type="points">5</cost>
+							<affects>total</affects>
+							<reference>B81</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Immunity</name>
+							<cost type="multiplier">1</cost>
+							<reference>B81</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>+8 to all HT rolls to resist</name>
+							<cost type="multiplier">0.5</cost>
+							<reference>B81</reference>
+						</modifier>
+						<modifier version="1">
+							<name>+3 to all HT rolls to resist</name>
+							<cost type="multiplier">0.33</cost>
+							<reference>B81</reference>
+						</modifier>
+						<reference>B81</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Security Clearance</name>
+						<type>Social</type>
+						<modifier version="1">
+							<name>Narrow Clearance on a "Need to Know" Basis</name>
+							<cost type="points">5</cost>
+							<affects>total</affects>
+							<reference>B82</reference>
+							<notes>Alchemical Formulae</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Narrow Clearance with Free Access</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B82</reference>
+							<notes>@What@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Broad Clearance on a "Need to Know" Basis</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B82</reference>
+							<notes>@What@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Broad Clearance with Free Access</name>
+							<cost type="points">15</cost>
+							<affects>total</affects>
+							<reference>B82</reference>
+							<notes>@What@</notes>
+						</modifier>
+						<modifier version="1">
+							<name>Minor Importance</name>
+							<cost type="multiplier">0.5</cost>
+							<reference>B83</reference>
+						</modifier>
+						<reference>B82</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth</name>
+						<type>Social</type>
+						<modifier version="1" enabled="no">
+							<name>Dead Broke</name>
+							<cost type="points">-25</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is $0</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Poor</name>
+							<cost type="points">-15</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 1/5 average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Struggling</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 1/2 average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Average</name>
+							<cost type="points">0</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Comfortable</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 2x average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Wealthy</name>
+							<cost type="points">20</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 5x average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Very Wealthy</name>
+							<cost type="points">30</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 20x average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Filthy Rich</name>
+							<cost type="points">50</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 100x average</notes>
+						</modifier>
+						<reference>B25</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth</name>
+						<type>Social</type>
+						<modifier version="1" enabled="no">
+							<name>Dead Broke</name>
+							<cost type="points">-25</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is $0</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Poor</name>
+							<cost type="points">-15</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 1/5 average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Struggling</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 1/2 average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Average</name>
+							<cost type="points">0</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Comfortable</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 2x average</notes>
+						</modifier>
+						<modifier version="1">
+							<name>Wealthy</name>
+							<cost type="points">20</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 5x average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Very Wealthy</name>
+							<cost type="points">30</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 20x average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Filthy Rich</name>
+							<cost type="points">50</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 100x average</notes>
+						</modifier>
+						<reference>B25</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+				</advantage_container>
+			</advantage_container>
+			<advantage_container version="2" open="yes">
+				<name>Class Disadvantages</name>
+				<advantage_container version="2" open="yes">
+					<name>-30 points from</name>
+					<advantage version="2">
+						<name>Absent-Mindedness</name>
+						<type>Mental</type>
+						<base_points>-15</base_points>
+						<reference>B122</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Bad Smell</name>
+						<type>Physical</type>
+						<base_points>-10</base_points>
+						<reference>B128</reference>
+						<notes>-2 Reaction penalty</notes>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Callous</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<reference>B125</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">psychology</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">teaching</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-3</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Curious</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<cr>12</cr>
+						<reference>B129</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Duty (Company)</name>
+						<type>Social</type>
+						<modifier version="1" enabled="no">
+							<name>FR: 6</name>
+							<cost type="points">-2</cost>
+							<affects>total</affects>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>FR: 9</name>
+							<cost type="points">-5</cost>
+							<affects>total</affects>
+						</modifier>
+						<modifier version="1">
+							<name>FR: 12</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>FR: 15</name>
+							<cost type="points">-15</cost>
+							<affects>total</affects>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Extremely Hazardous</name>
+							<cost type="points">-5</cost>
+							<affects>total</affects>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Involuntary</name>
+							<cost type="points">-5</cost>
+							<affects>total</affects>
+						</modifier>
+						<modifier version="1">
+							<name>Nonhazardous</name>
+							<cost type="points">5</cost>
+							<affects>total</affects>
+						</modifier>
+						<reference>B133</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Greed</name>
+						<type>Mental</type>
+						<base_points>-15</base_points>
+						<cr>12</cr>
+						<reference>B137</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Hard of Hearing</name>
+						<type>Physical</type>
+						<base_points>-10</base_points>
+						<reference>B138</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>hearing</attribute>
+							<amount>-4</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Reputation</name>
+						<type>Social</type>
+						<levels>1</levels>
+						<points_per_level>-5</points_per_level>
+						<modifier version="1" enabled="no">
+							<name>People Affected</name>
+							<cost type="multiplier">1</cost>
+							<reference>B27</reference>
+							<notes>Almost everyone</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Affected</name>
+							<cost type="multiplier">0.67</cost>
+							<reference>B27</reference>
+							<notes>Almost everyone except @large class of people@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Affected</name>
+							<cost type="multiplier">0.5</cost>
+							<reference>B27</reference>
+							<notes>@Large class of people@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>People Affected</name>
+							<cost type="multiplier">0.33</cost>
+							<reference>B27</reference>
+							<notes>@Small class of people@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Recognized all the time</name>
+							<cost type="multiplier">1</cost>
+							<reference>B28</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Recognized sometimes</name>
+							<cost type="multiplier">0.5</cost>
+							<reference>B28</reference>
+							<notes>10-</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Recognized occasionally</name>
+							<cost type="multiplier">0.33</cost>
+							<reference>B28</reference>
+							<notes>7-</notes>
+						</modifier>
+						<reference>B26</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Selfish</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<cr>12</cr>
+						<reference>B153</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Stubbornness</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<reference>B157</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Enemy (Drug and Alchemy Enforcment Agency)</name>
+						<type>Social</type>
+						<modifier version="1" enabled="no">
+							<name>Weak Individual</name>
+							<cost type="points">-5</cost>
+							<affects>total</affects>
+							<reference>B135</reference>
+							<notes>50% of your starting points</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Equal Individual</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B135</reference>
+							<notes>100% of your starting points</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Powerful Individual</name>
+							<cost type="points">-20</cost>
+							<affects>total</affects>
+							<reference>B135</reference>
+							<notes>&gt;150% of your starting points</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Weak Group</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B135</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Medium Group</name>
+							<cost type="points">-20</cost>
+							<affects>total</affects>
+							<reference>B135</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Appears almost all the time</name>
+							<cost type="multiplier">3</cost>
+							<reference>B36</reference>
+							<notes>15-</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Appears quite often</name>
+							<cost type="multiplier">2</cost>
+							<reference>B36</reference>
+							<notes>12-</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Appears fairly often</name>
+							<cost type="multiplier">1</cost>
+							<reference>B36</reference>
+							<notes>9-</notes>
+						</modifier>
+						<modifier version="1">
+							<name>Appears quite rarely</name>
+							<cost type="multiplier">0.5</cost>
+							<reference>B36</reference>
+							<notes>6-</notes>
+						</modifier>
+						<modifier version="1">
+							<name>Large/Powerful Group</name>
+							<cost type="points">-30</cost>
+							<affects>total</affects>
+							<reference>B135</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Utterly Formidible Group</name>
+							<cost type="points">-40</cost>
+							<affects>total</affects>
+							<reference>B135</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Unknown</name>
+							<cost type="points">-5</cost>
+							<affects>total</affects>
+							<reference>B135</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Evil Twin</name>
+							<cost type="points">0</cost>
+							<affects>total</affects>
+							<reference>B135</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Evil Twin</name>
+							<cost type="points">-5</cost>
+							<affects>total</affects>
+							<reference>B135</reference>
+							<notes>More skilled or extra abilities</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Evil Twin</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B135</reference>
+							<notes>More skilled and extra abilities</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Watcher</name>
+							<cost type="multiplier">0.25</cost>
+							<reference>B135</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Rival</name>
+							<cost type="multiplier">0.5</cost>
+							<reference>B135</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Hunter</name>
+							<cost type="multiplier">1</cost>
+							<reference>B135</reference>
+						</modifier>
+						<reference>B135</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+				</advantage_container>
+			</advantage_container>
+		</advantage_container>
+	</advantage_list>
+	<skill_list>
+		<skill_container version="2" open="yes">
+			<name>Alchemist</name>
+			<skill_container version="2" open="yes">
+				<name>Secondary</name>
+				<skill_container version="2" open="yes">
+					<name>Any four of</name>
+					<skill version="2">
+						<name>Computer Operation</name>
+						<tech_level/>
+						<difficulty>IQ/E</difficulty>
+						<points>2</points>
+						<reference>B184</reference>
+						<categories>
+							<category>Everyman</category>
+							<category>Scholarly</category>
+							<category>Technical</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-4</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Merchant</name>
+						<difficulty>IQ/A</difficulty>
+						<points>2</points>
+						<reference>B209</reference>
+						<categories>
+							<category>Business</category>
+							<category>Social</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-5</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Finance</name>
+							<modifier>-6</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Market Analysis</name>
+							<modifier>-4</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Research</name>
+						<tech_level/>
+						<difficulty>IQ/A</difficulty>
+						<points>2</points>
+						<reference>B217</reference>
+						<categories>
+							<category>Scholarly</category>
+							<category>Spy</category>
+						</categories>
+						<prereq_list all="yes">
+							<prereq_list all="yes">
+								<when_tl compare="at_least">8</when_tl>
+								<skill_prereq has="yes">
+									<name compare="is">Computer Operation</name>
+									<specialization compare="is anything"></specialization>
+								</skill_prereq>
+							</prereq_list>
+							<prereq_list all="no">
+								<advantage_prereq has="yes">
+									<name compare="starts with">Language</name>
+									<notes compare="contains">Written (Native</notes>
+								</advantage_prereq>
+								<advantage_prereq has="yes">
+									<name compare="starts with">Language</name>
+									<notes compare="contains">Written (Accented)</notes>
+								</advantage_prereq>
+								<advantage_prereq has="yes">
+									<name compare="starts with">Language</name>
+									<notes compare="contains">Written (Broken)</notes>
+								</advantage_prereq>
+							</prereq_list>
+						</prereq_list>
+						<default>
+							<type>IQ</type>
+							<modifier>-5</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Writing</name>
+							<modifier>-3</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Biology</name>
+						<specialization>Botany</specialization>
+						<tech_level/>
+						<difficulty>IQ/VH</difficulty>
+						<points>2</points>
+						<reference>B180</reference>
+						<categories>
+							<category>Natural Science</category>
+							<category>Plant</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-6</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Naturalist</name>
+							<modifier>-6</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Poisons</name>
+						<tech_level/>
+						<difficulty>IQ/H</difficulty>
+						<points>2</points>
+						<reference>B214</reference>
+						<categories>
+							<category>Criminal/Street</category>
+							<category>Medical</category>
+							<category>Spy</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-6</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Chemistry</name>
+							<modifier>-5</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Pharmacy</name>
+							<modifier>-3</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Physician</name>
+							<modifier>-3</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Biology</name>
+						<specialization>Biochemistry</specialization>
+						<tech_level/>
+						<difficulty>IQ/VH</difficulty>
+						<points>2</points>
+						<reference>B180</reference>
+						<categories>
+							<category>Natural Science</category>
+							<category>Plant</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-6</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Naturalist</name>
+							<modifier>-6</modifier>
+						</default>
+					</skill>
+				</skill_container>
+			</skill_container>
+			<skill_container version="2" open="yes">
+				<name>Primary</name>
+				<skill version="2">
+					<name>Alchemy</name>
+					<tech_level/>
+					<difficulty>IQ/VH</difficulty>
+					<points>16</points>
+					<reference>B174</reference>
+					<categories>
+						<category>Natural Science</category>
+						<category>Occult/Magical</category>
+					</categories>
+				</skill>
+				<skill version="2">
+					<name>Chemistry or Pharmacy</name>
+					<tech_level/>
+					<difficulty>IQ/H</difficulty>
+					<points>8</points>
+					<reference>B183</reference>
+					<categories>
+						<category>Natural Science</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-6</modifier>
+					</default>
+					<default>
+						<type>Skill</type>
+						<name>Alchemy</name>
+						<modifier>-3</modifier>
+					</default>
+				</skill>
+			</skill_container>
+			<skill_container version="2" open="yes">
+				<name>Background</name>
+				<skill_container version="2" open="yes">
+					<name>5 points in any of</name>
+					<skill version="2">
+						<name>Cooking</name>
+						<difficulty>IQ/A</difficulty>
+						<points>1</points>
+						<reference>B185</reference>
+						<categories>
+							<category>Everyman</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-5</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Housekeeping</name>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Administration</name>
+						<difficulty>IQ/A</difficulty>
+						<points>1</points>
+						<reference>B174</reference>
+						<categories>
+							<category>Business</category>
+							<category>Social</category>
+						</categories>
+						<default>
+							<type>Skill</type>
+							<name>Merchant</name>
+							<modifier>-3</modifier>
+						</default>
+						<default>
+							<type>IQ</type>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Teaching</name>
+						<difficulty>IQ/A</difficulty>
+						<points>1</points>
+						<reference>B224</reference>
+						<categories>
+							<category>Scholarly</category>
+							<category>Social</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Thaumatology</name>
+						<difficulty>IQ/VH</difficulty>
+						<points>1</points>
+						<reference>B225</reference>
+						<categories>
+							<category>Occult/Magical</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-7</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Writing</name>
+						<difficulty>IQ/A</difficulty>
+						<points>1</points>
+						<reference>B228</reference>
+						<categories>
+							<category>Arts/Entertainment</category>
+							<category>Scholarly</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Driving</name>
+						<specialization>Any</specialization>
+						<tech_level/>
+						<difficulty>DX/A</difficulty>
+						<points>1</points>
+						<reference>B188</reference>
+						<categories>
+							<category>Vehicle</category>
+						</categories>
+						<default>
+							<type>DX</type>
+							<modifier>-5</modifier>
+						</default>
+						<default>
+							<type>IQ</type>
+							<modifier>-5</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Driving</name>
+							<specialization>Heavy Wheeled</specialization>
+							<modifier>-2</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Driving</name>
+							<modifier>-4</modifier>
+						</default>
+					</skill>
+				</skill_container>
+			</skill_container>
+		</skill_container>
+	</skill_list>
+</template>

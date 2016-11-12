@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template unique_id="i3otd2si:1izf9pfvo25xy" version="1">
+	<advantage_list>
+		<advantage version="2">
+			<name>Fewer Hit Points</name>
+			<type>Physical</type>
+			<levels>2</levels>
+			<points_per_level>-2</points_per_level>
+			<reference>B16</reference>
+			<categories>
+				<category>Attribute</category>
+				<category>Disadvantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>hp</attribute>
+				<amount per_level="yes">-1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Reduced Basic Move</name>
+			<type>Physical</type>
+			<levels>2</levels>
+			<points_per_level>-5</points_per_level>
+			<reference>B17</reference>
+			<categories>
+				<category>Advantage</category>
+				<category>Attribute</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>move</attribute>
+				<amount per_level="yes">-1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Absolute Direction</name>
+			<type>Mental/Physical</type>
+			<base_points>5</base_points>
+			<modifier version="1" enabled="no">
+				<name>Requires signal</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B34</reference>
+			</modifier>
+			<modifier version="1">
+				<name>3D Spatial Sense</name>
+				<cost type="points">5</cost>
+				<affects>total</affects>
+				<reference>B34</reference>
+				<skill_bonus>
+					<name compare="starts with">piloting</name>
+					<specialization compare="is anything"></specialization>
+					<amount>1</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">aerobatics</name>
+					<specialization compare="is anything"></specialization>
+					<amount>2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">free fall</name>
+					<specialization compare="is anything"></specialization>
+					<amount>2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">navigation</name>
+					<specialization compare="is">hyperspace</specialization>
+					<amount>2</amount>
+				</skill_bonus>
+				<skill_bonus>
+					<name compare="is">navigation</name>
+					<specialization compare="is">space</specialization>
+					<amount>2</amount>
+				</skill_bonus>
+			</modifier>
+			<reference>B34</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<skill_bonus>
+				<name compare="is">body sense</name>
+				<specialization compare="is anything"></specialization>
+				<amount>3</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">navigation</name>
+				<specialization compare="is">air</specialization>
+				<amount>3</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">navigation</name>
+				<specialization compare="is">land</specialization>
+				<amount>3</amount>
+			</skill_bonus>
+			<skill_bonus>
+				<name compare="is">navigation</name>
+				<specialization compare="is">sea</specialization>
+				<amount>3</amount>
+			</skill_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Acute Vision</name>
+			<type>Physical</type>
+			<levels>3</levels>
+			<points_per_level>2</points_per_level>
+			<reference>B35</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+			<attribute_bonus>
+				<attribute>vision</attribute>
+				<amount per_level="yes">1</amount>
+			</attribute_bonus>
+		</advantage>
+		<advantage version="2">
+			<name>Claws, Talons (Feet)</name>
+			<type>Physical</type>
+			<base_points>8</base_points>
+			<melee_weapon>
+				<damage>thr cut</damage>
+				<usage>Trample</usage>
+				<reach>C,1</reach>
+				<parry>No</parry>
+				<block>No</block>
+				<default>
+					<type>DX</type>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Brawling</name>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Karate</name>
+					<modifier>-2</modifier>
+				</default>
+			</melee_weapon>
+			<melee_weapon>
+				<damage>thr imp</damage>
+				<usage>Kick</usage>
+				<reach>C,1</reach>
+				<parry>No</parry>
+				<block>No</block>
+				<default>
+					<type>DX</type>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Brawling</name>
+					<modifier>-2</modifier>
+				</default>
+				<default>
+					<type>Skill</type>
+					<name>Karate</name>
+					<modifier>-2</modifier>
+				</default>
+			</melee_weapon>
+			<reference>B43</reference>
+			<notes>Only pay for hands or feet, not both</notes>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Flight</name>
+			<type>Physical, Exotic</type>
+			<base_points>40</base_points>
+			<modifier version="1" enabled="no">
+				<name>Newtonian Space Flight</name>
+				<cost type="percentage">25</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Space Flight</name>
+				<cost type="percentage">50</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Cannot Hover</name>
+				<cost type="percentage">-15</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Controlled Gliding</name>
+				<cost type="percentage">-45</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Gliding</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Lighter Than Air</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Low Ceiling</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+				<notes>30'</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Low Ceiling</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+				<notes>10'</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Low Ceiling</name>
+				<cost type="percentage">-25</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+				<notes>5'</notes>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Small Wings</name>
+				<cost type="percentage">-10</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Space Flight Only</name>
+				<cost type="percentage">-75</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1">
+				<name>Winged</name>
+				<cost type="percentage">-25</cost>
+				<affects>total</affects>
+				<reference>B56</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Planetary</name>
+				<cost type="percentage">-5</cost>
+				<affects>total</affects>
+				<reference>P50</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Requires Surface</name>
+				<cost type="percentage">-20</cost>
+				<affects>total</affects>
+				<reference>P50</reference>
+			</modifier>
+			<reference>B56</reference>
+			<categories>
+				<category>Advantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Vulnerability</name>
+			<type>Physical, Exotic</type>
+			<modifier version="1" enabled="no">
+				<name>@Rare attack@</name>
+				<cost type="points">-5</cost>
+				<affects>total</affects>
+				<reference>B161</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>@Occasional attack@</name>
+				<cost type="points">-10</cost>
+				<affects>total</affects>
+				<reference>B161</reference>
+			</modifier>
+			<modifier version="1">
+				<name>Crushing</name>
+				<cost type="points">-15</cost>
+				<affects>total</affects>
+				<reference>B161</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>@Very common attack@</name>
+				<cost type="points">-20</cost>
+				<affects>total</affects>
+				<reference>B161</reference>
+			</modifier>
+			<modifier version="1">
+				<name>Wounding x2</name>
+				<cost type="multiplier">2</cost>
+				<reference>B161</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Wounding x3</name>
+				<cost type="multiplier">3</cost>
+				<reference>B161</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Wounding x4</name>
+				<cost type="multiplier">4</cost>
+				<reference>B161</reference>
+			</modifier>
+			<modifier version="1" enabled="no">
+				<name>Fatigue Only</name>
+				<cost type="percentage">-50</cost>
+				<affects>total</affects>
+				<reference>B161</reference>
+			</modifier>
+			<reference>B161</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage version="2">
+			<name>Lunacy</name>
+			<type>Physical</type>
+			<base_points>-10</base_points>
+			<reference>B143</reference>
+			<categories>
+				<category>Disadvantage</category>
+			</categories>
+		</advantage>
+		<advantage_container version="2" open="yes">
+			<name>Chimera Meta-Trait</name>
+			<advantage version="2">
+				<name>Speak With Animals</name>
+				<type>Mental, Exotic</type>
+				<base_points>25</base_points>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B87</reference>
+					<notes>All aquatic animals</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-40</cost>
+					<affects>total</affects>
+					<reference>B87</reference>
+					<notes>All land animals</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+					<reference>B87</reference>
+					<notes>@One class: Mammals, Birds, etc.@</notes>
+				</modifier>
+				<modifier version="1">
+					<name>Specialized</name>
+					<cost type="percentage">-60</cost>
+					<affects>total</affects>
+					<reference>B87</reference>
+					<notes>Chimera Type</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Specialized</name>
+					<cost type="percentage">-80</cost>
+					<affects>total</affects>
+					<reference>B87</reference>
+					<notes>@One species: House Cats, Macaws, etc.@</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Sapience</name>
+					<cost type="percentage">40</cost>
+					<affects>total</affects>
+					<reference>P77</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Universal</name>
+					<cost type="percentage">20</cost>
+					<affects>total</affects>
+					<reference>P77</reference>
+				</modifier>
+				<reference>B87</reference>
+				<categories>
+					<category>Advantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Dependency (Mana)</name>
+				<type>Physical, Exotic</type>
+				<modifier version="1" enabled="no">
+					<name>Rarity: Rare</name>
+					<cost type="points">-30</cost>
+					<affects>total</affects>
+					<reference>B130</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Rarity: Occasional</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+					<reference>B130</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Rarity: Common</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B130</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Rarity: Very Common</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B130</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Illegal</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B130</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Frequency: Constantly</name>
+					<cost type="multiplier">5</cost>
+					<reference>B130</reference>
+					<notes>Lose 1 HP per minute without it</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Frequency: Hourly</name>
+					<cost type="multiplier">4</cost>
+					<reference>B130</reference>
+					<notes>Lose 1 HP per 10 minutes after missing a hourly dose</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Frequency: Daily</name>
+					<cost type="multiplier">3</cost>
+					<reference>B130</reference>
+					<notes>Lose 1 HP per hour after missing a daily dose</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Frequency: Weekly</name>
+					<cost type="multiplier">2</cost>
+					<reference>B130</reference>
+					<notes>Lose 1 HP per six hours after missing a weekly dose</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Frequency: Monthly</name>
+					<cost type="multiplier">1</cost>
+					<reference>B130</reference>
+					<notes>Lose 1 HP per day after missing a monthly dose</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Frequency: Seasonally</name>
+					<cost type="multiplier">0.33333</cost>
+					<reference>B130</reference>
+					<notes>Lose 1 HP per 3 days after missing a seasonal dose</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Frequency: Yearly</name>
+					<cost type="multiplier">0.1</cost>
+					<reference>B130</reference>
+					<notes>Lose 1 HP per 2 weeks after missing a yearly dose</notes>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Aging</name>
+					<cost type="percentage">30</cost>
+					<affects>total</affects>
+					<reference>B130</reference>
+					<notes>Age 2 years for each HP lost due to this dependency</notes>
+				</modifier>
+				<reference>B130</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Social Stigma (Minority Group)</name>
+				<type>Social</type>
+				<base_points>-10</base_points>
+				<reference>B155</reference>
+				<notes>-2 Reaction from others; +2 Reaction in own group</notes>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+			<advantage version="2">
+				<name>Vulnerability</name>
+				<type>Physical, Exotic</type>
+				<modifier version="1">
+					<name>Silver and DN</name>
+					<cost type="points">-5</cost>
+					<affects>total</affects>
+					<reference>B161</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Occasional attack@</name>
+					<cost type="points">-10</cost>
+					<affects>total</affects>
+					<reference>B161</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Common attack@</name>
+					<cost type="points">-15</cost>
+					<affects>total</affects>
+					<reference>B161</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>@Very common attack@</name>
+					<cost type="points">-20</cost>
+					<affects>total</affects>
+					<reference>B161</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Wounding x2</name>
+					<cost type="multiplier">2</cost>
+					<reference>B161</reference>
+				</modifier>
+				<modifier version="1">
+					<name>Wounding x3</name>
+					<cost type="multiplier">3</cost>
+					<reference>B161</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Wounding x4</name>
+					<cost type="multiplier">4</cost>
+					<reference>B161</reference>
+				</modifier>
+				<modifier version="1" enabled="no">
+					<name>Fatigue Only</name>
+					<cost type="percentage">-50</cost>
+					<affects>total</affects>
+					<reference>B161</reference>
+				</modifier>
+				<reference>B161</reference>
+				<categories>
+					<category>Disadvantage</category>
+				</categories>
+			</advantage>
+		</advantage_container>
+	</advantage_list>
+</template>

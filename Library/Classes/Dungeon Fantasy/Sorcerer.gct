@@ -1,0 +1,1687 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<template id="0d5da991-9042-405d-8eac-e0a4f6cb72fb" version="2">
+	<advantage_list>
+		<advantage_container version="2" open="yes" type="race">
+			<name>Sorcerer</name>
+			<reference>DF1:4</reference>
+			<advantage_container version="2" open="yes">
+				<name>Attributes</name>
+				<advantage version="2">
+					<name>Increased Dexterity</name>
+					<type>Physical</type>
+					<levels>2</levels>
+					<points_per_level>20</points_per_level>
+					<modifier version="1" enabled="no">
+						<name>No Fine Manipulators</name>
+						<cost type="percentage">-40</cost>
+						<affects>total</affects>
+					</modifier>
+					<reference>B15</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>dx</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Increased Health</name>
+					<type>Physical</type>
+					<levels>2</levels>
+					<points_per_level>10</points_per_level>
+					<reference>B14</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>ht</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+				<advantage version="2">
+					<name>Increased Intelligence</name>
+					<type>Mental</type>
+					<levels>2</levels>
+					<points_per_level>20</points_per_level>
+					<reference>B15</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Attribute</category>
+					</categories>
+					<attribute_bonus>
+						<attribute>iq</attribute>
+						<amount per_level="yes">1</amount>
+					</attribute_bonus>
+				</advantage>
+			</advantage_container>
+			<advantage_container version="2" open="yes">
+				<name>Class Advantages</name>
+				<advantage_container version="2" open="yes">
+					<name>25 points in sorcery spells; put leftovers into other advantages</name>
+				</advantage_container>
+				<advantage_container version="2" open="yes">
+					<name>40 points from additional sorcery spells or:</name>
+					<advantage version="2">
+						<name>Eidetic Memory</name>
+						<type>Mental</type>
+						<base_points>5</base_points>
+						<modifier version="1" enabled="no">
+							<name>Photographic</name>
+							<cost type="points">5</cost>
+							<affects>total</affects>
+							<reference>B51</reference>
+						</modifier>
+						<reference>B51</reference>
+						<notes>alternatively, upgrade to photographic memory</notes>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Empathy</name>
+						<type>Mental</type>
+						<base_points>15</base_points>
+						<modifier version="1" enabled="no">
+							<name>Remote</name>
+							<cost type="percentage">50</cost>
+							<affects>total</affects>
+							<reference>P48</reference>
+						</modifier>
+						<reference>B51</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">detect lies</name>
+							<specialization compare="is anything"></specialization>
+							<amount>3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">fortune-telling</name>
+							<specialization compare="is anything"></specialization>
+							<amount>3</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">psychology</name>
+							<specialization compare="is anything"></specialization>
+							<amount>3</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Gizmo</name>
+						<type>Mental</type>
+						<levels>0</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B57</reference>
+						<notes>maximum 2</notes>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Increased Dexterity</name>
+						<type>Physical</type>
+						<levels>0</levels>
+						<points_per_level>20</points_per_level>
+						<modifier version="1" enabled="no">
+							<name>No Fine Manipulators</name>
+							<cost type="percentage">-40</cost>
+							<affects>total</affects>
+						</modifier>
+						<reference>B15</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>dx</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Increased Health</name>
+						<type>Physical</type>
+						<levels>0</levels>
+						<points_per_level>10</points_per_level>
+						<reference>B14</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>ht</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Increased Intelligence</name>
+						<type>Mental</type>
+						<levels>0</levels>
+						<points_per_level>20</points_per_level>
+						<reference>B15</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>iq</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Increased Perception</name>
+						<type>Mental/Physical</type>
+						<levels>0</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B16</reference>
+						<notes>maximum +5</notes>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>perception</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Increased Will</name>
+						<type>Mental</type>
+						<levels>0</levels>
+						<points_per_level>5</points_per_level>
+						<reference>B16</reference>
+						<notes>maximum +5</notes>
+						<categories>
+							<category>Advantage</category>
+							<category>Attribute</category>
+						</categories>
+						<attribute_bonus>
+							<attribute>will</attribute>
+							<amount per_level="yes">1</amount>
+						</attribute_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Language Talent</name>
+						<type>Mental</type>
+						<base_points>10</base_points>
+						<reference>B65</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Language: (Any)</name>
+						<type>Mental</type>
+						<modifier version="1" enabled="no">
+							<name>Native</name>
+							<cost type="points">-6</cost>
+							<affects>total</affects>
+							<reference>B23</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Spoken</name>
+							<cost type="points">0</cost>
+							<affects>total</affects>
+							<reference>B24</reference>
+							<notes>None</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Spoken</name>
+							<cost type="points">1</cost>
+							<affects>total</affects>
+							<reference>B24</reference>
+							<notes>Broken</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Spoken</name>
+							<cost type="points">2</cost>
+							<affects>total</affects>
+							<reference>B24</reference>
+							<notes>Accented</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Spoken</name>
+							<cost type="points">3</cost>
+							<affects>total</affects>
+							<reference>B24</reference>
+							<notes>Native</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Written</name>
+							<cost type="points">0</cost>
+							<affects>total</affects>
+							<reference>B24</reference>
+							<notes>None</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Written</name>
+							<cost type="points">1</cost>
+							<affects>total</affects>
+							<reference>B24</reference>
+							<notes>Broken</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Written</name>
+							<cost type="points">2</cost>
+							<affects>total</affects>
+							<reference>B24</reference>
+							<notes>Accented</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Written</name>
+							<cost type="points">3</cost>
+							<affects>total</affects>
+							<reference>B24</reference>
+							<notes>Native</notes>
+						</modifier>
+						<reference>B24</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Language</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Luck</name>
+						<type>Mental</type>
+						<base_points>15</base_points>
+						<modifier version="1" enabled="no">
+							<name>Active</name>
+							<cost type="percentage">-40</cost>
+							<affects>total</affects>
+							<reference>B66</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Aspected</name>
+							<cost type="percentage">-20</cost>
+							<affects>total</affects>
+							<reference>B66</reference>
+							<notes>@Aspect@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Defensive</name>
+							<cost type="percentage">-20</cost>
+							<affects>total</affects>
+							<reference>B66</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Wishing</name>
+							<cost type="percentage">100</cost>
+							<affects>total</affects>
+							<reference>P59</reference>
+						</modifier>
+						<reference>B66</reference>
+						<notes>Usable once per hour of play</notes>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<prereq_list all="yes">
+							<advantage_prereq has="no">
+								<name compare="starts with">Luck</name>
+								<notes compare="is anything"></notes>
+							</advantage_prereq>
+						</prereq_list>
+					</advantage>
+					<advantage version="2">
+						<name>Luck, Extraordinary</name>
+						<type>Mental</type>
+						<base_points>30</base_points>
+						<modifier version="1" enabled="no">
+							<name>Active</name>
+							<cost type="percentage">-40</cost>
+							<affects>total</affects>
+							<reference>B66</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Aspected</name>
+							<cost type="percentage">-20</cost>
+							<affects>total</affects>
+							<reference>B66</reference>
+							<notes>@Aspect@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Defensive</name>
+							<cost type="percentage">-20</cost>
+							<affects>total</affects>
+							<reference>B66</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Wishing</name>
+							<cost type="percentage">100</cost>
+							<affects>total</affects>
+							<reference>P59</reference>
+						</modifier>
+						<reference>B66</reference>
+						<notes>Usable once per 30 minutes of play</notes>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<prereq_list all="yes">
+							<advantage_prereq has="no">
+								<name compare="starts with">Luck</name>
+								<notes compare="is anything"></notes>
+							</advantage_prereq>
+						</prereq_list>
+					</advantage>
+					<advantage version="2">
+						<name>Mind Shield</name>
+						<type>Mental, Exotic</type>
+						<levels>0</levels>
+						<points_per_level>4</points_per_level>
+						<modifier version="1" enabled="no">
+							<name>Cybernetic</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B70</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Limited</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>P62</reference>
+							<notes>@Source@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Limited</name>
+							<cost type="percentage">-75</cost>
+							<affects>total</affects>
+							<reference>P62</reference>
+							<notes>@Power/College/Focus@</notes>
+						</modifier>
+						<reference>B70</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Signature Gear</name>
+						<type>Social</type>
+						<levels>0</levels>
+						<points_per_level>1</points_per_level>
+						<reference>B85</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Spirit Empathy</name>
+						<type>Mental, Supernatural</type>
+						<base_points>10</base_points>
+						<modifier version="1" enabled="no">
+							<name>Specialized</name>
+							<cost type="percentage">-50</cost>
+							<affects>total</affects>
+							<reference>B87</reference>
+							<notes>@Type: Angels, Demons, Elementals, Faerie, Ghosts, etc.@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Remote</name>
+							<cost type="percentage">50</cost>
+							<affects>total</affects>
+							<reference>P48</reference>
+						</modifier>
+						<reference>B88</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Talent (Sorcery)</name>
+						<type>Mental</type>
+						<levels>0</levels>
+						<points_per_level>10</points_per_level>
+						<modifier version="1" enabled="no">
+							<name>Reaction Bonus</name>
+							<cost type="percentage">0</cost>
+							<affects>total</affects>
+							<notes>@Reaction Bonus@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Alternate Benefit</name>
+							<cost type="percentage">0</cost>
+							<affects>total</affects>
+							<notes>@Alternate Benefit@</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Alternative Cost</name>
+							<cost type="points">0</cost>
+							<affects>levels only</affects>
+						</modifier>
+						<reference>B89</reference>
+						<notes>maximum total +6</notes>
+						<categories>
+							<category>Advantage</category>
+							<category>Talent</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Voice</name>
+						<type>Physical</type>
+						<base_points>10</base_points>
+						<reference>B97</reference>
+						<categories>
+							<category>Advantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">diplomacy</name>
+							<specialization compare="is anything"></specialization>
+							<amount>2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">fast-talk</name>
+							<specialization compare="is anything"></specialization>
+							<amount>2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="starts with">mimicry</name>
+							<specialization compare="is anything"></specialization>
+							<amount>2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">performance</name>
+							<specialization compare="is anything"></specialization>
+							<amount>2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">politics</name>
+							<specialization compare="is anything"></specialization>
+							<amount>2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">public speaking</name>
+							<specialization compare="is anything"></specialization>
+							<amount>2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">sex appeal</name>
+							<specialization compare="is anything"></specialization>
+							<amount>2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">singing</name>
+							<specialization compare="is anything"></specialization>
+							<amount>2</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth</name>
+						<type>Social</type>
+						<modifier version="1" enabled="no">
+							<name>Dead Broke</name>
+							<cost type="points">-25</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is $0</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Poor</name>
+							<cost type="points">-15</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 1/5 average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Struggling</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 1/2 average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Average</name>
+							<cost type="points">0</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+						</modifier>
+						<modifier version="1">
+							<name>Comfortable</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 2x average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Wealthy</name>
+							<cost type="points">20</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 5x average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Very Wealthy</name>
+							<cost type="points">30</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 20x average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Filthy Rich</name>
+							<cost type="points">50</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 100x average</notes>
+						</modifier>
+						<reference>B25</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Wealth</name>
+						<type>Social</type>
+						<modifier version="1" enabled="no">
+							<name>Dead Broke</name>
+							<cost type="points">-25</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is $0</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Poor</name>
+							<cost type="points">-15</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 1/5 average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Struggling</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 1/2 average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Average</name>
+							<cost type="points">0</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Comfortable</name>
+							<cost type="points">10</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 2x average</notes>
+						</modifier>
+						<modifier version="1">
+							<name>Wealthy</name>
+							<cost type="points">20</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 5x average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Very Wealthy</name>
+							<cost type="points">30</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 20x average</notes>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Filthy Rich</name>
+							<cost type="points">50</cost>
+							<affects>total</affects>
+							<reference>B25</reference>
+							<notes>Starting wealth is 100x average</notes>
+						</modifier>
+						<reference>B25</reference>
+						<categories>
+							<category>Advantage</category>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+				</advantage_container>
+				<advantage version="2">
+					<name>Sorcerous Empowerment</name>
+					<type>Physical</type>
+					<levels>6</levels>
+					<base_points>10</base_points>
+					<points_per_level>10</points_per_level>
+				</advantage>
+				<advantage version="2">
+					<name>Talent (Sorcery)</name>
+					<type>Mental</type>
+					<levels>3</levels>
+					<points_per_level>10</points_per_level>
+					<modifier version="1" enabled="no">
+						<name>Reaction Bonus</name>
+						<cost type="percentage">0</cost>
+						<affects>total</affects>
+						<notes>@Reaction Bonus@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Alternate Benefit</name>
+						<cost type="percentage">0</cost>
+						<affects>total</affects>
+						<notes>@Alternate Benefit@</notes>
+					</modifier>
+					<modifier version="1" enabled="no">
+						<name>Alternative Cost</name>
+						<cost type="points">0</cost>
+						<affects>levels only</affects>
+					</modifier>
+					<reference>B89</reference>
+					<categories>
+						<category>Advantage</category>
+						<category>Talent</category>
+					</categories>
+				</advantage>
+			</advantage_container>
+			<advantage_container version="2" open="yes">
+				<name>Class Disadvantages</name>
+				<advantage_container version="2" open="yes">
+					<name>-20 Chosen From or Previous List:</name>
+					<advantage version="2">
+						<name>Absent-Mindedness</name>
+						<type>Mental</type>
+						<base_points>-15</base_points>
+						<reference>B122</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Clueless</name>
+						<type>Mental</type>
+						<base_points>-10</base_points>
+						<reference>B126</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="starts with">savoir-faire</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-4</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Combat Paralysis</name>
+						<type>Physical</type>
+						<base_points>-15</base_points>
+						<reference>B127</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Cowardice</name>
+						<type>Mental</type>
+						<base_points>-10</base_points>
+						<cr adj="fright check penalty">12</cr>
+						<reference>B129</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Curious</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<cr>12</cr>
+						<reference>B129</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Loner</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<cr adj="reaction penalty">12</cr>
+						<reference>B142</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Low Pain Threshold</name>
+						<type>Physical</type>
+						<base_points>-10</base_points>
+						<reference>B142</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+						<prereq_list all="yes">
+							<advantage_prereq has="no">
+								<name compare="is">high pain threshold</name>
+								<notes compare="is anything"></notes>
+							</advantage_prereq>
+						</prereq_list>
+					</advantage>
+					<advantage version="2">
+						<name>Oblivious</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<reference>B146</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">diplomacy</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">fast-talk</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">intimidation</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="starts with">savoir-faire</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">sex appeal</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">streetwise</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Phantom Voices</name>
+						<type>Mental</type>
+						<modifier version="1" enabled="no">
+							<name>Annoying</name>
+							<cost type="points">-5</cost>
+							<affects>total</affects>
+							<reference>B148</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Disturbing</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B148</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Diabolical</name>
+							<cost type="points">-15</cost>
+							<affects>total</affects>
+							<reference>B148</reference>
+						</modifier>
+						<reference>B148</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Post-Combat Shakes</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<cr>12</cr>
+						<reference>B150</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Sense of Duty</name>
+						<type>Mental</type>
+						<modifier version="1">
+							<name>Adventuring Companions</name>
+							<cost type="points">-5</cost>
+							<affects>total</affects>
+							<reference>B153</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Small Group@</name>
+							<cost type="points">-5</cost>
+							<affects>total</affects>
+							<reference>B153</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Individual@</name>
+							<cost type="points">-2</cost>
+							<affects>total</affects>
+							<reference>B153</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Large Group@</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B153</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>@Entire Race@</name>
+							<cost type="points">-15</cost>
+							<affects>total</affects>
+							<reference>B153</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Every Living Being</name>
+							<cost type="points">-20</cost>
+							<affects>total</affects>
+							<reference>B153</reference>
+						</modifier>
+						<reference>B153</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Stubbornness</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<reference>B157</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Trickster</name>
+						<type>Mental</type>
+						<base_points>-15</base_points>
+						<cr>12</cr>
+						<reference>B159</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+				</advantage_container>
+				<advantage_container version="2" open="yes">
+					<name>-30 points Chosen From:</name>
+					<advantage version="2">
+						<name>Bad Temper</name>
+						<type>Mental</type>
+						<base_points>-10</base_points>
+						<cr>12</cr>
+						<reference>B124</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Disturbing Voice</name>
+						<type>Physical</type>
+						<base_points>-10</base_points>
+						<reference>B132</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+						<prereq_list all="yes">
+							<advantage_prereq has="no">
+								<name compare="is">voice</name>
+								<notes compare="is anything"></notes>
+							</advantage_prereq>
+						</prereq_list>
+					</advantage>
+					<advantage version="2">
+						<name>Fat</name>
+						<type>Physical</type>
+						<base_points>-3</base_points>
+						<reference>B19</reference>
+						<notes>+2 ST vs. knockback</notes>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">disguise</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">shadowing</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">swimming</name>
+							<specialization compare="is anything"></specialization>
+							<amount>3</amount>
+						</skill_bonus>
+						<prereq_list all="yes">
+							<attribute_prereq has="yes" which="ht" compare="at most">15</attribute_prereq>
+						</prereq_list>
+					</advantage>
+					<advantage version="2">
+						<name>Frightens Animals</name>
+						<type>Mental, Supernatural</type>
+						<base_points>-10</base_points>
+						<reference>B137</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Megalomania</name>
+						<type>Mental</type>
+						<base_points>-10</base_points>
+						<reference>B144</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Obsession</name>
+						<type>Physical</type>
+						<modifier version="1" enabled="no">
+							<name>Short term</name>
+							<cost type="points">-5</cost>
+							<affects>total</affects>
+							<reference>B146</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Long term</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B146</reference>
+						</modifier>
+						<reference>B146</reference>
+						<notes>Any related to magic or the discorvery of lineage, -5 or -10</notes>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Overconfidence</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<cr>12</cr>
+						<reference>B148</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Overweight</name>
+						<type>Physical</type>
+						<base_points>-1</base_points>
+						<reference>B19</reference>
+						<notes>+1 ST vs. knockback</notes>
+						<categories>
+							<category>Quirk</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">disguise</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">shadowing</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">swimming</name>
+							<specialization compare="is anything"></specialization>
+							<amount>1</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Paranoia</name>
+						<type>Mental</type>
+						<base_points>-10</base_points>
+						<reference>B148</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Pyromania</name>
+						<type>Mental</type>
+						<base_points>-5</base_points>
+						<cr>12</cr>
+						<reference>B150</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Secret (A particularly awful magical lineage)</name>
+						<type>Social</type>
+						<modifier version="1">
+							<name>Serious Embarrassment</name>
+							<cost type="points">-5</cost>
+							<affects>total</affects>
+							<reference>B152</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Utter Rejection</name>
+							<cost type="points">-10</cost>
+							<affects>total</affects>
+							<reference>B152</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Imprisonment</name>
+							<cost type="points">-20</cost>
+							<affects>total</affects>
+							<reference>B152</reference>
+						</modifier>
+						<modifier version="1" enabled="no">
+							<name>Possible Death</name>
+							<cost type="points">-30</cost>
+							<affects>total</affects>
+							<reference>B152</reference>
+						</modifier>
+						<reference>B152</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Skinny</name>
+						<type>Physical</type>
+						<base_points>-5</base_points>
+						<reference>B18</reference>
+						<notes>-2 ST vs. knockback</notes>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">disguise</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">shadowing</name>
+							<specialization compare="is anything"></specialization>
+							<amount>-2</amount>
+						</skill_bonus>
+						<prereq_list all="yes">
+							<attribute_prereq has="yes" which="ht" compare="at most">14</attribute_prereq>
+						</prereq_list>
+					</advantage>
+					<advantage version="2">
+						<name>Social Stigma (Excommunicated)</name>
+						<type>Social</type>
+						<base_points>-10</base_points>
+						<reference>B155</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Unfit</name>
+						<type>Physical</type>
+						<base_points>-5</base_points>
+						<reference>B160</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+					<advantage version="2">
+						<name>Unfit (Very)</name>
+						<type>Physical</type>
+						<base_points>-15</base_points>
+						<reference>B160</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+						<prereq_list all="yes">
+							<advantage_prereq has="no">
+								<name compare="contains">resistant</name>
+								<notes compare="is anything"></notes>
+							</advantage_prereq>
+						</prereq_list>
+					</advantage>
+					<advantage version="2">
+						<name>Unnatural Features ()</name>
+						<type>Physical</type>
+						<levels>0</levels>
+						<points_per_level>-1</points_per_level>
+						<reference>B22</reference>
+						<notes>maximum -5</notes>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+						<skill_bonus>
+							<name compare="is">disguise</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">-1</amount>
+						</skill_bonus>
+						<skill_bonus>
+							<name compare="is">shadowing</name>
+							<specialization compare="is anything"></specialization>
+							<amount per_level="yes">-1</amount>
+						</skill_bonus>
+					</advantage>
+					<advantage version="2">
+						<name>Weirdness Magnet</name>
+						<type>Mental, Supernatural</type>
+						<base_points>-15</base_points>
+						<modifier version="1" enabled="no">
+							<name>Origins Magnet</name>
+							<cost type="percentage">0</cost>
+							<affects>total</affects>
+							<reference>SU32</reference>
+						</modifier>
+						<reference>B161</reference>
+						<categories>
+							<category>Disadvantage</category>
+						</categories>
+					</advantage>
+				</advantage_container>
+			</advantage_container>
+		</advantage_container>
+	</advantage_list>
+	<skill_list>
+		<skill_container version="2" open="yes">
+			<name>Sorcerer</name>
+			<skill_container version="2" open="yes">
+				<name>Primary Skills</name>
+				<skill_container version="2" open="yes">
+					<name>One melee skills package:</name>
+					<skill version="2">
+						<name>Brawling</name>
+						<difficulty>DX/E</difficulty>
+						<points>12</points>
+						<reference>B182</reference>
+						<categories>
+							<category>Combat/Weapon</category>
+							<category>Melee Combat</category>
+						</categories>
+						<weapon_bonus>
+							<name compare="is">Brawling</name>
+							<specialization compare="is anything"></specialization>
+							<level compare="at least">2</level>
+							<amount per_level="yes">1</amount>
+						</weapon_bonus>
+					</skill>
+					<skill_container version="2" open="yes">
+						<name>Smallsword/Buckler</name>
+						<skill version="2">
+							<name>Shield</name>
+							<specialization>Buckler</specialization>
+							<difficulty>DX/E</difficulty>
+							<points>4</points>
+							<reference>B220</reference>
+							<categories>
+								<category>Combat/Weapon</category>
+								<category>Melee Combat</category>
+							</categories>
+							<default>
+								<type>DX</type>
+								<modifier>-4</modifier>
+							</default>
+							<default>
+								<type>Skill</type>
+								<name>Shield</name>
+								<specialization>Force</specialization>
+								<modifier>-2</modifier>
+							</default>
+						</skill>
+						<skill version="2">
+							<name>Smallsword</name>
+							<difficulty>DX/A</difficulty>
+							<points>8</points>
+							<reference>B208</reference>
+							<categories>
+								<category>Combat/Weapon</category>
+								<category>Melee Combat</category>
+							</categories>
+							<default>
+								<type>DX</type>
+								<modifier>-5</modifier>
+							</default>
+							<default>
+								<type>Skill</type>
+								<name>Shortsword</name>
+								<modifier>-4</modifier>
+							</default>
+							<default>
+								<type>Skill</type>
+								<name>Main-Gauche</name>
+								<modifier>-3</modifier>
+							</default>
+							<default>
+								<type>Skill</type>
+								<name>Rapier</name>
+								<modifier>-3</modifier>
+							</default>
+							<default>
+								<type>Skill</type>
+								<name>Saber</name>
+								<modifier>-3</modifier>
+							</default>
+						</skill>
+					</skill_container>
+					<skill version="2">
+						<name>Staff</name>
+						<difficulty>DX/A</difficulty>
+						<points>12</points>
+						<reference>B208</reference>
+						<categories>
+							<category>Combat/Weapon</category>
+							<category>Melee Combat</category>
+						</categories>
+						<default>
+							<type>DX</type>
+							<modifier>-5</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Polearm</name>
+							<modifier>-4</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Spear</name>
+							<modifier>-2</modifier>
+						</default>
+					</skill>
+				</skill_container>
+				<skill_container version="2" open="yes">
+					<name>One of:</name>
+					<skill version="2">
+						<name>Innate Attack</name>
+						<specialization>Beam</specialization>
+						<difficulty>DX/E</difficulty>
+						<points>12</points>
+						<reference>B201</reference>
+						<categories>
+							<category>Combat/Weapon</category>
+							<category>Ranged Combat</category>
+						</categories>
+						<default>
+							<type>DX</type>
+							<modifier>-4</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Innate Attack</name>
+							<modifier>-2</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Innate Attack</name>
+						<specialization>Breath</specialization>
+						<difficulty>DX/E</difficulty>
+						<points>12</points>
+						<reference>B201</reference>
+						<categories>
+							<category>Combat/Weapon</category>
+							<category>Ranged Combat</category>
+						</categories>
+						<default>
+							<type>DX</type>
+							<modifier>-4</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Innate Attack</name>
+							<modifier>-2</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Innate Attack</name>
+						<specialization>Gaze</specialization>
+						<difficulty>DX/E</difficulty>
+						<points>12</points>
+						<reference>B201</reference>
+						<categories>
+							<category>Combat/Weapon</category>
+							<category>Ranged Combat</category>
+						</categories>
+						<default>
+							<type>DX</type>
+							<modifier>-4</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Innate Attack</name>
+							<modifier>-2</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Innate Attack</name>
+						<specialization>Projectile</specialization>
+						<difficulty>DX/E</difficulty>
+						<points>12</points>
+						<reference>B201</reference>
+						<categories>
+							<category>Combat/Weapon</category>
+							<category>Ranged Combat</category>
+						</categories>
+						<default>
+							<type>DX</type>
+							<modifier>-4</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Innate Attack</name>
+							<modifier>-2</modifier>
+						</default>
+					</skill>
+				</skill_container>
+			</skill_container>
+			<skill_container version="2" open="yes">
+				<name>Secondary Skills</name>
+				<skill version="2">
+					<name>Hidden Lore</name>
+					<specialization>any magical</specialization>
+					<difficulty>IQ/A</difficulty>
+					<points>2</points>
+					<reference>B199</reference>
+					<categories>
+						<category>Knowledge</category>
+					</categories>
+				</skill>
+				<skill version="2">
+					<name>Thaumatology</name>
+					<difficulty>IQ/VH</difficulty>
+					<points>2</points>
+					<reference>B225</reference>
+					<categories>
+						<category>Occult/Magical</category>
+					</categories>
+					<default>
+						<type>IQ</type>
+						<modifier>-7</modifier>
+					</default>
+				</skill>
+			</skill_container>
+			<skill_container version="2" open="yes">
+				<name>Background Skills</name>
+				<skill_container version="2" open="yes">
+					<name>7 from:</name>
+					<skill version="2">
+						<name>Acrobatics</name>
+						<difficulty>DX/H</difficulty>
+						<points>1</points>
+						<reference>B174</reference>
+						<categories>
+							<category>Athletic</category>
+						</categories>
+						<default>
+							<type>DX</type>
+							<modifier>-6</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Aerobatics</name>
+							<modifier>-4</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Aquabatics</name>
+							<modifier>-4</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Animal Handling</name>
+						<specialization>any</specialization>
+						<difficulty>IQ/A</difficulty>
+						<points>1</points>
+						<reference>B175</reference>
+						<categories>
+							<category>Animal</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Climbing</name>
+						<encumbrance_penalty_multiplier>1</encumbrance_penalty_multiplier>
+						<difficulty>DX/A</difficulty>
+						<points>1</points>
+						<reference>B183</reference>
+						<categories>
+							<category>Athletic</category>
+							<category>Criminal/Street</category>
+							<category>Outdoor/Exploration</category>
+						</categories>
+						<default>
+							<type>DX</type>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Crossbow</name>
+						<difficulty>DX/E</difficulty>
+						<points>1</points>
+						<reference>B186</reference>
+						<categories>
+							<category>Combat/Weapon</category>
+							<category>Ranged Combat</category>
+						</categories>
+						<default>
+							<type>DX</type>
+							<modifier>-4</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Diplomacy</name>
+						<difficulty>IQ/H</difficulty>
+						<points>1</points>
+						<reference>B187</reference>
+						<categories>
+							<category>Business</category>
+							<category>Police</category>
+							<category>Social</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-6</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Politics</name>
+							<modifier>-6</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Fast-Talk</name>
+						<difficulty>IQ/A</difficulty>
+						<points>1</points>
+						<reference>B195</reference>
+						<categories>
+							<category>Criminal/Street</category>
+							<category>Social</category>
+							<category>Spy</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-5</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Acting</name>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>First Aid</name>
+						<tech_level/>
+						<difficulty>IQ/E</difficulty>
+						<points>1</points>
+						<reference>B195</reference>
+						<categories>
+							<category>Everyman</category>
+							<category>Medical</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-4</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Esoteric Medicine</name>
+							<modifier>0</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Physician</name>
+							<modifier>0</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Veterinary</name>
+							<modifier>-4</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Gesture</name>
+						<difficulty>IQ/E</difficulty>
+						<points>1</points>
+						<reference>B198</reference>
+						<categories>
+							<category>Social</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-4</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Hazardous Materials</name>
+						<specialization>Magical</specialization>
+						<tech_level/>
+						<difficulty>IQ/A</difficulty>
+						<points>1</points>
+						<reference>B199</reference>
+						<categories>
+							<category>Technical</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Hiking</name>
+						<difficulty>HT/A</difficulty>
+						<points>1</points>
+						<reference>B200</reference>
+						<categories>
+							<category>Athletic</category>
+							<category>Outdoor/Exploration</category>
+						</categories>
+						<default>
+							<type>HT</type>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Observation</name>
+						<difficulty>Per/A</difficulty>
+						<points>1</points>
+						<reference>B211</reference>
+						<categories>
+							<category>Criminal/Street</category>
+							<category>Military</category>
+							<category>Police</category>
+							<category>Spy</category>
+						</categories>
+						<default>
+							<type>Per</type>
+							<modifier>-5</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Shadowing</name>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Savoir-Faire</name>
+						<specialization>High Society</specialization>
+						<difficulty>IQ/E</difficulty>
+						<points>1</points>
+						<reference>B218</reference>
+						<categories>
+							<category>Business</category>
+							<category>Knowledge</category>
+							<category>Social</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-4</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Savoir-Faire</name>
+							<specialization>Servant</specialization>
+							<modifier>-2</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Scrounging</name>
+						<difficulty>Per/E</difficulty>
+						<points>1</points>
+						<reference>B218</reference>
+						<categories>
+							<category>Criminal/Street</category>
+						</categories>
+						<default>
+							<type>Per</type>
+							<modifier>-4</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Search</name>
+						<difficulty>Per/A</difficulty>
+						<points>1</points>
+						<reference>B219</reference>
+						<categories>
+							<category>Police</category>
+							<category>Spy</category>
+						</categories>
+						<default>
+							<type>Per</type>
+							<modifier>-5</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Criminology</name>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Stealth</name>
+						<encumbrance_penalty_multiplier>1</encumbrance_penalty_multiplier>
+						<difficulty>DX/A</difficulty>
+						<points>1</points>
+						<reference>B222</reference>
+						<categories>
+							<category>Criminal/Street</category>
+							<category>Police</category>
+							<category>Spy</category>
+						</categories>
+						<default>
+							<type>IQ</type>
+							<modifier>-5</modifier>
+						</default>
+						<default>
+							<type>DX</type>
+							<modifier>-5</modifier>
+						</default>
+					</skill>
+					<skill version="2">
+						<name>Thrown Weapon</name>
+						<specialization>Dart</specialization>
+						<difficulty>DX/E</difficulty>
+						<points>1</points>
+						<reference>B226</reference>
+						<categories>
+							<category>Combat/Weapon</category>
+							<category>Ranged Combat</category>
+						</categories>
+						<default>
+							<type>DX</type>
+							<modifier>-4</modifier>
+						</default>
+						<default>
+							<type>Skill</type>
+							<name>Throwing</name>
+							<modifier>-2</modifier>
+						</default>
+					</skill>
+				</skill_container>
+			</skill_container>
+		</skill_container>
+	</skill_list>
+</template>
