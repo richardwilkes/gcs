@@ -426,9 +426,6 @@
 				<name compare="is">shape air</name>
 			</spell_prereq>
 			<spell_prereq has="yes">
-				<name compare="is">shape stone</name>
-			</spell_prereq>
-			<spell_prereq has="yes">
 				<name compare="is">shape water</name>
 				<quantity compare="is">1</quantity>
 			</spell_prereq>
@@ -2716,7 +2713,7 @@
 			</prereq_list>
 			<spell_prereq has="yes">
 				<college compare="contains">Body Control</college>
-				<quantity compare="at least">4</quantity>
+				<quantity compare="at least">5</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<name compare="is">spasm</name>
@@ -6694,28 +6691,28 @@
 		<categories>
 			<category>Movement</category>
 		</categories>
-		<prereq_list all="no">
-			<prereq_list all="yes">
-				<prereq_list all="no">
-					<advantage_prereq has="yes">
-						<name compare="is">magery</name>
-						<notes compare="contains">one college (movement)</notes>
-						<level compare="at least">3</level>
-					</advantage_prereq>
-					<advantage_prereq has="yes">
-						<name compare="is">magery</name>
-						<notes compare="is anything"></notes>
-						<level compare="at least">3</level>
-					</advantage_prereq>
-				</prereq_list>
+		<prereq_list all="yes">
+			<prereq_list all="no">
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="contains">one college (movement)</notes>
+					<level compare="at least">3</level>
+				</advantage_prereq>
+				<advantage_prereq has="yes">
+					<name compare="is">magery</name>
+					<notes compare="is anything"></notes>
+					<level compare="at least">3</level>
+				</advantage_prereq>
+			</prereq_list>
+			<prereq_list all="no">
+					<spell_prereq has="yes">
+						<name compare="is">body of air</name>
+					</spell_prereq>
 				<spell_prereq has="yes">
-					<name compare="is">body of air</name>
+					<college compare="contains">Movement</college>
+					<quantity compare="at least">6</quantity>
 				</spell_prereq>
 			</prereq_list>
-			<spell_prereq has="yes">
-				<college compare="contains">Movement</college>
-				<quantity compare="at least">6</quantity>
-			</spell_prereq>
 		</prereq_list>
 	</spell>
 	<spell version="2" very_hard="yes">
@@ -7037,7 +7034,7 @@
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<college compare="contains">Mind Control</college>
-				<quantity compare="at least">6</quantity>
+				<quantity compare="at least">7</quantity>
 			</spell_prereq>
 		</prereq_list>
 	</spell>
@@ -8454,7 +8451,7 @@
 		<prereq_list all="yes">
 			<spell_prereq has="yes">
 				<college compare="contains">Mind Control</college>
-				<quantity compare="at least">14</quantity>
+				<quantity compare="at least">15</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<name compare="is">lesser geas</name>
@@ -10602,7 +10599,7 @@
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<college compare="contains">Mind Control</college>
-				<quantity compare="at least">9</quantity>
+				<quantity compare="at least">10</quantity>
 			</spell_prereq>
 			<prereq_list all="no">
 				<advantage_prereq has="yes">
@@ -12579,7 +12576,7 @@
 			</prereq_list>
 			<spell_prereq has="yes">
 				<college compare="contains">Body Control</college>
-				<quantity compare="at least">4</quantity>
+				<quantity compare="at least">5</quantity>
 			</spell_prereq>
 			<spell_prereq has="yes">
 				<name compare="is">clumsiness</name>
