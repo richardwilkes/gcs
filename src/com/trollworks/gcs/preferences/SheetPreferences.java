@@ -121,7 +121,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	@Localize(locale = "ru", value = "Использовать необязательное правило \"Замена модификаторов кубиками\" из B269")
 	@Localize(locale = "es", value = "Usar regla opcional: \"Modificando dado + incrementos\", véase B269")
 	private static String	OPTIONAL_DICE_RULES;
-	@Localize("Use optional strength rules from the \"Know Your Own Strength\" Pyramid article")
+	@Localize("Use optional strength rules from the \"Knowing Your Own Strength\" Pyramid article")
 	private static String	OPTIONAL_STRENGTH_RULES;
 	@Localize("for the initial scale when opening character sheets, templates and lists")
 	private static String	UI_SCALE_POST;
