@@ -328,7 +328,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
 	}
 
 	private JButton createHyperlinkButton(String linkText, String tooltip) {
-		JButton button = new JButton(String.format("<HTML><FONT color=\"#000099\"><U>%s</U></FONT>", linkText)); //$NON-NLS-1$
+		JButton button = new JButton(String.format("<html><body><font color=\"#000099\"><u>%s</u></font></body></html>", linkText)); //$NON-NLS-1$
 		button.setFocusPainted(false);
 		button.setMargin(new Insets(0, 0, 0, 0));
 		button.setContentAreaFilled(false);

@@ -11,44 +11,18 @@
 
 package com.trollworks.gcs.menu.file;
 
-import com.trollworks.gcs.common.GurpsCalculatorExportable;
-import com.trollworks.gcs.preferences.OutputPreferences;
-import com.trollworks.gcs.services.NotImplementedException;
+import com.trollworks.gcs.character.CharacterSheet;
+import com.trollworks.gcs.character.GURPSCalculator;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
-import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Desktop;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.text.MessageFormat;
-
-import javax.swing.JEditorPane;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 
 public class ExportToGurpsCalculatorCommand extends Command {
 	@Localize("Export to GURPS Calculator\u2026")
-	private static String	EXPORT_TO_GURPS_CALCULATOR;
-	@Localize("Success")
-	private static String	SUCCESS_TITLE;
-	@Localize("Export to GURPS Calculator was successful.")
-	private static String	SUCCESS_MESSAGE;
-	@Localize("There was an error exporting to GURPS Calculator. Please try again later.")
-	private static String	ERROR_MESSAGE;
-	@Localize("You need to set a valid GURPS Calculator Key in sheet preferences.<br><a href='%s'>Click here</a> for more information.")
-	private static String	KEY_MISSING_MESSAGE;
-	@Localize("Unable to open {0}")
-	protected static String	UNABLE_TO_OPEN_URL;
+	private static String EXPORT_TO_GURPS_CALCULATOR;
 
 	static {
 		Localization.initialize();
@@ -66,71 +40,11 @@ public class ExportToGurpsCalculatorCommand extends Command {
 
 	@Override
 	public void adjust() {
-		setEnabled(getTarget(GurpsCalculatorExportable.class) != null);
+		setEnabled(getTarget(CharacterSheet.class) != null);
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
-		export(getTarget(GurpsCalculatorExportable.class));
-	}
-
-	/**
-	 * Allows the user to save the file under another name.
-	 *
-	 * @param exportable The {@link GurpsCalculatorExportable} to work on.
-	 * @return The file(s) actually written to. May be empty.
-	 */
-	@SuppressWarnings("static-method")
-	public boolean export(GurpsCalculatorExportable exportable) {
-		if (exportable == null) {
-			return false;
-		}
-		boolean result;
-		try {
-			result = exportable.exportToGurpsCalculator();
-			if (!result) {
-				return result;
-			}
-		} catch (IOException | NotImplementedException exception) {
-			result = false;
-		}
-		Component frame = getFocusOwner();
-		String message = result ? SUCCESS_MESSAGE : ERROR_MESSAGE;
-		String key = OutputPreferences.getGurpsCalculatorKey();
-		if (key == null || !key.matches("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89ab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")) { //$NON-NLS-1$
-			message = String.format(KEY_MISSING_MESSAGE, OutputPreferences.GURPS_CALCULATOR_URL);
-		}
-		JEditorPane messagePane = new JEditorPane("text/html", String.format("<html><body style='%s'>%s</body></html>", getStyle(), message)); //$NON-NLS-1$//$NON-NLS-2$
-		messagePane.setEditable(false);
-		messagePane.setBorder(null);
-		messagePane.addHyperlinkListener(new HyperlinkListener() {
-			@Override
-			public void hyperlinkUpdate(HyperlinkEvent event) {
-				if (event.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED) && Desktop.isDesktopSupported()) {
-					URL url = event.getURL();
-					try {
-						Desktop.getDesktop().browse(url.toURI());
-					} catch (IOException | URISyntaxException exception) {
-						WindowUtils.showError(null, MessageFormat.format(UNABLE_TO_OPEN_URL, url.toExternalForm()));
-					}
-				}
-			}
-		});
-		JOptionPane.showMessageDialog(frame, messagePane, result ? SUCCESS_TITLE : WindowUtils.ERROR, result ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE);
-		return result;
-	}
-
-	static String getStyle() {
-		// for copying style
-		JLabel label = new JLabel();
-		Font font = label.getFont();
-		Color color = label.getBackground();
-
-		// create some css from the label's font
-		StringBuffer style = new StringBuffer(String.format("font-family:%s;", font.getFamily())); //$NON-NLS-1$
-		style.append(String.format("font-weight:%s;", font.isBold() ? "bold" : "normal")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		style.append(String.format("font-size:%dpt;", Integer.valueOf(font.getSize()))); //$NON-NLS-1$
-		style.append(String.format("background-color: rgb(%d,%d,%d);", Integer.valueOf(color.getRed()), Integer.valueOf(color.getGreen()), Integer.valueOf(color.getBlue()))); //$NON-NLS-1$
-		return style.toString();
+		GURPSCalculator.export(getTarget(CharacterSheet.class));
 	}
 }

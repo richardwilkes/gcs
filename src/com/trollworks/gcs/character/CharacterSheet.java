@@ -20,8 +20,6 @@ import com.trollworks.gcs.advantage.AdvantageColumn;
 import com.trollworks.gcs.advantage.AdvantageOutline;
 import com.trollworks.gcs.app.GCSApp;
 import com.trollworks.gcs.app.GCSFonts;
-import com.trollworks.gcs.common.GurpsCalculatorExportable;
-import com.trollworks.gcs.common.TemporaryFile;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.equipment.EquipmentOutline;
@@ -32,9 +30,6 @@ import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageOwner;
 import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
-import com.trollworks.gcs.services.HttpMethodType;
-import com.trollworks.gcs.services.NotImplementedException;
-import com.trollworks.gcs.services.WebServiceClient;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillColumn;
 import com.trollworks.gcs.skill.SkillDefault;
@@ -110,17 +105,12 @@ import java.awt.print.PageFormat;
 import java.awt.print.Paper;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -128,10 +118,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Scanner;
 import java.util.Set;
 
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.RepaintManager;
 import javax.swing.Scrollable;
@@ -141,7 +129,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /** The character sheet. */
-public class CharacterSheet extends JPanel implements ChangeListener, Scrollable, BatchNotifierTarget, PageOwner, PrintProxy, ActionListener, Runnable, DropTargetListener, GurpsCalculatorExportable, ScaleRoot {
+public class CharacterSheet extends JPanel implements ChangeListener, Scrollable, BatchNotifierTarget, PageOwner, PrintProxy, ActionListener, Runnable, DropTargetListener, ScaleRoot {
 	@Localize("Page {0} of {1}")
 	@Localize(locale = "de", value = "Seite {0} von {1}")
 	@Localize(locale = "ru", value = "Стр. {0} из {1}")
@@ -217,16 +205,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 	@Localize(locale = "ru", value = "Заметка")
 	@Localize(locale = "es", value = "Notas")
 	private static String	NOTES;
-	@Localize("Replace")
-	private static String	OPTION_REPLACE;
-	@Localize("Create New")
-	private static String	OPTION_CREATE_NEW;
-	@Localize("Cancel")
-	private static String	OPTION_CANCEL;
-	@Localize("Character Exists")
-	private static String	TITLE_CHARACTER_EXISTS;
-	@Localize("This character already exists in GURPS Calculator. Would you like to replace it?\n\n*If you choose 'create new' it is recommended that you save your character afterwards.")
-	private static String	TEXT_CHARACTER_EXISTS;
 
 	static {
 		Localization.initialize();
@@ -1127,70 +1105,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 			setPrinting(false);
 			closeContainers(changed);
 		}
-	}
-
-	@Override
-	public boolean exportToGurpsCalculator() throws IOException, NotImplementedException {
-		WebServiceClient client = new WebServiceClient(OutputPreferences.BASE_GURPS_CALCULATOR_URL);
-		if (!showExistsDialogIfNecessary(client)) {
-			return false;
-		}
-		try (TemporaryFile templateFile = new TemporaryFile("gcalcTemplate", "html")) { //$NON-NLS-1$ //$NON-NLS-2$
-			try (PrintWriter out = new PrintWriter(templateFile)) {
-				out.print(client.sendRequest(HttpMethodType.GET, "api/GetOutputTemplate")); //$NON-NLS-1$
-			}
-			try (TemporaryFile outputFile = new TemporaryFile("gcalcOutput", "html")) { //$NON-NLS-1$ //$NON-NLS-2$
-				if (saveAsHTML(outputFile, templateFile, null)) {
-					String result = null;
-					try (Scanner scanner = new Scanner(outputFile)) {
-						result = scanner.useDelimiter("\\A").next(); //$NON-NLS-1$
-					} catch (FileNotFoundException exception) {
-						exception.printStackTrace();
-					}
-					String key = OutputPreferences.getGurpsCalculatorKey();
-					String path = String.format("api/SaveCharacter/%s/%s", mCharacter.getId(), key); //$NON-NLS-1$
-					String n = client.sendRequest(HttpMethodType.POST, path, null, result);
-					if (!n.equals("")) { //$NON-NLS-1$
-						throw new IOException("Bad response from the web server"); //$NON-NLS-1$
-					}
-					// export image
-					try (TemporaryFile image = new TemporaryFile("gcalcImage", "png")) { //$NON-NLS-1$ //$NON-NLS-2$
-						StdImage.writePNG(image, mCharacter.getDescription().getPortrait().getRetina(), 150);
-						path = String.format("api/SaveCharacterImage/%s/%s", mCharacter.getId(), key); //$NON-NLS-1$
-						n = client.sendRequest(HttpMethodType.POST, path, Files.readAllBytes(image.toPath()));
-					}
-					// export save file
-					try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-						try (XMLWriter w = new XMLWriter(out)) {
-							mCharacter.save(w, true, false);
-						}
-						path = String.format("api/SaveCharacterRawFileGCS/%s/%s", mCharacter.getId(), key); //$NON-NLS-1$
-						n = client.sendRequest(HttpMethodType.POST, path, out.toByteArray());
-					}
-					return true;
-				}
-			}
-		}
-		return false; // probably shouldn't end up here
-	}
-
-	private boolean showExistsDialogIfNecessary(WebServiceClient client) throws MalformedURLException, IOException, NotImplementedException {
-		String key = OutputPreferences.getGurpsCalculatorKey();
-		String path = String.format("api/GetCharacterExists/%s/%s", mCharacter.getId(), key); //$NON-NLS-1$
-		String response = client.sendRequest(HttpMethodType.GET, path);
-		if (response.equals("true")) { //$NON-NLS-1$
-			Component frame = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
-			Object[] options = { OPTION_REPLACE, OPTION_CREATE_NEW, OPTION_CANCEL };
-			int n = JOptionPane.showOptionDialog(frame, TEXT_CHARACTER_EXISTS, TITLE_CHARACTER_EXISTS, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[2]);
-			if (n == 2) {
-				return false;
-			}
-			if (n == 1) {
-				mCharacter.generateNewId();
-				mCharacter.setModified(true);
-			}
-		}
-		return true;
 	}
 
 	/**
