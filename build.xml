@@ -162,7 +162,7 @@
 		<!-- Copy the database. -->
 		<mkdir dir="${data}"/>
 		<copy todir="${data}">
-			<fileset dir="Library"/>
+			<fileset dir="../gcs_library/Library"/>
 		</copy>
 
 		<!-- Create the zip file. Using native implementation to preserve execution bits on unix-like OS's. -->

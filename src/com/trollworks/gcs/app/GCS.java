@@ -242,7 +242,11 @@ public class GCS {
 		if (library != null) {
 			return Paths.get(library);
 		}
-		return App.getHomePath().resolve("Library"); //$NON-NLS-1$
+		Path path = App.getHomePath();
+		if (BundleInfo.getDefault().getVersion() == 0) {
+			path = path.resolve("../gcs_library"); //$NON-NLS-1$
+		}
+		return path.resolve("Library"); //$NON-NLS-1$
 	}
 
 	/**
