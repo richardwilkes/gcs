@@ -4,11 +4,12 @@ GURPS Character Sheet (GCS) is a stand-alone, interactive, character sheet edito
 
 ## Development Setup
 
-GCS is composed of three source projects that I maintain:
+GCS is composed of four source projects that I maintain:
 
 - https://github.com/richardwilkes/apple_stubs
 - https://github.com/richardwilkes/toolkit
 - https://github.com/richardwilkes/gcs
+- https://github.com/richardwilkes/gcs_library
 
 The code is compiled with Java 8. Ant is used to build the product and produce the distribution bundles, however, I use the latest Eclipse release for daily development.
 
@@ -19,6 +20,7 @@ The code is compiled with Java 8. Ant is used to build the product and produce t
   % git clone https://github.com/richardwilkes/apple_stubs.git
   % git clone https://github.com/richardwilkes/toolkit.git
   % git clone https://github.com/richardwilkes/gcs.git
+  % git clone https://github.com/richardwilkes/gcs_library.git
   ```
 
 2. Compile the code:
