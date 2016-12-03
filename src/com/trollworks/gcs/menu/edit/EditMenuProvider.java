@@ -30,8 +30,10 @@ import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.Platform;
 
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 
 /** Provides the standard "Edit" menu. */
@@ -40,7 +42,9 @@ public class EditMenuProvider implements MenuProvider {
 	@Localize(locale = "de", value = "Bearbeiten")
 	@Localize(locale = "ru", value = "Правка")
 	@Localize(locale = "es", value = "Editar")
-	private static String EDIT;
+	private static String	EDIT;
+	@Localize("User Interface Language")
+	private static String	LANGUAGE;
 
 	static {
 		Localization.initialize();
@@ -108,10 +112,23 @@ public class EditMenuProvider implements MenuProvider {
 		menu.add(new DynamicCheckBoxMenuItem(AddNaturalPunchCommand.INSTANCE));
 		menu.add(new DynamicCheckBoxMenuItem(AddNaturalKickCommand.INSTANCE));
 		menu.add(new DynamicCheckBoxMenuItem(AddNaturalKickWithBootsCommand.INSTANCE));
+		menu.addSeparator();
 		if (!Platform.isMacintosh()) {
-			menu.addSeparator();
 			menu.add(new DynamicMenuItem(PreferencesCommand.INSTANCE));
 		}
+		menu.add(createLanguageMenu());
+		DynamicMenuEnabler.add(menu);
+		return menu;
+	}
+
+	public static JMenu createLanguageMenu() {
+		JMenu menu = new JMenu(LANGUAGE);
+		menu.add(new JCheckBoxMenuItem(new SetLanguageCommand(null)));
+		menu.addSeparator();
+		menu.add(new JCheckBoxMenuItem(new SetLanguageCommand(new Locale("en")))); //$NON-NLS-1$
+		menu.add(new JCheckBoxMenuItem(new SetLanguageCommand(new Locale("de")))); //$NON-NLS-1$
+		menu.add(new JCheckBoxMenuItem(new SetLanguageCommand(new Locale("ru")))); //$NON-NLS-1$
+		menu.add(new JCheckBoxMenuItem(new SetLanguageCommand(new Locale("es")))); //$NON-NLS-1$
 		DynamicMenuEnabler.add(menu);
 		return menu;
 	}
