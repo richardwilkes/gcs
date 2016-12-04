@@ -20,6 +20,7 @@ import com.trollworks.gcs.menu.item.ItemMenuProvider;
 import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.preferences.ReferenceLookupPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.UpdateChecker;
 import com.trollworks.toolkit.ui.menu.StdMenuBar;
@@ -27,10 +28,13 @@ import com.trollworks.toolkit.ui.preferences.FontPreferences;
 import com.trollworks.toolkit.ui.preferences.MenuKeyPreferences;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
 import com.trollworks.toolkit.ui.widget.AppWindow;
+import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.FileType;
+import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.Platform;
 import com.trollworks.toolkit.utility.WindowsRegistry;
 import com.trollworks.toolkit.utility.cmdline.CmdLine;
+import com.trollworks.toolkit.utility.text.Text;
 
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -38,9 +42,17 @@ import java.util.Map;
 
 /** The main application user interface. */
 public class GCSApp extends App {
+	@Localize("macOS has translocated GCS, restricting access to the file system and preventing access to the data library. To fix this, you must quit GCS, then run the following command in the terminal after cd'ing into the GURPS Character Sheet folder:\n\n")
+	private static String TRANSLOCATION_INSTRUCTIONS;
+
+	static {
+		Localization.initialize();
+	}
+
 	/** The one and only instance of this class. */
 	public static final GCSApp	INSTANCE	= new GCSApp();
-	public static final String	WEB_SITE	= "http://gurpscharactersheet.com";	//$NON-NLS-1$
+	public static final String	WEB_SITE	= "http://gurpscharactersheet.com";									//$NON-NLS-1$
+	private static String		XATTR_CMD	= "xattr -d com.apple.quarantine \"GURPS Character Sheet.app\"";	//$NON-NLS-1$
 
 	private GCSApp() {
 		super();
@@ -83,5 +95,8 @@ public class GCSApp extends App {
 	public void finalStartup() {
 		super.finalStartup();
 		setDefaultMenuBar(new StdMenuBar());
+		if (Platform.isMacintosh() && App.getHomePath().toString().toLowerCase().contains("/apptranslocation/")) { //$NON-NLS-1$
+			WindowUtils.showError(null, Text.wrapToCharacterCount(TRANSLOCATION_INSTRUCTIONS, 60) + XATTR_CMD);
+		}
 	}
 }
