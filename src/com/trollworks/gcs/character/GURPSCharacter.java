@@ -1219,7 +1219,18 @@ public class GURPSCharacter extends DataFile {
 			value = 0;
 		} else {
 			if (SheetPreferences.areOptionalStrengthRulesUsed()) {
+				int diff = 0;
+				if (strength > 19) {
+					diff = strength / 10 - 1;
+					strength -= diff * 10;
+				}
 				value = Math.pow(10.0, strength / 10.0) * multiplier;
+				if (strength <= 6) {
+					value = Math.round(value * 10.0) / 10.0;
+				} else {
+					value = Math.round(value);
+				}
+				value *= Math.pow(10, diff);
 			} else {
 				value = strength * strength / divisor;
 			}
