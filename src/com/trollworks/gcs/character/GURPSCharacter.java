@@ -1237,8 +1237,8 @@ public class GURPSCharacter extends DataFile {
 			if (value >= roundAt) {
 				value = Math.round(value);
 			}
+			value = Math.floor(value * 10.0) / 10.0;
 		}
-		value = Math.floor(value * 10.0) / 10.0;
 		return new WeightValue(desiredUnits.convert(units, value), desiredUnits);
 	}
 
