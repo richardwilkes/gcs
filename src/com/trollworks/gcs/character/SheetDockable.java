@@ -66,26 +66,19 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 	@Localize(locale = "ru", value = "Лист без названия")
 	@Localize(locale = "es", value = "Hoja sin título")
 	private static String	UNTITLED;
-	@Localize("An error occurred while trying to save the sheet as a PNG.")
-	@Localize(locale = "de", value = "Ein Fehler ist beim Exportieren des Charakterblatts als PNG aufgetreten.")
-	@Localize(locale = "ru", value = "Произошла ошибка при попытке сохранить лист как PNG.")
-	@Localize(locale = "es", value = "ha ocurrido un error al intentar salvar la hoja como archivo PNG")
-	private static String	SAVE_AS_PNG_ERROR;
-	@Localize("An error occurred while trying to save the sheet as a PDF.")
-	@Localize(locale = "de", value = "Ein Fehler ist beim Exportieren des Charakterblatts als PDF aufgetreten.")
-	@Localize(locale = "ru", value = "Произошла ошибка при попытке сохранить лист в формате PDF.")
-	@Localize(locale = "es", value = "Ha ocurrido un error al intentar salvar la hoja como archivo PDF")
-	private static String	SAVE_AS_PDF_ERROR;
-	@Localize("An error occurred while trying to save the sheet as HTML.")
-	@Localize(locale = "de", value = "Ein Fehler ist beim Exportieren des Charakterblatts als HTML aufgetreten.")
-	@Localize(locale = "ru", value = "Произошла ошибка при попытке сохранить лист в формате HTML.")
-	@Localize(locale = "es", value = "Ha ocurrido un error al intentar salvar la hoja como archivo HTML")
-	private static String	SAVE_AS_HTML_ERROR;
+	@Localize("An error occurred while trying to export the sheet as a PNG.")
+	private static String	EXPORT_PNG_ERROR;
+	@Localize("An error occurred while trying to export the sheet as a PDF.")
+	private static String	EXPORT_PDF_ERROR;
+	@Localize("An error occurred while trying to export the sheet using the text template.")
+	private static String	EXPORT_TEXT_TEMPLATE_ERROR;
 	@Localize("Add Rows")
 	@Localize(locale = "de", value = "Zeilen hinzufügen")
 	@Localize(locale = "ru", value = "Добавить строки")
 	@Localize(locale = "es", value = "Añadir filas")
 	private static String	ADD_ROWS;
+	@Localize(".%s Files")
+	private static String	TEXT_TEMPLATE_DESCRIPTION;
 
 	static {
 		Localization.initialize();
@@ -196,7 +189,14 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 
 	@Override
 	public FileType[] getAllowedFileTypes() {
-		return new FileType[] { FileType.getByExtension(GURPSCharacter.EXTENSION), FileType.getByExtension(FileType.PDF_EXTENSION), FileType.getByExtension(FileType.HTML_EXTENSION), FileType.getByExtension(FileType.PNG_EXTENSION) };
+		File textTemplate = TextTemplate.resolveTextTemplate(null);
+		String extension = PathUtils.getExtension(textTemplate.getName());
+		FileType templateType = FileType.getByExtension(extension);
+		if (templateType == null) {
+			FileType.register(extension, null, String.format(TEXT_TEMPLATE_DESCRIPTION, extension), "", null, false, false); //$NON-NLS-1$
+		}
+		templateType = FileType.getByExtension(extension);
+		return new FileType[] { FileType.getByExtension(GURPSCharacter.EXTENSION), FileType.getByExtension(FileType.PDF_EXTENSION), FileType.getByExtension(FileType.PNG_EXTENSION), templateType };
 	}
 
 	@Override
@@ -212,21 +212,23 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 	public File[] saveTo(File file) {
 		ArrayList<File> result = new ArrayList<>();
 		String extension = PathUtils.getExtension(file.getName());
-		if (FileType.HTML_EXTENSION.equals(extension)) {
-			if (mSheet.saveAsHTML(file, null, null)) {
-				result.add(file);
-			} else {
-				WindowUtils.showError(this, SAVE_AS_HTML_ERROR);
-			}
-		} else if (FileType.PNG_EXTENSION.equals(extension)) {
+		File textTemplate = TextTemplate.resolveTextTemplate(null);
+		String templateExtension = PathUtils.getExtension(textTemplate.getName());
+		if (FileType.PNG_EXTENSION.equals(extension)) {
 			if (!mSheet.saveAsPNG(file, result)) {
-				WindowUtils.showError(this, SAVE_AS_PNG_ERROR);
+				WindowUtils.showError(this, EXPORT_PNG_ERROR);
 			}
 		} else if (FileType.PDF_EXTENSION.equals(extension)) {
 			if (mSheet.saveAsPDF(file)) {
 				result.add(file);
 			} else {
-				WindowUtils.showError(this, SAVE_AS_PDF_ERROR);
+				WindowUtils.showError(this, EXPORT_PDF_ERROR);
+			}
+		} else if (templateExtension.equals(extension)) {
+			if (new TextTemplate(mSheet).export(file, null)) {
+				result.add(file);
+			} else {
+				WindowUtils.showError(this, EXPORT_TEXT_TEMPLATE_ERROR);
 			}
 		} else {
 			return super.saveTo(file);

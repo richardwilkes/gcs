@@ -29,7 +29,6 @@ import com.trollworks.toolkit.ui.print.PageOrientation;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.StdFileDialog;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
-import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.Preferences;
@@ -79,23 +78,17 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
 	@Localize(locale = "de", value = "{0} DPI")
 	@Localize(locale = "es", value = "{0} ppp")
 	private static String	DPI_FORMAT;
-	@Localize("HTML Template")
-	private static String	HTML_TEMPLATE_OVERRIDE;
+	@Localize("Text Export Template")
+	private static String	TEXT_TEMPLATE_OVERRIDE;
 	@Localize("Choose\u2026")
 	@Localize(locale = "de", value = "wählen\u2026")
 	@Localize(locale = "ru", value = "Выбрать\u2026")
 	@Localize(locale = "es", value = "Elegir\u2026")
-	private static String	HTML_TEMPLATE_PICKER;
-	@Localize("Specify a file to use as the template when exporting to HTML")
-	@Localize(locale = "de", value = "Wähle die Datei, die als Vorlage für den HTML-Export verwendet werden soll.")
-	@Localize(locale = "ru", value = "Использовать указанный файл шаблона при экспорте в HTML")
-	@Localize(locale = "es", value = "Especifica que archivose usará como plantilla cuando se exporta a formato HTML")
-	private static String	HTML_TEMPLATE_OVERRIDE_TOOLTIP;
-	@Localize("Select A HTML Template")
-	@Localize(locale = "de", value = "Wähle eine HTML-Vorlage")
-	@Localize(locale = "ru", value = "Выберите HTML-шаблон")
-	@Localize(locale = "es", value = "Selecionar una plantilla HTML")
-	private static String	SELECT_HTML_TEMPLATE;
+	private static String	TEXT_TEMPLATE_PICKER;
+	@Localize("Specify a file to use as the template when exporting to a text format, such as HTML")
+	private static String	TEXT_TEMPLATE_OVERRIDE_TOOLTIP;
+	@Localize("Select A Text Template")
+	private static String	SELECT_TEXT_TEMPLATE;
 	@Localize("Use platform native print dialogs (settings cannot be saved)")
 	@Localize(locale = "de", value = "Verwende Druckdialoge des Betriebssystems (Einstellungen können nicht gespeichert werden)")
 	@Localize(locale = "ru", value = "Использовать диалоги печати родные для ОС (в этом случае не сохраняются настройки диалогов)")
@@ -133,20 +126,20 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
 		Localization.initialize();
 	}
 
-	private static final String	MODULE							= "Output";												//$NON-NLS-1$
-	private static final int	DEFAULT_PNG_RESOLUTION			= 200;
-	private static final String	PNG_RESOLUTION_KEY				= "PNGResolution";										//$NON-NLS-1$
-	private static final int[]	DPI								= { 72, 96, 144, 150, 200, 300 };
-	private static final String	USE_HTML_TEMPLATE_OVERRIDE_KEY	= "UseHTMLTemplateOverride";							//$NON-NLS-1$
-	private static final String	HTML_TEMPLATE_OVERRIDE_KEY		= "HTMLTemplateOverride";								//$NON-NLS-1$
-	private static final String	GURPS_CALCULATOR_KEY_KEY		= "GurpsCalculatorKey";									//$NON-NLS-1$
-	public static final String	BASE_GURPS_CALCULATOR_URL		= "http://www.gurpscalculator.com";						//$NON-NLS-1$
-	public static final String	GURPS_CALCULATOR_URL			= BASE_GURPS_CALCULATOR_URL + "/Character/ImportGCS";	//$NON-NLS-1$
-	private static final String	DEFAULT_PAGE_SETTINGS_KEY		= "DefaultPageSettings";								//$NON-NLS-1$
+	private static final String	MODULE						= "Output";												//$NON-NLS-1$
+	private static final int	DEFAULT_PNG_RESOLUTION		= 200;
+	private static final String	PNG_RESOLUTION_KEY			= "PNGResolution";										//$NON-NLS-1$
+	private static final int[]	DPI							= { 72, 96, 144, 150, 200, 300 };
+	private static final String	USE_TEMPLATE_OVERRIDE_KEY	= "UseTextTemplateOverride";							//$NON-NLS-1$
+	private static final String	TEMPLATE_OVERRIDE_KEY		= "TextTemplateOverride";								//$NON-NLS-1$
+	private static final String	GURPS_CALCULATOR_KEY_KEY	= "GurpsCalculatorKey";									//$NON-NLS-1$
+	public static final String	BASE_GURPS_CALCULATOR_URL	= "http://www.gurpscalculator.com";						//$NON-NLS-1$
+	public static final String	GURPS_CALCULATOR_URL		= BASE_GURPS_CALCULATOR_URL + "/Character/ImportGCS";	//$NON-NLS-1$
+	private static final String	DEFAULT_PAGE_SETTINGS_KEY	= "DefaultPageSettings";								//$NON-NLS-1$
 	private JComboBox<String>	mPNGResolutionCombo;
-	private JCheckBox			mUseHTMLTemplateOverride;
-	private JTextField			mHTMLTemplatePath;
-	private JButton				mHTMLTemplatePicker;
+	private JCheckBox			mUseTextTemplateOverride;
+	private JTextField			mTextTemplatePath;
+	private JButton				mTextTemplatePicker;
 	private JButton				mGurpsCalculatorLink;
 	private JTextField			mGurpsCalculatorKey;
 	private JCheckBox			mUseNativePrinter;
@@ -159,12 +152,12 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
 			if (PNG_RESOLUTION_KEY.equals(key)) {
 				prefs.setValue(MODULE, PNG_RESOLUTION_KEY, prefs.getIntValue(SheetPreferences.MODULE, PNG_RESOLUTION_KEY, DEFAULT_PNG_RESOLUTION));
 				prefs.removePreference(SheetPreferences.MODULE, PNG_RESOLUTION_KEY);
-			} else if (USE_HTML_TEMPLATE_OVERRIDE_KEY.equals(key)) {
-				prefs.setValue(MODULE, USE_HTML_TEMPLATE_OVERRIDE_KEY, prefs.getBooleanValue(SheetPreferences.MODULE, USE_HTML_TEMPLATE_OVERRIDE_KEY));
-				prefs.removePreference(SheetPreferences.MODULE, USE_HTML_TEMPLATE_OVERRIDE_KEY);
-			} else if (HTML_TEMPLATE_OVERRIDE_KEY.equals(key)) {
-				prefs.setValue(MODULE, HTML_TEMPLATE_OVERRIDE_KEY, prefs.getStringValue(SheetPreferences.MODULE, HTML_TEMPLATE_OVERRIDE_KEY));
-				prefs.removePreference(SheetPreferences.MODULE, HTML_TEMPLATE_OVERRIDE_KEY);
+			} else if (USE_TEMPLATE_OVERRIDE_KEY.equals(key)) {
+				prefs.setValue(MODULE, USE_TEMPLATE_OVERRIDE_KEY, prefs.getBooleanValue(SheetPreferences.MODULE, USE_TEMPLATE_OVERRIDE_KEY));
+				prefs.removePreference(SheetPreferences.MODULE, USE_TEMPLATE_OVERRIDE_KEY);
+			} else if (TEMPLATE_OVERRIDE_KEY.equals(key)) {
+				prefs.setValue(MODULE, TEMPLATE_OVERRIDE_KEY, prefs.getStringValue(SheetPreferences.MODULE, TEMPLATE_OVERRIDE_KEY));
+				prefs.removePreference(SheetPreferences.MODULE, TEMPLATE_OVERRIDE_KEY);
 			} else if (GURPS_CALCULATOR_KEY_KEY.equals(key)) {
 				prefs.setValue(MODULE, GURPS_CALCULATOR_KEY_KEY, prefs.getStringValue(SheetPreferences.MODULE, GURPS_CALCULATOR_KEY_KEY));
 				prefs.removePreference(SheetPreferences.MODULE, GURPS_CALCULATOR_KEY_KEY);
@@ -180,23 +173,23 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
 		return Preferences.getInstance().getIntValue(MODULE, PNG_RESOLUTION_KEY, DEFAULT_PNG_RESOLUTION);
 	}
 
-	/** @return Whether the default HTML template has been overridden. */
-	public static boolean isHTMLTemplateOverridden() {
-		return Preferences.getInstance().getBooleanValue(MODULE, USE_HTML_TEMPLATE_OVERRIDE_KEY);
+	/** @return Whether the default text template has been overridden. */
+	public static boolean isTextTemplateOverridden() {
+		return Preferences.getInstance().getBooleanValue(MODULE, USE_TEMPLATE_OVERRIDE_KEY);
 	}
 
-	/** @return The HTML template to use when exporting to HTML. */
-	public static String getHTMLTemplate() {
-		return isHTMLTemplateOverridden() ? getHTMLTemplateOverride() : getDefaultHTMLTemplate();
+	/** @return The text template to use when exporting to a text format. */
+	public static String getTextTemplate() {
+		return isTextTemplateOverridden() ? getTextTemplateOverride() : getDefaultTextTemplate();
 	}
 
-	private static String getHTMLTemplateOverride() {
-		return Preferences.getInstance().getStringValue(MODULE, HTML_TEMPLATE_OVERRIDE_KEY);
+	private static String getTextTemplateOverride() {
+		return Preferences.getInstance().getStringValue(MODULE, TEMPLATE_OVERRIDE_KEY);
 	}
 
-	/** @return The default HTML template to use when exporting to HTML. */
-	public static String getDefaultHTMLTemplate() {
-		return GCS.getLibraryRootPath().resolve("Output Templates").resolve("template.html").toString(); //$NON-NLS-1$ //$NON-NLS-2$
+	/** @return The default text template to use when exporting to a text format. */
+	public static String getDefaultTextTemplate() {
+		return GCS.getLibraryRootPath().resolve("Output Templates").resolve("html_template.html").toString(); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	public static String getGurpsCalculatorKey() {
@@ -284,13 +277,13 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
 		column.add(mUseNativePrinter);
 
 		row = new FlexRow();
-		mUseHTMLTemplateOverride = createCheckBox(HTML_TEMPLATE_OVERRIDE, HTML_TEMPLATE_OVERRIDE_TOOLTIP, isHTMLTemplateOverridden());
-		row.add(mUseHTMLTemplateOverride);
-		mHTMLTemplatePath = createHTMLTemplatePathField();
-		row.add(mHTMLTemplatePath);
-		mHTMLTemplatePicker = createButton(HTML_TEMPLATE_PICKER, HTML_TEMPLATE_OVERRIDE_TOOLTIP);
-		mHTMLTemplatePicker.setEnabled(isHTMLTemplateOverridden());
-		row.add(mHTMLTemplatePicker);
+		mUseTextTemplateOverride = createCheckBox(TEXT_TEMPLATE_OVERRIDE, TEXT_TEMPLATE_OVERRIDE_TOOLTIP, isTextTemplateOverridden());
+		row.add(mUseTextTemplateOverride);
+		mTextTemplatePath = createTextTemplatePathField();
+		row.add(mTextTemplatePath);
+		mTextTemplatePicker = createButton(TEXT_TEMPLATE_PICKER, TEXT_TEMPLATE_OVERRIDE_TOOLTIP);
+		mTextTemplatePicker.setEnabled(isTextTemplateOverridden());
+		row.add(mTextTemplatePicker);
 		column.add(row);
 
 		row = new FlexRow();
@@ -314,10 +307,10 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
 		return button;
 	}
 
-	private JTextField createHTMLTemplatePathField() {
-		JTextField field = new JTextField(getHTMLTemplate());
-		field.setToolTipText(Text.wrapPlainTextForToolTip(HTML_TEMPLATE_OVERRIDE_TOOLTIP));
-		field.setEnabled(isHTMLTemplateOverridden());
+	private JTextField createTextTemplatePathField() {
+		JTextField field = new JTextField(getTextTemplate());
+		field.setToolTipText(Text.wrapPlainTextForToolTip(TEXT_TEMPLATE_OVERRIDE_TOOLTIP));
+		field.setEnabled(isTextTemplateOverridden());
 		field.getDocument().addDocumentListener(this);
 		Dimension size = field.getPreferredSize();
 		Dimension maxSize = field.getMaximumSize();
@@ -377,10 +370,10 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
 		Object source = event.getSource();
 		if (source == mPNGResolutionCombo) {
 			Preferences.getInstance().setValue(MODULE, PNG_RESOLUTION_KEY, DPI[mPNGResolutionCombo.getSelectedIndex()]);
-		} else if (source == mHTMLTemplatePicker) {
-			File file = StdFileDialog.showOpenDialog(this, SELECT_HTML_TEMPLATE, FileType.getHtmlFilter());
+		} else if (source == mTextTemplatePicker) {
+			File file = StdFileDialog.showOpenDialog(this, SELECT_TEXT_TEMPLATE);
 			if (file != null) {
-				mHTMLTemplatePath.setText(PathUtils.getFullPath(file));
+				mTextTemplatePath.setText(PathUtils.getFullPath(file));
 			}
 		} else if (source == mGurpsCalculatorLink && Desktop.isDesktopSupported()) {
 			try {
@@ -401,20 +394,20 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
 				break;
 			}
 		}
-		mUseHTMLTemplateOverride.setSelected(false);
+		mUseTextTemplateOverride.setSelected(false);
 		mUseNativePrinter.setSelected(false);
 	}
 
 	@Override
 	public boolean isSetToDefaults() {
-		return getPNGResolution() == DEFAULT_PNG_RESOLUTION && isHTMLTemplateOverridden() == false && !PrintManager.useNativeDialogs() && mGurpsCalculatorKey.getText().equals(""); //$NON-NLS-1$
+		return getPNGResolution() == DEFAULT_PNG_RESOLUTION && isTextTemplateOverridden() == false && !PrintManager.useNativeDialogs() && mGurpsCalculatorKey.getText().equals(""); //$NON-NLS-1$
 	}
 
 	@Override
 	public void changedUpdate(DocumentEvent event) {
 		Document document = event.getDocument();
-		if (mHTMLTemplatePath.getDocument() == document) {
-			Preferences.getInstance().setValue(MODULE, HTML_TEMPLATE_OVERRIDE_KEY, mHTMLTemplatePath.getText());
+		if (mTextTemplatePath.getDocument() == document) {
+			Preferences.getInstance().setValue(MODULE, TEMPLATE_OVERRIDE_KEY, mTextTemplatePath.getText());
 		} else if (mGurpsCalculatorKey.getDocument() == document) {
 			Preferences.getInstance().setValue(MODULE, GURPS_CALCULATOR_KEY_KEY, mGurpsCalculatorKey.getText());
 		}
@@ -434,12 +427,12 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
 	@Override
 	public void itemStateChanged(ItemEvent event) {
 		Object source = event.getSource();
-		if (source == mUseHTMLTemplateOverride) {
-			boolean checked = mUseHTMLTemplateOverride.isSelected();
-			Preferences.getInstance().setValue(MODULE, USE_HTML_TEMPLATE_OVERRIDE_KEY, checked);
-			mHTMLTemplatePath.setEnabled(checked);
-			mHTMLTemplatePicker.setEnabled(checked);
-			mHTMLTemplatePath.setText(getHTMLTemplate());
+		if (source == mUseTextTemplateOverride) {
+			boolean checked = mUseTextTemplateOverride.isSelected();
+			Preferences.getInstance().setValue(MODULE, USE_TEMPLATE_OVERRIDE_KEY, checked);
+			mTextTemplatePath.setEnabled(checked);
+			mTextTemplatePicker.setEnabled(checked);
+			mTextTemplatePath.setText(getTextTemplate());
 		} else if (source == mUseNativePrinter) {
 			PrintManager.useNativeDialogs(mUseNativePrinter.isSelected());
 		}

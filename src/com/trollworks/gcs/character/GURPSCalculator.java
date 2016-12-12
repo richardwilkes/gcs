@@ -84,7 +84,7 @@ public class GURPSCalculator {
 							out.print(client.sendRequest(HttpMethodType.GET, "api/GetOutputTemplate")); //$NON-NLS-1$
 						}
 						try (TemporaryFile outputFile = new TemporaryFile("gcalcOutput", ".html")) { //$NON-NLS-1$ //$NON-NLS-2$
-							if (sheet.saveAsHTML(outputFile, templateFile, null)) {
+							if (new TextTemplate(sheet).export(outputFile, templateFile)) {
 								String result = null;
 								try (Scanner scanner = new Scanner(outputFile)) {
 									result = scanner.useDelimiter("\\A").next(); //$NON-NLS-1$

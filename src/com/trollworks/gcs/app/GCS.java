@@ -15,6 +15,7 @@ import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.PrerequisitesThread;
+import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.skill.SkillList;
@@ -88,21 +89,15 @@ public class GCS {
 	@Localize(locale = "ru", value = "Создать PDF-версии листов, указанных в командной строке.")
 	@Localize(locale = "es", value = "Crear archivo PDF de las hojas especificadas en la linea de mandatos")
 	private static String	PDF_OPTION_DESCRIPTION;
-	@Localize("Create HTML versions of sheets specified on the command line.")
-	@Localize(locale = "de", value = "Erstelle HTML-Dateien von den auf der Kommandozeile angegebenen Charakterblättern.")
-	@Localize(locale = "ru", value = "Создать HTML-версии листов, указанных в командной строке.")
-	@Localize(locale = "es", value = "Crear archivo HTML de las hojas especificadas en la linea de mandatos")
-	private static String	HTML_OPTION_DESCRIPTION;
-	@Localize("A template to use when creating HTML versions of the sheets. If this is not specified, then the template found in the data directory will be used by default.")
-	@Localize(locale = "de", value = "Die zu verwendende Vorlage, wenn HTML-Dateien erstellt werden. Wenn diese Option nicht angegeben wird, wird die Vorlage aus der Bibliothek verwendet.")
-	@Localize(locale = "ru", value = "Шаблон, используемый при создании HTML-версии листа. Если не указано, по умолчанию будет использоваться шаблон из папки с данными.")
-	@Localize(locale = "es", value = "Plantilla que se usará para generar la ficha en formato HTML. Si no se especifica, entonces se usará por defecto la plantilla que se encuentre en el directorio de datos.")
-	private static String	HTML_TEMPLATE_OPTION_DESCRIPTION;
+	@Localize("Create text versions of sheets specified on the command line.")
+	private static String	TEXT_OPTION_DESCRIPTION;
+	@Localize("A template to use when creating text versions of the sheets. If this is not specified, then the template found in the data directory will be used by default.")
+	private static String	TEXT_TEMPLATE_OPTION_DESCRIPTION;
 	@Localize("FILE")
 	@Localize(locale = "de", value = "DATEI")
 	@Localize(locale = "ru", value = "ФАЙЛ")
 	@Localize(locale = "es", value = "Archivo")
-	private static String	HTML_TEMPLATE_ARG;
+	private static String	TEXT_TEMPLATE_ARG;
 	@Localize("Create PNG versions of sheets specified on the command line.")
 	@Localize(locale = "de", value = "Erstelle PNG-Dateien von den auf der Kommandozeile angegebenen Charakterblättern.")
 	@Localize(locale = "ru", value = "Создать PNG-версии листов, указанных в командной строке.")
@@ -133,11 +128,8 @@ public class GCS {
 	@Localize(locale = "ru", value = "  Создание PDF... ")
 	@Localize(locale = "es", value = "  Generando archivo PDF... ")
 	private static String	CREATING_PDF;
-	@Localize("  Creating HMTL... ")
-	@Localize(locale = "de", value = "  Erstelle HTML-Datei... ")
-	@Localize(locale = "ru", value = "  Создание HMTL... ")
-	@Localize(locale = "es", value = "  Generando archivo HTML... ")
-	private static String	CREATING_HTML;
+	@Localize("  Creating from text template... ")
+	private static String	CREATING_TEXT;
 	@Localize("  Creating PNG... ")
 	@Localize(locale = "de", value = "  Erstelle PNG-Datei... ")
 	@Localize(locale = "ru", value = "  Создание PNG... ")
@@ -168,10 +160,7 @@ public class GCS {
 	@Localize(locale = "ru", value = "ПРЕДУПРЕЖДЕНИЕ: Неверные поля бумаги.")
 	@Localize(locale = "es", value = "AVISO: Los margenes especificados no son válidos")
 	private static String	INVALID_PAPER_MARGINS;
-	@Localize("    Used template file \"{0}\".")
-	@Localize(locale = "de", value = "    Verwendete HTML-Vorlage: \"{0}\".")
-	@Localize(locale = "ru", value = "    Использован файл шаблона\"{0}\".")
-	@Localize(locale = "es", value = "    Plantilla utilizada: \"{0}\".")
+	@Localize("    Used text template file \"{0}\".")
 	private static String	TEMPLATE_USED;
 
 	static {
@@ -180,8 +169,8 @@ public class GCS {
 	}
 
 	private static final CmdLineOption	PDF_OPTION				= new CmdLineOption(PDF_OPTION_DESCRIPTION, null, FileType.PDF_EXTENSION);
-	private static final CmdLineOption	HTML_OPTION				= new CmdLineOption(HTML_OPTION_DESCRIPTION, null, FileType.HTML_EXTENSION);
-	private static final CmdLineOption	HTML_TEMPLATE_OPTION	= new CmdLineOption(HTML_TEMPLATE_OPTION_DESCRIPTION, HTML_TEMPLATE_ARG, "html_template");	//$NON-NLS-1$
+	private static final CmdLineOption	TEXT_OPTION				= new CmdLineOption(TEXT_OPTION_DESCRIPTION, null, "text");									//$NON-NLS-1$
+	private static final CmdLineOption	TEXT_TEMPLATE_OPTION	= new CmdLineOption(TEXT_TEMPLATE_OPTION_DESCRIPTION, TEXT_TEMPLATE_ARG, "text_template");	//$NON-NLS-1$
 	private static final CmdLineOption	PNG_OPTION				= new CmdLineOption(PNG_OPTION_DESCRIPTION, null, FileType.PNG_EXTENSION);
 	private static final CmdLineOption	SIZE_OPTION				= new CmdLineOption(SIZE_OPTION_DESCRIPTION, "SIZE", "paper");								//$NON-NLS-1$ //$NON-NLS-2$
 	private static final CmdLineOption	MARGIN_OPTION			= new CmdLineOption(MARGIN_OPTION_DESCRIPTION, "MARGINS", "margins");						//$NON-NLS-1$ //$NON-NLS-2$
@@ -196,9 +185,9 @@ public class GCS {
 		App.setup(GCS.class);
 		Dice.setAssumedSideCount(6);
 		CmdLine cmdLine = new CmdLine();
-		cmdLine.addOptions(HTML_OPTION, HTML_TEMPLATE_OPTION, PDF_OPTION, PNG_OPTION, SIZE_OPTION, MARGIN_OPTION);
+		cmdLine.addOptions(TEXT_OPTION, TEXT_TEMPLATE_OPTION, PDF_OPTION, PNG_OPTION, SIZE_OPTION, MARGIN_OPTION);
 		cmdLine.processArguments(args);
-		if (cmdLine.isOptionUsed(HTML_OPTION) || cmdLine.isOptionUsed(PDF_OPTION) || cmdLine.isOptionUsed(PNG_OPTION)) {
+		if (cmdLine.isOptionUsed(TEXT_OPTION) || cmdLine.isOptionUsed(PDF_OPTION) || cmdLine.isOptionUsed(PNG_OPTION)) {
 			System.setProperty("java.awt.headless", Boolean.TRUE.toString()); //$NON-NLS-1$
 			initialize();
 			Timing timing = new Timing();
@@ -266,20 +255,20 @@ public class GCS {
 	}
 
 	private static int convert(CmdLine cmdLine) {
-		boolean html = cmdLine.isOptionUsed(GCS.HTML_OPTION);
+		boolean text = cmdLine.isOptionUsed(GCS.TEXT_OPTION);
 		boolean pdf = cmdLine.isOptionUsed(GCS.PDF_OPTION);
 		boolean png = cmdLine.isOptionUsed(GCS.PNG_OPTION);
 		int count = 0;
 
-		if (html || pdf || png) {
+		if (text || pdf || png) {
 			double[] paperSize = getPaperSize(cmdLine);
 			double[] margins = getMargins(cmdLine);
 			Timing timing = new Timing();
-			String htmlTemplateOption = cmdLine.getOptionArgument(GCS.HTML_TEMPLATE_OPTION);
-			File htmlTemplate = null;
+			String textTemplateOption = cmdLine.getOptionArgument(GCS.TEXT_TEMPLATE_OPTION);
+			File textTemplate = null;
 
-			if (htmlTemplateOption != null) {
-				htmlTemplate = new File(htmlTemplateOption);
+			if (textTemplateOption != null) {
+				textTemplate = new File(textTemplateOption);
 			}
 			GraphicsUtilities.setHeadlessPrintMode(true);
 			for (File file : cmdLine.getArgumentsAsFiles()) {
@@ -310,16 +299,15 @@ public class GCS {
 						sheet.setSize(sheet.getPreferredSize());
 
 						System.out.println(timing);
-						if (html) {
-							StringBuilder builder = new StringBuilder();
-
-							System.out.print(CREATING_HTML);
+						if (text) {
+							System.out.print(CREATING_TEXT);
 							System.out.flush();
-							output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), FileType.HTML_EXTENSION));
+							textTemplate = TextTemplate.resolveTextTemplate(textTemplate);
+							output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), PathUtils.getExtension(textTemplate.getName())));
 							timing.reset();
-							success = sheet.saveAsHTML(output, htmlTemplate, builder);
+							success = new TextTemplate(sheet).export(output, textTemplate);
 							System.out.println(timing);
-							System.out.println(MessageFormat.format(TEMPLATE_USED, builder));
+							System.out.println(MessageFormat.format(TEMPLATE_USED, PathUtils.getFullPath(textTemplate)));
 							if (success) {
 								System.out.println(MessageFormat.format(CREATED, output));
 								count++;
