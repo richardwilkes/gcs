@@ -65,7 +65,9 @@ public class TextTemplate {
 	private static final String	KEY_BASIC_HP							= "BASIC_HP";
 	private static final String	KEY_BASIC_LIFT							= "BASIC_LIFT";
 	private static final String	KEY_BASIC_MOVE							= "BASIC_MOVE";
+	private static final String	KEY_BASIC_MOVE_POINTS					= "BASIC_MOVE_POINTS";
 	private static final String	KEY_BASIC_SPEED							= "BASIC_SPEED";
+	private static final String	KEY_BASIC_SPEED_POINTS					= "BASIC_SPEED_POINTS";
 	private static final String	KEY_BEST_CURRENT_BLOCK					= "BEST_CURRENT_BLOCK";
 	private static final String	KEY_BEST_CURRENT_PARRY					= "BEST_CURRENT_PARRY";
 	private static final String	KEY_BIRTHDAY							= "BIRTHDAY";
@@ -101,6 +103,7 @@ public class TextTemplate {
 	private static final String	KEY_DR									= "DR";
 	private static final String	KEY_DURATION							= "DURATION";
 	private static final String	KEY_DX									= "DX";
+	private static final String	KEY_DX_POINTS							= "DX_POINTS";
 	private static final String	KEY_EARNED_POINTS						= "EARNED_POINTS";
 	private static final String	KEY_ENCODING_OFF						= "ENCODING_OFF";
 	private static final String	KEY_ENCUMBRANCE_LOOP_END				= "ENCUMBRANCE_LOOP_END";
@@ -110,6 +113,7 @@ public class TextTemplate {
 	private static final String	KEY_EYES								= "EYES";
 	private static final String	KEY_FP									= "FP";
 	private static final String	KEY_FP_COLLAPSE							= "FP_COLLAPSE";
+	private static final String	KEY_FP_POINTS							= "FP_POINTS";
 	private static final String	KEY_FRIGHT_CHECK						= "FRIGHT_CHECK";
 	private static final String	KEY_GENDER								= "GENDER";
 	private static final String	KEY_GENERAL_DR							= "GENERAL_DR";
@@ -121,9 +125,12 @@ public class TextTemplate {
 	private static final String	KEY_HIT_LOCATION_LOOP_START				= "HIT_LOCATION_LOOP_START";
 	private static final String	KEY_HP									= "HP";
 	private static final String	KEY_HP_COLLAPSE							= "HP_COLLAPSE";
+	private static final String	KEY_HP_POINTS							= "HP_POINTS";
 	private static final String	KEY_HT									= "HT";
+	private static final String	KEY_HT_POINTS							= "HT_POINTS";
 	private static final String	KEY_ID									= "ID";
 	private static final String	KEY_IQ									= "IQ";
+	private static final String	KEY_IQ_POINTS							= "IQ_POINTS";
 	private static final String	KEY_LANGUAGES_LOOP_END					= "LANGUAGES_LOOP_END";
 	private static final String	KEY_LANGUAGES_LOOP_START				= "LANGUAGES_LOOP_START";
 	private static final String	KEY_LEVEL								= "LEVEL";
@@ -143,6 +150,7 @@ public class TextTemplate {
 	private static final String	KEY_PARRY								= "PARRY";
 	private static final String	KEY_PENALTY								= "PENALTY";
 	private static final String	KEY_PERCEPTION							= "PERCEPTION";
+	private static final String	KEY_PERCEPTION_POINTS					= "PERCEPTION_POINTS";
 	private static final String	KEY_PERKS_LOOP_END						= "PERKS_LOOP_END";
 	private static final String	KEY_PERKS_LOOP_START					= "PERKS_LOOP_START";
 	private static final String	KEY_PLAYER								= "PLAYER";
@@ -181,8 +189,8 @@ public class TextTemplate {
 	private static final String	KEY_SPELLS_LOOP_END						= "SPELLS_LOOP_END";
 	private static final String	KEY_SPELLS_LOOP_START					= "SPELLS_LOOP_START";
 	private static final String	KEY_ST									= "ST";
+	private static final String	KEY_ST_POINTS							= "ST_POINTS";
 	private static final String	KEY_STATE								= "STATE";
-	private static final String	KEY_STRENGTH							= "STRENGTH";
 	private static final String	KEY_STYLE_INDENT_WARNING				= "STYLE_INDENT_WARNING";
 	private static final String	KEY_SUFFIX_PAREN						= "_PAREN";
 	private static final String	KEY_SWING								= "SWING";
@@ -199,10 +207,12 @@ public class TextTemplate {
 	private static final String	KEY_UNCONSCIOUS							= "UNCONSCIOUS";
 	private static final String	KEY_USAGE								= "USAGE";
 	private static final String	KEY_VISION								= "VISION";
+	private static final String	KEY_WEAPON_STRENGTH						= "STRENGTH";
 	private static final String	KEY_WEIGHT								= "WEIGHT";
 	private static final String	KEY_WEIGHT_SUMMARY						= "WEIGHT_SUMMARY";
 	private static final String	KEY_WHERE								= "WHERE";
 	private static final String	KEY_WILL								= "WILL";
+	private static final String	KEY_WILL_POINTS							= "WILL_POINTS";
 
 	private CharacterSheet		mSheet;
 	private boolean				mEncodeText								= true;
@@ -305,6 +315,36 @@ public class TextTemplate {
 				break;
 			case KEY_ATTRIBUTE_POINTS:
 				writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributePoints()));
+				break;
+			case KEY_ST_POINTS:
+				writeEncodedText(out, Numbers.format(gurpsCharacter.getStrengthPoints()));
+				break;
+			case KEY_DX_POINTS:
+				writeEncodedText(out, Numbers.format(gurpsCharacter.getDexterityPoints()));
+				break;
+			case KEY_IQ_POINTS:
+				writeEncodedText(out, Numbers.format(gurpsCharacter.getIntelligencePoints()));
+				break;
+			case KEY_HT_POINTS:
+				writeEncodedText(out, Numbers.format(gurpsCharacter.getHealthPoints()));
+				break;
+			case KEY_PERCEPTION_POINTS:
+				writeEncodedText(out, Numbers.format(gurpsCharacter.getPerceptionPoints()));
+				break;
+			case KEY_WILL_POINTS:
+				writeEncodedText(out, Numbers.format(gurpsCharacter.getWillPoints()));
+				break;
+			case KEY_FP_POINTS:
+				writeEncodedText(out, Numbers.format(gurpsCharacter.getFatiguePointPoints()));
+				break;
+			case KEY_HP_POINTS:
+				writeEncodedText(out, Numbers.format(gurpsCharacter.getHitPointPoints()));
+				break;
+			case KEY_BASIC_SPEED_POINTS:
+				writeEncodedText(out, Numbers.format(gurpsCharacter.getBasicSpeedPoints()));
+				break;
+			case KEY_BASIC_MOVE_POINTS:
+				writeEncodedText(out, Numbers.format(gurpsCharacter.getBasicMovePoints()));
 				break;
 			case KEY_ADVANTAGE_POINTS:
 				writeEncodedText(out, Numbers.format(gurpsCharacter.getAdvantagePoints()));
@@ -980,7 +1020,7 @@ public class TextTemplate {
 								case KEY_REACH:
 									writeEncodedText(out, weapon.getReach());
 									break;
-								case KEY_STRENGTH:
+								case KEY_WEAPON_STRENGTH:
 									writeEncodedText(out, weapon.getStrength());
 									break;
 								case KEY_ID:
@@ -1064,7 +1104,7 @@ public class TextTemplate {
 								case KEY_RECOIL:
 									writeEncodedText(out, weapon.getRecoil());
 									break;
-								case KEY_STRENGTH:
+								case KEY_WEAPON_STRENGTH:
 									writeEncodedText(out, weapon.getStrength());
 									break;
 								case KEY_ID:
