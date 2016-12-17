@@ -87,6 +87,7 @@ public class TextTemplate {
 	private static final String	KEY_CURRENT_DODGE						= "CURRENT_DODGE";
 	private static final String	KEY_CURRENT_MARKER						= "CURRENT_MARKER";
 	private static final String	KEY_DAMAGE								= "DAMAGE";
+	private static final String	KEY_UNMODIFIED_DAMAGE					= "UNMODIFIED_DAMAGE";
 	private static final String	KEY_DEAD								= "DEAD";
 	private static final String	KEY_DEATH_CHECK_1						= "DEATH_CHECK_1";
 	private static final String	KEY_DEATH_CHECK_2						= "DEATH_CHECK_2";
@@ -1017,6 +1018,9 @@ public class TextTemplate {
 								case KEY_DAMAGE:
 									writeEncodedText(out, weapon.getResolvedDamage());
 									break;
+								case KEY_UNMODIFIED_DAMAGE:
+									writeEncodedText(out, weapon.getDamage());
+									break;
 								case KEY_REACH:
 									writeEncodedText(out, weapon.getReach());
 									break;
@@ -1088,6 +1092,9 @@ public class TextTemplate {
 									break;
 								case KEY_DAMAGE:
 									writeEncodedText(out, weapon.getResolvedDamage());
+									break;
+								case KEY_UNMODIFIED_DAMAGE:
+									writeEncodedText(out, weapon.getDamage());
 									break;
 								case KEY_RANGE:
 									writeEncodedText(out, weapon.getResolvedRange());
