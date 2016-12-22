@@ -16,6 +16,7 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
+import com.trollworks.gcs.menu.edit.SkillLevelIncrementable;
 import com.trollworks.gcs.menu.edit.TechLevelIncrementable;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListOutline;
@@ -36,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** An outline specifically for skills. */
-public class SkillOutline extends ListOutline implements Incrementable, TechLevelIncrementable {
+public class SkillOutline extends ListOutline implements Incrementable, TechLevelIncrementable, SkillLevelIncrementable {
 	@Localize("Increment Points")
 	@Localize(locale = "de", value = "Punkte erhöhen")
 	@Localize(locale = "ru", value = "Увеличить очки")
@@ -145,6 +146,71 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
 			if (!skill.canHaveChildren()) {
 				RowUndo undo = new RowUndo(skill);
 				skill.setPoints(skill.getPoints() + 1);
+				if (undo.finish()) {
+					undos.add(undo);
+				}
+			}
+		}
+		if (!undos.isEmpty()) {
+			repaintSelection();
+			new MultipleRowUndo(undos);
+		}
+	}
+
+	@Override
+	public boolean canIncrementSkillLevel() {
+		return canIncrement();
+	}
+
+	@Override
+	public boolean canDecrementSkillLevel() {
+		return canDecrement();
+	}
+
+	@SuppressWarnings("unused")
+	@Override
+	public void incrementSkillLevel() {
+		List<RowUndo> undos = new ArrayList<>();
+		for (Skill skill : new FilteredIterator<>(getModel().getSelectionAsList(), Skill.class)) {
+			if (!skill.canHaveChildren()) {
+				int basePoints = skill.getPoints() + 1;
+				int maxPoints = basePoints + (skill.getDifficulty() == SkillDifficulty.W ? 12 : 4);
+				int oldLevel = skill.getLevel();
+				RowUndo undo = new RowUndo(skill);
+				for (int points = basePoints; points < maxPoints; ++points) {
+					skill.setPoints(points);
+					if (skill.getLevel() > oldLevel) {
+						break;
+					}
+				}
+				if (undo.finish()) {
+					undos.add(undo);
+				}
+			}
+		}
+		if (!undos.isEmpty()) {
+			repaintSelection();
+			new MultipleRowUndo(undos);
+		}
+	}
+
+	@SuppressWarnings("unused")
+	@Override
+	public void decrementSkillLevel() {
+		List<RowUndo> undos = new ArrayList<>();
+		for (Skill skill : new FilteredIterator<>(getModel().getSelectionAsList(), Skill.class)) {
+			if (!skill.canHaveChildren()) {
+				int basePoints = Math.max(0, skill.getPoints() - 1);
+				int minPoints = Math.max(0, basePoints - (skill.getDifficulty() == SkillDifficulty.W ? 12 : 4));
+				int oldLevel = skill.getLevel();
+				RowUndo undo = new RowUndo(skill);
+				for (int points = basePoints; points > minPoints; --points) {
+					skill.setPoints(points);
+					if (skill.getLevel() < oldLevel - 1) {
+						skill.setPoints(points + 1);
+						break;
+					}
+				}
 				if (undo.finish()) {
 					undos.add(undo);
 				}
