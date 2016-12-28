@@ -331,7 +331,8 @@ public class Technique extends Skill {
 
 	@Override
 	public String getDifficultyAsText(boolean localized) {
-		return getDifficulty().toString();
+		SkillDifficulty difficulty = getDifficulty();
+		return localized ? difficulty.toString() : difficulty.name();
 	}
 
 	/** @return Whether the maximum level is limited. */
