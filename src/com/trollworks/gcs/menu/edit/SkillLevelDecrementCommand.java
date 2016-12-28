@@ -34,7 +34,7 @@ public class SkillLevelDecrementCommand extends Command {
 	public static final SkillLevelDecrementCommand	INSTANCE			= new SkillLevelDecrementCommand();
 
 	private SkillLevelDecrementCommand() {
-		super(DECREASE_LEVEL, CMD_DECREASE_LEVEL, KeyEvent.VK_MINUS, SHIFTED_COMMAND_MODIFIER);
+		super(DECREASE_LEVEL, CMD_DECREASE_LEVEL, KeyEvent.VK_MINUS, Command.SHIFTED_COMMAND_MODIFIER);
 	}
 
 	@Override
