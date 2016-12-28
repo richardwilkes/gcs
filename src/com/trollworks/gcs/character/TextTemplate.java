@@ -19,6 +19,7 @@ import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillColumn;
+import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellColumn;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
@@ -97,6 +98,7 @@ public class TextTemplate {
 	private static final String	KEY_DESCRIPTION_MODIFIER_NOTES			= "DESCRIPTION_MODIFIER_NOTES";
 	private static final String	KEY_DESCRIPTION_NOTES					= "DESCRIPTION_NOTES";
 	private static final String	KEY_DESCRIPTION_PRIMARY					= "DESCRIPTION_PRIMARY";
+	private static final String	KEY_DIFFICULTY							= "DIFFICULTY";
 	private static final String	KEY_DISADVANTAGE_POINTS					= "DISADVANTAGE_POINTS";
 	private static final String	KEY_DISADVANTAGES_LOOP_END				= "DISADVANTAGES_LOOP_END";
 	private static final String	KEY_DISADVANTAGES_LOOP_START			= "DISADVANTAGES_LOOP_START";
@@ -855,6 +857,9 @@ public class TextTemplate {
 									case KEY_RSL:
 										writeEncodedText(out, SkillColumn.RELATIVE_LEVEL.getDataAsText(skill));
 										break;
+									case KEY_DIFFICULTY:
+										writeEncodedText(out, SkillColumn.DIFFICULTY.getDataAsText(skill));
+										break;
 									case KEY_POINTS:
 										writeEncodedText(out, SkillColumn.POINTS.getDataAsText(skill));
 										break;
@@ -955,6 +960,9 @@ public class TextTemplate {
 										break;
 									case KEY_RSL:
 										writeEncodedText(out, SpellColumn.RELATIVE_LEVEL.getDataAsText(spell));
+										break;
+									case KEY_DIFFICULTY:
+										writeEncodedText(out, (spell.isVeryHard() ? SkillDifficulty.VH : SkillDifficulty.H).toString());
 										break;
 									case KEY_POINTS:
 										writeEncodedText(out, SpellColumn.POINTS.getDataAsText(spell));
