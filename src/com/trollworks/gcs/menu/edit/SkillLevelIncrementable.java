@@ -15,15 +15,21 @@ package com.trollworks.gcs.menu.edit;
  * Objects that have their Skill Level change (mainly just skills)
  */
 public interface SkillLevelIncrementable {
-	/** @return Whether the data can be incremented. */
+	/** @return The title to use for the increment skill level menu item. */
+	String getIncrementSkillLevelTitle();
+
+	/** @return The title to use for the decrement skill level menu item. */
+	String getDecrementSkillLevelTitle();
+
+	/** @return Whether the level can be incremented. */
 	boolean canIncrementSkillLevel();
 
-	/** @return Whether the data can be decremented. */
+	/** @return Whether the level can be decremented. */
 	boolean canDecrementSkillLevel();
 
-	/** Call to increment the data. */
+	/** Call to increment the level. */
 	void incrementSkillLevel();
 
-	/** Call to decrement the data. */
+	/** Call to decrement the level. */
 	void decrementSkillLevel();
 }

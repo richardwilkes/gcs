@@ -48,6 +48,12 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
 	@Localize(locale = "ru", value = "Уменьшить очки")
 	@Localize(locale = "es", value = "Disminuir Puntos")
 	private static String	DECREMENT;
+	@Localize("Increment Skill Level")
+	@Localize(locale = "ru", value = "Увеличить уровень умения")
+	private static String	INCREMENT_SKILL_LEVEL;
+	@Localize("Decrement Skill Level")
+	@Localize(locale = "ru", value = "Уменьшить уровень умения")
+	private static String	DECREMENT_SKILL_LEVEL;
 
 	static {
 		Localization.initialize();
@@ -155,6 +161,16 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
 			repaintSelection();
 			new MultipleRowUndo(undos);
 		}
+	}
+
+	@Override
+	public String getIncrementSkillLevelTitle() {
+		return INCREMENT_SKILL_LEVEL;
+	}
+
+	@Override
+	public String getDecrementSkillLevelTitle() {
+		return DECREMENT_SKILL_LEVEL;
 	}
 
 	@Override

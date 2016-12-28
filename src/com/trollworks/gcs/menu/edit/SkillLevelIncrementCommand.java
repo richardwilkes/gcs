@@ -23,6 +23,7 @@ import java.awt.event.KeyEvent;
 /** Provides "Increase Skill Level" command */
 public class SkillLevelIncrementCommand extends Command {
 	@Localize("Increase Skill Level")
+	@Localize(locale = "ru", value = "Увеличить уровень умения")
 	private static String INCREASE_LEVEL;
 
 	static {
@@ -34,7 +35,7 @@ public class SkillLevelIncrementCommand extends Command {
 	public static final SkillLevelIncrementCommand	INSTANCE			= new SkillLevelIncrementCommand();
 
 	private SkillLevelIncrementCommand() {
-		super(INCREASE_LEVEL, CMD_INCREASE_LEVEL, KeyEvent.VK_EQUALS, Command.SHIFTED_COMMAND_MODIFIER);
+		super(INCREASE_LEVEL, CMD_INCREASE_LEVEL, KeyEvent.VK_SLASH);
 	}
 
 	@Override
@@ -46,8 +47,10 @@ public class SkillLevelIncrementCommand extends Command {
 		if (focus instanceof SkillLevelIncrementable) {
 			SkillLevelIncrementable inc = (SkillLevelIncrementable) focus;
 			setEnabled(inc.canIncrementSkillLevel());
+			setTitle(inc.getIncrementSkillLevelTitle());
 		} else {
 			setEnabled(false);
+			setTitle(INCREASE_LEVEL);
 		}
 	}
 

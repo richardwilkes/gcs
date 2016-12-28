@@ -23,6 +23,7 @@ import java.awt.event.KeyEvent;
 /** Provides "Decrease Skill Level" command */
 public class SkillLevelDecrementCommand extends Command {
 	@Localize("Decrease Skill Level")
+	@Localize(locale = "ru", value = "Уменьшить уровень умения")
 	private static String DECREASE_LEVEL;
 
 	static {
@@ -34,7 +35,7 @@ public class SkillLevelDecrementCommand extends Command {
 	public static final SkillLevelDecrementCommand	INSTANCE			= new SkillLevelDecrementCommand();
 
 	private SkillLevelDecrementCommand() {
-		super(DECREASE_LEVEL, CMD_DECREASE_LEVEL, KeyEvent.VK_MINUS, Command.SHIFTED_COMMAND_MODIFIER);
+		super(DECREASE_LEVEL, CMD_DECREASE_LEVEL, KeyEvent.VK_PERIOD);
 	}
 
 	@Override
@@ -46,8 +47,10 @@ public class SkillLevelDecrementCommand extends Command {
 		if (focus instanceof SkillLevelIncrementable) {
 			SkillLevelIncrementable inc = (SkillLevelIncrementable) focus;
 			setEnabled(inc.canDecrementSkillLevel());
+			setTitle(inc.getDecrementSkillLevelTitle());
 		} else {
 			setEnabled(false);
+			setTitle(DECREASE_LEVEL);
 		}
 	}
 
