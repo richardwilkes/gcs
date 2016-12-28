@@ -16,6 +16,7 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
+import com.trollworks.gcs.menu.edit.SkillLevelIncrementable;
 import com.trollworks.gcs.menu.edit.TechLevelIncrementable;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListOutline;
@@ -36,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** An outline specifically for spells. */
-public class SpellOutline extends ListOutline implements Incrementable, TechLevelIncrementable {
+public class SpellOutline extends ListOutline implements Incrementable, TechLevelIncrementable, SkillLevelIncrementable {
 	@Localize("Increment Points")
 	@Localize(locale = "de", value = "Punkte erhöhen")
 	@Localize(locale = "ru", value = "Увеличить очки")
@@ -47,6 +48,12 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
 	@Localize(locale = "ru", value = "Уменьшить очки")
 	@Localize(locale = "es", value = "Disminuir Puntos")
 	private static String	DECREMENT;
+	@Localize("Increment Spell Level")
+	@Localize(locale = "ru", value = "Увеличить уровень заклинания")
+	private static String	INCREMENT_SPELL_LEVEL;
+	@Localize("Decrement Spell Level")
+	@Localize(locale = "ru", value = "Уменьшить уровень заклинания")
+	private static String	DECREMENT_SPELL_LEVEL;
 
 	static {
 		Localization.initialize();
@@ -144,6 +151,90 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
 			if (!spell.canHaveChildren()) {
 				RowUndo undo = new RowUndo(spell);
 				spell.setPoints(spell.getPoints() + 1);
+				if (undo.finish()) {
+					undos.add(undo);
+				}
+			}
+		}
+		if (!undos.isEmpty()) {
+			repaintSelection();
+			new MultipleRowUndo(undos);
+		}
+	}
+
+	@Override
+	public String getIncrementSkillLevelTitle() {
+		return INCREMENT_SPELL_LEVEL;
+	}
+
+	@Override
+	public String getDecrementSkillLevelTitle() {
+		return DECREMENT_SPELL_LEVEL;
+	}
+
+	@Override
+	public boolean canIncrementSkillLevel() {
+		return canIncrement();
+	}
+
+	@Override
+	public boolean canDecrementSkillLevel() {
+		return canDecrement();
+	}
+
+	@SuppressWarnings("unused")
+	@Override
+	public void incrementSkillLevel() {
+		List<RowUndo> undos = new ArrayList<>();
+		for (Spell spell : new FilteredIterator<>(getModel().getSelectionAsList(), Spell.class)) {
+			if (!spell.canHaveChildren()) {
+				int basePoints = spell.getPoints() + 1;
+				int maxPoints = basePoints + 4;
+				int oldLevel = spell.getLevel();
+				RowUndo undo = new RowUndo(spell);
+				for (int points = basePoints; points < maxPoints; ++points) {
+					spell.setPoints(points);
+					if (spell.getLevel() > oldLevel) {
+						break;
+					}
+				}
+				// if skill level didn't change, perhaps we hit the limit and should reset points to
+				// old value
+				if (spell.getLevel() == oldLevel) {
+					spell.setPoints(basePoints - 1);
+				}
+				if (undo.finish()) {
+					undos.add(undo);
+				}
+			}
+		}
+		if (!undos.isEmpty()) {
+			repaintSelection();
+			new MultipleRowUndo(undos);
+		}
+	}
+
+	@SuppressWarnings("unused")
+	@Override
+	public void decrementSkillLevel() {
+		List<RowUndo> undos = new ArrayList<>();
+		for (Spell spell : new FilteredIterator<>(getModel().getSelectionAsList(), Spell.class)) {
+			if (!spell.canHaveChildren()) {
+				RowUndo undo = new RowUndo(spell);
+				int oldLevel = spell.getLevel();
+				int points = spell.getPoints() - 1;
+				spell.setPoints(points);
+				if (spell.getLevel() == -1) {
+					spell.setPoints(0);
+				} else {
+					while (points > 0) {
+						spell.setPoints(--points);
+						if (spell.getLevel() < oldLevel - 1) {
+							spell.setPoints(points + 1);
+							break;
+						}
+					}
+				}
 				if (undo.finish()) {
 					undos.add(undo);
 				}

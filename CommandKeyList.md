@@ -3,6 +3,8 @@
 | ---: | :--- |
 | - | Decrement (Skill/Spell Points, Advantage Level, Equipment Qty) |
 | = | Increment (Skill/Spell Points, Advantage Level, Equipment Qty) |
+| . | Decrement Skill/Spell Level |
+| / | Increment Skill/Spell Level |
 | ' | Rotate Equipment State |
 | , | Preferences |
 | [ | Decrement Tech Level |
