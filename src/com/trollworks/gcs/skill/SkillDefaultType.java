@@ -204,6 +204,18 @@ public enum SkillDefaultType {
 		public boolean isSkillBased() {
 			return true;
 		}
+	},
+	/** The type for 10-based defaults. */
+	Base10 {
+		@Override
+		public String toString() {
+			return BASE_10_TITLE;
+		}
+
+		@Override
+		public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+			return finalLevel(skillDefault, SkillAttribute.Base10.getBaseSkillLevel(character));
+		}
 	};
 
 	@Localize("ST")
@@ -251,6 +263,8 @@ public enum SkillDefaultType {
 	@Localize(locale = "ru", value = "Название умения блока")
 	@Localize(locale = "es", value = "Habilidad de bloqueo llamada")
 	static String	BLOCK_SKILL_NAMED;
+	@Localize("10")
+	static String	BASE_10_TITLE;
 
 	static {
 		Localization.initialize();

@@ -88,6 +88,18 @@ public enum SkillAttribute {
 		public int getBaseSkillLevel(GURPSCharacter character) {
 			return character != null ? character.getPerception() : Integer.MIN_VALUE;
 		}
+	},
+	/** Just 10 instead of the actual attribute. */
+	Base10 {
+		@Override
+		public String toString() {
+			return BASE_10_TITLE;
+		}
+
+		@Override
+		public int getBaseSkillLevel(GURPSCharacter character) {
+			return 10;
+		}
 	};
 
 	@Localize("ST")
@@ -119,6 +131,8 @@ public enum SkillAttribute {
 	@Localize(locale = "de", value = "WN")
 	@Localize(locale = "ru", value = "Восп")
 	static String	PER_TITLE;
+	@Localize("10")
+	static String	BASE_10_TITLE;
 
 	static {
 		Localization.initialize();
