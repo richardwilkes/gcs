@@ -680,7 +680,7 @@ public class TextTemplate {
 								writeEncodedText(out, Numbers.format(gurpsCharacter.getDodge(encumbrance)));
 								break;
 							default:
-								writeEncodedText(out, UNIDENTIFIED_KEY);
+								writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
 								break;
 						}
 					}
@@ -726,7 +726,7 @@ public class TextTemplate {
 								writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getValueForID(entry.getKey())).intValue()));
 								break;
 							default:
-								writeEncodedText(out, UNIDENTIFIED_KEY);
+								writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
 								break;
 						}
 					}
@@ -775,7 +775,7 @@ public class TextTemplate {
 											writeEncodedText(out, advantage.canHaveChildren() ? advantage.getContainerType().name() : ITEM);
 											break;
 										default:
-											writeEncodedText(out, UNIDENTIFIED_KEY);
+											writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
 											break;
 									}
 								}
@@ -870,7 +870,7 @@ public class TextTemplate {
 										writeEncodedText(out, Integer.toString(counter));
 										break;
 									default:
-										writeEncodedText(out, UNIDENTIFIED_KEY);
+										writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
 										break;
 								}
 							}
@@ -974,7 +974,7 @@ public class TextTemplate {
 										writeEncodedText(out, Integer.toString(counter));
 										break;
 									default:
-										writeEncodedText(out, UNIDENTIFIED_KEY);
+										writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
 										break;
 								}
 							}
@@ -1039,7 +1039,7 @@ public class TextTemplate {
 									writeEncodedText(out, Integer.toString(counter));
 									break;
 								default:
-									writeEncodedText(out, UNIDENTIFIED_KEY);
+									writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
 									break;
 							}
 						}
@@ -1126,7 +1126,7 @@ public class TextTemplate {
 									writeEncodedText(out, Integer.toString(counter));
 									break;
 								default:
-									writeEncodedText(out, UNIDENTIFIED_KEY);
+									writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
 									break;
 							}
 						}
@@ -1187,7 +1187,7 @@ public class TextTemplate {
 										writeEncodedText(out, Integer.toString(counter));
 										break;
 									default:
-										writeEncodedText(out, UNIDENTIFIED_KEY);
+										writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
 										break;
 								}
 							}
@@ -1230,7 +1230,7 @@ public class TextTemplate {
 									writeEncodedText(out, Integer.toString(counter));
 									break;
 								default:
-									writeEncodedText(out, UNIDENTIFIED_KEY);
+									writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
 									break;
 							}
 						}
