@@ -115,7 +115,7 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path>, C
 		mCurrent = new ArrayList<>();
 		mStack = new Stack<>();
 		try {
-			Files.walkFileTree(GCS.getLibraryRootPath(), EnumSet.of(FileVisitOption.FOLLOW_LINKS), 5, this);
+			Files.walkFileTree(GCS.getLibraryRootPath(), EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, this);
 		} catch (Exception exception) {
 			Log.error(exception);
 		}
