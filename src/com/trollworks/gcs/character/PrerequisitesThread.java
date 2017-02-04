@@ -96,7 +96,7 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 		mCharacter = sheet.getCharacter();
 		mNeedUpdate = true;
 		mCharacter.addTarget(this, Profile.ID_TECH_LEVEL, GURPSCharacter.ID_STRENGTH, GURPSCharacter.ID_DEXTERITY, GURPSCharacter.ID_INTELLIGENCE, GURPSCharacter.ID_HEALTH, GURPSCharacter.ID_WILL, GURPSCharacter.ID_PERCEPTION, Spell.ID_NAME, Spell.ID_COLLEGE, Spell.ID_POINTS, Spell.ID_LIST_CHANGED, Skill.ID_NAME, Skill.ID_SPECIALIZATION, Skill.ID_LEVEL, Skill.ID_RELATIVE_LEVEL, Skill.ID_ENCUMBRANCE_PENALTY, Skill.ID_POINTS, Skill.ID_TECH_LEVEL, Skill.ID_LIST_CHANGED, Advantage.ID_NAME, Advantage.ID_LEVELS, Advantage.ID_LIST_CHANGED, Equipment.ID_EXTENDED_WEIGHT, Equipment.ID_STATE, Equipment.ID_QUANTITY, Equipment.ID_LIST_CHANGED);
-		Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_IQ_RULES_PREF_KEY, SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY);
+		Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_IQ_RULES_PREF_KEY, SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY, SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY);
 		synchronized (MAP) {
 			MAP.put(mCharacter, this);
 		}
@@ -250,6 +250,8 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
 			mCharacter.updateWillAndPerceptionDueToOptionalIQRuleUseChange();
 		} else if (SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY.equals(type)) {
 			mCharacter.notifySingle(Advantage.ID_LIST_CHANGED, null);
+		} else if (SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY.equals(type)) {
+			mCharacter.notifySingle(type, data);
 		}
 		markForUpdate();
 	}
