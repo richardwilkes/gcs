@@ -19,6 +19,23 @@ import com.trollworks.toolkit.utility.text.Numbers;
 
 /** The possible self-control rolls, from page B121. */
 public enum SelfControlRoll {
+	/** Never. */
+	CRNA {
+		@Override
+		public String toString() {
+			return CRNA_TITLE;
+		}
+
+		@Override
+		public double getMultiplier() {
+			return 2.5;
+		}
+
+		@Override
+		public int getCR() {
+			return 0;
+		}
+	},
 	/** Rarely. */
 	CR6 {
 		@Override
@@ -115,6 +132,8 @@ public enum SelfControlRoll {
 		}
 	};
 
+	@Localize("CR: N/A (Never Resist)")
+	static String	CRNA_TITLE;
 	@Localize("CR: 6 (Resist Rarely)")
 	@Localize(locale = "de", value = "SBP: 6 (selten)")
 	@Localize(locale = "ru", value = "СК: 6 (редко)")
