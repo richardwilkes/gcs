@@ -20,10 +20,10 @@ import com.trollworks.toolkit.utility.text.Numbers;
 /** The possible self-control rolls, from page B121. */
 public enum SelfControlRoll {
 	/** Never. */
-	CRNA {
+	NOT_APPLICABLE {
 		@Override
 		public String toString() {
-			return CRNA_TITLE;
+			return NOT_APPLICABLE_TITLE;
 		}
 
 		@Override
@@ -132,8 +132,11 @@ public enum SelfControlRoll {
 		}
 	};
 
-	@Localize("CR: N/A (Never Resist)")
-	static String	CRNA_TITLE;
+	@Localize("CR: N/A (Cannot Resist)")
+	@Localize(locale = "de", value = "SBP: entf. (kann nicht widerstehen)")
+	@Localize(locale = "ru", value = "СК: - (не может сопротивляться)")
+	@Localize(locale = "es", value = "TC: n.a. (No puede resistir)")
+	static String	NOT_APPLICABLE_TITLE;
 	@Localize("CR: 6 (Resist Rarely)")
 	@Localize(locale = "de", value = "SBP: 6 (selten)")
 	@Localize(locale = "ru", value = "СК: 6 (редко)")
