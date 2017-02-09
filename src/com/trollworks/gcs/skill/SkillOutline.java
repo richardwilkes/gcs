@@ -193,7 +193,7 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
 				int maxPoints = basePoints + (skill.getDifficulty() == SkillDifficulty.W ? 12 : 4);
 				int oldLevel = skill.getLevel();
 				RowUndo undo = new RowUndo(skill);
-				for (int points = basePoints; points < maxPoints; ++points) {
+				for (int points = basePoints; points < maxPoints; points++) {
 					skill.setPoints(points);
 					if (skill.getLevel() > oldLevel) {
 						break;

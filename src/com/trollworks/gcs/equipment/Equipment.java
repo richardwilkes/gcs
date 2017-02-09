@@ -464,7 +464,15 @@ public class Equipment extends ListRow implements HasSourceReference {
 		for (int i = 0; i < count; i++) {
 			Equipment one = (Equipment) getChild(i);
 			if (one.isCarried()) {
-				contained.add(one.mExtendedWeight);
+				WeightValue weight = one.mExtendedWeight;
+				if (SheetPreferences.areGurpsMetricRulesUsed()) {
+					if (units.isMetric()) {
+						weight = GURPSCharacter.convertToGurpsMetric(weight);
+					} else {
+						weight = GURPSCharacter.convertFromGurpsMetric(weight);
+					}
+				}
+				contained.add(weight);
 			}
 		}
 		int percentage = 0;

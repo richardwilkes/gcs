@@ -192,7 +192,7 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
 				int maxPoints = basePoints + 4;
 				int oldLevel = spell.getLevel();
 				RowUndo undo = new RowUndo(spell);
-				for (int points = basePoints; points < maxPoints; ++points) {
+				for (int points = basePoints; points < maxPoints; points++) {
 					spell.setPoints(points);
 					if (spell.getLevel() > oldLevel) {
 						break;
