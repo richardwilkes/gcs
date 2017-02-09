@@ -897,7 +897,7 @@ public class GURPSCharacter extends DataFile {
 		if (Equipment.ID_QUANTITY.equals(type) || Equipment.ID_WEIGHT.equals(type) || Equipment.ID_EXTENDED_WEIGHT.equals(type) || Equipment.ID_LIST_CHANGED.equals(type)) {
 			mNeedEquipmentCalculation = true;
 		}
-		if (Profile.ID_SIZE_MODIFIER.equals(type)) {
+		if (Profile.ID_SIZE_MODIFIER.equals(type) || SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY.equals(type)) {
 			mNeedAttributePointCalculation = true;
 		}
 	}
@@ -1102,7 +1102,11 @@ public class GURPSCharacter extends DataFile {
 
 	/** @return The number of points spent on strength. */
 	public int getStrengthPoints() {
-		return getPointsForAttribute(mStrength - 10, 10, mStrengthCostReduction + mDescription.getSizeModifier() * 10);
+		int reduction = mStrengthCostReduction;
+		if (!SheetPreferences.areOptionalStrengthRulesUsed()) {
+			reduction += mDescription.getSizeModifier() * 10;
+		}
+		return getPointsForAttribute(mStrength - 10, 10, reduction);
 	}
 
 	private static int getPointsForAttribute(int delta, int ptsPerLevel, int reduction) {
