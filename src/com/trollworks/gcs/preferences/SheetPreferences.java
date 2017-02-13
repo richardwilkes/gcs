@@ -129,6 +129,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private static String	UI_SCALE_POST;
 	@Localize("HTML Template Override")
 	@Localize(locale = "de", value = "Alternative HTML-Vorlage")
+
 	@Localize(locale = "ru", value = "Переопределить HTML-шаблон")
 	@Localize(locale = "es", value = "Ignorar la plantilla HTML")
 	private static String	HTML_TEMPLATE_OVERRIDE;
