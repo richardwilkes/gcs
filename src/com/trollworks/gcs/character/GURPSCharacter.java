@@ -1134,6 +1134,24 @@ public class GURPSCharacter extends DataFile {
 	 * @return The basic thrusting damage.
 	 */
 	public static Dice getThrust(int strength) {
+		if (SheetPreferences.areOptionalReducedSwingUsed()) {
+			if (strength < 19) {
+				return new Dice(1, -(6 - (strength - 1) / 2));
+			}
+			int dice = 1;
+			int adds = (int) Math.ceil((strength - 10) / 2 - 2);
+			dice += 2 * (adds / 7);
+			adds = adds % 7;
+			dice += adds / 4;
+			adds = adds % 4;
+			if (adds == 3) {
+				dice++;
+				adds = -1;
+			}
+
+			return new Dice(dice, adds);
+		}
+
 		if (SheetPreferences.areOptionalStrengthRulesUsed()) {
 			if (strength < 12) {
 				return new Dice(1, strength - 12);
@@ -1167,6 +1185,25 @@ public class GURPSCharacter extends DataFile {
 	 * @return The basic thrusting damage.
 	 */
 	public static Dice getSwing(int strength) {
+		if (SheetPreferences.areOptionalReducedSwingUsed()) {
+			if (strength < 10) {
+				return new Dice(1, -(5 - (strength - 1) / 2));
+			}
+
+			int dice = 1;
+			int adds = (int) Math.floor((strength - 10) / 2);
+			dice += 2 * (adds / 7);
+			adds = adds % 7;
+			dice += adds / 4;
+			adds = adds % 4;
+			if (adds == 3) {
+				dice++;
+				adds = -1;
+			}
+
+			return new Dice(dice, adds);
+		}
+
 		if (SheetPreferences.areOptionalStrengthRulesUsed()) {
 			if (strength < 10) {
 				return new Dice(1, strength - 10);
