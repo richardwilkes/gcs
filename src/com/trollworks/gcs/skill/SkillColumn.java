@@ -254,7 +254,7 @@ public enum SkillColumn {
 
 		@Override
 		public Object getData(Skill skill) {
-			return new Integer(skill.getPoints());
+			return Integer.valueOf(skill.getPoints());
 		}
 
 		@Override
