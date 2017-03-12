@@ -445,6 +445,15 @@ public class Skill extends ListRow implements HasSourceReference {
 
 	/** @return The points. */
 	public int getPoints() {
+		if (canHaveChildren()) {
+			int sum = 0;
+			for (Row row : getChildren()) {
+				if (row instanceof Skill) {
+					sum += ((Skill) row).getPoints();
+				}
+			}
+			return sum;
+		}
 		return mPoints;
 	}
 

@@ -254,14 +254,11 @@ public enum SkillColumn {
 
 		@Override
 		public Object getData(Skill skill) {
-			return new Integer(skill.canHaveChildren() ? -1 : skill.getPoints());
+			return new Integer(skill.getPoints());
 		}
 
 		@Override
 		public String getDataAsText(Skill skill) {
-			if (skill.canHaveChildren()) {
-				return ""; //$NON-NLS-1$
-			}
 			return Numbers.format(skill.getPoints());
 		}
 	},
