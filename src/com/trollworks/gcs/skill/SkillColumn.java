@@ -244,7 +244,7 @@ public enum SkillColumn {
 
 		@Override
 		public Cell getCell() {
-			return new ListTextCell(SwingConstants.RIGHT, false);
+			return new SkillPointsTextCell();
 		}
 
 		@Override
