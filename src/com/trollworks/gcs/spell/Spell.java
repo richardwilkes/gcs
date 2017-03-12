@@ -31,6 +31,7 @@ import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Column;
+import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.Localization;
 
 import java.io.IOException;
@@ -655,6 +656,15 @@ public class Spell extends ListRow implements HasSourceReference {
 
 	/** @return The points. */
 	public int getPoints() {
+		if (canHaveChildren()) {
+			int sum = 0;
+			for (Row row : getChildren()) {
+				if (row instanceof Spell) {
+					sum += ((Spell) row).getPoints();
+				}
+			}
+			return sum;
+		}
 		return mPoints;
 	}
 

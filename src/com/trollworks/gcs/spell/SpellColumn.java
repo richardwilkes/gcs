@@ -15,6 +15,7 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
+import com.trollworks.gcs.skill.SkillPointsTextCell;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
@@ -298,7 +299,7 @@ public enum SpellColumn {
 
 		@Override
 		public Cell getCell() {
-			return new ListTextCell(SwingConstants.RIGHT, false);
+			return new SkillPointsTextCell();
 		}
 
 		@Override
@@ -308,12 +309,12 @@ public enum SpellColumn {
 
 		@Override
 		public Object getData(Spell spell) {
-			return new Integer(spell.canHaveChildren() ? -1 : spell.getPoints());
+			return Integer.valueOf(spell.getPoints());
 		}
 
 		@Override
 		public String getDataAsText(Spell spell) {
-			return spell.canHaveChildren() ? "" : Numbers.format(spell.getPoints()); //$NON-NLS-1$
+			return Numbers.format(spell.getPoints()); // $NON-NLS-1$
 		}
 	},
 	/** The category. */
