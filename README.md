@@ -36,7 +36,7 @@ The code is compiled with Java 8. Ant is used to build the product and produce t
 
   If you want to build a distribution package, you'll also need to:
 
-3. Download one (or all) of the JRE packages from Oracle. Click the button to download the JRE from the [main download page](http://www.oracle.com/technetwork/java/javase/downloads/index.html). This will take you to a form where you can download the packages for each platform.
+3. Download one (or all) of the JRE packages from Oracle. Click the button to download the JRE from the [main download page](http://www.oracle.com/technetwork/java/javase/downloads/index.html) and put it in the toolkit/launcher folder. This will take you to a form where you can download the packages for each platform.
 
 4. Build a distribution package for your platform:
 
