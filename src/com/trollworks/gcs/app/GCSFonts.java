@@ -23,36 +23,43 @@ public class GCSFonts {
 	@Localize(locale = "de", value = "Überschriften")
 	@Localize(locale = "ru", value = "Заголовки")
 	@Localize(locale = "es", value = "Etiquetas")
+	@Localize(locale = "pt-BR", value = "Rótulos")
 	private static String	LABELS_FONT;
 	@Localize("Fields")
 	@Localize(locale = "de", value = "Elemente")
 	@Localize(locale = "ru", value = "Поля")
 	@Localize(locale = "es", value = "Campos")
+	@Localize(locale = "pt-BR", value = "Campos")
 	private static String	FIELDS_FONT;
 	@Localize("Field Notes")
 	@Localize(locale = "de", value = "Anmerkungen zu Elementen")
 	@Localize(locale = "ru", value = "Заметки на полях")
 	@Localize(locale = "es", value = "Anotaciones del Campo")
+	@Localize(locale = "pt-BR", value = "Notas de Campo")
 	private static String	FIELD_NOTES_FONT;
 	@Localize("Technique Fields")
 	@Localize(locale = "de", value = "Technik-Elemente")
 	@Localize(locale = "ru", value = "Области техники")
 	@Localize(locale = "es", value = "Campos técnicos")
+	@Localize(locale = "pt-BR", value = "Campos técnicos")
 	private static String	TECHNIQUE_FIELDS_FONT;
 	@Localize("Primary Footer")
 	@Localize(locale = "de", value = "Erste Fußzeile")
 	@Localize(locale = "ru", value = "Основной колонтитул")
 	@Localize(locale = "es", value = "Pie de página principal")
+	@Localize(locale = "pt-BR", value = "Rodapé principal")
 	private static String	PRIMARY_FOOTER_FONT;
 	@Localize("Secondary Footer")
 	@Localize(locale = "de", value = "Zweite Fußzeile")
 	@Localize(locale = "ru", value = "Дополнительный колонтитул")
 	@Localize(locale = "es", value = "Pie de página secundario")
+	@Localize(locale = "pt-BR", value = "Rodapé secundário")
 	private static String	SECONDARY_FOOTER_FONT;
 	@Localize("Notes")
 	@Localize(locale = "de", value = "Notizen")
 	@Localize(locale = "ru", value = "Заметка")
 	@Localize(locale = "es", value = "Notas")
+	@Localize(locale = "pt-BR", value = "Notas")
 	private static String	NOTES_FONT;
 
 	static {
