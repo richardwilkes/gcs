@@ -81,8 +81,9 @@ public class Armor {
 		setSkullDR(getBonusDR(ID_SKULL_DR) + extra);
 		setFaceDR(getBonusDR(ID_FACE_DR) + extra);
 		setNeckDR(getBonusDR(ID_NECK_DR) + extra);
-		setTorsoDR(getBonusDR(ID_TORSO_DR) + extra);
-		setVitalsDR(getBonusDR(ID_VITALS_DR) + extra);
+		int torsoDR = getBonusDR(ID_TORSO_DR);
+		setTorsoDR(torsoDR + extra);
+		setVitalsDR(getBonusDR(ID_VITALS_DR) + torsoDR + extra);
 		setGroinDR(getBonusDR(ID_GROIN_DR) + extra);
 		setArmDR(getBonusDR(ID_ARM_DR) + extra);
 		setWingDR(getBonusDR(ID_WING_DR) + extra);
