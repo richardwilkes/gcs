@@ -184,19 +184,19 @@ public enum SkillColumn {
 					return level;
 				} else if (skill.getTemplate() != null) {
 					int points = skill.getPoints();
-
 					if (points > 0) {
 						SkillDifficulty difficulty = skill.getDifficulty();
 						int level;
-
 						if (skill instanceof Technique) {
 							if (difficulty != SkillDifficulty.A) {
 								points--;
 							}
 							return points + ((Technique) skill).getDefault().getModifier();
 						}
-
 						level = difficulty.getBaseRelativeLevel();
+						if (difficulty == SkillDifficulty.W) {
+							points /= 3;
+						}
 						if (points > 1) {
 							if (points < 4) {
 								level++;
