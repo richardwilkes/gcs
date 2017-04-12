@@ -23,6 +23,7 @@ import java.awt.event.KeyEvent;
 /** Provides the "Decrement" command. */
 public class TechLevelDecrementCommand extends Command {
 	@Localize("Decrement Tech Level")
+	@Localize(locale = "pt-br", value = "Diminuir Nível Tecnológico")
 	private static String TITLE;
 
 	static {

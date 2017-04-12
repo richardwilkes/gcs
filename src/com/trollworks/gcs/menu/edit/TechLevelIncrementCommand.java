@@ -23,6 +23,7 @@ import java.awt.event.KeyEvent;
 /** Provides the "Increment" command. */
 public class TechLevelIncrementCommand extends Command {
 	@Localize("Increment Tech Level")
+	@Localize(locale = "pt-br", value = "Aumentar Nível Tecnológico")
 	private static String TITLE;
 
 	static {

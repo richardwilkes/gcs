@@ -22,6 +22,7 @@ import java.awt.event.KeyEvent;
 
 public class ExportToGurpsCalculatorCommand extends Command {
 	@Localize("Export to GURPS Calculator\u2026")
+	@Localize(locale = "pt-br", value = "Exportar para GURPS Calculator\u2026")
 	private static String EXPORT_TO_GURPS_CALCULATOR;
 
 	static {

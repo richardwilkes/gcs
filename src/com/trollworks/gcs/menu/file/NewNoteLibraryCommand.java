@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 /** Provides the "New Equipment Library" command. */
 public class NewNoteLibraryCommand extends Command {
 	@Localize("New Note Library")
+	@Localize(locale = "pt-br", value = "Nova biblioteca de notas")
 	private static String TITLE;
 
 	static {
@@ -30,7 +31,7 @@ public class NewNoteLibraryCommand extends Command {
 	}
 
 	/** The action command this command will issue. */
-	public static final String			CMD_NEW_LIBRARY	= "NewNoteLibrary";		//$NON-NLS-1$
+	public static final String					CMD_NEW_LIBRARY	= "NewNoteLibrary";				//$NON-NLS-1$
 
 	/** The singleton {@link NewNoteLibraryCommand}. */
 	public static final NewNoteLibraryCommand	INSTANCE		= new NewNoteLibraryCommand();

@@ -34,6 +34,7 @@ import java.util.ArrayList;
 /** Provides the "Rotate State" command. */
 public class RotateStateCommand extends Command {
 	@Localize("Rotate State")
+	@Localize(locale = "pt-br", value = "Rotacionar estado")
 	private static String TITLE;
 
 	static {

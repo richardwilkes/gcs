@@ -26,6 +26,7 @@ public class NewCharacterTemplateCommand extends Command {
 	@Localize(locale = "de", value = "Neue Charaktervorlage")
 	@Localize(locale = "ru", value = "Новый шаблон персонажа")
 	@Localize(locale = "es", value = "Nueva plantilla de personaje")
+	@Localize(locale = "pt-br", value = "Novo Modelo de Personagem")
 	private static String NEW_CHARACTER_TEMPLATE;
 
 	static {

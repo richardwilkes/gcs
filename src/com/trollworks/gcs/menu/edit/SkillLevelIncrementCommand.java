@@ -24,6 +24,7 @@ import java.awt.event.KeyEvent;
 public class SkillLevelIncrementCommand extends Command {
 	@Localize("Increase Skill Level")
 	@Localize(locale = "ru", value = "Увеличить уровень умения")
+	@Localize(locale = "pt-br", value = "Aumentar nível de habilidade")
 	private static String INCREASE_LEVEL;
 
 	static {

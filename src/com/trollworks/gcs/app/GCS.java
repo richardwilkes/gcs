@@ -164,7 +164,7 @@ public class GCS {
 	@Localize(locale = "de", value = "\nFertig! Benötigte Zeit: {0}.")
 	@Localize(locale = "ru", value = "\nГотово! {0} всего.")
 	@Localize(locale = "es", value = "\n¡Terminado! {0}")
-	@Localize(locale = "pt-BR", value = "\Finalizado! {0}")
+	@Localize(locale = "pt-BR", value = "\nFinalizado! {0}")
 	private static String	FINISHED;
 	@Localize("    Created \"{0}\".")
 	@Localize(locale = "de", value = "    Erstellt: \"{0}\".")

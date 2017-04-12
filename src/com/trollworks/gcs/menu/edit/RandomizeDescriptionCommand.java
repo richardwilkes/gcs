@@ -29,21 +29,25 @@ public class RandomizeDescriptionCommand extends Command {
 	@Localize(locale = "de", value = "Zufällige Beschreibung erstellen\u2026")
 	@Localize(locale = "ru", value = "Случайное описание\u2026")
 	@Localize(locale = "es", value = "Descripción al azar\u2026")
+	@Localize(locale = "pt-br", value = "Descrição aleatória\u2026")
 	private static String	RANDOMIZE_DESCRIPTION;
 	@Localize("Description Randomizer")
 	@Localize(locale = "de", value = "Zufallsgenerator für Beschreibungen")
 	@Localize(locale = "ru", value = "Сгенерировать описание")
 	@Localize(locale = "es", value = "Descripción al azar")
+	@Localize(locale = "pt-br", value = "Descrição aleatória")
 	private static String	RANDOMIZER;
 	@Localize("Apply")
 	@Localize(locale = "de", value = "Anwenden")
 	@Localize(locale = "ru", value = "Применить")
 	@Localize(locale = "es", value = "Aceptar")
+	@Localize(locale = "pt-br", value = "Aplicar")
 	private static String	APPLY;
 	@Localize("Cancel")
 	@Localize(locale = "de", value = "Abbrechen")
 	@Localize(locale = "ru", value = "Отмена")
 	@Localize(locale = "es", value = "Cancelar")
+	@Localize(locale = "pt-br", value = "Cancelar")
 	private static String	CANCEL;
 
 	static {
