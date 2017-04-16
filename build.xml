@@ -3,7 +3,7 @@
 	<import file="../toolkit/props.xml"/>
 
 	<target name="setup" depends="platform_props">
-		<property name="primary_version" value="4.8.0"/>
+		<property name="primary_version" value="4.9.0"/>
 		<property name="app" value="gcs"/>
 		<property if:true="${platform.windows}" name="app.exe" value="${app}.exe"/>
 		<property unless:true="${platform.windows}" name="app.exe" value="${app}"/>
