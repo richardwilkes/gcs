@@ -2485,11 +2485,13 @@ public class GURPSCharacter extends DataFile {
 		ArrayList<Skill> skills = new ArrayList<>();
 		boolean checkSpecialization = specialization != null && specialization.length() > 0;
 		for (Skill skill : getSkillsIterator()) {
-			if (excludes == null || !excludes.contains(skill.toString())) {
-				if (!requirePoints || skill.getPoints() > 0) {
-					if (skill.getName().equalsIgnoreCase(name)) {
-						if (!checkSpecialization || skill.getSpecialization().equalsIgnoreCase(specialization)) {
-							skills.add(skill);
+			if (!skill.canHaveChildren()) {
+				if (excludes == null || !excludes.contains(skill.toString())) {
+					if (!requirePoints || skill.getPoints() > 0) {
+						if (skill.getName().equalsIgnoreCase(name)) {
+							if (!checkSpecialization || skill.getSpecialization().equalsIgnoreCase(specialization)) {
+								skills.add(skill);
+							}
 						}
 					}
 				}
