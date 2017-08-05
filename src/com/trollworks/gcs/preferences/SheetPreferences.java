@@ -123,10 +123,13 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private static String	OPTIONAL_DICE_RULES;
 	@Localize("Use optional strength rules from the \"Knowing Your Own Strength\" Pyramid article")
 	private static String	OPTIONAL_STRENGTH_RULES;
+	@Localize("Use optional Reduced Swing rules from the  \"Adjusting Swing Damage in Dungeon Fantasy\" No School Grognard article")
+	private static String	OPTIONAL_REDUCED_SWING;
 	@Localize("for the initial scale when opening character sheets, templates and lists")
 	private static String	UI_SCALE_POST;
 	@Localize("HTML Template Override")
 	@Localize(locale = "de", value = "Alternative HTML-Vorlage")
+
 	@Localize(locale = "ru", value = "Переопределить HTML-шаблон")
 	@Localize(locale = "es", value = "Ignorar la plantilla HTML")
 	private static String	HTML_TEMPLATE_OVERRIDE;
@@ -229,6 +232,10 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	/** The optional Strength rules preference key. */
 	public static final String			OPTIONAL_STRENGTH_RULES_PREF_KEY	= Preferences.getModuleKey(MODULE, OPTIONAL_STRENGTH_RULES_KEY);
 	private static final boolean		DEFAULT_OPTIONAL_STRENGTH_RULES		= false;
+	private static final String			OPTIONAL_REDUCED_SWING_KEY			= "UseOptionalReducedSwing";									//$NON-NLS-1$
+	/** The optional Reduced Swing rules preference key. */
+	public static final String			OPTIONAL_REDUCED_SWING_PREF_KEY		= Preferences.getModuleKey(MODULE, OPTIONAL_REDUCED_SWING_KEY);
+	private static final boolean		DEFAULT_OPTIONAL_REDUCED_SWING		= false;
 	private static final String			AUTO_NAME_KEY						= "AutoNameNewCharacters";										//$NON-NLS-1$
 	/** The auto-naming preference key. */
 	public static final String			AUTO_NAME_PREF_KEY					= Preferences.getModuleKey(MODULE, AUTO_NAME_KEY);
@@ -265,6 +272,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	private JCheckBox					mUseOptionalIQRules;
 	private JCheckBox					mUseOptionalModifierRules;
 	private JCheckBox					mUseOptionalStrengthRules;
+	private JCheckBox					mUseOptionalReducedSwing;
 	private JCheckBox					mIncludeUnspentPointsInTotal;
 	private JCheckBox					mUseGurpsMetricRules;
 	private JCheckBox					mAutoName;
@@ -308,6 +316,14 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 	/** @return Whether the optional strength rules (KYOS) are in use. */
 	public static boolean areOptionalStrengthRulesUsed() {
 		return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_STRENGTH_RULES_KEY, DEFAULT_OPTIONAL_STRENGTH_RULES);
+	}
+
+	/**
+	 * @return Whether the optional reduced swing rules are in use. Reduces KYOS damages if used
+	 *         together.
+	 */
+	public static boolean areOptionalReducedSwingUsed() {
+		return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_REDUCED_SWING_KEY, DEFAULT_OPTIONAL_REDUCED_SWING);
 	}
 
 	/**
@@ -406,6 +422,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
 		mUseOptionalStrengthRules = createCheckBox(OPTIONAL_STRENGTH_RULES, null, areOptionalStrengthRulesUsed());
 		column.add(mUseOptionalStrengthRules);
+
+		mUseOptionalReducedSwing = createCheckBox(OPTIONAL_REDUCED_SWING, null, areOptionalReducedSwingUsed());
+		column.add(mUseOptionalReducedSwing);
 
 		mIncludeUnspentPointsInTotal = createCheckBox(TOTAL_POINTS_INCLUDES_UNSPENT_POINTS, null, shouldIncludeUnspentPointsInTotalPointDisplay());
 		column.add(mIncludeUnspentPointsInTotal);
@@ -526,13 +545,14 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 		mUseOptionalIQRules.setSelected(DEFAULT_OPTIONAL_IQ_RULES);
 		mUseOptionalModifierRules.setSelected(DEFAULT_OPTIONAL_MODIFIER_RULES);
 		mUseOptionalStrengthRules.setSelected(DEFAULT_OPTIONAL_STRENGTH_RULES);
+		mUseOptionalReducedSwing.setSelected(DEFAULT_OPTIONAL_REDUCED_SWING);
 		mIncludeUnspentPointsInTotal.setSelected(DEFAULT_TOTAL_POINTS_DISPLAY);
 		mUseGurpsMetricRules.setSelected(DEFAULT_GURPS_METRIC_RULES);
 	}
 
 	@Override
 	public boolean isSetToDefaults() {
-		return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultCampaign().equals("") && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getInitialPoints() == DEFAULT_INITIAL_POINTS && getInitialUIScale() == DEFAULT_SCALE && areOptionalDiceRulesUsed() == DEFAULT_OPTIONAL_DICE_RULES && areOptionalIQRulesUsed() == DEFAULT_OPTIONAL_IQ_RULES && areOptionalModifierRulesUsed() == DEFAULT_OPTIONAL_MODIFIER_RULES && areOptionalStrengthRulesUsed() == DEFAULT_OPTIONAL_STRENGTH_RULES && isNewCharacterAutoNamed() == DEFAULT_AUTO_NAME; //$NON-NLS-1$ //$NON-NLS-2$
+		return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultCampaign().equals("") && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getInitialPoints() == DEFAULT_INITIAL_POINTS && getInitialUIScale() == DEFAULT_SCALE && areOptionalDiceRulesUsed() == DEFAULT_OPTIONAL_DICE_RULES && areOptionalIQRulesUsed() == DEFAULT_OPTIONAL_IQ_RULES && areOptionalModifierRulesUsed() == DEFAULT_OPTIONAL_MODIFIER_RULES && areOptionalStrengthRulesUsed() == DEFAULT_OPTIONAL_STRENGTH_RULES && areOptionalReducedSwingUsed() == DEFAULT_OPTIONAL_REDUCED_SWING && isNewCharacterAutoNamed() == DEFAULT_AUTO_NAME; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	private void setPortrait(String path) {
@@ -579,6 +599,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 			Preferences.getInstance().setValue(MODULE, OPTIONAL_MODIFIER_RULES_KEY, mUseOptionalModifierRules.isSelected());
 		} else if (source == mUseOptionalStrengthRules) {
 			Preferences.getInstance().setValue(MODULE, OPTIONAL_STRENGTH_RULES_KEY, mUseOptionalStrengthRules.isSelected());
+		} else if (source == mUseOptionalReducedSwing) {
+			Preferences.getInstance().setValue(MODULE, OPTIONAL_REDUCED_SWING_KEY, mUseOptionalReducedSwing.isSelected());
 		} else if (source == mIncludeUnspentPointsInTotal) {
 			Preferences.getInstance().setValue(MODULE, TOTAL_POINTS_DISPLAY_KEY, mIncludeUnspentPointsInTotal.isSelected());
 		} else if (source == mUseGurpsMetricRules) {
