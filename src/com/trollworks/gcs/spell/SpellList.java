@@ -24,46 +24,46 @@ import java.io.IOException;
 
 /** A list of spells. */
 public class SpellList extends ListFile {
-	/** The current version. */
-	public static final int		CURRENT_VERSION	= 1;
-	/** The XML tag for {@link SpellList}s. */
-	public static final String	TAG_ROOT		= "spell_list";	//$NON-NLS-1$
-	/** The extension for {@link SpellList}s. */
-	public static final String	EXTENSION		= "spl";		//$NON-NLS-1$
+    /** The current version. */
+    public static final int    CURRENT_VERSION = 1;
+    /** The XML tag for {@link SpellList}s. */
+    public static final String TAG_ROOT        = "spell_list";	//$NON-NLS-1$
+    /** The extension for {@link SpellList}s. */
+    public static final String EXTENSION       = "spl";       		//$NON-NLS-1$
 
-	@Override
-	public int getXMLTagVersion() {
-		return CURRENT_VERSION;
-	}
+    @Override
+    public int getXMLTagVersion() {
+        return CURRENT_VERSION;
+    }
 
-	@Override
-	public String getXMLTagName() {
-		return TAG_ROOT;
-	}
+    @Override
+    public String getXMLTagName() {
+        return TAG_ROOT;
+    }
 
-	@Override
-	public FileType getFileType() {
-		return FileType.getByExtension(EXTENSION);
-	}
+    @Override
+    public FileType getFileType() {
+        return FileType.getByExtension(EXTENSION);
+    }
 
-	@Override
-	public StdImageSet getFileIcons() {
-		return GCSImages.getSpellsDocumentIcons();
-	}
+    @Override
+    public StdImageSet getFileIcons() {
+        return GCSImages.getSpellsDocumentIcons();
+    }
 
-	@Override
-	protected void loadList(XMLReader reader, LoadState state) throws IOException {
-		OutlineModel model = getModel();
-		String marker = reader.getMarker();
-		do {
-			if (reader.next() == XMLNodeType.START_TAG) {
-				String name = reader.getName();
-				if (Spell.TAG_SPELL.equals(name) || Spell.TAG_SPELL_CONTAINER.equals(name)) {
-					model.addRow(new Spell(this, reader, state), true);
-				} else {
-					reader.skipTag(name);
-				}
-			}
-		} while (reader.withinMarker(marker));
-	}
+    @Override
+    protected void loadList(XMLReader reader, LoadState state) throws IOException {
+        OutlineModel model = getModel();
+        String marker = reader.getMarker();
+        do {
+            if (reader.next() == XMLNodeType.START_TAG) {
+                String name = reader.getName();
+                if (Spell.TAG_SPELL.equals(name) || Spell.TAG_SPELL_CONTAINER.equals(name)) {
+                    model.addRow(new Spell(this, reader, state), true);
+                } else {
+                    reader.skipTag(name);
+                }
+            }
+        } while (reader.withinMarker(marker));
+    }
 }

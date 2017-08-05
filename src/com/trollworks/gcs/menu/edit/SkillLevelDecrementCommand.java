@@ -22,45 +22,45 @@ import java.awt.event.KeyEvent;
 
 /** Provides "Decrease Skill Level" command */
 public class SkillLevelDecrementCommand extends Command {
-	@Localize("Decrease Skill Level")
-	@Localize(locale = "ru", value = "Уменьшить уровень умения")
-	private static String DECREASE_LEVEL;
+    @Localize("Decrease Skill Level")
+    @Localize(locale = "ru", value = "Уменьшить уровень умения")
+    private static String DECREASE_LEVEL;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	public static final String						CMD_DECREASE_LEVEL	= "DecreaseLevel";					//$NON-NLS-1$
+    public static final String                     CMD_DECREASE_LEVEL = "DecreaseLevel";                 					//$NON-NLS-1$
 
-	public static final SkillLevelDecrementCommand	INSTANCE			= new SkillLevelDecrementCommand();
+    public static final SkillLevelDecrementCommand INSTANCE           = new SkillLevelDecrementCommand();
 
-	private SkillLevelDecrementCommand() {
-		super(DECREASE_LEVEL, CMD_DECREASE_LEVEL, KeyEvent.VK_PERIOD);
-	}
+    private SkillLevelDecrementCommand() {
+        super(DECREASE_LEVEL, CMD_DECREASE_LEVEL, KeyEvent.VK_PERIOD);
+    }
 
-	@Override
-	public void adjust() {
-		Component focus = getFocusOwner();
-		if (focus instanceof OutlineProxy) {
-			focus = ((OutlineProxy) focus).getRealOutline();
-		}
-		if (focus instanceof SkillLevelIncrementable) {
-			SkillLevelIncrementable inc = (SkillLevelIncrementable) focus;
-			setEnabled(inc.canDecrementSkillLevel());
-			setTitle(inc.getDecrementSkillLevelTitle());
-		} else {
-			setEnabled(false);
-			setTitle(DECREASE_LEVEL);
-		}
-	}
+    @Override
+    public void adjust() {
+        Component focus = getFocusOwner();
+        if (focus instanceof OutlineProxy) {
+            focus = ((OutlineProxy) focus).getRealOutline();
+        }
+        if (focus instanceof SkillLevelIncrementable) {
+            SkillLevelIncrementable inc = (SkillLevelIncrementable) focus;
+            setEnabled(inc.canDecrementSkillLevel());
+            setTitle(inc.getDecrementSkillLevelTitle());
+        } else {
+            setEnabled(false);
+            setTitle(DECREASE_LEVEL);
+        }
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		Component focus = getFocusOwner();
-		if (focus instanceof OutlineProxy) {
-			focus = ((OutlineProxy) focus).getRealOutline();
-		}
-		((SkillLevelIncrementable) focus).decrementSkillLevel();
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        Component focus = getFocusOwner();
+        if (focus instanceof OutlineProxy) {
+            focus = ((OutlineProxy) focus).getRealOutline();
+        }
+        ((SkillLevelIncrementable) focus).decrementSkillLevel();
+    }
 
 }

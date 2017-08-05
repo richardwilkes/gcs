@@ -20,20 +20,20 @@ import java.awt.dnd.DropTargetDragEvent;
 
 /** An outline for weapons. */
 public class WeaponOutline extends Outline {
-	/**
-	 * Creates a new weapon outline.
-	 * 
-	 * @param weaponClass The class of weapon to generate an outline for.
-	 */
-	public WeaponOutline(Class<? extends WeaponStats> weaponClass) {
-		super(false);
-		WeaponColumn.addColumns(this, weaponClass, false);
-		getModel().getColumnWithID(WeaponColumn.DESCRIPTION.ordinal()).setSortCriteria(0, true);
-		setEnabled(false);
-	}
+    /**
+     * Creates a new weapon outline.
+     * 
+     * @param weaponClass The class of weapon to generate an outline for.
+     */
+    public WeaponOutline(Class<? extends WeaponStats> weaponClass) {
+        super(false);
+        WeaponColumn.addColumns(this, weaponClass, false);
+        getModel().getColumnWithID(WeaponColumn.DESCRIPTION.ordinal()).setSortCriteria(0, true);
+        setEnabled(false);
+    }
 
-	@Override
-	protected boolean isRowDragAcceptable(DropTargetDragEvent dtde, Row[] rows) {
-		return false;
-	}
+    @Override
+    protected boolean isRowDragAcceptable(DropTargetDragEvent dtde, Row[] rows) {
+        return false;
+    }
 }

@@ -22,48 +22,48 @@ import java.awt.event.KeyEvent;
 
 /** Provides the "Decrement" command. */
 public class DecrementCommand extends Command {
-	@Localize("Decrement")
-	@Localize(locale = "de", value = "Verringern")
-	@Localize(locale = "ru", value = "Уменьшить")
-	@Localize(locale = "es", value = "Disminuir")
-	private static String DECREMENT;
+    @Localize("Decrement")
+    @Localize(locale = "de", value = "Verringern")
+    @Localize(locale = "ru", value = "Уменьшить")
+    @Localize(locale = "es", value = "Disminuir")
+    private static String DECREMENT;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String				CMD_DECREMENT	= "Decrement";				//$NON-NLS-1$
+    /** The action command this command will issue. */
+    public static final String           CMD_DECREMENT = "Decrement";           				//$NON-NLS-1$
 
-	/** The singleton {@link DecrementCommand}. */
-	public static final DecrementCommand	INSTANCE		= new DecrementCommand();
+    /** The singleton {@link DecrementCommand}. */
+    public static final DecrementCommand INSTANCE      = new DecrementCommand();
 
-	private DecrementCommand() {
-		super(DECREMENT, CMD_DECREMENT, KeyEvent.VK_MINUS);
-	}
+    private DecrementCommand() {
+        super(DECREMENT, CMD_DECREMENT, KeyEvent.VK_MINUS);
+    }
 
-	@Override
-	public void adjust() {
-		Component focus = getFocusOwner();
-		if (focus instanceof OutlineProxy) {
-			focus = ((OutlineProxy) focus).getRealOutline();
-		}
-		if (focus instanceof Incrementable) {
-			Incrementable inc = (Incrementable) focus;
-			setTitle(inc.getDecrementTitle());
-			setEnabled(inc.canDecrement());
-		} else {
-			setTitle(DECREMENT);
-			setEnabled(false);
-		}
-	}
+    @Override
+    public void adjust() {
+        Component focus = getFocusOwner();
+        if (focus instanceof OutlineProxy) {
+            focus = ((OutlineProxy) focus).getRealOutline();
+        }
+        if (focus instanceof Incrementable) {
+            Incrementable inc = (Incrementable) focus;
+            setTitle(inc.getDecrementTitle());
+            setEnabled(inc.canDecrement());
+        } else {
+            setTitle(DECREMENT);
+            setEnabled(false);
+        }
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		Component focus = getFocusOwner();
-		if (focus instanceof OutlineProxy) {
-			focus = ((OutlineProxy) focus).getRealOutline();
-		}
-		((Incrementable) focus).decrement();
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        Component focus = getFocusOwner();
+        if (focus instanceof OutlineProxy) {
+            focus = ((OutlineProxy) focus).getRealOutline();
+        }
+        ((Incrementable) focus).decrement();
+    }
 }

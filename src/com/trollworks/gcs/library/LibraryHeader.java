@@ -22,26 +22,26 @@ import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
 public class LibraryHeader extends JPanel implements ScaleRoot {
-	private Scale mScale;
+    private Scale mScale;
 
-	public LibraryHeader(OutlineHeader header) {
-		header.setBorder(new LineBorder(header.getOwner().getDividerColor(), 0, 0, 0, 1));
-		setLayout(new BorderLayout());
-		add(header);
-		mScale = SheetPreferences.getInitialUIScale().getScale();
-	}
+    public LibraryHeader(OutlineHeader header) {
+        header.setBorder(new LineBorder(header.getOwner().getDividerColor(), 0, 0, 0, 1));
+        setLayout(new BorderLayout());
+        add(header);
+        mScale = SheetPreferences.getInitialUIScale().getScale();
+    }
 
-	@Override
-	public Scale getScale() {
-		return mScale;
-	}
+    @Override
+    public Scale getScale() {
+        return mScale;
+    }
 
-	@Override
-	public void setScale(Scale scale) {
-		if (mScale.getScale() != scale.getScale()) {
-			mScale = scale;
-			revalidate();
-			repaint();
-		}
-	}
+    @Override
+    public void setScale(Scale scale) {
+        if (mScale.getScale() != scale.getScale()) {
+            mScale = scale;
+            revalidate();
+            repaint();
+        }
+    }
 }

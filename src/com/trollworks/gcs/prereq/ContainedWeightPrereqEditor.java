@@ -20,41 +20,41 @@ import com.trollworks.toolkit.utility.Localization;
 
 /** A contained weight prerequisite editor panel. */
 public class ContainedWeightPrereqEditor extends PrereqEditor {
-	@Localize("which ")
-	@Localize(locale = "de", value = "die ")
-	@Localize(locale = "ru", value = "который")
-	@Localize(locale = "es", value = "el cual ")
-	private static String WHICH;
+    @Localize("which ")
+    @Localize(locale = "de", value = "die ")
+    @Localize(locale = "ru", value = "который")
+    @Localize(locale = "es", value = "el cual ")
+    private static String WHICH;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/**
-	 * Creates a new contained weight prerequisite editor panel.
-	 *
-	 * @param row The owning row.
-	 * @param prereq The prerequisite to edit.
-	 * @param depth The depth of this prerequisite.
-	 */
-	public ContainedWeightPrereqEditor(ListRow row, ContainedWeightPrereq prereq, int depth) {
-		super(row, prereq, depth);
-	}
+    /**
+     * Creates a new contained weight prerequisite editor panel.
+     *
+     * @param row The owning row.
+     * @param prereq The prerequisite to edit.
+     * @param depth The depth of this prerequisite.
+     */
+    public ContainedWeightPrereqEditor(ListRow row, ContainedWeightPrereq prereq, int depth) {
+        super(row, prereq, depth);
+    }
 
-	@Override
-	protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
-		ContainedWeightPrereq prereq = (ContainedWeightPrereq) mPrereq;
+    @Override
+    protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
+        ContainedWeightPrereq prereq = (ContainedWeightPrereq) mPrereq;
 
-		FlexRow row = new FlexRow();
-		row.add(addHasCombo(prereq.has()));
-		row.add(addChangeBaseTypeCombo());
-		row.add(new FlexSpacer(0, 0, true, false));
-		grid.add(row, 0, 1);
+        FlexRow row = new FlexRow();
+        row.add(addHasCombo(prereq.has()));
+        row.add(addChangeBaseTypeCombo());
+        row.add(new FlexSpacer(0, 0, true, false));
+        grid.add(row, 0, 1);
 
-		row = new FlexRow();
-		row.add(addNumericCompareCombo(prereq.getWeightCompare(), WHICH));
-		row.add(addWeightCompareField(prereq.getWeightCompare()));
-		row.add(new FlexSpacer(0, 0, true, false));
-		grid.add(row, 1, 1);
-	}
+        row = new FlexRow();
+        row.add(addNumericCompareCombo(prereq.getWeightCompare(), WHICH));
+        row.add(addWeightCompareField(prereq.getWeightCompare()));
+        row.add(new FlexSpacer(0, 0, true, false));
+        grid.add(row, 1, 1);
+    }
 }

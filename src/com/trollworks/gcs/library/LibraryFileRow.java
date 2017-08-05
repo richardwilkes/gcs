@@ -20,30 +20,30 @@ import java.nio.file.Path;
 
 /** A {@link TreeRow} that represents a file in the library explorer. */
 public class LibraryFileRow extends TreeRow implements LibraryExplorerRow {
-	private Path mPath;
+    private Path mPath;
 
-	/** @param path A {@link Path} to a library or template file. */
-	public LibraryFileRow(Path path) {
-		mPath = path;
-	}
+    /** @param path A {@link Path} to a library or template file. */
+    public LibraryFileRow(Path path) {
+        mPath = path;
+    }
 
-	/** @return The {@link Path}. */
-	public Path getPath() {
-		return mPath;
-	}
+    /** @return The {@link Path}. */
+    public Path getPath() {
+        return mPath;
+    }
 
-	@Override
-	public String getSelectionKey() {
-		return mPath.toString();
-	}
+    @Override
+    public String getSelectionKey() {
+        return mPath.toString();
+    }
 
-	@Override
-	public StdImage getIcon() {
-		return FileType.getIconsForFile(mPath.toFile()).getImage(16);
-	}
+    @Override
+    public StdImage getIcon() {
+        return FileType.getIconsForFile(mPath.toFile()).getImage(16);
+    }
 
-	@Override
-	public String getName() {
-		return PathUtils.getLeafName(mPath.getFileName(), false);
-	}
+    @Override
+    public String getName() {
+        return PathUtils.getLeafName(mPath.getFileName(), false);
+    }
 }

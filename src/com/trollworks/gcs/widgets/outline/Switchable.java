@@ -12,6 +12,6 @@
 package com.trollworks.gcs.widgets.outline;
 
 public interface Switchable {
-	/** @return <code>true</code> if this item is enabled. */
-	boolean isEnabled();
+    /** @return <code>true</code> if this item is enabled. */
+    boolean isEnabled();
 }

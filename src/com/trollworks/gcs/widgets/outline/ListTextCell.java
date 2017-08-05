@@ -26,34 +26,34 @@ import javax.swing.UIManager;
 
 /** Represents cells in a {@link Outline}. */
 public class ListTextCell extends TextCell {
-	/**
-	 * Create a new text cell.
-	 *
-	 * @param alignment The horizontal text alignment to use.
-	 * @param wrapped Pass in <code>true</code> to enable wrapping.
-	 */
-	public ListTextCell(int alignment, boolean wrapped) {
-		super(alignment, wrapped);
-	}
+    /**
+     * Create a new text cell.
+     *
+     * @param alignment The horizontal text alignment to use.
+     * @param wrapped Pass in <code>true</code> to enable wrapping.
+     */
+    public ListTextCell(int alignment, boolean wrapped) {
+        super(alignment, wrapped);
+    }
 
-	@Override
-	public Font getFont(Row row, Column column) {
-		return UIManager.getFont(GCSFonts.KEY_FIELD);
-	}
+    @Override
+    public Font getFont(Row row, Column column) {
+        return UIManager.getFont(GCSFonts.KEY_FIELD);
+    }
 
-	@Override
-	public Color getColor(boolean selected, boolean active, Row row, Column column) {
-		if (row instanceof ListRow && !((ListRow) row).isSatisfied()) {
-			return Color.red;
-		}
-		return super.getColor(selected, active, row, column);
-	}
+    @Override
+    public Color getColor(boolean selected, boolean active, Row row, Column column) {
+        if (row instanceof ListRow && !((ListRow) row).isSatisfied()) {
+            return Color.red;
+        }
+        return super.getColor(selected, active, row, column);
+    }
 
-	@Override
-	public String getToolTipText(Outline outline, MouseEvent event, Rectangle bounds, Row row, Column column) {
-		if (!(row instanceof ListRow) || ((ListRow) row).isSatisfied()) {
-			return super.getToolTipText(outline, event, bounds, row, column);
-		}
-		return ((ListRow) row).getReasonForUnsatisfied();
-	}
+    @Override
+    public String getToolTipText(Outline outline, MouseEvent event, Rectangle bounds, Row row, Column column) {
+        if (!(row instanceof ListRow) || ((ListRow) row).isSatisfied()) {
+            return super.getToolTipText(outline, event, bounds, row, column);
+        }
+        return ((ListRow) row).getReasonForUnsatisfied();
+    }
 }

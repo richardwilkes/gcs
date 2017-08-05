@@ -31,65 +31,65 @@ import javax.swing.JMenuItem;
 
 /** Provides the standard "Help" menu. */
 public class HelpMenuProvider implements MenuProvider {
-	@Localize("Help")
-	@Localize(locale = "de", value = "Hilfe")
-	@Localize(locale = "ru", value = "Справка")
-	@Localize(locale = "es", value = "Ayuda")
-	private static String	HELP;
-	@Localize("Release Notes")
-	@Localize(locale = "de", value = "Hinweise zur Veröffentlichung")
-	@Localize(locale = "ru", value = "Примечания к выпуску")
-	@Localize(locale = "es", value = "Notas de la versión")
-	private static String	RELEASE_NOTES;
-	@Localize("Bug Reports")
-	private static String	BUG_REPORTS;
-	@Localize("Feature Requests")
-	private static String	FEATURE_REQUESTS;
-	@Localize("License")
-	@Localize(locale = "de", value = "Lizenz")
-	@Localize(locale = "ru", value = "Лицензия")
-	@Localize(locale = "es", value = "Licencia")
-	private static String	LICENSE;
-	@Localize("Web Site")
-	@Localize(locale = "de", value = "Webseite")
-	@Localize(locale = "ru", value = "Сайт")
-	@Localize(locale = "es", value = "Sitio Web")
-	private static String	WEB_SITE;
-	@Localize("Mailing Lists")
-	@Localize(locale = "de", value = "Mailinglisten")
-	@Localize(locale = "ru", value = "Списки рассылки")
-	@Localize(locale = "es", value = "Listas de correo")
-	private static String	MAILING_LISTS;
+    @Localize("Help")
+    @Localize(locale = "de", value = "Hilfe")
+    @Localize(locale = "ru", value = "Справка")
+    @Localize(locale = "es", value = "Ayuda")
+    private static String HELP;
+    @Localize("Release Notes")
+    @Localize(locale = "de", value = "Hinweise zur Veröffentlichung")
+    @Localize(locale = "ru", value = "Примечания к выпуску")
+    @Localize(locale = "es", value = "Notas de la versión")
+    private static String RELEASE_NOTES;
+    @Localize("Bug Reports")
+    private static String BUG_REPORTS;
+    @Localize("Feature Requests")
+    private static String FEATURE_REQUESTS;
+    @Localize("License")
+    @Localize(locale = "de", value = "Lizenz")
+    @Localize(locale = "ru", value = "Лицензия")
+    @Localize(locale = "es", value = "Licencia")
+    private static String LICENSE;
+    @Localize("Web Site")
+    @Localize(locale = "de", value = "Webseite")
+    @Localize(locale = "ru", value = "Сайт")
+    @Localize(locale = "es", value = "Sitio Web")
+    private static String WEB_SITE;
+    @Localize("Mailing Lists")
+    @Localize(locale = "de", value = "Mailinglisten")
+    @Localize(locale = "ru", value = "Списки рассылки")
+    @Localize(locale = "es", value = "Listas de correo")
+    private static String MAILING_LISTS;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	public static final String NAME = "Help"; //$NON-NLS-1$
+    public static final String NAME = "Help"; //$NON-NLS-1$
 
-	@Override
-	public Set<Command> getModifiableCommands() {
-		return Collections.emptySet();
-	}
+    @Override
+    public Set<Command> getModifiableCommands() {
+        return Collections.emptySet();
+    }
 
-	@Override
-	public JMenu createMenu() {
-		JMenu menu = new JMenu(HELP);
-		menu.setName(NAME);
-		if (!Platform.isMacintosh()) {
-			menu.add(new JMenuItem(AboutCommand.INSTANCE));
-			menu.addSeparator();
-		}
-		menu.add(new JMenuItem(UpdateCommand.INSTANCE));
-		menu.addSeparator();
-		menu.add(new JMenuItem(new OpenURICommand(RELEASE_NOTES, GCSApp.WEB_SITE + "/release_notes.php"))); //$NON-NLS-1$
-		menu.add(new JMenuItem(new OpenURICommand(LICENSE, App.getHomePath().resolve("license.html").toUri()))); //$NON-NLS-1$
-		menu.addSeparator();
-		menu.add(new JMenuItem(new OpenURICommand(WEB_SITE, GCSApp.WEB_SITE)));
-		menu.add(new JMenuItem(new OpenURICommand(MAILING_LISTS, GCSApp.WEB_SITE + "/mailing_lists.php"))); //$NON-NLS-1$
-		menu.add(new JMenuItem(new OpenURICommand(FEATURE_REQUESTS, "https://gurpscharactersheet.atlassian.net/issues/?filter=10000"))); //$NON-NLS-1$
-		menu.add(new JMenuItem(new OpenURICommand(BUG_REPORTS, "https://gurpscharactersheet.atlassian.net/issues/?filter=10001"))); //$NON-NLS-1$
-		DynamicMenuEnabler.add(menu);
-		return menu;
-	}
+    @Override
+    public JMenu createMenu() {
+        JMenu menu = new JMenu(HELP);
+        menu.setName(NAME);
+        if (!Platform.isMacintosh()) {
+            menu.add(new JMenuItem(AboutCommand.INSTANCE));
+            menu.addSeparator();
+        }
+        menu.add(new JMenuItem(UpdateCommand.INSTANCE));
+        menu.addSeparator();
+        menu.add(new JMenuItem(new OpenURICommand(RELEASE_NOTES, GCSApp.WEB_SITE + "/release_notes.php"))); //$NON-NLS-1$
+        menu.add(new JMenuItem(new OpenURICommand(LICENSE, App.getHomePath().resolve("license.html").toUri()))); //$NON-NLS-1$
+        menu.addSeparator();
+        menu.add(new JMenuItem(new OpenURICommand(WEB_SITE, GCSApp.WEB_SITE)));
+        menu.add(new JMenuItem(new OpenURICommand(MAILING_LISTS, GCSApp.WEB_SITE + "/mailing_lists.php"))); //$NON-NLS-1$
+        menu.add(new JMenuItem(new OpenURICommand(FEATURE_REQUESTS, "https://gurpscharactersheet.atlassian.net/issues/?filter=10000"))); //$NON-NLS-1$
+        menu.add(new JMenuItem(new OpenURICommand(BUG_REPORTS, "https://gurpscharactersheet.atlassian.net/issues/?filter=10001"))); //$NON-NLS-1$
+        DynamicMenuEnabler.add(menu);
+        return menu;
+    }
 }

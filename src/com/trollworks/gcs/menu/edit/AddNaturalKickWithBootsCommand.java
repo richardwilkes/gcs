@@ -21,44 +21,44 @@ import java.awt.event.ActionEvent;
 
 /** Provides the "Add Natural Kick w/Boots" command. */
 public class AddNaturalKickWithBootsCommand extends Command {
-	@Localize("Include Kick w/Boots In Weapons")
-	@Localize(locale = "de", value = "Führe Tritt mit Schuh als Waffe auf")
-	@Localize(locale = "ru", value = "Отображать пинок (в ботинке) в оружии")
-	@Localize(locale = "es", value = "Incluir Pata con Botas entre las Armas")
-	private static String ADD_NATURAL_KICK_WITH_BOOTS;
+    @Localize("Include Kick w/Boots In Weapons")
+    @Localize(locale = "de", value = "Führe Tritt mit Schuh als Waffe auf")
+    @Localize(locale = "ru", value = "Отображать пинок (в ботинке) в оружии")
+    @Localize(locale = "es", value = "Incluir Pata con Botas entre las Armas")
+    private static String ADD_NATURAL_KICK_WITH_BOOTS;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String							CMD_ADD_NATURAL_KICK_WITH_BOOTS	= "AddNaturalKickWithBoots";			//$NON-NLS-1$
+    /** The action command this command will issue. */
+    public static final String                         CMD_ADD_NATURAL_KICK_WITH_BOOTS = "AddNaturalKickWithBoots";           			//$NON-NLS-1$
 
-	/** The singleton {@link AddNaturalKickWithBootsCommand}. */
-	public static final AddNaturalKickWithBootsCommand	INSTANCE						= new AddNaturalKickWithBootsCommand();
+    /** The singleton {@link AddNaturalKickWithBootsCommand}. */
+    public static final AddNaturalKickWithBootsCommand INSTANCE                        = new AddNaturalKickWithBootsCommand();
 
-	private AddNaturalKickWithBootsCommand() {
-		super(ADD_NATURAL_KICK_WITH_BOOTS, CMD_ADD_NATURAL_KICK_WITH_BOOTS);
-	}
+    private AddNaturalKickWithBootsCommand() {
+        super(ADD_NATURAL_KICK_WITH_BOOTS, CMD_ADD_NATURAL_KICK_WITH_BOOTS);
+    }
 
-	@Override
-	public void adjust() {
-		CharacterSheet sheet = getTarget(CharacterSheet.class);
-		if (sheet != null) {
-			setEnabled(true);
-			setMarked(sheet.getCharacter().includeKickBoots());
-		} else {
-			setEnabled(false);
-			setMarked(false);
-		}
-	}
+    @Override
+    public void adjust() {
+        CharacterSheet sheet = getTarget(CharacterSheet.class);
+        if (sheet != null) {
+            setEnabled(true);
+            setMarked(sheet.getCharacter().includeKickBoots());
+        } else {
+            setEnabled(false);
+            setMarked(false);
+        }
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		CharacterSheet sheet = getTarget(CharacterSheet.class);
-		if (sheet != null) {
-			GURPSCharacter character = sheet.getCharacter();
-			character.setIncludeKickBoots(!character.includeKickBoots());
-		}
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        CharacterSheet sheet = getTarget(CharacterSheet.class);
+        if (sheet != null) {
+            GURPSCharacter character = sheet.getCharacter();
+            character.setIncludeKickBoots(!character.includeKickBoots());
+        }
+    }
 }

@@ -21,31 +21,31 @@ import java.util.HashMap;
  * the {@link HashedWeapon} is within the {@link HashMap}.
  */
 class HashedWeapon {
-	private WeaponStats mWeapon;
+    private WeaponStats mWeapon;
 
-	/**
-	 * Creates a new hashed weapon.
-	 * 
-	 * @param weapon The weapon.
-	 */
-	HashedWeapon(WeaponStats weapon) {
-		mWeapon = weapon;
-	}
+    /**
+     * Creates a new hashed weapon.
+     * 
+     * @param weapon The weapon.
+     */
+    HashedWeapon(WeaponStats weapon) {
+        mWeapon = weapon;
+    }
 
-	@Override
-	public int hashCode() {
-		return mWeapon.getDescription().hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return mWeapon.getDescription().hashCode();
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj instanceof HashedWeapon) {
-			HashedWeapon other = (HashedWeapon) obj;
-			return mWeapon.equals(other.mWeapon) && mWeapon.getDescription().equals(other.mWeapon.getDescription());
-		}
-		return false;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof HashedWeapon) {
+            HashedWeapon other = (HashedWeapon) obj;
+            return mWeapon.equals(other.mWeapon) && mWeapon.getDescription().equals(other.mWeapon.getDescription());
+        }
+        return false;
+    }
 }

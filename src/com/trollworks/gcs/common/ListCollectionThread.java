@@ -34,158 +34,158 @@ import java.util.List;
 
 /** A thread that periodically updates the set of available list files. */
 public class ListCollectionThread extends Thread implements FileVisitor<Path>, Comparator<Object> {
-	private static final ListCollectionThread	INSTANCE;
-	private List<Object>						mLists;
-	private List<Object>						mCurrent;
-	private Stack<List<Object>>					mStack;
-	private List<ListCollectionListener>		mListeners;
+    private static final ListCollectionThread INSTANCE;
+    private List<Object>                      mLists;
+    private List<Object>                      mCurrent;
+    private Stack<List<Object>>               mStack;
+    private List<ListCollectionListener>      mListeners;
 
-	static {
-		INSTANCE = new ListCollectionThread();
-		INSTANCE.start();
-	}
+    static {
+        INSTANCE = new ListCollectionThread();
+        INSTANCE.start();
+    }
 
-	/** @return The one and only instance of this thread. */
-	public static final ListCollectionThread get() {
-		return INSTANCE;
-	}
+    /** @return The one and only instance of this thread. */
+    public static final ListCollectionThread get() {
+        return INSTANCE;
+    }
 
-	private ListCollectionThread() {
-		super("List Collection"); //$NON-NLS-1$
-		setPriority(NORM_PRIORITY);
-		setDaemon(true);
-		mListeners = new ArrayList<>();
-	}
+    private ListCollectionThread() {
+        super("List Collection"); //$NON-NLS-1$
+        setPriority(NORM_PRIORITY);
+        setDaemon(true);
+        mListeners = new ArrayList<>();
+    }
 
-	/** @param listener The {@link ListCollectionListener} to add. */
-	public synchronized void addListener(ListCollectionListener listener) {
-		mListeners.add(listener);
-	}
+    /** @param listener The {@link ListCollectionListener} to add. */
+    public synchronized void addListener(ListCollectionListener listener) {
+        mListeners.add(listener);
+    }
 
-	/** @param listener The {@link ListCollectionListener} to remove. */
-	public synchronized void removeListener(ListCollectionListener listener) {
-		mListeners.remove(listener);
-	}
+    /** @param listener The {@link ListCollectionListener} to remove. */
+    public synchronized void removeListener(ListCollectionListener listener) {
+        mListeners.remove(listener);
+    }
 
-	protected void notifyListeners() {
-		ListCollectionListener[] listeners;
-		synchronized (this) {
-			listeners = mListeners.toArray(new ListCollectionListener[mListeners.size()]);
-		}
-		List<Object> lists = getLists();
-		for (ListCollectionListener listener : listeners) {
-			try {
-				listener.dataFileListUpdated(lists);
-			} catch (Throwable throwable) {
-				Log.error(throwable);
-			}
-		}
-	}
+    protected void notifyListeners() {
+        ListCollectionListener[] listeners;
+        synchronized (this) {
+            listeners = mListeners.toArray(new ListCollectionListener[mListeners.size()]);
+        }
+        List<Object> lists = getLists();
+        for (ListCollectionListener listener : listeners) {
+            try {
+                listener.dataFileListUpdated(lists);
+            } catch (Throwable throwable) {
+                Log.error(throwable);
+            }
+        }
+    }
 
-	/** @return The current list of lists. */
-	public List<Object> getLists() {
-		try {
-			while (mLists == null) {
-				sleep(100);
-			}
-		} catch (InterruptedException outerIEx) {
-			// Someone is trying to terminate us... let them.
-		}
-		return mLists == null ? new ArrayList<>() : mLists;
-	}
+    /** @return The current list of lists. */
+    public List<Object> getLists() {
+        try {
+            while (mLists == null) {
+                sleep(100);
+            }
+        } catch (InterruptedException outerIEx) {
+            // Someone is trying to terminate us... let them.
+        }
+        return mLists == null ? new ArrayList<>() : mLists;
+    }
 
-	@Override
-	public void run() {
-		try {
-			while (true) {
-				List<Object> lists = collectLists();
-				if (!lists.equals(mLists)) {
-					mLists = lists;
-					EventQueue.invokeLater(() -> notifyListeners());
-				}
-				sleep(5000);
-			}
-		} catch (InterruptedException outerIEx) {
-			// Someone is trying to terminate us... let them.
-		}
-	}
+    @Override
+    public void run() {
+        try {
+            while (true) {
+                List<Object> lists = collectLists();
+                if (!lists.equals(mLists)) {
+                    mLists = lists;
+                    EventQueue.invokeLater(() -> notifyListeners());
+                }
+                sleep(5000);
+            }
+        } catch (InterruptedException outerIEx) {
+            // Someone is trying to terminate us... let them.
+        }
+    }
 
-	@SuppressWarnings("unchecked")
-	private List<Object> collectLists() {
-		mCurrent = new ArrayList<>();
-		mStack = new Stack<>();
-		try {
-			Files.walkFileTree(GCS.getLibraryRootPath(), EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, this);
-		} catch (Exception exception) {
-			Log.error(exception);
-		}
-		List<Object> result = mCurrent;
-		mCurrent = null;
-		mStack = null;
-		return result.isEmpty() ? new ArrayList<>() : (List<Object>) result.get(0);
-	}
+    @SuppressWarnings("unchecked")
+    private List<Object> collectLists() {
+        mCurrent = new ArrayList<>();
+        mStack = new Stack<>();
+        try {
+            Files.walkFileTree(GCS.getLibraryRootPath(), EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, this);
+        } catch (Exception exception) {
+            Log.error(exception);
+        }
+        List<Object> result = mCurrent;
+        mCurrent = null;
+        mStack = null;
+        return result.isEmpty() ? new ArrayList<>() : (List<Object>) result.get(0);
+    }
 
-	private static boolean shouldSkip(Path path) {
-		return path.getFileName().toString().startsWith("."); //$NON-NLS-1$
-	}
+    private static boolean shouldSkip(Path path) {
+        return path.getFileName().toString().startsWith("."); //$NON-NLS-1$
+    }
 
-	@Override
-	public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-		if (shouldSkip(dir)) {
-			return FileVisitResult.SKIP_SUBTREE;
-		}
-		mStack.push(mCurrent);
-		mCurrent = new ArrayList<>();
-		mCurrent.add(dir.getFileName().toString());
-		return FileVisitResult.CONTINUE;
-	}
+    @Override
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+        if (shouldSkip(dir)) {
+            return FileVisitResult.SKIP_SUBTREE;
+        }
+        mStack.push(mCurrent);
+        mCurrent = new ArrayList<>();
+        mCurrent.add(dir.getFileName().toString());
+        return FileVisitResult.CONTINUE;
+    }
 
-	@Override
-	public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-		if (!shouldSkip(file)) {
-			String ext = PathUtils.getExtension(file.getFileName());
-			for (String one : FileType.getOpenableExtensions()) {
-				if (one.equalsIgnoreCase(ext)) {
-					mCurrent.add(file);
-					break;
-				}
-			}
-		}
-		return FileVisitResult.CONTINUE;
-	}
+    @Override
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        if (!shouldSkip(file)) {
+            String ext = PathUtils.getExtension(file.getFileName());
+            for (String one : FileType.getOpenableExtensions()) {
+                if (one.equalsIgnoreCase(ext)) {
+                    mCurrent.add(file);
+                    break;
+                }
+            }
+        }
+        return FileVisitResult.CONTINUE;
+    }
 
-	@Override
-	public FileVisitResult visitFileFailed(Path file, IOException exception) throws IOException {
-		Log.error(exception);
-		return FileVisitResult.CONTINUE;
-	}
+    @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exception) throws IOException {
+        Log.error(exception);
+        return FileVisitResult.CONTINUE;
+    }
 
-	@Override
-	public FileVisitResult postVisitDirectory(Path dir, IOException exception) throws IOException {
-		if (exception != null) {
-			Log.error(exception);
-		}
-		Collections.sort(mCurrent, this);
-		List<Object> restoring = mStack.pop();
-		if (mCurrent.size() > 1) {
-			restoring.add(mCurrent);
-		}
-		mCurrent = restoring;
-		return FileVisitResult.CONTINUE;
-	}
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exception) throws IOException {
+        if (exception != null) {
+            Log.error(exception);
+        }
+        Collections.sort(mCurrent, this);
+        List<Object> restoring = mStack.pop();
+        if (mCurrent.size() > 1) {
+            restoring.add(mCurrent);
+        }
+        mCurrent = restoring;
+        return FileVisitResult.CONTINUE;
+    }
 
-	@Override
-	public int compare(Object o1, Object o2) {
-		return NumericComparator.compareStrings(getName(o1), getName(o2));
-	}
+    @Override
+    public int compare(Object o1, Object o2) {
+        return NumericComparator.compareStrings(getName(o1), getName(o2));
+    }
 
-	private static final String getName(Object obj) {
-		if (obj instanceof Path) {
-			return ((Path) obj).getFileName().toString();
-		}
-		if (obj instanceof List) {
-			return ((List<?>) obj).get(0).toString();
-		}
-		return ""; //$NON-NLS-1$
-	}
+    private static final String getName(Object obj) {
+        if (obj instanceof Path) {
+            return ((Path) obj).getFileName().toString();
+        }
+        if (obj instanceof List) {
+            return ((List<?>) obj).get(0).toString();
+        }
+        return ""; //$NON-NLS-1$
+    }
 }

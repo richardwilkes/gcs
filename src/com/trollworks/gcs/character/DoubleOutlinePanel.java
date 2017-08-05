@@ -26,100 +26,100 @@ import javax.swing.JPanel;
 
 /** A panel that holds a pair of side-by-side outlines. */
 public class DoubleOutlinePanel extends JPanel implements LayoutManager2 {
-	private SingleOutlinePanel	mLeftPanel;
-	private SingleOutlinePanel	mRightPanel;
+    private SingleOutlinePanel mLeftPanel;
+    private SingleOutlinePanel mRightPanel;
 
-	/**
-	 * Creates a new double outline panel.
-	 *
-	 * @param leftOutline The outline to display on the left.
-	 * @param leftTitle The localized title for the left panel.
-	 * @param rightOutline The outline to display on the right.
-	 * @param rightTitle The localized title for the right panel.
-	 * @param useProxy <code>true</code> if a proxy of the outlines should be used.
-	 */
-	public DoubleOutlinePanel(Scale scale, Outline leftOutline, String leftTitle, Outline rightOutline, String rightTitle, boolean useProxy) {
-		super();
-		setLayout(this);
-		setBackground(Color.WHITE);
-		mLeftPanel = new SingleOutlinePanel(scale, leftOutline, leftTitle, useProxy);
-		mRightPanel = new SingleOutlinePanel(scale, rightOutline, rightTitle, useProxy);
-		add(mLeftPanel);
-		add(mRightPanel);
-	}
+    /**
+     * Creates a new double outline panel.
+     *
+     * @param leftOutline The outline to display on the left.
+     * @param leftTitle The localized title for the left panel.
+     * @param rightOutline The outline to display on the right.
+     * @param rightTitle The localized title for the right panel.
+     * @param useProxy <code>true</code> if a proxy of the outlines should be used.
+     */
+    public DoubleOutlinePanel(Scale scale, Outline leftOutline, String leftTitle, Outline rightOutline, String rightTitle, boolean useProxy) {
+        super();
+        setLayout(this);
+        setBackground(Color.WHITE);
+        mLeftPanel = new SingleOutlinePanel(scale, leftOutline, leftTitle, useProxy);
+        mRightPanel = new SingleOutlinePanel(scale, rightOutline, rightTitle, useProxy);
+        add(mLeftPanel);
+        add(mRightPanel);
+    }
 
-	/**
-	 * Sets the embedded outline's display range.
-	 *
-	 * @param forRight <code>true</code> to set the right outline.
-	 * @param first The first row to display.
-	 * @param last The last row to display.
-	 */
-	public void setOutlineRowRange(boolean forRight, int first, int last) {
-		(forRight ? mRightPanel : mLeftPanel).setOutlineRowRange(first, last);
-	}
+    /**
+     * Sets the embedded outline's display range.
+     *
+     * @param forRight <code>true</code> to set the right outline.
+     * @param first The first row to display.
+     * @param last The last row to display.
+     */
+    public void setOutlineRowRange(boolean forRight, int first, int last) {
+        (forRight ? mRightPanel : mLeftPanel).setOutlineRowRange(first, last);
+    }
 
-	@Override
-	public void addLayoutComponent(Component comp, Object constraints) {
-		// Not used.
-	}
+    @Override
+    public void addLayoutComponent(Component comp, Object constraints) {
+        // Not used.
+    }
 
-	@Override
-	public float getLayoutAlignmentX(Container target) {
-		return CENTER_ALIGNMENT;
-	}
+    @Override
+    public float getLayoutAlignmentX(Container target) {
+        return CENTER_ALIGNMENT;
+    }
 
-	@Override
-	public float getLayoutAlignmentY(Container target) {
-		return CENTER_ALIGNMENT;
-	}
+    @Override
+    public float getLayoutAlignmentY(Container target) {
+        return CENTER_ALIGNMENT;
+    }
 
-	@Override
-	public void invalidateLayout(Container target) {
-		// Not used.
-	}
+    @Override
+    public void invalidateLayout(Container target) {
+        // Not used.
+    }
 
-	@Override
-	public void addLayoutComponent(String name, Component comp) {
-		// Not used.
-	}
+    @Override
+    public void addLayoutComponent(String name, Component comp) {
+        // Not used.
+    }
 
-	@Override
-	public void removeLayoutComponent(Component comp) {
-		// Not used.
-	}
+    @Override
+    public void removeLayoutComponent(Component comp) {
+        // Not used.
+    }
 
-	@Override
-	public Dimension preferredLayoutSize(Container parent) {
-		return getLayoutSize(parent, mLeftPanel.getPreferredSize(), mRightPanel.getPreferredSize());
-	}
+    @Override
+    public Dimension preferredLayoutSize(Container parent) {
+        return getLayoutSize(parent, mLeftPanel.getPreferredSize(), mRightPanel.getPreferredSize());
+    }
 
-	@Override
-	public Dimension minimumLayoutSize(Container parent) {
-		return getLayoutSize(parent, mLeftPanel.getMinimumSize(), mRightPanel.getMinimumSize());
-	}
+    @Override
+    public Dimension minimumLayoutSize(Container parent) {
+        return getLayoutSize(parent, mLeftPanel.getMinimumSize(), mRightPanel.getMinimumSize());
+    }
 
-	@Override
-	public Dimension maximumLayoutSize(Container parent) {
-		return getLayoutSize(parent, mLeftPanel.getMaximumSize(), mRightPanel.getMaximumSize());
-	}
+    @Override
+    public Dimension maximumLayoutSize(Container parent) {
+        return getLayoutSize(parent, mLeftPanel.getMaximumSize(), mRightPanel.getMaximumSize());
+    }
 
-	@Override
-	public void layoutContainer(Container parent) {
-		Insets insets = getInsets();
-		Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
-		Scale scale = Scale.get(parent);
-		int gap = scale.scale(2);
-		int width = (bounds.width - gap) / 2;
-		mLeftPanel.setBounds(bounds.x, bounds.y, width, bounds.height);
-		mRightPanel.setBounds(bounds.x + bounds.width - width, bounds.y, width, bounds.height);
-	}
+    @Override
+    public void layoutContainer(Container parent) {
+        Insets insets = getInsets();
+        Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
+        Scale scale = Scale.get(parent);
+        int gap = scale.scale(2);
+        int width = (bounds.width - gap) / 2;
+        mLeftPanel.setBounds(bounds.x, bounds.y, width, bounds.height);
+        mRightPanel.setBounds(bounds.x + bounds.width - width, bounds.y, width, bounds.height);
+    }
 
-	private Dimension getLayoutSize(Container parent, Dimension leftSize, Dimension rightSize) {
-		Dimension size = new Dimension(leftSize.width + rightSize.width, Math.max(leftSize.height, rightSize.height));
-		Insets insets = getInsets();
-		size.width += insets.left + Scale.get(parent).scale(2) + insets.right;
-		size.height += insets.top + insets.bottom;
-		return size;
-	}
+    private Dimension getLayoutSize(Container parent, Dimension leftSize, Dimension rightSize) {
+        Dimension size = new Dimension(leftSize.width + rightSize.width, Math.max(leftSize.height, rightSize.height));
+        Insets insets = getInsets();
+        size.width += insets.left + Scale.get(parent).scale(2) + insets.right;
+        size.height += insets.top + insets.bottom;
+        return size;
+    }
 }

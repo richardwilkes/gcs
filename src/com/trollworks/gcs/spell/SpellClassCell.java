@@ -16,18 +16,18 @@ import com.trollworks.gcs.widgets.outline.MultiCell;
 
 /** A cell for displaying the spell class and college. */
 public class SpellClassCell extends MultiCell {
-	@Override
-	protected String getPrimaryText(ListRow row) {
-		return row.canHaveChildren() ? "" : ((Spell) row).getSpellClass(); //$NON-NLS-1$
-	}
+    @Override
+    protected String getPrimaryText(ListRow row) {
+        return row.canHaveChildren() ? "" : ((Spell) row).getSpellClass(); //$NON-NLS-1$
+    }
 
-	@Override
-	protected String getSecondaryText(ListRow row) {
-		return row.canHaveChildren() ? "" : ((Spell) row).getCollege(); //$NON-NLS-1$
-	}
+    @Override
+    protected String getSecondaryText(ListRow row) {
+        return row.canHaveChildren() ? "" : ((Spell) row).getCollege(); //$NON-NLS-1$
+    }
 
-	@Override
-	protected String getSortText(ListRow row) {
-		return getSecondaryText(row);
-	}
+    @Override
+    protected String getSortText(ListRow row) {
+        return getSecondaryText(row);
+    }
 }

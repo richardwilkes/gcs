@@ -18,76 +18,76 @@ import java.util.Random;
 
 /** An abstract base class for name generation. */
 public abstract class Names {
-	/**
-	 * A random number generator that can be shared amongst instances of the {@link Names} class.
-	 */
-	protected static final Random RANDOM = new Random();
+    /**
+     * A random number generator that can be shared amongst instances of the {@link Names} class.
+     */
+    protected static final Random RANDOM = new Random();
 
-	/** @return A newly generated male first name. */
-	public abstract String getMaleFirstName();
+    /** @return A newly generated male first name. */
+    public abstract String getMaleFirstName();
 
-	/** @return A newly generated female first name. */
-	public abstract String getFemaleFirstName();
+    /** @return A newly generated female first name. */
+    public abstract String getFemaleFirstName();
 
-	/**
-	 * @param male Whether to generate a male or female name.
-	 * @return A newly generated first name.
-	 */
-	public String getGivenName(boolean male) {
-		return male ? getMaleFirstName() : getFemaleFirstName();
-	}
+    /**
+     * @param male Whether to generate a male or female name.
+     * @return A newly generated first name.
+     */
+    public String getGivenName(boolean male) {
+        return male ? getMaleFirstName() : getFemaleFirstName();
+    }
 
-	/** @return A newly generated last name. */
-	public abstract String getLastName();
+    /** @return A newly generated last name. */
+    public abstract String getLastName();
 
-	/**
-	 * @param male Whether to generate a male or female name.
-	 * @return A newly generated full (first and last) name.
-	 */
-	public String getFullName(boolean male) {
-		return getGivenName(male) + " " + getLastName(); //$NON-NLS-1$
-	}
+    /**
+     * @param male Whether to generate a male or female name.
+     * @return A newly generated full (first and last) name.
+     */
+    public String getFullName(boolean male) {
+        return getGivenName(male) + " " + getLastName(); //$NON-NLS-1$
+    }
 
-	/**
-	 * Loads names from a file into an array of strings. The names in the file should be listed one
-	 * per line.
-	 *
-	 * @param url The {@link URL} to load the name data from.
-	 * @param fallback A single name to use in case the file couldn't be loaded.
-	 * @return An array of strings representing the contents of the file.
-	 */
-	protected static final String[] loadNames(URL url, String fallback) {
-		String[] names;
+    /**
+     * Loads names from a file into an array of strings. The names in the file should be listed one
+     * per line.
+     *
+     * @param url The {@link URL} to load the name data from.
+     * @param fallback A single name to use in case the file couldn't be loaded.
+     * @return An array of strings representing the contents of the file.
+     */
+    protected static final String[] loadNames(URL url, String fallback) {
+        String[] names;
 
-		try {
-			int count = 0;
-			try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()))) {
-				String line = in.readLine();
-				while (line != null) {
-					if (line.trim().length() > 0) {
-						count++;
-					}
-					line = in.readLine();
-				}
-			}
+        try {
+            int count = 0;
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()))) {
+                String line = in.readLine();
+                while (line != null) {
+                    if (line.trim().length() > 0) {
+                        count++;
+                    }
+                    line = in.readLine();
+                }
+            }
 
-			names = new String[count];
-			try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()))) {
-				String line = in.readLine();
-				count = 0;
-				while (line != null) {
-					line = line.trim();
-					if (line.length() > 0) {
-						names[count++] = line;
-					}
-					line = in.readLine();
-				}
-			}
-		} catch (Exception exception) {
-			// This should never occur... but if it does, we won't fail.
-			names = new String[] { fallback };
-		}
+            names = new String[count];
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()))) {
+                String line = in.readLine();
+                count = 0;
+                while (line != null) {
+                    line = line.trim();
+                    if (line.length() > 0) {
+                        names[count++] = line;
+                    }
+                    line = in.readLine();
+                }
+            }
+        } catch (Exception exception) {
+            // This should never occur... but if it does, we won't fail.
+            names = new String[] { fallback };
+        }
 
-		return names;
-	}
+        return names;
+    }
 }

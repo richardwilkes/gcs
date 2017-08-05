@@ -22,44 +22,44 @@ import java.awt.event.ActionEvent;
 
 /** Provides the "New Character Template" command. */
 public class NewCharacterTemplateCommand extends Command {
-	@Localize("New Character Template")
-	@Localize(locale = "de", value = "Neue Charaktervorlage")
-	@Localize(locale = "ru", value = "Новый шаблон персонажа")
-	@Localize(locale = "es", value = "Nueva plantilla de personaje")
-	private static String NEW_CHARACTER_TEMPLATE;
+    @Localize("New Character Template")
+    @Localize(locale = "de", value = "Neue Charaktervorlage")
+    @Localize(locale = "ru", value = "Новый шаблон персонажа")
+    @Localize(locale = "es", value = "Nueva plantilla de personaje")
+    private static String NEW_CHARACTER_TEMPLATE;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String						CMD_NEW_CHARACTER_TEMPLATE	= "NewCharacterTemplate";			//$NON-NLS-1$
+    /** The action command this command will issue. */
+    public static final String                      CMD_NEW_CHARACTER_TEMPLATE = "NewCharacterTemplate";           			//$NON-NLS-1$
 
-	/** The singletone {@link NewCharacterTemplateCommand}. */
-	public static final NewCharacterTemplateCommand	INSTANCE					= new NewCharacterTemplateCommand();
+    /** The singletone {@link NewCharacterTemplateCommand}. */
+    public static final NewCharacterTemplateCommand INSTANCE                   = new NewCharacterTemplateCommand();
 
-	private NewCharacterTemplateCommand() {
-		super(NEW_CHARACTER_TEMPLATE, CMD_NEW_CHARACTER_TEMPLATE);
-	}
+    private NewCharacterTemplateCommand() {
+        super(NEW_CHARACTER_TEMPLATE, CMD_NEW_CHARACTER_TEMPLATE);
+    }
 
-	@Override
-	public void adjust() {
-		// Do nothing. We're always enabled.
-	}
+    @Override
+    public void adjust() {
+        // Do nothing. We're always enabled.
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		newTemplate();
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        newTemplate();
+    }
 
-	/** @return The newly created a new {@link TemplateDockable}. */
-	public static TemplateDockable newTemplate() {
-		LibraryExplorerDockable library = LibraryExplorerDockable.get();
-		if (library != null) {
-			TemplateDockable template = new TemplateDockable(new Template());
-			library.dockTemplate(template);
-			return template;
-		}
-		return null;
-	}
+    /** @return The newly created a new {@link TemplateDockable}. */
+    public static TemplateDockable newTemplate() {
+        LibraryExplorerDockable library = LibraryExplorerDockable.get();
+        if (library != null) {
+            TemplateDockable template = new TemplateDockable(new Template());
+            library.dockTemplate(template);
+            return template;
+        }
+        return null;
+    }
 }

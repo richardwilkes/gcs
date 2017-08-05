@@ -29,70 +29,70 @@ import java.util.ArrayList;
 /** Provides the "Duplicate" command. */
 // RAW: This should be reimplemented in terms of the Duplicatable interface
 public class DuplicateCommand extends Command {
-	@Localize("Duplicate")
-	@Localize(locale = "de", value = "Duplizieren")
-	@Localize(locale = "ru", value = "Дублировать")
-	@Localize(locale = "es", value = "Duplicar")
-	private static String	DUPLICATE;
-	@Localize("Duplicate Rows")
-	@Localize(locale = "de", value = "Zeile Duplizieren")
-	@Localize(locale = "ru", value = "Дублировать строки")
-	@Localize(locale = "es", value = "Duplicar Filas")
-	private static String	DUPLICATE_UNDO;
+    @Localize("Duplicate")
+    @Localize(locale = "de", value = "Duplizieren")
+    @Localize(locale = "ru", value = "Дублировать")
+    @Localize(locale = "es", value = "Duplicar")
+    private static String DUPLICATE;
+    @Localize("Duplicate Rows")
+    @Localize(locale = "de", value = "Zeile Duplizieren")
+    @Localize(locale = "ru", value = "Дублировать строки")
+    @Localize(locale = "es", value = "Duplicar Filas")
+    private static String DUPLICATE_UNDO;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String				CMD_DUPLICATE	= "Duplicate";				//$NON-NLS-1$
+    /** The action command this command will issue. */
+    public static final String           CMD_DUPLICATE = "Duplicate";           				//$NON-NLS-1$
 
-	/** The singleton {@link DuplicateCommand}. */
-	public static final DuplicateCommand	INSTANCE		= new DuplicateCommand();
+    /** The singleton {@link DuplicateCommand}. */
+    public static final DuplicateCommand INSTANCE      = new DuplicateCommand();
 
-	private DuplicateCommand() {
-		super(DUPLICATE, CMD_DUPLICATE, KeyEvent.VK_U);
-	}
+    private DuplicateCommand() {
+        super(DUPLICATE, CMD_DUPLICATE, KeyEvent.VK_U);
+    }
 
-	@Override
-	public void adjust() {
-		Component focus = getFocusOwner();
-		if (focus instanceof OutlineProxy) {
-			focus = ((OutlineProxy) focus).getRealOutline();
-		}
-		if (focus instanceof ListOutline) {
-			OutlineModel model = ((ListOutline) focus).getModel();
-			setEnabled(!model.isLocked() && model.hasSelection());
-		} else {
-			setEnabled(false);
-		}
-	}
+    @Override
+    public void adjust() {
+        Component focus = getFocusOwner();
+        if (focus instanceof OutlineProxy) {
+            focus = ((OutlineProxy) focus).getRealOutline();
+        }
+        if (focus instanceof ListOutline) {
+            OutlineModel model = ((ListOutline) focus).getModel();
+            setEnabled(!model.isLocked() && model.hasSelection());
+        } else {
+            setEnabled(false);
+        }
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		Component focus = getFocusOwner();
-		if (focus instanceof OutlineProxy) {
-			focus = ((OutlineProxy) focus).getRealOutline();
-		}
-		ListOutline outline = (ListOutline) focus;
-		OutlineModel model = outline.getModel();
-		if (!model.isLocked() && model.hasSelection()) {
-			ArrayList<Row> rows = new ArrayList<>();
-			ArrayList<Row> topRows = new ArrayList<>();
-			DataFile dataFile = outline.getDataFile();
-			dataFile.startNotify();
-			model.setDragRows(model.getSelectionAsList(true).toArray(new Row[0]));
-			outline.convertDragRowsToSelf(rows);
-			model.setDragRows(null);
-			for (Row row : rows) {
-				if (row.getDepth() == 0) {
-					topRows.add(row);
-				}
-			}
-			outline.addRow(topRows.toArray(new ListRow[0]), DUPLICATE_UNDO, true);
-			dataFile.endNotify();
-			model.select(topRows, false);
-			outline.scrollSelectionIntoView();
-		}
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        Component focus = getFocusOwner();
+        if (focus instanceof OutlineProxy) {
+            focus = ((OutlineProxy) focus).getRealOutline();
+        }
+        ListOutline outline = (ListOutline) focus;
+        OutlineModel model = outline.getModel();
+        if (!model.isLocked() && model.hasSelection()) {
+            ArrayList<Row> rows = new ArrayList<>();
+            ArrayList<Row> topRows = new ArrayList<>();
+            DataFile dataFile = outline.getDataFile();
+            dataFile.startNotify();
+            model.setDragRows(model.getSelectionAsList(true).toArray(new Row[0]));
+            outline.convertDragRowsToSelf(rows);
+            model.setDragRows(null);
+            for (Row row : rows) {
+                if (row.getDepth() == 0) {
+                    topRows.add(row);
+                }
+            }
+            outline.addRow(topRows.toArray(new ListRow[0]), DUPLICATE_UNDO, true);
+            dataFile.endNotify();
+            model.select(topRows, false);
+            outline.scrollSelectionIntoView();
+        }
+    }
 }

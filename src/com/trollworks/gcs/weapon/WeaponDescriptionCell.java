@@ -35,110 +35,110 @@ import javax.swing.UIManager;
  * information for a {@link WeaponDisplayRow}.
  */
 public class WeaponDescriptionCell implements Cell {
-	private static final int H_MARGIN = 2;
+    private static final int H_MARGIN = 2;
 
-	/**
-	 * @param row The row to use.
-	 * @return The primary text to display.
-	 */
-	@SuppressWarnings("static-method")
-	protected String getPrimaryText(WeaponDisplayRow row) {
-		return row.getWeapon().toString();
-	}
+    /**
+     * @param row The row to use.
+     * @return The primary text to display.
+     */
+    @SuppressWarnings("static-method")
+    protected String getPrimaryText(WeaponDisplayRow row) {
+        return row.getWeapon().toString();
+    }
 
-	/**
-	 * @param row The row to use.
-	 * @return The secondary text to display.
-	 */
-	@SuppressWarnings("static-method")
-	protected String getSecondaryText(WeaponDisplayRow row) {
-		return row.getWeapon().getNotes();
-	}
+    /**
+     * @param row The row to use.
+     * @return The secondary text to display.
+     */
+    @SuppressWarnings("static-method")
+    protected String getSecondaryText(WeaponDisplayRow row) {
+        return row.getWeapon().getNotes();
+    }
 
-	@Override
-	public void drawCell(Outline outline, Graphics gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
-		Scale scale = Scale.get(outline);
-		int hMargin = scale.scale(H_MARGIN);
-		WeaponDisplayRow theRow = (WeaponDisplayRow) row;
-		Rectangle insetBounds = new Rectangle(bounds.x + hMargin, bounds.y, bounds.width - hMargin * 2, bounds.height);
-		String notes = getSecondaryText(theRow);
-		Font font = scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD));
-		gc.setColor(Colors.getListForeground(selected, active));
-		gc.setFont(font);
-		int pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP);
-		if (notes.trim().length() > 0) {
-			insetBounds.height -= pos - insetBounds.y;
-			insetBounds.y = pos;
-			gc.setFont(scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES)));
-			TextDrawing.draw(gc, insetBounds, notes, SwingConstants.LEFT, SwingConstants.TOP);
-		}
-	}
+    @Override
+    public void drawCell(Outline outline, Graphics gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
+        Scale scale = Scale.get(outline);
+        int hMargin = scale.scale(H_MARGIN);
+        WeaponDisplayRow theRow = (WeaponDisplayRow) row;
+        Rectangle insetBounds = new Rectangle(bounds.x + hMargin, bounds.y, bounds.width - hMargin * 2, bounds.height);
+        String notes = getSecondaryText(theRow);
+        Font font = scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD));
+        gc.setColor(Colors.getListForeground(selected, active));
+        gc.setFont(font);
+        int pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP);
+        if (notes.trim().length() > 0) {
+            insetBounds.height -= pos - insetBounds.y;
+            insetBounds.y = pos;
+            gc.setFont(scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES)));
+            TextDrawing.draw(gc, insetBounds, notes, SwingConstants.LEFT, SwingConstants.TOP);
+        }
+    }
 
-	@Override
-	public int getPreferredWidth(Outline outline, Row row, Column column) {
-		Scale scale = Scale.get(outline);
-		WeaponDisplayRow theRow = (WeaponDisplayRow) row;
-		int width = TextDrawing.getWidth(scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD)), getPrimaryText(theRow));
-		String notes = getSecondaryText(theRow);
-		if (notes.trim().length() > 0) {
-			int notesWidth = TextDrawing.getWidth(scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES)), notes);
-			if (notesWidth > width) {
-				width = notesWidth;
-			}
-		}
-		return width + scale.scale(H_MARGIN) * 2;
-	}
+    @Override
+    public int getPreferredWidth(Outline outline, Row row, Column column) {
+        Scale scale = Scale.get(outline);
+        WeaponDisplayRow theRow = (WeaponDisplayRow) row;
+        int width = TextDrawing.getWidth(scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD)), getPrimaryText(theRow));
+        String notes = getSecondaryText(theRow);
+        if (notes.trim().length() > 0) {
+            int notesWidth = TextDrawing.getWidth(scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES)), notes);
+            if (notesWidth > width) {
+                width = notesWidth;
+            }
+        }
+        return width + scale.scale(H_MARGIN) * 2;
+    }
 
-	@Override
-	public int getPreferredHeight(Outline outline, Row row, Column column) {
-		Scale scale = Scale.get(outline);
-		WeaponDisplayRow theRow = (WeaponDisplayRow) row;
-		Font font = scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD));
-		int height = TextDrawing.getPreferredSize(font, wrap(theRow, column, getPrimaryText(theRow), font, scale)).height;
-		String notes = getSecondaryText(theRow);
-		if (notes.trim().length() > 0) {
-			font = scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES));
-			height += TextDrawing.getPreferredSize(font, wrap(theRow, column, notes, font, scale)).height;
-		}
-		return height;
-	}
+    @Override
+    public int getPreferredHeight(Outline outline, Row row, Column column) {
+        Scale scale = Scale.get(outline);
+        WeaponDisplayRow theRow = (WeaponDisplayRow) row;
+        Font font = scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD));
+        int height = TextDrawing.getPreferredSize(font, wrap(theRow, column, getPrimaryText(theRow), font, scale)).height;
+        String notes = getSecondaryText(theRow);
+        if (notes.trim().length() > 0) {
+            font = scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES));
+            height += TextDrawing.getPreferredSize(font, wrap(theRow, column, notes, font, scale)).height;
+        }
+        return height;
+    }
 
-	private static String wrap(WeaponDisplayRow row, Column column, String text, Font font, Scale scale) {
-		int width = column.getWidth();
-		if (width == -1) {
-			return text;
-		}
-		return TextDrawing.wrapToPixelWidth(font, text, width - (scale.scale(row.getOwner().getIndentWidth(row, column)) + scale.scale(H_MARGIN) * 2));
-	}
+    private static String wrap(WeaponDisplayRow row, Column column, String text, Font font, Scale scale) {
+        int width = column.getWidth();
+        if (width == -1) {
+            return text;
+        }
+        return TextDrawing.wrapToPixelWidth(font, text, width - (scale.scale(row.getOwner().getIndentWidth(row, column)) + scale.scale(H_MARGIN) * 2));
+    }
 
-	@Override
-	public int compare(Column column, Row one, Row two) {
-		WeaponDisplayRow r1 = (WeaponDisplayRow) one;
-		WeaponDisplayRow r2 = (WeaponDisplayRow) two;
-		int result = NumericComparator.caselessCompareStrings(getPrimaryText(r1), getPrimaryText(r2));
-		if (result == 0) {
-			result = NumericComparator.caselessCompareStrings(getSecondaryText(r1), getSecondaryText(r2));
-		}
-		return result;
-	}
+    @Override
+    public int compare(Column column, Row one, Row two) {
+        WeaponDisplayRow r1 = (WeaponDisplayRow) one;
+        WeaponDisplayRow r2 = (WeaponDisplayRow) two;
+        int result = NumericComparator.caselessCompareStrings(getPrimaryText(r1), getPrimaryText(r2));
+        if (result == 0) {
+            result = NumericComparator.caselessCompareStrings(getSecondaryText(r1), getSecondaryText(r2));
+        }
+        return result;
+    }
 
-	@Override
-	public Cursor getCursor(MouseEvent event, Rectangle bounds, Row row, Column column) {
-		return Cursor.getDefaultCursor();
-	}
+    @Override
+    public Cursor getCursor(MouseEvent event, Rectangle bounds, Row row, Column column) {
+        return Cursor.getDefaultCursor();
+    }
 
-	@Override
-	public String getToolTipText(Outline outline, MouseEvent event, Rectangle bounds, Row row, Column column) {
-		return null;
-	}
+    @Override
+    public String getToolTipText(Outline outline, MouseEvent event, Rectangle bounds, Row row, Column column) {
+        return null;
+    }
 
-	@Override
-	public boolean participatesInDynamicRowLayout() {
-		return true;
-	}
+    @Override
+    public boolean participatesInDynamicRowLayout() {
+        return true;
+    }
 
-	@Override
-	public void mouseClicked(MouseEvent event, Rectangle bounds, Row row, Column column) {
-		// Does nothing
-	}
+    @Override
+    public void mouseClicked(MouseEvent event, Rectangle bounds, Row row, Column column) {
+        // Does nothing
+    }
 }

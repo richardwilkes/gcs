@@ -58,322 +58,322 @@ import javax.swing.undo.StateEdit;
 
 /** A list of advantages and disadvantages from a library. */
 public class TemplateDockable extends CommonDockable implements NotifierTarget, SearchTarget, RetargetableFocus {
-	@Localize("Untitled Template")
-	@Localize(locale = "de", value = "Unbenannte Vorlage")
-	@Localize(locale = "ru", value = "Безымянный шаблон")
-	@Localize(locale = "es", value = "Plantilla sin título")
-	private static String	UNTITLED;
-	@Localize("Add Rows")
-	@Localize(locale = "de", value = "Zeilen hinzufügen")
-	@Localize(locale = "ru", value = "Добавить строки")
-	@Localize(locale = "es", value = "Añadir filas")
-	private static String	ADD_ROWS;
+    @Localize("Untitled Template")
+    @Localize(locale = "de", value = "Unbenannte Vorlage")
+    @Localize(locale = "ru", value = "Безымянный шаблон")
+    @Localize(locale = "es", value = "Plantilla sin título")
+    private static String UNTITLED;
+    @Localize("Add Rows")
+    @Localize(locale = "de", value = "Zeilen hinzufügen")
+    @Localize(locale = "ru", value = "Добавить строки")
+    @Localize(locale = "es", value = "Añadir filas")
+    private static String ADD_ROWS;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	private static TemplateDockable	LAST_ACTIVATED;
-	private TemplateSheet			mTemplate;
-	private Toolbar					mToolbar;
-	private JComboBox<Scales>		mScaleCombo;
-	private Search					mSearch;
+    private static TemplateDockable LAST_ACTIVATED;
+    private TemplateSheet           mTemplate;
+    private Toolbar                 mToolbar;
+    private JComboBox<Scales>       mScaleCombo;
+    private Search                  mSearch;
 
-	/** Creates a new {@link TemplateDockable}. */
-	public TemplateDockable(Template template) {
-		super(template);
-		Template dataFile = getDataFile();
-		mTemplate = new TemplateSheet(dataFile);
-		mToolbar = new Toolbar();
-		mScaleCombo = new JComboBox<>(Scales.values());
-		mScaleCombo.setSelectedItem(SheetPreferences.getInitialUIScale());
-		mScaleCombo.addActionListener((event) -> mTemplate.setScale(((Scales) mScaleCombo.getSelectedItem()).getScale()));
-		mToolbar.add(mScaleCombo);
-		mSearch = new Search(this);
-		mToolbar.add(mSearch, Toolbar.LAYOUT_FILL);
-		add(mToolbar, BorderLayout.NORTH);
-		JScrollPane scroller = new JScrollPane(mTemplate);
-		scroller.setBorder(null);
-		scroller.getViewport().setBackground(Color.LIGHT_GRAY);
-		add(scroller, BorderLayout.CENTER);
-		dataFile.setModified(false);
-		StdUndoManager undoManager = getUndoManager();
-		undoManager.discardAllEdits();
-		dataFile.setUndoManager(undoManager);
-		Preferences.getInstance().getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY, SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY);
-	}
+    /** Creates a new {@link TemplateDockable}. */
+    public TemplateDockable(Template template) {
+        super(template);
+        Template dataFile = getDataFile();
+        mTemplate = new TemplateSheet(dataFile);
+        mToolbar = new Toolbar();
+        mScaleCombo = new JComboBox<>(Scales.values());
+        mScaleCombo.setSelectedItem(SheetPreferences.getInitialUIScale());
+        mScaleCombo.addActionListener((event) -> mTemplate.setScale(((Scales) mScaleCombo.getSelectedItem()).getScale()));
+        mToolbar.add(mScaleCombo);
+        mSearch = new Search(this);
+        mToolbar.add(mSearch, Toolbar.LAYOUT_FILL);
+        add(mToolbar, BorderLayout.NORTH);
+        JScrollPane scroller = new JScrollPane(mTemplate);
+        scroller.setBorder(null);
+        scroller.getViewport().setBackground(Color.LIGHT_GRAY);
+        add(scroller, BorderLayout.CENTER);
+        dataFile.setModified(false);
+        StdUndoManager undoManager = getUndoManager();
+        undoManager.discardAllEdits();
+        dataFile.setUndoManager(undoManager);
+        Preferences.getInstance().getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY, SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY);
+    }
 
-	@Override
-	public boolean attemptClose() {
-		boolean closed = super.attemptClose();
-		if (closed) {
-			Preferences.getInstance().getNotifier().remove(this);
-		}
-		return closed;
-	}
+    @Override
+    public boolean attemptClose() {
+        boolean closed = super.attemptClose();
+        if (closed) {
+            Preferences.getInstance().getNotifier().remove(this);
+        }
+        return closed;
+    }
 
-	@Override
-	public Component getRetargetedFocus() {
-		return mTemplate;
-	}
+    @Override
+    public Component getRetargetedFocus() {
+        return mTemplate;
+    }
 
-	/** @return The last activated {@link TemplateDockable}. */
-	public static TemplateDockable getLastActivated() {
-		if (LAST_ACTIVATED != null) {
-			Dock dock = UIUtilities.getAncestorOfType(LAST_ACTIVATED, Dock.class);
-			if (dock == null) {
-				LAST_ACTIVATED = null;
-			}
-		}
-		return LAST_ACTIVATED;
-	}
+    /** @return The last activated {@link TemplateDockable}. */
+    public static TemplateDockable getLastActivated() {
+        if (LAST_ACTIVATED != null) {
+            Dock dock = UIUtilities.getAncestorOfType(LAST_ACTIVATED, Dock.class);
+            if (dock == null) {
+                LAST_ACTIVATED = null;
+            }
+        }
+        return LAST_ACTIVATED;
+    }
 
-	@Override
-	public void activated() {
-		super.activated();
-		LAST_ACTIVATED = this;
-	}
+    @Override
+    public void activated() {
+        super.activated();
+        LAST_ACTIVATED = this;
+    }
 
-	@Override
-	public Template getDataFile() {
-		return (Template) super.getDataFile();
-	}
+    @Override
+    public Template getDataFile() {
+        return (Template) super.getDataFile();
+    }
 
-	/** @return The {@link TemplateSheet}. */
-	public TemplateSheet getTemplate() {
-		return mTemplate;
-	}
+    /** @return The {@link TemplateSheet}. */
+    public TemplateSheet getTemplate() {
+        return mTemplate;
+    }
 
-	@Override
-	public PrintProxy getPrintProxy() {
-		return null;
-	}
+    @Override
+    public PrintProxy getPrintProxy() {
+        return null;
+    }
 
-	@Override
-	public String getDescriptor() {
-		// RAW: Implement
-		return null;
-	}
+    @Override
+    public String getDescriptor() {
+        // RAW: Implement
+        return null;
+    }
 
-	@Override
-	protected String getUntitledBaseName() {
-		return UNTITLED;
-	}
+    @Override
+    protected String getUntitledBaseName() {
+        return UNTITLED;
+    }
 
-	@Override
-	public FileType[] getAllowedFileTypes() {
-		return new FileType[] { FileType.getByExtension(Template.EXTENSION) };
-	}
+    @Override
+    public FileType[] getAllowedFileTypes() {
+        return new FileType[] { FileType.getByExtension(Template.EXTENSION) };
+    }
 
-	@Override
-	public int getNotificationPriority() {
-		return 0;
-	}
+    @Override
+    public int getNotificationPriority() {
+        return 0;
+    }
 
-	@Override
-	public void handleNotification(Object producer, String name, Object data) {
-		if (Fonts.FONT_NOTIFICATION_KEY.equals(name)) {
-			mTemplate.revalidate();
-			mTemplate.getAdvantageOutline().updateRowHeights();
-			mTemplate.getSkillOutline().updateRowHeights();
-			mTemplate.getSpellOutline().updateRowHeights();
-			mTemplate.getEquipmentOutline().updateRowHeights();
-		} else {
-			getDataFile().notifySingle(Advantage.ID_LIST_CHANGED, null);
-		}
-	}
+    @Override
+    public void handleNotification(Object producer, String name, Object data) {
+        if (Fonts.FONT_NOTIFICATION_KEY.equals(name)) {
+            mTemplate.revalidate();
+            mTemplate.getAdvantageOutline().updateRowHeights();
+            mTemplate.getSkillOutline().updateRowHeights();
+            mTemplate.getSpellOutline().updateRowHeights();
+            mTemplate.getEquipmentOutline().updateRowHeights();
+        } else {
+            getDataFile().notifySingle(Advantage.ID_LIST_CHANGED, null);
+        }
+    }
 
-	@Override
-	public boolean isJumpToSearchAvailable() {
-		return mSearch.isEnabled() && mSearch != KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
-	}
+    @Override
+    public boolean isJumpToSearchAvailable() {
+        return mSearch.isEnabled() && mSearch != KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
+    }
 
-	@Override
-	public void jumpToSearchField() {
-		mSearch.requestFocusInWindow();
-	}
+    @Override
+    public void jumpToSearchField() {
+        mSearch.requestFocusInWindow();
+    }
 
-	@Override
-	public ListCellRenderer<Object> getSearchRenderer() {
-		return new RowItemRenderer();
-	}
+    @Override
+    public ListCellRenderer<Object> getSearchRenderer() {
+        return new RowItemRenderer();
+    }
 
-	@Override
-	public List<Object> search(String filter) {
-		ArrayList<Object> list = new ArrayList<>();
-		filter = filter.toLowerCase();
-		searchOne(mTemplate.getAdvantageOutline(), filter, list);
-		searchOne(mTemplate.getSkillOutline(), filter, list);
-		searchOne(mTemplate.getSpellOutline(), filter, list);
-		searchOne(mTemplate.getEquipmentOutline(), filter, list);
-		return list;
-	}
+    @Override
+    public List<Object> search(String filter) {
+        ArrayList<Object> list = new ArrayList<>();
+        filter = filter.toLowerCase();
+        searchOne(mTemplate.getAdvantageOutline(), filter, list);
+        searchOne(mTemplate.getSkillOutline(), filter, list);
+        searchOne(mTemplate.getSpellOutline(), filter, list);
+        searchOne(mTemplate.getEquipmentOutline(), filter, list);
+        return list;
+    }
 
-	private static void searchOne(ListOutline outline, String text, ArrayList<Object> list) {
-		for (ListRow row : new RowIterator<ListRow>(outline.getModel())) {
-			if (row.contains(text, true)) {
-				list.add(row);
-			}
-		}
-	}
+    private static void searchOne(ListOutline outline, String text, ArrayList<Object> list) {
+        for (ListRow row : new RowIterator<ListRow>(outline.getModel())) {
+            if (row.contains(text, true)) {
+                list.add(row);
+            }
+        }
+    }
 
-	@Override
-	public void searchSelect(List<Object> selection) {
-		HashMap<OutlineModel, ArrayList<Row>> map = new HashMap<>();
-		Outline primary = null;
-		ArrayList<Row> list;
+    @Override
+    public void searchSelect(List<Object> selection) {
+        HashMap<OutlineModel, ArrayList<Row>> map = new HashMap<>();
+        Outline primary = null;
+        ArrayList<Row> list;
 
-		mTemplate.getAdvantageOutline().getModel().deselect();
-		mTemplate.getSkillOutline().getModel().deselect();
-		mTemplate.getSpellOutline().getModel().deselect();
-		mTemplate.getEquipmentOutline().getModel().deselect();
+        mTemplate.getAdvantageOutline().getModel().deselect();
+        mTemplate.getSkillOutline().getModel().deselect();
+        mTemplate.getSpellOutline().getModel().deselect();
+        mTemplate.getEquipmentOutline().getModel().deselect();
 
-		for (Object obj : selection) {
-			Row row = (Row) obj;
-			Row parent = row.getParent();
-			OutlineModel model = row.getOwner();
+        for (Object obj : selection) {
+            Row row = (Row) obj;
+            Row parent = row.getParent();
+            OutlineModel model = row.getOwner();
 
-			while (parent != null) {
-				parent.setOpen(true);
-				model = parent.getOwner();
-				parent = parent.getParent();
-			}
-			list = map.get(model);
-			if (list == null) {
-				list = new ArrayList<>();
-				list.add(row);
-				map.put(model, list);
-			} else {
-				list.add(row);
-			}
-			if (primary == null) {
-				primary = mTemplate.getAdvantageOutline();
-				if (model != primary.getModel()) {
-					primary = mTemplate.getSkillOutline();
-					if (model != primary.getModel()) {
-						primary = mTemplate.getSpellOutline();
-						if (model != primary.getModel()) {
-							primary = mTemplate.getEquipmentOutline();
-						}
-					}
-				}
-			}
-		}
+            while (parent != null) {
+                parent.setOpen(true);
+                model = parent.getOwner();
+                parent = parent.getParent();
+            }
+            list = map.get(model);
+            if (list == null) {
+                list = new ArrayList<>();
+                list.add(row);
+                map.put(model, list);
+            } else {
+                list.add(row);
+            }
+            if (primary == null) {
+                primary = mTemplate.getAdvantageOutline();
+                if (model != primary.getModel()) {
+                    primary = mTemplate.getSkillOutline();
+                    if (model != primary.getModel()) {
+                        primary = mTemplate.getSpellOutline();
+                        if (model != primary.getModel()) {
+                            primary = mTemplate.getEquipmentOutline();
+                        }
+                    }
+                }
+            }
+        }
 
-		for (OutlineModel model : map.keySet()) {
-			model.select(map.get(model), false);
-		}
+        for (OutlineModel model : map.keySet()) {
+            model.select(map.get(model), false);
+        }
 
-		if (primary != null) {
-			final Outline outline = primary;
-			EventQueue.invokeLater(() -> outline.scrollSelectionIntoView());
-			primary.requestFocus();
-		}
-	}
+        if (primary != null) {
+            final Outline outline = primary;
+            EventQueue.invokeLater(() -> outline.scrollSelectionIntoView());
+            primary.requestFocus();
+        }
+    }
 
-	/**
-	 * Adds rows to the display.
-	 *
-	 * @param rows The rows to add.
-	 */
-	public void addRows(List<Row> rows) {
-		HashMap<ListOutline, StateEdit> map = new HashMap<>();
-		HashMap<Outline, ArrayList<Row>> selMap = new HashMap<>();
-		HashMap<Outline, ArrayList<ListRow>> nameMap = new HashMap<>();
-		ListOutline outline = null;
+    /**
+     * Adds rows to the display.
+     *
+     * @param rows The rows to add.
+     */
+    public void addRows(List<Row> rows) {
+        HashMap<ListOutline, StateEdit> map = new HashMap<>();
+        HashMap<Outline, ArrayList<Row>> selMap = new HashMap<>();
+        HashMap<Outline, ArrayList<ListRow>> nameMap = new HashMap<>();
+        ListOutline outline = null;
 
-		for (Row row : rows) {
-			if (row instanceof Advantage) {
-				outline = mTemplate.getAdvantageOutline();
-				if (!map.containsKey(outline)) {
-					map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
-				}
-				row = new Advantage(getDataFile(), (Advantage) row, true);
-				addCompleteRow(outline, row, selMap);
-			} else if (row instanceof Technique) {
-				outline = mTemplate.getSkillOutline();
-				if (!map.containsKey(outline)) {
-					map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
-				}
-				row = new Technique(getDataFile(), (Technique) row, true);
-				addCompleteRow(outline, row, selMap);
-			} else if (row instanceof Skill) {
-				outline = mTemplate.getSkillOutline();
-				if (!map.containsKey(outline)) {
-					map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
-				}
-				row = new Skill(getDataFile(), (Skill) row, true, true);
-				addCompleteRow(outline, row, selMap);
-			} else if (row instanceof Spell) {
-				outline = mTemplate.getSpellOutline();
-				if (!map.containsKey(outline)) {
-					map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
-				}
-				row = new Spell(getDataFile(), (Spell) row, true, true);
-				addCompleteRow(outline, row, selMap);
-			} else if (row instanceof Equipment) {
-				outline = mTemplate.getEquipmentOutline();
-				if (!map.containsKey(outline)) {
-					map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
-				}
-				row = new Equipment(getDataFile(), (Equipment) row, true);
-				addCompleteRow(outline, row, selMap);
-			} else {
-				row = null;
-			}
-			if (row instanceof ListRow) {
-				ArrayList<ListRow> process = nameMap.get(outline);
+        for (Row row : rows) {
+            if (row instanceof Advantage) {
+                outline = mTemplate.getAdvantageOutline();
+                if (!map.containsKey(outline)) {
+                    map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
+                }
+                row = new Advantage(getDataFile(), (Advantage) row, true);
+                addCompleteRow(outline, row, selMap);
+            } else if (row instanceof Technique) {
+                outline = mTemplate.getSkillOutline();
+                if (!map.containsKey(outline)) {
+                    map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
+                }
+                row = new Technique(getDataFile(), (Technique) row, true);
+                addCompleteRow(outline, row, selMap);
+            } else if (row instanceof Skill) {
+                outline = mTemplate.getSkillOutline();
+                if (!map.containsKey(outline)) {
+                    map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
+                }
+                row = new Skill(getDataFile(), (Skill) row, true, true);
+                addCompleteRow(outline, row, selMap);
+            } else if (row instanceof Spell) {
+                outline = mTemplate.getSpellOutline();
+                if (!map.containsKey(outline)) {
+                    map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
+                }
+                row = new Spell(getDataFile(), (Spell) row, true, true);
+                addCompleteRow(outline, row, selMap);
+            } else if (row instanceof Equipment) {
+                outline = mTemplate.getEquipmentOutline();
+                if (!map.containsKey(outline)) {
+                    map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
+                }
+                row = new Equipment(getDataFile(), (Equipment) row, true);
+                addCompleteRow(outline, row, selMap);
+            } else {
+                row = null;
+            }
+            if (row instanceof ListRow) {
+                ArrayList<ListRow> process = nameMap.get(outline);
 
-				if (process == null) {
-					process = new ArrayList<>();
-					nameMap.put(outline, process);
-				}
-				addRowsToBeProcessed(process, (ListRow) row);
-			}
-		}
-		for (ListOutline anOutline : map.keySet()) {
-			OutlineModel model = anOutline.getModel();
+                if (process == null) {
+                    process = new ArrayList<>();
+                    nameMap.put(outline, process);
+                }
+                addRowsToBeProcessed(process, (ListRow) row);
+            }
+        }
+        for (ListOutline anOutline : map.keySet()) {
+            OutlineModel model = anOutline.getModel();
 
-			model.select(selMap.get(anOutline), false);
-			StateEdit edit = map.get(anOutline);
-			edit.end();
-			anOutline.postUndo(edit);
-			anOutline.scrollSelectionIntoView();
-			anOutline.requestFocus();
-		}
-		if (!nameMap.isEmpty()) {
-			EventQueue.invokeLater(new RowPostProcessor(nameMap));
-		}
-	}
+            model.select(selMap.get(anOutline), false);
+            StateEdit edit = map.get(anOutline);
+            edit.end();
+            anOutline.postUndo(edit);
+            anOutline.scrollSelectionIntoView();
+            anOutline.requestFocus();
+        }
+        if (!nameMap.isEmpty()) {
+            EventQueue.invokeLater(new RowPostProcessor(nameMap));
+        }
+    }
 
-	private void addRowsToBeProcessed(ArrayList<ListRow> list, ListRow row) {
-		int count = row.getChildCount();
+    private void addRowsToBeProcessed(ArrayList<ListRow> list, ListRow row) {
+        int count = row.getChildCount();
 
-		list.add(row);
+        list.add(row);
 
-		for (int i = 0; i < count; i++) {
-			addRowsToBeProcessed(list, (ListRow) row.getChild(i));
-		}
-	}
+        for (int i = 0; i < count; i++) {
+            addRowsToBeProcessed(list, (ListRow) row.getChild(i));
+        }
+    }
 
-	private void addCompleteRow(Outline outline, Row row, HashMap<Outline, ArrayList<Row>> selMap) {
-		ArrayList<Row> selection = selMap.get(outline);
+    private void addCompleteRow(Outline outline, Row row, HashMap<Outline, ArrayList<Row>> selMap) {
+        ArrayList<Row> selection = selMap.get(outline);
 
-		addCompleteRow(outline.getModel(), row);
-		outline.contentSizeMayHaveChanged();
-		if (selection == null) {
-			selection = new ArrayList<>();
-			selMap.put(outline, selection);
-		}
-		selection.add(row);
-	}
+        addCompleteRow(outline.getModel(), row);
+        outline.contentSizeMayHaveChanged();
+        if (selection == null) {
+            selection = new ArrayList<>();
+            selMap.put(outline, selection);
+        }
+        selection.add(row);
+    }
 
-	private void addCompleteRow(OutlineModel outlineModel, Row row) {
-		outlineModel.addRow(row);
-		if (row.isOpen() && row.hasChildren()) {
-			for (Row child : row.getChildren()) {
-				addCompleteRow(outlineModel, child);
-			}
-		}
-	}
+    private void addCompleteRow(OutlineModel outlineModel, Row row) {
+        outlineModel.addRow(row);
+        if (row.isOpen() && row.hasChildren()) {
+            for (Row child : row.getChildren()) {
+                addCompleteRow(outlineModel, child);
+            }
+        }
+    }
 }

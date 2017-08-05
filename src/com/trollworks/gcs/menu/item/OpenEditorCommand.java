@@ -23,39 +23,39 @@ import java.awt.event.KeyEvent;
 
 /** Provides the "Open Detail Editor" command. */
 public class OpenEditorCommand extends Command {
-	@Localize("Open Detail Editor")
-	@Localize(locale = "de", value = "Öffne Detail-Editor")
-	@Localize(locale = "ru", value = "Открыть расширенный редактор")
-	@Localize(locale = "es", value = "Abrir editor de detalles")
-	private static String OPEN_EDITOR;
+    @Localize("Open Detail Editor")
+    @Localize(locale = "de", value = "Öffne Detail-Editor")
+    @Localize(locale = "ru", value = "Открыть расширенный редактор")
+    @Localize(locale = "es", value = "Abrir editor de detalles")
+    private static String OPEN_EDITOR;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String				CMD_OPEN_EDITOR	= "OpenEditor";				//$NON-NLS-1$
+    /** The action command this command will issue. */
+    public static final String            CMD_OPEN_EDITOR = "OpenEditor";           				//$NON-NLS-1$
 
-	/** The singleton {@link OpenEditorCommand}. */
-	public static final OpenEditorCommand	INSTANCE		= new OpenEditorCommand();
+    /** The singleton {@link OpenEditorCommand}. */
+    public static final OpenEditorCommand INSTANCE        = new OpenEditorCommand();
 
-	private OpenEditorCommand() {
-		super(OPEN_EDITOR, CMD_OPEN_EDITOR, KeyEvent.VK_I);
-	}
+    private OpenEditorCommand() {
+        super(OPEN_EDITOR, CMD_OPEN_EDITOR, KeyEvent.VK_I);
+    }
 
-	@Override
-	public void adjust() {
-		Component comp = getFocusOwner();
-		if (comp instanceof Outline) {
-			setEnabled(((Outline) comp).getModel().hasSelection());
-		} else {
-			setEnabled(false);
-		}
-	}
+    @Override
+    public void adjust() {
+        Component comp = getFocusOwner();
+        if (comp instanceof Outline) {
+            setEnabled(((Outline) comp).getModel().hasSelection());
+        } else {
+            setEnabled(false);
+        }
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		Outline outline = (Outline) getFocusOwner();
-		((ListOutline) outline.getRealOutline()).openDetailEditor(false);
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        Outline outline = (Outline) getFocusOwner();
+        ((ListOutline) outline.getRealOutline()).openDetailEditor(false);
+    }
 }

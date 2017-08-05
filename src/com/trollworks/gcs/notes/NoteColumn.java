@@ -27,102 +27,102 @@ import javax.swing.SwingConstants;
 
 /** Definitions for note columns. */
 public enum NoteColumn {
-	/** The text of the note. */
-	TEXT {
-		@Override
-		public String toString() {
-			return TEXT_TITLE;
-		}
+    /** The text of the note. */
+    TEXT {
+        @Override
+        public String toString() {
+            return TEXT_TITLE;
+        }
 
-		@Override
-		public String getToolTip() {
-			return ""; //$NON-NLS-1$
-		}
+        @Override
+        public String getToolTip() {
+            return ""; //$NON-NLS-1$
+        }
 
-		@Override
-		public Cell getCell() {
-			return new ListTextCell(SwingConstants.LEFT, true);
-		}
+        @Override
+        public Cell getCell() {
+            return new ListTextCell(SwingConstants.LEFT, true);
+        }
 
-		@Override
-		public boolean shouldDisplay(DataFile dataFile) {
-			return true;
-		}
+        @Override
+        public boolean shouldDisplay(DataFile dataFile) {
+            return true;
+        }
 
-		@Override
-		public Object getData(Note note) {
-			return getDataAsText(note);
-		}
+        @Override
+        public Object getData(Note note) {
+            return getDataAsText(note);
+        }
 
-		@Override
-		public String getDataAsText(Note note) {
-			StringBuilder builder = new StringBuilder();
-			String notes = note.getNotes();
-			builder.append(note.toString());
-			if (notes.length() > 0) {
-				builder.append(" - "); //$NON-NLS-1$
-				builder.append(notes);
-			}
-			return builder.toString();
-		}
-	};
+        @Override
+        public String getDataAsText(Note note) {
+            StringBuilder builder = new StringBuilder();
+            String notes = note.getNotes();
+            builder.append(note.toString());
+            if (notes.length() > 0) {
+                builder.append(" - "); //$NON-NLS-1$
+                builder.append(notes);
+            }
+            return builder.toString();
+        }
+    };
 
-	@Localize("Notes")
-	static String TEXT_TITLE;
+    @Localize("Notes")
+    static String TEXT_TITLE;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/**
-	 * @param character The {@link GURPSCharacter} this note list is associated with, or
-	 *            <code>null</code>.
-	 * @return The header title.
-	 */
-	public String toString(GURPSCharacter character) {
-		return toString();
-	}
+    /**
+     * @param character The {@link GURPSCharacter} this note list is associated with, or
+     *            <code>null</code>.
+     * @return The header title.
+     */
+    public String toString(GURPSCharacter character) {
+        return toString();
+    }
 
-	/**
-	 * @param note The {@link Note} to get the data from.
-	 * @return An object representing the data for this column.
-	 */
-	public abstract Object getData(Note note);
+    /**
+     * @param note The {@link Note} to get the data from.
+     * @return An object representing the data for this column.
+     */
+    public abstract Object getData(Note note);
 
-	/**
-	 * @param note The {@link Note} to get the data from.
-	 * @return Text representing the data for this column.
-	 */
-	public abstract String getDataAsText(Note note);
+    /**
+     * @param note The {@link Note} to get the data from.
+     * @return Text representing the data for this column.
+     */
+    public abstract String getDataAsText(Note note);
 
-	/** @return The tooltip for the column. */
-	public abstract String getToolTip();
+    /** @return The tooltip for the column. */
+    public abstract String getToolTip();
 
-	/** @return The {@link Cell} used to display the data. */
-	public abstract Cell getCell();
+    /** @return The {@link Cell} used to display the data. */
+    public abstract Cell getCell();
 
-	/**
-	 * @param dataFile The {@link DataFile} to use.
-	 * @return Whether this column should be displayed for the specified data file.
-	 */
-	public abstract boolean shouldDisplay(DataFile dataFile);
+    /**
+     * @param dataFile The {@link DataFile} to use.
+     * @return Whether this column should be displayed for the specified data file.
+     */
+    public abstract boolean shouldDisplay(DataFile dataFile);
 
-	/**
-	 * Adds all relevant {@link Column}s to a {@link Outline}.
-	 *
-	 * @param outline The {@link Outline} to use.
-	 * @param dataFile The {@link DataFile} that data is being displayed for.
-	 */
-	public static void addColumns(Outline outline, DataFile dataFile) {
-		GURPSCharacter character = dataFile instanceof GURPSCharacter ? (GURPSCharacter) dataFile : null;
-		boolean sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
-		OutlineModel model = outline.getModel();
-		for (NoteColumn one : values()) {
-			if (one.shouldDisplay(dataFile)) {
-				Column column = new Column(one.ordinal(), one.toString(character), one.getToolTip(), one.getCell());
-				column.setHeaderCell(new ListHeaderCell(sheetOrTemplate));
-				model.addColumn(column);
-			}
-		}
-	}
+    /**
+     * Adds all relevant {@link Column}s to a {@link Outline}.
+     *
+     * @param outline The {@link Outline} to use.
+     * @param dataFile The {@link DataFile} that data is being displayed for.
+     */
+    public static void addColumns(Outline outline, DataFile dataFile) {
+        GURPSCharacter character = dataFile instanceof GURPSCharacter ? (GURPSCharacter) dataFile : null;
+        boolean sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
+        OutlineModel model = outline.getModel();
+        for (NoteColumn one : values()) {
+            if (one.shouldDisplay(dataFile)) {
+                Column column = new Column(one.ordinal(), one.toString(character), one.getToolTip(), one.getCell());
+                column.setHeaderCell(new ListHeaderCell(sheetOrTemplate));
+                model.addColumn(column);
+            }
+        }
+    }
 }

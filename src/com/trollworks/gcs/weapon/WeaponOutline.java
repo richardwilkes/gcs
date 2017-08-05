@@ -14,23 +14,23 @@ package com.trollworks.gcs.weapon;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 
 class WeaponOutline extends Outline {
-	WeaponOutline() {
-		super(false);
-		setAllowColumnDrag(false);
-		setAllowColumnResize(false);
-		setAllowRowDrag(false);
-	}
+    WeaponOutline() {
+        super(false);
+        setAllowColumnDrag(false);
+        setAllowColumnResize(false);
+        setAllowRowDrag(false);
+    }
 
-	@Override
-	public boolean canDeleteSelection() {
-		return getModel().hasSelection();
-	}
+    @Override
+    public boolean canDeleteSelection() {
+        return getModel().hasSelection();
+    }
 
-	@Override
-	public void deleteSelection() {
-		if (canDeleteSelection()) {
-			getModel().removeSelection();
-			sizeColumnsToFit();
-		}
-	}
+    @Override
+    public void deleteSelection() {
+        if (canDeleteSelection()) {
+            getModel().removeSelection();
+            sizeColumnsToFit();
+        }
+    }
 }

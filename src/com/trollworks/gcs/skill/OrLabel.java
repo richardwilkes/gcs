@@ -24,32 +24,32 @@ import javax.swing.SwingConstants;
 
 /** A label that displays the "or" message, or nothing if it is the first one. */
 public class OrLabel extends JLabel {
-	@Localize("or")
-	@Localize(locale = "de", value = "oder")
-	@Localize(locale = "ru", value = "или")
-	@Localize(locale = "es", value = "o")
-	private static String OR;
+    @Localize("or")
+    @Localize(locale = "de", value = "oder")
+    @Localize(locale = "ru", value = "или")
+    @Localize(locale = "es", value = "o")
+    private static String OR;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	private Component mOwner;
+    private Component mOwner;
 
-	/**
-	 * Creates a new {@link OrLabel}.
-	 *
-	 * @param owner The owning component.
-	 */
-	public OrLabel(Component owner) {
-		super(OR, SwingConstants.RIGHT);
-		mOwner = owner;
-		UIUtilities.setOnlySize(this, getPreferredSize());
-	}
+    /**
+     * Creates a new {@link OrLabel}.
+     *
+     * @param owner The owning component.
+     */
+    public OrLabel(Component owner) {
+        super(OR, SwingConstants.RIGHT);
+        mOwner = owner;
+        UIUtilities.setOnlySize(this, getPreferredSize());
+    }
 
-	@Override
-	protected void paintComponent(Graphics gc) {
-		setText(UIUtilities.getIndexOf(mOwner.getParent(), mOwner) != 0 ? OR : ""); //$NON-NLS-1$
-		super.paintComponent(GraphicsUtilities.prepare(gc));
-	}
+    @Override
+    protected void paintComponent(Graphics gc) {
+        setText(UIUtilities.getIndexOf(mOwner.getParent(), mOwner) != 0 ? OR : ""); //$NON-NLS-1$
+        super.paintComponent(GraphicsUtilities.prepare(gc));
+    }
 }

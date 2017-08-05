@@ -23,43 +23,43 @@ import javax.swing.JComboBox;
 
 /** A DR bonus editor. */
 public class DRBonusEditor extends FeatureEditor {
-	private static final String CHANGE_LOCATION = "ChangeLocation"; //$NON-NLS-1$
+    private static final String CHANGE_LOCATION = "ChangeLocation"; //$NON-NLS-1$
 
-	/**
-	 * Create a new DR bonus editor.
-	 *
-	 * @param row The row this feature will belong to.
-	 * @param bonus The bonus to edit.
-	 */
-	public DRBonusEditor(ListRow row, DRBonus bonus) {
-		super(row, bonus);
-	}
+    /**
+     * Create a new DR bonus editor.
+     *
+     * @param row The row this feature will belong to.
+     * @param bonus The bonus to edit.
+     */
+    public DRBonusEditor(ListRow row, DRBonus bonus) {
+        super(row, bonus);
+    }
 
-	@Override
-	protected void rebuildSelf(FlexGrid grid, FlexRow right) {
-		DRBonus bonus = (DRBonus) getFeature();
-		FlexRow row = new FlexRow();
-		row.add(addChangeBaseTypeCombo());
-		LeveledAmount amount = bonus.getAmount();
-		row.add(addLeveledAmountField(amount, -99999, 99999));
-		row.add(addLeveledAmountCombo(amount, false));
-		row.add(new FlexSpacer(0, 0, true, false));
-		grid.add(row, 0, 0);
+    @Override
+    protected void rebuildSelf(FlexGrid grid, FlexRow right) {
+        DRBonus bonus = (DRBonus) getFeature();
+        FlexRow row = new FlexRow();
+        row.add(addChangeBaseTypeCombo());
+        LeveledAmount amount = bonus.getAmount();
+        row.add(addLeveledAmountField(amount, -99999, 99999));
+        row.add(addLeveledAmountCombo(amount, false));
+        row.add(new FlexSpacer(0, 0, true, false));
+        grid.add(row, 0, 0);
 
-		row = new FlexRow();
-		row.setInsets(new Insets(0, 20, 0, 0));
-		row.add(addComboBox(CHANGE_LOCATION, HitLocation.getChoosableLocations(), ((DRBonus) getFeature()).getLocation()));
-		row.add(new FlexSpacer(0, 0, true, false));
-		grid.add(row, 1, 0);
-	}
+        row = new FlexRow();
+        row.setInsets(new Insets(0, 20, 0, 0));
+        row.add(addComboBox(CHANGE_LOCATION, HitLocation.getChoosableLocations(), ((DRBonus) getFeature()).getLocation()));
+        row.add(new FlexSpacer(0, 0, true, false));
+        grid.add(row, 1, 0);
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		String command = event.getActionCommand();
-		if (CHANGE_LOCATION.equals(command)) {
-			((DRBonus) getFeature()).setLocation((HitLocation) ((JComboBox<?>) event.getSource()).getSelectedItem());
-		} else {
-			super.actionPerformed(event);
-		}
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        String command = event.getActionCommand();
+        if (CHANGE_LOCATION.equals(command)) {
+            ((DRBonus) getFeature()).setLocation((HitLocation) ((JComboBox<?>) event.getSource()).getSelectedItem());
+        } else {
+            super.actionPerformed(event);
+        }
+    }
 }

@@ -21,44 +21,44 @@ import java.util.List;
 
 /** Displays and edits {@link Feature} objects. */
 public class FeaturesPanel extends BandedPanel {
-	@Localize("Features")
-	@Localize(locale = "de", value = "Eigenschaften")
-	@Localize(locale = "ru", value = "Особенности")
-	@Localize(locale = "es", value = "Características")
-	private static String FEATURES;
+    @Localize("Features")
+    @Localize(locale = "de", value = "Eigenschaften")
+    @Localize(locale = "ru", value = "Особенности")
+    @Localize(locale = "es", value = "Características")
+    private static String FEATURES;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/**
-	 * Creates a new feature editor.
-	 *
-	 * @param row The row these features will belong to.
-	 * @param features The initial features to display.
-	 */
-	public FeaturesPanel(ListRow row, List<Feature> features) {
-		super(FEATURES);
-		for (Feature feature : features) {
-			add(FeatureEditor.create(row, feature.cloneFeature()));
-		}
-		if (getComponentCount() == 0) {
-			add(new NoFeature(row));
-		}
-	}
+    /**
+     * Creates a new feature editor.
+     *
+     * @param row The row these features will belong to.
+     * @param features The initial features to display.
+     */
+    public FeaturesPanel(ListRow row, List<Feature> features) {
+        super(FEATURES);
+        for (Feature feature : features) {
+            add(FeatureEditor.create(row, feature.cloneFeature()));
+        }
+        if (getComponentCount() == 0) {
+            add(new NoFeature(row));
+        }
+    }
 
-	/** @return The current set of features. */
-	public List<Feature> getFeatures() {
-		int count = getComponentCount();
-		ArrayList<Feature> list = new ArrayList<>(count);
+    /** @return The current set of features. */
+    public List<Feature> getFeatures() {
+        int count = getComponentCount();
+        ArrayList<Feature> list = new ArrayList<>(count);
 
-		for (int i = 0; i < count; i++) {
-			Feature feature = ((FeatureEditor) getComponent(i)).getFeature();
+        for (int i = 0; i < count; i++) {
+            Feature feature = ((FeatureEditor) getComponent(i)).getFeature();
 
-			if (feature != null) {
-				list.add(feature);
-			}
-		}
-		return list;
-	}
+            if (feature != null) {
+                list.add(feature);
+            }
+        }
+        return list;
+    }
 }

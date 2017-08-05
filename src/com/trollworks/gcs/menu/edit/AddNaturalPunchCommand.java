@@ -21,44 +21,44 @@ import java.awt.event.ActionEvent;
 
 /** Provides the "Add Natural Punch" command. */
 public class AddNaturalPunchCommand extends Command {
-	@Localize("Include Punch In Weapons")
-	@Localize(locale = "de", value = "Führe Schlag als Waffe auf")
-	@Localize(locale = "ru", value = "Отображать удар в оружии")
-	@Localize(locale = "es", value = "Incluir Puñetazo entre las Armas")
-	private static String ADD_NATURAL_PUNCH;
+    @Localize("Include Punch In Weapons")
+    @Localize(locale = "de", value = "Führe Schlag als Waffe auf")
+    @Localize(locale = "ru", value = "Отображать удар в оружии")
+    @Localize(locale = "es", value = "Incluir Puñetazo entre las Armas")
+    private static String ADD_NATURAL_PUNCH;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String					CMD_ADD_NATURAL_PUNCH	= "AddNaturalPunch";			//$NON-NLS-1$
+    /** The action command this command will issue. */
+    public static final String                 CMD_ADD_NATURAL_PUNCH = "AddNaturalPunch";           			//$NON-NLS-1$
 
-	/** The singleton {@link AddNaturalPunchCommand}. */
-	public static final AddNaturalPunchCommand	INSTANCE				= new AddNaturalPunchCommand();
+    /** The singleton {@link AddNaturalPunchCommand}. */
+    public static final AddNaturalPunchCommand INSTANCE              = new AddNaturalPunchCommand();
 
-	private AddNaturalPunchCommand() {
-		super(ADD_NATURAL_PUNCH, CMD_ADD_NATURAL_PUNCH);
-	}
+    private AddNaturalPunchCommand() {
+        super(ADD_NATURAL_PUNCH, CMD_ADD_NATURAL_PUNCH);
+    }
 
-	@Override
-	public void adjust() {
-		CharacterSheet sheet = getTarget(CharacterSheet.class);
-		if (sheet != null) {
-			setEnabled(true);
-			setMarked(sheet.getCharacter().includePunch());
-		} else {
-			setEnabled(false);
-			setMarked(false);
-		}
-	}
+    @Override
+    public void adjust() {
+        CharacterSheet sheet = getTarget(CharacterSheet.class);
+        if (sheet != null) {
+            setEnabled(true);
+            setMarked(sheet.getCharacter().includePunch());
+        } else {
+            setEnabled(false);
+            setMarked(false);
+        }
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		CharacterSheet sheet = getTarget(CharacterSheet.class);
-		if (sheet != null) {
-			GURPSCharacter character = sheet.getCharacter();
-			character.setIncludePunch(!character.includePunch());
-		}
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        CharacterSheet sheet = getTarget(CharacterSheet.class);
+        if (sheet != null) {
+            GURPSCharacter character = sheet.getCharacter();
+            character.setIncludePunch(!character.includePunch());
+        }
+    }
 }

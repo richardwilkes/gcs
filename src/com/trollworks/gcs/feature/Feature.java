@@ -18,25 +18,25 @@ import java.util.HashSet;
 
 /** Describes a feature of an advantage, skill, spell, or piece of equipment. */
 public interface Feature {
-	/** @return The XML tag representing this feature. */
-	String getXMLTag();
+    /** @return The XML tag representing this feature. */
+    String getXMLTag();
 
-	/** @return The feature key used in the feature map. */
-	String getKey();
+    /** @return The feature key used in the feature map. */
+    String getKey();
 
-	/** @return An exact clone of this feature. */
-	Feature cloneFeature();
+    /** @return An exact clone of this feature. */
+    Feature cloneFeature();
 
-	/**
-	 * Saves the feature.
-	 * 
-	 * @param out The XML writer to use.
-	 */
-	void save(XMLWriter out);
+    /**
+     * Saves the feature.
+     * 
+     * @param out The XML writer to use.
+     */
+    void save(XMLWriter out);
 
-	/** @param set The nameable keys. */
-	void fillWithNameableKeys(HashSet<String> set);
+    /** @param set The nameable keys. */
+    void fillWithNameableKeys(HashSet<String> set);
 
-	/** @param map The map of nameable keys to names to apply. */
-	void applyNameableKeys(HashMap<String, String> map);
+    /** @param map The map of nameable keys to names to apply. */
+    void applyNameableKeys(HashMap<String, String> map);
 }

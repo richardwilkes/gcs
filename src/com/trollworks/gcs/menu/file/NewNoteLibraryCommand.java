@@ -22,43 +22,43 @@ import java.awt.event.ActionEvent;
 
 /** Provides the "New Equipment Library" command. */
 public class NewNoteLibraryCommand extends Command {
-	@Localize("New Note Library")
-	private static String TITLE;
+    @Localize("New Note Library")
+    private static String TITLE;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String			CMD_NEW_LIBRARY	= "NewNoteLibrary";		//$NON-NLS-1$
+    /** The action command this command will issue. */
+    public static final String                CMD_NEW_LIBRARY = "NewNoteLibrary";           		//$NON-NLS-1$
 
-	/** The singleton {@link NewNoteLibraryCommand}. */
-	public static final NewNoteLibraryCommand	INSTANCE		= new NewNoteLibraryCommand();
+    /** The singleton {@link NewNoteLibraryCommand}. */
+    public static final NewNoteLibraryCommand INSTANCE        = new NewNoteLibraryCommand();
 
-	private NewNoteLibraryCommand() {
-		super(TITLE, CMD_NEW_LIBRARY);
-	}
+    private NewNoteLibraryCommand() {
+        super(TITLE, CMD_NEW_LIBRARY);
+    }
 
-	@Override
-	public void adjust() {
-		// Do nothing. We're always enabled.
-	}
+    @Override
+    public void adjust() {
+        // Do nothing. We're always enabled.
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		newNoteLibrary();
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        newNoteLibrary();
+    }
 
-	/** @return The newly created a new {@link NotesDockable}. */
-	public static NotesDockable newNoteLibrary() {
-		LibraryExplorerDockable library = LibraryExplorerDockable.get();
-		if (library != null) {
-			NoteList list = new NoteList();
-			list.getModel().setLocked(false);
-			NotesDockable dockable = new NotesDockable(list);
-			library.dockLibrary(dockable);
-			return dockable;
-		}
-		return null;
-	}
+    /** @return The newly created a new {@link NotesDockable}. */
+    public static NotesDockable newNoteLibrary() {
+        LibraryExplorerDockable library = LibraryExplorerDockable.get();
+        if (library != null) {
+            NoteList list = new NoteList();
+            list.getModel().setLocked(false);
+            NotesDockable dockable = new NotesDockable(list);
+            library.dockLibrary(dockable);
+            return dockable;
+        }
+        return null;
+    }
 }

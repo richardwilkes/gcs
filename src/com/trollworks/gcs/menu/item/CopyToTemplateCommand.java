@@ -23,46 +23,46 @@ import java.awt.event.KeyEvent;
 
 /** Provides the "Copy To Template" command. */
 public class CopyToTemplateCommand extends Command {
-	@Localize("Copy To Template")
-	@Localize(locale = "de", value = "Kopiere zur Vorlage")
-	@Localize(locale = "ru", value = "Копировать в шаблон")
-	@Localize(locale = "es", value = "Copiar a la plantilla")
-	private static String COPY_TO_TEMPLATE;
+    @Localize("Copy To Template")
+    @Localize(locale = "de", value = "Kopiere zur Vorlage")
+    @Localize(locale = "ru", value = "Копировать в шаблон")
+    @Localize(locale = "es", value = "Copiar a la plantilla")
+    private static String COPY_TO_TEMPLATE;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String					CMD_COPY_TO_TEMPLATE	= "CopyToTemplate";				//$NON-NLS-1$
-	/** The singleton {@link CopyToTemplateCommand}. */
-	public static final CopyToTemplateCommand	INSTANCE				= new CopyToTemplateCommand();
+    /** The action command this command will issue. */
+    public static final String                CMD_COPY_TO_TEMPLATE = "CopyToTemplate";           				//$NON-NLS-1$
+    /** The singleton {@link CopyToTemplateCommand}. */
+    public static final CopyToTemplateCommand INSTANCE             = new CopyToTemplateCommand();
 
-	private CopyToTemplateCommand() {
-		super(COPY_TO_TEMPLATE, CMD_COPY_TO_TEMPLATE, KeyEvent.VK_T, SHIFTED_COMMAND_MODIFIER);
-	}
+    private CopyToTemplateCommand() {
+        super(COPY_TO_TEMPLATE, CMD_COPY_TO_TEMPLATE, KeyEvent.VK_T, SHIFTED_COMMAND_MODIFIER);
+    }
 
-	@Override
-	public void adjust() {
-		LibraryDockable library = getTarget(LibraryDockable.class);
-		if (library != null) {
-			setEnabled(library.getOutline().getModel().hasSelection() && TemplateDockable.getLastActivated() != null);
-		} else {
-			setEnabled(false);
-		}
-	}
+    @Override
+    public void adjust() {
+        LibraryDockable library = getTarget(LibraryDockable.class);
+        if (library != null) {
+            setEnabled(library.getOutline().getModel().hasSelection() && TemplateDockable.getLastActivated() != null);
+        } else {
+            setEnabled(false);
+        }
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		LibraryDockable library = getTarget(LibraryDockable.class);
-		if (library != null) {
-			OutlineModel outlineModel = library.getOutline().getModel();
-			if (outlineModel.hasSelection()) {
-				TemplateDockable template = TemplateDockable.getLastActivated();
-				if (template != null) {
-					template.addRows(outlineModel.getSelectionAsList(true));
-				}
-			}
-		}
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        LibraryDockable library = getTarget(LibraryDockable.class);
+        if (library != null) {
+            OutlineModel outlineModel = library.getOutline().getModel();
+            if (outlineModel.hasSelection()) {
+                TemplateDockable template = TemplateDockable.getLastActivated();
+                if (template != null) {
+                    template.addRows(outlineModel.getSelectionAsList(true));
+                }
+            }
+        }
+    }
 }

@@ -18,13 +18,13 @@ import java.io.File;
 
 /** Utility to generate the Info.plist file for GCS. */
 public class GCSInfoPlistCreator {
-	public static void main(String[] args) {
-		if (args.length != 1) {
-			System.err.println("You must provide the path to the Info.plist you'd like created as the sole argument."); //$NON-NLS-1$
-			System.exit(1);
-		}
-		App.setup(GCS.class);
-		GCS.registerFileTypes(null);
-		BundleInfo.getDefault().write(new File(args[0]));
-	}
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.err.println("You must provide the path to the Info.plist you'd like created as the sole argument."); //$NON-NLS-1$
+            System.exit(1);
+        }
+        App.setup(GCS.class);
+        GCS.registerFileTypes(null);
+        BundleInfo.getDefault().write(new File(args[0]));
+    }
 }

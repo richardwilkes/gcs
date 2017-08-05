@@ -23,47 +23,47 @@ import java.awt.event.KeyEvent;
 
 /** Provides the "Copy To Character Sheet" command. */
 public class CopyToSheetCommand extends Command {
-	@Localize("Copy To Character Sheet")
-	@Localize(locale = "de", value = "Kopiere zum Charakterblatt")
-	@Localize(locale = "ru", value = "Копировать в лист персонажа")
-	@Localize(locale = "es", value = "Copiar a la hoja de personaje")
-	private static String COPY_TO_SHEET;
+    @Localize("Copy To Character Sheet")
+    @Localize(locale = "de", value = "Kopiere zum Charakterblatt")
+    @Localize(locale = "ru", value = "Копировать в лист персонажа")
+    @Localize(locale = "es", value = "Copiar a la hoja de personaje")
+    private static String COPY_TO_SHEET;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String				CMD_COPY_TO_SHEET	= "CopyToSheet";			//$NON-NLS-1$
+    /** The action command this command will issue. */
+    public static final String             CMD_COPY_TO_SHEET = "CopyToSheet";           			//$NON-NLS-1$
 
-	/** The singleton {@link CopyToSheetCommand}. */
-	public static final CopyToSheetCommand	INSTANCE			= new CopyToSheetCommand();
+    /** The singleton {@link CopyToSheetCommand}. */
+    public static final CopyToSheetCommand INSTANCE          = new CopyToSheetCommand();
 
-	private CopyToSheetCommand() {
-		super(COPY_TO_SHEET, CMD_COPY_TO_SHEET, KeyEvent.VK_C, SHIFTED_COMMAND_MODIFIER);
-	}
+    private CopyToSheetCommand() {
+        super(COPY_TO_SHEET, CMD_COPY_TO_SHEET, KeyEvent.VK_C, SHIFTED_COMMAND_MODIFIER);
+    }
 
-	@Override
-	public void adjust() {
-		LibraryDockable library = getTarget(LibraryDockable.class);
-		if (library != null) {
-			setEnabled(library.getOutline().getModel().hasSelection() && SheetDockable.getLastActivated() != null);
-		} else {
-			setEnabled(false);
-		}
-	}
+    @Override
+    public void adjust() {
+        LibraryDockable library = getTarget(LibraryDockable.class);
+        if (library != null) {
+            setEnabled(library.getOutline().getModel().hasSelection() && SheetDockable.getLastActivated() != null);
+        } else {
+            setEnabled(false);
+        }
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		LibraryDockable library = getTarget(LibraryDockable.class);
-		if (library != null) {
-			OutlineModel outlineModel = library.getOutline().getModel();
-			if (outlineModel.hasSelection()) {
-				SheetDockable sheet = SheetDockable.getLastActivated();
-				if (sheet != null) {
-					sheet.addRows(outlineModel.getSelectionAsList(true));
-				}
-			}
-		}
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        LibraryDockable library = getTarget(LibraryDockable.class);
+        if (library != null) {
+            OutlineModel outlineModel = library.getOutline().getModel();
+            if (outlineModel.hasSelection()) {
+                SheetDockable sheet = SheetDockable.getLastActivated();
+                if (sheet != null) {
+                    sheet.addRows(outlineModel.getSelectionAsList(true));
+                }
+            }
+        }
+    }
 }

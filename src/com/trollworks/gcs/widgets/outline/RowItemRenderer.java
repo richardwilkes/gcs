@@ -18,12 +18,12 @@ import javax.swing.JList;
 
 /** An item renderer for rows. */
 public class RowItemRenderer extends DefaultListCellRenderer {
-	@Override
-	public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-		Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-		if (value instanceof ListRow) {
-			setIcon(((ListRow) value).getIcon(false));
-		}
-		return comp;
-	}
+    @Override
+    public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        if (value instanceof ListRow) {
+            setIcon(((ListRow) value).getIcon(false));
+        }
+        return comp;
+    }
 }

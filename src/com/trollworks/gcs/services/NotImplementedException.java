@@ -13,12 +13,12 @@ package com.trollworks.gcs.services;
 
 /** Thrown when a method is not implemented */
 public class NotImplementedException extends Exception {
-	/**
-	 * Creates a new {@link NotImplementedException}.
-	 *
-	 * @param message an error message to be thrown
-	 */
-	public NotImplementedException(String message) {
-		super(message);
-	}
+    /**
+     * Creates a new {@link NotImplementedException}.
+     *
+     * @param message an error message to be thrown
+     */
+    public NotImplementedException(String message) {
+        super(message);
+    }
 }

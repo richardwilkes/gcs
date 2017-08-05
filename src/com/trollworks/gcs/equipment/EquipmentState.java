@@ -17,83 +17,83 @@ import com.trollworks.toolkit.utility.Localization;
 
 /** The possible states for a piece of equipment. */
 public enum EquipmentState {
-	/**
-	 * The state for a piece of equipment that is being carried and should also have any of its
-	 * {@link Feature}s applied. For example, a magic ring that is being worn on a finger.
-	 */
-	EQUIPPED {
-		@Override
-		public String toShortName() {
-			return EQUIPPED_SHORT;
-		}
+    /**
+     * The state for a piece of equipment that is being carried and should also have any of its
+     * {@link Feature}s applied. For example, a magic ring that is being worn on a finger.
+     */
+    EQUIPPED {
+        @Override
+        public String toShortName() {
+            return EQUIPPED_SHORT;
+        }
 
-		@Override
-		public String toString() {
-			return EQUIPPED_TITLE;
-		}
-	},
-	/**
-	 * The state for a piece of equipment that is being carried, but should not have any of its
-	 * {@link Feature}s applied. For example, a magic ring that is being stored in a pouch.
-	 */
-	CARRIED {
-		@Override
-		public String toShortName() {
-			return CARRIED_SHORT;
-		}
+        @Override
+        public String toString() {
+            return EQUIPPED_TITLE;
+        }
+    },
+    /**
+     * The state for a piece of equipment that is being carried, but should not have any of its
+     * {@link Feature}s applied. For example, a magic ring that is being stored in a pouch.
+     */
+    CARRIED {
+        @Override
+        public String toShortName() {
+            return CARRIED_SHORT;
+        }
 
-		@Override
-		public String toString() {
-			return CARRIED_TITLE;
-		}
-	},
-	/** The state of a piece of equipment that is not being carried. */
-	NOT_CARRIED {
-		@Override
-		public String toShortName() {
-			return NOT_CARRIED_SHORT;
-		}
+        @Override
+        public String toString() {
+            return CARRIED_TITLE;
+        }
+    },
+    /** The state of a piece of equipment that is not being carried. */
+    NOT_CARRIED {
+        @Override
+        public String toShortName() {
+            return NOT_CARRIED_SHORT;
+        }
 
-		@Override
-		public String toString() {
-			return NOT_CARRIED_TITLE;
-		}
-	};
+        @Override
+        public String toString() {
+            return NOT_CARRIED_TITLE;
+        }
+    };
 
-	@Localize("E")
-	@Localize(locale = "de", value = "A")
-	@Localize(locale = "ru", value = "Э")
-	@Localize(locale = "es", value = "E")
-	static String	EQUIPPED_SHORT;
-	@Localize("Equipped")
-	@Localize(locale = "de", value = "Ausgerüstet")
-	@Localize(locale = "ru", value = "Экипирован")
-	@Localize(locale = "es", value = "Equipado")
-	static String	EQUIPPED_TITLE;
-	@Localize("C")
-	@Localize(locale = "de", value = "M")
-	@Localize(locale = "ru", value = "Н")
-	@Localize(locale = "es", value = "P")
-	static String	CARRIED_SHORT;
-	@Localize("Carried")
-	@Localize(locale = "de", value = "Mitgeführt")
-	@Localize(locale = "ru", value = "Носимый")
-	@Localize(locale = "es", value = "Portado")
-	static String	CARRIED_TITLE;
-	@Localize("-")
-	@Localize(locale = "de", value = "-")
-	@Localize(locale = "es", value = "-")
-	static String	NOT_CARRIED_SHORT;
-	@Localize("Not Carried")
-	@Localize(locale = "de", value = "Nicht mitgeführt")
-	@Localize(locale = "ru", value = "Не носимый")
-	@Localize(locale = "es", value = "Sin portadar")
-	static String	NOT_CARRIED_TITLE;
+    @Localize("E")
+    @Localize(locale = "de", value = "A")
+    @Localize(locale = "ru", value = "Э")
+    @Localize(locale = "es", value = "E")
+    static String EQUIPPED_SHORT;
+    @Localize("Equipped")
+    @Localize(locale = "de", value = "Ausgerüstet")
+    @Localize(locale = "ru", value = "Экипирован")
+    @Localize(locale = "es", value = "Equipado")
+    static String EQUIPPED_TITLE;
+    @Localize("C")
+    @Localize(locale = "de", value = "M")
+    @Localize(locale = "ru", value = "Н")
+    @Localize(locale = "es", value = "P")
+    static String CARRIED_SHORT;
+    @Localize("Carried")
+    @Localize(locale = "de", value = "Mitgeführt")
+    @Localize(locale = "ru", value = "Носимый")
+    @Localize(locale = "es", value = "Portado")
+    static String CARRIED_TITLE;
+    @Localize("-")
+    @Localize(locale = "de", value = "-")
+    @Localize(locale = "es", value = "-")
+    static String NOT_CARRIED_SHORT;
+    @Localize("Not Carried")
+    @Localize(locale = "de", value = "Nicht mitgeführt")
+    @Localize(locale = "ru", value = "Не носимый")
+    @Localize(locale = "es", value = "Sin portadar")
+    static String NOT_CARRIED_TITLE;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** @return The short form of its description, typically a single character. */
-	public abstract String toShortName();
+    /** @return The short form of its description, typically a single character. */
+    public abstract String toShortName();
 }

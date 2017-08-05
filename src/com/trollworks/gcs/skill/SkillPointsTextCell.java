@@ -21,16 +21,16 @@ import javax.swing.SwingConstants;
 
 /** Provides a grayed-out point value for skill containers. */
 public class SkillPointsTextCell extends ListTextCell {
-	/** Creates a new {@link SkillPointsTextCell}. */
-	public SkillPointsTextCell() {
-		super(SwingConstants.RIGHT, false);
-	}
+    /** Creates a new {@link SkillPointsTextCell}. */
+    public SkillPointsTextCell() {
+        super(SwingConstants.RIGHT, false);
+    }
 
-	@Override
-	public Color getColor(boolean selected, boolean active, Row row, Column column) {
-		if (!selected && row.canHaveChildren()) {
-			return Color.LIGHT_GRAY;
-		}
-		return super.getColor(selected, active, row, column);
-	}
+    @Override
+    public Color getColor(boolean selected, boolean active, Row row, Column column) {
+        if (!selected && row.canHaveChildren()) {
+            return Color.LIGHT_GRAY;
+        }
+        return super.getColor(selected, active, row, column);
+    }
 }

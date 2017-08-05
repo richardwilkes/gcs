@@ -23,44 +23,44 @@ import java.awt.event.KeyEvent;
 
 /** Provides the "New Character Sheet" command. */
 public class NewCharacterSheetCommand extends Command {
-	@Localize("New Character Sheet")
-	@Localize(locale = "de", value = "Neues Charakterblatt")
-	@Localize(locale = "ru", value = "Новый лист персонажа")
-	@Localize(locale = "es", value = "Nueva hoja de personaje")
-	private static String NEW_CHARACTER_SHEET;
+    @Localize("New Character Sheet")
+    @Localize(locale = "de", value = "Neues Charakterblatt")
+    @Localize(locale = "ru", value = "Новый лист персонажа")
+    @Localize(locale = "es", value = "Nueva hoja de personaje")
+    private static String NEW_CHARACTER_SHEET;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String						CMD_NEW_CHARACTER_SHEET	= "NewCharacterSheet";				//$NON-NLS-1$
+    /** The action command this command will issue. */
+    public static final String                   CMD_NEW_CHARACTER_SHEET = "NewCharacterSheet";           				//$NON-NLS-1$
 
-	/** The singleton {@link NewCharacterSheetCommand}. */
-	public static final NewCharacterSheetCommand	INSTANCE				= new NewCharacterSheetCommand();
+    /** The singleton {@link NewCharacterSheetCommand}. */
+    public static final NewCharacterSheetCommand INSTANCE                = new NewCharacterSheetCommand();
 
-	private NewCharacterSheetCommand() {
-		super(NEW_CHARACTER_SHEET, CMD_NEW_CHARACTER_SHEET, KeyEvent.VK_N);
-	}
+    private NewCharacterSheetCommand() {
+        super(NEW_CHARACTER_SHEET, CMD_NEW_CHARACTER_SHEET, KeyEvent.VK_N);
+    }
 
-	@Override
-	public void adjust() {
-		// Do nothing. We're always enabled.
-	}
+    @Override
+    public void adjust() {
+        // Do nothing. We're always enabled.
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		newSheet();
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        newSheet();
+    }
 
-	/** @return The newly created a new {@link SheetDockable}. */
-	public static SheetDockable newSheet() {
-		LibraryExplorerDockable library = LibraryExplorerDockable.get();
-		if (library != null) {
-			SheetDockable sheet = new SheetDockable(new GURPSCharacter());
-			library.dockSheet(sheet);
-			return sheet;
-		}
-		return null;
-	}
+    /** @return The newly created a new {@link SheetDockable}. */
+    public static SheetDockable newSheet() {
+        LibraryExplorerDockable library = LibraryExplorerDockable.get();
+        if (library != null) {
+            SheetDockable sheet = new SheetDockable(new GURPSCharacter());
+            library.dockSheet(sheet);
+            return sheet;
+        }
+        return null;
+    }
 }

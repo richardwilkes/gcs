@@ -24,46 +24,46 @@ import java.io.IOException;
 
 /** A list of notes. */
 public class NoteList extends ListFile {
-	/** The current version. */
-	public static final int		CURRENT_VERSION	= 1;
-	/** The XML tag for {@link NoteList}s. */
-	public static final String	TAG_ROOT		= "note_list";	//$NON-NLS-1$
-	/** The extension for {@link NoteList}s. */
-	public static final String	EXTENSION		= "not";		//$NON-NLS-1$
+    /** The current version. */
+    public static final int    CURRENT_VERSION = 1;
+    /** The XML tag for {@link NoteList}s. */
+    public static final String TAG_ROOT        = "note_list";	//$NON-NLS-1$
+    /** The extension for {@link NoteList}s. */
+    public static final String EXTENSION       = "not";      		//$NON-NLS-1$
 
-	@Override
-	public int getXMLTagVersion() {
-		return CURRENT_VERSION;
-	}
+    @Override
+    public int getXMLTagVersion() {
+        return CURRENT_VERSION;
+    }
 
-	@Override
-	public String getXMLTagName() {
-		return TAG_ROOT;
-	}
+    @Override
+    public String getXMLTagName() {
+        return TAG_ROOT;
+    }
 
-	@Override
-	public FileType getFileType() {
-		return FileType.getByExtension(EXTENSION);
-	}
+    @Override
+    public FileType getFileType() {
+        return FileType.getByExtension(EXTENSION);
+    }
 
-	@Override
-	public StdImageSet getFileIcons() {
-		return GCSImages.getNoteDocumentIcons();
-	}
+    @Override
+    public StdImageSet getFileIcons() {
+        return GCSImages.getNoteDocumentIcons();
+    }
 
-	@Override
-	protected void loadList(XMLReader reader, LoadState state) throws IOException {
-		OutlineModel model = getModel();
-		String marker = reader.getMarker();
-		do {
-			if (reader.next() == XMLNodeType.START_TAG) {
-				String name = reader.getName();
-				if (Note.TAG_NOTE.equals(name) || Note.TAG_NOTE_CONTAINER.equals(name)) {
-					model.addRow(new Note(this, reader, state), true);
-				} else {
-					reader.skipTag(name);
-				}
-			}
-		} while (reader.withinMarker(marker));
-	}
+    @Override
+    protected void loadList(XMLReader reader, LoadState state) throws IOException {
+        OutlineModel model = getModel();
+        String marker = reader.getMarker();
+        do {
+            if (reader.next() == XMLNodeType.START_TAG) {
+                String name = reader.getName();
+                if (Note.TAG_NOTE.equals(name) || Note.TAG_NOTE_CONTAINER.equals(name)) {
+                    model.addRow(new Note(this, reader, state), true);
+                } else {
+                    reader.skipTag(name);
+                }
+            }
+        } while (reader.withinMarker(marker));
+    }
 }

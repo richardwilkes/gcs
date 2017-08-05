@@ -25,54 +25,54 @@ import javax.swing.JOptionPane;
 
 /** Provides the "Randomize Description" command. */
 public class RandomizeDescriptionCommand extends Command {
-	@Localize("Randomize Description\u2026")
-	@Localize(locale = "de", value = "Zufällige Beschreibung erstellen\u2026")
-	@Localize(locale = "ru", value = "Случайное описание\u2026")
-	@Localize(locale = "es", value = "Descripción al azar\u2026")
-	private static String	RANDOMIZE_DESCRIPTION;
-	@Localize("Description Randomizer")
-	@Localize(locale = "de", value = "Zufallsgenerator für Beschreibungen")
-	@Localize(locale = "ru", value = "Сгенерировать описание")
-	@Localize(locale = "es", value = "Descripción al azar")
-	private static String	RANDOMIZER;
-	@Localize("Apply")
-	@Localize(locale = "de", value = "Anwenden")
-	@Localize(locale = "ru", value = "Применить")
-	@Localize(locale = "es", value = "Aceptar")
-	private static String	APPLY;
-	@Localize("Cancel")
-	@Localize(locale = "de", value = "Abbrechen")
-	@Localize(locale = "ru", value = "Отмена")
-	@Localize(locale = "es", value = "Cancelar")
-	private static String	CANCEL;
+    @Localize("Randomize Description\u2026")
+    @Localize(locale = "de", value = "Zufällige Beschreibung erstellen\u2026")
+    @Localize(locale = "ru", value = "Случайное описание\u2026")
+    @Localize(locale = "es", value = "Descripción al azar\u2026")
+    private static String RANDOMIZE_DESCRIPTION;
+    @Localize("Description Randomizer")
+    @Localize(locale = "de", value = "Zufallsgenerator für Beschreibungen")
+    @Localize(locale = "ru", value = "Сгенерировать описание")
+    @Localize(locale = "es", value = "Descripción al azar")
+    private static String RANDOMIZER;
+    @Localize("Apply")
+    @Localize(locale = "de", value = "Anwenden")
+    @Localize(locale = "ru", value = "Применить")
+    @Localize(locale = "es", value = "Aceptar")
+    private static String APPLY;
+    @Localize("Cancel")
+    @Localize(locale = "de", value = "Abbrechen")
+    @Localize(locale = "ru", value = "Отмена")
+    @Localize(locale = "es", value = "Cancelar")
+    private static String CANCEL;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String						CMD_RANDOMIZE_DESCRIPTION	= "RandomizeDescription";			//$NON-NLS-1$
+    /** The action command this command will issue. */
+    public static final String                      CMD_RANDOMIZE_DESCRIPTION = "RandomizeDescription";           			//$NON-NLS-1$
 
-	/** The singleton {@link RandomizeDescriptionCommand}. */
-	public static final RandomizeDescriptionCommand	INSTANCE					= new RandomizeDescriptionCommand();
+    /** The singleton {@link RandomizeDescriptionCommand}. */
+    public static final RandomizeDescriptionCommand INSTANCE                  = new RandomizeDescriptionCommand();
 
-	private RandomizeDescriptionCommand() {
-		super(RANDOMIZE_DESCRIPTION, CMD_RANDOMIZE_DESCRIPTION);
-	}
+    private RandomizeDescriptionCommand() {
+        super(RANDOMIZE_DESCRIPTION, CMD_RANDOMIZE_DESCRIPTION);
+    }
 
-	@Override
-	public void adjust() {
-		setEnabled(getTarget(CharacterSheet.class) != null);
-	}
+    @Override
+    public void adjust() {
+        setEnabled(getTarget(CharacterSheet.class) != null);
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		CharacterSheet target = getTarget(CharacterSheet.class);
-		if (target != null) {
-			DescriptionRandomizer panel = new DescriptionRandomizer(target.getCharacter());
-			if (WindowUtils.showOptionDialog(null, panel, RANDOMIZER, true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, GCSImages.getCharacterSheetDocumentIcons().getImage(32), new String[] { APPLY, CANCEL }, APPLY) == JOptionPane.OK_OPTION) {
-				panel.applyChanges();
-			}
-		}
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        CharacterSheet target = getTarget(CharacterSheet.class);
+        if (target != null) {
+            DescriptionRandomizer panel = new DescriptionRandomizer(target.getCharacter());
+            if (WindowUtils.showOptionDialog(null, panel, RANDOMIZER, true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, GCSImages.getCharacterSheetDocumentIcons().getImage(32), new String[] { APPLY, CANCEL }, APPLY) == JOptionPane.OK_OPTION) {
+                panel.applyChanges();
+            }
+        }
+    }
 }

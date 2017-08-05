@@ -19,40 +19,40 @@ import com.trollworks.toolkit.utility.Localization;
 
 /** A list of skills from a library. */
 public class SkillsDockable extends LibraryDockable {
-	@Localize("Untitled Skills")
-	@Localize(locale = "de", value = "Unbenannte Fertigkeiten-Liste")
-	@Localize(locale = "ru", value = "Безымянный список умений")
-	@Localize(locale = "es", value = "Habilidades sin título")
-	private static String UNTITLED;
+    @Localize("Untitled Skills")
+    @Localize(locale = "de", value = "Unbenannte Fertigkeiten-Liste")
+    @Localize(locale = "ru", value = "Безымянный список умений")
+    @Localize(locale = "es", value = "Habilidades sin título")
+    private static String UNTITLED;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** Creates a new {@link SkillsDockable}. */
-	public SkillsDockable(SkillList list) {
-		super(list);
-	}
+    /** Creates a new {@link SkillsDockable}. */
+    public SkillsDockable(SkillList list) {
+        super(list);
+    }
 
-	@Override
-	public SkillList getDataFile() {
-		return (SkillList) super.getDataFile();
-	}
+    @Override
+    public SkillList getDataFile() {
+        return (SkillList) super.getDataFile();
+    }
 
-	@Override
-	protected String getUntitledBaseName() {
-		return UNTITLED;
-	}
+    @Override
+    protected String getUntitledBaseName() {
+        return UNTITLED;
+    }
 
-	@Override
-	protected ListOutline createOutline() {
-		SkillList list = getDataFile();
-		list.addTarget(this, Skill.ID_CATEGORY);
-		return new SkillOutline(list, list.getModel());
-	}
+    @Override
+    protected ListOutline createOutline() {
+        SkillList list = getDataFile();
+        list.addTarget(this, Skill.ID_CATEGORY);
+        return new SkillOutline(list, list.getModel());
+    }
 
-	@Override
-	public void applyScale(Scale scale) {
-		// RAW: Implement me
-	}
+    @Override
+    public void applyScale(Scale scale) {
+        // RAW: Implement me
+    }
 }

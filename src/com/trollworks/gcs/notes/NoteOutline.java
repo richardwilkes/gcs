@@ -28,56 +28,56 @@ import java.util.List;
 
 /** An outline specifically for notes. */
 public class NoteOutline extends ListOutline {
-	private static OutlineModel extractModel(DataFile dataFile) {
-		if (dataFile instanceof GURPSCharacter) {
-			return ((GURPSCharacter) dataFile).getNotesRoot();
-		}
-		if (dataFile instanceof Template) {
-			return ((Template) dataFile).getNotesModel();
-		}
-		return ((ListFile) dataFile).getModel();
-	}
+    private static OutlineModel extractModel(DataFile dataFile) {
+        if (dataFile instanceof GURPSCharacter) {
+            return ((GURPSCharacter) dataFile).getNotesRoot();
+        }
+        if (dataFile instanceof Template) {
+            return ((Template) dataFile).getNotesModel();
+        }
+        return ((ListFile) dataFile).getModel();
+    }
 
-	/**
-	 * Create a new notes outline.
-	 *
-	 * @param dataFile The owning data file.
-	 */
-	public NoteOutline(DataFile dataFile) {
-		this(dataFile, extractModel(dataFile));
-	}
+    /**
+     * Create a new notes outline.
+     *
+     * @param dataFile The owning data file.
+     */
+    public NoteOutline(DataFile dataFile) {
+        this(dataFile, extractModel(dataFile));
+    }
 
-	/**
-	 * Create a new notes outline.
-	 *
-	 * @param dataFile The owning data file.
-	 * @param model The {@link OutlineModel} to use.
-	 */
-	public NoteOutline(DataFile dataFile, OutlineModel model) {
-		super(dataFile, model, Note.ID_LIST_CHANGED);
-		NoteColumn.addColumns(this, dataFile);
-	}
+    /**
+     * Create a new notes outline.
+     *
+     * @param dataFile The owning data file.
+     * @param model The {@link OutlineModel} to use.
+     */
+    public NoteOutline(DataFile dataFile, OutlineModel model) {
+        super(dataFile, model, Note.ID_LIST_CHANGED);
+        NoteColumn.addColumns(this, dataFile);
+    }
 
-	@Override
-	protected boolean isRowDragAcceptable(DropTargetDragEvent dtde, Row[] rows) {
-		return !getModel().isLocked() && rows.length > 0 && rows[0] instanceof Note;
-	}
+    @Override
+    protected boolean isRowDragAcceptable(DropTargetDragEvent dtde, Row[] rows) {
+        return !getModel().isLocked() && rows.length > 0 && rows[0] instanceof Note;
+    }
 
-	@Override
-	public void convertDragRowsToSelf(List<Row> list) {
-		OutlineModel model = getModel();
-		Row[] rows = model.getDragRows();
-		boolean forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
-		ArrayList<ListRow> process = new ArrayList<>();
-		for (Row element : rows) {
-			Note note = new Note(mDataFile, (Note) element, true);
-			model.collectRowsAndSetOwner(list, note, false);
-			if (forSheetOrTemplate) {
-				addRowsToBeProcessed(process, note);
-			}
-		}
-		if (forSheetOrTemplate && !process.isEmpty()) {
-			EventQueue.invokeLater(new RowPostProcessor(this, process));
-		}
-	}
+    @Override
+    public void convertDragRowsToSelf(List<Row> list) {
+        OutlineModel model = getModel();
+        Row[] rows = model.getDragRows();
+        boolean forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
+        ArrayList<ListRow> process = new ArrayList<>();
+        for (Row element : rows) {
+            Note note = new Note(mDataFile, (Note) element, true);
+            model.collectRowsAndSetOwner(list, note, false);
+            if (forSheetOrTemplate) {
+                addRowsToBeProcessed(process, note);
+            }
+        }
+        if (forSheetOrTemplate && !process.isEmpty()) {
+            EventQueue.invokeLater(new RowPostProcessor(this, process));
+        }
+    }
 }

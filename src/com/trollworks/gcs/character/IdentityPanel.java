@@ -20,40 +20,40 @@ import javax.swing.SwingConstants;
 
 /** The character identity panel. */
 public class IdentityPanel extends DropPanel {
-	@Localize("Identity")
-	@Localize(locale = "de", value = "Identität")
-	@Localize(locale = "ru", value = "Личность")
-	@Localize(locale = "es", value = "Identidad")
-	private static String	IDENTITY;
-	@Localize("Name:")
-	@Localize(locale = "de", value = "Name:")
-	@Localize(locale = "ru", value = "Имя:")
-	@Localize(locale = "es", value = "Nombre:")
-	private static String	NAME;
-	@Localize("Title:")
-	@Localize(locale = "de", value = "Titel:")
-	@Localize(locale = "ru", value = "Статус:")
-	@Localize(locale = "es", value = "Título:")
-	private static String	TITLE;
-	@Localize("Religion:")
-	@Localize(locale = "de", value = "Religion:")
-	@Localize(locale = "ru", value = "Религия:")
-	@Localize(locale = "es", value = "Religión:")
-	private static String	RELIGION;
+    @Localize("Identity")
+    @Localize(locale = "de", value = "Identität")
+    @Localize(locale = "ru", value = "Личность")
+    @Localize(locale = "es", value = "Identidad")
+    private static String IDENTITY;
+    @Localize("Name:")
+    @Localize(locale = "de", value = "Name:")
+    @Localize(locale = "ru", value = "Имя:")
+    @Localize(locale = "es", value = "Nombre:")
+    private static String NAME;
+    @Localize("Title:")
+    @Localize(locale = "de", value = "Titel:")
+    @Localize(locale = "ru", value = "Статус:")
+    @Localize(locale = "es", value = "Título:")
+    private static String TITLE;
+    @Localize("Religion:")
+    @Localize(locale = "de", value = "Religion:")
+    @Localize(locale = "ru", value = "Религия:")
+    @Localize(locale = "es", value = "Religión:")
+    private static String RELIGION;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/**
-	 * Creates a new identity panel.
-	 *
-	 * @param sheet The sheet to display the data for.
-	 */
-	public IdentityPanel(CharacterSheet sheet) {
-		super(new ColumnLayout(2, 2, 0), IDENTITY);
-		createLabelAndField(this, sheet, Profile.ID_NAME, NAME, null, SwingConstants.LEFT);
-		createLabelAndField(this, sheet, Profile.ID_TITLE, TITLE, null, SwingConstants.LEFT);
-		createLabelAndField(this, sheet, Profile.ID_RELIGION, RELIGION, null, SwingConstants.LEFT);
-	}
+    /**
+     * Creates a new identity panel.
+     *
+     * @param sheet The sheet to display the data for.
+     */
+    public IdentityPanel(CharacterSheet sheet) {
+        super(new ColumnLayout(2, 2, 0), IDENTITY);
+        createLabelAndField(this, sheet, Profile.ID_NAME, NAME, null, SwingConstants.LEFT);
+        createLabelAndField(this, sheet, Profile.ID_TITLE, TITLE, null, SwingConstants.LEFT);
+        createLabelAndField(this, sheet, Profile.ID_RELIGION, RELIGION, null, SwingConstants.LEFT);
+    }
 }

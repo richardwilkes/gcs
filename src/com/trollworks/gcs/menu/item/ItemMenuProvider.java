@@ -25,69 +25,69 @@ import javax.swing.JMenu;
 
 /** Provides the "Item" menu. */
 public class ItemMenuProvider implements MenuProvider {
-	@Localize("Item")
-	@Localize(locale = "de", value = "Element")
-	@Localize(locale = "ru", value = "Элемент")
-	@Localize(locale = "es", value = "Elemento")
-	private static String ITEM;
+    @Localize("Item")
+    @Localize(locale = "de", value = "Element")
+    @Localize(locale = "ru", value = "Элемент")
+    @Localize(locale = "es", value = "Elemento")
+    private static String ITEM;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	public static final String NAME = "Item"; //$NON-NLS-1$
+    public static final String NAME = "Item"; //$NON-NLS-1$
 
-	@Override
-	public Set<Command> getModifiableCommands() {
-		Set<Command> cmds = new HashSet<>();
-		cmds.add(OpenEditorCommand.INSTANCE);
-		cmds.add(CopyToSheetCommand.INSTANCE);
-		cmds.add(CopyToTemplateCommand.INSTANCE);
-		cmds.add(ApplyTemplateCommand.INSTANCE);
-		cmds.add(OpenPageReferenceCommand.OPEN_ONE_INSTANCE);
-		cmds.add(OpenPageReferenceCommand.OPEN_EACH_INSTANCE);
-		cmds.add(NewAdvantageCommand.INSTANCE);
-		cmds.add(NewAdvantageCommand.CONTAINER_INSTANCE);
-		cmds.add(NewSkillCommand.INSTANCE);
-		cmds.add(NewSkillCommand.CONTAINER_INSTANCE);
-		cmds.add(NewSkillCommand.TECHNIQUE_INSTANCE);
-		cmds.add(NewSpellCommand.INSTANCE);
-		cmds.add(NewSpellCommand.CONTAINER_INSTANCE);
-		cmds.add(NewEquipmentCommand.CARRIED_INSTANCE);
-		cmds.add(NewEquipmentCommand.CARRIED_CONTAINER_INSTANCE);
-		cmds.add(NewNoteCommand.INSTANCE);
-		cmds.add(NewNoteCommand.CONTAINER_INSTANCE);
-		return cmds;
-	}
+    @Override
+    public Set<Command> getModifiableCommands() {
+        Set<Command> cmds = new HashSet<>();
+        cmds.add(OpenEditorCommand.INSTANCE);
+        cmds.add(CopyToSheetCommand.INSTANCE);
+        cmds.add(CopyToTemplateCommand.INSTANCE);
+        cmds.add(ApplyTemplateCommand.INSTANCE);
+        cmds.add(OpenPageReferenceCommand.OPEN_ONE_INSTANCE);
+        cmds.add(OpenPageReferenceCommand.OPEN_EACH_INSTANCE);
+        cmds.add(NewAdvantageCommand.INSTANCE);
+        cmds.add(NewAdvantageCommand.CONTAINER_INSTANCE);
+        cmds.add(NewSkillCommand.INSTANCE);
+        cmds.add(NewSkillCommand.CONTAINER_INSTANCE);
+        cmds.add(NewSkillCommand.TECHNIQUE_INSTANCE);
+        cmds.add(NewSpellCommand.INSTANCE);
+        cmds.add(NewSpellCommand.CONTAINER_INSTANCE);
+        cmds.add(NewEquipmentCommand.CARRIED_INSTANCE);
+        cmds.add(NewEquipmentCommand.CARRIED_CONTAINER_INSTANCE);
+        cmds.add(NewNoteCommand.INSTANCE);
+        cmds.add(NewNoteCommand.CONTAINER_INSTANCE);
+        return cmds;
+    }
 
-	@Override
-	public JMenu createMenu() {
-		JMenu menu = new JMenu(ITEM);
-		menu.setName(NAME);
-		menu.add(new DynamicMenuItem(OpenEditorCommand.INSTANCE));
-		menu.add(new DynamicMenuItem(CopyToSheetCommand.INSTANCE));
-		menu.add(new DynamicMenuItem(CopyToTemplateCommand.INSTANCE));
-		menu.add(new DynamicMenuItem(ApplyTemplateCommand.INSTANCE));
-		menu.addSeparator();
-		menu.add(new DynamicMenuItem(OpenPageReferenceCommand.OPEN_ONE_INSTANCE));
-		menu.add(new DynamicMenuItem(OpenPageReferenceCommand.OPEN_EACH_INSTANCE));
-		menu.addSeparator();
-		menu.add(new DynamicMenuItem(NewAdvantageCommand.INSTANCE));
-		menu.add(new DynamicMenuItem(NewAdvantageCommand.CONTAINER_INSTANCE));
-		menu.addSeparator();
-		menu.add(new DynamicMenuItem(NewSkillCommand.INSTANCE));
-		menu.add(new DynamicMenuItem(NewSkillCommand.CONTAINER_INSTANCE));
-		menu.add(new DynamicMenuItem(NewSkillCommand.TECHNIQUE_INSTANCE));
-		menu.addSeparator();
-		menu.add(new DynamicMenuItem(NewSpellCommand.INSTANCE));
-		menu.add(new DynamicMenuItem(NewSpellCommand.CONTAINER_INSTANCE));
-		menu.addSeparator();
-		menu.add(new DynamicMenuItem(NewEquipmentCommand.CARRIED_INSTANCE));
-		menu.add(new DynamicMenuItem(NewEquipmentCommand.CARRIED_CONTAINER_INSTANCE));
-		menu.addSeparator();
-		menu.add(new DynamicMenuItem(NewNoteCommand.INSTANCE));
-		menu.add(new DynamicMenuItem(NewNoteCommand.CONTAINER_INSTANCE));
-		DynamicMenuEnabler.add(menu);
-		return menu;
-	}
+    @Override
+    public JMenu createMenu() {
+        JMenu menu = new JMenu(ITEM);
+        menu.setName(NAME);
+        menu.add(new DynamicMenuItem(OpenEditorCommand.INSTANCE));
+        menu.add(new DynamicMenuItem(CopyToSheetCommand.INSTANCE));
+        menu.add(new DynamicMenuItem(CopyToTemplateCommand.INSTANCE));
+        menu.add(new DynamicMenuItem(ApplyTemplateCommand.INSTANCE));
+        menu.addSeparator();
+        menu.add(new DynamicMenuItem(OpenPageReferenceCommand.OPEN_ONE_INSTANCE));
+        menu.add(new DynamicMenuItem(OpenPageReferenceCommand.OPEN_EACH_INSTANCE));
+        menu.addSeparator();
+        menu.add(new DynamicMenuItem(NewAdvantageCommand.INSTANCE));
+        menu.add(new DynamicMenuItem(NewAdvantageCommand.CONTAINER_INSTANCE));
+        menu.addSeparator();
+        menu.add(new DynamicMenuItem(NewSkillCommand.INSTANCE));
+        menu.add(new DynamicMenuItem(NewSkillCommand.CONTAINER_INSTANCE));
+        menu.add(new DynamicMenuItem(NewSkillCommand.TECHNIQUE_INSTANCE));
+        menu.addSeparator();
+        menu.add(new DynamicMenuItem(NewSpellCommand.INSTANCE));
+        menu.add(new DynamicMenuItem(NewSpellCommand.CONTAINER_INSTANCE));
+        menu.addSeparator();
+        menu.add(new DynamicMenuItem(NewEquipmentCommand.CARRIED_INSTANCE));
+        menu.add(new DynamicMenuItem(NewEquipmentCommand.CARRIED_CONTAINER_INSTANCE));
+        menu.addSeparator();
+        menu.add(new DynamicMenuItem(NewNoteCommand.INSTANCE));
+        menu.add(new DynamicMenuItem(NewNoteCommand.CONTAINER_INSTANCE));
+        DynamicMenuEnabler.add(menu);
+        return menu;
+    }
 }

@@ -25,57 +25,57 @@ import javax.swing.JComboBox;
 
 /** An cost reduction editor. */
 public class CostReductionEditor extends FeatureEditor {
-	@Localize("by {0}%")
-	@Localize(locale = "de", value = "um {0}%")
-	@Localize(locale = "ru", value = "на {0}% ")
-	@Localize(locale = "es", value = "en {0}%")
-	private static String BY;
+    @Localize("by {0}%")
+    @Localize(locale = "de", value = "um {0}%")
+    @Localize(locale = "ru", value = "на {0}% ")
+    @Localize(locale = "es", value = "en {0}%")
+    private static String BY;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	private static final String	CHANGE_ATTRIBUTE	= "ChangeAttribute";	//$NON-NLS-1$
-	private static final String	CHANGE_PERCENTAGE	= "ChangePercentage";	//$NON-NLS-1$
+    private static final String CHANGE_ATTRIBUTE  = "ChangeAttribute"; 	//$NON-NLS-1$
+    private static final String CHANGE_PERCENTAGE = "ChangePercentage";	//$NON-NLS-1$
 
-	/**
-	 * Create a new cost reduction editor.
-	 *
-	 * @param row The row this feature will belong to.
-	 * @param feature The feature to edit.
-	 */
-	public CostReductionEditor(ListRow row, CostReduction feature) {
-		super(row, feature);
-	}
+    /**
+     * Create a new cost reduction editor.
+     *
+     * @param row The row this feature will belong to.
+     * @param feature The feature to edit.
+     */
+    public CostReductionEditor(ListRow row, CostReduction feature) {
+        super(row, feature);
+    }
 
-	@Override
-	protected void rebuildSelf(FlexGrid grid, FlexRow right) {
-		CostReduction feature = (CostReduction) getFeature();
-		FlexRow row = new FlexRow();
-		row.add(addChangeBaseTypeCombo());
-		String[] names = new String[CostReduction.TYPES.length];
-		for (int i = 0; i < CostReduction.TYPES.length; i++) {
-			names[i] = CostReduction.TYPES[i].toString();
-		}
-		row.add(addComboBox(CHANGE_ATTRIBUTE, names, feature.getAttribute().name()));
-		String[] percents = new String[16];
-		for (int i = 0; i < 16; i++) {
-			percents[i] = MessageFormat.format(BY, new Integer((i + 1) * 5));
-		}
-		row.add(addComboBox(CHANGE_PERCENTAGE, percents, percents[Math.min(80, Math.max(0, feature.getPercentage())) / 5 - 1]));
-		row.add(new FlexSpacer(0, 0, true, false));
-		grid.add(row, 0, 0);
-	}
+    @Override
+    protected void rebuildSelf(FlexGrid grid, FlexRow right) {
+        CostReduction feature = (CostReduction) getFeature();
+        FlexRow row = new FlexRow();
+        row.add(addChangeBaseTypeCombo());
+        String[] names = new String[CostReduction.TYPES.length];
+        for (int i = 0; i < CostReduction.TYPES.length; i++) {
+            names[i] = CostReduction.TYPES[i].toString();
+        }
+        row.add(addComboBox(CHANGE_ATTRIBUTE, names, feature.getAttribute().name()));
+        String[] percents = new String[16];
+        for (int i = 0; i < 16; i++) {
+            percents[i] = MessageFormat.format(BY, new Integer((i + 1) * 5));
+        }
+        row.add(addComboBox(CHANGE_PERCENTAGE, percents, percents[Math.min(80, Math.max(0, feature.getPercentage())) / 5 - 1]));
+        row.add(new FlexSpacer(0, 0, true, false));
+        grid.add(row, 0, 0);
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		String command = event.getActionCommand();
-		if (CHANGE_ATTRIBUTE.equals(command)) {
-			((CostReduction) getFeature()).setAttribute(CostReduction.TYPES[((JComboBox<?>) event.getSource()).getSelectedIndex()]);
-		} else if (CHANGE_PERCENTAGE.equals(command)) {
-			((CostReduction) getFeature()).setPercentage((((JComboBox<?>) event.getSource()).getSelectedIndex() + 1) * 5);
-		} else {
-			super.actionPerformed(event);
-		}
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        String command = event.getActionCommand();
+        if (CHANGE_ATTRIBUTE.equals(command)) {
+            ((CostReduction) getFeature()).setAttribute(CostReduction.TYPES[((JComboBox<?>) event.getSource()).getSelectedIndex()]);
+        } else if (CHANGE_PERCENTAGE.equals(command)) {
+            ((CostReduction) getFeature()).setPercentage((((JComboBox<?>) event.getSource()).getSelectedIndex() + 1) * 5);
+        } else {
+            super.actionPerformed(event);
+        }
+    }
 }

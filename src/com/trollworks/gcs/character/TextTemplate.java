@@ -49,1241 +49,1241 @@ import java.util.function.Function;
 /** Provides text template output. */
 @SuppressWarnings("nls")
 public class TextTemplate {
-	private static String		UNIDENTIFIED_KEY						= "Unidentified key: '%s'";
+    private static String       UNIDENTIFIED_KEY                      = "Unidentified key: '%s'";
 
-	private static final String	CURRENT									= "current";
-	private static final String	ITEM									= "ITEM";
+    private static final String CURRENT                               = "current";
+    private static final String ITEM                                  = "ITEM";
 
-	private static final String	KEY_ACCURACY							= "ACCURACY";
-	private static final String	KEY_ADVANTAGE_POINTS					= "ADVANTAGE_POINTS";
-	private static final String	KEY_ADVANTAGES_LOOP_END					= "ADVANTAGES_LOOP_END";
-	private static final String	KEY_ADVANTAGES_LOOP_START				= "ADVANTAGES_LOOP_START";
-	private static final String	KEY_ADVANTAGES_ONLY_LOOP_END			= "ADVANTAGES_ONLY_LOOP_END";
-	private static final String	KEY_ADVANTAGES_ONLY_LOOP_START			= "ADVANTAGES_ONLY_LOOP_START";
-	private static final String	KEY_AGE									= "AGE";
-	private static final String	KEY_ATTRIBUTE_POINTS					= "ATTRIBUTE_POINTS";
-	private static final String	KEY_BASIC_FP							= "BASIC_FP";
-	private static final String	KEY_BASIC_HP							= "BASIC_HP";
-	private static final String	KEY_BASIC_LIFT							= "BASIC_LIFT";
-	private static final String	KEY_BASIC_MOVE							= "BASIC_MOVE";
-	private static final String	KEY_BASIC_MOVE_POINTS					= "BASIC_MOVE_POINTS";
-	private static final String	KEY_BASIC_SPEED							= "BASIC_SPEED";
-	private static final String	KEY_BASIC_SPEED_POINTS					= "BASIC_SPEED_POINTS";
-	private static final String	KEY_BEST_CURRENT_BLOCK					= "BEST_CURRENT_BLOCK";
-	private static final String	KEY_BEST_CURRENT_PARRY					= "BEST_CURRENT_PARRY";
-	private static final String	KEY_BIRTHDAY							= "BIRTHDAY";
-	private static final String	KEY_BLOCK								= "BLOCK";
-	private static final String	KEY_BULK								= "BULK";
-	private static final String	KEY_CAMPAIGN							= "CAMPAIGN";
-	private static final String	KEY_CARRIED_VALUE						= "CARRIED_VALUE";
-	private static final String	KEY_CARRIED_WEIGHT						= "CARRIED_WEIGHT";
-	private static final String	KEY_CARRY_ON_BACK						= "CARRY_ON_BACK";
-	private static final String	KEY_CLASS								= "CLASS";
-	private static final String	KEY_COLLEGE								= "COLLEGE";
-	private static final String	KEY_COST								= "COST";
-	private static final String	KEY_COST_SUMMARY						= "COST_SUMMARY";
-	private static final String	KEY_CREATED_ON							= "CREATED_ON";
-	private static final String	KEY_CULTURAL_FAMILIARITIES_LOOP_END		= "CULTURAL_FAMILIARITIES_LOOP_END";
-	private static final String	KEY_CULTURAL_FAMILIARITIES_LOOP_START	= "CULTURAL_FAMILIARITIES_LOOP_START";
-	private static final String	KEY_CURRENT_DODGE						= "CURRENT_DODGE";
-	private static final String	KEY_CURRENT_MARKER						= "CURRENT_MARKER";
-	private static final String	KEY_DAMAGE								= "DAMAGE";
-	private static final String	KEY_UNMODIFIED_DAMAGE					= "UNMODIFIED_DAMAGE";
-	private static final String	KEY_DEAD								= "DEAD";
-	private static final String	KEY_DEATH_CHECK_1						= "DEATH_CHECK_1";
-	private static final String	KEY_DEATH_CHECK_2						= "DEATH_CHECK_2";
-	private static final String	KEY_DEATH_CHECK_3						= "DEATH_CHECK_3";
-	private static final String	KEY_DEATH_CHECK_4						= "DEATH_CHECK_4";
-	private static final String	KEY_DESCRIPTION							= "DESCRIPTION";
-	private static final String	KEY_DESCRIPTION_MODIFIER_NOTES			= "DESCRIPTION_MODIFIER_NOTES";
-	private static final String	KEY_DESCRIPTION_NOTES					= "DESCRIPTION_NOTES";
-	private static final String	KEY_DESCRIPTION_PRIMARY					= "DESCRIPTION_PRIMARY";
-	private static final String	KEY_DIFFICULTY							= "DIFFICULTY";
-	private static final String	KEY_DISADVANTAGE_POINTS					= "DISADVANTAGE_POINTS";
-	private static final String	KEY_DISADVANTAGES_LOOP_END				= "DISADVANTAGES_LOOP_END";
-	private static final String	KEY_DISADVANTAGES_LOOP_START			= "DISADVANTAGES_LOOP_START";
-	private static final String	KEY_DODGE								= "DODGE";
-	private static final String	KEY_DR									= "DR";
-	private static final String	KEY_DURATION							= "DURATION";
-	private static final String	KEY_DX									= "DX";
-	private static final String	KEY_DX_POINTS							= "DX_POINTS";
-	private static final String	KEY_EARNED_POINTS						= "EARNED_POINTS";
-	private static final String	KEY_ENCODING_OFF						= "ENCODING_OFF";
-	private static final String	KEY_ENCUMBRANCE_LOOP_END				= "ENCUMBRANCE_LOOP_END";
-	private static final String	KEY_ENCUMBRANCE_LOOP_START				= "ENCUMBRANCE_LOOP_START";
-	private static final String	KEY_EQUIPMENT_LOOP_END					= "EQUIPMENT_LOOP_END";
-	private static final String	KEY_EQUIPMENT_LOOP_START				= "EQUIPMENT_LOOP_START";
-	private static final String	KEY_EYES								= "EYES";
-	private static final String	KEY_FP									= "FP";
-	private static final String	KEY_FP_COLLAPSE							= "FP_COLLAPSE";
-	private static final String	KEY_FP_POINTS							= "FP_POINTS";
-	private static final String	KEY_FRIGHT_CHECK						= "FRIGHT_CHECK";
-	private static final String	KEY_GENDER								= "GENDER";
-	private static final String	KEY_GENERAL_DR							= "GENERAL_DR";
-	private static final String	KEY_HAIR								= "HAIR";
-	private static final String	KEY_HAND								= "HAND";
-	private static final String	KEY_HEARING								= "HEARING";
-	private static final String	KEY_HEIGHT								= "HEIGHT";
-	private static final String	KEY_HIT_LOCATION_LOOP_END				= "HIT_LOCATION_LOOP_END";
-	private static final String	KEY_HIT_LOCATION_LOOP_START				= "HIT_LOCATION_LOOP_START";
-	private static final String	KEY_HP									= "HP";
-	private static final String	KEY_HP_COLLAPSE							= "HP_COLLAPSE";
-	private static final String	KEY_HP_POINTS							= "HP_POINTS";
-	private static final String	KEY_HT									= "HT";
-	private static final String	KEY_HT_POINTS							= "HT_POINTS";
-	private static final String	KEY_ID									= "ID";
-	private static final String	KEY_IQ									= "IQ";
-	private static final String	KEY_IQ_POINTS							= "IQ_POINTS";
-	private static final String	KEY_LANGUAGES_LOOP_END					= "LANGUAGES_LOOP_END";
-	private static final String	KEY_LANGUAGES_LOOP_START				= "LANGUAGES_LOOP_START";
-	private static final String	KEY_LEVEL								= "LEVEL";
-	private static final String	KEY_MANA_CAST							= "MANA_CAST";
-	private static final String	KEY_MANA_MAINTAIN						= "MANA_MAINTAIN";
-	private static final String	KEY_MAX_LOAD							= "MAX_LOAD";
-	private static final String	KEY_MELEE_LOOP_END						= "MELEE_LOOP_END";
-	private static final String	KEY_MELEE_LOOP_START					= "MELEE_LOOP_START";
-	private static final String	KEY_MODIFIED_ON							= "MODIFIED_ON";
-	private static final String	KEY_MOVE								= "MOVE";
-	private static final String	KEY_NAME								= "NAME";
-	private static final String	KEY_NOTE								= "NOTE";
-	private static final String	KEY_NOTES								= "NOTES";
-	private static final String	KEY_NOTES_LOOP_END						= "NOTES_LOOP_END";
-	private static final String	KEY_NOTES_LOOP_START					= "NOTES_LOOP_START";
-	private static final String	KEY_ONE_HANDED_LIFT						= "ONE_HANDED_LIFT";
-	private static final String	KEY_PARRY								= "PARRY";
-	private static final String	KEY_PENALTY								= "PENALTY";
-	private static final String	KEY_PERCEPTION							= "PERCEPTION";
-	private static final String	KEY_PERCEPTION_POINTS					= "PERCEPTION_POINTS";
-	private static final String	KEY_PERKS_LOOP_END						= "PERKS_LOOP_END";
-	private static final String	KEY_PERKS_LOOP_START					= "PERKS_LOOP_START";
-	private static final String	KEY_PLAYER								= "PLAYER";
-	private static final String	KEY_POINTS								= "POINTS";
-	private static final String	KEY_PORTRAIT							= "PORTRAIT";
-	private static final String	KEY_PREFIX_DEPTH						= "DEPTHx";
-	private static final String	KEY_QTY									= "QTY";
-	private static final String	KEY_QUIRK_POINTS						= "QUIRK_POINTS";
-	private static final String	KEY_QUIRKS_LOOP_END						= "QUIRKS_LOOP_END";
-	private static final String	KEY_QUIRKS_LOOP_START					= "QUIRKS_LOOP_START";
-	private static final String	KEY_RACE								= "RACE";
-	private static final String	KEY_RACE_POINTS							= "RACE_POINTS";
-	private static final String	KEY_RANGE								= "RANGE";
-	private static final String	KEY_RANGED_LOOP_END						= "RANGED_LOOP_END";
-	private static final String	KEY_RANGED_LOOP_START					= "RANGED_LOOP_START";
-	private static final String	KEY_REACH								= "REACH";
-	private static final String	KEY_RECOIL								= "RECOIL";
-	private static final String	KEY_REELING								= "REELING";
-	private static final String	KEY_REF									= "REF";
-	private static final String	KEY_RELIGION							= "RELIGION";
-	private static final String	KEY_ROF									= "ROF";
-	private static final String	KEY_ROLL								= "ROLL";
-	private static final String	KEY_RSL									= "RSL";
-	private static final String	KEY_RUNNING_SHOVE						= "RUNNING_SHOVE";
-	private static final String	KEY_SATISFIED							= "SATISFIED";
-	private static final String	KEY_SHIFT_SLIGHTLY						= "SHIFT_SLIGHTLY";
-	private static final String	KEY_SHOTS								= "SHOTS";
-	private static final String	KEY_SHOVE								= "SHOVE";
-	private static final String	KEY_SIZE								= "SIZE";
-	private static final String	KEY_SKILL_POINTS						= "SKILL_POINTS";
-	private static final String	KEY_SKILLS_LOOP_END						= "SKILLS_LOOP_END";
-	private static final String	KEY_SKILLS_LOOP_START					= "SKILLS_LOOP_START";
-	private static final String	KEY_SKIN								= "SKIN";
-	private static final String	KEY_SL									= "SL";
-	private static final String	KEY_SPELL_POINTS						= "SPELL_POINTS";
-	private static final String	KEY_SPELLS_LOOP_END						= "SPELLS_LOOP_END";
-	private static final String	KEY_SPELLS_LOOP_START					= "SPELLS_LOOP_START";
-	private static final String	KEY_ST									= "ST";
-	private static final String	KEY_ST_POINTS							= "ST_POINTS";
-	private static final String	KEY_STATE								= "STATE";
-	private static final String	KEY_STYLE_INDENT_WARNING				= "STYLE_INDENT_WARNING";
-	private static final String	KEY_SUFFIX_PAREN						= "_PAREN";
-	private static final String	KEY_SWING								= "SWING";
-	private static final String	KEY_TASTE_SMELL							= "TASTE_SMELL";
-	private static final String	KEY_THRUST								= "THRUST";
-	private static final String	KEY_TIME_CAST							= "TIME_CAST";
-	private static final String	KEY_TIRED								= "TIRED";
-	private static final String	KEY_TITLE								= "TITLE";
-	private static final String	KEY_TL									= "TL";
-	private static final String	KEY_TOTAL_POINTS						= "TOTAL_POINTS";
-	private static final String	KEY_TOUCH								= "TOUCH";
-	private static final String	KEY_TWO_HANDED_LIFT						= "TWO_HANDED_LIFT";
-	private static final String	KEY_TYPE								= "TYPE";
-	private static final String	KEY_UNCONSCIOUS							= "UNCONSCIOUS";
-	private static final String	KEY_USAGE								= "USAGE";
-	private static final String	KEY_VISION								= "VISION";
-	private static final String	KEY_WEAPON_STRENGTH						= "STRENGTH";
-	private static final String	KEY_WEIGHT								= "WEIGHT";
-	private static final String	KEY_WEIGHT_SUMMARY						= "WEIGHT_SUMMARY";
-	private static final String	KEY_WHERE								= "WHERE";
-	private static final String	KEY_WILL								= "WILL";
-	private static final String	KEY_WILL_POINTS							= "WILL_POINTS";
+    private static final String KEY_ACCURACY                          = "ACCURACY";
+    private static final String KEY_ADVANTAGE_POINTS                  = "ADVANTAGE_POINTS";
+    private static final String KEY_ADVANTAGES_LOOP_END               = "ADVANTAGES_LOOP_END";
+    private static final String KEY_ADVANTAGES_LOOP_START             = "ADVANTAGES_LOOP_START";
+    private static final String KEY_ADVANTAGES_ONLY_LOOP_END          = "ADVANTAGES_ONLY_LOOP_END";
+    private static final String KEY_ADVANTAGES_ONLY_LOOP_START        = "ADVANTAGES_ONLY_LOOP_START";
+    private static final String KEY_AGE                               = "AGE";
+    private static final String KEY_ATTRIBUTE_POINTS                  = "ATTRIBUTE_POINTS";
+    private static final String KEY_BASIC_FP                          = "BASIC_FP";
+    private static final String KEY_BASIC_HP                          = "BASIC_HP";
+    private static final String KEY_BASIC_LIFT                        = "BASIC_LIFT";
+    private static final String KEY_BASIC_MOVE                        = "BASIC_MOVE";
+    private static final String KEY_BASIC_MOVE_POINTS                 = "BASIC_MOVE_POINTS";
+    private static final String KEY_BASIC_SPEED                       = "BASIC_SPEED";
+    private static final String KEY_BASIC_SPEED_POINTS                = "BASIC_SPEED_POINTS";
+    private static final String KEY_BEST_CURRENT_BLOCK                = "BEST_CURRENT_BLOCK";
+    private static final String KEY_BEST_CURRENT_PARRY                = "BEST_CURRENT_PARRY";
+    private static final String KEY_BIRTHDAY                          = "BIRTHDAY";
+    private static final String KEY_BLOCK                             = "BLOCK";
+    private static final String KEY_BULK                              = "BULK";
+    private static final String KEY_CAMPAIGN                          = "CAMPAIGN";
+    private static final String KEY_CARRIED_VALUE                     = "CARRIED_VALUE";
+    private static final String KEY_CARRIED_WEIGHT                    = "CARRIED_WEIGHT";
+    private static final String KEY_CARRY_ON_BACK                     = "CARRY_ON_BACK";
+    private static final String KEY_CLASS                             = "CLASS";
+    private static final String KEY_COLLEGE                           = "COLLEGE";
+    private static final String KEY_COST                              = "COST";
+    private static final String KEY_COST_SUMMARY                      = "COST_SUMMARY";
+    private static final String KEY_CREATED_ON                        = "CREATED_ON";
+    private static final String KEY_CULTURAL_FAMILIARITIES_LOOP_END   = "CULTURAL_FAMILIARITIES_LOOP_END";
+    private static final String KEY_CULTURAL_FAMILIARITIES_LOOP_START = "CULTURAL_FAMILIARITIES_LOOP_START";
+    private static final String KEY_CURRENT_DODGE                     = "CURRENT_DODGE";
+    private static final String KEY_CURRENT_MARKER                    = "CURRENT_MARKER";
+    private static final String KEY_DAMAGE                            = "DAMAGE";
+    private static final String KEY_UNMODIFIED_DAMAGE                 = "UNMODIFIED_DAMAGE";
+    private static final String KEY_DEAD                              = "DEAD";
+    private static final String KEY_DEATH_CHECK_1                     = "DEATH_CHECK_1";
+    private static final String KEY_DEATH_CHECK_2                     = "DEATH_CHECK_2";
+    private static final String KEY_DEATH_CHECK_3                     = "DEATH_CHECK_3";
+    private static final String KEY_DEATH_CHECK_4                     = "DEATH_CHECK_4";
+    private static final String KEY_DESCRIPTION                       = "DESCRIPTION";
+    private static final String KEY_DESCRIPTION_MODIFIER_NOTES        = "DESCRIPTION_MODIFIER_NOTES";
+    private static final String KEY_DESCRIPTION_NOTES                 = "DESCRIPTION_NOTES";
+    private static final String KEY_DESCRIPTION_PRIMARY               = "DESCRIPTION_PRIMARY";
+    private static final String KEY_DIFFICULTY                        = "DIFFICULTY";
+    private static final String KEY_DISADVANTAGE_POINTS               = "DISADVANTAGE_POINTS";
+    private static final String KEY_DISADVANTAGES_LOOP_END            = "DISADVANTAGES_LOOP_END";
+    private static final String KEY_DISADVANTAGES_LOOP_START          = "DISADVANTAGES_LOOP_START";
+    private static final String KEY_DODGE                             = "DODGE";
+    private static final String KEY_DR                                = "DR";
+    private static final String KEY_DURATION                          = "DURATION";
+    private static final String KEY_DX                                = "DX";
+    private static final String KEY_DX_POINTS                         = "DX_POINTS";
+    private static final String KEY_EARNED_POINTS                     = "EARNED_POINTS";
+    private static final String KEY_ENCODING_OFF                      = "ENCODING_OFF";
+    private static final String KEY_ENCUMBRANCE_LOOP_END              = "ENCUMBRANCE_LOOP_END";
+    private static final String KEY_ENCUMBRANCE_LOOP_START            = "ENCUMBRANCE_LOOP_START";
+    private static final String KEY_EQUIPMENT_LOOP_END                = "EQUIPMENT_LOOP_END";
+    private static final String KEY_EQUIPMENT_LOOP_START              = "EQUIPMENT_LOOP_START";
+    private static final String KEY_EYES                              = "EYES";
+    private static final String KEY_FP                                = "FP";
+    private static final String KEY_FP_COLLAPSE                       = "FP_COLLAPSE";
+    private static final String KEY_FP_POINTS                         = "FP_POINTS";
+    private static final String KEY_FRIGHT_CHECK                      = "FRIGHT_CHECK";
+    private static final String KEY_GENDER                            = "GENDER";
+    private static final String KEY_GENERAL_DR                        = "GENERAL_DR";
+    private static final String KEY_HAIR                              = "HAIR";
+    private static final String KEY_HAND                              = "HAND";
+    private static final String KEY_HEARING                           = "HEARING";
+    private static final String KEY_HEIGHT                            = "HEIGHT";
+    private static final String KEY_HIT_LOCATION_LOOP_END             = "HIT_LOCATION_LOOP_END";
+    private static final String KEY_HIT_LOCATION_LOOP_START           = "HIT_LOCATION_LOOP_START";
+    private static final String KEY_HP                                = "HP";
+    private static final String KEY_HP_COLLAPSE                       = "HP_COLLAPSE";
+    private static final String KEY_HP_POINTS                         = "HP_POINTS";
+    private static final String KEY_HT                                = "HT";
+    private static final String KEY_HT_POINTS                         = "HT_POINTS";
+    private static final String KEY_ID                                = "ID";
+    private static final String KEY_IQ                                = "IQ";
+    private static final String KEY_IQ_POINTS                         = "IQ_POINTS";
+    private static final String KEY_LANGUAGES_LOOP_END                = "LANGUAGES_LOOP_END";
+    private static final String KEY_LANGUAGES_LOOP_START              = "LANGUAGES_LOOP_START";
+    private static final String KEY_LEVEL                             = "LEVEL";
+    private static final String KEY_MANA_CAST                         = "MANA_CAST";
+    private static final String KEY_MANA_MAINTAIN                     = "MANA_MAINTAIN";
+    private static final String KEY_MAX_LOAD                          = "MAX_LOAD";
+    private static final String KEY_MELEE_LOOP_END                    = "MELEE_LOOP_END";
+    private static final String KEY_MELEE_LOOP_START                  = "MELEE_LOOP_START";
+    private static final String KEY_MODIFIED_ON                       = "MODIFIED_ON";
+    private static final String KEY_MOVE                              = "MOVE";
+    private static final String KEY_NAME                              = "NAME";
+    private static final String KEY_NOTE                              = "NOTE";
+    private static final String KEY_NOTES                             = "NOTES";
+    private static final String KEY_NOTES_LOOP_END                    = "NOTES_LOOP_END";
+    private static final String KEY_NOTES_LOOP_START                  = "NOTES_LOOP_START";
+    private static final String KEY_ONE_HANDED_LIFT                   = "ONE_HANDED_LIFT";
+    private static final String KEY_PARRY                             = "PARRY";
+    private static final String KEY_PENALTY                           = "PENALTY";
+    private static final String KEY_PERCEPTION                        = "PERCEPTION";
+    private static final String KEY_PERCEPTION_POINTS                 = "PERCEPTION_POINTS";
+    private static final String KEY_PERKS_LOOP_END                    = "PERKS_LOOP_END";
+    private static final String KEY_PERKS_LOOP_START                  = "PERKS_LOOP_START";
+    private static final String KEY_PLAYER                            = "PLAYER";
+    private static final String KEY_POINTS                            = "POINTS";
+    private static final String KEY_PORTRAIT                          = "PORTRAIT";
+    private static final String KEY_PREFIX_DEPTH                      = "DEPTHx";
+    private static final String KEY_QTY                               = "QTY";
+    private static final String KEY_QUIRK_POINTS                      = "QUIRK_POINTS";
+    private static final String KEY_QUIRKS_LOOP_END                   = "QUIRKS_LOOP_END";
+    private static final String KEY_QUIRKS_LOOP_START                 = "QUIRKS_LOOP_START";
+    private static final String KEY_RACE                              = "RACE";
+    private static final String KEY_RACE_POINTS                       = "RACE_POINTS";
+    private static final String KEY_RANGE                             = "RANGE";
+    private static final String KEY_RANGED_LOOP_END                   = "RANGED_LOOP_END";
+    private static final String KEY_RANGED_LOOP_START                 = "RANGED_LOOP_START";
+    private static final String KEY_REACH                             = "REACH";
+    private static final String KEY_RECOIL                            = "RECOIL";
+    private static final String KEY_REELING                           = "REELING";
+    private static final String KEY_REF                               = "REF";
+    private static final String KEY_RELIGION                          = "RELIGION";
+    private static final String KEY_ROF                               = "ROF";
+    private static final String KEY_ROLL                              = "ROLL";
+    private static final String KEY_RSL                               = "RSL";
+    private static final String KEY_RUNNING_SHOVE                     = "RUNNING_SHOVE";
+    private static final String KEY_SATISFIED                         = "SATISFIED";
+    private static final String KEY_SHIFT_SLIGHTLY                    = "SHIFT_SLIGHTLY";
+    private static final String KEY_SHOTS                             = "SHOTS";
+    private static final String KEY_SHOVE                             = "SHOVE";
+    private static final String KEY_SIZE                              = "SIZE";
+    private static final String KEY_SKILL_POINTS                      = "SKILL_POINTS";
+    private static final String KEY_SKILLS_LOOP_END                   = "SKILLS_LOOP_END";
+    private static final String KEY_SKILLS_LOOP_START                 = "SKILLS_LOOP_START";
+    private static final String KEY_SKIN                              = "SKIN";
+    private static final String KEY_SL                                = "SL";
+    private static final String KEY_SPELL_POINTS                      = "SPELL_POINTS";
+    private static final String KEY_SPELLS_LOOP_END                   = "SPELLS_LOOP_END";
+    private static final String KEY_SPELLS_LOOP_START                 = "SPELLS_LOOP_START";
+    private static final String KEY_ST                                = "ST";
+    private static final String KEY_ST_POINTS                         = "ST_POINTS";
+    private static final String KEY_STATE                             = "STATE";
+    private static final String KEY_STYLE_INDENT_WARNING              = "STYLE_INDENT_WARNING";
+    private static final String KEY_SUFFIX_PAREN                      = "_PAREN";
+    private static final String KEY_SWING                             = "SWING";
+    private static final String KEY_TASTE_SMELL                       = "TASTE_SMELL";
+    private static final String KEY_THRUST                            = "THRUST";
+    private static final String KEY_TIME_CAST                         = "TIME_CAST";
+    private static final String KEY_TIRED                             = "TIRED";
+    private static final String KEY_TITLE                             = "TITLE";
+    private static final String KEY_TL                                = "TL";
+    private static final String KEY_TOTAL_POINTS                      = "TOTAL_POINTS";
+    private static final String KEY_TOUCH                             = "TOUCH";
+    private static final String KEY_TWO_HANDED_LIFT                   = "TWO_HANDED_LIFT";
+    private static final String KEY_TYPE                              = "TYPE";
+    private static final String KEY_UNCONSCIOUS                       = "UNCONSCIOUS";
+    private static final String KEY_USAGE                             = "USAGE";
+    private static final String KEY_VISION                            = "VISION";
+    private static final String KEY_WEAPON_STRENGTH                   = "STRENGTH";
+    private static final String KEY_WEIGHT                            = "WEIGHT";
+    private static final String KEY_WEIGHT_SUMMARY                    = "WEIGHT_SUMMARY";
+    private static final String KEY_WHERE                             = "WHERE";
+    private static final String KEY_WILL                              = "WILL";
+    private static final String KEY_WILL_POINTS                       = "WILL_POINTS";
 
-	private CharacterSheet		mSheet;
-	private boolean				mEncodeText								= true;
+    private CharacterSheet      mSheet;
+    private boolean             mEncodeText                           = true;
 
-	public static File resolveTextTemplate(File template) {
-		if (template == null || !template.isFile() || !template.canRead()) {
-			template = new File(OutputPreferences.getTextTemplate());
-			if (!template.isFile() || !template.canRead()) {
-				template = new File(OutputPreferences.getDefaultTextTemplate());
-			}
-		}
-		return template;
-	}
+    public static File resolveTextTemplate(File template) {
+        if (template == null || !template.isFile() || !template.canRead()) {
+            template = new File(OutputPreferences.getTextTemplate());
+            if (!template.isFile() || !template.canRead()) {
+                template = new File(OutputPreferences.getDefaultTextTemplate());
+            }
+        }
+        return template;
+    }
 
-	public TextTemplate(CharacterSheet sheet) {
-		mSheet = sheet;
-	}
+    public TextTemplate(CharacterSheet sheet) {
+        mSheet = sheet;
+    }
 
-	/**
-	 * @param exportTo The file to save to.
-	 * @param template The template file to use.
-	 * @return <code>true</code> on success.
-	 */
-	public boolean export(File exportTo, File template) {
-		try {
-			char[] buffer = new char[1];
-			boolean lookForKeyMarker = true;
-			StringBuilder keyBuffer = new StringBuilder();
-			template = resolveTextTemplate(template);
-			try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(template)))) {
-				try (BufferedWriter out = new BufferedWriter(new FileWriter(exportTo))) {
-					while (in.read(buffer) != -1) {
-						char ch = buffer[0];
-						if (lookForKeyMarker) {
-							if (ch == '@') {
-								lookForKeyMarker = false;
-								in.mark(1);
-							} else {
-								out.append(ch);
-							}
-						} else {
-							if (ch == '_' || Character.isLetterOrDigit(ch)) {
-								keyBuffer.append(ch);
-								in.mark(1);
-							} else {
-								in.reset();
-								emitKey(in, out, keyBuffer.toString(), exportTo);
-								keyBuffer.setLength(0);
-								lookForKeyMarker = true;
-							}
-						}
-					}
-					if (keyBuffer.length() != 0) {
-						emitKey(in, out, keyBuffer.toString(), exportTo);
-					}
-				}
-			}
-			return true;
-		} catch (Exception exception) {
-			return false;
-		}
-	}
+    /**
+     * @param exportTo The file to save to.
+     * @param template The template file to use.
+     * @return <code>true</code> on success.
+     */
+    public boolean export(File exportTo, File template) {
+        try {
+            char[] buffer = new char[1];
+            boolean lookForKeyMarker = true;
+            StringBuilder keyBuffer = new StringBuilder();
+            template = resolveTextTemplate(template);
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(template)))) {
+                try (BufferedWriter out = new BufferedWriter(new FileWriter(exportTo))) {
+                    while (in.read(buffer) != -1) {
+                        char ch = buffer[0];
+                        if (lookForKeyMarker) {
+                            if (ch == '@') {
+                                lookForKeyMarker = false;
+                                in.mark(1);
+                            } else {
+                                out.append(ch);
+                            }
+                        } else {
+                            if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                                keyBuffer.append(ch);
+                                in.mark(1);
+                            } else {
+                                in.reset();
+                                emitKey(in, out, keyBuffer.toString(), exportTo);
+                                keyBuffer.setLength(0);
+                                lookForKeyMarker = true;
+                            }
+                        }
+                    }
+                    if (keyBuffer.length() != 0) {
+                        emitKey(in, out, keyBuffer.toString(), exportTo);
+                    }
+                }
+            }
+            return true;
+        } catch (Exception exception) {
+            return false;
+        }
+    }
 
-	private void emitKey(BufferedReader in, BufferedWriter out, String key, File base) throws IOException {
-		GURPSCharacter gurpsCharacter = mSheet.getCharacter();
-		Profile description = gurpsCharacter.getDescription();
-		switch (key) {
-			case KEY_ENCODING_OFF:
-				mEncodeText = false;
-				break;
-			case KEY_PORTRAIT:
-				String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base.getName(), false), FileType.PNG_EXTENSION);
-				StdImage.writePNG(new File(base.getParentFile(), fileName), description.getPortrait().getRetina(), 150);
-				writeEncodedData(out, fileName);
-				break;
-			case KEY_NAME:
-				writeEncodedText(out, description.getName());
-				break;
-			case KEY_TITLE:
-				writeEncodedText(out, description.getTitle());
-				break;
-			case KEY_RELIGION:
-				writeEncodedText(out, description.getReligion());
-				break;
-			case KEY_PLAYER:
-				writeEncodedText(out, description.getPlayerName());
-				break;
-			case KEY_CAMPAIGN:
-				writeEncodedText(out, description.getCampaign());
-				break;
-			case KEY_CREATED_ON:
-				Date date = new Date(gurpsCharacter.getCreatedOn());
-				writeEncodedText(out, DateFormat.getDateInstance(DateFormat.MEDIUM).format(date));
-				break;
-			case KEY_MODIFIED_ON:
-				writeEncodedText(out, gurpsCharacter.getLastModified());
-				break;
-			case KEY_TOTAL_POINTS:
-				writeEncodedText(out, Numbers.format(SheetPreferences.shouldIncludeUnspentPointsInTotalPointDisplay() ? gurpsCharacter.getTotalPoints() : gurpsCharacter.getSpentPoints()));
-				break;
-			case KEY_ATTRIBUTE_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributePoints()));
-				break;
-			case KEY_ST_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getStrengthPoints()));
-				break;
-			case KEY_DX_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getDexterityPoints()));
-				break;
-			case KEY_IQ_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getIntelligencePoints()));
-				break;
-			case KEY_HT_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getHealthPoints()));
-				break;
-			case KEY_PERCEPTION_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getPerceptionPoints()));
-				break;
-			case KEY_WILL_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getWillPoints()));
-				break;
-			case KEY_FP_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getFatiguePointPoints()));
-				break;
-			case KEY_HP_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getHitPointPoints()));
-				break;
-			case KEY_BASIC_SPEED_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getBasicSpeedPoints()));
-				break;
-			case KEY_BASIC_MOVE_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getBasicMovePoints()));
-				break;
-			case KEY_ADVANTAGE_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getAdvantagePoints()));
-				break;
-			case KEY_DISADVANTAGE_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getDisadvantagePoints()));
-				break;
-			case KEY_QUIRK_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getQuirkPoints()));
-				break;
-			case KEY_SKILL_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getSkillPoints()));
-				break;
-			case KEY_SPELL_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getSpellPoints()));
-				break;
-			case KEY_RACE_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getRacePoints()));
-				break;
-			case KEY_EARNED_POINTS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getEarnedPoints()));
-				break;
-			case KEY_RACE:
-				writeEncodedText(out, description.getRace());
-				break;
-			case KEY_HEIGHT:
-				writeEncodedText(out, description.getHeight().toString());
-				break;
-			case KEY_HAIR:
-				writeEncodedText(out, description.getHair());
-				break;
-			case KEY_GENDER:
-				writeEncodedText(out, description.getGender());
-				break;
-			case KEY_WEIGHT:
-				writeEncodedText(out, description.getWeight().toString());
-				break;
-			case KEY_EYES:
-				writeEncodedText(out, description.getEyeColor());
-				break;
-			case KEY_AGE:
-				writeEncodedText(out, Numbers.format(description.getAge()));
-				break;
-			case KEY_SIZE:
-				writeEncodedText(out, Numbers.formatWithForcedSign(description.getSizeModifier()));
-				break;
-			case KEY_SKIN:
-				writeEncodedText(out, description.getSkinColor());
-				break;
-			case KEY_BIRTHDAY:
-				writeEncodedText(out, description.getBirthday());
-				break;
-			case KEY_TL:
-				writeEncodedText(out, description.getTechLevel());
-				break;
-			case KEY_HAND:
-				writeEncodedText(out, description.getHandedness());
-				break;
-			case KEY_ST:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getStrength()));
-				break;
-			case KEY_DX:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getDexterity()));
-				break;
-			case KEY_IQ:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getIntelligence()));
-				break;
-			case KEY_HT:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getHealth()));
-				break;
-			case KEY_WILL:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getWill()));
-				break;
-			case KEY_FRIGHT_CHECK:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getFrightCheck()));
-				break;
-			case KEY_BASIC_SPEED:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getBasicSpeed()));
-				break;
-			case KEY_BASIC_MOVE:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getBasicMove()));
-				break;
-			case KEY_PERCEPTION:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getPerception()));
-				break;
-			case KEY_VISION:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getVision()));
-				break;
-			case KEY_HEARING:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getHearing()));
-				break;
-			case KEY_TASTE_SMELL:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getTasteAndSmell()));
-				break;
-			case KEY_TOUCH:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getTouch()));
-				break;
-			case KEY_THRUST:
-				writeEncodedText(out, gurpsCharacter.getThrust().toString());
-				break;
-			case KEY_SWING:
-				writeEncodedText(out, gurpsCharacter.getSwing().toString());
-				break;
-			case KEY_GENERAL_DR:
-				writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getValueForID(Armor.ID_TORSO_DR)).intValue()));
-				break;
-			case KEY_CURRENT_DODGE:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getDodge(gurpsCharacter.getEncumbranceLevel())));
-				break;
-			case KEY_BEST_CURRENT_PARRY:
-				writeBestWeaponDefense(out, (weapon) -> weapon.getResolvedParry());
-				break;
-			case KEY_BEST_CURRENT_BLOCK:
-				writeBestWeaponDefense(out, (weapon) -> weapon.getResolvedBlock());
-				break;
-			case KEY_FP:
-				writeEncodedText(out, gurpsCharacter.getCurrentFatiguePoints());
-				break;
-			case KEY_BASIC_FP:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getFatiguePoints()));
-				break;
-			case KEY_TIRED:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getTiredFatiguePoints()));
-				break;
-			case KEY_FP_COLLAPSE:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getUnconsciousChecksFatiguePoints()));
-				break;
-			case KEY_UNCONSCIOUS:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getUnconsciousFatiguePoints()));
-				break;
-			case KEY_HP:
-				writeEncodedText(out, gurpsCharacter.getCurrentHitPoints());
-				break;
-			case KEY_BASIC_HP:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getHitPoints()));
-				break;
-			case KEY_REELING:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getReelingHitPoints()));
-				break;
-			case KEY_HP_COLLAPSE:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getUnconsciousChecksHitPoints()));
-				break;
-			case KEY_DEATH_CHECK_1:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getDeathCheck1HitPoints()));
-				break;
-			case KEY_DEATH_CHECK_2:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getDeathCheck2HitPoints()));
-				break;
-			case KEY_DEATH_CHECK_3:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getDeathCheck3HitPoints()));
-				break;
-			case KEY_DEATH_CHECK_4:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getDeathCheck4HitPoints()));
-				break;
-			case KEY_DEAD:
-				writeEncodedText(out, Numbers.format(gurpsCharacter.getDeadHitPoints()));
-				break;
-			case KEY_BASIC_LIFT:
-				writeEncodedText(out, gurpsCharacter.getBasicLift().toString());
-				break;
-			case KEY_ONE_HANDED_LIFT:
-				writeEncodedText(out, gurpsCharacter.getOneHandedLift().toString());
-				break;
-			case KEY_TWO_HANDED_LIFT:
-				writeEncodedText(out, gurpsCharacter.getTwoHandedLift().toString());
-				break;
-			case KEY_SHOVE:
-				writeEncodedText(out, gurpsCharacter.getShoveAndKnockOver().toString());
-				break;
-			case KEY_RUNNING_SHOVE:
-				writeEncodedText(out, gurpsCharacter.getRunningShoveAndKnockOver().toString());
-				break;
-			case KEY_CARRY_ON_BACK:
-				writeEncodedText(out, gurpsCharacter.getCarryOnBack().toString());
-				break;
-			case KEY_SHIFT_SLIGHTLY:
-				writeEncodedText(out, gurpsCharacter.getShiftSlightly().toString());
-				break;
-			case KEY_CARRIED_WEIGHT:
-				writeEncodedText(out, gurpsCharacter.getWeightCarried().toString());
-				break;
-			case KEY_CARRIED_VALUE:
-				writeEncodedText(out, "$" + Numbers.format(gurpsCharacter.getWealthCarried()));
-				break;
-			case KEY_NOTES:
-				StringBuilder buffer = new StringBuilder();
-				for (Note note : gurpsCharacter.getNoteIterator()) {
-					if (buffer.length() > 0) {
-						buffer.append("\n\n");
-					}
-					buffer.append(note.getDescription());
-				}
-				writeEncodedText(out, buffer.toString());
-				break;
-			default:
-				if (key.startsWith(KEY_ENCUMBRANCE_LOOP_START)) {
-					processEncumbranceLoop(out, extractUpToMarker(in, KEY_ENCUMBRANCE_LOOP_END));
-				} else if (key.startsWith(KEY_HIT_LOCATION_LOOP_START)) {
-					processHitLocationLoop(out, extractUpToMarker(in, KEY_HIT_LOCATION_LOOP_END));
-				} else if (key.startsWith(KEY_ADVANTAGES_LOOP_START)) {
-					processAdvantagesLoop(out, extractUpToMarker(in, KEY_ADVANTAGES_LOOP_END), AdvantagesLoopType.ALL);
-				} else if (key.startsWith(KEY_ADVANTAGES_ONLY_LOOP_START)) {
-					processAdvantagesLoop(out, extractUpToMarker(in, KEY_ADVANTAGES_ONLY_LOOP_END), AdvantagesLoopType.ADS);
-				} else if (key.startsWith(KEY_DISADVANTAGES_LOOP_START)) {
-					processAdvantagesLoop(out, extractUpToMarker(in, KEY_DISADVANTAGES_LOOP_END), AdvantagesLoopType.DISADS);
-				} else if (key.startsWith(KEY_QUIRKS_LOOP_START)) {
-					processAdvantagesLoop(out, extractUpToMarker(in, KEY_QUIRKS_LOOP_END), AdvantagesLoopType.QUIRKS);
-				} else if (key.startsWith(KEY_PERKS_LOOP_START)) {
-					processAdvantagesLoop(out, extractUpToMarker(in, KEY_PERKS_LOOP_END), AdvantagesLoopType.PERKS);
-				} else if (key.startsWith(KEY_LANGUAGES_LOOP_START)) {
-					processAdvantagesLoop(out, extractUpToMarker(in, KEY_LANGUAGES_LOOP_END), AdvantagesLoopType.LANGUAGES);
-				} else if (key.startsWith(KEY_CULTURAL_FAMILIARITIES_LOOP_START)) {
-					processAdvantagesLoop(out, extractUpToMarker(in, KEY_CULTURAL_FAMILIARITIES_LOOP_END), AdvantagesLoopType.CULTURAL_FAMILIARITIES);
-				} else if (key.startsWith(KEY_SKILLS_LOOP_START)) {
-					processSkillsLoop(out, extractUpToMarker(in, KEY_SKILLS_LOOP_END));
-				} else if (key.startsWith(KEY_SPELLS_LOOP_START)) {
-					processSpellsLoop(out, extractUpToMarker(in, KEY_SPELLS_LOOP_END));
-				} else if (key.startsWith(KEY_MELEE_LOOP_START)) {
-					processMeleeLoop(out, extractUpToMarker(in, KEY_MELEE_LOOP_END));
-				} else if (key.startsWith(KEY_RANGED_LOOP_START)) {
-					processRangedLoop(out, extractUpToMarker(in, KEY_RANGED_LOOP_END));
-				} else if (key.startsWith(KEY_EQUIPMENT_LOOP_START)) {
-					processEquipmentLoop(out, extractUpToMarker(in, KEY_EQUIPMENT_LOOP_END));
-				} else if (key.startsWith(KEY_NOTES_LOOP_START)) {
-					processNotesLoop(out, extractUpToMarker(in, KEY_NOTES_LOOP_END));
-				} else {
-					writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-				}
-				break;
-		}
-	}
+    private void emitKey(BufferedReader in, BufferedWriter out, String key, File base) throws IOException {
+        GURPSCharacter gurpsCharacter = mSheet.getCharacter();
+        Profile description = gurpsCharacter.getDescription();
+        switch (key) {
+            case KEY_ENCODING_OFF:
+                mEncodeText = false;
+                break;
+            case KEY_PORTRAIT:
+                String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base.getName(), false), FileType.PNG_EXTENSION);
+                StdImage.writePNG(new File(base.getParentFile(), fileName), description.getPortrait().getRetina(), 150);
+                writeEncodedData(out, fileName);
+                break;
+            case KEY_NAME:
+                writeEncodedText(out, description.getName());
+                break;
+            case KEY_TITLE:
+                writeEncodedText(out, description.getTitle());
+                break;
+            case KEY_RELIGION:
+                writeEncodedText(out, description.getReligion());
+                break;
+            case KEY_PLAYER:
+                writeEncodedText(out, description.getPlayerName());
+                break;
+            case KEY_CAMPAIGN:
+                writeEncodedText(out, description.getCampaign());
+                break;
+            case KEY_CREATED_ON:
+                Date date = new Date(gurpsCharacter.getCreatedOn());
+                writeEncodedText(out, DateFormat.getDateInstance(DateFormat.MEDIUM).format(date));
+                break;
+            case KEY_MODIFIED_ON:
+                writeEncodedText(out, gurpsCharacter.getLastModified());
+                break;
+            case KEY_TOTAL_POINTS:
+                writeEncodedText(out, Numbers.format(SheetPreferences.shouldIncludeUnspentPointsInTotalPointDisplay() ? gurpsCharacter.getTotalPoints() : gurpsCharacter.getSpentPoints()));
+                break;
+            case KEY_ATTRIBUTE_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributePoints()));
+                break;
+            case KEY_ST_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getStrengthPoints()));
+                break;
+            case KEY_DX_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getDexterityPoints()));
+                break;
+            case KEY_IQ_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getIntelligencePoints()));
+                break;
+            case KEY_HT_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getHealthPoints()));
+                break;
+            case KEY_PERCEPTION_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getPerceptionPoints()));
+                break;
+            case KEY_WILL_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getWillPoints()));
+                break;
+            case KEY_FP_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getFatiguePointPoints()));
+                break;
+            case KEY_HP_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getHitPointPoints()));
+                break;
+            case KEY_BASIC_SPEED_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getBasicSpeedPoints()));
+                break;
+            case KEY_BASIC_MOVE_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getBasicMovePoints()));
+                break;
+            case KEY_ADVANTAGE_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAdvantagePoints()));
+                break;
+            case KEY_DISADVANTAGE_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getDisadvantagePoints()));
+                break;
+            case KEY_QUIRK_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getQuirkPoints()));
+                break;
+            case KEY_SKILL_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getSkillPoints()));
+                break;
+            case KEY_SPELL_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getSpellPoints()));
+                break;
+            case KEY_RACE_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getRacePoints()));
+                break;
+            case KEY_EARNED_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getEarnedPoints()));
+                break;
+            case KEY_RACE:
+                writeEncodedText(out, description.getRace());
+                break;
+            case KEY_HEIGHT:
+                writeEncodedText(out, description.getHeight().toString());
+                break;
+            case KEY_HAIR:
+                writeEncodedText(out, description.getHair());
+                break;
+            case KEY_GENDER:
+                writeEncodedText(out, description.getGender());
+                break;
+            case KEY_WEIGHT:
+                writeEncodedText(out, description.getWeight().toString());
+                break;
+            case KEY_EYES:
+                writeEncodedText(out, description.getEyeColor());
+                break;
+            case KEY_AGE:
+                writeEncodedText(out, Numbers.format(description.getAge()));
+                break;
+            case KEY_SIZE:
+                writeEncodedText(out, Numbers.formatWithForcedSign(description.getSizeModifier()));
+                break;
+            case KEY_SKIN:
+                writeEncodedText(out, description.getSkinColor());
+                break;
+            case KEY_BIRTHDAY:
+                writeEncodedText(out, description.getBirthday());
+                break;
+            case KEY_TL:
+                writeEncodedText(out, description.getTechLevel());
+                break;
+            case KEY_HAND:
+                writeEncodedText(out, description.getHandedness());
+                break;
+            case KEY_ST:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getStrength()));
+                break;
+            case KEY_DX:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getDexterity()));
+                break;
+            case KEY_IQ:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getIntelligence()));
+                break;
+            case KEY_HT:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getHealth()));
+                break;
+            case KEY_WILL:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getWill()));
+                break;
+            case KEY_FRIGHT_CHECK:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getFrightCheck()));
+                break;
+            case KEY_BASIC_SPEED:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getBasicSpeed()));
+                break;
+            case KEY_BASIC_MOVE:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getBasicMove()));
+                break;
+            case KEY_PERCEPTION:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getPerception()));
+                break;
+            case KEY_VISION:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getVision()));
+                break;
+            case KEY_HEARING:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getHearing()));
+                break;
+            case KEY_TASTE_SMELL:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getTasteAndSmell()));
+                break;
+            case KEY_TOUCH:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getTouch()));
+                break;
+            case KEY_THRUST:
+                writeEncodedText(out, gurpsCharacter.getThrust().toString());
+                break;
+            case KEY_SWING:
+                writeEncodedText(out, gurpsCharacter.getSwing().toString());
+                break;
+            case KEY_GENERAL_DR:
+                writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getValueForID(Armor.ID_TORSO_DR)).intValue()));
+                break;
+            case KEY_CURRENT_DODGE:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getDodge(gurpsCharacter.getEncumbranceLevel())));
+                break;
+            case KEY_BEST_CURRENT_PARRY:
+                writeBestWeaponDefense(out, (weapon) -> weapon.getResolvedParry());
+                break;
+            case KEY_BEST_CURRENT_BLOCK:
+                writeBestWeaponDefense(out, (weapon) -> weapon.getResolvedBlock());
+                break;
+            case KEY_FP:
+                writeEncodedText(out, gurpsCharacter.getCurrentFatiguePoints());
+                break;
+            case KEY_BASIC_FP:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getFatiguePoints()));
+                break;
+            case KEY_TIRED:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getTiredFatiguePoints()));
+                break;
+            case KEY_FP_COLLAPSE:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getUnconsciousChecksFatiguePoints()));
+                break;
+            case KEY_UNCONSCIOUS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getUnconsciousFatiguePoints()));
+                break;
+            case KEY_HP:
+                writeEncodedText(out, gurpsCharacter.getCurrentHitPoints());
+                break;
+            case KEY_BASIC_HP:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getHitPoints()));
+                break;
+            case KEY_REELING:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getReelingHitPoints()));
+                break;
+            case KEY_HP_COLLAPSE:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getUnconsciousChecksHitPoints()));
+                break;
+            case KEY_DEATH_CHECK_1:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getDeathCheck1HitPoints()));
+                break;
+            case KEY_DEATH_CHECK_2:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getDeathCheck2HitPoints()));
+                break;
+            case KEY_DEATH_CHECK_3:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getDeathCheck3HitPoints()));
+                break;
+            case KEY_DEATH_CHECK_4:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getDeathCheck4HitPoints()));
+                break;
+            case KEY_DEAD:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getDeadHitPoints()));
+                break;
+            case KEY_BASIC_LIFT:
+                writeEncodedText(out, gurpsCharacter.getBasicLift().toString());
+                break;
+            case KEY_ONE_HANDED_LIFT:
+                writeEncodedText(out, gurpsCharacter.getOneHandedLift().toString());
+                break;
+            case KEY_TWO_HANDED_LIFT:
+                writeEncodedText(out, gurpsCharacter.getTwoHandedLift().toString());
+                break;
+            case KEY_SHOVE:
+                writeEncodedText(out, gurpsCharacter.getShoveAndKnockOver().toString());
+                break;
+            case KEY_RUNNING_SHOVE:
+                writeEncodedText(out, gurpsCharacter.getRunningShoveAndKnockOver().toString());
+                break;
+            case KEY_CARRY_ON_BACK:
+                writeEncodedText(out, gurpsCharacter.getCarryOnBack().toString());
+                break;
+            case KEY_SHIFT_SLIGHTLY:
+                writeEncodedText(out, gurpsCharacter.getShiftSlightly().toString());
+                break;
+            case KEY_CARRIED_WEIGHT:
+                writeEncodedText(out, gurpsCharacter.getWeightCarried().toString());
+                break;
+            case KEY_CARRIED_VALUE:
+                writeEncodedText(out, "$" + Numbers.format(gurpsCharacter.getWealthCarried()));
+                break;
+            case KEY_NOTES:
+                StringBuilder buffer = new StringBuilder();
+                for (Note note : gurpsCharacter.getNoteIterator()) {
+                    if (buffer.length() > 0) {
+                        buffer.append("\n\n");
+                    }
+                    buffer.append(note.getDescription());
+                }
+                writeEncodedText(out, buffer.toString());
+                break;
+            default:
+                if (key.startsWith(KEY_ENCUMBRANCE_LOOP_START)) {
+                    processEncumbranceLoop(out, extractUpToMarker(in, KEY_ENCUMBRANCE_LOOP_END));
+                } else if (key.startsWith(KEY_HIT_LOCATION_LOOP_START)) {
+                    processHitLocationLoop(out, extractUpToMarker(in, KEY_HIT_LOCATION_LOOP_END));
+                } else if (key.startsWith(KEY_ADVANTAGES_LOOP_START)) {
+                    processAdvantagesLoop(out, extractUpToMarker(in, KEY_ADVANTAGES_LOOP_END), AdvantagesLoopType.ALL);
+                } else if (key.startsWith(KEY_ADVANTAGES_ONLY_LOOP_START)) {
+                    processAdvantagesLoop(out, extractUpToMarker(in, KEY_ADVANTAGES_ONLY_LOOP_END), AdvantagesLoopType.ADS);
+                } else if (key.startsWith(KEY_DISADVANTAGES_LOOP_START)) {
+                    processAdvantagesLoop(out, extractUpToMarker(in, KEY_DISADVANTAGES_LOOP_END), AdvantagesLoopType.DISADS);
+                } else if (key.startsWith(KEY_QUIRKS_LOOP_START)) {
+                    processAdvantagesLoop(out, extractUpToMarker(in, KEY_QUIRKS_LOOP_END), AdvantagesLoopType.QUIRKS);
+                } else if (key.startsWith(KEY_PERKS_LOOP_START)) {
+                    processAdvantagesLoop(out, extractUpToMarker(in, KEY_PERKS_LOOP_END), AdvantagesLoopType.PERKS);
+                } else if (key.startsWith(KEY_LANGUAGES_LOOP_START)) {
+                    processAdvantagesLoop(out, extractUpToMarker(in, KEY_LANGUAGES_LOOP_END), AdvantagesLoopType.LANGUAGES);
+                } else if (key.startsWith(KEY_CULTURAL_FAMILIARITIES_LOOP_START)) {
+                    processAdvantagesLoop(out, extractUpToMarker(in, KEY_CULTURAL_FAMILIARITIES_LOOP_END), AdvantagesLoopType.CULTURAL_FAMILIARITIES);
+                } else if (key.startsWith(KEY_SKILLS_LOOP_START)) {
+                    processSkillsLoop(out, extractUpToMarker(in, KEY_SKILLS_LOOP_END));
+                } else if (key.startsWith(KEY_SPELLS_LOOP_START)) {
+                    processSpellsLoop(out, extractUpToMarker(in, KEY_SPELLS_LOOP_END));
+                } else if (key.startsWith(KEY_MELEE_LOOP_START)) {
+                    processMeleeLoop(out, extractUpToMarker(in, KEY_MELEE_LOOP_END));
+                } else if (key.startsWith(KEY_RANGED_LOOP_START)) {
+                    processRangedLoop(out, extractUpToMarker(in, KEY_RANGED_LOOP_END));
+                } else if (key.startsWith(KEY_EQUIPMENT_LOOP_START)) {
+                    processEquipmentLoop(out, extractUpToMarker(in, KEY_EQUIPMENT_LOOP_END));
+                } else if (key.startsWith(KEY_NOTES_LOOP_START)) {
+                    processNotesLoop(out, extractUpToMarker(in, KEY_NOTES_LOOP_END));
+                } else {
+                    writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                }
+                break;
+        }
+    }
 
-	private void writeBestWeaponDefense(BufferedWriter out, Function<MeleeWeaponStats, String> resolver) throws IOException {
-		String best = "-";
-		int bestValue = Integer.MIN_VALUE;
-		for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
-			MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
-			String result = resolver.apply(weapon).trim();
-			if (result.length() > 0 && !"No".equals(result)) {
-				int value = Numbers.extractInteger(result, 0, false);
-				if (value > bestValue) {
-					bestValue = value;
-					best = result;
-				}
-			}
-		}
-		writeEncodedText(out, best);
-	}
+    private void writeBestWeaponDefense(BufferedWriter out, Function<MeleeWeaponStats, String> resolver) throws IOException {
+        String best = "-";
+        int bestValue = Integer.MIN_VALUE;
+        for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
+            MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
+            String result = resolver.apply(weapon).trim();
+            if (result.length() > 0 && !"No".equals(result)) {
+                int value = Numbers.extractInteger(result, 0, false);
+                if (value > bestValue) {
+                    bestValue = value;
+                    best = result;
+                }
+            }
+        }
+        writeEncodedText(out, best);
+    }
 
-	private void writeEncodedData(BufferedWriter out, String text) throws IOException {
-		out.write(mEncodeText ? XMLWriter.encodeData(text).replaceAll(" ", "%20") : text);
-	}
+    private void writeEncodedData(BufferedWriter out, String text) throws IOException {
+        out.write(mEncodeText ? XMLWriter.encodeData(text).replaceAll(" ", "%20") : text);
+    }
 
-	private void writeEncodedText(BufferedWriter out, String text) throws IOException {
-		out.write(mEncodeText ? XMLWriter.encodeData(text).replaceAll("&#10;", "<br>").replaceAll("\"", "&quot;") : text);
-	}
+    private void writeEncodedText(BufferedWriter out, String text) throws IOException {
+        out.write(mEncodeText ? XMLWriter.encodeData(text).replaceAll("&#10;", "<br>").replaceAll("\"", "&quot;") : text);
+    }
 
-	private static String extractUpToMarker(BufferedReader in, String marker) throws IOException {
-		char[] buffer = new char[1];
-		StringBuilder keyBuffer = new StringBuilder();
-		StringBuilder extraction = new StringBuilder();
-		boolean lookForKeyMarker = true;
-		while (in.read(buffer) != -1) {
-			char ch = buffer[0];
-			if (lookForKeyMarker) {
-				if (ch == '@') {
-					lookForKeyMarker = false;
-					in.mark(1);
-				} else {
-					extraction.append(ch);
-				}
-			} else {
-				if (ch == '_' || Character.isLetterOrDigit(ch)) {
-					keyBuffer.append(ch);
-					in.mark(1);
-				} else {
-					String key = keyBuffer.toString();
-					in.reset();
-					if (key.equals(marker)) {
-						return extraction.toString();
-					}
-					extraction.append('@');
-					extraction.append(key);
-					keyBuffer.setLength(0);
-					lookForKeyMarker = true;
-				}
-			}
-		}
-		return extraction.toString();
-	}
+    private static String extractUpToMarker(BufferedReader in, String marker) throws IOException {
+        char[] buffer = new char[1];
+        StringBuilder keyBuffer = new StringBuilder();
+        StringBuilder extraction = new StringBuilder();
+        boolean lookForKeyMarker = true;
+        while (in.read(buffer) != -1) {
+            char ch = buffer[0];
+            if (lookForKeyMarker) {
+                if (ch == '@') {
+                    lookForKeyMarker = false;
+                    in.mark(1);
+                } else {
+                    extraction.append(ch);
+                }
+            } else {
+                if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                    keyBuffer.append(ch);
+                    in.mark(1);
+                } else {
+                    String key = keyBuffer.toString();
+                    in.reset();
+                    if (key.equals(marker)) {
+                        return extraction.toString();
+                    }
+                    extraction.append('@');
+                    extraction.append(key);
+                    keyBuffer.setLength(0);
+                    lookForKeyMarker = true;
+                }
+            }
+        }
+        return extraction.toString();
+    }
 
-	private void processEncumbranceLoop(BufferedWriter out, String contents) throws IOException {
-		GURPSCharacter gurpsCharacter = mSheet.getCharacter();
-		int length = contents.length();
-		StringBuilder keyBuffer = new StringBuilder();
-		boolean lookForKeyMarker = true;
-		for (Encumbrance encumbrance : Encumbrance.values()) {
-			for (int i = 0; i < length; i++) {
-				char ch = contents.charAt(i);
-				if (lookForKeyMarker) {
-					if (ch == '@') {
-						lookForKeyMarker = false;
-					} else {
-						out.append(ch);
-					}
-				} else {
-					if (ch == '_' || Character.isLetterOrDigit(ch)) {
-						keyBuffer.append(ch);
-					} else {
-						String key = keyBuffer.toString();
-						i--;
-						keyBuffer.setLength(0);
-						lookForKeyMarker = true;
-						switch (key) {
-							case KEY_CURRENT_MARKER:
-								if (encumbrance == gurpsCharacter.getEncumbranceLevel()) {
-									out.write(CURRENT);
-								}
-								break;
-							case KEY_LEVEL:
-								writeEncodedText(out, MessageFormat.format(encumbrance == gurpsCharacter.getEncumbranceLevel() ? EncumbrancePanel.CURRENT_ENCUMBRANCE_FORMAT : EncumbrancePanel.ENCUMBRANCE_FORMAT, encumbrance, Numbers.format(-encumbrance.getEncumbrancePenalty())));
-								break;
-							case KEY_MAX_LOAD:
-								writeEncodedText(out, gurpsCharacter.getMaximumCarry(encumbrance).toString());
-								break;
-							case KEY_MOVE:
-								writeEncodedText(out, Numbers.format(gurpsCharacter.getMove(encumbrance)));
-								break;
-							case KEY_DODGE:
-								writeEncodedText(out, Numbers.format(gurpsCharacter.getDodge(encumbrance)));
-								break;
-							default:
-								writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-								break;
-						}
-					}
-				}
-			}
-		}
-	}
+    private void processEncumbranceLoop(BufferedWriter out, String contents) throws IOException {
+        GURPSCharacter gurpsCharacter = mSheet.getCharacter();
+        int length = contents.length();
+        StringBuilder keyBuffer = new StringBuilder();
+        boolean lookForKeyMarker = true;
+        for (Encumbrance encumbrance : Encumbrance.values()) {
+            for (int i = 0; i < length; i++) {
+                char ch = contents.charAt(i);
+                if (lookForKeyMarker) {
+                    if (ch == '@') {
+                        lookForKeyMarker = false;
+                    } else {
+                        out.append(ch);
+                    }
+                } else {
+                    if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                        keyBuffer.append(ch);
+                    } else {
+                        String key = keyBuffer.toString();
+                        i--;
+                        keyBuffer.setLength(0);
+                        lookForKeyMarker = true;
+                        switch (key) {
+                            case KEY_CURRENT_MARKER:
+                                if (encumbrance == gurpsCharacter.getEncumbranceLevel()) {
+                                    out.write(CURRENT);
+                                }
+                                break;
+                            case KEY_LEVEL:
+                                writeEncodedText(out, MessageFormat.format(encumbrance == gurpsCharacter.getEncumbranceLevel() ? EncumbrancePanel.CURRENT_ENCUMBRANCE_FORMAT : EncumbrancePanel.ENCUMBRANCE_FORMAT, encumbrance, Numbers.format(-encumbrance.getEncumbrancePenalty())));
+                                break;
+                            case KEY_MAX_LOAD:
+                                writeEncodedText(out, gurpsCharacter.getMaximumCarry(encumbrance).toString());
+                                break;
+                            case KEY_MOVE:
+                                writeEncodedText(out, Numbers.format(gurpsCharacter.getMove(encumbrance)));
+                                break;
+                            case KEY_DODGE:
+                                writeEncodedText(out, Numbers.format(gurpsCharacter.getDodge(encumbrance)));
+                                break;
+                            default:
+                                writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	private void processHitLocationLoop(BufferedWriter out, String contents) throws IOException {
-		GURPSCharacter gurpsCharacter = mSheet.getCharacter();
-		int length = contents.length();
-		StringBuilder keyBuffer = new StringBuilder();
-		boolean lookForKeyMarker = true;
-		HitLocationTable table = gurpsCharacter.getDescription().getHitLocationTable();
-		for (HitLocationTableEntry entry : table.getEntries()) {
-			for (int i = 0; i < length; i++) {
-				char ch = contents.charAt(i);
-				if (lookForKeyMarker) {
-					if (ch == '@') {
-						lookForKeyMarker = false;
-					} else {
-						out.append(ch);
-					}
-				} else {
-					if (ch == '_' || Character.isLetterOrDigit(ch)) {
-						keyBuffer.append(ch);
-					} else {
-						String key = keyBuffer.toString();
-						i--;
-						keyBuffer.setLength(0);
-						lookForKeyMarker = true;
-						switch (key) {
-							case KEY_ROLL:
-								writeEncodedText(out, entry.getRoll());
-								break;
-							case KEY_WHERE:
-								writeEncodedText(out, entry.getName());
-								break;
-							case KEY_PENALTY:
-								writeEncodedText(out, Numbers.format(entry.getHitPenalty()));
-								break;
-							case KEY_DR:
-								writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getValueForID(entry.getKey())).intValue()));
-								break;
-							default:
-								writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-								break;
-						}
-					}
-				}
-			}
-		}
-	}
+    private void processHitLocationLoop(BufferedWriter out, String contents) throws IOException {
+        GURPSCharacter gurpsCharacter = mSheet.getCharacter();
+        int length = contents.length();
+        StringBuilder keyBuffer = new StringBuilder();
+        boolean lookForKeyMarker = true;
+        HitLocationTable table = gurpsCharacter.getDescription().getHitLocationTable();
+        for (HitLocationTableEntry entry : table.getEntries()) {
+            for (int i = 0; i < length; i++) {
+                char ch = contents.charAt(i);
+                if (lookForKeyMarker) {
+                    if (ch == '@') {
+                        lookForKeyMarker = false;
+                    } else {
+                        out.append(ch);
+                    }
+                } else {
+                    if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                        keyBuffer.append(ch);
+                    } else {
+                        String key = keyBuffer.toString();
+                        i--;
+                        keyBuffer.setLength(0);
+                        lookForKeyMarker = true;
+                        switch (key) {
+                            case KEY_ROLL:
+                                writeEncodedText(out, entry.getRoll());
+                                break;
+                            case KEY_WHERE:
+                                writeEncodedText(out, entry.getName());
+                                break;
+                            case KEY_PENALTY:
+                                writeEncodedText(out, Numbers.format(entry.getHitPenalty()));
+                                break;
+                            case KEY_DR:
+                                writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getValueForID(entry.getKey())).intValue()));
+                                break;
+                            default:
+                                writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	private void processAdvantagesLoop(BufferedWriter out, String contents, AdvantagesLoopType loopType) throws IOException {
-		int length = contents.length();
-		StringBuilder keyBuffer = new StringBuilder();
-		boolean lookForKeyMarker = true;
-		int counter = 0;
-		for (Advantage advantage : mSheet.getCharacter().getAdvantagesIterator(false)) {
-			if (loopType.shouldInclude(advantage)) {
-				counter++;
-				for (int i = 0; i < length; i++) {
-					char ch = contents.charAt(i);
-					if (lookForKeyMarker) {
-						if (ch == '@') {
-							lookForKeyMarker = false;
-						} else {
-							out.append(ch);
-						}
-					} else {
-						if (ch == '_' || Character.isLetterOrDigit(ch)) {
-							keyBuffer.append(ch);
-						} else {
-							String key = keyBuffer.toString();
-							i--;
-							keyBuffer.setLength(0);
-							lookForKeyMarker = true;
-							if (!processStyleIndentWarning(key, out, advantage)) {
-								if (!processDescription(key, out, advantage)) {
-									switch (key) {
-										case KEY_POINTS:
-											writeEncodedText(out, AdvantageColumn.POINTS.getDataAsText(advantage));
-											break;
-										case KEY_REF:
-											writeEncodedText(out, AdvantageColumn.REFERENCE.getDataAsText(advantage));
-											break;
-										case KEY_ID:
-											writeEncodedText(out, Integer.toString(counter));
-											break;
-										case KEY_TYPE:
-											writeEncodedText(out, advantage.canHaveChildren() ? advantage.getContainerType().name() : ITEM);
-											break;
-										default:
-											writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-											break;
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+    private void processAdvantagesLoop(BufferedWriter out, String contents, AdvantagesLoopType loopType) throws IOException {
+        int length = contents.length();
+        StringBuilder keyBuffer = new StringBuilder();
+        boolean lookForKeyMarker = true;
+        int counter = 0;
+        for (Advantage advantage : mSheet.getCharacter().getAdvantagesIterator(false)) {
+            if (loopType.shouldInclude(advantage)) {
+                counter++;
+                for (int i = 0; i < length; i++) {
+                    char ch = contents.charAt(i);
+                    if (lookForKeyMarker) {
+                        if (ch == '@') {
+                            lookForKeyMarker = false;
+                        } else {
+                            out.append(ch);
+                        }
+                    } else {
+                        if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                            keyBuffer.append(ch);
+                        } else {
+                            String key = keyBuffer.toString();
+                            i--;
+                            keyBuffer.setLength(0);
+                            lookForKeyMarker = true;
+                            if (!processStyleIndentWarning(key, out, advantage)) {
+                                if (!processDescription(key, out, advantage)) {
+                                    switch (key) {
+                                        case KEY_POINTS:
+                                            writeEncodedText(out, AdvantageColumn.POINTS.getDataAsText(advantage));
+                                            break;
+                                        case KEY_REF:
+                                            writeEncodedText(out, AdvantageColumn.REFERENCE.getDataAsText(advantage));
+                                            break;
+                                        case KEY_ID:
+                                            writeEncodedText(out, Integer.toString(counter));
+                                            break;
+                                        case KEY_TYPE:
+                                            writeEncodedText(out, advantage.canHaveChildren() ? advantage.getContainerType().name() : ITEM);
+                                            break;
+                                        default:
+                                            writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	private boolean processDescription(String key, BufferedWriter out, ListRow row) throws IOException {
-		if (key.equals(KEY_DESCRIPTION)) {
-			writeEncodedText(out, row.toString());
-			writeNote(out, row.getModifierNotes());
-			writeNote(out, row.getNotes());
-		} else if (key.equals(KEY_DESCRIPTION_PRIMARY)) {
-			writeEncodedText(out, row.toString());
-		} else if (key.startsWith(KEY_DESCRIPTION_MODIFIER_NOTES)) {
-			writeXMLTextWithOptionalParens(key, out, row.getModifierNotes());
-		} else if (key.startsWith(KEY_DESCRIPTION_NOTES)) {
-			writeXMLTextWithOptionalParens(key, out, row.getNotes());
-		} else {
-			return false;
-		}
-		return true;
-	}
+    private boolean processDescription(String key, BufferedWriter out, ListRow row) throws IOException {
+        if (key.equals(KEY_DESCRIPTION)) {
+            writeEncodedText(out, row.toString());
+            writeNote(out, row.getModifierNotes());
+            writeNote(out, row.getNotes());
+        } else if (key.equals(KEY_DESCRIPTION_PRIMARY)) {
+            writeEncodedText(out, row.toString());
+        } else if (key.startsWith(KEY_DESCRIPTION_MODIFIER_NOTES)) {
+            writeXMLTextWithOptionalParens(key, out, row.getModifierNotes());
+        } else if (key.startsWith(KEY_DESCRIPTION_NOTES)) {
+            writeXMLTextWithOptionalParens(key, out, row.getNotes());
+        } else {
+            return false;
+        }
+        return true;
+    }
 
-	private void writeXMLTextWithOptionalParens(String key, BufferedWriter out, String text) throws IOException {
-		if (text.length() > 0) {
-			boolean parenVersion = key.endsWith(KEY_SUFFIX_PAREN);
-			if (parenVersion) {
-				out.write(" (");
-			}
-			writeEncodedText(out, text);
-			if (parenVersion) {
-				out.write(')');
-			}
-		}
-	}
+    private void writeXMLTextWithOptionalParens(String key, BufferedWriter out, String text) throws IOException {
+        if (text.length() > 0) {
+            boolean parenVersion = key.endsWith(KEY_SUFFIX_PAREN);
+            if (parenVersion) {
+                out.write(" (");
+            }
+            writeEncodedText(out, text);
+            if (parenVersion) {
+                out.write(')');
+            }
+        }
+    }
 
-	private void writeNote(BufferedWriter out, String notes) throws IOException {
-		if (notes.length() > 0) {
-			out.write("<div class=\"note\">");
-			writeEncodedText(out, notes);
-			out.write("</div>");
-		}
-	}
+    private void writeNote(BufferedWriter out, String notes) throws IOException {
+        if (notes.length() > 0) {
+            out.write("<div class=\"note\">");
+            writeEncodedText(out, notes);
+            out.write("</div>");
+        }
+    }
 
-	private void processSkillsLoop(BufferedWriter out, String contents) throws IOException {
-		int length = contents.length();
-		StringBuilder keyBuffer = new StringBuilder();
-		boolean lookForKeyMarker = true;
-		int counter = 0;
-		for (Skill skill : mSheet.getCharacter().getSkillsIterator()) {
-			counter++;
-			for (int i = 0; i < length; i++) {
-				char ch = contents.charAt(i);
-				if (lookForKeyMarker) {
-					if (ch == '@') {
-						lookForKeyMarker = false;
-					} else {
-						out.append(ch);
-					}
-				} else {
-					if (ch == '_' || Character.isLetterOrDigit(ch)) {
-						keyBuffer.append(ch);
-					} else {
-						String key = keyBuffer.toString();
-						i--;
-						keyBuffer.setLength(0);
-						lookForKeyMarker = true;
-						if (!processStyleIndentWarning(key, out, skill)) {
-							if (!processDescription(key, out, skill)) {
-								switch (key) {
-									case KEY_SL:
-										writeEncodedText(out, SkillColumn.LEVEL.getDataAsText(skill));
-										break;
-									case KEY_RSL:
-										writeEncodedText(out, SkillColumn.RELATIVE_LEVEL.getDataAsText(skill));
-										break;
-									case KEY_DIFFICULTY:
-										writeEncodedText(out, SkillColumn.DIFFICULTY.getDataAsText(skill));
-										break;
-									case KEY_POINTS:
-										writeEncodedText(out, SkillColumn.POINTS.getDataAsText(skill));
-										break;
-									case KEY_REF:
-										writeEncodedText(out, SkillColumn.REFERENCE.getDataAsText(skill));
-										break;
-									case KEY_ID:
-										writeEncodedText(out, Integer.toString(counter));
-										break;
-									default:
-										writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-										break;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+    private void processSkillsLoop(BufferedWriter out, String contents) throws IOException {
+        int length = contents.length();
+        StringBuilder keyBuffer = new StringBuilder();
+        boolean lookForKeyMarker = true;
+        int counter = 0;
+        for (Skill skill : mSheet.getCharacter().getSkillsIterator()) {
+            counter++;
+            for (int i = 0; i < length; i++) {
+                char ch = contents.charAt(i);
+                if (lookForKeyMarker) {
+                    if (ch == '@') {
+                        lookForKeyMarker = false;
+                    } else {
+                        out.append(ch);
+                    }
+                } else {
+                    if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                        keyBuffer.append(ch);
+                    } else {
+                        String key = keyBuffer.toString();
+                        i--;
+                        keyBuffer.setLength(0);
+                        lookForKeyMarker = true;
+                        if (!processStyleIndentWarning(key, out, skill)) {
+                            if (!processDescription(key, out, skill)) {
+                                switch (key) {
+                                    case KEY_SL:
+                                        writeEncodedText(out, SkillColumn.LEVEL.getDataAsText(skill));
+                                        break;
+                                    case KEY_RSL:
+                                        writeEncodedText(out, SkillColumn.RELATIVE_LEVEL.getDataAsText(skill));
+                                        break;
+                                    case KEY_DIFFICULTY:
+                                        writeEncodedText(out, SkillColumn.DIFFICULTY.getDataAsText(skill));
+                                        break;
+                                    case KEY_POINTS:
+                                        writeEncodedText(out, SkillColumn.POINTS.getDataAsText(skill));
+                                        break;
+                                    case KEY_REF:
+                                        writeEncodedText(out, SkillColumn.REFERENCE.getDataAsText(skill));
+                                        break;
+                                    case KEY_ID:
+                                        writeEncodedText(out, Integer.toString(counter));
+                                        break;
+                                    default:
+                                        writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	private static boolean processStyleIndentWarning(String key, BufferedWriter out, ListRow row) throws IOException {
-		if (key.equals(KEY_STYLE_INDENT_WARNING)) {
-			StringBuilder style = new StringBuilder();
-			int depth = row.getDepth();
-			if (depth > 0) {
-				style.append(" style=\"padding-left: ");
-				style.append(depth * 12);
-				style.append("px;");
-			}
-			if (!row.isSatisfied()) {
-				if (style.length() == 0) {
-					style.append(" style=\"");
-				}
-				style.append(" color: red;");
-			}
-			if (style.length() > 0) {
-				style.append("\" ");
-				out.write(style.toString());
-			}
-		} else if (key.startsWith(KEY_PREFIX_DEPTH)) {
-			int amt = Numbers.extractInteger(key.substring(6), 1, false);
-			out.write("" + amt * row.getDepth());
-		} else if (key.equals(KEY_SATISFIED)) {
-			out.write(row.isSatisfied() ? "Y" : "N");
-		} else {
-			return false;
-		}
-		return true;
-	}
+    private static boolean processStyleIndentWarning(String key, BufferedWriter out, ListRow row) throws IOException {
+        if (key.equals(KEY_STYLE_INDENT_WARNING)) {
+            StringBuilder style = new StringBuilder();
+            int depth = row.getDepth();
+            if (depth > 0) {
+                style.append(" style=\"padding-left: ");
+                style.append(depth * 12);
+                style.append("px;");
+            }
+            if (!row.isSatisfied()) {
+                if (style.length() == 0) {
+                    style.append(" style=\"");
+                }
+                style.append(" color: red;");
+            }
+            if (style.length() > 0) {
+                style.append("\" ");
+                out.write(style.toString());
+            }
+        } else if (key.startsWith(KEY_PREFIX_DEPTH)) {
+            int amt = Numbers.extractInteger(key.substring(6), 1, false);
+            out.write("" + amt * row.getDepth());
+        } else if (key.equals(KEY_SATISFIED)) {
+            out.write(row.isSatisfied() ? "Y" : "N");
+        } else {
+            return false;
+        }
+        return true;
+    }
 
-	private void processSpellsLoop(BufferedWriter out, String contents) throws IOException {
-		int length = contents.length();
-		StringBuilder keyBuffer = new StringBuilder();
-		boolean lookForKeyMarker = true;
-		int counter = 0;
-		for (Spell spell : mSheet.getCharacter().getSpellsIterator()) {
-			counter++;
-			for (int i = 0; i < length; i++) {
-				char ch = contents.charAt(i);
-				if (lookForKeyMarker) {
-					if (ch == '@') {
-						lookForKeyMarker = false;
-					} else {
-						out.append(ch);
-					}
-				} else {
-					if (ch == '_' || Character.isLetterOrDigit(ch)) {
-						keyBuffer.append(ch);
-					} else {
-						String key = keyBuffer.toString();
-						i--;
-						keyBuffer.setLength(0);
-						lookForKeyMarker = true;
-						if (!processStyleIndentWarning(key, out, spell)) {
-							if (!processDescription(key, out, spell)) {
-								switch (key) {
-									case KEY_CLASS:
-										writeEncodedText(out, spell.getSpellClass());
-										break;
-									case KEY_COLLEGE:
-										writeEncodedText(out, spell.getCollege());
-										break;
-									case KEY_MANA_CAST:
-										writeEncodedText(out, spell.getCastingCost());
-										break;
-									case KEY_MANA_MAINTAIN:
-										writeEncodedText(out, spell.getMaintenance());
-										break;
-									case KEY_TIME_CAST:
-										writeEncodedText(out, spell.getCastingTime());
-										break;
-									case KEY_DURATION:
-										writeEncodedText(out, spell.getDuration());
-										break;
-									case KEY_SL:
-										writeEncodedText(out, SpellColumn.LEVEL.getDataAsText(spell));
-										break;
-									case KEY_RSL:
-										writeEncodedText(out, SpellColumn.RELATIVE_LEVEL.getDataAsText(spell));
-										break;
-									case KEY_DIFFICULTY:
-										writeEncodedText(out, (spell.isVeryHard() ? SkillDifficulty.VH : SkillDifficulty.H).toString());
-										break;
-									case KEY_POINTS:
-										writeEncodedText(out, SpellColumn.POINTS.getDataAsText(spell));
-										break;
-									case KEY_REF:
-										writeEncodedText(out, SpellColumn.REFERENCE.getDataAsText(spell));
-										break;
-									case KEY_ID:
-										writeEncodedText(out, Integer.toString(counter));
-										break;
-									default:
-										writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-										break;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+    private void processSpellsLoop(BufferedWriter out, String contents) throws IOException {
+        int length = contents.length();
+        StringBuilder keyBuffer = new StringBuilder();
+        boolean lookForKeyMarker = true;
+        int counter = 0;
+        for (Spell spell : mSheet.getCharacter().getSpellsIterator()) {
+            counter++;
+            for (int i = 0; i < length; i++) {
+                char ch = contents.charAt(i);
+                if (lookForKeyMarker) {
+                    if (ch == '@') {
+                        lookForKeyMarker = false;
+                    } else {
+                        out.append(ch);
+                    }
+                } else {
+                    if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                        keyBuffer.append(ch);
+                    } else {
+                        String key = keyBuffer.toString();
+                        i--;
+                        keyBuffer.setLength(0);
+                        lookForKeyMarker = true;
+                        if (!processStyleIndentWarning(key, out, spell)) {
+                            if (!processDescription(key, out, spell)) {
+                                switch (key) {
+                                    case KEY_CLASS:
+                                        writeEncodedText(out, spell.getSpellClass());
+                                        break;
+                                    case KEY_COLLEGE:
+                                        writeEncodedText(out, spell.getCollege());
+                                        break;
+                                    case KEY_MANA_CAST:
+                                        writeEncodedText(out, spell.getCastingCost());
+                                        break;
+                                    case KEY_MANA_MAINTAIN:
+                                        writeEncodedText(out, spell.getMaintenance());
+                                        break;
+                                    case KEY_TIME_CAST:
+                                        writeEncodedText(out, spell.getCastingTime());
+                                        break;
+                                    case KEY_DURATION:
+                                        writeEncodedText(out, spell.getDuration());
+                                        break;
+                                    case KEY_SL:
+                                        writeEncodedText(out, SpellColumn.LEVEL.getDataAsText(spell));
+                                        break;
+                                    case KEY_RSL:
+                                        writeEncodedText(out, SpellColumn.RELATIVE_LEVEL.getDataAsText(spell));
+                                        break;
+                                    case KEY_DIFFICULTY:
+                                        writeEncodedText(out, (spell.isVeryHard() ? SkillDifficulty.VH : SkillDifficulty.H).toString());
+                                        break;
+                                    case KEY_POINTS:
+                                        writeEncodedText(out, SpellColumn.POINTS.getDataAsText(spell));
+                                        break;
+                                    case KEY_REF:
+                                        writeEncodedText(out, SpellColumn.REFERENCE.getDataAsText(spell));
+                                        break;
+                                    case KEY_ID:
+                                        writeEncodedText(out, Integer.toString(counter));
+                                        break;
+                                    default:
+                                        writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	private void processMeleeLoop(BufferedWriter out, String contents) throws IOException {
-		int length = contents.length();
-		StringBuilder keyBuffer = new StringBuilder();
-		boolean lookForKeyMarker = true;
-		int counter = 0;
-		for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
-			counter++;
-			MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
-			for (int i = 0; i < length; i++) {
-				char ch = contents.charAt(i);
-				if (lookForKeyMarker) {
-					if (ch == '@') {
-						lookForKeyMarker = false;
-					} else {
-						out.append(ch);
-					}
-				} else {
-					if (ch == '_' || Character.isLetterOrDigit(ch)) {
-						keyBuffer.append(ch);
-					} else {
-						String key = keyBuffer.toString();
-						i--;
-						keyBuffer.setLength(0);
-						lookForKeyMarker = true;
-						if (!processDescription(key, out, weapon)) {
-							switch (key) {
-								case KEY_USAGE:
-									writeEncodedText(out, weapon.getUsage());
-									break;
-								case KEY_LEVEL:
-									writeEncodedText(out, Numbers.format(weapon.getSkillLevel()));
-									break;
-								case KEY_PARRY:
-									writeEncodedText(out, weapon.getResolvedParry());
-									break;
-								case KEY_BLOCK:
-									writeEncodedText(out, weapon.getResolvedBlock());
-									break;
-								case KEY_DAMAGE:
-									writeEncodedText(out, weapon.getResolvedDamage());
-									break;
-								case KEY_UNMODIFIED_DAMAGE:
-									writeEncodedText(out, weapon.getDamage());
-									break;
-								case KEY_REACH:
-									writeEncodedText(out, weapon.getReach());
-									break;
-								case KEY_WEAPON_STRENGTH:
-									writeEncodedText(out, weapon.getStrength());
-									break;
-								case KEY_ID:
-									writeEncodedText(out, Integer.toString(counter));
-									break;
-								default:
-									writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-									break;
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+    private void processMeleeLoop(BufferedWriter out, String contents) throws IOException {
+        int length = contents.length();
+        StringBuilder keyBuffer = new StringBuilder();
+        boolean lookForKeyMarker = true;
+        int counter = 0;
+        for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
+            counter++;
+            MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
+            for (int i = 0; i < length; i++) {
+                char ch = contents.charAt(i);
+                if (lookForKeyMarker) {
+                    if (ch == '@') {
+                        lookForKeyMarker = false;
+                    } else {
+                        out.append(ch);
+                    }
+                } else {
+                    if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                        keyBuffer.append(ch);
+                    } else {
+                        String key = keyBuffer.toString();
+                        i--;
+                        keyBuffer.setLength(0);
+                        lookForKeyMarker = true;
+                        if (!processDescription(key, out, weapon)) {
+                            switch (key) {
+                                case KEY_USAGE:
+                                    writeEncodedText(out, weapon.getUsage());
+                                    break;
+                                case KEY_LEVEL:
+                                    writeEncodedText(out, Numbers.format(weapon.getSkillLevel()));
+                                    break;
+                                case KEY_PARRY:
+                                    writeEncodedText(out, weapon.getResolvedParry());
+                                    break;
+                                case KEY_BLOCK:
+                                    writeEncodedText(out, weapon.getResolvedBlock());
+                                    break;
+                                case KEY_DAMAGE:
+                                    writeEncodedText(out, weapon.getResolvedDamage());
+                                    break;
+                                case KEY_UNMODIFIED_DAMAGE:
+                                    writeEncodedText(out, weapon.getDamage());
+                                    break;
+                                case KEY_REACH:
+                                    writeEncodedText(out, weapon.getReach());
+                                    break;
+                                case KEY_WEAPON_STRENGTH:
+                                    writeEncodedText(out, weapon.getStrength());
+                                    break;
+                                case KEY_ID:
+                                    writeEncodedText(out, Integer.toString(counter));
+                                    break;
+                                default:
+                                    writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	private boolean processDescription(String key, BufferedWriter out, WeaponStats stats) throws IOException {
-		if (key.equals(KEY_DESCRIPTION)) {
-			writeEncodedText(out, stats.toString());
-			writeNote(out, stats.getNotes());
-		} else if (key.equals(KEY_DESCRIPTION_PRIMARY)) {
-			writeEncodedText(out, stats.toString());
-		} else if (key.startsWith(KEY_DESCRIPTION_NOTES)) {
-			writeXMLTextWithOptionalParens(key, out, stats.getNotes());
-		} else {
-			return false;
-		}
-		return true;
-	}
+    private boolean processDescription(String key, BufferedWriter out, WeaponStats stats) throws IOException {
+        if (key.equals(KEY_DESCRIPTION)) {
+            writeEncodedText(out, stats.toString());
+            writeNote(out, stats.getNotes());
+        } else if (key.equals(KEY_DESCRIPTION_PRIMARY)) {
+            writeEncodedText(out, stats.toString());
+        } else if (key.startsWith(KEY_DESCRIPTION_NOTES)) {
+            writeXMLTextWithOptionalParens(key, out, stats.getNotes());
+        } else {
+            return false;
+        }
+        return true;
+    }
 
-	private void processRangedLoop(BufferedWriter out, String contents) throws IOException {
-		int length = contents.length();
-		StringBuilder keyBuffer = new StringBuilder();
-		boolean lookForKeyMarker = true;
-		int counter = 0;
-		for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getRangedWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
-			counter++;
-			RangedWeaponStats weapon = (RangedWeaponStats) row.getWeapon();
-			for (int i = 0; i < length; i++) {
-				char ch = contents.charAt(i);
-				if (lookForKeyMarker) {
-					if (ch == '@') {
-						lookForKeyMarker = false;
-					} else {
-						out.append(ch);
-					}
-				} else {
-					if (ch == '_' || Character.isLetterOrDigit(ch)) {
-						keyBuffer.append(ch);
-					} else {
-						String key = keyBuffer.toString();
-						i--;
-						keyBuffer.setLength(0);
-						lookForKeyMarker = true;
-						if (!processDescription(key, out, weapon)) {
-							switch (key) {
-								case KEY_USAGE:
-									writeEncodedText(out, weapon.getUsage());
-									break;
-								case KEY_LEVEL:
-									writeEncodedText(out, Numbers.format(weapon.getSkillLevel()));
-									break;
-								case KEY_ACCURACY:
-									writeEncodedText(out, weapon.getAccuracy());
-									break;
-								case KEY_DAMAGE:
-									writeEncodedText(out, weapon.getResolvedDamage());
-									break;
-								case KEY_UNMODIFIED_DAMAGE:
-									writeEncodedText(out, weapon.getDamage());
-									break;
-								case KEY_RANGE:
-									writeEncodedText(out, weapon.getResolvedRange());
-									break;
-								case KEY_ROF:
-									writeEncodedText(out, weapon.getRateOfFire());
-									break;
-								case KEY_SHOTS:
-									writeEncodedText(out, weapon.getShots());
-									break;
-								case KEY_BULK:
-									writeEncodedText(out, weapon.getBulk());
-									break;
-								case KEY_RECOIL:
-									writeEncodedText(out, weapon.getRecoil());
-									break;
-								case KEY_WEAPON_STRENGTH:
-									writeEncodedText(out, weapon.getStrength());
-									break;
-								case KEY_ID:
-									writeEncodedText(out, Integer.toString(counter));
-									break;
-								default:
-									writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-									break;
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+    private void processRangedLoop(BufferedWriter out, String contents) throws IOException {
+        int length = contents.length();
+        StringBuilder keyBuffer = new StringBuilder();
+        boolean lookForKeyMarker = true;
+        int counter = 0;
+        for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getRangedWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
+            counter++;
+            RangedWeaponStats weapon = (RangedWeaponStats) row.getWeapon();
+            for (int i = 0; i < length; i++) {
+                char ch = contents.charAt(i);
+                if (lookForKeyMarker) {
+                    if (ch == '@') {
+                        lookForKeyMarker = false;
+                    } else {
+                        out.append(ch);
+                    }
+                } else {
+                    if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                        keyBuffer.append(ch);
+                    } else {
+                        String key = keyBuffer.toString();
+                        i--;
+                        keyBuffer.setLength(0);
+                        lookForKeyMarker = true;
+                        if (!processDescription(key, out, weapon)) {
+                            switch (key) {
+                                case KEY_USAGE:
+                                    writeEncodedText(out, weapon.getUsage());
+                                    break;
+                                case KEY_LEVEL:
+                                    writeEncodedText(out, Numbers.format(weapon.getSkillLevel()));
+                                    break;
+                                case KEY_ACCURACY:
+                                    writeEncodedText(out, weapon.getAccuracy());
+                                    break;
+                                case KEY_DAMAGE:
+                                    writeEncodedText(out, weapon.getResolvedDamage());
+                                    break;
+                                case KEY_UNMODIFIED_DAMAGE:
+                                    writeEncodedText(out, weapon.getDamage());
+                                    break;
+                                case KEY_RANGE:
+                                    writeEncodedText(out, weapon.getResolvedRange());
+                                    break;
+                                case KEY_ROF:
+                                    writeEncodedText(out, weapon.getRateOfFire());
+                                    break;
+                                case KEY_SHOTS:
+                                    writeEncodedText(out, weapon.getShots());
+                                    break;
+                                case KEY_BULK:
+                                    writeEncodedText(out, weapon.getBulk());
+                                    break;
+                                case KEY_RECOIL:
+                                    writeEncodedText(out, weapon.getRecoil());
+                                    break;
+                                case KEY_WEAPON_STRENGTH:
+                                    writeEncodedText(out, weapon.getStrength());
+                                    break;
+                                case KEY_ID:
+                                    writeEncodedText(out, Integer.toString(counter));
+                                    break;
+                                default:
+                                    writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	private void processEquipmentLoop(BufferedWriter out, String contents) throws IOException {
-		int length = contents.length();
-		StringBuilder keyBuffer = new StringBuilder();
-		boolean lookForKeyMarker = true;
-		int counter = 0;
-		for (Equipment equipment : mSheet.getCharacter().getEquipmentIterator()) {
-			counter++;
-			for (int i = 0; i < length; i++) {
-				char ch = contents.charAt(i);
-				if (lookForKeyMarker) {
-					if (ch == '@') {
-						lookForKeyMarker = false;
-					} else {
-						out.append(ch);
-					}
-				} else {
-					if (ch == '_' || Character.isLetterOrDigit(ch)) {
-						keyBuffer.append(ch);
-					} else {
-						String key = keyBuffer.toString();
-						i--;
-						keyBuffer.setLength(0);
-						lookForKeyMarker = true;
-						if (!processStyleIndentWarning(key, out, equipment)) {
-							if (!processDescription(key, out, equipment)) {
-								switch (key) {
-									case KEY_STATE:
-										out.write(equipment.getState().toShortName());
-										break;
-									case KEY_QTY:
-										writeEncodedText(out, Numbers.format(equipment.getQuantity()));
-										break;
-									case KEY_COST:
-										writeEncodedText(out, Numbers.format(equipment.getValue()));
-										break;
-									case KEY_WEIGHT:
-										writeEncodedText(out, equipment.getWeight().toString());
-										break;
-									case KEY_COST_SUMMARY:
-										writeEncodedText(out, Numbers.format(equipment.getExtendedValue()));
-										break;
-									case KEY_WEIGHT_SUMMARY:
-										writeEncodedText(out, equipment.getExtendedWeight().toString());
-										break;
-									case KEY_REF:
-										writeEncodedText(out, equipment.getReference());
-										break;
-									case KEY_ID:
-										writeEncodedText(out, Integer.toString(counter));
-										break;
-									default:
-										writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-										break;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+    private void processEquipmentLoop(BufferedWriter out, String contents) throws IOException {
+        int length = contents.length();
+        StringBuilder keyBuffer = new StringBuilder();
+        boolean lookForKeyMarker = true;
+        int counter = 0;
+        for (Equipment equipment : mSheet.getCharacter().getEquipmentIterator()) {
+            counter++;
+            for (int i = 0; i < length; i++) {
+                char ch = contents.charAt(i);
+                if (lookForKeyMarker) {
+                    if (ch == '@') {
+                        lookForKeyMarker = false;
+                    } else {
+                        out.append(ch);
+                    }
+                } else {
+                    if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                        keyBuffer.append(ch);
+                    } else {
+                        String key = keyBuffer.toString();
+                        i--;
+                        keyBuffer.setLength(0);
+                        lookForKeyMarker = true;
+                        if (!processStyleIndentWarning(key, out, equipment)) {
+                            if (!processDescription(key, out, equipment)) {
+                                switch (key) {
+                                    case KEY_STATE:
+                                        out.write(equipment.getState().toShortName());
+                                        break;
+                                    case KEY_QTY:
+                                        writeEncodedText(out, Numbers.format(equipment.getQuantity()));
+                                        break;
+                                    case KEY_COST:
+                                        writeEncodedText(out, Numbers.format(equipment.getValue()));
+                                        break;
+                                    case KEY_WEIGHT:
+                                        writeEncodedText(out, equipment.getWeight().toString());
+                                        break;
+                                    case KEY_COST_SUMMARY:
+                                        writeEncodedText(out, Numbers.format(equipment.getExtendedValue()));
+                                        break;
+                                    case KEY_WEIGHT_SUMMARY:
+                                        writeEncodedText(out, equipment.getExtendedWeight().toString());
+                                        break;
+                                    case KEY_REF:
+                                        writeEncodedText(out, equipment.getReference());
+                                        break;
+                                    case KEY_ID:
+                                        writeEncodedText(out, Integer.toString(counter));
+                                        break;
+                                    default:
+                                        writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	private void processNotesLoop(BufferedWriter out, String contents) throws IOException {
-		int length = contents.length();
-		StringBuilder keyBuffer = new StringBuilder();
-		boolean lookForKeyMarker = true;
-		int counter = 0;
-		for (Note note : mSheet.getCharacter().getNoteIterator()) {
-			counter++;
-			for (int i = 0; i < length; i++) {
-				char ch = contents.charAt(i);
-				if (lookForKeyMarker) {
-					if (ch == '@') {
-						lookForKeyMarker = false;
-					} else {
-						out.append(ch);
-					}
-				} else {
-					if (ch == '_' || Character.isLetterOrDigit(ch)) {
-						keyBuffer.append(ch);
-					} else {
-						String key = keyBuffer.toString();
-						i--;
-						keyBuffer.setLength(0);
-						lookForKeyMarker = true;
-						if (!processStyleIndentWarning(key, out, note)) {
-							switch (key) {
-								case KEY_NOTE:
-									writeEncodedText(out, note.getDescription());
-									break;
-								case KEY_ID:
-									writeEncodedText(out, Integer.toString(counter));
-									break;
-								default:
-									writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-									break;
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+    private void processNotesLoop(BufferedWriter out, String contents) throws IOException {
+        int length = contents.length();
+        StringBuilder keyBuffer = new StringBuilder();
+        boolean lookForKeyMarker = true;
+        int counter = 0;
+        for (Note note : mSheet.getCharacter().getNoteIterator()) {
+            counter++;
+            for (int i = 0; i < length; i++) {
+                char ch = contents.charAt(i);
+                if (lookForKeyMarker) {
+                    if (ch == '@') {
+                        lookForKeyMarker = false;
+                    } else {
+                        out.append(ch);
+                    }
+                } else {
+                    if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                        keyBuffer.append(ch);
+                    } else {
+                        String key = keyBuffer.toString();
+                        i--;
+                        keyBuffer.setLength(0);
+                        lookForKeyMarker = true;
+                        if (!processStyleIndentWarning(key, out, note)) {
+                            switch (key) {
+                                case KEY_NOTE:
+                                    writeEncodedText(out, note.getDescription());
+                                    break;
+                                case KEY_ID:
+                                    writeEncodedText(out, Integer.toString(counter));
+                                    break;
+                                default:
+                                    writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	private enum AdvantagesLoopType {
-		ALL {
-			@Override
-			public boolean shouldInclude(Advantage advantage) {
-				return true;
-			}
-		},
-		ADS {
-			@Override
-			public boolean shouldInclude(Advantage advantage) {
-				return advantage.getAdjustedPoints() > 1;
-			}
-		},
-		DISADS {
-			@Override
-			public boolean shouldInclude(Advantage advantage) {
-				return advantage.getAdjustedPoints() < -1;
-			}
-		},
-		PERKS {
-			@Override
-			public boolean shouldInclude(Advantage advantage) {
-				return advantage.getAdjustedPoints() == 1;
-			}
-		},
-		QUIRKS {
-			@Override
-			public boolean shouldInclude(Advantage advantage) {
-				return advantage.getAdjustedPoints() == -1;
-			}
-		},
-		LANGUAGES {
-			@Override
-			public boolean shouldInclude(Advantage advantage) {
-				return advantage.getCategories().contains("Language");
-			}
-		},
-		CULTURAL_FAMILIARITIES {
-			@Override
-			public boolean shouldInclude(Advantage advantage) {
-				return advantage.getName().startsWith("Cultural Familiarity (");
-			}
-		};
+    private enum AdvantagesLoopType {
+        ALL {
+            @Override
+            public boolean shouldInclude(Advantage advantage) {
+                return true;
+            }
+        },
+        ADS {
+            @Override
+            public boolean shouldInclude(Advantage advantage) {
+                return advantage.getAdjustedPoints() > 1;
+            }
+        },
+        DISADS {
+            @Override
+            public boolean shouldInclude(Advantage advantage) {
+                return advantage.getAdjustedPoints() < -1;
+            }
+        },
+        PERKS {
+            @Override
+            public boolean shouldInclude(Advantage advantage) {
+                return advantage.getAdjustedPoints() == 1;
+            }
+        },
+        QUIRKS {
+            @Override
+            public boolean shouldInclude(Advantage advantage) {
+                return advantage.getAdjustedPoints() == -1;
+            }
+        },
+        LANGUAGES {
+            @Override
+            public boolean shouldInclude(Advantage advantage) {
+                return advantage.getCategories().contains("Language");
+            }
+        },
+        CULTURAL_FAMILIARITIES {
+            @Override
+            public boolean shouldInclude(Advantage advantage) {
+                return advantage.getName().startsWith("Cultural Familiarity (");
+            }
+        };
 
-		public abstract boolean shouldInclude(Advantage advantage);
-	}
+        public abstract boolean shouldInclude(Advantage advantage);
+    }
 }

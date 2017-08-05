@@ -22,43 +22,43 @@ import java.awt.event.KeyEvent;
 
 /** Provides the "Increment" command. */
 public class TechLevelIncrementCommand extends Command {
-	@Localize("Increment Tech Level")
-	private static String TITLE;
+    @Localize("Increment Tech Level")
+    private static String TITLE;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String						CMD_INCREMENT_TL	= "IncrementTL";					//$NON-NLS-1$
+    /** The action command this command will issue. */
+    public static final String                    CMD_INCREMENT_TL = "IncrementTL";                  					//$NON-NLS-1$
 
-	/** The singleton {@link TechLevelIncrementCommand}. */
-	public static final TechLevelIncrementCommand	INSTANCE			= new TechLevelIncrementCommand();
+    /** The singleton {@link TechLevelIncrementCommand}. */
+    public static final TechLevelIncrementCommand INSTANCE         = new TechLevelIncrementCommand();
 
-	private TechLevelIncrementCommand() {
-		super(TITLE, CMD_INCREMENT_TL, KeyEvent.VK_CLOSE_BRACKET);
-	}
+    private TechLevelIncrementCommand() {
+        super(TITLE, CMD_INCREMENT_TL, KeyEvent.VK_CLOSE_BRACKET);
+    }
 
-	@Override
-	public void adjust() {
-		Component focus = getFocusOwner();
-		if (focus instanceof OutlineProxy) {
-			focus = ((OutlineProxy) focus).getRealOutline();
-		}
-		if (focus instanceof TechLevelIncrementable) {
-			TechLevelIncrementable inc = (TechLevelIncrementable) focus;
-			setEnabled(inc.canIncrementTechLevel());
-		} else {
-			setEnabled(false);
-		}
-	}
+    @Override
+    public void adjust() {
+        Component focus = getFocusOwner();
+        if (focus instanceof OutlineProxy) {
+            focus = ((OutlineProxy) focus).getRealOutline();
+        }
+        if (focus instanceof TechLevelIncrementable) {
+            TechLevelIncrementable inc = (TechLevelIncrementable) focus;
+            setEnabled(inc.canIncrementTechLevel());
+        } else {
+            setEnabled(false);
+        }
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		Component focus = getFocusOwner();
-		if (focus instanceof OutlineProxy) {
-			focus = ((OutlineProxy) focus).getRealOutline();
-		}
-		((TechLevelIncrementable) focus).incrementTechLevel();
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        Component focus = getFocusOwner();
+        if (focus instanceof OutlineProxy) {
+            focus = ((OutlineProxy) focus).getRealOutline();
+        }
+        ((TechLevelIncrementable) focus).incrementTechLevel();
+    }
 }

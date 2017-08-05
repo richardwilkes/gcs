@@ -29,114 +29,114 @@ import java.awt.Rectangle;
 
 /** An outline panel. */
 public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
-	private OutlineHeader	mHeader;
-	private Outline			mOutline;
+    private OutlineHeader mHeader;
+    private Outline       mOutline;
 
-	/**
-	 * Creates a new outline panel.
-	 *
-	 * @param scale The scale to use.
-	 * @param outline The outline to display.
-	 * @param title The localized title for the panel.
-	 * @param useProxy <code>true</code> if a proxy of the outline should be used.
-	 */
-	public SingleOutlinePanel(Scale scale, Outline outline, String title, boolean useProxy) {
-		super(null);
-		mOutline = useProxy ? new OutlineProxy(outline) : outline;
-		mHeader = mOutline.getHeaderPanel();
-		CharacterSheet.prepOutline(mOutline);
-		add(mHeader);
-		add(mOutline);
-		setBorder(getTitledBorder());
-		setLayout(this);
-	}
+    /**
+     * Creates a new outline panel.
+     *
+     * @param scale The scale to use.
+     * @param outline The outline to display.
+     * @param title The localized title for the panel.
+     * @param useProxy <code>true</code> if a proxy of the outline should be used.
+     */
+    public SingleOutlinePanel(Scale scale, Outline outline, String title, boolean useProxy) {
+        super(null);
+        mOutline = useProxy ? new OutlineProxy(outline) : outline;
+        mHeader = mOutline.getHeaderPanel();
+        CharacterSheet.prepOutline(mOutline);
+        add(mHeader);
+        add(mOutline);
+        setBorder(getTitledBorder());
+        setLayout(this);
+    }
 
-	/**
-	 * Sets the embedded outline's display range.
-	 *
-	 * @param first The first row to display.
-	 * @param last The last row to display.
-	 */
-	public void setOutlineRowRange(int first, int last) {
-		mOutline.setFirstRowToDisplay(first);
-		mOutline.setLastRowToDisplay(last);
-	}
+    /**
+     * Sets the embedded outline's display range.
+     *
+     * @param first The first row to display.
+     * @param last The last row to display.
+     */
+    public void setOutlineRowRange(int first, int last) {
+        mOutline.setFirstRowToDisplay(first);
+        mOutline.setLastRowToDisplay(last);
+    }
 
-	/** @return The preferred width. */
-	public int getPreferredWidth() {
-		Insets insets = getInsets();
-		int width = insets.left + insets.right;
-		OutlineModel outlineModel = mOutline.getModel();
-		int count = outlineModel.getColumnCount();
-		if (mOutline.shouldDrawColumnDividers()) {
-			width += (count - 1) * Scale.get(this).scale(1);
-		}
-		for (int i = 0; i < count; i++) {
-			Column column = outlineModel.getColumnAtIndex(i);
-			width += column.getPreferredWidth(mOutline);
-		}
-		return width;
-	}
+    /** @return The preferred width. */
+    public int getPreferredWidth() {
+        Insets insets = getInsets();
+        int width = insets.left + insets.right;
+        OutlineModel outlineModel = mOutline.getModel();
+        int count = outlineModel.getColumnCount();
+        if (mOutline.shouldDrawColumnDividers()) {
+            width += (count - 1) * Scale.get(this).scale(1);
+        }
+        for (int i = 0; i < count; i++) {
+            Column column = outlineModel.getColumnAtIndex(i);
+            width += column.getPreferredWidth(mOutline);
+        }
+        return width;
+    }
 
-	@Override
-	public void layoutContainer(Container parent) {
-		Insets insets = getInsets();
-		Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
-		int height = mHeader.getPreferredSize().height;
-		mHeader.setLocation(bounds.x, bounds.y);
-		bounds.y += height;
-		bounds.height -= height;
-		mOutline.setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
-		ColumnUtils.pack(mOutline, bounds.width);
-	}
+    @Override
+    public void layoutContainer(Container parent) {
+        Insets insets = getInsets();
+        Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
+        int height = mHeader.getPreferredSize().height;
+        mHeader.setLocation(bounds.x, bounds.y);
+        bounds.y += height;
+        bounds.height -= height;
+        mOutline.setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
+        ColumnUtils.pack(mOutline, bounds.width);
+    }
 
-	@Override
-	public Dimension minimumLayoutSize(Container parent) {
-		return getLayoutSize(mOutline.getMinimumSize());
-	}
+    @Override
+    public Dimension minimumLayoutSize(Container parent) {
+        return getLayoutSize(mOutline.getMinimumSize());
+    }
 
-	@Override
-	public Dimension preferredLayoutSize(Container parent) {
-		return getLayoutSize(mOutline.getPreferredSize());
-	}
+    @Override
+    public Dimension preferredLayoutSize(Container parent) {
+        return getLayoutSize(mOutline.getPreferredSize());
+    }
 
-	@Override
-	public Dimension maximumLayoutSize(Container target) {
-		return getLayoutSize(mOutline.getMaximumSize());
-	}
+    @Override
+    public Dimension maximumLayoutSize(Container target) {
+        return getLayoutSize(mOutline.getMaximumSize());
+    }
 
-	private Dimension getLayoutSize(Dimension size) {
-		Insets insets = getInsets();
-		return new Dimension(insets.left + insets.right + size.width, insets.top + insets.bottom + size.height + mHeader.getPreferredSize().height);
-	}
+    private Dimension getLayoutSize(Dimension size) {
+        Insets insets = getInsets();
+        return new Dimension(insets.left + insets.right + size.width, insets.top + insets.bottom + size.height + mHeader.getPreferredSize().height);
+    }
 
-	@Override
-	public float getLayoutAlignmentX(Container target) {
-		return CENTER_ALIGNMENT;
-	}
+    @Override
+    public float getLayoutAlignmentX(Container target) {
+        return CENTER_ALIGNMENT;
+    }
 
-	@Override
-	public float getLayoutAlignmentY(Container target) {
-		return CENTER_ALIGNMENT;
-	}
+    @Override
+    public float getLayoutAlignmentY(Container target) {
+        return CENTER_ALIGNMENT;
+    }
 
-	@Override
-	public void invalidateLayout(Container target) {
-		// Nothing to do...
-	}
+    @Override
+    public void invalidateLayout(Container target) {
+        // Nothing to do...
+    }
 
-	@Override
-	public void addLayoutComponent(String name, Component comp) {
-		// Nothing to do...
-	}
+    @Override
+    public void addLayoutComponent(String name, Component comp) {
+        // Nothing to do...
+    }
 
-	@Override
-	public void addLayoutComponent(Component comp, Object constraints) {
-		// Nothing to do...
-	}
+    @Override
+    public void addLayoutComponent(Component comp, Object constraints) {
+        // Nothing to do...
+    }
 
-	@Override
-	public void removeLayoutComponent(Component comp) {
-		// Nothing to do...
-	}
+    @Override
+    public void removeLayoutComponent(Component comp) {
+        // Nothing to do...
+    }
 }

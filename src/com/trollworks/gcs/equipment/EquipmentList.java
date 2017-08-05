@@ -24,46 +24,46 @@ import java.io.IOException;
 
 /** A list of equipment. */
 public class EquipmentList extends ListFile {
-	/** The current version. */
-	public static final int		CURRENT_VERSION	= 1;
-	/** The XML tag for {@link EquipmentList}s. */
-	public static final String	TAG_ROOT		= "equipment_list";	//$NON-NLS-1$
-	/** The extension for {@link EquipmentList}s. */
-	public static final String	EXTENSION		= "eqp";			//$NON-NLS-1$
+    /** The current version. */
+    public static final int    CURRENT_VERSION = 1;
+    /** The XML tag for {@link EquipmentList}s. */
+    public static final String TAG_ROOT        = "equipment_list";	//$NON-NLS-1$
+    /** The extension for {@link EquipmentList}s. */
+    public static final String EXTENSION       = "eqp";           			//$NON-NLS-1$
 
-	@Override
-	public int getXMLTagVersion() {
-		return CURRENT_VERSION;
-	}
+    @Override
+    public int getXMLTagVersion() {
+        return CURRENT_VERSION;
+    }
 
-	@Override
-	public String getXMLTagName() {
-		return TAG_ROOT;
-	}
+    @Override
+    public String getXMLTagName() {
+        return TAG_ROOT;
+    }
 
-	@Override
-	public FileType getFileType() {
-		return FileType.getByExtension(EXTENSION);
-	}
+    @Override
+    public FileType getFileType() {
+        return FileType.getByExtension(EXTENSION);
+    }
 
-	@Override
-	public StdImageSet getFileIcons() {
-		return GCSImages.getEquipmentDocumentIcons();
-	}
+    @Override
+    public StdImageSet getFileIcons() {
+        return GCSImages.getEquipmentDocumentIcons();
+    }
 
-	@Override
-	protected void loadList(XMLReader reader, LoadState state) throws IOException {
-		OutlineModel model = getModel();
-		String marker = reader.getMarker();
-		do {
-			if (reader.next() == XMLNodeType.START_TAG) {
-				String name = reader.getName();
-				if (Equipment.TAG_EQUIPMENT.equals(name) || Equipment.TAG_EQUIPMENT_CONTAINER.equals(name)) {
-					model.addRow(new Equipment(this, reader, state), true);
-				} else {
-					reader.skipTag(name);
-				}
-			}
-		} while (reader.withinMarker(marker));
-	}
+    @Override
+    protected void loadList(XMLReader reader, LoadState state) throws IOException {
+        OutlineModel model = getModel();
+        String marker = reader.getMarker();
+        do {
+            if (reader.next() == XMLNodeType.START_TAG) {
+                String name = reader.getName();
+                if (Equipment.TAG_EQUIPMENT.equals(name) || Equipment.TAG_EQUIPMENT_CONTAINER.equals(name)) {
+                    model.addRow(new Equipment(this, reader, state), true);
+                } else {
+                    reader.skipTag(name);
+                }
+            }
+        } while (reader.withinMarker(marker));
+    }
 }

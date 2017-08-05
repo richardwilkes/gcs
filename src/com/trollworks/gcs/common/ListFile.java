@@ -23,64 +23,64 @@ import java.util.TreeSet;
 
 /** A list of rows. */
 public abstract class ListFile extends DataFile {
-	private OutlineModel mModel = new OutlineModel();
+    private OutlineModel mModel = new OutlineModel();
 
-	public ListFile() {
-		setSortingMarksDirty(false);
-	}
+    public ListFile() {
+        setSortingMarksDirty(false);
+    }
 
-	@Override
-	protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
-		loadList(reader, state);
-	}
+    @Override
+    protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
+        loadList(reader, state);
+    }
 
-	/**
-	 * Called to load the individual rows.
-	 *
-	 * @param reader The XML reader to load from.
-	 * @param state The {@link LoadState} to use.
-	 */
-	protected abstract void loadList(XMLReader reader, LoadState state) throws IOException;
+    /**
+     * Called to load the individual rows.
+     *
+     * @param reader The XML reader to load from.
+     * @param state The {@link LoadState} to use.
+     */
+    protected abstract void loadList(XMLReader reader, LoadState state) throws IOException;
 
-	@Override
-	protected final void saveSelf(XMLWriter out) {
-		for (Row one : getTopLevelRows()) {
-			((ListRow) one).save(out, false);
-		}
-	}
+    @Override
+    protected final void saveSelf(XMLWriter out) {
+        for (Row one : getTopLevelRows()) {
+            ((ListRow) one).save(out, false);
+        }
+    }
 
-	/** @return The top-level rows in this list. */
-	public List<Row> getTopLevelRows() {
-		return mModel.getTopLevelRows();
-	}
+    /** @return The top-level rows in this list. */
+    public List<Row> getTopLevelRows() {
+        return mModel.getTopLevelRows();
+    }
 
-	/** @return The outline model. */
-	public OutlineModel getModel() {
-		return mModel;
-	}
+    /** @return The outline model. */
+    public OutlineModel getModel() {
+        return mModel;
+    }
 
-	@Override
-	public boolean isEmpty() {
-		return mModel.getRowCount() == 0;
-	}
+    @Override
+    public boolean isEmpty() {
+        return mModel.getRowCount() == 0;
+    }
 
-	/** @return The set of categories that exist in this {@link ListFile}. */
-	public TreeSet<String> getCategories() {
-		TreeSet<String> set = new TreeSet<>();
-		for (Row row : getTopLevelRows()) {
-			processRowForCategories(row, set);
-		}
-		return set;
-	}
+    /** @return The set of categories that exist in this {@link ListFile}. */
+    public TreeSet<String> getCategories() {
+        TreeSet<String> set = new TreeSet<>();
+        for (Row row : getTopLevelRows()) {
+            processRowForCategories(row, set);
+        }
+        return set;
+    }
 
-	private void processRowForCategories(Row row, TreeSet<String> set) {
-		if (row instanceof ListRow) {
-			set.addAll(((ListRow) row).getCategories());
-		}
-		if (row.hasChildren()) {
-			for (Row child : row.getChildren()) {
-				processRowForCategories(child, set);
-			}
-		}
-	}
+    private void processRowForCategories(Row row, TreeSet<String> set) {
+        if (row instanceof ListRow) {
+            set.addAll(((ListRow) row).getCategories());
+        }
+        if (row.hasChildren()) {
+            for (Row child : row.getChildren()) {
+                processRowForCategories(child, set);
+            }
+        }
+    }
 }

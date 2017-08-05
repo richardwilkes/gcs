@@ -38,79 +38,79 @@ import javax.swing.text.DefaultFormatterFactory;
 
 /** The page reference lookup preferences panel. */
 public class ReferenceLookupPreferences extends PreferencePanel {
-	@Localize("Page References")
-	private static String	TITLE;
-	@Localize("Remove")
-	private static String	REMOVE;
-	@Localize("If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate.")
-	private static String	OFFSET_FIELD_TOOLTIP;
+    @Localize("Page References")
+    private static String TITLE;
+    @Localize("Remove")
+    private static String REMOVE;
+    @Localize("If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate.")
+    private static String OFFSET_FIELD_TOOLTIP;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	private BandedPanel mPanel;
+    private BandedPanel mPanel;
 
-	/**
-	 * Creates a new {@link ReferenceLookupPreferences}.
-	 *
-	 * @param owner The owning {@link PreferencesWindow}.
-	 */
-	public ReferenceLookupPreferences(PreferencesWindow owner) {
-		super(TITLE, owner);
-		setLayout(new BorderLayout());
-		mPanel = new BandedPanel(TITLE);
-		mPanel.setLayout(new ColumnLayout(4, 5, 0));
-		mPanel.setBorder(new EmptyBorder(2, 5, 2, 5));
-		mPanel.setOpaque(true);
-		mPanel.setBackground(Color.WHITE);
-		for (PdfRef ref : PdfRef.getKnown(false)) {
-			JButton button = new JButton(REMOVE);
-			UIUtilities.setOnlySize(button, button.getPreferredSize());
-			button.addActionListener(event -> {
-				ref.remove();
-				Component[] children = mPanel.getComponents();
-				for (int i = 0; i < children.length; i++) {
-					if (children[i] == button) {
-						for (int j = i + 4; --j >= i;) {
-							mPanel.remove(j);
-						}
-						mPanel.setSize(mPanel.getPreferredSize());
-						break;
-					}
-				}
-			});
-			mPanel.add(button);
-			JLabel idLabel = new JLabel(ref.getId(), SwingConstants.CENTER);
-			idLabel.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(1, 4, 1, 4)));
-			idLabel.setOpaque(true);
-			idLabel.setBackground(Color.YELLOW);
-			mPanel.add(idLabel);
-			EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-9999, 9999, true)), event -> {
-				ref.setPageToIndexOffset(((Integer) event.getNewValue()).intValue());
-			}, SwingConstants.RIGHT, Integer.valueOf(ref.getPageToIndexOffset()), Integer.valueOf(-9999), OFFSET_FIELD_TOOLTIP);
-			mPanel.add(field);
-			mPanel.add(new JLabel(ref.getFile().getAbsolutePath()));
-		}
-		mPanel.setSize(mPanel.getPreferredSize());
-		JScrollPane scroller = new JScrollPane(mPanel);
-		Dimension preferredSize = scroller.getPreferredSize();
-		if (preferredSize.height > 200) {
-			preferredSize.height = 200;
-		}
-		scroller.setPreferredSize(preferredSize);
-		add(scroller);
-	}
+    /**
+     * Creates a new {@link ReferenceLookupPreferences}.
+     *
+     * @param owner The owning {@link PreferencesWindow}.
+     */
+    public ReferenceLookupPreferences(PreferencesWindow owner) {
+        super(TITLE, owner);
+        setLayout(new BorderLayout());
+        mPanel = new BandedPanel(TITLE);
+        mPanel.setLayout(new ColumnLayout(4, 5, 0));
+        mPanel.setBorder(new EmptyBorder(2, 5, 2, 5));
+        mPanel.setOpaque(true);
+        mPanel.setBackground(Color.WHITE);
+        for (PdfRef ref : PdfRef.getKnown(false)) {
+            JButton button = new JButton(REMOVE);
+            UIUtilities.setOnlySize(button, button.getPreferredSize());
+            button.addActionListener(event -> {
+                ref.remove();
+                Component[] children = mPanel.getComponents();
+                for (int i = 0; i < children.length; i++) {
+                    if (children[i] == button) {
+                        for (int j = i + 4; --j >= i;) {
+                            mPanel.remove(j);
+                        }
+                        mPanel.setSize(mPanel.getPreferredSize());
+                        break;
+                    }
+                }
+            });
+            mPanel.add(button);
+            JLabel idLabel = new JLabel(ref.getId(), SwingConstants.CENTER);
+            idLabel.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(1, 4, 1, 4)));
+            idLabel.setOpaque(true);
+            idLabel.setBackground(Color.YELLOW);
+            mPanel.add(idLabel);
+            EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-9999, 9999, true)), event -> {
+                ref.setPageToIndexOffset(((Integer) event.getNewValue()).intValue());
+            }, SwingConstants.RIGHT, Integer.valueOf(ref.getPageToIndexOffset()), Integer.valueOf(-9999), OFFSET_FIELD_TOOLTIP);
+            mPanel.add(field);
+            mPanel.add(new JLabel(ref.getFile().getAbsolutePath()));
+        }
+        mPanel.setSize(mPanel.getPreferredSize());
+        JScrollPane scroller = new JScrollPane(mPanel);
+        Dimension preferredSize = scroller.getPreferredSize();
+        if (preferredSize.height > 200) {
+            preferredSize.height = 200;
+        }
+        scroller.setPreferredSize(preferredSize);
+        add(scroller);
+    }
 
-	@Override
-	public boolean isSetToDefaults() {
-		return PdfRef.isSetToDefaults();
-	}
+    @Override
+    public boolean isSetToDefaults() {
+        return PdfRef.isSetToDefaults();
+    }
 
-	@Override
-	public void reset() {
-		PdfRef.reset();
-		mPanel.removeAll();
-		mPanel.setSize(mPanel.getPreferredSize());
-	}
+    @Override
+    public void reset() {
+        PdfRef.reset();
+        mPanel.removeAll();
+        mPanel.setSize(mPanel.getPreferredSize());
+    }
 }

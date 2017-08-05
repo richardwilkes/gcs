@@ -13,21 +13,21 @@ package com.trollworks.gcs.menu.edit;
 
 /** Objects that can have their data incremented/decremented should implement this interface. */
 public interface Incrementable {
-	/** @return The title to use for the increment menu item. */
-	String getIncrementTitle();
+    /** @return The title to use for the increment menu item. */
+    String getIncrementTitle();
 
-	/** @return The title to use for the decrement menu item. */
-	String getDecrementTitle();
+    /** @return The title to use for the decrement menu item. */
+    String getDecrementTitle();
 
-	/** @return Whether the data can be incremented. */
-	boolean canIncrement();
+    /** @return Whether the data can be incremented. */
+    boolean canIncrement();
 
-	/** @return Whether the data can be decremented. */
-	boolean canDecrement();
+    /** @return Whether the data can be decremented. */
+    boolean canDecrement();
 
-	/** Call to increment the data. */
-	void increment();
+    /** Call to increment the data. */
+    void increment();
 
-	/** Call to decrement the data. */
-	void decrement();
+    /** Call to decrement the data. */
+    void decrement();
 }

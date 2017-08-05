@@ -42,61 +42,61 @@ import java.util.Map;
 
 /** The main application user interface. */
 public class GCSApp extends App {
-	@Localize("macOS has translocated GCS, restricting access to the file system and preventing access to the data library. To fix this, you must quit GCS, then run the following command in the terminal after cd'ing into the GURPS Character Sheet folder:\n\n")
-	private static String TRANSLOCATION_INSTRUCTIONS;
+    @Localize("macOS has translocated GCS, restricting access to the file system and preventing access to the data library. To fix this, you must quit GCS, then run the following command in the terminal after cd'ing into the GURPS Character Sheet folder:\n\n")
+    private static String TRANSLOCATION_INSTRUCTIONS;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The one and only instance of this class. */
-	public static final GCSApp	INSTANCE	= new GCSApp();
-	public static final String	WEB_SITE	= "http://gurpscharactersheet.com";									//$NON-NLS-1$
-	private static String		XATTR_CMD	= "xattr -d com.apple.quarantine \"GURPS Character Sheet.app\"";	//$NON-NLS-1$
+    /** The one and only instance of this class. */
+    public static final GCSApp INSTANCE  = new GCSApp();
+    public static final String WEB_SITE  = "http://gurpscharactersheet.com";                             									//$NON-NLS-1$
+    private static String      XATTR_CMD = "xattr -d com.apple.quarantine \"GURPS Character Sheet.app\"";	//$NON-NLS-1$
 
-	private GCSApp() {
-		super();
-		AppWindow.setDefaultWindowIcons(GCSImages.getAppIcons());
-	}
+    private GCSApp() {
+        super();
+        AppWindow.setDefaultWindowIcons(GCSImages.getAppIcons());
+    }
 
-	@Override
-	public void configureApplication(CmdLine cmdLine) {
-		if (Platform.isWindows()) {
-			Map<String, String> map = new HashMap<>();
-			for (FileType fileType : FileType.getAll()) {
-				if (fileType.shouldRegisterAppForOpening()) {
-					map.put(fileType.getExtension(), fileType.getDescription());
-				}
-			}
-			Path home = App.getHomePath();
-			WindowsRegistry.register("GCS", map, home.resolve("gcs"), home.resolve("support")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		}
+    @Override
+    public void configureApplication(CmdLine cmdLine) {
+        if (Platform.isWindows()) {
+            Map<String, String> map = new HashMap<>();
+            for (FileType fileType : FileType.getAll()) {
+                if (fileType.shouldRegisterAppForOpening()) {
+                    map.put(fileType.getExtension(), fileType.getDescription());
+                }
+            }
+            Path home = App.getHomePath();
+            WindowsRegistry.register("GCS", map, home.resolve("gcs"), home.resolve("support")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        }
 
-		UpdateChecker.check("gcs", WEB_SITE + "/versions.txt", WEB_SITE); //$NON-NLS-1$ //$NON-NLS-2$
+        UpdateChecker.check("gcs", WEB_SITE + "/versions.txt", WEB_SITE); //$NON-NLS-1$ //$NON-NLS-2$
 
-		ListCollectionThread.get();
+        ListCollectionThread.get();
 
-		StdMenuBar.configure(new FileMenuProvider(), new EditMenuProvider(), new ItemMenuProvider(), new HelpMenuProvider());
-		OutputPreferences.initialize(); // Must come before SheetPreferences.initialize()
-		SheetPreferences.initialize();
-		PreferencesWindow.addCategory(SheetPreferences::new);
-		PreferencesWindow.addCategory(OutputPreferences::new);
-		PreferencesWindow.addCategory(FontPreferences::new);
-		PreferencesWindow.addCategory(MenuKeyPreferences::new);
-		PreferencesWindow.addCategory(ReferenceLookupPreferences::new);
-	}
+        StdMenuBar.configure(new FileMenuProvider(), new EditMenuProvider(), new ItemMenuProvider(), new HelpMenuProvider());
+        OutputPreferences.initialize(); // Must come before SheetPreferences.initialize()
+        SheetPreferences.initialize();
+        PreferencesWindow.addCategory(SheetPreferences::new);
+        PreferencesWindow.addCategory(OutputPreferences::new);
+        PreferencesWindow.addCategory(FontPreferences::new);
+        PreferencesWindow.addCategory(MenuKeyPreferences::new);
+        PreferencesWindow.addCategory(ReferenceLookupPreferences::new);
+    }
 
-	@Override
-	public void noWindowsAreOpenAtStartup(boolean finalChance) {
-		Workspace.get();
-	}
+    @Override
+    public void noWindowsAreOpenAtStartup(boolean finalChance) {
+        Workspace.get();
+    }
 
-	@Override
-	public void finalStartup() {
-		super.finalStartup();
-		setDefaultMenuBar(new StdMenuBar());
-		if (Platform.isMacintosh() && App.getHomePath().toString().toLowerCase().contains("/apptranslocation/")) { //$NON-NLS-1$
-			WindowUtils.showError(null, Text.wrapToCharacterCount(TRANSLOCATION_INSTRUCTIONS, 60) + XATTR_CMD);
-		}
-	}
+    @Override
+    public void finalStartup() {
+        super.finalStartup();
+        setDefaultMenuBar(new StdMenuBar());
+        if (Platform.isMacintosh() && App.getHomePath().toString().toLowerCase().contains("/apptranslocation/")) { //$NON-NLS-1$
+            WindowUtils.showError(null, Text.wrapToCharacterCount(TRANSLOCATION_INSTRUCTIONS, 60) + XATTR_CMD);
+        }
+    }
 }

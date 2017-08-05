@@ -19,40 +19,40 @@ import com.trollworks.toolkit.utility.Localization;
 
 /** A list of equipment from a library. */
 public class EquipmentDockable extends LibraryDockable {
-	@Localize("Untitled Equipment")
-	@Localize(locale = "de", value = "Unbenannte Ausrüstungs-Liste")
-	@Localize(locale = "ru", value = "Безымянное снаряжение")
-	@Localize(locale = "es", value = "Equipo sin nombrar")
-	private static String UNTITLED;
+    @Localize("Untitled Equipment")
+    @Localize(locale = "de", value = "Unbenannte Ausrüstungs-Liste")
+    @Localize(locale = "ru", value = "Безымянное снаряжение")
+    @Localize(locale = "es", value = "Equipo sin nombrar")
+    private static String UNTITLED;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** Creates a new {@link EquipmentDockable}. */
-	public EquipmentDockable(EquipmentList list) {
-		super(list);
-	}
+    /** Creates a new {@link EquipmentDockable}. */
+    public EquipmentDockable(EquipmentList list) {
+        super(list);
+    }
 
-	@Override
-	public EquipmentList getDataFile() {
-		return (EquipmentList) super.getDataFile();
-	}
+    @Override
+    public EquipmentList getDataFile() {
+        return (EquipmentList) super.getDataFile();
+    }
 
-	@Override
-	protected String getUntitledBaseName() {
-		return UNTITLED;
-	}
+    @Override
+    protected String getUntitledBaseName() {
+        return UNTITLED;
+    }
 
-	@Override
-	protected ListOutline createOutline() {
-		EquipmentList list = getDataFile();
-		list.addTarget(this, Equipment.ID_CATEGORY);
-		return new EquipmentOutline(list, list.getModel());
-	}
+    @Override
+    protected ListOutline createOutline() {
+        EquipmentList list = getDataFile();
+        list.addTarget(this, Equipment.ID_CATEGORY);
+        return new EquipmentOutline(list, list.getModel());
+    }
 
-	@Override
-	public void applyScale(Scale scale) {
-		// RAW: Implement me
-	}
+    @Override
+    public void applyScale(Scale scale) {
+        // RAW: Implement me
+    }
 }

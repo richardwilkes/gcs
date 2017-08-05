@@ -16,45 +16,45 @@ import com.trollworks.toolkit.utility.Localization;
 
 /** Describes how a {@link Modifier}'s point cost is applied. */
 public enum CostType {
-	/** Adds to the percentage multiplier. */
-	PERCENTAGE {
-		@Override
-		public String toString() {
-			return PERCENTAGE_TITLE;
-		}
-	},
-	/** Adds a constant to the base value prior to any multiplier or percentage adjustment. */
-	POINTS {
-		@Override
-		public String toString() {
-			return POINTS_TITLE;
-		}
-	},
-	/** Multiplies the final cost by a constant. */
-	MULTIPLIER {
-		@Override
-		public String toString() {
-			return MULTIPLIER_TITLE;
-		}
-	};
+    /** Adds to the percentage multiplier. */
+    PERCENTAGE {
+        @Override
+        public String toString() {
+            return PERCENTAGE_TITLE;
+        }
+    },
+    /** Adds a constant to the base value prior to any multiplier or percentage adjustment. */
+    POINTS {
+        @Override
+        public String toString() {
+            return POINTS_TITLE;
+        }
+    },
+    /** Multiplies the final cost by a constant. */
+    MULTIPLIER {
+        @Override
+        public String toString() {
+            return MULTIPLIER_TITLE;
+        }
+    };
 
-	@Localize("%")
-	@Localize(locale = "de", value = "%")
-	@Localize(locale = "ru", value = "%")
-	@Localize(locale = "es", value = "%")
-	static String	PERCENTAGE_TITLE;
-	@Localize("points")
-	@Localize(locale = "de", value = "Punkte")
-	@Localize(locale = "ru", value = "очки")
-	@Localize(locale = "es", value = "puntos")
-	static String	POINTS_TITLE;
-	@Localize("\u00d7")
-	@Localize(locale = "de", value = "\u00d7")
-	@Localize(locale = "ru", value = "\u00d7")
-	@Localize(locale = "es", value = "\u00d7")
-	static String	MULTIPLIER_TITLE;
+    @Localize("%")
+    @Localize(locale = "de", value = "%")
+    @Localize(locale = "ru", value = "%")
+    @Localize(locale = "es", value = "%")
+    static String PERCENTAGE_TITLE;
+    @Localize("points")
+    @Localize(locale = "de", value = "Punkte")
+    @Localize(locale = "ru", value = "очки")
+    @Localize(locale = "es", value = "puntos")
+    static String POINTS_TITLE;
+    @Localize("\u00d7")
+    @Localize(locale = "de", value = "\u00d7")
+    @Localize(locale = "ru", value = "\u00d7")
+    @Localize(locale = "es", value = "\u00d7")
+    static String MULTIPLIER_TITLE;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 }

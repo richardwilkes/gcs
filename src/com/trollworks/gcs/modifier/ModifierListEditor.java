@@ -39,196 +39,196 @@ import javax.swing.ScrollPaneConstants;
 
 /** Editor for {@link ModifierList}s. */
 public class ModifierListEditor extends ActionPanel implements ActionListener {
-	@Localize("Modifiers")
-	@Localize(locale = "de", value = "Modifikatoren")
-	@Localize(locale = "ru", value = "Модификаторы")
-	@Localize(locale = "es", value = "Modificadores")
-	private static String	MODIFIERS;
-	@Localize("Add a modifier")
-	@Localize(locale = "de", value = "Einen Modifikator hinzufügen.")
-	@Localize(locale = "ru", value = "Добавить модификатор")
-	@Localize(locale = "es", value = "Añadir un modificador")
-	private static String	ADD_TOOLTIP;
+    @Localize("Modifiers")
+    @Localize(locale = "de", value = "Modifikatoren")
+    @Localize(locale = "ru", value = "Модификаторы")
+    @Localize(locale = "es", value = "Modificadores")
+    private static String MODIFIERS;
+    @Localize("Add a modifier")
+    @Localize(locale = "de", value = "Einen Modifikator hinzufügen.")
+    @Localize(locale = "ru", value = "Добавить модификатор")
+    @Localize(locale = "es", value = "Añadir un modificador")
+    private static String ADD_TOOLTIP;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	private DataFile	mOwner;
-	private Outline		mOutline;
-	IconButton			mAddButton;
-	boolean				mModified;
+    private DataFile mOwner;
+    private Outline  mOutline;
+    IconButton       mAddButton;
+    boolean          mModified;
 
-	/**
-	 * @param advantage The {@link Advantage} to edit.
-	 * @return An instance of {@link ModifierListEditor}.
-	 */
-	static public ModifierListEditor createEditor(Advantage advantage) {
-		return new ModifierListEditor(advantage);
-	}
+    /**
+     * @param advantage The {@link Advantage} to edit.
+     * @return An instance of {@link ModifierListEditor}.
+     */
+    static public ModifierListEditor createEditor(Advantage advantage) {
+        return new ModifierListEditor(advantage);
+    }
 
-	/**
-	 * Creates a new {@link ModifierListEditor} editor.
-	 *
-	 * @param owner The owning row.
-	 * @param readOnlyModifiers The list of {@link Modifier}s from parents, which are not to be
-	 *            modified.
-	 * @param modifiers The list of {@link Modifier}s to modify.
-	 */
-	public ModifierListEditor(DataFile owner, List<Modifier> readOnlyModifiers, List<Modifier> modifiers) {
-		super(new BorderLayout());
-		mOwner = owner;
-		add(createOutline(readOnlyModifiers, modifiers), BorderLayout.CENTER);
-		setName(toString());
-	}
+    /**
+     * Creates a new {@link ModifierListEditor} editor.
+     *
+     * @param owner The owning row.
+     * @param readOnlyModifiers The list of {@link Modifier}s from parents, which are not to be
+     *            modified.
+     * @param modifiers The list of {@link Modifier}s to modify.
+     */
+    public ModifierListEditor(DataFile owner, List<Modifier> readOnlyModifiers, List<Modifier> modifiers) {
+        super(new BorderLayout());
+        mOwner = owner;
+        add(createOutline(readOnlyModifiers, modifiers), BorderLayout.CENTER);
+        setName(toString());
+    }
 
-	/**
-	 * Creates a new {@link ModifierListEditor}.
-	 *
-	 * @param advantage Associated advantage
-	 */
-	public ModifierListEditor(Advantage advantage) {
-		this(advantage.getDataFile(), advantage.getParent() != null ? ((Advantage) advantage.getParent()).getAllModifiers() : null, advantage.getModifiers());
-	}
+    /**
+     * Creates a new {@link ModifierListEditor}.
+     *
+     * @param advantage Associated advantage
+     */
+    public ModifierListEditor(Advantage advantage) {
+        this(advantage.getDataFile(), advantage.getParent() != null ? ((Advantage) advantage.getParent()).getAllModifiers() : null, advantage.getModifiers());
+    }
 
-	/** @return Whether a {@link Modifier} was modified. */
-	public boolean wasModified() {
-		return mModified;
-	}
+    /** @return Whether a {@link Modifier} was modified. */
+    public boolean wasModified() {
+        return mModified;
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		Object source = event.getSource();
-		if (mOutline == source) {
-			handleOutline(event.getActionCommand());
-		}
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        Object source = event.getSource();
+        if (mOutline == source) {
+            handleOutline(event.getActionCommand());
+        }
+    }
 
-	private void handleOutline(String cmd) {
-		if (Outline.CMD_OPEN_SELECTION.equals(cmd)) {
-			openDetailEditor();
-		}
-	}
+    private void handleOutline(String cmd) {
+        if (Outline.CMD_OPEN_SELECTION.equals(cmd)) {
+            openDetailEditor();
+        }
+    }
 
-	private Component createOutline(List<Modifier> readOnlyModifiers, List<Modifier> modifiers) {
-		JScrollPane scroller;
-		OutlineModel model;
+    private Component createOutline(List<Modifier> readOnlyModifiers, List<Modifier> modifiers) {
+        JScrollPane scroller;
+        OutlineModel model;
 
-		mAddButton = new IconButton(StdImage.ADD, ADD_TOOLTIP, () -> addModifier());
+        mAddButton = new IconButton(StdImage.ADD, ADD_TOOLTIP, () -> addModifier());
 
-		mOutline = new ModifierOutline();
-		model = mOutline.getModel();
-		ModifierColumnID.addColumns(mOutline, true);
+        mOutline = new ModifierOutline();
+        model = mOutline.getModel();
+        ModifierColumnID.addColumns(mOutline, true);
 
-		if (readOnlyModifiers != null) {
-			for (Modifier modifier : readOnlyModifiers) {
-				if (modifier.isEnabled()) {
-					Modifier romod = modifier.cloneModifier();
-					romod.setReadOnly(true);
-					model.addRow(romod);
-				}
-			}
-		}
-		for (Modifier modifier : modifiers) {
-			model.addRow(modifier.cloneModifier());
-		}
-		mOutline.addActionListener(this);
+        if (readOnlyModifiers != null) {
+            for (Modifier modifier : readOnlyModifiers) {
+                if (modifier.isEnabled()) {
+                    Modifier romod = modifier.cloneModifier();
+                    romod.setReadOnly(true);
+                    model.addRow(romod);
+                }
+            }
+        }
+        for (Modifier modifier : modifiers) {
+            model.addRow(modifier.cloneModifier());
+        }
+        mOutline.addActionListener(this);
 
-		scroller = new JScrollPane(mOutline, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-		scroller.setColumnHeaderView(mOutline.getHeaderPanel());
-		scroller.setCorner(ScrollPaneConstants.UPPER_RIGHT_CORNER, mAddButton);
-		return scroller;
-	}
+        scroller = new JScrollPane(mOutline, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scroller.setColumnHeaderView(mOutline.getHeaderPanel());
+        scroller.setCorner(ScrollPaneConstants.UPPER_RIGHT_CORNER, mAddButton);
+        return scroller;
+    }
 
-	private void openDetailEditor() {
-		ArrayList<ListRow> rows = new ArrayList<>();
-		for (Modifier row : new FilteredIterator<>(mOutline.getModel().getSelectionAsList(), Modifier.class)) {
-			if (!row.isReadOnly()) {
-				rows.add(row);
-			}
-		}
-		if (!rows.isEmpty()) {
-			mOutline.getModel().setLocked(!mAddButton.isEnabled());
-			if (RowEditor.edit(mOutline, rows)) {
-				mModified = true;
-				for (ListRow row : rows) {
-					row.update();
-				}
-				mOutline.updateRowHeights(rows);
-				mOutline.sizeColumnsToFit();
-				notifyActionListeners();
-			}
-		}
-	}
+    private void openDetailEditor() {
+        ArrayList<ListRow> rows = new ArrayList<>();
+        for (Modifier row : new FilteredIterator<>(mOutline.getModel().getSelectionAsList(), Modifier.class)) {
+            if (!row.isReadOnly()) {
+                rows.add(row);
+            }
+        }
+        if (!rows.isEmpty()) {
+            mOutline.getModel().setLocked(!mAddButton.isEnabled());
+            if (RowEditor.edit(mOutline, rows)) {
+                mModified = true;
+                for (ListRow row : rows) {
+                    row.update();
+                }
+                mOutline.updateRowHeights(rows);
+                mOutline.sizeColumnsToFit();
+                notifyActionListeners();
+            }
+        }
+    }
 
-	private void addModifier() {
-		Modifier modifier = new Modifier(mOwner);
-		OutlineModel model = mOutline.getModel();
+    private void addModifier() {
+        Modifier modifier = new Modifier(mOwner);
+        OutlineModel model = mOutline.getModel();
 
-		if (mOwner instanceof ListFile || mOwner instanceof LibraryFile) {
-			modifier.setEnabled(false);
-		}
-		model.addRow(modifier);
-		mOutline.sizeColumnsToFit();
-		model.select(modifier, false);
-		mOutline.revalidate();
-		mOutline.scrollSelectionIntoView();
-		mOutline.requestFocus();
-		mModified = true;
-		openDetailEditor();
-	}
+        if (mOwner instanceof ListFile || mOwner instanceof LibraryFile) {
+            modifier.setEnabled(false);
+        }
+        model.addRow(modifier);
+        mOutline.sizeColumnsToFit();
+        model.select(modifier, false);
+        mOutline.revalidate();
+        mOutline.scrollSelectionIntoView();
+        mOutline.requestFocus();
+        mModified = true;
+        openDetailEditor();
+    }
 
-	/** @return Modifiers edited by this editor */
-	public List<Modifier> getModifiers() {
-		ArrayList<Modifier> modifiers = new ArrayList<>();
-		for (Modifier modifier : new FilteredIterator<>(mOutline.getModel().getRows(), Modifier.class)) {
-			if (!modifier.isReadOnly()) {
-				modifiers.add(modifier);
-			}
-		}
-		return modifiers;
-	}
+    /** @return Modifiers edited by this editor */
+    public List<Modifier> getModifiers() {
+        ArrayList<Modifier> modifiers = new ArrayList<>();
+        for (Modifier modifier : new FilteredIterator<>(mOutline.getModel().getRows(), Modifier.class)) {
+            if (!modifier.isReadOnly()) {
+                modifiers.add(modifier);
+            }
+        }
+        return modifiers;
+    }
 
-	/** @return Modifiers edited by this editor plus inherited Modifiers */
-	public List<Modifier> getAllModifiers() {
-		return new FilteredList<>(mOutline.getModel().getRows(), Modifier.class);
-	}
+    /** @return Modifiers edited by this editor plus inherited Modifiers */
+    public List<Modifier> getAllModifiers() {
+        return new FilteredList<>(mOutline.getModel().getRows(), Modifier.class);
+    }
 
-	@Override
-	public String toString() {
-		return MODIFIERS;
-	}
+    @Override
+    public String toString() {
+        return MODIFIERS;
+    }
 
-	class ModifierOutline extends Outline {
-		ModifierOutline() {
-			super(false);
-			setAllowColumnDrag(false);
-			setAllowColumnResize(false);
-			setAllowRowDrag(false);
-		}
+    class ModifierOutline extends Outline {
+        ModifierOutline() {
+            super(false);
+            setAllowColumnDrag(false);
+            setAllowColumnResize(false);
+            setAllowRowDrag(false);
+        }
 
-		@Override
-		public boolean canDeleteSelection() {
-			OutlineModel model = getModel();
-			boolean can = mAddButton.isEnabled() && model.hasSelection();
-			if (can) {
-				for (Modifier row : new FilteredIterator<>(model.getSelectionAsList(), Modifier.class)) {
-					if (row.isReadOnly()) {
-						return false;
-					}
-				}
-			}
-			return can;
-		}
+        @Override
+        public boolean canDeleteSelection() {
+            OutlineModel model = getModel();
+            boolean can = mAddButton.isEnabled() && model.hasSelection();
+            if (can) {
+                for (Modifier row : new FilteredIterator<>(model.getSelectionAsList(), Modifier.class)) {
+                    if (row.isReadOnly()) {
+                        return false;
+                    }
+                }
+            }
+            return can;
+        }
 
-		@Override
-		public void deleteSelection() {
-			if (canDeleteSelection()) {
-				getModel().removeSelection();
-				sizeColumnsToFit();
-				mModified = true;
-				notifyActionListeners();
-			}
-		}
-	}
+        @Override
+        public void deleteSelection() {
+            if (canDeleteSelection()) {
+                getModel().removeSelection();
+                sizeColumnsToFit();
+                mModified = true;
+                notifyActionListeners();
+            }
+        }
+    }
 }

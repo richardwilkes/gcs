@@ -20,61 +20,61 @@ import com.trollworks.toolkit.utility.Localization;
 
 /** An advantage prerequisite editor panel. */
 public class AdvantagePrereqEditor extends PrereqEditor {
-	@Localize("whose name ")
-	@Localize(locale = "de", value = "dessen Name ")
-	@Localize(locale = "ru", value = "чье имя ")
-	@Localize(locale = "es", value = "llamada ")
-	private static String	WHOSE_NAME;
-	@Localize("and whose level ")
-	@Localize(locale = "de", value = "und dessen Stufe ")
-	@Localize(locale = "ru", value = "и чей уровень ")
-	@Localize(locale = "es", value = "y cuyo nivel ")
-	private static String	WHOSE_LEVEL;
-	@Localize("and whose notes ")
-	@Localize(locale = "de", value = "und dessen Anmerkungen ")
-	@Localize(locale = "ru", value = "и чьи заметки ")
-	@Localize(locale = "es", value = "y cuyas notas ")
-	private static String	WHOSE_NOTES;
+    @Localize("whose name ")
+    @Localize(locale = "de", value = "dessen Name ")
+    @Localize(locale = "ru", value = "чье имя ")
+    @Localize(locale = "es", value = "llamada ")
+    private static String WHOSE_NAME;
+    @Localize("and whose level ")
+    @Localize(locale = "de", value = "und dessen Stufe ")
+    @Localize(locale = "ru", value = "и чей уровень ")
+    @Localize(locale = "es", value = "y cuyo nivel ")
+    private static String WHOSE_LEVEL;
+    @Localize("and whose notes ")
+    @Localize(locale = "de", value = "und dessen Anmerkungen ")
+    @Localize(locale = "ru", value = "и чьи заметки ")
+    @Localize(locale = "es", value = "y cuyas notas ")
+    private static String WHOSE_NOTES;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/**
-	 * Creates a new advantage prerequisite editor panel.
-	 *
-	 * @param row The owning row.
-	 * @param prereq The prerequisite to edit.
-	 * @param depth The depth of this prerequisite.
-	 */
-	public AdvantagePrereqEditor(ListRow row, AdvantagePrereq prereq, int depth) {
-		super(row, prereq, depth);
-	}
+    /**
+     * Creates a new advantage prerequisite editor panel.
+     *
+     * @param row The owning row.
+     * @param prereq The prerequisite to edit.
+     * @param depth The depth of this prerequisite.
+     */
+    public AdvantagePrereqEditor(ListRow row, AdvantagePrereq prereq, int depth) {
+        super(row, prereq, depth);
+    }
 
-	@Override
-	protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
-		AdvantagePrereq prereq = (AdvantagePrereq) mPrereq;
+    @Override
+    protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
+        AdvantagePrereq prereq = (AdvantagePrereq) mPrereq;
 
-		FlexRow row = new FlexRow();
-		row.add(addHasCombo(prereq.has()));
-		row.add(addChangeBaseTypeCombo());
-		row.add(new FlexSpacer(0, 0, true, false));
-		grid.add(row, 0, 1);
+        FlexRow row = new FlexRow();
+        row.add(addHasCombo(prereq.has()));
+        row.add(addChangeBaseTypeCombo());
+        row.add(new FlexSpacer(0, 0, true, false));
+        grid.add(row, 0, 1);
 
-		row = new FlexRow();
-		row.add(addStringCompareCombo(prereq.getNameCriteria(), WHOSE_NAME));
-		row.add(addStringCompareField(prereq.getNameCriteria()));
-		grid.add(row, 1, 1);
+        row = new FlexRow();
+        row.add(addStringCompareCombo(prereq.getNameCriteria(), WHOSE_NAME));
+        row.add(addStringCompareField(prereq.getNameCriteria()));
+        grid.add(row, 1, 1);
 
-		row = new FlexRow();
-		row.add(addStringCompareCombo(prereq.getNotesCriteria(), WHOSE_NOTES));
-		row.add(addStringCompareField(prereq.getNotesCriteria()));
-		grid.add(row, 2, 1);
+        row = new FlexRow();
+        row.add(addStringCompareCombo(prereq.getNotesCriteria(), WHOSE_NOTES));
+        row.add(addStringCompareField(prereq.getNotesCriteria()));
+        grid.add(row, 2, 1);
 
-		row = new FlexRow();
-		row.add(addNumericCompareCombo(prereq.getLevelCriteria(), WHOSE_LEVEL));
-		row.add(addNumericCompareField(prereq.getLevelCriteria(), 0, 999, false));
-		row.add(new FlexSpacer(0, 0, true, false));
-		grid.add(row, 3, 1);
-	}
+        row = new FlexRow();
+        row.add(addNumericCompareCombo(prereq.getLevelCriteria(), WHOSE_LEVEL));
+        row.add(addNumericCompareField(prereq.getLevelCriteria(), 0, 999, false));
+        row.add(new FlexSpacer(0, 0, true, false));
+        grid.add(row, 3, 1);
+    }
 }

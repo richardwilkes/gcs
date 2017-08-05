@@ -18,18 +18,18 @@ import com.trollworks.toolkit.ui.layout.FlexSpacer;
 
 /** This is a placeholder feature, used for the empty state. */
 public class NoFeature extends FeatureEditor {
-	/**
-	 * Create a new placeholder.
-	 * 
-	 * @param row The row this feature will belong to.
-	 */
-	public NoFeature(ListRow row) {
-		super(row, null);
+    /**
+     * Create a new placeholder.
+     * 
+     * @param row The row this feature will belong to.
+     */
+    public NoFeature(ListRow row) {
+        super(row, null);
 
-	}
+    }
 
-	@Override
-	protected void rebuildSelf(FlexGrid grid, FlexRow right) {
-		grid.add(new FlexSpacer(0, 0, true, false), 0, 0);
-	}
+    @Override
+    protected void rebuildSelf(FlexGrid grid, FlexRow right) {
+        grid.add(new FlexSpacer(0, 0, true, false), 0, 0);
+    }
 }

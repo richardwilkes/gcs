@@ -17,12 +17,12 @@ import java.io.IOException;
 
 /** Used to create a file for temporary use. The file will be deleted when closed */
 public class TemporaryFile extends File implements Closeable {
-	public TemporaryFile(String prefix, String extension) throws IOException {
-		super(File.createTempFile(prefix, extension).getAbsolutePath());
-	}
+    public TemporaryFile(String prefix, String extension) throws IOException {
+        super(File.createTempFile(prefix, extension).getAbsolutePath());
+    }
 
-	@Override
-	public void close() throws IOException {
-		delete();
-	}
+    @Override
+    public void close() throws IOException {
+        delete();
+    }
 }

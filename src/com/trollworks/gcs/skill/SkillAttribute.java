@@ -17,130 +17,130 @@ import com.trollworks.toolkit.utility.Localization;
 
 /** The possible skill attributes. */
 public enum SkillAttribute {
-	/** The strength attribute. */
-	ST {
-		@Override
-		public String toString() {
-			return ST_TITLE;
-		}
+    /** The strength attribute. */
+    ST {
+        @Override
+        public String toString() {
+            return ST_TITLE;
+        }
 
-		@Override
-		public int getBaseSkillLevel(GURPSCharacter character) {
-			return character != null ? character.getStrength() : Integer.MIN_VALUE;
-		}
-	},
-	/** The dexterity attribute. */
-	DX {
-		@Override
-		public String toString() {
-			return DX_TITLE;
-		}
+        @Override
+        public int getBaseSkillLevel(GURPSCharacter character) {
+            return character != null ? character.getStrength() : Integer.MIN_VALUE;
+        }
+    },
+    /** The dexterity attribute. */
+    DX {
+        @Override
+        public String toString() {
+            return DX_TITLE;
+        }
 
-		@Override
-		public int getBaseSkillLevel(GURPSCharacter character) {
-			return character != null ? character.getDexterity() : Integer.MIN_VALUE;
-		}
-	},
-	/** The health attribute. */
-	HT {
-		@Override
-		public String toString() {
-			return HT_TITLE;
-		}
+        @Override
+        public int getBaseSkillLevel(GURPSCharacter character) {
+            return character != null ? character.getDexterity() : Integer.MIN_VALUE;
+        }
+    },
+    /** The health attribute. */
+    HT {
+        @Override
+        public String toString() {
+            return HT_TITLE;
+        }
 
-		@Override
-		public int getBaseSkillLevel(GURPSCharacter character) {
-			return character != null ? character.getHealth() : Integer.MIN_VALUE;
-		}
-	},
-	/** The intelligence attribute. */
-	IQ {
-		@Override
-		public String toString() {
-			return IQ_TITLE;
-		}
+        @Override
+        public int getBaseSkillLevel(GURPSCharacter character) {
+            return character != null ? character.getHealth() : Integer.MIN_VALUE;
+        }
+    },
+    /** The intelligence attribute. */
+    IQ {
+        @Override
+        public String toString() {
+            return IQ_TITLE;
+        }
 
-		@Override
-		public int getBaseSkillLevel(GURPSCharacter character) {
-			return character != null ? character.getIntelligence() : Integer.MIN_VALUE;
-		}
-	},
-	/** The will attribute. */
-	Will {
-		@Override
-		public String toString() {
-			return WILL_TITLE;
-		}
+        @Override
+        public int getBaseSkillLevel(GURPSCharacter character) {
+            return character != null ? character.getIntelligence() : Integer.MIN_VALUE;
+        }
+    },
+    /** The will attribute. */
+    Will {
+        @Override
+        public String toString() {
+            return WILL_TITLE;
+        }
 
-		@Override
-		public int getBaseSkillLevel(GURPSCharacter character) {
-			return character != null ? character.getWill() : Integer.MIN_VALUE;
-		}
-	},
-	/** The perception attribute. */
-	Per {
-		@Override
-		public String toString() {
-			return PER_TITLE;
-		}
+        @Override
+        public int getBaseSkillLevel(GURPSCharacter character) {
+            return character != null ? character.getWill() : Integer.MIN_VALUE;
+        }
+    },
+    /** The perception attribute. */
+    Per {
+        @Override
+        public String toString() {
+            return PER_TITLE;
+        }
 
-		@Override
-		public int getBaseSkillLevel(GURPSCharacter character) {
-			return character != null ? character.getPerception() : Integer.MIN_VALUE;
-		}
-	},
-	/** Just 10 instead of the actual attribute. */
-	Base10 {
-		@Override
-		public String toString() {
-			return BASE_10_TITLE;
-		}
+        @Override
+        public int getBaseSkillLevel(GURPSCharacter character) {
+            return character != null ? character.getPerception() : Integer.MIN_VALUE;
+        }
+    },
+    /** Just 10 instead of the actual attribute. */
+    Base10 {
+        @Override
+        public String toString() {
+            return BASE_10_TITLE;
+        }
 
-		@Override
-		public int getBaseSkillLevel(GURPSCharacter character) {
-			return 10;
-		}
-	};
+        @Override
+        public int getBaseSkillLevel(GURPSCharacter character) {
+            return 10;
+        }
+    };
 
-	@Localize("ST")
-	@Localize(locale = "de", value = "ST")
-	@Localize(locale = "ru", value = "СЛ")
-	@Localize(locale = "es", value = "FZ")
-	static String	ST_TITLE;
-	@Localize("DX")
-	@Localize(locale = "de", value = "GE")
-	@Localize(locale = "ru", value = "ЛВ")
-	@Localize(locale = "es", value = "DS")
-	static String	DX_TITLE;
-	@Localize("IQ")
-	@Localize(locale = "de", value = "IQ")
-	@Localize(locale = "ru", value = "ИН")
-	@Localize(locale = "es", value = "CI")
-	static String	IQ_TITLE;
-	@Localize("HT")
-	@Localize(locale = "de", value = "KO")
-	@Localize(locale = "ru", value = "ЗД")
-	@Localize(locale = "es", value = "SL")
-	static String	HT_TITLE;
-	@Localize("Will")
-	@Localize(locale = "de", value = "Wille")
-	@Localize(locale = "ru", value = "Воля")
-	@Localize(locale = "es", value = "Vol")
-	static String	WILL_TITLE;
-	@Localize("Per")
-	@Localize(locale = "de", value = "WN")
-	@Localize(locale = "ru", value = "Восп")
-	static String	PER_TITLE;
-	@Localize("10")
-	static String	BASE_10_TITLE;
+    @Localize("ST")
+    @Localize(locale = "de", value = "ST")
+    @Localize(locale = "ru", value = "СЛ")
+    @Localize(locale = "es", value = "FZ")
+    static String ST_TITLE;
+    @Localize("DX")
+    @Localize(locale = "de", value = "GE")
+    @Localize(locale = "ru", value = "ЛВ")
+    @Localize(locale = "es", value = "DS")
+    static String DX_TITLE;
+    @Localize("IQ")
+    @Localize(locale = "de", value = "IQ")
+    @Localize(locale = "ru", value = "ИН")
+    @Localize(locale = "es", value = "CI")
+    static String IQ_TITLE;
+    @Localize("HT")
+    @Localize(locale = "de", value = "KO")
+    @Localize(locale = "ru", value = "ЗД")
+    @Localize(locale = "es", value = "SL")
+    static String HT_TITLE;
+    @Localize("Will")
+    @Localize(locale = "de", value = "Wille")
+    @Localize(locale = "ru", value = "Воля")
+    @Localize(locale = "es", value = "Vol")
+    static String WILL_TITLE;
+    @Localize("Per")
+    @Localize(locale = "de", value = "WN")
+    @Localize(locale = "ru", value = "Восп")
+    static String PER_TITLE;
+    @Localize("10")
+    static String BASE_10_TITLE;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/**
-	 * @param character The character to work with.
-	 * @return The base skill level for this attribute.
-	 */
-	public abstract int getBaseSkillLevel(GURPSCharacter character);
+    /**
+     * @param character The character to work with.
+     * @return The base skill level for this attribute.
+     */
+    public abstract int getBaseSkillLevel(GURPSCharacter character);
 }

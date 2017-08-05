@@ -24,63 +24,63 @@ import java.io.IOException;
 
 /** Data Object to hold several {@link Modifier} */
 public class ModifierList extends ListFile {
-	private static final int	CURRENT_VERSION	= 1;
-	/** The XML tag for advantage lists. */
-	public static final String	TAG_ROOT		= "modifier_list";	//$NON-NLS-1$
+    private static final int   CURRENT_VERSION = 1;
+    /** The XML tag for advantage lists. */
+    public static final String TAG_ROOT        = "modifier_list";	//$NON-NLS-1$
 
-	/** Creates new {@link ModifierList}. */
-	public ModifierList() {
-		super();
-	}
+    /** Creates new {@link ModifierList}. */
+    public ModifierList() {
+        super();
+    }
 
-	/**
-	 * Creates a new {@link ModifierList}.
-	 *
-	 * @param modifiers The {@link ModifierList} to clone.
-	 */
-	public ModifierList(ModifierList modifiers) {
-		this();
-		for (Row Row : modifiers.getModel().getRows()) {
-			getModel().getRows().add(Row);
-		}
-	}
+    /**
+     * Creates a new {@link ModifierList}.
+     *
+     * @param modifiers The {@link ModifierList} to clone.
+     */
+    public ModifierList(ModifierList modifiers) {
+        this();
+        for (Row Row : modifiers.getModel().getRows()) {
+            getModel().getRows().add(Row);
+        }
+    }
 
-	@Override
-	protected void loadList(XMLReader reader, LoadState state) throws IOException {
-		OutlineModel model = getModel();
-		String marker = reader.getMarker();
-		do {
-			if (reader.next() == XMLNodeType.START_TAG) {
-				String name = reader.getName();
+    @Override
+    protected void loadList(XMLReader reader, LoadState state) throws IOException {
+        OutlineModel model = getModel();
+        String marker = reader.getMarker();
+        do {
+            if (reader.next() == XMLNodeType.START_TAG) {
+                String name = reader.getName();
 
-				if (Modifier.TAG_MODIFIER.equals(name)) {
-					model.addRow(new Modifier(this, reader, state), true);
-				} else {
-					reader.skipTag(name);
-				}
-			}
-		} while (reader.withinMarker(marker));
-	}
+                if (Modifier.TAG_MODIFIER.equals(name)) {
+                    model.addRow(new Modifier(this, reader, state), true);
+                } else {
+                    reader.skipTag(name);
+                }
+            }
+        } while (reader.withinMarker(marker));
+    }
 
-	@Override
-	// Not used
-	public FileType getFileType() {
-		return null;
-	}
+    @Override
+    // Not used
+    public FileType getFileType() {
+        return null;
+    }
 
-	@Override
-	// Not used
-	public StdImageSet getFileIcons() {
-		return null;
-	}
+    @Override
+    // Not used
+    public StdImageSet getFileIcons() {
+        return null;
+    }
 
-	@Override
-	public int getXMLTagVersion() {
-		return CURRENT_VERSION;
-	}
+    @Override
+    public int getXMLTagVersion() {
+        return CURRENT_VERSION;
+    }
 
-	@Override
-	public String getXMLTagName() {
-		return TAG_ROOT;
-	}
+    @Override
+    public String getXMLTagName() {
+        return TAG_ROOT;
+    }
 }

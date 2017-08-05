@@ -18,93 +18,93 @@ import com.trollworks.toolkit.utility.Localization;
 
 /** An abstract prerequisite class for whether or not the specific item is present. */
 public abstract class HasPrereq extends Prereq {
-	@Localize("Has")
-	@Localize(locale = "de", value = "Hat")
-	@Localize(locale = "ru", value = "Имеет")
-	@Localize(locale = "es", value = "Tiene")
-	static String	HAS;
-	@Localize("Does not have")
-	@Localize(locale = "de", value = "Hat nicht")
-	@Localize(locale = "ru", value = "Не имеет")
-	@Localize(locale = "es", value = "No tiene")
-	static String	DOES_NOT_HAVE;
+    @Localize("Has")
+    @Localize(locale = "de", value = "Hat")
+    @Localize(locale = "ru", value = "Имеет")
+    @Localize(locale = "es", value = "Tiene")
+    static String HAS;
+    @Localize("Does not have")
+    @Localize(locale = "de", value = "Hat nicht")
+    @Localize(locale = "ru", value = "Не имеет")
+    @Localize(locale = "es", value = "No tiene")
+    static String DOES_NOT_HAVE;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The "has" attribute name. */
-	protected static final String	ATTRIBUTE_HAS	= "has";	//$NON-NLS-1$
-	private boolean					mHas;
+    /** The "has" attribute name. */
+    protected static final String ATTRIBUTE_HAS = "has";	//$NON-NLS-1$
+    private boolean               mHas;
 
-	/**
-	 * Creates a new prerequisite.
-	 *
-	 * @param parent The owning prerequisite list, if any.
-	 */
-	public HasPrereq(PrereqList parent) {
-		super(parent);
-		mHas = true;
-	}
+    /**
+     * Creates a new prerequisite.
+     *
+     * @param parent The owning prerequisite list, if any.
+     */
+    public HasPrereq(PrereqList parent) {
+        super(parent);
+        mHas = true;
+    }
 
-	/**
-	 * Creates a copy of the specified prerequisite.
-	 *
-	 * @param parent The owning prerequisite list, if any.
-	 * @param prereq The prerequisite to clone.
-	 */
-	protected HasPrereq(PrereqList parent, HasPrereq prereq) {
-		super(parent);
-		mHas = prereq.mHas;
-	}
+    /**
+     * Creates a copy of the specified prerequisite.
+     *
+     * @param parent The owning prerequisite list, if any.
+     * @param prereq The prerequisite to clone.
+     */
+    protected HasPrereq(PrereqList parent, HasPrereq prereq) {
+        super(parent);
+        mHas = prereq.mHas;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == this) {
-			return true;
-		}
-		if (obj instanceof HasPrereq) {
-			return mHas == ((HasPrereq) obj).mHas;
-		}
-		return false;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof HasPrereq) {
+            return mHas == ((HasPrereq) obj).mHas;
+        }
+        return false;
+    }
 
-	@Override
-	public int hashCode() {
-		return super.hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 
-	/**
-	 * Loads the "has" attribute.
-	 *
-	 * @param reader The XML reader to load from.
-	 */
-	protected void loadHasAttribute(XMLReader reader) {
-		mHas = reader.isAttributeSet(ATTRIBUTE_HAS);
-	}
+    /**
+     * Loads the "has" attribute.
+     *
+     * @param reader The XML reader to load from.
+     */
+    protected void loadHasAttribute(XMLReader reader) {
+        mHas = reader.isAttributeSet(ATTRIBUTE_HAS);
+    }
 
-	/**
-	 * Writes the "has" attribute to the stream.
-	 *
-	 * @param out The XML writer to use.
-	 */
-	protected void saveHasAttribute(XMLWriter out) {
-		out.writeAttribute(ATTRIBUTE_HAS, mHas);
-	}
+    /**
+     * Writes the "has" attribute to the stream.
+     *
+     * @param out The XML writer to use.
+     */
+    protected void saveHasAttribute(XMLWriter out) {
+        out.writeAttribute(ATTRIBUTE_HAS, mHas);
+    }
 
-	/**
-	 * @return <code>true</code> if the specified criteria should exist, <code>false</code> if it
-	 *         should not.
-	 */
-	public boolean has() {
-		return mHas;
-	}
+    /**
+     * @return <code>true</code> if the specified criteria should exist, <code>false</code> if it
+     *         should not.
+     */
+    public boolean has() {
+        return mHas;
+    }
 
-	/**
-	 * @param has <code>true</code> if the specified criteria should exist, <code>false</code> if it
-	 *            should not.
-	 */
-	public void has(boolean has) {
-		mHas = has;
-	}
+    /**
+     * @param has <code>true</code> if the specified criteria should exist, <code>false</code> if it
+     *            should not.
+     */
+    public void has(boolean has) {
+        mHas = has;
+    }
 }

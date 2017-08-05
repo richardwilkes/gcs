@@ -22,48 +22,48 @@ import java.awt.event.KeyEvent;
 
 /** Provides the "Increment" command. */
 public class IncrementCommand extends Command {
-	@Localize("Increment")
-	@Localize(locale = "de", value = "Erhöhen")
-	@Localize(locale = "ru", value = "Увеличить")
-	@Localize(locale = "es", value = "Incrementar")
-	private static String INCREMENT;
+    @Localize("Increment")
+    @Localize(locale = "de", value = "Erhöhen")
+    @Localize(locale = "ru", value = "Увеличить")
+    @Localize(locale = "es", value = "Incrementar")
+    private static String INCREMENT;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String				CMD_INCREMENT	= "Increment";				//$NON-NLS-1$
+    /** The action command this command will issue. */
+    public static final String           CMD_INCREMENT = "Increment";           				//$NON-NLS-1$
 
-	/** The singleton {@link IncrementCommand}. */
-	public static final IncrementCommand	INSTANCE		= new IncrementCommand();
+    /** The singleton {@link IncrementCommand}. */
+    public static final IncrementCommand INSTANCE      = new IncrementCommand();
 
-	private IncrementCommand() {
-		super(INCREMENT, CMD_INCREMENT, KeyEvent.VK_EQUALS);
-	}
+    private IncrementCommand() {
+        super(INCREMENT, CMD_INCREMENT, KeyEvent.VK_EQUALS);
+    }
 
-	@Override
-	public void adjust() {
-		Component focus = getFocusOwner();
-		if (focus instanceof OutlineProxy) {
-			focus = ((OutlineProxy) focus).getRealOutline();
-		}
-		if (focus instanceof Incrementable) {
-			Incrementable inc = (Incrementable) focus;
-			setTitle(inc.getIncrementTitle());
-			setEnabled(inc.canIncrement());
-		} else {
-			setTitle(INCREMENT);
-			setEnabled(false);
-		}
-	}
+    @Override
+    public void adjust() {
+        Component focus = getFocusOwner();
+        if (focus instanceof OutlineProxy) {
+            focus = ((OutlineProxy) focus).getRealOutline();
+        }
+        if (focus instanceof Incrementable) {
+            Incrementable inc = (Incrementable) focus;
+            setTitle(inc.getIncrementTitle());
+            setEnabled(inc.canIncrement());
+        } else {
+            setTitle(INCREMENT);
+            setEnabled(false);
+        }
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		Component focus = getFocusOwner();
-		if (focus instanceof OutlineProxy) {
-			focus = ((OutlineProxy) focus).getRealOutline();
-		}
-		((Incrementable) focus).increment();
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        Component focus = getFocusOwner();
+        if (focus instanceof OutlineProxy) {
+            focus = ((OutlineProxy) focus).getRealOutline();
+        }
+        ((Incrementable) focus).increment();
+    }
 }

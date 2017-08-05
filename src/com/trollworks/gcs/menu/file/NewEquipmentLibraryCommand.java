@@ -22,46 +22,46 @@ import java.awt.event.ActionEvent;
 
 /** Provides the "New Equipment Library" command. */
 public class NewEquipmentLibraryCommand extends Command {
-	@Localize("New Equipment Library")
-	@Localize(locale = "de", value = "Neue Ausrüstungs-Liste")
-	@Localize(locale = "ru", value = "Новая библиотека снаряжений")
-	@Localize(locale = "es", value = "Nueva Librería de Equipo")
-	private static String TITLE;
+    @Localize("New Equipment Library")
+    @Localize(locale = "de", value = "Neue Ausrüstungs-Liste")
+    @Localize(locale = "ru", value = "Новая библиотека снаряжений")
+    @Localize(locale = "es", value = "Nueva Librería de Equipo")
+    private static String TITLE;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String						CMD_NEW_LIBRARY	= "NewEquipmentLibrary";			//$NON-NLS-1$
+    /** The action command this command will issue. */
+    public static final String                     CMD_NEW_LIBRARY = "NewEquipmentLibrary";           			//$NON-NLS-1$
 
-	/** The singleton {@link NewEquipmentLibraryCommand}. */
-	public static final NewEquipmentLibraryCommand	INSTANCE		= new NewEquipmentLibraryCommand();
+    /** The singleton {@link NewEquipmentLibraryCommand}. */
+    public static final NewEquipmentLibraryCommand INSTANCE        = new NewEquipmentLibraryCommand();
 
-	private NewEquipmentLibraryCommand() {
-		super(TITLE, CMD_NEW_LIBRARY);
-	}
+    private NewEquipmentLibraryCommand() {
+        super(TITLE, CMD_NEW_LIBRARY);
+    }
 
-	@Override
-	public void adjust() {
-		// Do nothing. We're always enabled.
-	}
+    @Override
+    public void adjust() {
+        // Do nothing. We're always enabled.
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		newEquipmentLibrary();
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        newEquipmentLibrary();
+    }
 
-	/** @return The newly created a new {@link EquipmentDockable}. */
-	public static EquipmentDockable newEquipmentLibrary() {
-		LibraryExplorerDockable library = LibraryExplorerDockable.get();
-		if (library != null) {
-			EquipmentList list = new EquipmentList();
-			list.getModel().setLocked(false);
-			EquipmentDockable dockable = new EquipmentDockable(list);
-			library.dockLibrary(dockable);
-			return dockable;
-		}
-		return null;
-	}
+    /** @return The newly created a new {@link EquipmentDockable}. */
+    public static EquipmentDockable newEquipmentLibrary() {
+        LibraryExplorerDockable library = LibraryExplorerDockable.get();
+        if (library != null) {
+            EquipmentList list = new EquipmentList();
+            list.getModel().setLocked(false);
+            EquipmentDockable dockable = new EquipmentDockable(list);
+            library.dockLibrary(dockable);
+            return dockable;
+        }
+        return null;
+    }
 }

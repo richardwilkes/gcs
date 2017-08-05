@@ -26,58 +26,58 @@ import java.util.ArrayList;
 
 /** Provides the "Apply Template To Sheet" command. */
 public class ApplyTemplateCommand extends Command {
-	@Localize("Apply Template To Character Sheet")
-	@Localize(locale = "de", value = "Wende Vorlage auf Charakterblatt an")
-	@Localize(locale = "ru", value = "Применить шаблон к листу персонажа")
-	@Localize(locale = "es", value = "Aplicar nueva plantilla de hoja de personaje")
-	private static String	APPLY_TEMPLATE_TO_SHEET;
-	@Localize("Apply Template")
-	@Localize(locale = "de", value = "Vorlage anwenden")
-	@Localize(locale = "ru", value = "Применить шаблон")
-	@Localize(locale = "es", value = "Aplicar plantilla")
-	private static String	UNDO;
+    @Localize("Apply Template To Character Sheet")
+    @Localize(locale = "de", value = "Wende Vorlage auf Charakterblatt an")
+    @Localize(locale = "ru", value = "Применить шаблон к листу персонажа")
+    @Localize(locale = "es", value = "Aplicar nueva plantilla de hoja de personaje")
+    private static String APPLY_TEMPLATE_TO_SHEET;
+    @Localize("Apply Template")
+    @Localize(locale = "de", value = "Vorlage anwenden")
+    @Localize(locale = "ru", value = "Применить шаблон")
+    @Localize(locale = "es", value = "Aplicar plantilla")
+    private static String UNDO;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String					CMD_APPLY_TEMPLATE	= "ApplyTemplate";				//$NON-NLS-1$
-	/** The singleton {@link ApplyTemplateCommand}. */
-	public static final ApplyTemplateCommand	INSTANCE			= new ApplyTemplateCommand();
+    /** The action command this command will issue. */
+    public static final String               CMD_APPLY_TEMPLATE = "ApplyTemplate";           				//$NON-NLS-1$
+    /** The singleton {@link ApplyTemplateCommand}. */
+    public static final ApplyTemplateCommand INSTANCE           = new ApplyTemplateCommand();
 
-	private ApplyTemplateCommand() {
-		super(APPLY_TEMPLATE_TO_SHEET, CMD_APPLY_TEMPLATE, KeyEvent.VK_A, SHIFTED_COMMAND_MODIFIER);
-	}
+    private ApplyTemplateCommand() {
+        super(APPLY_TEMPLATE_TO_SHEET, CMD_APPLY_TEMPLATE, KeyEvent.VK_A, SHIFTED_COMMAND_MODIFIER);
+    }
 
-	@Override
-	public void adjust() {
-		TemplateDockable template = getTarget(TemplateDockable.class);
-		if (template != null) {
-			setEnabled(SheetDockable.getLastActivated() != null);
-		} else {
-			setEnabled(false);
-		}
-	}
+    @Override
+    public void adjust() {
+        TemplateDockable template = getTarget(TemplateDockable.class);
+        if (template != null) {
+            setEnabled(SheetDockable.getLastActivated() != null);
+        } else {
+            setEnabled(false);
+        }
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		TemplateDockable templateDockable = getTarget(TemplateDockable.class);
-		if (templateDockable != null) {
-			SheetDockable sheetDockable = SheetDockable.getLastActivated();
-			if (sheetDockable != null) {
-				Template template = templateDockable.getDataFile();
-				MultipleUndo edit = new MultipleUndo(UNDO);
-				ArrayList<Row> rows = new ArrayList<>();
-				template.addEdit(edit);
-				rows.addAll(template.getAdvantagesModel().getTopLevelRows());
-				rows.addAll(template.getSkillsModel().getTopLevelRows());
-				rows.addAll(template.getSpellsModel().getTopLevelRows());
-				rows.addAll(template.getEquipmentModel().getTopLevelRows());
-				rows.addAll(template.getNotesModel().getTopLevelRows());
-				sheetDockable.addRows(rows);
-				edit.end();
-			}
-		}
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        TemplateDockable templateDockable = getTarget(TemplateDockable.class);
+        if (templateDockable != null) {
+            SheetDockable sheetDockable = SheetDockable.getLastActivated();
+            if (sheetDockable != null) {
+                Template template = templateDockable.getDataFile();
+                MultipleUndo edit = new MultipleUndo(UNDO);
+                ArrayList<Row> rows = new ArrayList<>();
+                template.addEdit(edit);
+                rows.addAll(template.getAdvantagesModel().getTopLevelRows());
+                rows.addAll(template.getSkillsModel().getTopLevelRows());
+                rows.addAll(template.getSpellsModel().getTopLevelRows());
+                rows.addAll(template.getEquipmentModel().getTopLevelRows());
+                rows.addAll(template.getNotesModel().getTopLevelRows());
+                sheetDockable.addRows(rows);
+                edit.end();
+            }
+        }
+    }
 }

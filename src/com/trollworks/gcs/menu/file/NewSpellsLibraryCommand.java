@@ -22,46 +22,46 @@ import java.awt.event.ActionEvent;
 
 /** Provides the "New Spells Library" command. */
 public class NewSpellsLibraryCommand extends Command {
-	@Localize("New Spells Library")
-	@Localize(locale = "de", value = "Neue Zauber-Liste")
-	@Localize(locale = "ru", value = "Новая библиотека заклинаний")
-	@Localize(locale = "es", value = "Nueva Librería de Sortilegios")
-	private static String TITLE;
+    @Localize("New Spells Library")
+    @Localize(locale = "de", value = "Neue Zauber-Liste")
+    @Localize(locale = "ru", value = "Новая библиотека заклинаний")
+    @Localize(locale = "es", value = "Nueva Librería de Sortilegios")
+    private static String TITLE;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String					CMD_NEW_LIBRARY	= "NewSpellsLibrary";			//$NON-NLS-1$
+    /** The action command this command will issue. */
+    public static final String                  CMD_NEW_LIBRARY = "NewSpellsLibrary";           			//$NON-NLS-1$
 
-	/** The singleton {@link NewSpellsLibraryCommand}. */
-	public static final NewSpellsLibraryCommand	INSTANCE		= new NewSpellsLibraryCommand();
+    /** The singleton {@link NewSpellsLibraryCommand}. */
+    public static final NewSpellsLibraryCommand INSTANCE        = new NewSpellsLibraryCommand();
 
-	private NewSpellsLibraryCommand() {
-		super(TITLE, CMD_NEW_LIBRARY);
-	}
+    private NewSpellsLibraryCommand() {
+        super(TITLE, CMD_NEW_LIBRARY);
+    }
 
-	@Override
-	public void adjust() {
-		// Do nothing. We're always enabled.
-	}
+    @Override
+    public void adjust() {
+        // Do nothing. We're always enabled.
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		newSpellsLibrary();
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        newSpellsLibrary();
+    }
 
-	/** @return The newly created a new {@link SpellsDockable}. */
-	public static SpellsDockable newSpellsLibrary() {
-		LibraryExplorerDockable library = LibraryExplorerDockable.get();
-		if (library != null) {
-			SpellList list = new SpellList();
-			list.getModel().setLocked(false);
-			SpellsDockable dockable = new SpellsDockable(list);
-			library.dockLibrary(dockable);
-			return dockable;
-		}
-		return null;
-	}
+    /** @return The newly created a new {@link SpellsDockable}. */
+    public static SpellsDockable newSpellsLibrary() {
+        LibraryExplorerDockable library = LibraryExplorerDockable.get();
+        if (library != null) {
+            SpellList list = new SpellList();
+            list.getModel().setLocked(false);
+            SpellsDockable dockable = new SpellsDockable(list);
+            library.dockLibrary(dockable);
+            return dockable;
+        }
+        return null;
+    }
 }

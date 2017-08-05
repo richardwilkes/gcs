@@ -22,16 +22,16 @@ import javax.swing.UIManager;
 
 /** A header within the page. */
 public class PageHeader extends Label {
-	/**
-	 * Creates a new {@link PageHeader}.
-	 *
-	 * @param title The title to use.
-	 * @param tooltip The tooltip to use.
-	 */
-	public PageHeader(String title, String tooltip) {
-		super(title, SwingConstants.CENTER);
-		setFont(UIManager.getFont(GCSFonts.KEY_LABEL));
-		setForeground(Color.white);
-		setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-	}
+    /**
+     * Creates a new {@link PageHeader}.
+     *
+     * @param title The title to use.
+     * @param tooltip The tooltip to use.
+     */
+    public PageHeader(String title, String tooltip) {
+        super(title, SwingConstants.CENTER);
+        setFont(UIManager.getFont(GCSFonts.KEY_LABEL));
+        setForeground(Color.white);
+        setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+    }
 }

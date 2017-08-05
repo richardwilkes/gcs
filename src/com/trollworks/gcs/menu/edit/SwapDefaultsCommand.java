@@ -23,47 +23,47 @@ import java.awt.event.KeyEvent;
 
 /** Swaps the default values of two skills that default to each other */
 public class SwapDefaultsCommand extends Command {
-	@Localize("Swap defaults")
-	@Localize(locale = "de", value = "Grundwerte tauschen")
-	@Localize(locale = "ru", value = "Переключение по умолчанию")
-	@Localize(locale = "es", value = "Canjear defectos")
-	private static String SWAP_DEFAULTS;
+    @Localize("Swap defaults")
+    @Localize(locale = "de", value = "Grundwerte tauschen")
+    @Localize(locale = "ru", value = "Переключение по умолчанию")
+    @Localize(locale = "es", value = "Canjear defectos")
+    private static String SWAP_DEFAULTS;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String				CMD_SWAP_DEFAULTS	= "SwapDefaults";			//$NON-NLS-1$
+    /** The action command this command will issue. */
+    public static final String              CMD_SWAP_DEFAULTS = "SwapDefaults";           			//$NON-NLS-1$
 
-	/** The singleton {@link SwapDefaultsCommand}. */
-	public static final SwapDefaultsCommand	INSTANCE			= new SwapDefaultsCommand();
+    /** The singleton {@link SwapDefaultsCommand}. */
+    public static final SwapDefaultsCommand INSTANCE          = new SwapDefaultsCommand();
 
-	private SwapDefaultsCommand() {
-		super(SWAP_DEFAULTS, CMD_SWAP_DEFAULTS, KeyEvent.VK_X, Command.SHIFTED_COMMAND_MODIFIER);
-	}
+    private SwapDefaultsCommand() {
+        super(SWAP_DEFAULTS, CMD_SWAP_DEFAULTS, KeyEvent.VK_X, Command.SHIFTED_COMMAND_MODIFIER);
+    }
 
-	@Override
-	public void adjust() {
-		Component focus = getFocusOwner();
-		if (focus instanceof OutlineProxy) {
-			focus = ((OutlineProxy) focus).getRealOutline();
-		}
-		if (focus instanceof SkillOutline) {
-			SkillOutline skillOutline = (SkillOutline) focus;
-			setEnabled(skillOutline.canSwapDefaults());
-		} else {
-			setEnabled(false);
-		}
-	}
+    @Override
+    public void adjust() {
+        Component focus = getFocusOwner();
+        if (focus instanceof OutlineProxy) {
+            focus = ((OutlineProxy) focus).getRealOutline();
+        }
+        if (focus instanceof SkillOutline) {
+            SkillOutline skillOutline = (SkillOutline) focus;
+            setEnabled(skillOutline.canSwapDefaults());
+        } else {
+            setEnabled(false);
+        }
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		Component focus = getFocusOwner();
-		if (focus instanceof OutlineProxy) {
-			focus = ((OutlineProxy) focus).getRealOutline();
-		}
-		((SkillOutline) focus).swapDefaults();
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        Component focus = getFocusOwner();
+        if (focus instanceof OutlineProxy) {
+            focus = ((OutlineProxy) focus).getRealOutline();
+        }
+        ((SkillOutline) focus).swapDefaults();
+    }
 
 }

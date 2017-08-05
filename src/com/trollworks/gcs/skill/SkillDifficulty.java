@@ -16,79 +16,79 @@ import com.trollworks.toolkit.utility.Localization;
 
 /** The possible skill difficulty levels. */
 public enum SkillDifficulty {
-	/** The "easy" difficulty. */
-	E {
-		@Override
-		public String toString() {
-			return E_TITLE;
-		}
-	},
-	/** The "average" difficulty. */
-	A {
-		@Override
-		public String toString() {
-			return A_TITLE;
-		}
-	},
-	/** The "hard" difficulty. */
-	H {
-		@Override
-		public String toString() {
-			return H_TITLE;
-		}
-	},
-	/** The "very hard" difficulty. */
-	VH {
-		@Override
-		public String toString() {
-			return VH_TITLE;
-		}
-	},
-	/** The "wildcard" difficulty. */
-	W {
-		@Override
-		public String toString() {
-			return W_TITLE;
-		}
+    /** The "easy" difficulty. */
+    E {
+        @Override
+        public String toString() {
+            return E_TITLE;
+        }
+    },
+    /** The "average" difficulty. */
+    A {
+        @Override
+        public String toString() {
+            return A_TITLE;
+        }
+    },
+    /** The "hard" difficulty. */
+    H {
+        @Override
+        public String toString() {
+            return H_TITLE;
+        }
+    },
+    /** The "very hard" difficulty. */
+    VH {
+        @Override
+        public String toString() {
+            return VH_TITLE;
+        }
+    },
+    /** The "wildcard" difficulty. */
+    W {
+        @Override
+        public String toString() {
+            return W_TITLE;
+        }
 
-		@Override
-		public int getBaseRelativeLevel() {
-			return VH.getBaseRelativeLevel();
-		}
-	};
+        @Override
+        public int getBaseRelativeLevel() {
+            return VH.getBaseRelativeLevel();
+        }
+    };
 
-	@Localize("E")
-	@Localize(locale = "de", value = "E")
-	@Localize(locale = "ru", value = "Л")
-	@Localize(locale = "es", value = "F")
-	static String	E_TITLE;
-	@Localize("A")
-	@Localize(locale = "de", value = "D")
-	@Localize(locale = "ru", value = "С")
-	@Localize(locale = "es", value = "M")
-	static String	A_TITLE;
-	@Localize("H")
-	@Localize(locale = "de", value = "S")
-	@Localize(locale = "ru", value = "Т")
-	@Localize(locale = "es", value = "D")
-	static String	H_TITLE;
-	@Localize("VH")
-	@Localize(locale = "de", value = "ES")
-	@Localize(locale = "ru", value = "ОТ")
-	@Localize(locale = "es", value = "MD")
-	static String	VH_TITLE;
-	@Localize("W")
-	@Localize(locale = "de", value = "W")
-	@Localize(locale = "ru", value = "У")
-	@Localize(locale = "es", value = "C")
-	static String	W_TITLE;
+    @Localize("E")
+    @Localize(locale = "de", value = "E")
+    @Localize(locale = "ru", value = "Л")
+    @Localize(locale = "es", value = "F")
+    static String E_TITLE;
+    @Localize("A")
+    @Localize(locale = "de", value = "D")
+    @Localize(locale = "ru", value = "С")
+    @Localize(locale = "es", value = "M")
+    static String A_TITLE;
+    @Localize("H")
+    @Localize(locale = "de", value = "S")
+    @Localize(locale = "ru", value = "Т")
+    @Localize(locale = "es", value = "D")
+    static String H_TITLE;
+    @Localize("VH")
+    @Localize(locale = "de", value = "ES")
+    @Localize(locale = "ru", value = "ОТ")
+    @Localize(locale = "es", value = "MD")
+    static String VH_TITLE;
+    @Localize("W")
+    @Localize(locale = "de", value = "W")
+    @Localize(locale = "ru", value = "У")
+    @Localize(locale = "es", value = "C")
+    static String W_TITLE;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** @return The base relative skill level at 0 points. */
-	public int getBaseRelativeLevel() {
-		return -ordinal();
-	}
+    /** @return The base relative skill level at 0 points. */
+    public int getBaseRelativeLevel() {
+        return -ordinal();
+    }
 }

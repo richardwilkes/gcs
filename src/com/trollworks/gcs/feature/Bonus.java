@@ -21,96 +21,96 @@ import java.util.HashSet;
 
 /** Describes a bonus. */
 public abstract class Bonus implements Feature {
-	/** The "amount" tag. */
-	public static final String	TAG_AMOUNT	= "amount";	//$NON-NLS-1$
-	private LeveledAmount		mAmount;
+    /** The "amount" tag. */
+    public static final String TAG_AMOUNT = "amount";	//$NON-NLS-1$
+    private LeveledAmount      mAmount;
 
-	/**
-	 * Creates a new bonus.
-	 * 
-	 * @param amount The initial amount.
-	 */
-	public Bonus(double amount) {
-		mAmount = new LeveledAmount(amount);
-	}
+    /**
+     * Creates a new bonus.
+     * 
+     * @param amount The initial amount.
+     */
+    public Bonus(double amount) {
+        mAmount = new LeveledAmount(amount);
+    }
 
-	/**
-	 * Creates a new bonus.
-	 * 
-	 * @param amount The initial amount.
-	 */
-	public Bonus(int amount) {
-		mAmount = new LeveledAmount(amount);
-	}
+    /**
+     * Creates a new bonus.
+     * 
+     * @param amount The initial amount.
+     */
+    public Bonus(int amount) {
+        mAmount = new LeveledAmount(amount);
+    }
 
-	/**
-	 * Creates a clone of the specified bonus.
-	 * 
-	 * @param other The bonus to clone.
-	 */
-	public Bonus(Bonus other) {
-		mAmount = new LeveledAmount(other.mAmount);
-	}
+    /**
+     * Creates a clone of the specified bonus.
+     * 
+     * @param other The bonus to clone.
+     */
+    public Bonus(Bonus other) {
+        mAmount = new LeveledAmount(other.mAmount);
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == this) {
-			return true;
-		}
-		if (obj instanceof Bonus) {
-			return mAmount.equals(((Bonus) obj).mAmount);
-		}
-		return false;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof Bonus) {
+            return mAmount.equals(((Bonus) obj).mAmount);
+        }
+        return false;
+    }
 
-	@Override
-	public int hashCode() {
-		return super.hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 
-	/** @param reader The XML reader to use. */
-	protected final void load(XMLReader reader) throws IOException {
-		String marker = reader.getMarker();
+    /** @param reader The XML reader to use. */
+    protected final void load(XMLReader reader) throws IOException {
+        String marker = reader.getMarker();
 
-		do {
-			if (reader.next() == XMLNodeType.START_TAG) {
-				loadSelf(reader);
-			}
-		} while (reader.withinMarker(marker));
-	}
+        do {
+            if (reader.next() == XMLNodeType.START_TAG) {
+                loadSelf(reader);
+            }
+        } while (reader.withinMarker(marker));
+    }
 
-	/** @param reader The XML reader to use. */
-	protected void loadSelf(XMLReader reader) throws IOException {
-		String tag = reader.getName();
+    /** @param reader The XML reader to use. */
+    protected void loadSelf(XMLReader reader) throws IOException {
+        String tag = reader.getName();
 
-		if (TAG_AMOUNT.equals(tag)) {
-			mAmount.load(reader);
-		} else {
-			reader.skipTag(tag);
-		}
-	}
+        if (TAG_AMOUNT.equals(tag)) {
+            mAmount.load(reader);
+        } else {
+            reader.skipTag(tag);
+        }
+    }
 
-	/**
-	 * Saves the bonus base information.
-	 * 
-	 * @param out The XML writer to use..
-	 */
-	public void saveBase(XMLWriter out) {
-		mAmount.save(out, TAG_AMOUNT);
-	}
+    /**
+     * Saves the bonus base information.
+     * 
+     * @param out The XML writer to use..
+     */
+    public void saveBase(XMLWriter out) {
+        mAmount.save(out, TAG_AMOUNT);
+    }
 
-	/** @return The leveled amount. */
-	public LeveledAmount getAmount() {
-		return mAmount;
-	}
+    /** @return The leveled amount. */
+    public LeveledAmount getAmount() {
+        return mAmount;
+    }
 
-	@Override
-	public void fillWithNameableKeys(HashSet<String> set) {
-		// Nothing to do.
-	}
+    @Override
+    public void fillWithNameableKeys(HashSet<String> set) {
+        // Nothing to do.
+    }
 
-	@Override
-	public void applyNameableKeys(HashMap<String, String> map) {
-		// Nothing to do.
-	}
+    @Override
+    public void applyNameableKeys(HashMap<String, String> map) {
+        // Nothing to do.
+    }
 }

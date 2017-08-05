@@ -18,40 +18,40 @@ import com.trollworks.toolkit.utility.Localization;
 
 /** Displays and edits {@link Prereq} objects. */
 public class PrereqsPanel extends BandedPanel {
-	@Localize("Prerequisites")
-	@Localize(locale = "de", value = "Bedingungen")
-	@Localize(locale = "ru", value = "Требования")
-	@Localize(locale = "es", value = "Prerrequisitos")
-	private static String PREREQUISITES;
+    @Localize("Prerequisites")
+    @Localize(locale = "de", value = "Bedingungen")
+    @Localize(locale = "ru", value = "Требования")
+    @Localize(locale = "es", value = "Prerrequisitos")
+    private static String PREREQUISITES;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/**
-	 * Creates a new prerequisite editor.
-	 *
-	 * @param row The row these prerequisites will belong to.
-	 * @param prereqs The initial prerequisites to display.
-	 */
-	public PrereqsPanel(ListRow row, PrereqList prereqs) {
-		super(PREREQUISITES);
-		addPrereqs(row, new PrereqList(null, prereqs), 0);
-	}
+    /**
+     * Creates a new prerequisite editor.
+     *
+     * @param row The row these prerequisites will belong to.
+     * @param prereqs The initial prerequisites to display.
+     */
+    public PrereqsPanel(ListRow row, PrereqList prereqs) {
+        super(PREREQUISITES);
+        addPrereqs(row, new PrereqList(null, prereqs), 0);
+    }
 
-	/** @return The current prerequisite list. */
-	public PrereqList getPrereqList() {
-		return (PrereqList) ((ListPrereqEditor) getComponent(0)).getPrereq();
-	}
+    /** @return The current prerequisite list. */
+    public PrereqList getPrereqList() {
+        return (PrereqList) ((ListPrereqEditor) getComponent(0)).getPrereq();
+    }
 
-	private void addPrereqs(ListRow row, PrereqList prereqs, int depth) {
-		add(PrereqEditor.create(row, prereqs, depth++));
-		for (Prereq prereq : prereqs.getChildren()) {
-			if (prereq instanceof PrereqList) {
-				addPrereqs(row, (PrereqList) prereq, depth);
-			} else {
-				add(PrereqEditor.create(row, prereq, depth));
-			}
-		}
-	}
+    private void addPrereqs(ListRow row, PrereqList prereqs, int depth) {
+        add(PrereqEditor.create(row, prereqs, depth++));
+        for (Prereq prereq : prereqs.getChildren()) {
+            if (prereq instanceof PrereqList) {
+                addPrereqs(row, (PrereqList) prereq, depth);
+            } else {
+                add(PrereqEditor.create(row, prereq, depth));
+            }
+        }
+    }
 }

@@ -12,5 +12,5 @@
 package com.trollworks.gcs.services;
 
 public enum HttpMethodType {
-	GET, POST, PUT, DELETE
+    GET, POST, PUT, DELETE
 }

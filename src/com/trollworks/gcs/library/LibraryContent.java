@@ -25,54 +25,54 @@ import javax.swing.JPanel;
 import javax.swing.Scrollable;
 
 public class LibraryContent extends JPanel implements ScaleRoot, Scrollable {
-	private ListOutline	mOutline;
-	private Scale		mScale;
+    private ListOutline mOutline;
+    private Scale       mScale;
 
-	public LibraryContent(ListOutline outline) {
-		mOutline = outline;
-		mOutline.setBorder(new LineBorder(mOutline.getDividerColor(), 0, 0, 0, 1));
-		setLayout(new BorderLayout());
-		add(mOutline);
-		mScale = SheetPreferences.getInitialUIScale().getScale();
-	}
+    public LibraryContent(ListOutline outline) {
+        mOutline = outline;
+        mOutline.setBorder(new LineBorder(mOutline.getDividerColor(), 0, 0, 0, 1));
+        setLayout(new BorderLayout());
+        add(mOutline);
+        mScale = SheetPreferences.getInitialUIScale().getScale();
+    }
 
-	@Override
-	public Scale getScale() {
-		return mScale;
-	}
+    @Override
+    public Scale getScale() {
+        return mScale;
+    }
 
-	@Override
-	public void setScale(Scale scale) {
-		if (mScale.getScale() != scale.getScale()) {
-			mScale = scale;
-			mOutline.sizeColumnsToFit();
-			revalidate();
-			repaint();
-		}
-	}
+    @Override
+    public void setScale(Scale scale) {
+        if (mScale.getScale() != scale.getScale()) {
+            mScale = scale;
+            mOutline.sizeColumnsToFit();
+            revalidate();
+            repaint();
+        }
+    }
 
-	@Override
-	public Dimension getPreferredScrollableViewportSize() {
-		return mOutline.getPreferredScrollableViewportSize();
-	}
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+        return mOutline.getPreferredScrollableViewportSize();
+    }
 
-	@Override
-	public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-		return mOutline.getScrollableUnitIncrement(visibleRect, orientation, direction);
-	}
+    @Override
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return mOutline.getScrollableUnitIncrement(visibleRect, orientation, direction);
+    }
 
-	@Override
-	public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-		return mOutline.getScrollableBlockIncrement(visibleRect, orientation, direction);
-	}
+    @Override
+    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return mOutline.getScrollableBlockIncrement(visibleRect, orientation, direction);
+    }
 
-	@Override
-	public boolean getScrollableTracksViewportWidth() {
-		return mOutline.getScrollableTracksViewportWidth();
-	}
+    @Override
+    public boolean getScrollableTracksViewportWidth() {
+        return mOutline.getScrollableTracksViewportWidth();
+    }
 
-	@Override
-	public boolean getScrollableTracksViewportHeight() {
-		return mOutline.getScrollableTracksViewportHeight();
-	}
+    @Override
+    public boolean getScrollableTracksViewportHeight() {
+        return mOutline.getScrollableTracksViewportHeight();
+    }
 }

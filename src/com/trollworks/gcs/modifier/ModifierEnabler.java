@@ -42,158 +42,158 @@ import javax.swing.border.CompoundBorder;
 
 /** Asks the user to enable/disable modifiers. */
 public class ModifierEnabler extends JPanel {
-	@Localize("Enable Modifiers")
-	@Localize(locale = "de", value = "Modifikatoren auswählen")
-	@Localize(locale = "ru", value = "Включить модификаторы")
-	@Localize(locale = "es", value = "Activar Modificadores")
-	private static String	MODIFIER_TITLE;
-	@Localize("1 advantage remaining to be processed.")
-	@Localize(locale = "de", value = "1 weiterer Vorteil zu bearbeiten.")
-	@Localize(locale = "ru", value = "осталось обработать 1 преимущество.")
-	@Localize(locale = "es", value = "1 ventaja pendientede procesarse.")
-	private static String	MODIFIER_ONE_REMAINING;
-	@Localize("{0} advantages remaining to be processed.")
-	@Localize(locale = "de", value = "{0} weitere Vorteile zu bearbeiten.")
-	@Localize(locale = "ru", value = "{0} преимуществ(а) осталось обработать.")
-	@Localize(locale = "es", value = "{0} ventajas pendientes de procesarse.")
-	private static String	MODIFIER_REMAINING;
-	@Localize("Cancel Remaining")
-	@Localize(locale = "de", value = "Alles Abbrechen")
-	@Localize(locale = "ru", value = "Пропустить остальные")
-	@Localize(locale = "es", value = "Cancelar las restantes")
-	private static String	CANCEL_REST;
-	@Localize("Cancel")
-	@Localize(locale = "de", value = "Abbrechen")
-	@Localize(locale = "ru", value = "Отмена")
-	@Localize(locale = "es", value = "Cancelar")
-	private static String	CANCEL;
-	@Localize("Apply")
-	@Localize(locale = "de", value = "Anwenden")
-	@Localize(locale = "ru", value = "Применить")
-	@Localize(locale = "es", value = "Aplicar")
-	private static String	APPLY;
+    @Localize("Enable Modifiers")
+    @Localize(locale = "de", value = "Modifikatoren auswählen")
+    @Localize(locale = "ru", value = "Включить модификаторы")
+    @Localize(locale = "es", value = "Activar Modificadores")
+    private static String MODIFIER_TITLE;
+    @Localize("1 advantage remaining to be processed.")
+    @Localize(locale = "de", value = "1 weiterer Vorteil zu bearbeiten.")
+    @Localize(locale = "ru", value = "осталось обработать 1 преимущество.")
+    @Localize(locale = "es", value = "1 ventaja pendientede procesarse.")
+    private static String MODIFIER_ONE_REMAINING;
+    @Localize("{0} advantages remaining to be processed.")
+    @Localize(locale = "de", value = "{0} weitere Vorteile zu bearbeiten.")
+    @Localize(locale = "ru", value = "{0} преимуществ(а) осталось обработать.")
+    @Localize(locale = "es", value = "{0} ventajas pendientes de procesarse.")
+    private static String MODIFIER_REMAINING;
+    @Localize("Cancel Remaining")
+    @Localize(locale = "de", value = "Alles Abbrechen")
+    @Localize(locale = "ru", value = "Пропустить остальные")
+    @Localize(locale = "es", value = "Cancelar las restantes")
+    private static String CANCEL_REST;
+    @Localize("Cancel")
+    @Localize(locale = "de", value = "Abbrechen")
+    @Localize(locale = "ru", value = "Отмена")
+    @Localize(locale = "es", value = "Cancelar")
+    private static String CANCEL;
+    @Localize("Apply")
+    @Localize(locale = "de", value = "Anwenden")
+    @Localize(locale = "ru", value = "Применить")
+    @Localize(locale = "es", value = "Aplicar")
+    private static String APPLY;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	private Advantage			mAdvantage;
-	private JCheckBox[]			mEnabled;
-	private Modifier[]			mModifiers;
-	private JComboBox<String>	mCRCombo;
+    private Advantage         mAdvantage;
+    private JCheckBox[]       mEnabled;
+    private Modifier[]        mModifiers;
+    private JComboBox<String> mCRCombo;
 
-	/**
-	 * Brings up a modal dialog that allows {@link Modifier}s to be enabled or disabled for the
-	 * specified {@link Advantage}s.
-	 *
-	 * @param comp The component to open the dialog over.
-	 * @param advantages The {@link Advantage}s to process.
-	 * @return Whether anything was modified.
-	 */
-	static public boolean process(Component comp, ArrayList<Advantage> advantages) {
-		ArrayList<Advantage> list = new ArrayList<>();
-		boolean modified = false;
-		int count;
+    /**
+     * Brings up a modal dialog that allows {@link Modifier}s to be enabled or disabled for the
+     * specified {@link Advantage}s.
+     *
+     * @param comp The component to open the dialog over.
+     * @param advantages The {@link Advantage}s to process.
+     * @return Whether anything was modified.
+     */
+    static public boolean process(Component comp, ArrayList<Advantage> advantages) {
+        ArrayList<Advantage> list = new ArrayList<>();
+        boolean modified = false;
+        int count;
 
-		for (Advantage advantage : advantages) {
-			if (advantage.getCR() != SelfControlRoll.NONE_REQUIRED || !advantage.getModifiers().isEmpty()) {
-				list.add(advantage);
-			}
-		}
+        for (Advantage advantage : advantages) {
+            if (advantage.getCR() != SelfControlRoll.NONE_REQUIRED || !advantage.getModifiers().isEmpty()) {
+                list.add(advantage);
+            }
+        }
 
-		count = list.size();
-		for (int i = 0; i < count; i++) {
-			Advantage advantage = list.get(i);
-			boolean hasMore = i != count - 1;
-			ModifierEnabler panel = new ModifierEnabler(advantage, count - i - 1);
-			switch (WindowUtils.showOptionDialog(comp, panel, MODIFIER_TITLE, true, hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, advantage.getIcon(true), hasMore ? new String[] { APPLY, CANCEL, CANCEL_REST } : new String[] { APPLY, CANCEL }, APPLY)) {
-				case JOptionPane.YES_OPTION:
-					panel.applyChanges();
-					modified = true;
-					break;
-				case JOptionPane.NO_OPTION:
-					break;
-				case JOptionPane.CANCEL_OPTION:
-				case JOptionPane.CLOSED_OPTION:
-				default:
-					return modified;
-			}
-		}
-		return modified;
-	}
+        count = list.size();
+        for (int i = 0; i < count; i++) {
+            Advantage advantage = list.get(i);
+            boolean hasMore = i != count - 1;
+            ModifierEnabler panel = new ModifierEnabler(advantage, count - i - 1);
+            switch (WindowUtils.showOptionDialog(comp, panel, MODIFIER_TITLE, true, hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, advantage.getIcon(true), hasMore ? new String[] { APPLY, CANCEL, CANCEL_REST } : new String[] { APPLY, CANCEL }, APPLY)) {
+                case JOptionPane.YES_OPTION:
+                    panel.applyChanges();
+                    modified = true;
+                    break;
+                case JOptionPane.NO_OPTION:
+                    break;
+                case JOptionPane.CANCEL_OPTION:
+                case JOptionPane.CLOSED_OPTION:
+                default:
+                    return modified;
+            }
+        }
+        return modified;
+    }
 
-	private ModifierEnabler(Advantage advantage, int remaining) {
-		super(new BorderLayout());
-		mAdvantage = advantage;
-		add(createTop(advantage, remaining), BorderLayout.NORTH);
-		JScrollPane scrollPanel = new JScrollPane(createCenter());
-		scrollPanel.setMinimumSize(new Dimension(500, 120));
-		add(scrollPanel, BorderLayout.CENTER);
-	}
+    private ModifierEnabler(Advantage advantage, int remaining) {
+        super(new BorderLayout());
+        mAdvantage = advantage;
+        add(createTop(advantage, remaining), BorderLayout.NORTH);
+        JScrollPane scrollPanel = new JScrollPane(createCenter());
+        scrollPanel.setMinimumSize(new Dimension(500, 120));
+        add(scrollPanel, BorderLayout.CENTER);
+    }
 
-	private static Container createTop(Advantage advantage, int remaining) {
-		JPanel top = new JPanel(new ColumnLayout());
-		JLabel label = new JLabel(Text.truncateIfNecessary(advantage.toString(), 80, SwingConstants.RIGHT), SwingConstants.LEFT);
+    private static Container createTop(Advantage advantage, int remaining) {
+        JPanel top = new JPanel(new ColumnLayout());
+        JLabel label = new JLabel(Text.truncateIfNecessary(advantage.toString(), 80, SwingConstants.RIGHT), SwingConstants.LEFT);
 
-		top.setBorder(new EmptyBorder(0, 0, 15, 0));
-		if (remaining > 0) {
-			String msg;
-			if (remaining == 1) {
-				msg = MODIFIER_ONE_REMAINING;
-			} else {
-				msg = MessageFormat.format(MODIFIER_REMAINING, new Integer(remaining));
-			}
-			top.add(new JLabel(msg, SwingConstants.CENTER));
-		}
-		label.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 2, 0, 2)));
-		label.setOpaque(true);
-		top.add(new JPanel());
-		top.add(label);
-		return top;
-	}
+        top.setBorder(new EmptyBorder(0, 0, 15, 0));
+        if (remaining > 0) {
+            String msg;
+            if (remaining == 1) {
+                msg = MODIFIER_ONE_REMAINING;
+            } else {
+                msg = MessageFormat.format(MODIFIER_REMAINING, new Integer(remaining));
+            }
+            top.add(new JLabel(msg, SwingConstants.CENTER));
+        }
+        label.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 2, 0, 2)));
+        label.setOpaque(true);
+        top.add(new JPanel());
+        top.add(label);
+        return top;
+    }
 
-	private Container createCenter() {
-		JPanel wrapper = new JPanel(new ColumnLayout());
-		wrapper.setBackground(Color.WHITE);
-		SelfControlRoll cr = mAdvantage.getCR();
-		if (cr != SelfControlRoll.NONE_REQUIRED) {
-			ArrayList<String> possible = new ArrayList<>();
-			for (SelfControlRoll one : SelfControlRoll.values()) {
-				if (one != SelfControlRoll.NONE_REQUIRED) {
-					possible.add(one.getDescriptionWithCost());
-				}
-			}
-			mCRCombo = new JComboBox<>(possible.toArray(new String[possible.size()]));
-			mCRCombo.setSelectedItem(cr.getDescriptionWithCost());
-			UIUtilities.setOnlySize(mCRCombo, mCRCombo.getPreferredSize());
-			wrapper.add(mCRCombo);
-		}
+    private Container createCenter() {
+        JPanel wrapper = new JPanel(new ColumnLayout());
+        wrapper.setBackground(Color.WHITE);
+        SelfControlRoll cr = mAdvantage.getCR();
+        if (cr != SelfControlRoll.NONE_REQUIRED) {
+            ArrayList<String> possible = new ArrayList<>();
+            for (SelfControlRoll one : SelfControlRoll.values()) {
+                if (one != SelfControlRoll.NONE_REQUIRED) {
+                    possible.add(one.getDescriptionWithCost());
+                }
+            }
+            mCRCombo = new JComboBox<>(possible.toArray(new String[possible.size()]));
+            mCRCombo.setSelectedItem(cr.getDescriptionWithCost());
+            UIUtilities.setOnlySize(mCRCombo, mCRCombo.getPreferredSize());
+            wrapper.add(mCRCombo);
+        }
 
-		mModifiers = mAdvantage.getModifiers().toArray(new Modifier[0]);
-		Arrays.sort(mModifiers);
+        mModifiers = mAdvantage.getModifiers().toArray(new Modifier[0]);
+        Arrays.sort(mModifiers);
 
-		mEnabled = new JCheckBox[mModifiers.length];
-		for (int i = 0; i < mModifiers.length; i++) {
-			mEnabled[i] = new JCheckBox(mModifiers[i].getFullDescription(), mModifiers[i].isEnabled());
-			wrapper.add(mEnabled[i]);
-		}
-		return wrapper;
-	}
+        mEnabled = new JCheckBox[mModifiers.length];
+        for (int i = 0; i < mModifiers.length; i++) {
+            mEnabled[i] = new JCheckBox(mModifiers[i].getFullDescription(), mModifiers[i].isEnabled());
+            wrapper.add(mEnabled[i]);
+        }
+        return wrapper;
+    }
 
-	private void applyChanges() {
-		if (mAdvantage.getCR() != SelfControlRoll.NONE_REQUIRED) {
-			Object selectedItem = mCRCombo.getSelectedItem();
-			for (SelfControlRoll one : SelfControlRoll.values()) {
-				if (one != SelfControlRoll.NONE_REQUIRED) {
-					if (selectedItem.equals(one.getDescriptionWithCost())) {
-						mAdvantage.setCR(one);
-						break;
-					}
-				}
-			}
-		}
-		for (int i = 0; i < mModifiers.length; i++) {
-			mModifiers[i].setEnabled(mEnabled[i].isSelected());
-		}
-	}
+    private void applyChanges() {
+        if (mAdvantage.getCR() != SelfControlRoll.NONE_REQUIRED) {
+            Object selectedItem = mCRCombo.getSelectedItem();
+            for (SelfControlRoll one : SelfControlRoll.values()) {
+                if (one != SelfControlRoll.NONE_REQUIRED) {
+                    if (selectedItem.equals(one.getDescriptionWithCost())) {
+                        mAdvantage.setCR(one);
+                        break;
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < mModifiers.length; i++) {
+            mModifiers[i].setEnabled(mEnabled[i].isSelected());
+        }
+    }
 }

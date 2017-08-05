@@ -23,62 +23,62 @@ import java.util.List;
 
 /** Displays and edits {@link SkillDefault} objects. */
 public class Defaults extends BandedPanel implements ActionListener {
-	@Localize("Defaults")
-	@Localize(locale = "de", value = "Grundwerte")
-	@Localize(locale = "ru", value = "По умолчанию")
-	@Localize(locale = "es", value = "Valores por defecto")
-	private static String TITLE;
+    @Localize("Defaults")
+    @Localize(locale = "de", value = "Grundwerte")
+    @Localize(locale = "ru", value = "По умолчанию")
+    @Localize(locale = "es", value = "Valores por defecto")
+    private static String TITLE;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/**
-	 * Creates a new skill defaults editor.
-	 *
-	 * @param defaults The initial defaults to display.
-	 */
-	public Defaults(List<SkillDefault> defaults) {
-		super(TITLE);
-		setDefaults(defaults);
-	}
+    /**
+     * Creates a new skill defaults editor.
+     *
+     * @param defaults The initial defaults to display.
+     */
+    public Defaults(List<SkillDefault> defaults) {
+        super(TITLE);
+        setDefaults(defaults);
+    }
 
-	/** @param defaults The defaults to set. */
-	public void setDefaults(List<SkillDefault> defaults) {
-		removeAll();
-		for (SkillDefault skillDefault : defaults) {
-			add(new SkillDefaultEditor(new SkillDefault(skillDefault)));
-		}
-		if (getComponentCount() == 0) {
-			add(new SkillDefaultEditor());
-		}
-		revalidate();
-		repaint();
-	}
+    /** @param defaults The defaults to set. */
+    public void setDefaults(List<SkillDefault> defaults) {
+        removeAll();
+        for (SkillDefault skillDefault : defaults) {
+            add(new SkillDefaultEditor(new SkillDefault(skillDefault)));
+        }
+        if (getComponentCount() == 0) {
+            add(new SkillDefaultEditor());
+        }
+        revalidate();
+        repaint();
+    }
 
-	@Override
-	protected void addImpl(Component comp, Object constraints, int index) {
-		super.addImpl(comp, constraints, index);
-		if (comp instanceof SkillDefaultEditor) {
-			((SkillDefaultEditor) comp).addActionListener(this);
-		}
-	}
+    @Override
+    protected void addImpl(Component comp, Object constraints, int index) {
+        super.addImpl(comp, constraints, index);
+        if (comp instanceof SkillDefaultEditor) {
+            ((SkillDefaultEditor) comp).addActionListener(this);
+        }
+    }
 
-	/** @return The current set of skill defaults. */
-	public List<SkillDefault> getDefaults() {
-		int count = getComponentCount();
-		ArrayList<SkillDefault> list = new ArrayList<>(count);
-		for (int i = 0; i < count; i++) {
-			SkillDefault skillDefault = ((SkillDefaultEditor) getComponent(i)).getSkillDefault();
-			if (skillDefault != null) {
-				list.add(skillDefault);
-			}
-		}
-		return list;
-	}
+    /** @return The current set of skill defaults. */
+    public List<SkillDefault> getDefaults() {
+        int count = getComponentCount();
+        ArrayList<SkillDefault> list = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            SkillDefault skillDefault = ((SkillDefaultEditor) getComponent(i)).getSkillDefault();
+            if (skillDefault != null) {
+                list.add(skillDefault);
+            }
+        }
+        return list;
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		notifyActionListeners();
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        notifyActionListeners();
+    }
 }

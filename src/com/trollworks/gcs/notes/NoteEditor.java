@@ -28,46 +28,46 @@ import javax.swing.SwingConstants;
 
 /** The detailed editor for {@link Note}s. */
 public class NoteEditor extends RowEditor<Note> {
-	@Localize("Note")
-	private static String NAME;
+    @Localize("Note")
+    private static String NAME;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	private JTextArea mEditor;
+    private JTextArea mEditor;
 
-	/**
-	 * Creates a new {@link Note} editor.
-	 *
-	 * @param note The {@link Note} to edit.
-	 */
-	public NoteEditor(Note note) {
-		super(note);
+    /**
+     * Creates a new {@link Note} editor.
+     *
+     * @param note The {@link Note} to edit.
+     */
+    public NoteEditor(Note note) {
+        super(note);
 
-		JPanel content = new JPanel(new ColumnLayout(2, RowDistribution.GIVE_EXCESS_TO_LAST));
-		JLabel icon = new JLabel(note.getIcon(true));
+        JPanel content = new JPanel(new ColumnLayout(2, RowDistribution.GIVE_EXCESS_TO_LAST));
+        JLabel icon = new JLabel(note.getIcon(true));
 
-		mEditor = new JTextArea(note.getDescription());
-		mEditor.setLineWrap(true);
-		mEditor.setWrapStyleWord(true);
-		mEditor.setEnabled(mIsEditable);
-		JScrollPane scroller = new JScrollPane(mEditor, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-		scroller.setMinimumSize(new Dimension(400, 300));
-		icon.setVerticalAlignment(SwingConstants.TOP);
-		icon.setAlignmentY(-1f);
-		content.add(icon);
-		content.add(scroller);
-		add(content);
-	}
+        mEditor = new JTextArea(note.getDescription());
+        mEditor.setLineWrap(true);
+        mEditor.setWrapStyleWord(true);
+        mEditor.setEnabled(mIsEditable);
+        JScrollPane scroller = new JScrollPane(mEditor, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scroller.setMinimumSize(new Dimension(400, 300));
+        icon.setVerticalAlignment(SwingConstants.TOP);
+        icon.setAlignmentY(-1f);
+        content.add(icon);
+        content.add(scroller);
+        add(content);
+    }
 
-	@Override
-	public boolean applyChangesSelf() {
-		return mRow.setDescription(mEditor.getText());
-	}
+    @Override
+    public boolean applyChangesSelf() {
+        return mRow.setDescription(mEditor.getText());
+    }
 
-	@Override
-	public void finished() {
-		// Unused
-	}
+    @Override
+    public void finished() {
+        // Unused
+    }
 }

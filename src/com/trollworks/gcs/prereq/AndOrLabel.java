@@ -23,42 +23,42 @@ import javax.swing.SwingConstants;
 
 /** A label that displays the "and" or the "or" message, or nothing if it is the first one. */
 public class AndOrLabel extends JLabel {
-	@Localize("and")
-	@Localize(locale = "de", value = "und")
-	@Localize(locale = "ru", value = "и")
-	@Localize(locale = "es", value = "y")
-	private static String	AND;
-	@Localize("or")
-	@Localize(locale = "de", value = "oder")
-	@Localize(locale = "ru", value = "или")
-	@Localize(locale = "es", value = "o")
-	private static String	OR;
+    @Localize("and")
+    @Localize(locale = "de", value = "und")
+    @Localize(locale = "ru", value = "и")
+    @Localize(locale = "es", value = "y")
+    private static String AND;
+    @Localize("or")
+    @Localize(locale = "de", value = "oder")
+    @Localize(locale = "ru", value = "или")
+    @Localize(locale = "es", value = "o")
+    private static String OR;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	private Prereq mOwner;
+    private Prereq mOwner;
 
-	/**
-	 * Creates a new {@link AndOrLabel}.
-	 *
-	 * @param owner The owning {@link Prereq}.
-	 */
-	public AndOrLabel(Prereq owner) {
-		super(AND, SwingConstants.RIGHT);
-		mOwner = owner;
-		UIUtilities.setOnlySize(this, getPreferredSize());
-	}
+    /**
+     * Creates a new {@link AndOrLabel}.
+     *
+     * @param owner The owning {@link Prereq}.
+     */
+    public AndOrLabel(Prereq owner) {
+        super(AND, SwingConstants.RIGHT);
+        mOwner = owner;
+        UIUtilities.setOnlySize(this, getPreferredSize());
+    }
 
-	@Override
-	protected void paintComponent(Graphics gc) {
-		PrereqList parent = mOwner.getParent();
-		if (parent != null && parent.getChildren().get(0) != mOwner) {
-			setText(parent.requiresAll() ? AND : OR);
-		} else {
-			setText(""); //$NON-NLS-1$
-		}
-		super.paintComponent(GraphicsUtilities.prepare(gc));
-	}
+    @Override
+    protected void paintComponent(Graphics gc) {
+        PrereqList parent = mOwner.getParent();
+        if (parent != null && parent.getChildren().get(0) != mOwner) {
+            setText(parent.requiresAll() ? AND : OR);
+        } else {
+            setText(""); //$NON-NLS-1$
+        }
+        super.paintComponent(GraphicsUtilities.prepare(gc));
+    }
 }

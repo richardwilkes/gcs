@@ -17,26 +17,26 @@ import com.trollworks.toolkit.ui.widget.tree.TreeRow;
 
 /** A {@link TreeRow} that represents a directory in the library explorer. */
 public class LibraryDirectoryRow extends TreeContainerRow implements LibraryExplorerRow {
-	private String mName;
+    private String mName;
 
-	/** @param name The name of the directory. */
-	public LibraryDirectoryRow(String name) {
-		mName = name;
-	}
+    /** @param name The name of the directory. */
+    public LibraryDirectoryRow(String name) {
+        mName = name;
+    }
 
-	@Override
-	public String getSelectionKey() {
-		TreeContainerRow parent = getParent();
-		return parent instanceof LibraryDirectoryRow ? ((LibraryDirectoryRow) parent).getSelectionKey() + "/" + mName : mName; //$NON-NLS-1$
-	}
+    @Override
+    public String getSelectionKey() {
+        TreeContainerRow parent = getParent();
+        return parent instanceof LibraryDirectoryRow ? ((LibraryDirectoryRow) parent).getSelectionKey() + "/" + mName : mName; //$NON-NLS-1$
+    }
 
-	@Override
-	public StdImage getIcon() {
-		return StdImage.FOLDER.getImage(16);
-	}
+    @Override
+    public StdImage getIcon() {
+        return StdImage.FOLDER.getImage(16);
+    }
 
-	@Override
-	public String getName() {
-		return mName;
-	}
+    @Override
+    public String getName() {
+        return mName;
+    }
 }

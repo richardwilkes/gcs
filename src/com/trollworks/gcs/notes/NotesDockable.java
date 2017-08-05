@@ -19,36 +19,36 @@ import com.trollworks.toolkit.utility.Localization;
 
 /** A list of notes from a library. */
 public class NotesDockable extends LibraryDockable {
-	@Localize("Untitled Notes")
-	private static String UNTITLED;
+    @Localize("Untitled Notes")
+    private static String UNTITLED;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** Creates a new {@link NotesDockable}. */
-	public NotesDockable(NoteList list) {
-		super(list);
-	}
+    /** Creates a new {@link NotesDockable}. */
+    public NotesDockable(NoteList list) {
+        super(list);
+    }
 
-	@Override
-	public NoteList getDataFile() {
-		return (NoteList) super.getDataFile();
-	}
+    @Override
+    public NoteList getDataFile() {
+        return (NoteList) super.getDataFile();
+    }
 
-	@Override
-	protected String getUntitledBaseName() {
-		return UNTITLED;
-	}
+    @Override
+    protected String getUntitledBaseName() {
+        return UNTITLED;
+    }
 
-	@Override
-	protected ListOutline createOutline() {
-		NoteList list = getDataFile();
-		return new NoteOutline(list, list.getModel());
-	}
+    @Override
+    protected ListOutline createOutline() {
+        NoteList list = getDataFile();
+        return new NoteOutline(list, list.getModel());
+    }
 
-	@Override
-	public void applyScale(Scale scale) {
-		// RAW: Implement me
-	}
+    @Override
+    public void applyScale(Scale scale) {
+        // RAW: Implement me
+    }
 }

@@ -20,30 +20,30 @@ import javax.swing.JFormattedTextField;
 
 /** Provides weight reduction field conversion. */
 public class WeightReductionFormatter extends JFormattedTextField.AbstractFormatter {
-	@Override
-	public Object stringToValue(String text) throws ParseException {
-		text = text != null ? text.trim() : ""; //$NON-NLS-1$
-		if (text.endsWith("%")) { //$NON-NLS-1$
-			return Integer.valueOf(Numbers.extractInteger(text.substring(0, text.length() - 1), 0, true));
-		}
-		return WeightValue.extract(text, true);
-	}
+    @Override
+    public Object stringToValue(String text) throws ParseException {
+        text = text != null ? text.trim() : ""; //$NON-NLS-1$
+        if (text.endsWith("%")) { //$NON-NLS-1$
+            return Integer.valueOf(Numbers.extractInteger(text.substring(0, text.length() - 1), 0, true));
+        }
+        return WeightValue.extract(text, true);
+    }
 
-	@Override
-	public String valueToString(Object value) throws ParseException {
-		if (value instanceof Integer) {
-			int percentage = ((Integer) value).intValue();
-			if (percentage != 0) {
-				return Numbers.format(percentage) + "%"; //$NON-NLS-1$
-			}
-			return ""; //$NON-NLS-1$
-		} else if (value instanceof WeightValue) {
-			WeightValue weight = (WeightValue) value;
-			if (weight.getValue() == 0) {
-				return ""; //$NON-NLS-1$
-			}
-			return weight.toString();
-		}
-		return ""; //$NON-NLS-1$
-	}
+    @Override
+    public String valueToString(Object value) throws ParseException {
+        if (value instanceof Integer) {
+            int percentage = ((Integer) value).intValue();
+            if (percentage != 0) {
+                return Numbers.format(percentage) + "%"; //$NON-NLS-1$
+            }
+            return ""; //$NON-NLS-1$
+        } else if (value instanceof WeightValue) {
+            WeightValue weight = (WeightValue) value;
+            if (weight.getValue() == 0) {
+                return ""; //$NON-NLS-1$
+            }
+            return weight.toString();
+        }
+        return ""; //$NON-NLS-1$
+    }
 }

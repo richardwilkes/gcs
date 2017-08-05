@@ -36,81 +36,81 @@ import java.util.ArrayList;
 
 /** The workspace, where all files can be viewed and edited. */
 public class Workspace extends AppWindow implements SignificantFrame, JumpToSearchTarget {
-	@Localize("GURPS Workspace")
-	private static String TITLE;
+    @Localize("GURPS Workspace")
+    private static String TITLE;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	private Toolbar	mToolbar;
-	private Dock	mDock;
+    private Toolbar mToolbar;
+    private Dock    mDock;
 
-	/** @return The {@link Workspace}. */
-	public static Workspace get() {
-		Window window = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
-		if (window == null || !(window instanceof Workspace)) {
-			ArrayList<Workspace> windows = BaseWindow.getWindows(Workspace.class);
-			if (!windows.isEmpty()) {
-				window = windows.get(0);
-			}
-		}
-		if (window == null) {
-			window = new Workspace();
-		}
-		return (Workspace) window;
-	}
+    /** @return The {@link Workspace}. */
+    public static Workspace get() {
+        Window window = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
+        if (window == null || !(window instanceof Workspace)) {
+            ArrayList<Workspace> windows = BaseWindow.getWindows(Workspace.class);
+            if (!windows.isEmpty()) {
+                window = windows.get(0);
+            }
+        }
+        if (window == null) {
+            window = new Workspace();
+        }
+        return (Workspace) window;
+    }
 
-	private Workspace() {
-		super(TITLE, GCSImages.getAppIcons());
-		Container content = getContentPane();
-		mToolbar = new Toolbar();
-		content.add(mToolbar, BorderLayout.NORTH);
-		mDock = new Dock();
-		content.add(mDock, BorderLayout.CENTER);
-		LibraryExplorerDockable libraryExplorer = new LibraryExplorerDockable();
-		mDock.dock(libraryExplorer, DockLocation.WEST);
-		mDock.getLayout().findLayout(libraryExplorer.getDockContainer()).setDividerPosition(200);
-		restoreBounds();
-		setVisible(true);
-	}
+    private Workspace() {
+        super(TITLE, GCSImages.getAppIcons());
+        Container content = getContentPane();
+        mToolbar = new Toolbar();
+        content.add(mToolbar, BorderLayout.NORTH);
+        mDock = new Dock();
+        content.add(mDock, BorderLayout.CENTER);
+        LibraryExplorerDockable libraryExplorer = new LibraryExplorerDockable();
+        mDock.dock(libraryExplorer, DockLocation.WEST);
+        mDock.getLayout().findLayout(libraryExplorer.getDockContainer()).setDividerPosition(200);
+        restoreBounds();
+        setVisible(true);
+    }
 
-	@Override
-	public void pack() {
-		super.pack();
-		setBounds(Geometry.inset(20, new Rectangle(GraphicsUtilities.getMaximumWindowBounds())));
-	}
+    @Override
+    public void pack() {
+        super.pack();
+        setBounds(Geometry.inset(20, new Rectangle(GraphicsUtilities.getMaximumWindowBounds())));
+    }
 
-	@Override
-	public String getWindowPrefsPrefix() {
-		return "workspace."; //$NON-NLS-1$
-	}
+    @Override
+    public String getWindowPrefsPrefix() {
+        return "workspace."; //$NON-NLS-1$
+    }
 
-	/** @return The {@link Dock}. */
-	public Dock getDock() {
-		return mDock;
-	}
+    /** @return The {@link Dock}. */
+    public Dock getDock() {
+        return mDock;
+    }
 
-	@Override
-	public boolean isJumpToSearchAvailable() {
-		DockContainer dc = mDock.getFocusedDockContainer();
-		if (dc != null) {
-			Dockable dockable = dc.getCurrentDockable();
-			if (dockable instanceof JumpToSearchTarget) {
-				return ((JumpToSearchTarget) dockable).isJumpToSearchAvailable();
-			}
-		}
-		return false;
-	}
+    @Override
+    public boolean isJumpToSearchAvailable() {
+        DockContainer dc = mDock.getFocusedDockContainer();
+        if (dc != null) {
+            Dockable dockable = dc.getCurrentDockable();
+            if (dockable instanceof JumpToSearchTarget) {
+                return ((JumpToSearchTarget) dockable).isJumpToSearchAvailable();
+            }
+        }
+        return false;
+    }
 
-	@Override
-	public void jumpToSearchField() {
-		DockContainer dc = mDock.getFocusedDockContainer();
-		if (dc != null) {
-			Dockable dockable = dc.getCurrentDockable();
-			if (dockable instanceof JumpToSearchTarget) {
-				((JumpToSearchTarget) dockable).jumpToSearchField();
-			}
-		}
-	}
+    @Override
+    public void jumpToSearchField() {
+        DockContainer dc = mDock.getFocusedDockContainer();
+        if (dc != null) {
+            Dockable dockable = dc.getCurrentDockable();
+            if (dockable instanceof JumpToSearchTarget) {
+                ((JumpToSearchTarget) dockable).jumpToSearchField();
+            }
+        }
+    }
 }

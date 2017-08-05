@@ -22,45 +22,45 @@ import java.awt.event.KeyEvent;
 
 /** Provides "Increase Skill Level" command */
 public class SkillLevelIncrementCommand extends Command {
-	@Localize("Increase Skill Level")
-	@Localize(locale = "ru", value = "Увеличить уровень умения")
-	private static String INCREASE_LEVEL;
+    @Localize("Increase Skill Level")
+    @Localize(locale = "ru", value = "Увеличить уровень умения")
+    private static String INCREASE_LEVEL;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	public static final String						CMD_INCREASE_LEVEL	= "IncreaseLevel";					//$NON-NLS-1$
+    public static final String                     CMD_INCREASE_LEVEL = "IncreaseLevel";                 					//$NON-NLS-1$
 
-	public static final SkillLevelIncrementCommand	INSTANCE			= new SkillLevelIncrementCommand();
+    public static final SkillLevelIncrementCommand INSTANCE           = new SkillLevelIncrementCommand();
 
-	private SkillLevelIncrementCommand() {
-		super(INCREASE_LEVEL, CMD_INCREASE_LEVEL, KeyEvent.VK_SLASH);
-	}
+    private SkillLevelIncrementCommand() {
+        super(INCREASE_LEVEL, CMD_INCREASE_LEVEL, KeyEvent.VK_SLASH);
+    }
 
-	@Override
-	public void adjust() {
-		Component focus = getFocusOwner();
-		if (focus instanceof OutlineProxy) {
-			focus = ((OutlineProxy) focus).getRealOutline();
-		}
-		if (focus instanceof SkillLevelIncrementable) {
-			SkillLevelIncrementable inc = (SkillLevelIncrementable) focus;
-			setEnabled(inc.canIncrementSkillLevel());
-			setTitle(inc.getIncrementSkillLevelTitle());
-		} else {
-			setEnabled(false);
-			setTitle(INCREASE_LEVEL);
-		}
-	}
+    @Override
+    public void adjust() {
+        Component focus = getFocusOwner();
+        if (focus instanceof OutlineProxy) {
+            focus = ((OutlineProxy) focus).getRealOutline();
+        }
+        if (focus instanceof SkillLevelIncrementable) {
+            SkillLevelIncrementable inc = (SkillLevelIncrementable) focus;
+            setEnabled(inc.canIncrementSkillLevel());
+            setTitle(inc.getIncrementSkillLevelTitle());
+        } else {
+            setEnabled(false);
+            setTitle(INCREASE_LEVEL);
+        }
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		Component focus = getFocusOwner();
-		if (focus instanceof OutlineProxy) {
-			focus = ((OutlineProxy) focus).getRealOutline();
-		}
-		((SkillLevelIncrementable) focus).incrementSkillLevel();
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        Component focus = getFocusOwner();
+        if (focus instanceof OutlineProxy) {
+            focus = ((OutlineProxy) focus).getRealOutline();
+        }
+        ((SkillLevelIncrementable) focus).incrementSkillLevel();
+    }
 
 }

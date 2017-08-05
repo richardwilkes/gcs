@@ -16,9 +16,9 @@ import com.trollworks.toolkit.ui.widget.outline.Row;
 
 /** A {@link Row} that represents a node in the library explorer. */
 public interface LibraryExplorerRow {
-	StdImage getIcon();
+    StdImage getIcon();
 
-	String getName();
+    String getName();
 
-	String getSelectionKey();
+    String getSelectionKey();
 }

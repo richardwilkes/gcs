@@ -22,46 +22,46 @@ import java.awt.event.ActionEvent;
 
 /** Provides the "New Advantages Library" command. */
 public class NewAdvantagesLibraryCommand extends Command {
-	@Localize("New Advantages Library")
-	@Localize(locale = "de", value = "Neue Vorteils-Liste")
-	@Localize(locale = "ru", value = "Новая библиотека преимуществ")
-	@Localize(locale = "es", value = "Librería de nuevas Ventajas")
-	private static String TITLE;
+    @Localize("New Advantages Library")
+    @Localize(locale = "de", value = "Neue Vorteils-Liste")
+    @Localize(locale = "ru", value = "Новая библиотека преимуществ")
+    @Localize(locale = "es", value = "Librería de nuevas Ventajas")
+    private static String TITLE;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** The action command this command will issue. */
-	public static final String						CMD_NEW_LIBRARY	= "NewAdvantagesLibrary";			//$NON-NLS-1$
+    /** The action command this command will issue. */
+    public static final String                      CMD_NEW_LIBRARY = "NewAdvantagesLibrary";           			//$NON-NLS-1$
 
-	/** The singleton {@link NewAdvantagesLibraryCommand}. */
-	public static final NewAdvantagesLibraryCommand	INSTANCE		= new NewAdvantagesLibraryCommand();
+    /** The singleton {@link NewAdvantagesLibraryCommand}. */
+    public static final NewAdvantagesLibraryCommand INSTANCE        = new NewAdvantagesLibraryCommand();
 
-	private NewAdvantagesLibraryCommand() {
-		super(TITLE, CMD_NEW_LIBRARY);
-	}
+    private NewAdvantagesLibraryCommand() {
+        super(TITLE, CMD_NEW_LIBRARY);
+    }
 
-	@Override
-	public void adjust() {
-		// Do nothing. We're always enabled.
-	}
+    @Override
+    public void adjust() {
+        // Do nothing. We're always enabled.
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		newAdvantagesLibrary();
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        newAdvantagesLibrary();
+    }
 
-	/** @return The newly created a new {@link AdvantagesDockable}. */
-	public static AdvantagesDockable newAdvantagesLibrary() {
-		LibraryExplorerDockable library = LibraryExplorerDockable.get();
-		if (library != null) {
-			AdvantageList list = new AdvantageList();
-			list.getModel().setLocked(false);
-			AdvantagesDockable dockable = new AdvantagesDockable(list);
-			library.dockLibrary(dockable);
-			return dockable;
-		}
-		return null;
-	}
+    /** @return The newly created a new {@link AdvantagesDockable}. */
+    public static AdvantagesDockable newAdvantagesLibrary() {
+        LibraryExplorerDockable library = LibraryExplorerDockable.get();
+        if (library != null) {
+            AdvantageList list = new AdvantageList();
+            list.getModel().setLocked(false);
+            AdvantagesDockable dockable = new AdvantagesDockable(list);
+            library.dockLibrary(dockable);
+            return dockable;
+        }
+        return null;
+    }
 }

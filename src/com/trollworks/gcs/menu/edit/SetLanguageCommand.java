@@ -23,76 +23,76 @@ import java.util.Locale;
 
 /** Provides a menu item to set a language for the user interface. */
 public class SetLanguageCommand extends Command {
-	@Localize("Automatic")
-	private static String	AUTO;
-	@Localize("English")
-	private static String	ENGLISH;
-	@Localize("German")
-	private static String	GERMAN;
-	@Localize("Russian")
-	private static String	RUSSIAN;
-	@Localize("Spanish")
-	private static String	SPANISH;
-	@Localize("You will need to restart GCS for this change to take effect.")
-	private static String	NOTICE;
+    @Localize("Automatic")
+    private static String AUTO;
+    @Localize("English")
+    private static String ENGLISH;
+    @Localize("German")
+    private static String GERMAN;
+    @Localize("Russian")
+    private static String RUSSIAN;
+    @Localize("Spanish")
+    private static String SPANISH;
+    @Localize("You will need to restart GCS for this change to take effect.")
+    private static String NOTICE;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	private static final String	CMD	= "SetLanguage:";	//$NON-NLS-1$
-	private Locale				mLocale;
+    private static final String CMD = "SetLanguage:";	//$NON-NLS-1$
+    private Locale              mLocale;
 
-	private static String getTitle(Locale locale) {
-		if (locale == null) {
-			return AUTO;
-		}
-		switch (locale.getLanguage()) {
-			case "en": //$NON-NLS-1$
-				return ENGLISH;
-			case "de": //$NON-NLS-1$
-				return GERMAN;
-			case "ru": //$NON-NLS-1$
-				return RUSSIAN;
-			case "es": //$NON-NLS-1$
-				return SPANISH;
-			default:
-				return locale.getLanguage();
-		}
-	}
+    private static String getTitle(Locale locale) {
+        if (locale == null) {
+            return AUTO;
+        }
+        switch (locale.getLanguage()) {
+            case "en": //$NON-NLS-1$
+                return ENGLISH;
+            case "de": //$NON-NLS-1$
+                return GERMAN;
+            case "ru": //$NON-NLS-1$
+                return RUSSIAN;
+            case "es": //$NON-NLS-1$
+                return SPANISH;
+            default:
+                return locale.getLanguage();
+        }
+    }
 
-	public SetLanguageCommand(Locale locale) {
-		super(getTitle(locale), CMD + getTitle(locale));
-		mLocale = locale;
-	}
+    public SetLanguageCommand(Locale locale) {
+        super(getTitle(locale), CMD + getTitle(locale));
+        mLocale = locale;
+    }
 
-	private boolean matches(Locale locale) {
-		return mLocale == null ? locale == null : mLocale.equals(locale);
-	}
+    private boolean matches(Locale locale) {
+        return mLocale == null ? locale == null : mLocale.equals(locale);
+    }
 
-	@Override
-	public void adjust() {
-		Locale locale = Localization.getLocaleOverride();
-		boolean matches = matches(locale);
-		setEnabled(!matches);
-		setMarked(matches);
-	}
+    @Override
+    public void adjust() {
+        Locale locale = Localization.getLocaleOverride();
+        boolean matches = matches(locale);
+        setEnabled(!matches);
+        setMarked(matches);
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		Locale locale = Localization.getLocaleOverride();
-		if (!matches(locale)) {
-			File file = Localization.getLocaleOverrideFile();
-			if (mLocale == null) {
-				file.delete();
-			} else {
-				try (PrintWriter out = new PrintWriter(file)) {
-					out.println(mLocale.getLanguage());
-				} catch (Exception ex) {
-					// Ignore
-				}
-			}
-			WindowUtils.showWarning(null, NOTICE);
-		}
-	}
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        Locale locale = Localization.getLocaleOverride();
+        if (!matches(locale)) {
+            File file = Localization.getLocaleOverrideFile();
+            if (mLocale == null) {
+                file.delete();
+            } else {
+                try (PrintWriter out = new PrintWriter(file)) {
+                    out.println(mLocale.getLanguage());
+                } catch (Exception ex) {
+                    // Ignore
+                }
+            }
+            WindowUtils.showWarning(null, NOTICE);
+        }
+    }
 }

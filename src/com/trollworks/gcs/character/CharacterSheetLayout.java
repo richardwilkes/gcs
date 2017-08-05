@@ -19,107 +19,107 @@ import java.awt.LayoutManager2;
 
 /** A layout for the character sheet that dynamically does n-up presentation. */
 class CharacterSheetLayout implements LayoutManager2 {
-	private static final int	MARGIN	= 1;
-	private CharacterSheet		mSheet;
+    private static final int MARGIN = 1;
+    private CharacterSheet   mSheet;
 
-	public CharacterSheetLayout(CharacterSheet sheet) {
-		mSheet = sheet;
-	}
+    public CharacterSheetLayout(CharacterSheet sheet) {
+        mSheet = sheet;
+    }
 
-	@Override
-	public Dimension minimumLayoutSize(Container target) {
-		return preferredLayoutSize(target);
-	}
+    @Override
+    public Dimension minimumLayoutSize(Container target) {
+        return preferredLayoutSize(target);
+    }
 
-	@Override
-	public Dimension preferredLayoutSize(Container target) {
-		Insets insets = target.getInsets();
-		Component[] children = target.getComponents();
-		int across = 1;
-		int width = 0;
-		int height = 0;
-		int margin = mSheet.getScale().scale(MARGIN);
-		if (children.length > 0) {
-			Dimension size = children[0].getPreferredSize();
-			Container parent = target.getParent();
-			if (parent != null) {
-				Insets parentInsets = parent.getInsets();
-				int avail = parent.getWidth() - (parentInsets.left + parentInsets.right);
-				int pageWidth = size.width;
-				avail -= insets.left + insets.right + pageWidth;
-				pageWidth += margin;
-				while (true) {
-					avail -= pageWidth;
-					if (avail >= 0) {
-						across++;
-					} else {
-						break;
-					}
-				}
-			}
-			width = (size.width + margin) * across - margin;
-			int pagesDown = children.length / across;
-			if (children.length % across != 0) {
-				pagesDown++;
-			}
-			height = (size.height + margin) * pagesDown - margin;
-		}
-		return new Dimension(insets.left + insets.right + width, insets.top + insets.bottom + height);
-	}
+    @Override
+    public Dimension preferredLayoutSize(Container target) {
+        Insets insets = target.getInsets();
+        Component[] children = target.getComponents();
+        int across = 1;
+        int width = 0;
+        int height = 0;
+        int margin = mSheet.getScale().scale(MARGIN);
+        if (children.length > 0) {
+            Dimension size = children[0].getPreferredSize();
+            Container parent = target.getParent();
+            if (parent != null) {
+                Insets parentInsets = parent.getInsets();
+                int avail = parent.getWidth() - (parentInsets.left + parentInsets.right);
+                int pageWidth = size.width;
+                avail -= insets.left + insets.right + pageWidth;
+                pageWidth += margin;
+                while (true) {
+                    avail -= pageWidth;
+                    if (avail >= 0) {
+                        across++;
+                    } else {
+                        break;
+                    }
+                }
+            }
+            width = (size.width + margin) * across - margin;
+            int pagesDown = children.length / across;
+            if (children.length % across != 0) {
+                pagesDown++;
+            }
+            height = (size.height + margin) * pagesDown - margin;
+        }
+        return new Dimension(insets.left + insets.right + width, insets.top + insets.bottom + height);
+    }
 
-	@Override
-	public Dimension maximumLayoutSize(Container target) {
-		return preferredLayoutSize(target);
-	}
+    @Override
+    public Dimension maximumLayoutSize(Container target) {
+        return preferredLayoutSize(target);
+    }
 
-	@Override
-	public void layoutContainer(Container target) {
-		Component[] children = target.getComponents();
-		if (children.length > 0) {
-			Dimension size = children[0].getPreferredSize();
-			Dimension avail = target.getSize();
-			Insets insets = target.getInsets();
-			int x = insets.left;
-			int y = insets.top;
-			int margin = mSheet.getScale().scale(MARGIN);
-			for (Component child : children) {
-				child.setBounds(x, y, size.width, size.height);
-				x += size.width + margin;
-				if (x + size.width + insets.right > avail.width) {
-					x = insets.left;
-					y += size.height + margin;
-				}
-			}
-		}
-	}
+    @Override
+    public void layoutContainer(Container target) {
+        Component[] children = target.getComponents();
+        if (children.length > 0) {
+            Dimension size = children[0].getPreferredSize();
+            Dimension avail = target.getSize();
+            Insets insets = target.getInsets();
+            int x = insets.left;
+            int y = insets.top;
+            int margin = mSheet.getScale().scale(MARGIN);
+            for (Component child : children) {
+                child.setBounds(x, y, size.width, size.height);
+                x += size.width + margin;
+                if (x + size.width + insets.right > avail.width) {
+                    x = insets.left;
+                    y += size.height + margin;
+                }
+            }
+        }
+    }
 
-	@Override
-	public float getLayoutAlignmentX(Container target) {
-		return Component.LEFT_ALIGNMENT;
-	}
+    @Override
+    public float getLayoutAlignmentX(Container target) {
+        return Component.LEFT_ALIGNMENT;
+    }
 
-	@Override
-	public float getLayoutAlignmentY(Container target) {
-		return Component.TOP_ALIGNMENT;
-	}
+    @Override
+    public float getLayoutAlignmentY(Container target) {
+        return Component.TOP_ALIGNMENT;
+    }
 
-	@Override
-	public void addLayoutComponent(Component comp, Object constraints) {
-		// Not used.
-	}
+    @Override
+    public void addLayoutComponent(Component comp, Object constraints) {
+        // Not used.
+    }
 
-	@Override
-	public void addLayoutComponent(String name, Component comp) {
-		// Not used.
-	}
+    @Override
+    public void addLayoutComponent(String name, Component comp) {
+        // Not used.
+    }
 
-	@Override
-	public void removeLayoutComponent(Component comp) {
-		// Not used.
-	}
+    @Override
+    public void removeLayoutComponent(Component comp) {
+        // Not used.
+    }
 
-	@Override
-	public void invalidateLayout(Container target) {
-		// Not used.
-	}
+    @Override
+    public void invalidateLayout(Container target) {
+        // Not used.
+    }
 }

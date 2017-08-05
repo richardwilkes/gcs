@@ -19,41 +19,41 @@ import com.trollworks.toolkit.utility.Localization;
 
 /** A list of advantages and disadvantages from a library. */
 public class AdvantagesDockable extends LibraryDockable {
-	@Localize("Untitled Advantages")
-	@Localize(locale = "de", value = "Unbenannte Vorteils-Liste")
-	@Localize(locale = "ru", value = "Безымянный список преимуществ")
-	@Localize(locale = "es", value = "Ventajas sin título")
-	private static String UNTITLED;
+    @Localize("Untitled Advantages")
+    @Localize(locale = "de", value = "Unbenannte Vorteils-Liste")
+    @Localize(locale = "ru", value = "Безымянный список преимуществ")
+    @Localize(locale = "es", value = "Ventajas sin título")
+    private static String UNTITLED;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** Creates a new {@link AdvantagesDockable}. */
-	public AdvantagesDockable(AdvantageList list) {
-		super(list);
-	}
+    /** Creates a new {@link AdvantagesDockable}. */
+    public AdvantagesDockable(AdvantageList list) {
+        super(list);
+    }
 
-	@Override
-	public AdvantageList getDataFile() {
-		return (AdvantageList) super.getDataFile();
-	}
+    @Override
+    public AdvantageList getDataFile() {
+        return (AdvantageList) super.getDataFile();
+    }
 
-	@Override
-	protected String getUntitledBaseName() {
-		return UNTITLED;
-	}
+    @Override
+    protected String getUntitledBaseName() {
+        return UNTITLED;
+    }
 
-	@Override
-	protected ListOutline createOutline() {
-		AdvantageList list = getDataFile();
-		list.addTarget(this, Advantage.ID_TYPE);
-		list.addTarget(this, Advantage.ID_CATEGORY);
-		return new AdvantageOutline(list, list.getModel());
-	}
+    @Override
+    protected ListOutline createOutline() {
+        AdvantageList list = getDataFile();
+        list.addTarget(this, Advantage.ID_TYPE);
+        list.addTarget(this, Advantage.ID_CATEGORY);
+        return new AdvantageOutline(list, list.getModel());
+    }
 
-	@Override
-	public void applyScale(Scale scale) {
-		// RAW: Implement me
-	}
+    @Override
+    public void applyScale(Scale scale) {
+        // RAW: Implement me
+    }
 }

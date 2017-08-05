@@ -24,49 +24,49 @@ import java.io.IOException;
 
 /** A list of skills. */
 public class SkillList extends ListFile {
-	/** The current version. */
-	public static final int		CURRENT_VERSION	= 1;
-	/** The XML tag for {@link SkillList}s. */
-	public static final String	TAG_ROOT		= "skill_list";	//$NON-NLS-1$
-	/** The extension for {@link SkillList}s. */
-	public static final String	EXTENSION		= "skl";		//$NON-NLS-1$
+    /** The current version. */
+    public static final int    CURRENT_VERSION = 1;
+    /** The XML tag for {@link SkillList}s. */
+    public static final String TAG_ROOT        = "skill_list";	//$NON-NLS-1$
+    /** The extension for {@link SkillList}s. */
+    public static final String EXTENSION       = "skl";       		//$NON-NLS-1$
 
-	@Override
-	public int getXMLTagVersion() {
-		return CURRENT_VERSION;
-	}
+    @Override
+    public int getXMLTagVersion() {
+        return CURRENT_VERSION;
+    }
 
-	@Override
-	public String getXMLTagName() {
-		return TAG_ROOT;
-	}
+    @Override
+    public String getXMLTagName() {
+        return TAG_ROOT;
+    }
 
-	@Override
-	public FileType getFileType() {
-		return FileType.getByExtension(EXTENSION);
-	}
+    @Override
+    public FileType getFileType() {
+        return FileType.getByExtension(EXTENSION);
+    }
 
-	@Override
-	public StdImageSet getFileIcons() {
-		return GCSImages.getSkillsDocumentIcons();
-	}
+    @Override
+    public StdImageSet getFileIcons() {
+        return GCSImages.getSkillsDocumentIcons();
+    }
 
-	@Override
-	protected void loadList(XMLReader reader, LoadState state) throws IOException {
-		OutlineModel model = getModel();
-		String marker = reader.getMarker();
-		do {
-			if (reader.next() == XMLNodeType.START_TAG) {
-				String name = reader.getName();
+    @Override
+    protected void loadList(XMLReader reader, LoadState state) throws IOException {
+        OutlineModel model = getModel();
+        String marker = reader.getMarker();
+        do {
+            if (reader.next() == XMLNodeType.START_TAG) {
+                String name = reader.getName();
 
-				if (Skill.TAG_SKILL.equals(name) || Skill.TAG_SKILL_CONTAINER.equals(name)) {
-					model.addRow(new Skill(this, reader, state), true);
-				} else if (Technique.TAG_TECHNIQUE.equals(name)) {
-					model.addRow(new Technique(this, reader, state), true);
-				} else {
-					reader.skipTag(name);
-				}
-			}
-		} while (reader.withinMarker(marker));
-	}
+                if (Skill.TAG_SKILL.equals(name) || Skill.TAG_SKILL_CONTAINER.equals(name)) {
+                    model.addRow(new Skill(this, reader, state), true);
+                } else if (Technique.TAG_TECHNIQUE.equals(name)) {
+                    model.addRow(new Technique(this, reader, state), true);
+                } else {
+                    reader.skipTag(name);
+                }
+            }
+        } while (reader.withinMarker(marker));
+    }
 }

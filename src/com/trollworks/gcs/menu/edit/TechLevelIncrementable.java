@@ -15,15 +15,15 @@ package com.trollworks.gcs.menu.edit;
  * Objects that can have their Tech Level incremented/decremented should implement this interface.
  */
 public interface TechLevelIncrementable {
-	/** @return Whether the data can be incremented. */
-	boolean canIncrementTechLevel();
+    /** @return Whether the data can be incremented. */
+    boolean canIncrementTechLevel();
 
-	/** @return Whether the data can be decremented. */
-	boolean canDecrementTechLevel();
+    /** @return Whether the data can be decremented. */
+    boolean canDecrementTechLevel();
 
-	/** Call to increment the data. */
-	void incrementTechLevel();
+    /** Call to increment the data. */
+    void incrementTechLevel();
 
-	/** Call to decrement the data. */
-	void decrementTechLevel();
+    /** Call to decrement the data. */
+    void decrementTechLevel();
 }

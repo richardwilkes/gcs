@@ -24,14 +24,14 @@ import java.io.IOException;
  * Responsible for creating new {@link Dockable}s and installing them into the {@link Workspace}.
  */
 public class GCSFileProxyCreator implements FileProxyCreator {
-	@Override
-	public FileProxy create(File file) throws IOException {
-		LibraryExplorerDockable library = LibraryExplorerDockable.get();
-		if (library != null) {
-			FileProxy proxy = library.open(file.toPath());
-			proxy.toFrontAndFocus();
-			return proxy;
-		}
-		return null;
-	}
+    @Override
+    public FileProxy create(File file) throws IOException {
+        LibraryExplorerDockable library = LibraryExplorerDockable.get();
+        if (library != null) {
+            FileProxy proxy = library.open(file.toPath());
+            proxy.toFrontAndFocus();
+            return proxy;
+        }
+        return null;
+    }
 }

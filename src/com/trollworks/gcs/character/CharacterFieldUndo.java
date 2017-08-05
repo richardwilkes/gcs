@@ -17,44 +17,44 @@ import javax.swing.undo.CannotUndoException;
 
 /** Provides undo support for character fields. */
 public class CharacterFieldUndo extends AbstractUndoableEdit {
-	private GURPSCharacter	mCharacter;
-	private String			mName;
-	private String			mID;
-	private Object			mBefore;
-	private Object			mAfter;
+    private GURPSCharacter mCharacter;
+    private String         mName;
+    private String         mID;
+    private Object         mBefore;
+    private Object         mAfter;
 
-	/**
-	 * Create a new character field undo edit.
-	 * 
-	 * @param character The character to provide an undo edit for.
-	 * @param name The name of the undo edit.
-	 * @param id The ID of the field being changed.
-	 * @param before The original value.
-	 * @param after The new value.
-	 */
-	public CharacterFieldUndo(GURPSCharacter character, String name, String id, Object before, Object after) {
-		super();
-		mCharacter = character;
-		mName = name;
-		mID = id;
-		mBefore = before;
-		mAfter = after;
-	}
+    /**
+     * Create a new character field undo edit.
+     * 
+     * @param character The character to provide an undo edit for.
+     * @param name The name of the undo edit.
+     * @param id The ID of the field being changed.
+     * @param before The original value.
+     * @param after The new value.
+     */
+    public CharacterFieldUndo(GURPSCharacter character, String name, String id, Object before, Object after) {
+        super();
+        mCharacter = character;
+        mName = name;
+        mID = id;
+        mBefore = before;
+        mAfter = after;
+    }
 
-	@Override
-	public String getPresentationName() {
-		return mName;
-	}
+    @Override
+    public String getPresentationName() {
+        return mName;
+    }
 
-	@Override
-	public void undo() throws CannotUndoException {
-		super.undo();
-		mCharacter.setValueForID(mID, mBefore);
-	}
+    @Override
+    public void undo() throws CannotUndoException {
+        super.undo();
+        mCharacter.setValueForID(mID, mBefore);
+    }
 
-	@Override
-	public void redo() throws CannotRedoException {
-		super.redo();
-		mCharacter.setValueForID(mID, mAfter);
-	}
+    @Override
+    public void redo() throws CannotRedoException {
+        super.redo();
+        mCharacter.setValueForID(mID, mAfter);
+    }
 }

@@ -19,40 +19,40 @@ import com.trollworks.toolkit.utility.Localization;
 
 /** A list of spells from a library. */
 public class SpellsDockable extends LibraryDockable {
-	@Localize("Untitled Spells")
-	@Localize(locale = "de", value = "Unbenannte Zauber-Liste")
-	@Localize(locale = "ru", value = "Безымянный список заклинаний")
-	@Localize(locale = "es", value = "Sortilegios Sin Nombre")
-	private static String UNTITLED;
+    @Localize("Untitled Spells")
+    @Localize(locale = "de", value = "Unbenannte Zauber-Liste")
+    @Localize(locale = "ru", value = "Безымянный список заклинаний")
+    @Localize(locale = "es", value = "Sortilegios Sin Nombre")
+    private static String UNTITLED;
 
-	static {
-		Localization.initialize();
-	}
+    static {
+        Localization.initialize();
+    }
 
-	/** Creates a new {@link SpellsDockable}. */
-	public SpellsDockable(SpellList list) {
-		super(list);
-	}
+    /** Creates a new {@link SpellsDockable}. */
+    public SpellsDockable(SpellList list) {
+        super(list);
+    }
 
-	@Override
-	public SpellList getDataFile() {
-		return (SpellList) super.getDataFile();
-	}
+    @Override
+    public SpellList getDataFile() {
+        return (SpellList) super.getDataFile();
+    }
 
-	@Override
-	protected String getUntitledBaseName() {
-		return UNTITLED;
-	}
+    @Override
+    protected String getUntitledBaseName() {
+        return UNTITLED;
+    }
 
-	@Override
-	protected ListOutline createOutline() {
-		SpellList list = getDataFile();
-		list.addTarget(this, Spell.ID_CATEGORY);
-		return new SpellOutline(list, list.getModel());
-	}
+    @Override
+    protected ListOutline createOutline() {
+        SpellList list = getDataFile();
+        list.addTarget(this, Spell.ID_CATEGORY);
+        return new SpellOutline(list, list.getModel());
+    }
 
-	@Override
-	public void applyScale(Scale scale) {
-		// RAW: Implement me
-	}
+    @Override
+    public void applyScale(Scale scale) {
+        // RAW: Implement me
+    }
 }
