@@ -33,6 +33,8 @@ public class SetLanguageCommand extends Command {
 	private static String	RUSSIAN;
 	@Localize("Spanish")
 	private static String	SPANISH;
+	@Localize("Português")
+	private static String	PORTUGUESE;
 	@Localize("You will need to restart GCS for this change to take effect.")
 	private static String	NOTICE;
 
@@ -56,6 +58,8 @@ public class SetLanguageCommand extends Command {
 				return RUSSIAN;
 			case "es": //$NON-NLS-1$
 				return SPANISH;
+			case "pt-br": //$NON-NLS-1$
+				return PORTUGUESE;
 			default:
 				return locale.getLanguage();
 		}

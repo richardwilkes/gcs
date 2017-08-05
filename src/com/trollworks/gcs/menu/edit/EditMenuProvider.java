@@ -42,6 +42,7 @@ public class EditMenuProvider implements MenuProvider {
 	@Localize(locale = "de", value = "Bearbeiten")
 	@Localize(locale = "ru", value = "Правка")
 	@Localize(locale = "es", value = "Editar")
+	@Localize(locale = "pt-br", value = "Editar")
 	private static String	EDIT;
 	@Localize("User Interface Language")
 	private static String	LANGUAGE;
@@ -133,6 +134,7 @@ public class EditMenuProvider implements MenuProvider {
 		menu.add(new JCheckBoxMenuItem(new SetLanguageCommand(new Locale("de")))); //$NON-NLS-1$
 		menu.add(new JCheckBoxMenuItem(new SetLanguageCommand(new Locale("ru")))); //$NON-NLS-1$
 		menu.add(new JCheckBoxMenuItem(new SetLanguageCommand(new Locale("es")))); //$NON-NLS-1$
+		menu.add(new JCheckBoxMenuItem(new SetLanguageCommand(new Locale("pt-br")))); //$NON-NLS-1$
 		DynamicMenuEnabler.add(menu);
 		return menu;
 	}

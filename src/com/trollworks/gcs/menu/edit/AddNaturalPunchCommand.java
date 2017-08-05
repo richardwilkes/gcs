@@ -25,6 +25,7 @@ public class AddNaturalPunchCommand extends Command {
 	@Localize(locale = "de", value = "Führe Schlag als Waffe auf")
 	@Localize(locale = "ru", value = "Отображать удар в оружии")
 	@Localize(locale = "es", value = "Incluir Puñetazo entre las Armas")
+	@Localize(locale = "pt-br", value = "Adicionar soco em armas")
 	private static String ADD_NATURAL_PUNCH;
 
 	static {

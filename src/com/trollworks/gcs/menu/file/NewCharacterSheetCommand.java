@@ -27,6 +27,7 @@ public class NewCharacterSheetCommand extends Command {
 	@Localize(locale = "de", value = "Neues Charakterblatt")
 	@Localize(locale = "ru", value = "Новый лист персонажа")
 	@Localize(locale = "es", value = "Nueva hoja de personaje")
+	@Localize(locale = "pt-br", value = "Nova Ficha de Personagem")
 	private static String NEW_CHARACTER_SHEET;
 
 	static {

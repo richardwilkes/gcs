@@ -27,16 +27,19 @@ public class RandomizeNameCommand extends Command {
 	@Localize(locale = "de", value = "männlichen")
 	@Localize(locale = "ru", value = "муж.")
 	@Localize(locale = "es", value = "Varón")
+	@Localize(locale = "pt-br", value = "Masculino")
 	private static String	MALE;
 	@Localize("Female")
 	@Localize(locale = "de", value = "weiblichen")
 	@Localize(locale = "ru", value = "жен.")
 	@Localize(locale = "es", value = "Hembra")
+	@Localize(locale = "pt-br", value = "Feminino")
 	private static String	FEMALE;
 	@Localize("Generate Random {0} Name")
 	@Localize(locale = "de", value = "Erstelle zufälligen {0} Namen")
 	@Localize(locale = "ru", value = "Создать случайное {0} имя")
 	@Localize(locale = "es", value = "Generar nombre al Azar {0}")
+	@Localize(locale = "pt-br", value = "Gerar nome aleatório {0}")
 	private static String	TITLE;
 
 	static {

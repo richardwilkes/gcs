@@ -27,6 +27,7 @@ public class SwapDefaultsCommand extends Command {
 	@Localize(locale = "de", value = "Grundwerte tauschen")
 	@Localize(locale = "ru", value = "Переключение по умолчанию")
 	@Localize(locale = "es", value = "Canjear defectos")
+	@Localize(locale = "pt-br", value = "Trocar valores padrão")
 	private static String SWAP_DEFAULTS;
 
 	static {

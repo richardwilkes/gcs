@@ -43,6 +43,7 @@ import java.util.Map;
 /** The main application user interface. */
 public class GCSApp extends App {
 	@Localize("macOS has translocated GCS, restricting access to the file system and preventing access to the data library. To fix this, you must quit GCS, then run the following command in the terminal after cd'ing into the GURPS Character Sheet folder:\n\n")
+	@Localize(locale = "pt-BR", value = "O macOS translocou o GCS, restringindo o acesso ao sistema de arquivos e impedindo o acesso à biblioteca de dados. Para corrigir isso, você deve fechar o GCS e, em seguida, executar o seguinte comando no terminal após entrar na pasta GURPS Character Sheet:\n\n")
 	private static String TRANSLOCATION_INSTRUCTIONS;
 
 	static {

@@ -38,6 +38,7 @@ public class FileMenuProvider implements MenuProvider {
 	@Localize(locale = "de", value = "Datei")
 	@Localize(locale = "ru", value = "Файл")
 	@Localize(locale = "es", value = "Archivo")
+	@Localize(locale = "pt-br", value = "Arquivo")
 	private static String FILE;
 
 	static {

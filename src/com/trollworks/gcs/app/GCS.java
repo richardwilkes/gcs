@@ -53,114 +53,139 @@ public class GCS {
 	@Localize(locale = "de", value = "GURPS Charakterblatt")
 	@Localize(locale = "ru", value = "GURPS персонаж")
 	@Localize(locale = "es", value = "Ficha de Personaje GURPS")
+	@Localize(locale = "pt-BR", value = "Ficha de Personagem GURPS")
 	private static String	SHEET_DESCRIPTION;
 	@Localize("GCS Advantages Library")
 	@Localize(locale = "de", value = "GCS Vorteils-Liste")
 	@Localize(locale = "ru", value = "GCS библиотека преимуществ")
 	@Localize(locale = "es", value = "Biblioteca de Ventajas CGS")
+	@Localize(locale = "pt-BR", value = "Biblioteca de Vantagens CGS")
 	private static String	ADVANTAGES_LIBRARY_DESCRIPTION;
 	@Localize("GCS Equipment Library")
 	@Localize(locale = "de", value = "GCS Ausrüstungs-Liste")
 	@Localize(locale = "ru", value = "GCS библиотека снаряжения")
 	@Localize(locale = "es", value = "Biblioteca de Equipo GCS")
+	@Localize(locale = "pt-BR", value = "Biblioteca de Equipamentos GCS")
 	private static String	EQUIPMENT_LIBRARY_DESCRIPTION;
 	@Localize("GCS Skills Library")
 	@Localize(locale = "de", value = "GCS Fertigkeiten-Liste")
 	@Localize(locale = "ru", value = "GCS библиотека умений")
 	@Localize(locale = "es", value = "Biblioteca de Habilidades GCS")
+	@Localize(locale = "pt-BR", value = "Biblioteca de Habilidades GCS")
 	private static String	SKILLS_LIBRARY_DESCRIPTION;
 	@Localize("GCS Spells Library")
 	@Localize(locale = "de", value = "GCS Zauber-Liste")
 	@Localize(locale = "ru", value = "GCS библиотека заклинаний")
 	@Localize(locale = "es", value = "Biblioteca de Sortilegios GCS")
+	@Localize(locale = "pt-BR", value = "Biblioteca de Magias GCS")
 	private static String	SPELLS_LIBRARY_DESCRIPTION;
 	@Localize("GCS Library")
 	@Localize(locale = "de", value = "GCS Listen")
 	@Localize(locale = "ru", value = "GCS библиотека")
 	@Localize(locale = "es", value = "Biblioteca GCS")
+	@Localize(locale = "pt-BR", value = "Biblioteca GCS")
 	private static String	LIBRARY_DESCRIPTION;
 	@Localize("GCS Character Template")
 	@Localize(locale = "de", value = "GCS Charaktervorlage")
 	@Localize(locale = "ru", value = "GCS шаблон персонажа")
 	@Localize(locale = "es", value = "Plantilla de Personaje GCS")
+	@Localize(locale = "pt-BR", value = "Modelo de Personagem GCS")
 	private static String	TEMPLATE_DESCRIPTION;
 	@Localize("Create PDF versions of sheets specified on the command line.")
 	@Localize(locale = "de", value = "Erstelle PDF-Dateien von den auf der Kommandozeile angegebenen Charakterblättern.")
 	@Localize(locale = "ru", value = "Создать PDF-версии листов, указанных в командной строке.")
 	@Localize(locale = "es", value = "Crear archivo PDF de las hojas especificadas en la linea de mandatos")
+	@Localize(locale = "pt-BR", value = "Criar versão em PDF da ficha específicada em linha de comando.")
 	private static String	PDF_OPTION_DESCRIPTION;
 	@Localize("Create text versions of sheets specified on the command line.")
+	@Localize(locale = "pt-BR", value = "Criar versão em texto da ficha específicada em linha de comando.")
 	private static String	TEXT_OPTION_DESCRIPTION;
 	@Localize("A template to use when creating text versions of the sheets. If this is not specified, then the template found in the data directory will be used by default.")
+	@Localize(locale = "pt-BR", value = "Um modelo a ser usado ao criar versões de texto das fichas. Se não for especificado, o modelo encontrado no diretório de dados será usado por padrão.")
 	private static String	TEXT_TEMPLATE_OPTION_DESCRIPTION;
 	@Localize("FILE")
 	@Localize(locale = "de", value = "DATEI")
 	@Localize(locale = "ru", value = "ФАЙЛ")
 	@Localize(locale = "es", value = "Archivo")
+	@Localize(locale = "pt-BR", value = "Arquivo")
 	private static String	TEXT_TEMPLATE_ARG;
 	@Localize("Create PNG versions of sheets specified on the command line.")
 	@Localize(locale = "de", value = "Erstelle PNG-Dateien von den auf der Kommandozeile angegebenen Charakterblättern.")
 	@Localize(locale = "ru", value = "Создать PNG-версии листов, указанных в командной строке.")
 	@Localize(locale = "es", value = "Crear archivo PNG de las hojas especificadas en la linea de mandatos")
+	@Localize(locale = "pt-BR", value = "Criar versão em PNG da ficha específicadas em linha de comando.")
 	private static String	PNG_OPTION_DESCRIPTION;
 	@Localize("When generating PDF or PNG from the command line, allows you to specify a paper size to use, rather than the one embedded in the file. Valid choices are: LETTER, A4, or the width and height, expressed in inches and separated by an 'x', such as '5x7'.")
 	@Localize(locale = "de", value = "Erlaubt, bei der Erstellung von PDF-Dateien oder PNG-Dateien von der Kommandozeile aus, das zu verwendende Papierformat anzugeben, statt das im Charakterblatt angegebene zu verwenden. Gültige Werte sind: LETTER, A4 oder die Höhe und Breite in Zoll und mit einem 'x' getrennt, wie z.B. '5x7'.")
 	@Localize(locale = "ru", value = "При создании PDF или PNG из командной строки, позволяет указывать размер бумаги, отличный от того, что содержится в файле. Можно выбрать следующие: Letter, A4 или ширину и высоту в дюймах и разделенную 'х', например '5x7'.")
 	@Localize(locale = "es", value = "Cuando se genera en formato PDF o PNG desde la linea de mandatos,se permite especificar el tamaño de papel, en lugar del valor contenido en el archivo. Las elecciones válidas son: LETTER, A4, o ancho y alto en pulgadas separado por una 'x', como por ejemplo '5x7'.")
+	@Localize(locale = "pt-BR", value = "Quando gerar PDFs ou PNGs a partir da linha de comando, se permite especificar o tamanho do papel, ao invés dos valores do arquivo. As opções válidas são: CARTA, A4, ou largura e altura, em polegadas e separadas por um 'x', como por exemplo '5x7'.")
 	private static String	SIZE_OPTION_DESCRIPTION;
 	@Localize("When generating PDF or PNG from the command line, allows you to specify the margins to use, rather than the ones embedded in the file. The top, left, bottom, and right margins must all be specified in inches, separated by colons, such as '1:1:1:1'.")
 	@Localize(locale = "de", value = "Erlaubt, bei der Erstellung von PDF-Dateien oder PNG-Dateien von der Kommandozeile aus, die zu verwendenden Ränder anzugeben, statt die im Charakterblatt angegebenen zu verwenden. Der obere, linke, untere und rechte Rand müssen alle in Zoll angegeben werden, getrennt durch Doppelpunke, wie z.B. '1:1:1:1'.")
 	@Localize(locale = "ru", value = "При создании PDF или PNG из командной строки, позволяет указать размеры отступов, отличные от тех, что содержатся в файле. Сверху, слева, снизу, и справа должны быть указаны в дюймах, разделенные двоеточиями, например '1:1:1:1'.")
 	@Localize(locale = "es", value = "Cuando se genera en formato PDF o PNG desde la linea de mandatos,se permite especificar las dimensiones de los márgenes, en lugar de los valores contenidos en el archivo. Las medidas de los márgenes superior, izquierdo, inferior y derecho, deben especificarse en pulgadas, separadas por dos puntos, como por ejemplo '1:1:1:1' .")
+	@Localize(locale = "pt-BR", value = "Quando gerar PDFs ou PNGs a partir da linha de comandos, se permite especificar as margens para uso, ao invés dos valores do arquivo. As margens do topo, esquerda, baixo, e direita, precisam ser especificadas em polegadas, separadas por dois pontos, como por exemplo '1:1:1:1' .")
 	private static String	MARGIN_OPTION_DESCRIPTION;
 	@Localize("You must specify one or more sheet files to process.")
 	@Localize(locale = "de", value = "Es muss mindestens ein Charakterblatt angegeben werden.")
 	@Localize(locale = "ru", value = "Вы должны указать один или несколько файлов листов для обработки.")
 	@Localize(locale = "es", value = "Debes seleccionar uno o más archivos de Ficha de Personaje para procesarlas.")
+	@Localize(locale = "pt-BR", value = "Selecione uma ou mais fichas para processar.")
 	private static String	NO_FILES_TO_PROCESS;
 	@Localize("Loading \"{0}\"... ")
 	@Localize(locale = "de", value = "Lade \"{0}\"... ")
 	@Localize(locale = "ru", value = "Загрузка \"{0}\"... ")
 	@Localize(locale = "es", value = "Cargando \"{0}\"...")
+	@Localize(locale = "pt-BR", value = "Carregando \"{0}\"...")
 	private static String	LOADING;
 	@Localize("  Creating PDF... ")
 	@Localize(locale = "de", value = "  Erstelle PDF-Datei... ")
 	@Localize(locale = "ru", value = "  Создание PDF... ")
 	@Localize(locale = "es", value = "  Generando archivo PDF... ")
+	@Localize(locale = "pt-BR", value = "  Gerando arquivo PDF... ")
 	private static String	CREATING_PDF;
 	@Localize("  Creating from text template... ")
+	@Localize(locale = "pt-BR", value = "  Criado a partir do modelo de texto... ")
 	private static String	CREATING_TEXT;
 	@Localize("  Creating PNG... ")
 	@Localize(locale = "de", value = "  Erstelle PNG-Datei... ")
 	@Localize(locale = "ru", value = "  Создание PNG... ")
 	@Localize(locale = "es", value = "  Generando archivo PNG... ")
+	@Localize(locale = "pt-BR", value = "  Gerando arquivo PNG... ")
 	private static String	CREATING_PNG;
 	@Localize("  ** ERROR ENCOUNTERED **")
 	@Localize(locale = "de", value = "  ** FEHLER AUFGETRETEN **")
 	@Localize(locale = "ru", value = "  ** ОБНАРУЖЕНА ОШИБКА **")
 	@Localize(locale = "es", value = "  ** SE HA ENCONTRADO UN ERROR **")
+	@Localize(locale = "pt-BR", value = "  ** ERRO ENCONTRADO **")
 	private static String	PROCESSING_FAILED;
 	@Localize("\nDone! {0} overall.")
 	@Localize(locale = "de", value = "\nFertig! Benötigte Zeit: {0}.")
 	@Localize(locale = "ru", value = "\nГотово! {0} всего.")
 	@Localize(locale = "es", value = "\n¡Terminado! {0}")
+	@Localize(locale = "pt-BR", value = "\nFinalizado! {0}")
 	private static String	FINISHED;
 	@Localize("    Created \"{0}\".")
 	@Localize(locale = "de", value = "    Erstellt: \"{0}\".")
 	@Localize(locale = "ru", value = "    Создано \"{0}\".")
 	@Localize(locale = "es", value = "    Creado: \"{0}\".")
+	@Localize(locale = "pt-BR", value = "    Criado em: \"{0}\".")
 	private static String	CREATED;
 	@Localize("WARNING: Invalid paper size specification.")
 	@Localize(locale = "de", value = "WARNUNG: Ungültiges Papierformat.")
 	@Localize(locale = "ru", value = "ПРЕДУПРЕЖДЕНИЕ: Неверный размер бумаги.")
 	@Localize(locale = "es", value = "AVISO: El tamaño del papel especificado no es válido")
+	@Localize(locale = "pt-BR", value = "AVISO: Especificação de tamanho de papel inválida.")
 	private static String	INVALID_PAPER_SIZE;
 	@Localize("WARNING: Invalid paper margins specification.")
 	@Localize(locale = "de", value = "WARNUNG: Ungültiger Randbereich.")
 	@Localize(locale = "ru", value = "ПРЕДУПРЕЖДЕНИЕ: Неверные поля бумаги.")
 	@Localize(locale = "es", value = "AVISO: Los margenes especificados no son válidos")
+	@Localize(locale = "pt-BR", value = "AVISO: As margens definidas são inválidas.")
 	private static String	INVALID_PAPER_MARGINS;
 	@Localize("    Used text template file \"{0}\".")
+	@Localize(locale = "pt-BR", value = "    Arquivo de texto de modelo usado \"{0}\".")
 	private static String	TEMPLATE_USED;
 
 	static {
