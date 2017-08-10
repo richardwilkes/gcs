@@ -175,7 +175,7 @@ public class MeleeWeaponStats extends WeaponStats {
                                 }
                                 skillLevel = best != Integer.MIN_VALUE ? best : 0;
                             }
-                            num = Numbers.format(skillLevel + (neg ? -modifier : modifier));
+                            num = Numbers.format(skillLevel + (neg ? -modifier : modifier) + (token.contains("F") ? character.getEncumbranceLevel().getEncumbrancePenalty() : 0)); //$NON-NLS-1$
                             if (i < max) {
                                 buffer.append(num);
                                 token = token.substring(i);

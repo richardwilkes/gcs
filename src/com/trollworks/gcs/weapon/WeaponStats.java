@@ -435,9 +435,14 @@ public abstract class WeaponStats {
             int minST = getMinStrengthValue() - (character.getStrength() + character.getStrikingStrengthBonus());
             if (minST > 0) {
                 best -= minST;
-                if (best < 0) {
-                    best = 0;
+            }
+            if (this instanceof MeleeWeaponStats) {
+                if (((MeleeWeaponStats) this).getParry().contains("F")) { //$NON-NLS-1$
+                    best += character.getEncumbranceLevel().getEncumbrancePenalty();
                 }
+            }
+            if (best < 0) {
+                best = 0;
             }
         } else {
             best = 0;
