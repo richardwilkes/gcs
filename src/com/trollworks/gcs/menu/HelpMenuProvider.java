@@ -82,11 +82,11 @@ public class HelpMenuProvider implements MenuProvider {
         }
         menu.add(new JMenuItem(UpdateCommand.INSTANCE));
         menu.addSeparator();
-        menu.add(new JMenuItem(new OpenURICommand(RELEASE_NOTES, GCSApp.WEB_SITE + "/release_notes.php"))); //$NON-NLS-1$
+        menu.add(new JMenuItem(new OpenURICommand(RELEASE_NOTES, GCSApp.WEB_SITE + "/release_notes.html"))); //$NON-NLS-1$
         menu.add(new JMenuItem(new OpenURICommand(LICENSE, App.getHomePath().resolve("license.html").toUri()))); //$NON-NLS-1$
         menu.addSeparator();
         menu.add(new JMenuItem(new OpenURICommand(WEB_SITE, GCSApp.WEB_SITE)));
-        menu.add(new JMenuItem(new OpenURICommand(MAILING_LISTS, GCSApp.WEB_SITE + "/mailing_lists.php"))); //$NON-NLS-1$
+        menu.add(new JMenuItem(new OpenURICommand(MAILING_LISTS, GCSApp.WEB_SITE + "/mailing_lists.html"))); //$NON-NLS-1$
         menu.add(new JMenuItem(new OpenURICommand(FEATURE_REQUESTS, "https://gurpscharactersheet.atlassian.net/issues/?filter=10000"))); //$NON-NLS-1$
         menu.add(new JMenuItem(new OpenURICommand(BUG_REPORTS, "https://gurpscharactersheet.atlassian.net/issues/?filter=10001"))); //$NON-NLS-1$
         DynamicMenuEnabler.add(menu);
