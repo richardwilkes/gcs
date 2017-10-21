@@ -373,7 +373,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         items[0] = NO_ENC_PENALTY;
         items[1] = ONE_ENC_PENALTY;
         for (int i = 2; i < 10; i++) {
-            items[i] = MessageFormat.format(ENC_PENALTY_FORMAT, new Integer(i));
+            items[i] = MessageFormat.format(ENC_PENALTY_FORMAT, Integer.valueOf(i));
         }
         LinkedLabel label = new LinkedLabel(ENC_PENALTY_MULT);
         parent.add(label);

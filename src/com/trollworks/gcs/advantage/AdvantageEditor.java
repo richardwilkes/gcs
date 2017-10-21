@@ -519,7 +519,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         if (min < 0 || max < 0) {
             proto = -proto;
         }
-        EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(min, max, false)), this, SwingConstants.LEFT, new Integer(value), new Integer(proto), tooltip);
+        EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(min, max, false)), this, SwingConstants.LEFT, Integer.valueOf(value), Integer.valueOf(proto), tooltip);
         field.setEnabled(mIsEditable);
         add(field);
         return field;
@@ -631,8 +631,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         boolean allowHalfLevels = allowHalfLevels();
 
         if (isLeveled) {
-            mLevelField.setValue(new Integer(mLastLevel));
-            mLevelPointsField.setValue(new Integer(mLastPointsPerLevel));
+            mLevelField.setValue(Integer.valueOf(mLastLevel));
+            mLevelPointsField.setValue(Integer.valueOf(mLastPointsPerLevel));
             mHalfLevel.setSelected(mLastHalfLevel && allowHalfLevels);
         } else {
             mLastLevel = getLevels();
@@ -681,7 +681,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
     private void updatePoints() {
         if (mPointsField != null) {
-            mPointsField.setValue(new Integer(getPoints()));
+            mPointsField.setValue(Integer.valueOf(getPoints()));
         }
     }
 

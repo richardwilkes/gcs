@@ -275,15 +275,15 @@ public class Template extends DataFile {
      */
     public Object getValueForID(String id) {
         if (ID_ADVANTAGE_POINTS.equals(id)) {
-            return new Integer(getAdvantagePoints());
+            return Integer.valueOf(getAdvantagePoints());
         } else if (ID_DISADVANTAGE_POINTS.equals(id)) {
-            return new Integer(getDisadvantagePoints());
+            return Integer.valueOf(getDisadvantagePoints());
         } else if (ID_QUIRK_POINTS.equals(id)) {
-            return new Integer(getQuirkPoints());
+            return Integer.valueOf(getQuirkPoints());
         } else if (ID_SKILL_POINTS.equals(id)) {
-            return new Integer(getSkillPoints());
+            return Integer.valueOf(getSkillPoints());
         } else if (ID_SPELL_POINTS.equals(id)) {
-            return new Integer(getSpellPoints());
+            return Integer.valueOf(getSpellPoints());
         }
         return null;
     }
@@ -313,20 +313,20 @@ public class Template extends DataFile {
     protected void endNotifyAtBatchLevelOne() {
         if (mNeedAdvantagesPointCalculation) {
             calculateAdvantagePoints();
-            notify(ID_ADVANTAGE_POINTS, new Integer(getAdvantagePoints()));
-            notify(ID_DISADVANTAGE_POINTS, new Integer(getDisadvantagePoints()));
-            notify(ID_QUIRK_POINTS, new Integer(getQuirkPoints()));
+            notify(ID_ADVANTAGE_POINTS, Integer.valueOf(getAdvantagePoints()));
+            notify(ID_DISADVANTAGE_POINTS, Integer.valueOf(getDisadvantagePoints()));
+            notify(ID_QUIRK_POINTS, Integer.valueOf(getQuirkPoints()));
         }
         if (mNeedSkillPointCalculation) {
             calculateSkillPoints();
-            notify(ID_SKILL_POINTS, new Integer(getSkillPoints()));
+            notify(ID_SKILL_POINTS, Integer.valueOf(getSkillPoints()));
         }
         if (mNeedSpellPointCalculation) {
             calculateSpellPoints();
-            notify(ID_SPELL_POINTS, new Integer(getSpellPoints()));
+            notify(ID_SPELL_POINTS, Integer.valueOf(getSpellPoints()));
         }
         if (mNeedAdvantagesPointCalculation || mNeedSkillPointCalculation || mNeedSpellPointCalculation) {
-            notify(ID_TOTAL_POINTS, new Integer(getTotalPoints()));
+            notify(ID_TOTAL_POINTS, Integer.valueOf(getTotalPoints()));
         }
     }
 

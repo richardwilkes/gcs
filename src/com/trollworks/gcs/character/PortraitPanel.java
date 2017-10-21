@@ -75,7 +75,7 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
         super(null, true);
         setBorder(new TitledBorder(UIManager.getFont(GCSFonts.KEY_LABEL), PORTRAIT));
         mSheet = sheet;
-        setToolTipText(Text.wrapPlainTextForToolTip(MessageFormat.format(PORTRAIT_TOOLTIP, new Integer(Profile.PORTRAIT_WIDTH * 2), new Integer(Profile.PORTRAIT_HEIGHT * 2))));
+        setToolTipText(Text.wrapPlainTextForToolTip(MessageFormat.format(PORTRAIT_TOOLTIP, Integer.valueOf(Profile.PORTRAIT_WIDTH * 2), Integer.valueOf(Profile.PORTRAIT_HEIGHT * 2))));
         sheet.getCharacter().addTarget(this, Profile.ID_PORTRAIT);
         addMouseListener(new MouseAdapter() {
             @Override

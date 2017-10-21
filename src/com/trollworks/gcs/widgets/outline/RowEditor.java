@@ -100,7 +100,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 
             if (hasMore) {
                 int remaining = rows.length - i - 1;
-                String msg = remaining == 1 ? ONE_REMAINING : MessageFormat.format(REMAINING, new Integer(remaining));
+                String msg = remaining == 1 ? ONE_REMAINING : MessageFormat.format(REMAINING, Integer.valueOf(remaining));
                 JLabel panel = new JLabel(msg, SwingConstants.CENTER);
                 panel.setBorder(new EmptyBorder(0, 0, 10, 0));
                 wrapper.add(panel, BorderLayout.NORTH);

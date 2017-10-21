@@ -106,7 +106,7 @@ public enum WeaponColumn {
 
         @Override
         public Object getData(WeaponStats weapon) {
-            return new Integer(weapon.getSkillLevel());
+            return Integer.valueOf(weapon.getSkillLevel());
         }
 
         @Override

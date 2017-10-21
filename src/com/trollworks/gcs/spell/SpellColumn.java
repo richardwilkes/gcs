@@ -216,7 +216,7 @@ public enum SpellColumn {
 
         @Override
         public Object getData(Spell spell) {
-            return new Integer(spell.canHaveChildren() ? -1 : spell.getLevel());
+            return Integer.valueOf(spell.canHaveChildren() ? -1 : spell.getLevel());
         }
 
         @Override
@@ -257,7 +257,7 @@ public enum SpellColumn {
 
         @Override
         public Object getData(Spell spell) {
-            return new Integer(getRelativeLevel(spell));
+            return Integer.valueOf(getRelativeLevel(spell));
         }
 
         private int getRelativeLevel(Spell spell) {

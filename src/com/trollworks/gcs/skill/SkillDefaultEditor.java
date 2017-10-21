@@ -108,7 +108,7 @@ public class SkillDefaultEditor extends EditorPanel {
             row.add(mTypeCombo);
             grid.add(row, 0, 1);
 
-            mModifierField = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-99, 99, true)), this, SwingConstants.LEFT, new Integer(mDefault.getModifier()), new Integer(99), null);
+            mModifierField = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-99, 99, true)), this, SwingConstants.LEFT, Integer.valueOf(mDefault.getModifier()), Integer.valueOf(99), null);
             UIUtilities.setOnlySize(mModifierField, mModifierField.getPreferredSize());
             add(mModifierField);
 

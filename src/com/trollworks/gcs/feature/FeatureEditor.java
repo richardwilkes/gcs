@@ -96,8 +96,8 @@ public abstract class FeatureEditor extends EditorPanel {
         Localization.initialize();
     }
 
-    private static final String     CHANGE_BASE_TYPE = "ChangeBaseType";                                                                                                                                                  																																						//$NON-NLS-1$
-    private static final String     BLANK            = " ";                                                                                                                                                               																																									//$NON-NLS-1$
+    private static final String     CHANGE_BASE_TYPE = "ChangeBaseType";                                                                                                                                                                                                                                                                                                                                                                                                                                                      																																						//$NON-NLS-1$
+    private static final String     BLANK            = " ";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             																																									//$NON-NLS-1$
     private static final Class<?>[] BASE_TYPES       = new Class<?>[] { AttributeBonus.class, DRBonus.class, SkillBonus.class, SpellBonus.class, WeaponBonus.class, CostReduction.class, ContainedWeightReduction.class };
     private static Class<?>         LAST_ITEM_TYPE   = SkillBonus.class;
     private ListRow                 mRow;
@@ -215,12 +215,12 @@ public abstract class FeatureEditor extends EditorPanel {
         Object prototype;
         if (amt.isIntegerOnly()) {
             formatter = new IntegerFormatter(min, max, true);
-            value = new Integer(amt.getIntegerAmount());
-            prototype = new Integer(max);
+            value = Integer.valueOf(amt.getIntegerAmount());
+            prototype = Integer.valueOf(max);
         } else {
             formatter = new DoubleFormatter(min, max, true);
-            value = new Double(amt.getAmount());
-            prototype = new Double(max + 0.25);
+            value = Double.valueOf(amt.getAmount());
+            prototype = Double.valueOf(max + 0.25);
         }
         EditorField field = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, value, prototype, null);
         field.putClientProperty(LeveledAmount.class, amt);
@@ -249,7 +249,7 @@ public abstract class FeatureEditor extends EditorPanel {
     private void addFeature() {
         JComponent parent = (JComponent) getParent();
         try {
-            parent.add(create(mRow, (Feature) LAST_ITEM_TYPE.newInstance()));
+            parent.add(create(mRow, (Feature) LAST_ITEM_TYPE.getConstructor().newInstance()));
         } catch (Exception exception) {
             // Shouldn't have a failure...
             exception.printStackTrace(System.err);
@@ -282,7 +282,7 @@ public abstract class FeatureEditor extends EditorPanel {
             if (!mFeature.getClass().equals(LAST_ITEM_TYPE)) {
                 Commitable.sendCommitToFocusOwner();
                 try {
-                    parent.add(create(mRow, (Feature) LAST_ITEM_TYPE.newInstance()), UIUtilities.getIndexOf(parent, this));
+                    parent.add(create(mRow, (Feature) LAST_ITEM_TYPE.getConstructor().newInstance()), UIUtilities.getIndexOf(parent, this));
                 } catch (Exception exception) {
                     // Shouldn't have a failure...
                     exception.printStackTrace(System.err);

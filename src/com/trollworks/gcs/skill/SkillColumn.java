@@ -95,7 +95,7 @@ public enum SkillColumn {
 
         @Override
         public Object getData(Skill skill) {
-            return new Integer(skill.canHaveChildren() ? -1 : skill.getDifficulty().ordinal() + (skill.getAttribute().ordinal() << 8));
+            return Integer.valueOf(skill.canHaveChildren() ? -1 : skill.getDifficulty().ordinal() + (skill.getAttribute().ordinal() << 8));
         }
 
         @Override
@@ -127,7 +127,7 @@ public enum SkillColumn {
 
         @Override
         public Object getData(Skill skill) {
-            return new Integer(skill.canHaveChildren() ? -1 : skill.getLevel());
+            return Integer.valueOf(skill.canHaveChildren() ? -1 : skill.getLevel());
         }
 
         @Override
@@ -168,7 +168,7 @@ public enum SkillColumn {
 
         @Override
         public Object getData(Skill skill) {
-            return new Integer(getRelativeLevel(skill));
+            return Integer.valueOf(getRelativeLevel(skill));
         }
 
         private int getRelativeLevel(Skill skill) {

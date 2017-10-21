@@ -60,7 +60,7 @@ public class CostReductionEditor extends FeatureEditor {
         row.add(addComboBox(CHANGE_ATTRIBUTE, names, feature.getAttribute().name()));
         String[] percents = new String[16];
         for (int i = 0; i < 16; i++) {
-            percents[i] = MessageFormat.format(BY, new Integer((i + 1) * 5));
+            percents[i] = MessageFormat.format(BY, Integer.valueOf((i + 1) * 5));
         }
         row.add(addComboBox(CHANGE_PERCENTAGE, percents, percents[Math.min(80, Math.max(0, feature.getPercentage())) / 5 - 1]));
         row.add(new FlexSpacer(0, 0, true, false));

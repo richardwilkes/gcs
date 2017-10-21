@@ -341,7 +341,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         JComboBox<String> combo = new JComboBox<>();
         setupCombo(combo, PNG_RESOLUTION_TOOLTIP);
         for (int i = 0; i < DPI.length; i++) {
-            combo.addItem(MessageFormat.format(DPI_FORMAT, new Integer(DPI[i])));
+            combo.addItem(MessageFormat.format(DPI_FORMAT, Integer.valueOf(DPI[i])));
             if (DPI[i] == resolution) {
                 selection = i;
             }

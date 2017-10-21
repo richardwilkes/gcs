@@ -60,7 +60,7 @@ public enum EquipmentColumn {
 
         @Override
         public Object getData(Equipment equipment) {
-            return new Integer(equipment.getQuantity());
+            return Integer.valueOf(equipment.getQuantity());
         }
 
         @Override
@@ -241,7 +241,7 @@ public enum EquipmentColumn {
 
         @Override
         public Object getData(Equipment equipment) {
-            return new Double(equipment.getValue());
+            return Double.valueOf(equipment.getValue());
         }
 
         @Override
@@ -305,7 +305,7 @@ public enum EquipmentColumn {
 
         @Override
         public Object getData(Equipment equipment) {
-            return new Double(equipment.getExtendedValue());
+            return Double.valueOf(equipment.getExtendedValue());
         }
 
         @Override

@@ -148,7 +148,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
      * @return The {@link EditorField} that allows an integer comparison to be changed.
      */
     protected EditorField addNumericCompareField(IntegerCriteria compare, int min, int max, boolean forceSign) {
-        EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(min, max, forceSign)), this, SwingConstants.LEFT, new Integer(compare.getQualifier()), new Integer(max), null);
+        EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(min, max, forceSign)), this, SwingConstants.LEFT, Integer.valueOf(compare.getQualifier()), Integer.valueOf(max), null);
         field.putClientProperty(IntegerCriteria.class, compare);
         UIUtilities.setOnlySize(field, field.getPreferredSize());
         add(field);
@@ -163,7 +163,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
      * @return The {@link EditorField} that allows a double comparison to be changed.
      */
     protected EditorField addNumericCompareField(DoubleCriteria compare, double min, double max, boolean forceSign) {
-        EditorField field = new EditorField(new DefaultFormatterFactory(new DoubleFormatter(min, max, forceSign)), this, SwingConstants.LEFT, new Double(compare.getQualifier()), new Double(max), null);
+        EditorField field = new EditorField(new DefaultFormatterFactory(new DoubleFormatter(min, max, forceSign)), this, SwingConstants.LEFT, Double.valueOf(compare.getQualifier()), Double.valueOf(max), null);
         field.putClientProperty(DoubleCriteria.class, compare);
         UIUtilities.setOnlySize(field, field.getPreferredSize());
         add(field);

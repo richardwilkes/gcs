@@ -133,7 +133,7 @@ public class Namer extends JPanel {
 
         FlexColumn column = new FlexColumn();
         if (remaining > 0) {
-            label = new JLabel(remaining == 1 ? ONE_REMAINING : MessageFormat.format(REMAINING, new Integer(remaining)), SwingConstants.CENTER);
+            label = new JLabel(remaining == 1 ? ONE_REMAINING : MessageFormat.format(REMAINING, Integer.valueOf(remaining)), SwingConstants.CENTER);
             Dimension size = label.getMaximumSize();
             size.width = LayoutSize.MAXIMUM_SIZE;
             label.setMaximumSize(size);

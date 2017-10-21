@@ -106,7 +106,7 @@ public enum AdvantageColumn {
 
         @Override
         public Object getData(Advantage advantage) {
-            return new Integer(advantage.getAdjustedPoints());
+            return Integer.valueOf(advantage.getAdjustedPoints());
         }
 
         @Override

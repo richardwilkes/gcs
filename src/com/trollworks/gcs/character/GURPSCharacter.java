@@ -170,38 +170,38 @@ public class GURPSCharacter extends DataFile {
     }
 
     /** The extension for character sheets. */
-    public static final String                  EXTENSION                            = "gcs";                                                      														//$NON-NLS-1$
+    public static final String                  EXTENSION                            = "gcs";                                                                                                            														//$NON-NLS-1$
     private static final int                    CURRENT_VERSION                      = 3;
-    private static final String                 EMPTY                                = "";                                                         															//$NON-NLS-1$
-    private static final String                 TAG_ROOT                             = "character";                                                													//$NON-NLS-1$
-    private static final String                 TAG_CREATED_DATE                     = "created_date";                                             												//$NON-NLS-1$
-    private static final String                 TAG_MODIFIED_DATE                    = "modified_date";                                            												//$NON-NLS-1$
-    private static final String                 TAG_CURRENT_HP                       = "current_hp";                                               													//$NON-NLS-1$
-    private static final String                 TAG_CURRENT_FP                       = "current_fp";                                               													//$NON-NLS-1$
-    private static final String                 TAG_UNSPENT_POINTS                   = "unspent_points";                                           												//$NON-NLS-1$
-    private static final String                 TAG_TOTAL_POINTS                     = "total_points";                                             												//$NON-NLS-1$
-    private static final String                 TAG_INCLUDE_PUNCH                    = "include_punch";                                            												//$NON-NLS-1$
-    private static final String                 TAG_INCLUDE_KICK                     = "include_kick";                                             												//$NON-NLS-1$
-    private static final String                 TAG_INCLUDE_BOOTS                    = "include_kick_with_boots";                                  									//$NON-NLS-1$
-    private static final String                 ATTRIBUTE_CARRIED                    = "carried";                                                  													//$NON-NLS-1$
+    private static final String                 EMPTY                                = "";                                                                                                                  															//$NON-NLS-1$
+    private static final String                 TAG_ROOT                             = "character";                                                                                                													//$NON-NLS-1$
+    private static final String                 TAG_CREATED_DATE                     = "created_date";                                                                                          												//$NON-NLS-1$
+    private static final String                 TAG_MODIFIED_DATE                    = "modified_date";                                                                                        												//$NON-NLS-1$
+    private static final String                 TAG_CURRENT_HP                       = "current_hp";                                                                                              													//$NON-NLS-1$
+    private static final String                 TAG_CURRENT_FP                       = "current_fp";                                                                                              													//$NON-NLS-1$
+    private static final String                 TAG_UNSPENT_POINTS                   = "unspent_points";                                                                                      												//$NON-NLS-1$
+    private static final String                 TAG_TOTAL_POINTS                     = "total_points";                                                                                          												//$NON-NLS-1$
+    private static final String                 TAG_INCLUDE_PUNCH                    = "include_punch";                                                                                        												//$NON-NLS-1$
+    private static final String                 TAG_INCLUDE_KICK                     = "include_kick";                                                                                          												//$NON-NLS-1$
+    private static final String                 TAG_INCLUDE_BOOTS                    = "include_kick_with_boots";                                                                    									//$NON-NLS-1$
+    private static final String                 ATTRIBUTE_CARRIED                    = "carried";                                                                                                    													//$NON-NLS-1$
     /** The prefix for all character IDs. */
-    public static final String                  CHARACTER_PREFIX                     = "gcs.";                                                     														//$NON-NLS-1$
+    public static final String                  CHARACTER_PREFIX                     = "gcs.";                                                                                                          														//$NON-NLS-1$
     /** The field ID for last modified date changes. */
-    public static final String                  ID_LAST_MODIFIED                     = CHARACTER_PREFIX + "LastModifiedDate";                      						//$NON-NLS-1$
+    public static final String                  ID_LAST_MODIFIED                     = CHARACTER_PREFIX + "LastModifiedDate";                                            						//$NON-NLS-1$
     /** The field ID for created on date changes. */
-    public static final String                  ID_CREATED_ON                        = CHARACTER_PREFIX + "CreatedOn";                             								//$NON-NLS-1$
+    public static final String                  ID_CREATED_ON                        = CHARACTER_PREFIX + "CreatedOn";                                                          								//$NON-NLS-1$
     /** The field ID for include punch changes. */
-    public static final String                  ID_INCLUDE_PUNCH                     = CHARACTER_PREFIX + "IncludePunch";                          							//$NON-NLS-1$
+    public static final String                  ID_INCLUDE_PUNCH                     = CHARACTER_PREFIX + "IncludePunch";                                                    							//$NON-NLS-1$
     /** The field ID for include kick changes. */
-    public static final String                  ID_INCLUDE_KICK                      = CHARACTER_PREFIX + "IncludeKickFeet";                       							//$NON-NLS-1$
+    public static final String                  ID_INCLUDE_KICK                      = CHARACTER_PREFIX + "IncludeKickFeet";                                              							//$NON-NLS-1$
     /** The field ID for include kick with boots changes. */
-    public static final String                  ID_INCLUDE_BOOTS                     = CHARACTER_PREFIX + "IncludeKickBoots";                      						//$NON-NLS-1$
+    public static final String                  ID_INCLUDE_BOOTS                     = CHARACTER_PREFIX + "IncludeKickBoots";                                            						//$NON-NLS-1$
     /**
      * The prefix used to indicate a point value is requested from {@link #getValueForID(String)}.
      */
-    public static final String                  POINTS_PREFIX                        = CHARACTER_PREFIX + "points.";                               									//$NON-NLS-1$
+    public static final String                  POINTS_PREFIX                        = CHARACTER_PREFIX + "points.";                                                              									//$NON-NLS-1$
     /** The prefix used in front of all IDs for basic attributes. */
-    public static final String                  ATTRIBUTES_PREFIX                    = CHARACTER_PREFIX + "ba.";                                   										//$NON-NLS-1$
+    public static final String                  ATTRIBUTES_PREFIX                    = CHARACTER_PREFIX + "ba.";                                                                      										//$NON-NLS-1$
     /** The field ID for strength (ST) changes. */
     public static final String                  ID_STRENGTH                          = ATTRIBUTES_PREFIX + BonusAttributeType.ST.name();
     /** The field ID for lifting strength bonuses -- used by features. */
@@ -233,7 +233,7 @@ public class GURPSCharacter extends DataFile {
     /** The field ID for basic move changes. */
     public static final String                  ID_BASIC_MOVE                        = ATTRIBUTES_PREFIX + BonusAttributeType.MOVE.name();
     /** The prefix used in front of all IDs for dodge changes. */
-    public static final String                  DODGE_PREFIX                         = ATTRIBUTES_PREFIX + BonusAttributeType.DODGE.name() + "#."; 	//$NON-NLS-1$
+    public static final String                  DODGE_PREFIX                         = ATTRIBUTES_PREFIX + BonusAttributeType.DODGE.name() + "#.";  	//$NON-NLS-1$
     /** The field ID for dodge bonus changes. */
     public static final String                  ID_DODGE_BONUS                       = ATTRIBUTES_PREFIX + BonusAttributeType.DODGE.name();
     /** The field ID for parry bonus changes. */
@@ -241,84 +241,84 @@ public class GURPSCharacter extends DataFile {
     /** The field ID for block bonus changes. */
     public static final String                  ID_BLOCK_BONUS                       = ATTRIBUTES_PREFIX + BonusAttributeType.BLOCK.name();
     /** The prefix used in front of all IDs for move changes. */
-    public static final String                  MOVE_PREFIX                          = ATTRIBUTES_PREFIX + BonusAttributeType.MOVE.name() + "#.";  	//$NON-NLS-1$
+    public static final String                  MOVE_PREFIX                          = ATTRIBUTES_PREFIX + BonusAttributeType.MOVE.name() + "#.";    	//$NON-NLS-1$
     /** The field ID for carried weight changes. */
-    public static final String                  ID_CARRIED_WEIGHT                    = CHARACTER_PREFIX + "CarriedWeight";                         							//$NON-NLS-1$
+    public static final String                  ID_CARRIED_WEIGHT                    = CHARACTER_PREFIX + "CarriedWeight";                                                  							//$NON-NLS-1$
     /** The field ID for carried wealth changes. */
-    public static final String                  ID_CARRIED_WEALTH                    = CHARACTER_PREFIX + "CarriedWealth";                         							//$NON-NLS-1$
+    public static final String                  ID_CARRIED_WEALTH                    = CHARACTER_PREFIX + "CarriedWealth";                                                  							//$NON-NLS-1$
     /** The prefix used in front of all IDs for encumbrance changes. */
-    public static final String                  MAXIMUM_CARRY_PREFIX                 = ATTRIBUTES_PREFIX + "MaximumCarry";                         							//$NON-NLS-1$
-    private static final String                 LIFT_PREFIX                          = ATTRIBUTES_PREFIX + "lift.";                                									//$NON-NLS-1$
+    public static final String                  MAXIMUM_CARRY_PREFIX                 = ATTRIBUTES_PREFIX + "MaximumCarry";                                                  							//$NON-NLS-1$
+    private static final String                 LIFT_PREFIX                          = ATTRIBUTES_PREFIX + "lift.";                                                                									//$NON-NLS-1$
     /** The field ID for basic lift changes. */
-    public static final String                  ID_BASIC_LIFT                        = LIFT_PREFIX + "BasicLift";                                  									//$NON-NLS-1$
+    public static final String                  ID_BASIC_LIFT                        = LIFT_PREFIX + "BasicLift";                                                                    									//$NON-NLS-1$
     /** The field ID for one-handed lift changes. */
-    public static final String                  ID_ONE_HANDED_LIFT                   = LIFT_PREFIX + "OneHandedLift";                              								//$NON-NLS-1$
+    public static final String                  ID_ONE_HANDED_LIFT                   = LIFT_PREFIX + "OneHandedLift";                                                            								//$NON-NLS-1$
     /** The field ID for two-handed lift changes. */
-    public static final String                  ID_TWO_HANDED_LIFT                   = LIFT_PREFIX + "TwoHandedLift";                              								//$NON-NLS-1$
+    public static final String                  ID_TWO_HANDED_LIFT                   = LIFT_PREFIX + "TwoHandedLift";                                                            								//$NON-NLS-1$
     /** The field ID for shove and knock over changes. */
-    public static final String                  ID_SHOVE_AND_KNOCK_OVER              = LIFT_PREFIX + "ShoveAndKnockOver";                          							//$NON-NLS-1$
+    public static final String                  ID_SHOVE_AND_KNOCK_OVER              = LIFT_PREFIX + "ShoveAndKnockOver";                                                    							//$NON-NLS-1$
     /** The field ID for running shove and knock over changes. */
-    public static final String                  ID_RUNNING_SHOVE_AND_KNOCK_OVER      = LIFT_PREFIX + "RunningShoveAndKnockOver";                   						//$NON-NLS-1$
+    public static final String                  ID_RUNNING_SHOVE_AND_KNOCK_OVER      = LIFT_PREFIX + "RunningShoveAndKnockOver";                                      						//$NON-NLS-1$
     /** The field ID for carry on back changes. */
-    public static final String                  ID_CARRY_ON_BACK                     = LIFT_PREFIX + "CarryOnBack";                                									//$NON-NLS-1$
+    public static final String                  ID_CARRY_ON_BACK                     = LIFT_PREFIX + "CarryOnBack";                                                                									//$NON-NLS-1$
     /** The field ID for carry on back changes. */
-    public static final String                  ID_SHIFT_SLIGHTLY                    = LIFT_PREFIX + "ShiftSlightly";                              								//$NON-NLS-1$
+    public static final String                  ID_SHIFT_SLIGHTLY                    = LIFT_PREFIX + "ShiftSlightly";                                                            								//$NON-NLS-1$
     /** The prefix used in front of all IDs for point summaries. */
-    public static final String                  POINT_SUMMARY_PREFIX                 = CHARACTER_PREFIX + "ps.";                                   										//$NON-NLS-1$
+    public static final String                  POINT_SUMMARY_PREFIX                 = CHARACTER_PREFIX + "ps.";                                                                      										//$NON-NLS-1$
     /** The field ID for point total changes. */
-    public static final String                  ID_TOTAL_POINTS                      = POINT_SUMMARY_PREFIX + "TotalPoints";                       							//$NON-NLS-1$
+    public static final String                  ID_TOTAL_POINTS                      = POINT_SUMMARY_PREFIX + "TotalPoints";                                              							//$NON-NLS-1$
     /** The field ID for attribute point summary changes. */
-    public static final String                  ID_ATTRIBUTE_POINTS                  = POINT_SUMMARY_PREFIX + "AttributePoints";                   						//$NON-NLS-1$
+    public static final String                  ID_ATTRIBUTE_POINTS                  = POINT_SUMMARY_PREFIX + "AttributePoints";                                      						//$NON-NLS-1$
     /** The field ID for advantage point summary changes. */
-    public static final String                  ID_ADVANTAGE_POINTS                  = POINT_SUMMARY_PREFIX + "AdvantagePoints";                   						//$NON-NLS-1$
+    public static final String                  ID_ADVANTAGE_POINTS                  = POINT_SUMMARY_PREFIX + "AdvantagePoints";                                      						//$NON-NLS-1$
     /** The field ID for disadvantage point summary changes. */
-    public static final String                  ID_DISADVANTAGE_POINTS               = POINT_SUMMARY_PREFIX + "DisadvantagePoints";                					//$NON-NLS-1$
+    public static final String                  ID_DISADVANTAGE_POINTS               = POINT_SUMMARY_PREFIX + "DisadvantagePoints";                                					//$NON-NLS-1$
     /** The field ID for quirk point summary changes. */
-    public static final String                  ID_QUIRK_POINTS                      = POINT_SUMMARY_PREFIX + "QuirkPoints";                       							//$NON-NLS-1$
+    public static final String                  ID_QUIRK_POINTS                      = POINT_SUMMARY_PREFIX + "QuirkPoints";                                              							//$NON-NLS-1$
     /** The field ID for skill point summary changes. */
-    public static final String                  ID_SKILL_POINTS                      = POINT_SUMMARY_PREFIX + "SkillPoints";                       							//$NON-NLS-1$
+    public static final String                  ID_SKILL_POINTS                      = POINT_SUMMARY_PREFIX + "SkillPoints";                                              							//$NON-NLS-1$
     /** The field ID for spell point summary changes. */
-    public static final String                  ID_SPELL_POINTS                      = POINT_SUMMARY_PREFIX + "SpellPoints";                       							//$NON-NLS-1$
+    public static final String                  ID_SPELL_POINTS                      = POINT_SUMMARY_PREFIX + "SpellPoints";                                              							//$NON-NLS-1$
     /** The field ID for racial point summary changes. */
-    public static final String                  ID_RACE_POINTS                       = POINT_SUMMARY_PREFIX + "RacePoints";                        							//$NON-NLS-1$
+    public static final String                  ID_RACE_POINTS                       = POINT_SUMMARY_PREFIX + "RacePoints";                                                							//$NON-NLS-1$
     /** The field ID for earned point changes. */
-    public static final String                  ID_EARNED_POINTS                     = POINT_SUMMARY_PREFIX + "EarnedPoints";                      						//$NON-NLS-1$
+    public static final String                  ID_EARNED_POINTS                     = POINT_SUMMARY_PREFIX + "EarnedPoints";                                            						//$NON-NLS-1$
     /** The prefix used in front of all IDs for basic damage. */
-    public static final String                  BASIC_DAMAGE_PREFIX                  = CHARACTER_PREFIX + "bd.";                                   										//$NON-NLS-1$
+    public static final String                  BASIC_DAMAGE_PREFIX                  = CHARACTER_PREFIX + "bd.";                                                                      										//$NON-NLS-1$
     /** The field ID for basic thrust damage changes. */
-    public static final String                  ID_BASIC_THRUST                      = BASIC_DAMAGE_PREFIX + "Thrust";                             								//$NON-NLS-1$
+    public static final String                  ID_BASIC_THRUST                      = BASIC_DAMAGE_PREFIX + "Thrust";                                                          								//$NON-NLS-1$
     /** The field ID for basic swing damage changes. */
-    public static final String                  ID_BASIC_SWING                       = BASIC_DAMAGE_PREFIX + "Swing";                              								//$NON-NLS-1$
-    private static final String                 HIT_POINTS_PREFIX                    = ATTRIBUTES_PREFIX + "derived_hp.";                          							//$NON-NLS-1$
+    public static final String                  ID_BASIC_SWING                       = BASIC_DAMAGE_PREFIX + "Swing";                                                            								//$NON-NLS-1$
+    private static final String                 HIT_POINTS_PREFIX                    = ATTRIBUTES_PREFIX + "derived_hp.";                                                    							//$NON-NLS-1$
     /** The field ID for hit point changes. */
     public static final String                  ID_HIT_POINTS                        = ATTRIBUTES_PREFIX + BonusAttributeType.HP.name();
     /** The field ID for current hit point changes. */
-    public static final String                  ID_CURRENT_HIT_POINTS                = HIT_POINTS_PREFIX + "Current";                              								//$NON-NLS-1$
+    public static final String                  ID_CURRENT_HIT_POINTS                = HIT_POINTS_PREFIX + "Current";                                                            								//$NON-NLS-1$
     /** The field ID for reeling hit point changes. */
-    public static final String                  ID_REELING_HIT_POINTS                = HIT_POINTS_PREFIX + "Reeling";                              								//$NON-NLS-1$
+    public static final String                  ID_REELING_HIT_POINTS                = HIT_POINTS_PREFIX + "Reeling";                                                            								//$NON-NLS-1$
     /** The field ID for unconscious check hit point changes. */
-    public static final String                  ID_UNCONSCIOUS_CHECKS_HIT_POINTS     = HIT_POINTS_PREFIX + "UnconsciousChecks";                    						//$NON-NLS-1$
+    public static final String                  ID_UNCONSCIOUS_CHECKS_HIT_POINTS     = HIT_POINTS_PREFIX + "UnconsciousChecks";                                        						//$NON-NLS-1$
     /** The field ID for death check #1 hit point changes. */
-    public static final String                  ID_DEATH_CHECK_1_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck1";                          							//$NON-NLS-1$
+    public static final String                  ID_DEATH_CHECK_1_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck1";                                                    							//$NON-NLS-1$
     /** The field ID for death check #2 hit point changes. */
-    public static final String                  ID_DEATH_CHECK_2_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck2";                          							//$NON-NLS-1$
+    public static final String                  ID_DEATH_CHECK_2_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck2";                                                    							//$NON-NLS-1$
     /** The field ID for death check #3 hit point changes. */
-    public static final String                  ID_DEATH_CHECK_3_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck3";                          							//$NON-NLS-1$
+    public static final String                  ID_DEATH_CHECK_3_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck3";                                                    							//$NON-NLS-1$
     /** The field ID for death check #4 hit point changes. */
-    public static final String                  ID_DEATH_CHECK_4_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck4";                          							//$NON-NLS-1$
+    public static final String                  ID_DEATH_CHECK_4_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck4";                                                    							//$NON-NLS-1$
     /** The field ID for dead hit point changes. */
-    public static final String                  ID_DEAD_HIT_POINTS                   = HIT_POINTS_PREFIX + "Dead";                                 									//$NON-NLS-1$
-    private static final String                 FATIGUE_POINTS_PREFIX                = ATTRIBUTES_PREFIX + "derived_fp.";                          							//$NON-NLS-1$
+    public static final String                  ID_DEAD_HIT_POINTS                   = HIT_POINTS_PREFIX + "Dead";                                                                  									//$NON-NLS-1$
+    private static final String                 FATIGUE_POINTS_PREFIX                = ATTRIBUTES_PREFIX + "derived_fp.";                                                    							//$NON-NLS-1$
     /** The field ID for fatigue point changes. */
     public static final String                  ID_FATIGUE_POINTS                    = ATTRIBUTES_PREFIX + BonusAttributeType.FP.name();
     /** The field ID for current fatigue point changes. */
-    public static final String                  ID_CURRENT_FATIGUE_POINTS            = FATIGUE_POINTS_PREFIX + "Current";                          							//$NON-NLS-1$
+    public static final String                  ID_CURRENT_FATIGUE_POINTS            = FATIGUE_POINTS_PREFIX + "Current";                                                    							//$NON-NLS-1$
     /** The field ID for tired fatigue point changes. */
-    public static final String                  ID_TIRED_FATIGUE_POINTS              = FATIGUE_POINTS_PREFIX + "Tired";                            								//$NON-NLS-1$
+    public static final String                  ID_TIRED_FATIGUE_POINTS              = FATIGUE_POINTS_PREFIX + "Tired";                                                        								//$NON-NLS-1$
     /** The field ID for unconscious check fatigue point changes. */
-    public static final String                  ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS = FATIGUE_POINTS_PREFIX + "UnconsciousChecks";                					//$NON-NLS-1$
+    public static final String                  ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS = FATIGUE_POINTS_PREFIX + "UnconsciousChecks";                                					//$NON-NLS-1$
     /** The field ID for unconscious fatigue point changes. */
-    public static final String                  ID_UNCONSCIOUS_FATIGUE_POINTS        = FATIGUE_POINTS_PREFIX + "Unconscious";                      						//$NON-NLS-1$
+    public static final String                  ID_UNCONSCIOUS_FATIGUE_POINTS        = FATIGUE_POINTS_PREFIX + "Unconscious";                                            						//$NON-NLS-1$
     private long                                mLastModified;
     private long                                mCreatedOn;
     private HashMap<String, ArrayList<Feature>> mFeatureMap;
@@ -676,75 +676,75 @@ public class GURPSCharacter extends DataFile {
         if (id.startsWith(POINTS_PREFIX)) {
             id = id.substring(POINTS_PREFIX.length());
             if (ID_STRENGTH.equals(id)) {
-                return new Integer(getStrengthPoints());
+                return Integer.valueOf(getStrengthPoints());
             } else if (ID_DEXTERITY.equals(id)) {
-                return new Integer(getDexterityPoints());
+                return Integer.valueOf(getDexterityPoints());
             } else if (ID_INTELLIGENCE.equals(id)) {
-                return new Integer(getIntelligencePoints());
+                return Integer.valueOf(getIntelligencePoints());
             } else if (ID_HEALTH.equals(id)) {
-                return new Integer(getHealthPoints());
+                return Integer.valueOf(getHealthPoints());
             } else if (ID_WILL.equals(id)) {
-                return new Integer(getWillPoints());
+                return Integer.valueOf(getWillPoints());
             } else if (ID_PERCEPTION.equals(id)) {
-                return new Integer(getPerceptionPoints());
+                return Integer.valueOf(getPerceptionPoints());
             } else if (ID_BASIC_SPEED.equals(id)) {
-                return new Integer(getBasicSpeedPoints());
+                return Integer.valueOf(getBasicSpeedPoints());
             } else if (ID_BASIC_MOVE.equals(id)) {
-                return new Integer(getBasicMovePoints());
+                return Integer.valueOf(getBasicMovePoints());
             } else if (ID_FATIGUE_POINTS.equals(id)) {
-                return new Integer(getFatiguePointPoints());
+                return Integer.valueOf(getFatiguePointPoints());
             } else if (ID_HIT_POINTS.equals(id)) {
-                return new Integer(getHitPointPoints());
+                return Integer.valueOf(getHitPointPoints());
             }
             return null;
         } else if (ID_LAST_MODIFIED.equals(id)) {
             return getLastModified();
         } else if (ID_CREATED_ON.equals(id)) {
-            return new Long(getCreatedOn());
+            return Long.valueOf(getCreatedOn());
         } else if (ID_STRENGTH.equals(id)) {
-            return new Integer(getStrength());
+            return Integer.valueOf(getStrength());
         } else if (ID_DEXTERITY.equals(id)) {
-            return new Integer(getDexterity());
+            return Integer.valueOf(getDexterity());
         } else if (ID_INTELLIGENCE.equals(id)) {
-            return new Integer(getIntelligence());
+            return Integer.valueOf(getIntelligence());
         } else if (ID_HEALTH.equals(id)) {
-            return new Integer(getHealth());
+            return Integer.valueOf(getHealth());
         } else if (ID_BASIC_SPEED.equals(id)) {
-            return new Double(getBasicSpeed());
+            return Double.valueOf(getBasicSpeed());
         } else if (ID_BASIC_MOVE.equals(id)) {
-            return new Integer(getBasicMove());
+            return Integer.valueOf(getBasicMove());
         } else if (ID_BASIC_LIFT.equals(id)) {
             return getBasicLift();
         } else if (ID_PERCEPTION.equals(id)) {
-            return new Integer(getPerception());
+            return Integer.valueOf(getPerception());
         } else if (ID_VISION.equals(id)) {
-            return new Integer(getVision());
+            return Integer.valueOf(getVision());
         } else if (ID_HEARING.equals(id)) {
-            return new Integer(getHearing());
+            return Integer.valueOf(getHearing());
         } else if (ID_TASTE_AND_SMELL.equals(id)) {
-            return new Integer(getTasteAndSmell());
+            return Integer.valueOf(getTasteAndSmell());
         } else if (ID_TOUCH.equals(id)) {
-            return new Integer(getTouch());
+            return Integer.valueOf(getTouch());
         } else if (ID_WILL.equals(id)) {
-            return new Integer(getWill());
+            return Integer.valueOf(getWill());
         } else if (ID_FRIGHT_CHECK.equals(id)) {
-            return new Integer(getFrightCheck());
+            return Integer.valueOf(getFrightCheck());
         } else if (ID_ATTRIBUTE_POINTS.equals(id)) {
-            return new Integer(getAttributePoints());
+            return Integer.valueOf(getAttributePoints());
         } else if (ID_ADVANTAGE_POINTS.equals(id)) {
-            return new Integer(getAdvantagePoints());
+            return Integer.valueOf(getAdvantagePoints());
         } else if (ID_DISADVANTAGE_POINTS.equals(id)) {
-            return new Integer(getDisadvantagePoints());
+            return Integer.valueOf(getDisadvantagePoints());
         } else if (ID_QUIRK_POINTS.equals(id)) {
-            return new Integer(getQuirkPoints());
+            return Integer.valueOf(getQuirkPoints());
         } else if (ID_SKILL_POINTS.equals(id)) {
-            return new Integer(getSkillPoints());
+            return Integer.valueOf(getSkillPoints());
         } else if (ID_SPELL_POINTS.equals(id)) {
-            return new Integer(getSpellPoints());
+            return Integer.valueOf(getSpellPoints());
         } else if (ID_RACE_POINTS.equals(id)) {
-            return new Integer(getRacePoints());
+            return Integer.valueOf(getRacePoints());
         } else if (ID_EARNED_POINTS.equals(id)) {
-            return new Integer(getEarnedPoints());
+            return Integer.valueOf(getEarnedPoints());
         } else if (ID_ONE_HANDED_LIFT.equals(id)) {
             return getOneHandedLift();
         } else if (ID_TWO_HANDED_LIFT.equals(id)) {
@@ -758,45 +758,45 @@ public class GURPSCharacter extends DataFile {
         } else if (ID_SHIFT_SLIGHTLY.equals(id)) {
             return getShiftSlightly();
         } else if (ID_TOTAL_POINTS.equals(id)) {
-            return new Integer(getTotalPoints());
+            return Integer.valueOf(getTotalPoints());
         } else if (ID_BASIC_THRUST.equals(id)) {
             return getThrust();
         } else if (ID_BASIC_SWING.equals(id)) {
             return getSwing();
         } else if (ID_HIT_POINTS.equals(id)) {
-            return new Integer(getHitPoints());
+            return Integer.valueOf(getHitPoints());
         } else if (ID_CURRENT_HIT_POINTS.equals(id)) {
             return getCurrentHitPoints();
         } else if (ID_REELING_HIT_POINTS.equals(id)) {
-            return new Integer(getReelingHitPoints());
+            return Integer.valueOf(getReelingHitPoints());
         } else if (ID_UNCONSCIOUS_CHECKS_HIT_POINTS.equals(id)) {
-            return new Integer(getUnconsciousChecksHitPoints());
+            return Integer.valueOf(getUnconsciousChecksHitPoints());
         } else if (ID_DEATH_CHECK_1_HIT_POINTS.equals(id)) {
-            return new Integer(getDeathCheck1HitPoints());
+            return Integer.valueOf(getDeathCheck1HitPoints());
         } else if (ID_DEATH_CHECK_2_HIT_POINTS.equals(id)) {
-            return new Integer(getDeathCheck2HitPoints());
+            return Integer.valueOf(getDeathCheck2HitPoints());
         } else if (ID_DEATH_CHECK_3_HIT_POINTS.equals(id)) {
-            return new Integer(getDeathCheck3HitPoints());
+            return Integer.valueOf(getDeathCheck3HitPoints());
         } else if (ID_DEATH_CHECK_4_HIT_POINTS.equals(id)) {
-            return new Integer(getDeathCheck4HitPoints());
+            return Integer.valueOf(getDeathCheck4HitPoints());
         } else if (ID_DEAD_HIT_POINTS.equals(id)) {
-            return new Integer(getDeadHitPoints());
+            return Integer.valueOf(getDeadHitPoints());
         } else if (ID_FATIGUE_POINTS.equals(id)) {
-            return new Integer(getFatiguePoints());
+            return Integer.valueOf(getFatiguePoints());
         } else if (ID_CURRENT_FATIGUE_POINTS.equals(id)) {
             return getCurrentFatiguePoints();
         } else if (ID_TIRED_FATIGUE_POINTS.equals(id)) {
-            return new Integer(getTiredFatiguePoints());
+            return Integer.valueOf(getTiredFatiguePoints());
         } else if (ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS.equals(id)) {
-            return new Integer(getUnconsciousChecksFatiguePoints());
+            return Integer.valueOf(getUnconsciousChecksFatiguePoints());
         } else if (ID_UNCONSCIOUS_FATIGUE_POINTS.equals(id)) {
-            return new Integer(getUnconsciousFatiguePoints());
+            return Integer.valueOf(getUnconsciousFatiguePoints());
         } else if (ID_PARRY_BONUS.equals(id)) {
-            return new Integer(getParryBonus());
+            return Integer.valueOf(getParryBonus());
         } else if (ID_BLOCK_BONUS.equals(id)) {
-            return new Integer(getBlockBonus());
+            return Integer.valueOf(getBlockBonus());
         } else if (ID_DODGE_BONUS.equals(id)) {
-            return new Integer(getDodgeBonus());
+            return Integer.valueOf(getDodgeBonus());
         } else if (id.startsWith(Profile.PROFILE_PREFIX)) {
             return mDescription.getValueForID(id);
         } else if (id.startsWith(Armor.DR_PREFIX)) {
@@ -805,10 +805,10 @@ public class GURPSCharacter extends DataFile {
             for (Encumbrance encumbrance : Encumbrance.values()) {
                 int index = encumbrance.ordinal();
                 if ((DODGE_PREFIX + index).equals(id)) {
-                    return new Integer(getDodge(encumbrance));
+                    return Integer.valueOf(getDodge(encumbrance));
                 }
                 if ((MOVE_PREFIX + index).equals(id)) {
-                    return new Integer(getMove(encumbrance));
+                    return Integer.valueOf(getMove(encumbrance));
                 }
                 if ((MAXIMUM_CARRY_PREFIX + index).equals(id)) {
                     return getMaximumCarry(encumbrance);
@@ -911,25 +911,25 @@ public class GURPSCharacter extends DataFile {
     protected void endNotifyAtBatchLevelOne() {
         if (mNeedAttributePointCalculation) {
             calculateAttributePoints();
-            notify(ID_ATTRIBUTE_POINTS, new Integer(getAttributePoints()));
+            notify(ID_ATTRIBUTE_POINTS, Integer.valueOf(getAttributePoints()));
         }
         if (mNeedAdvantagesPointCalculation) {
             calculateAdvantagePoints();
-            notify(ID_ADVANTAGE_POINTS, new Integer(getAdvantagePoints()));
-            notify(ID_DISADVANTAGE_POINTS, new Integer(getDisadvantagePoints()));
-            notify(ID_QUIRK_POINTS, new Integer(getQuirkPoints()));
-            notify(ID_RACE_POINTS, new Integer(getRacePoints()));
+            notify(ID_ADVANTAGE_POINTS, Integer.valueOf(getAdvantagePoints()));
+            notify(ID_DISADVANTAGE_POINTS, Integer.valueOf(getDisadvantagePoints()));
+            notify(ID_QUIRK_POINTS, Integer.valueOf(getQuirkPoints()));
+            notify(ID_RACE_POINTS, Integer.valueOf(getRacePoints()));
         }
         if (mNeedSkillPointCalculation) {
             calculateSkillPoints();
-            notify(ID_SKILL_POINTS, new Integer(getSkillPoints()));
+            notify(ID_SKILL_POINTS, Integer.valueOf(getSkillPoints()));
         }
         if (mNeedSpellPointCalculation) {
             calculateSpellPoints();
-            notify(ID_SPELL_POINTS, new Integer(getSpellPoints()));
+            notify(ID_SPELL_POINTS, Integer.valueOf(getSpellPoints()));
         }
         if (mNeedAttributePointCalculation || mNeedAdvantagesPointCalculation || mNeedSkillPointCalculation || mNeedSpellPointCalculation) {
-            notify(ID_EARNED_POINTS, new Integer(getEarnedPoints()));
+            notify(ID_EARNED_POINTS, Integer.valueOf(getEarnedPoints()));
         }
         if (mNeedEquipmentCalculation) {
             calculateWeightAndWealthCarried(true);
@@ -939,7 +939,7 @@ public class GURPSCharacter extends DataFile {
 
             if (mLastModified != now) {
                 mLastModified = now;
-                notify(ID_LAST_MODIFIED, new Long(mLastModified));
+                notify(ID_LAST_MODIFIED, Long.valueOf(mLastModified));
             }
         }
     }
@@ -962,8 +962,8 @@ public class GURPSCharacter extends DataFile {
      */
     public void setCreatedOn(long date) {
         if (mCreatedOn != date) {
-            Long value = new Long(date);
-            postUndoEdit(CREATED_ON_UNDO, ID_CREATED_ON, new Long(mCreatedOn), value);
+            Long value = Long.valueOf(date);
+            postUndoEdit(CREATED_ON_UNDO, ID_CREATED_ON, Long.valueOf(mCreatedOn), value);
             mCreatedOn = date;
             notifySingle(ID_CREATED_ON, value);
         }
@@ -1006,7 +1006,7 @@ public class GURPSCharacter extends DataFile {
         int oldStrength = getStrength();
 
         if (oldStrength != strength) {
-            postUndoEdit(STRENGTH_UNDO, ID_STRENGTH, new Integer(oldStrength), new Integer(strength));
+            postUndoEdit(STRENGTH_UNDO, ID_STRENGTH, Integer.valueOf(oldStrength), Integer.valueOf(strength));
             updateStrengthInfo(strength - mStrengthBonus, mStrengthBonus, mLiftingStrengthBonus, mStrikingStrengthBonus);
         }
     }
@@ -1069,7 +1069,7 @@ public class GURPSCharacter extends DataFile {
 
         startNotify();
         if (notifyST) {
-            notify(ID_STRENGTH, new Integer(getStrength()));
+            notify(ID_STRENGTH, Integer.valueOf(getStrength()));
             notifyOfBaseHitPointChange();
         }
         WeightValue newLift = getBasicLift();
@@ -1351,7 +1351,7 @@ public class GURPSCharacter extends DataFile {
         double oldBasicSpeed = getBasicSpeed();
 
         if (oldBasicSpeed != speed) {
-            postUndoEdit(BASIC_SPEED_UNDO, ID_BASIC_SPEED, new Double(oldBasicSpeed), new Double(speed));
+            postUndoEdit(BASIC_SPEED_UNDO, ID_BASIC_SPEED, Double.valueOf(oldBasicSpeed), Double.valueOf(speed));
             updateBasicSpeedInfo(speed - (mSpeedBonus + getRawBasicSpeed()), mSpeedBonus);
         }
     }
@@ -1377,10 +1377,10 @@ public class GURPSCharacter extends DataFile {
         mSpeedBonus = bonus;
 
         startNotify();
-        notify(ID_BASIC_SPEED, new Double(getBasicSpeed()));
+        notify(ID_BASIC_SPEED, Double.valueOf(getBasicSpeed()));
         tmp = getBasicMove();
         if (move != tmp) {
-            notify(ID_BASIC_MOVE, new Integer(tmp));
+            notify(ID_BASIC_MOVE, Integer.valueOf(tmp));
         }
         notifyIfMoveOrDodgeAltered(data);
         mNeedAttributePointCalculation = true;
@@ -1414,7 +1414,7 @@ public class GURPSCharacter extends DataFile {
         int oldBasicMove = getBasicMove();
 
         if (oldBasicMove != move) {
-            postUndoEdit(BASIC_MOVE_UNDO, ID_BASIC_MOVE, new Integer(oldBasicMove), new Integer(move));
+            postUndoEdit(BASIC_MOVE_UNDO, ID_BASIC_MOVE, Integer.valueOf(oldBasicMove), Integer.valueOf(move));
             updateBasicMoveInfo(move - (mMoveBonus + getRawBasicMove()), mMoveBonus);
         }
     }
@@ -1437,7 +1437,7 @@ public class GURPSCharacter extends DataFile {
         startNotify();
         mMove = move;
         mMoveBonus = bonus;
-        notify(ID_BASIC_MOVE, new Integer(getBasicMove()));
+        notify(ID_BASIC_MOVE, Integer.valueOf(getBasicMove()));
         notifyIfMoveOrDodgeAltered(data);
         mNeedAttributePointCalculation = true;
         endNotify();
@@ -1482,7 +1482,7 @@ public class GURPSCharacter extends DataFile {
 
             mDodgeBonus = bonus;
             startNotify();
-            notifySingle(ID_DODGE_BONUS, new Integer(mDodgeBonus));
+            notifySingle(ID_DODGE_BONUS, Integer.valueOf(mDodgeBonus));
             notifyIfMoveOrDodgeAltered(data);
             endNotify();
         }
@@ -1497,7 +1497,7 @@ public class GURPSCharacter extends DataFile {
     public void setParryBonus(int bonus) {
         if (mParryBonus != bonus) {
             mParryBonus = bonus;
-            notifySingle(ID_PARRY_BONUS, new Integer(mParryBonus));
+            notifySingle(ID_PARRY_BONUS, Integer.valueOf(mParryBonus));
         }
     }
 
@@ -1510,7 +1510,7 @@ public class GURPSCharacter extends DataFile {
     public void setBlockBonus(int bonus) {
         if (mBlockBonus != bonus) {
             mBlockBonus = bonus;
-            notifySingle(ID_BLOCK_BONUS, new Integer(mBlockBonus));
+            notifySingle(ID_BLOCK_BONUS, Integer.valueOf(mBlockBonus));
         }
     }
 
@@ -1616,7 +1616,7 @@ public class GURPSCharacter extends DataFile {
                 notify(ID_CARRIED_WEIGHT, mCachedWeightCarried);
             }
             if (savedWealth != mCachedWealthCarried) {
-                notify(ID_CARRIED_WEALTH, new Double(mCachedWealthCarried));
+                notify(ID_CARRIED_WEALTH, Double.valueOf(mCachedWealthCarried));
             }
         }
     }
@@ -1638,11 +1638,11 @@ public class GURPSCharacter extends DataFile {
             int index = encumbrance.ordinal();
             int tmp = getDodge(encumbrance);
             if (tmp != data[values.length + index]) {
-                notify(DODGE_PREFIX + index, new Integer(tmp));
+                notify(DODGE_PREFIX + index, Integer.valueOf(tmp));
             }
             tmp = getMove(encumbrance);
             if (tmp != data[index]) {
-                notify(MOVE_PREFIX + index, new Integer(tmp));
+                notify(MOVE_PREFIX + index, Integer.valueOf(tmp));
             }
         }
     }
@@ -1661,7 +1661,7 @@ public class GURPSCharacter extends DataFile {
         int oldDexterity = getDexterity();
 
         if (oldDexterity != dexterity) {
-            postUndoEdit(DEXTERITY_UNDO, ID_DEXTERITY, new Integer(oldDexterity), new Integer(dexterity));
+            postUndoEdit(DEXTERITY_UNDO, ID_DEXTERITY, Integer.valueOf(oldDexterity), Integer.valueOf(dexterity));
             updateDexterityInfo(dexterity - mDexterityBonus, mDexterityBonus);
         }
     }
@@ -1697,14 +1697,14 @@ public class GURPSCharacter extends DataFile {
         mDexterityBonus = bonus;
 
         startNotify();
-        notify(ID_DEXTERITY, new Integer(getDexterity()));
+        notify(ID_DEXTERITY, Integer.valueOf(getDexterity()));
         newSpeed = getBasicSpeed();
         if (newSpeed != speed) {
-            notify(ID_BASIC_SPEED, new Double(newSpeed));
+            notify(ID_BASIC_SPEED, Double.valueOf(newSpeed));
         }
         newMove = getBasicMove();
         if (newMove != move) {
-            notify(ID_BASIC_MOVE, new Integer(newMove));
+            notify(ID_BASIC_MOVE, Integer.valueOf(newMove));
         }
         notifyIfMoveOrDodgeAltered(data);
         updateSkills();
@@ -1730,7 +1730,7 @@ public class GURPSCharacter extends DataFile {
     public void setIntelligence(int intelligence) {
         int oldIntelligence = getIntelligence();
         if (oldIntelligence != intelligence) {
-            postUndoEdit(INTELLIGENCE_UNDO, ID_INTELLIGENCE, new Integer(oldIntelligence), new Integer(intelligence));
+            postUndoEdit(INTELLIGENCE_UNDO, ID_INTELLIGENCE, Integer.valueOf(oldIntelligence), Integer.valueOf(intelligence));
             updateIntelligenceInfo(intelligence - mIntelligenceBonus, mIntelligenceBonus);
         }
     }
@@ -1765,19 +1765,19 @@ public class GURPSCharacter extends DataFile {
         mIntelligenceBonus = bonus;
 
         startNotify();
-        notify(ID_INTELLIGENCE, new Integer(getIntelligence()));
+        notify(ID_INTELLIGENCE, Integer.valueOf(getIntelligence()));
         newPerception = getPerception();
         if (newPerception != perception) {
-            notify(ID_PERCEPTION, new Integer(newPerception));
-            notify(ID_VISION, new Integer(getVision()));
-            notify(ID_HEARING, new Integer(getHearing()));
-            notify(ID_TASTE_AND_SMELL, new Integer(getTasteAndSmell()));
-            notify(ID_TOUCH, new Integer(getTouch()));
+            notify(ID_PERCEPTION, Integer.valueOf(newPerception));
+            notify(ID_VISION, Integer.valueOf(getVision()));
+            notify(ID_HEARING, Integer.valueOf(getHearing()));
+            notify(ID_TASTE_AND_SMELL, Integer.valueOf(getTasteAndSmell()));
+            notify(ID_TOUCH, Integer.valueOf(getTouch()));
         }
         newWill = getWill();
         if (newWill != will) {
-            notify(ID_WILL, new Integer(newWill));
-            notify(ID_FRIGHT_CHECK, new Integer(getFrightCheck()));
+            notify(ID_WILL, Integer.valueOf(newWill));
+            notify(ID_FRIGHT_CHECK, Integer.valueOf(getFrightCheck()));
         }
         updateSkills();
         updateSpells();
@@ -1804,7 +1804,7 @@ public class GURPSCharacter extends DataFile {
         int oldHealth = getHealth();
 
         if (oldHealth != health) {
-            postUndoEdit(HEALTH_UNDO, ID_HEALTH, new Integer(oldHealth), new Integer(health));
+            postUndoEdit(HEALTH_UNDO, ID_HEALTH, Integer.valueOf(oldHealth), Integer.valueOf(health));
             updateHealthInfo(health - mHealthBonus, mHealthBonus);
         }
     }
@@ -1840,16 +1840,16 @@ public class GURPSCharacter extends DataFile {
         mHealthBonus = bonus;
 
         startNotify();
-        notify(ID_HEALTH, new Integer(getHealth()));
+        notify(ID_HEALTH, Integer.valueOf(getHealth()));
 
         newSpeed = getBasicSpeed();
         if (newSpeed != speed) {
-            notify(ID_BASIC_SPEED, new Double(newSpeed));
+            notify(ID_BASIC_SPEED, Double.valueOf(newSpeed));
         }
 
         tmp = getBasicMove();
         if (tmp != move) {
-            notify(ID_BASIC_MOVE, new Integer(tmp));
+            notify(ID_BASIC_MOVE, Integer.valueOf(tmp));
         }
         notifyIfMoveOrDodgeAltered(data);
         notifyOfBaseFatiguePointChange();
@@ -1887,13 +1887,13 @@ public class GURPSCharacter extends DataFile {
         int current = getEarnedPoints();
 
         if (current != earned) {
-            Integer value = new Integer(earned);
+            Integer value = Integer.valueOf(earned);
 
-            postUndoEdit(EARNED_POINTS_UNDO, ID_EARNED_POINTS, new Integer(current), value);
+            postUndoEdit(EARNED_POINTS_UNDO, ID_EARNED_POINTS, Integer.valueOf(current), value);
             mTotalPoints = earned + getSpentPoints();
             startNotify();
             notify(ID_EARNED_POINTS, value);
-            notify(ID_TOTAL_POINTS, new Integer(getTotalPoints()));
+            notify(ID_TOTAL_POINTS, Integer.valueOf(getTotalPoints()));
             endNotify();
         }
     }
@@ -1998,9 +1998,9 @@ public class GURPSCharacter extends DataFile {
     /** @param include Whether to include the punch natural weapon or not. */
     public void setIncludePunch(boolean include) {
         if (mIncludePunch != include) {
-            postUndoEdit(INCLUDE_PUNCH_UNDO, ID_INCLUDE_PUNCH, new Boolean(mIncludePunch), new Boolean(include));
+            postUndoEdit(INCLUDE_PUNCH_UNDO, ID_INCLUDE_PUNCH, Boolean.valueOf(mIncludePunch), Boolean.valueOf(include));
             mIncludePunch = include;
-            notifySingle(ID_INCLUDE_PUNCH, new Boolean(mIncludePunch));
+            notifySingle(ID_INCLUDE_PUNCH, Boolean.valueOf(mIncludePunch));
         }
     }
 
@@ -2012,9 +2012,9 @@ public class GURPSCharacter extends DataFile {
     /** @param include Whether to include the kick natural weapon or not. */
     public void setIncludeKick(boolean include) {
         if (mIncludeKick != include) {
-            postUndoEdit(INCLUDE_KICK_UNDO, ID_INCLUDE_KICK, new Boolean(mIncludeKick), new Boolean(include));
+            postUndoEdit(INCLUDE_KICK_UNDO, ID_INCLUDE_KICK, Boolean.valueOf(mIncludeKick), Boolean.valueOf(include));
             mIncludeKick = include;
-            notifySingle(ID_INCLUDE_KICK, new Boolean(mIncludeKick));
+            notifySingle(ID_INCLUDE_KICK, Boolean.valueOf(mIncludeKick));
         }
     }
 
@@ -2026,9 +2026,9 @@ public class GURPSCharacter extends DataFile {
     /** @param include Whether to include the kick w/boots natural weapon or not. */
     public void setIncludeKickBoots(boolean include) {
         if (mIncludeKickBoots != include) {
-            postUndoEdit(INCLUDE_BOOTS_UNDO, ID_INCLUDE_BOOTS, new Boolean(mIncludeKickBoots), new Boolean(include));
+            postUndoEdit(INCLUDE_BOOTS_UNDO, ID_INCLUDE_BOOTS, Boolean.valueOf(mIncludeKickBoots), Boolean.valueOf(include));
             mIncludeKickBoots = include;
-            notifySingle(ID_INCLUDE_BOOTS, new Boolean(mIncludeKickBoots));
+            notifySingle(ID_INCLUDE_BOOTS, Boolean.valueOf(mIncludeKickBoots));
         }
     }
 
@@ -2046,7 +2046,7 @@ public class GURPSCharacter extends DataFile {
         int oldHP = getHitPoints();
 
         if (oldHP != hp) {
-            postUndoEdit(HIT_POINTS_UNDO, ID_HIT_POINTS, new Integer(oldHP), new Integer(hp));
+            postUndoEdit(HIT_POINTS_UNDO, ID_HIT_POINTS, Integer.valueOf(oldHP), Integer.valueOf(hp));
             startNotify();
             mHitPoints = hp - (getStrength() + mHitPointBonus);
             mNeedAttributePointCalculation = true;
@@ -2094,13 +2094,13 @@ public class GURPSCharacter extends DataFile {
 
     private void notifyOfBaseHitPointChange() {
         startNotify();
-        notify(ID_HIT_POINTS, new Integer(getHitPoints()));
-        notify(ID_DEATH_CHECK_1_HIT_POINTS, new Integer(getDeathCheck1HitPoints()));
-        notify(ID_DEATH_CHECK_2_HIT_POINTS, new Integer(getDeathCheck2HitPoints()));
-        notify(ID_DEATH_CHECK_3_HIT_POINTS, new Integer(getDeathCheck3HitPoints()));
-        notify(ID_DEATH_CHECK_4_HIT_POINTS, new Integer(getDeathCheck4HitPoints()));
-        notify(ID_DEAD_HIT_POINTS, new Integer(getDeadHitPoints()));
-        notify(ID_REELING_HIT_POINTS, new Integer(getReelingHitPoints()));
+        notify(ID_HIT_POINTS, Integer.valueOf(getHitPoints()));
+        notify(ID_DEATH_CHECK_1_HIT_POINTS, Integer.valueOf(getDeathCheck1HitPoints()));
+        notify(ID_DEATH_CHECK_2_HIT_POINTS, Integer.valueOf(getDeathCheck2HitPoints()));
+        notify(ID_DEATH_CHECK_3_HIT_POINTS, Integer.valueOf(getDeathCheck3HitPoints()));
+        notify(ID_DEATH_CHECK_4_HIT_POINTS, Integer.valueOf(getDeathCheck4HitPoints()));
+        notify(ID_DEAD_HIT_POINTS, Integer.valueOf(getDeadHitPoints()));
+        notify(ID_REELING_HIT_POINTS, Integer.valueOf(getReelingHitPoints()));
         endNotify();
     }
 
@@ -2169,7 +2169,7 @@ public class GURPSCharacter extends DataFile {
     public void setWill(int will) {
         int oldWill = getWill();
         if (oldWill != will) {
-            postUndoEdit(WILL_UNDO, ID_WILL, new Integer(oldWill), new Integer(will));
+            postUndoEdit(WILL_UNDO, ID_WILL, Integer.valueOf(oldWill), Integer.valueOf(will));
             updateWillInfo(will - (mWillBonus + (SheetPreferences.areOptionalIQRulesUsed() ? 10 : getIntelligence())), mWillBonus);
         }
     }
@@ -2191,8 +2191,8 @@ public class GURPSCharacter extends DataFile {
         mWillBonus = bonus;
 
         startNotify();
-        notify(ID_WILL, new Integer(getWill()));
-        notify(ID_FRIGHT_CHECK, new Integer(getFrightCheck()));
+        notify(ID_WILL, Integer.valueOf(getWill()));
+        notify(ID_FRIGHT_CHECK, Integer.valueOf(getFrightCheck()));
         updateSkills();
         mNeedAttributePointCalculation = true;
         endNotify();
@@ -2224,7 +2224,7 @@ public class GURPSCharacter extends DataFile {
         if (mFrightCheckBonus != bonus) {
             mFrightCheckBonus = bonus;
             startNotify();
-            notify(ID_FRIGHT_CHECK, new Integer(getFrightCheck()));
+            notify(ID_FRIGHT_CHECK, Integer.valueOf(getFrightCheck()));
             endNotify();
         }
     }
@@ -2244,7 +2244,7 @@ public class GURPSCharacter extends DataFile {
         if (mVisionBonus != bonus) {
             mVisionBonus = bonus;
             startNotify();
-            notify(ID_VISION, new Integer(getVision()));
+            notify(ID_VISION, Integer.valueOf(getVision()));
             endNotify();
         }
     }
@@ -2264,7 +2264,7 @@ public class GURPSCharacter extends DataFile {
         if (mHearingBonus != bonus) {
             mHearingBonus = bonus;
             startNotify();
-            notify(ID_HEARING, new Integer(getHearing()));
+            notify(ID_HEARING, Integer.valueOf(getHearing()));
             endNotify();
         }
     }
@@ -2284,7 +2284,7 @@ public class GURPSCharacter extends DataFile {
         if (mTouchBonus != bonus) {
             mTouchBonus = bonus;
             startNotify();
-            notify(ID_TOUCH, new Integer(getTouch()));
+            notify(ID_TOUCH, Integer.valueOf(getTouch()));
             endNotify();
         }
     }
@@ -2304,7 +2304,7 @@ public class GURPSCharacter extends DataFile {
         if (mTasteAndSmellBonus != bonus) {
             mTasteAndSmellBonus = bonus;
             startNotify();
-            notify(ID_TASTE_AND_SMELL, new Integer(getTasteAndSmell()));
+            notify(ID_TASTE_AND_SMELL, Integer.valueOf(getTasteAndSmell()));
             endNotify();
         }
     }
@@ -2322,7 +2322,7 @@ public class GURPSCharacter extends DataFile {
     public void setPerception(int perception) {
         int oldPerception = getPerception();
         if (oldPerception != perception) {
-            postUndoEdit(PERCEPTION_UNDO, ID_PERCEPTION, new Integer(oldPerception), new Integer(perception));
+            postUndoEdit(PERCEPTION_UNDO, ID_PERCEPTION, Integer.valueOf(oldPerception), Integer.valueOf(perception));
             updatePerceptionInfo(perception - (mPerceptionBonus + (SheetPreferences.areOptionalIQRulesUsed() ? 10 : getIntelligence())), mPerceptionBonus);
         }
     }
@@ -2344,11 +2344,11 @@ public class GURPSCharacter extends DataFile {
         mPerceptionBonus = bonus;
 
         startNotify();
-        notify(ID_PERCEPTION, new Integer(getPerception()));
-        notify(ID_VISION, new Integer(getVision()));
-        notify(ID_HEARING, new Integer(getHearing()));
-        notify(ID_TASTE_AND_SMELL, new Integer(getTasteAndSmell()));
-        notify(ID_TOUCH, new Integer(getTouch()));
+        notify(ID_PERCEPTION, Integer.valueOf(getPerception()));
+        notify(ID_VISION, Integer.valueOf(getVision()));
+        notify(ID_HEARING, Integer.valueOf(getHearing()));
+        notify(ID_TASTE_AND_SMELL, Integer.valueOf(getTasteAndSmell()));
+        notify(ID_TOUCH, Integer.valueOf(getTouch()));
         updateSkills();
         mNeedAttributePointCalculation = true;
         endNotify();
@@ -2373,7 +2373,7 @@ public class GURPSCharacter extends DataFile {
         int oldFP = getFatiguePoints();
 
         if (oldFP != fp) {
-            postUndoEdit(FATIGUE_POINTS_UNDO, ID_FATIGUE_POINTS, new Integer(oldFP), new Integer(fp));
+            postUndoEdit(FATIGUE_POINTS_UNDO, ID_FATIGUE_POINTS, Integer.valueOf(oldFP), Integer.valueOf(fp));
             startNotify();
             mFatiguePoints = fp - (getHealth() + mFatiguePointBonus);
             mNeedAttributePointCalculation = true;
@@ -2402,10 +2402,10 @@ public class GURPSCharacter extends DataFile {
 
     private void notifyOfBaseFatiguePointChange() {
         startNotify();
-        notify(ID_FATIGUE_POINTS, new Integer(getFatiguePoints()));
-        notify(ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS, new Integer(getUnconsciousChecksFatiguePoints()));
-        notify(ID_UNCONSCIOUS_FATIGUE_POINTS, new Integer(getUnconsciousFatiguePoints()));
-        notify(ID_TIRED_FATIGUE_POINTS, new Integer(getTiredFatiguePoints()));
+        notify(ID_FATIGUE_POINTS, Integer.valueOf(getFatiguePoints()));
+        notify(ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS, Integer.valueOf(getUnconsciousChecksFatiguePoints()));
+        notify(ID_UNCONSCIOUS_FATIGUE_POINTS, Integer.valueOf(getUnconsciousFatiguePoints()));
+        notify(ID_TIRED_FATIGUE_POINTS, Integer.valueOf(getTiredFatiguePoints()));
         endNotify();
     }
 

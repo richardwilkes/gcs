@@ -141,7 +141,7 @@ public class ModifierEnabler extends JPanel {
             if (remaining == 1) {
                 msg = MODIFIER_ONE_REMAINING;
             } else {
-                msg = MessageFormat.format(MODIFIER_REMAINING, new Integer(remaining));
+                msg = MessageFormat.format(MODIFIER_REMAINING, Integer.valueOf(remaining));
             }
             top.add(new JLabel(msg, SwingConstants.CENTER));
         }

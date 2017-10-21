@@ -16,7 +16,7 @@ import com.trollworks.gcs.feature.HitLocation;
 /** Tracks the current armor levels. */
 public class Armor {
     /** The prefix used in front of all IDs for damage resistance. */
-    public static final String  DR_PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "dr.";             				//$NON-NLS-1$
+    public static final String  DR_PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "dr.";                          				//$NON-NLS-1$
     /** The skull hit location's DR. */
     public static final String  ID_SKULL_DR                 = DR_PREFIX + HitLocation.SKULL.name();
     /** The eyes hit location's DR. */
@@ -117,7 +117,7 @@ public class Armor {
     public void setBrainDR(int dr) {
         if (mBrainDR != dr) {
             mBrainDR = dr;
-            mCharacter.notifySingle(ID_BRAIN_DR, new Integer(mBrainDR));
+            mCharacter.notifySingle(ID_BRAIN_DR, Integer.valueOf(mBrainDR));
         }
     }
 
@@ -134,7 +134,7 @@ public class Armor {
     public void setSkullDR(int dr) {
         if (mSkullDR != dr) {
             mSkullDR = dr;
-            mCharacter.notifySingle(ID_SKULL_DR, new Integer(mSkullDR));
+            mCharacter.notifySingle(ID_SKULL_DR, Integer.valueOf(mSkullDR));
         }
     }
 
@@ -151,7 +151,7 @@ public class Armor {
     public void setEyesDR(int dr) {
         if (mEyesDR != dr) {
             mEyesDR = dr;
-            mCharacter.notifySingle(ID_EYES_DR, new Integer(mEyesDR));
+            mCharacter.notifySingle(ID_EYES_DR, Integer.valueOf(mEyesDR));
         }
     }
 
@@ -168,7 +168,7 @@ public class Armor {
     public void setFaceDR(int dr) {
         if (mFaceDR != dr) {
             mFaceDR = dr;
-            mCharacter.notifySingle(ID_FACE_DR, new Integer(mFaceDR));
+            mCharacter.notifySingle(ID_FACE_DR, Integer.valueOf(mFaceDR));
         }
     }
 
@@ -185,7 +185,7 @@ public class Armor {
     public void setNeckDR(int dr) {
         if (mNeckDR != dr) {
             mNeckDR = dr;
-            mCharacter.notifySingle(ID_NECK_DR, new Integer(mNeckDR));
+            mCharacter.notifySingle(ID_NECK_DR, Integer.valueOf(mNeckDR));
         }
     }
 
@@ -202,7 +202,7 @@ public class Armor {
     public void setTorsoDR(int dr) {
         if (mTorsoDR != dr) {
             mTorsoDR = dr;
-            mCharacter.notifySingle(ID_TORSO_DR, new Integer(mTorsoDR));
+            mCharacter.notifySingle(ID_TORSO_DR, Integer.valueOf(mTorsoDR));
         }
     }
 
@@ -219,7 +219,7 @@ public class Armor {
     public void setVitalsDR(int dr) {
         if (mVitalsDR != dr) {
             mVitalsDR = dr;
-            mCharacter.notifySingle(ID_VITALS_DR, new Integer(mVitalsDR));
+            mCharacter.notifySingle(ID_VITALS_DR, Integer.valueOf(mVitalsDR));
         }
     }
 
@@ -236,7 +236,7 @@ public class Armor {
     public void setGroinDR(int dr) {
         if (mGroinDR != dr) {
             mGroinDR = dr;
-            mCharacter.notifySingle(ID_GROIN_DR, new Integer(mGroinDR));
+            mCharacter.notifySingle(ID_GROIN_DR, Integer.valueOf(mGroinDR));
         }
     }
 
@@ -253,7 +253,7 @@ public class Armor {
     public void setArmDR(int dr) {
         if (mArmDR != dr) {
             mArmDR = dr;
-            mCharacter.notifySingle(ID_ARM_DR, new Integer(mArmDR));
+            mCharacter.notifySingle(ID_ARM_DR, Integer.valueOf(mArmDR));
         }
     }
 
@@ -270,7 +270,7 @@ public class Armor {
     public void setWingDR(int dr) {
         if (mWingDR != dr) {
             mWingDR = dr;
-            mCharacter.notifySingle(ID_WING_DR, new Integer(mWingDR));
+            mCharacter.notifySingle(ID_WING_DR, Integer.valueOf(mWingDR));
         }
     }
 
@@ -287,7 +287,7 @@ public class Armor {
     public void setHandDR(int dr) {
         if (mHandDR != dr) {
             mHandDR = dr;
-            mCharacter.notifySingle(ID_HAND_DR, new Integer(mHandDR));
+            mCharacter.notifySingle(ID_HAND_DR, Integer.valueOf(mHandDR));
         }
     }
 
@@ -304,7 +304,7 @@ public class Armor {
     public void setFinDR(int dr) {
         if (mFinDR != dr) {
             mFinDR = dr;
-            mCharacter.notifySingle(ID_FIN_DR, new Integer(mFinDR));
+            mCharacter.notifySingle(ID_FIN_DR, Integer.valueOf(mFinDR));
         }
     }
 
@@ -321,7 +321,7 @@ public class Armor {
     public void setLegDR(int dr) {
         if (mLegDR != dr) {
             mLegDR = dr;
-            mCharacter.notifySingle(ID_LEG_DR, new Integer(mLegDR));
+            mCharacter.notifySingle(ID_LEG_DR, Integer.valueOf(mLegDR));
         }
     }
 
@@ -338,7 +338,7 @@ public class Armor {
     public void setFootDR(int dr) {
         if (mFootDR != dr) {
             mFootDR = dr;
-            mCharacter.notifySingle(ID_FOOT_DR, new Integer(mFootDR));
+            mCharacter.notifySingle(ID_FOOT_DR, Integer.valueOf(mFootDR));
         }
     }
 
@@ -355,7 +355,7 @@ public class Armor {
     public void setTailDR(int dr) {
         if (mTailDR != dr) {
             mTailDR = dr;
-            mCharacter.notifySingle(ID_TAIL_DR, new Integer(mTailDR));
+            mCharacter.notifySingle(ID_TAIL_DR, Integer.valueOf(mTailDR));
         }
     }
 
@@ -366,35 +366,35 @@ public class Armor {
     public Object getValueForID(String id) {
         if (id != null && id.startsWith(DR_PREFIX)) {
             if (ID_BRAIN_DR.equals(id)) {
-                return new Integer(getBrainDR());
+                return Integer.valueOf(getBrainDR());
             } else if (ID_SKULL_DR.equals(id)) {
-                return new Integer(getSkullDR());
+                return Integer.valueOf(getSkullDR());
             } else if (ID_EYES_DR.equals(id)) {
-                return new Integer(getEyesDR());
+                return Integer.valueOf(getEyesDR());
             } else if (ID_FACE_DR.equals(id)) {
-                return new Integer(getFaceDR());
+                return Integer.valueOf(getFaceDR());
             } else if (ID_NECK_DR.equals(id)) {
-                return new Integer(getNeckDR());
+                return Integer.valueOf(getNeckDR());
             } else if (ID_TORSO_DR.equals(id)) {
-                return new Integer(getTorsoDR());
+                return Integer.valueOf(getTorsoDR());
             } else if (ID_VITALS_DR.equals(id)) {
-                return new Integer(getVitalsDR());
+                return Integer.valueOf(getVitalsDR());
             } else if (ID_GROIN_DR.equals(id)) {
-                return new Integer(getGroinDR());
+                return Integer.valueOf(getGroinDR());
             } else if (ID_ARM_DR.equals(id)) {
-                return new Integer(getArmDR());
+                return Integer.valueOf(getArmDR());
             } else if (ID_WING_DR.equals(id)) {
-                return new Integer(getWingDR());
+                return Integer.valueOf(getWingDR());
             } else if (ID_HAND_DR.equals(id)) {
-                return new Integer(getHandDR());
+                return Integer.valueOf(getHandDR());
             } else if (ID_FIN_DR.equals(id)) {
-                return new Integer(getFinDR());
+                return Integer.valueOf(getFinDR());
             } else if (ID_LEG_DR.equals(id)) {
-                return new Integer(getLegDR());
+                return Integer.valueOf(getLegDR());
             } else if (ID_FOOT_DR.equals(id)) {
-                return new Integer(getFootDR());
+                return Integer.valueOf(getFootDR());
             } else if (ID_TAIL_DR.equals(id)) {
-                return new Integer(getTailDR());
+                return Integer.valueOf(getTailDR());
             }
         }
         return null;

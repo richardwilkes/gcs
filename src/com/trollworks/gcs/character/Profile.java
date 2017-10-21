@@ -728,9 +728,9 @@ public class Profile {
      */
     public void setAge(int age) {
         if (mAge != age) {
-            Integer value = new Integer(age);
+            Integer value = Integer.valueOf(age);
 
-            mCharacter.postUndoEdit(AGE_UNDO, ID_AGE, new Integer(mAge), value);
+            mCharacter.postUndoEdit(AGE_UNDO, ID_AGE, Integer.valueOf(mAge), value);
             mAge = age;
             mCharacter.notifySingle(ID_AGE, value);
         }
@@ -931,9 +931,9 @@ public class Profile {
         int totalSizeModifier = getSizeModifier();
 
         if (totalSizeModifier != size) {
-            Integer value = new Integer(size);
+            Integer value = Integer.valueOf(size);
 
-            mCharacter.postUndoEdit(SIZE_MODIFIER_UNDO, ID_SIZE_MODIFIER, new Integer(totalSizeModifier), value);
+            mCharacter.postUndoEdit(SIZE_MODIFIER_UNDO, ID_SIZE_MODIFIER, Integer.valueOf(totalSizeModifier), value);
             mSizeModifier = size - mSizeModifierBonus;
             mCharacter.notifySingle(ID_SIZE_MODIFIER, value);
         }
@@ -943,7 +943,7 @@ public class Profile {
     public void setSizeModifierBonus(int bonus) {
         if (mSizeModifierBonus != bonus) {
             mSizeModifierBonus = bonus;
-            mCharacter.notifySingle(ID_SIZE_MODIFIER, new Integer(getSizeModifier()));
+            mCharacter.notifySingle(ID_SIZE_MODIFIER, Integer.valueOf(getSizeModifier()));
         }
     }
 
@@ -958,7 +958,7 @@ public class Profile {
             } else if (ID_TITLE.equals(id)) {
                 return getTitle();
             } else if (ID_AGE.equals(id)) {
-                return new Integer(getAge());
+                return Integer.valueOf(getAge());
             } else if (ID_BIRTHDAY.equals(id)) {
                 return getBirthday();
             } else if (ID_EYE_COLOR.equals(id)) {
@@ -986,7 +986,7 @@ public class Profile {
             } else if (ID_TECH_LEVEL.equals(id)) {
                 return getTechLevel();
             } else if (ID_SIZE_MODIFIER.equals(id)) {
-                return new Integer(getSizeModifier());
+                return Integer.valueOf(getSizeModifier());
             } else if (ID_BODY_TYPE.equals(id)) {
                 return mHitLocationTable;
             }
