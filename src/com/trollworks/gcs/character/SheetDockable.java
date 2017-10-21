@@ -201,11 +201,7 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 
     @Override
     public String getPreferredSavePath() {
-        String name = getDataFile().getDescription().getName();
-        if (name.length() == 0) {
-            name = getTitle();
-        }
-        return PathUtils.getFullPath(PathUtils.getParent(PathUtils.getFullPath(getBackingFile())), name);
+        return null;
     }
 
     @Override

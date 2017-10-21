@@ -106,7 +106,7 @@ public abstract class CommonDockable extends Dockable implements CloseHandler, S
 
     @Override
     public String getPreferredSavePath() {
-        return PathUtils.getFullPath(getBackingFile());
+        return null;
     }
 
     @Override
