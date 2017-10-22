@@ -73,6 +73,9 @@ public class HitLocationTableEntry {
 
     public String getRoll() {
         if (hasRoll()) {
+            if (mLowRoll == mHighRoll) {
+                return Integer.toString(mLowRoll);
+            }
             return mLowRoll + "-" + mHighRoll; //$NON-NLS-1$
         }
         return "-"; //$NON-NLS-1$
