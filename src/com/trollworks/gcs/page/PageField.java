@@ -250,7 +250,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         FACTORY_MAP.put(GURPSCharacter.ID_SKILL_POINTS, factory);
         FACTORY_MAP.put(GURPSCharacter.ID_SPELL_POINTS, factory);
         FACTORY_MAP.put(GURPSCharacter.ID_RACE_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_EARNED_POINTS, factory);
+        FACTORY_MAP.put(GURPSCharacter.ID_UNSPENT_POINTS, factory);
         FACTORY_MAP.put(GURPSCharacter.ID_TIRED_FATIGUE_POINTS, factory);
         FACTORY_MAP.put(GURPSCharacter.ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS, factory);
         FACTORY_MAP.put(GURPSCharacter.ID_UNCONSCIOUS_FATIGUE_POINTS, factory);

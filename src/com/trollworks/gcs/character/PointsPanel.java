@@ -105,16 +105,10 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
     @Localize(locale = "ru", value = "Очки, потраченные на расовый пакет")
     @Localize(locale = "es", value = "Suma de todos los puntos consumidos en el paquete racial para el personaje")
     private static String RACE_POINTS_TOOLTIP;
-    @Localize("Earned:")
-    @Localize(locale = "de", value = "Verdient:")
-    @Localize(locale = "ru", value = "Заработано:")
-    @Localize(locale = "es", value = "Ganados:")
-    private static String EARNED_POINTS;
-    @Localize("Points that have been earned but not yet been spent")
-    @Localize(locale = "de", value = "Punkte, die verdient aber noch nicht ausgegeben wurden")
-    @Localize(locale = "ru", value = "Нераспределенные очки")
-    @Localize(locale = "es", value = "Puntos ganados pero aún no consumidos")
-    private static String EARNED_POINTS_TOOLTIP;
+    @Localize("Unspent:")
+    private static String UNSPENT_POINTS;
+    @Localize("Points that have been earned but have not yet been spent")
+    private static String UNSPENT_POINTS_TOOLTIP;
 
     static {
         Localization.initialize();
@@ -138,7 +132,7 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
         createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_SKILL_POINTS, SKILL_POINTS, SKILL_POINTS_TOOLTIP, SwingConstants.RIGHT);
         createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_SPELL_POINTS, SPELL_POINTS, SPELL_POINTS_TOOLTIP, SwingConstants.RIGHT);
         createDivider();
-        createLabelAndField(this, sheet, GURPSCharacter.ID_EARNED_POINTS, EARNED_POINTS, EARNED_POINTS_TOOLTIP, SwingConstants.RIGHT);
+        createLabelAndField(this, sheet, GURPSCharacter.ID_UNSPENT_POINTS, UNSPENT_POINTS, UNSPENT_POINTS_TOOLTIP, SwingConstants.RIGHT);
         sheet.getCharacter().addTarget(this, GURPSCharacter.ID_TOTAL_POINTS);
         Preferences.getInstance().getNotifier().add(this, SheetPreferences.TOTAL_POINTS_DISPLAY_PREF_KEY);
     }

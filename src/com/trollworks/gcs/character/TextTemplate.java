@@ -107,7 +107,8 @@ public class TextTemplate {
     private static final String KEY_DURATION                          = "DURATION";
     private static final String KEY_DX                                = "DX";
     private static final String KEY_DX_POINTS                         = "DX_POINTS";
-    private static final String KEY_EARNED_POINTS                     = "EARNED_POINTS";
+    private static final String KEY_EARNED_POINTS_DEPRECATED          = "EARNED_POINTS";
+    private static final String KEY_UNSPENT_POINTS                    = "UNSPENT_POINTS";
     private static final String KEY_ENCODING_OFF                      = "ENCODING_OFF";
     private static final String KEY_ENCUMBRANCE_LOOP_END              = "ENCUMBRANCE_LOOP_END";
     private static final String KEY_ENCUMBRANCE_LOOP_START            = "ENCUMBRANCE_LOOP_START";
@@ -367,8 +368,9 @@ public class TextTemplate {
             case KEY_RACE_POINTS:
                 writeEncodedText(out, Numbers.format(gurpsCharacter.getRacePoints()));
                 break;
-            case KEY_EARNED_POINTS:
-                writeEncodedText(out, Numbers.format(gurpsCharacter.getEarnedPoints()));
+            case KEY_UNSPENT_POINTS:
+            case KEY_EARNED_POINTS_DEPRECATED:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getUnspentPoints()));
                 break;
             case KEY_RACE:
                 writeEncodedText(out, description.getRace());
