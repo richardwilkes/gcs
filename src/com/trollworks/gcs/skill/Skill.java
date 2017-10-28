@@ -60,49 +60,49 @@ public class Skill extends ListRow implements HasSourceReference {
 
     private static final int       CURRENT_VERSION          = 2;
     /** The extension for Skill lists. */
-    public static final String     OLD_SKILL_EXTENSION      = "skl";                                     										//$NON-NLS-1$
+    public static final String     OLD_SKILL_EXTENSION      = "skl";                                                                                                                                                    										//$NON-NLS-1$
     /** The XML tag used for items. */
-    public static final String     TAG_SKILL                = "skill";                                   										//$NON-NLS-1$
+    public static final String     TAG_SKILL                = "skill";                                                                                                                                            										//$NON-NLS-1$
     /** The XML tag used for containers. */
-    public static final String     TAG_SKILL_CONTAINER      = "skill_container";                         							//$NON-NLS-1$
-    private static final String    TAG_NAME                 = "name";                                    										//$NON-NLS-1$
-    private static final String    TAG_SPECIALIZATION       = "specialization";                          								//$NON-NLS-1$
-    private static final String    TAG_TECH_LEVEL           = "tech_level";                              									//$NON-NLS-1$
-    private static final String    TAG_DIFFICULTY           = "difficulty";                              									//$NON-NLS-1$
-    private static final String    TAG_POINTS               = "points";                                  										//$NON-NLS-1$
-    private static final String    TAG_REFERENCE            = "reference";                               									//$NON-NLS-1$
-    private static final String    TAG_ENCUMBRANCE_PENALTY  = "encumbrance_penalty_multiplier";          				//$NON-NLS-1$
+    public static final String     TAG_SKILL_CONTAINER      = "skill_container";                                                                                                    							//$NON-NLS-1$
+    private static final String    TAG_NAME                 = "name";                                                                                                                                                										//$NON-NLS-1$
+    private static final String    TAG_SPECIALIZATION       = "specialization";                                                                                                        								//$NON-NLS-1$
+    private static final String    TAG_TECH_LEVEL           = "tech_level";                                                                                                                        									//$NON-NLS-1$
+    private static final String    TAG_DIFFICULTY           = "difficulty";                                                                                                                        									//$NON-NLS-1$
+    private static final String    TAG_POINTS               = "points";                                                                                                                                        										//$NON-NLS-1$
+    private static final String    TAG_REFERENCE            = "reference";                                                                                                                            									//$NON-NLS-1$
+    private static final String    TAG_ENCUMBRANCE_PENALTY  = "encumbrance_penalty_multiplier";                                        				//$NON-NLS-1$
     /** The prefix used in front of all IDs for the skills. */
     public static final String     PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "skill.";	//$NON-NLS-1$
     /** The field ID for name changes. */
-    public static final String     ID_NAME                  = PREFIX + "Name";                           								//$NON-NLS-1$
+    public static final String     ID_NAME                  = PREFIX + "Name";                                                                                                            								//$NON-NLS-1$
     /** The field ID for specialization changes. */
-    public static final String     ID_SPECIALIZATION        = PREFIX + "Specialization";                 					//$NON-NLS-1$
+    public static final String     ID_SPECIALIZATION        = PREFIX + "Specialization";                                                                    					//$NON-NLS-1$
     /** The field ID for tech level changes. */
-    public static final String     ID_TECH_LEVEL            = PREFIX + "TechLevel";                      							//$NON-NLS-1$
+    public static final String     ID_TECH_LEVEL            = PREFIX + "TechLevel";                                                                                        							//$NON-NLS-1$
     /** The field ID for level changes. */
-    public static final String     ID_LEVEL                 = PREFIX + "Level";                          								//$NON-NLS-1$
+    public static final String     ID_LEVEL                 = PREFIX + "Level";                                                                                                        								//$NON-NLS-1$
     /** The field ID for relative level changes. */
-    public static final String     ID_RELATIVE_LEVEL        = PREFIX + "RelativeLevel";                  						//$NON-NLS-1$
+    public static final String     ID_RELATIVE_LEVEL        = PREFIX + "RelativeLevel";                                                                        						//$NON-NLS-1$
     /** The field ID for difficulty changes. */
-    public static final String     ID_DIFFICULTY            = PREFIX + "Difficulty";                     						//$NON-NLS-1$
+    public static final String     ID_DIFFICULTY            = PREFIX + "Difficulty";                                                                                    						//$NON-NLS-1$
     /** The field ID for point changes. */
-    public static final String     ID_POINTS                = PREFIX + "Points";                         							//$NON-NLS-1$
+    public static final String     ID_POINTS                = PREFIX + "Points";                                                                                                    							//$NON-NLS-1$
     /** The field ID for page reference changes. */
-    public static final String     ID_REFERENCE             = PREFIX + "Reference";                      							//$NON-NLS-1$
+    public static final String     ID_REFERENCE             = PREFIX + "Reference";                                                                                        							//$NON-NLS-1$
     /** The field ID for enumbrance penalty multiplier changes. */
-    public static final String     ID_ENCUMBRANCE_PENALTY   = PREFIX + "EncMultplier";                   						//$NON-NLS-1$
+    public static final String     ID_ENCUMBRANCE_PENALTY   = PREFIX + "EncMultplier";                                                                            						//$NON-NLS-1$
     /** The field ID for when the categories change. */
-    public static final String     ID_CATEGORY              = PREFIX + "Category";                       							//$NON-NLS-1$
+    public static final String     ID_CATEGORY              = PREFIX + "Category";                                                                                            							//$NON-NLS-1$
     /** The field ID for when the row hierarchy changes. */
-    public static final String     ID_LIST_CHANGED          = PREFIX + "ListChanged";                    						//$NON-NLS-1$
+    public static final String     ID_LIST_CHANGED          = PREFIX + "ListChanged";                                                                                						//$NON-NLS-1$
     /** The field ID for when the skill becomes or stops being a weapon. */
-    public static final String     ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus";                   						//$NON-NLS-1$
-    private static final String    NEWLINE                  = "\n";                                      											//$NON-NLS-1$
-    private static final String    SPACE                    = " ";                                       											//$NON-NLS-1$
-    private static final String    EMPTY                    = "";                                        											//$NON-NLS-1$
-    private static final String    ASTERISK                 = "*";                                       											//$NON-NLS-1$
-    private static final String    SLASH                    = "/";                                       											//$NON-NLS-1$
+    public static final String     ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus";                                                                            						//$NON-NLS-1$
+    private static final String    NEWLINE                  = "\n";                                                                                                                                                        											//$NON-NLS-1$
+    private static final String    SPACE                    = " ";                                                                                                                                                            											//$NON-NLS-1$
+    private static final String    EMPTY                    = "";                                                                                                                                                                											//$NON-NLS-1$
+    private static final String    ASTERISK                 = "*";                                                                                                                                                            											//$NON-NLS-1$
+    private static final String    SLASH                    = "/";                                                                                                                                                            											//$NON-NLS-1$
     private String                 mName;
     private String                 mSpecialization;
     private String                 mTechLevel;
@@ -818,11 +818,6 @@ public class Skill extends ListRow implements HasSourceReference {
             GURPSCharacter character = getCharacter();
             int baseLine = getAttribute().getBaseSkillLevel(character) + getDifficulty().getBaseRelativeLevel();
             int level = best.getLevel();
-            if (best.getType().isSkillBased()) {
-                String name = best.getName();
-                level -= character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, best.getSpecialization());
-                level -= character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
-            }
             best.setAdjLevel(level);
             if (level == baseLine) {
                 best.setPoints(1);
@@ -852,6 +847,11 @@ public class Skill extends ListRow implements HasSourceReference {
                     // are involved with
                     if (!skillDefault.equals(excludedDefault) && !isInDefaultChain(this, skillDefault, new HashSet<>())) {
                         int level = skillDefault.getType().getSkillLevel(character, skillDefault, excludes);
+                        if (skillDefault.getType().isSkillBased()) {
+                            String name = skillDefault.getName();
+                            level -= character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, skillDefault.getSpecialization());
+                            level -= character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
+                        }
                         if (level > best) {
                             best = level;
                             bestSkill = new SkillDefault(skillDefault);
