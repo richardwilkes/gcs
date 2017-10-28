@@ -193,8 +193,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         Localization.initialize();
     }
 
-    private static final String BOXING_SKILL_NAME   = "Boxing";  		//$NON-NLS-1$
-    private static final String KARATE_SKILL_NAME   = "Karate";  		//$NON-NLS-1$
+    private static final String BOXING_SKILL_NAME   = "Boxing";      		//$NON-NLS-1$
+    private static final String KARATE_SKILL_NAME   = "Karate";      		//$NON-NLS-1$
     private static final String BRAWLING_SKILL_NAME = "Brawling";	//$NON-NLS-1$
     private static final int    GAP                 = 2;
     private Scale               mScale;
@@ -320,6 +320,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         pageAssembler.addToContent(hwrap(new AttributesPanel(this), vwrap(new EncumbrancePanel(this), new LiftPanel(this)), new HitLocationPanel(this), new HitPointsPanel(this)), null, null);
 
         // Add our outlines
+        addOutline(pageAssembler, mMeleeWeaponOutline, MELEE_WEAPONS);
+        addOutline(pageAssembler, mRangedWeaponOutline, RANGED_WEAPONS);
         if (mAdvantageOutline.getModel().getRowCount() > 0 && mSkillOutline.getModel().getRowCount() > 0) {
             addOutline(pageAssembler, mAdvantageOutline, ADVANTAGES, mSkillOutline, SKILLS);
         } else {
@@ -327,21 +329,19 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             addOutline(pageAssembler, mSkillOutline, SKILLS);
         }
         addOutline(pageAssembler, mSpellOutline, SPELLS);
-        addOutline(pageAssembler, mMeleeWeaponOutline, MELEE_WEAPONS);
-        addOutline(pageAssembler, mRangedWeaponOutline, RANGED_WEAPONS);
         addOutline(pageAssembler, mEquipmentOutline, EQUIPMENT);
         addOutline(pageAssembler, mNoteOutline, NOTES);
         pageAssembler.finish();
 
         // Ensure everything is laid out and register for notification
         validate();
+        OutlineSyncer.remove(mMeleeWeaponOutline);
+        OutlineSyncer.remove(mRangedWeaponOutline);
         OutlineSyncer.remove(mAdvantageOutline);
         OutlineSyncer.remove(mSkillOutline);
         OutlineSyncer.remove(mSpellOutline);
         OutlineSyncer.remove(mEquipmentOutline);
         OutlineSyncer.remove(mNoteOutline);
-        OutlineSyncer.remove(mMeleeWeaponOutline);
-        OutlineSyncer.remove(mRangedWeaponOutline);
         mCharacter.addTarget(this, GURPSCharacter.CHARACTER_PREFIX);
         mCharacter.calculateWeightAndWealthCarried(true);
         if (focusKey != null) {
