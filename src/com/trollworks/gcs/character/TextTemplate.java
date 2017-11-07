@@ -121,6 +121,7 @@ public class TextTemplate {
     private static final String KEY_FRIGHT_CHECK                      = "FRIGHT_CHECK";
     private static final String KEY_GENDER                            = "GENDER";
     private static final String KEY_GENERAL_DR                        = "GENERAL_DR";
+    private static final String KEY_GRID_TEMPLATE                     = "GRID_TEMPLATE";
     private static final String KEY_HAIR                              = "HAIR";
     private static final String KEY_HAND                              = "HAND";
     private static final String KEY_HEARING                           = "HEARING";
@@ -284,6 +285,9 @@ public class TextTemplate {
         GURPSCharacter gurpsCharacter = mSheet.getCharacter();
         Profile description = gurpsCharacter.getDescription();
         switch (key) {
+            case KEY_GRID_TEMPLATE:
+                out.write(CharacterSheet.getHTMLGridTemplate());
+                break;
             case KEY_ENCODING_OFF:
                 mEncodeText = false;
                 break;

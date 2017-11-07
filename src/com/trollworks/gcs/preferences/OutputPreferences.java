@@ -19,10 +19,10 @@ import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.UIUtilities;
+import com.trollworks.toolkit.ui.border.LineBorder;
 import com.trollworks.toolkit.ui.layout.FlexColumn;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
-import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.preferences.PreferencePanel;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
 import com.trollworks.toolkit.ui.print.PageOrientation;
@@ -54,6 +54,7 @@ import java.text.MessageFormat;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -121,21 +122,29 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
     private static String WHERE_OBTAIN;
     @Localize("Unable to open {0}")
     private static String UNABLE_TO_OPEN_URL;
+    @Localize("Block Layout")
+    private static String BLOCK_LAYOUT;
+    @Localize("Specifies the layout of the various blocks of data on the character sheet")
+    private static String BLOCK_LAYOUT_TOOLTIP;
 
     static {
         Localization.initialize();
     }
 
-    private static final String MODULE                    = "Output";                                          												//$NON-NLS-1$
+    private static final String MODULE                    = "Output";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            												//$NON-NLS-1$
     private static final int    DEFAULT_PNG_RESOLUTION    = 200;
-    private static final String PNG_RESOLUTION_KEY        = "PNGResolution";                                   										//$NON-NLS-1$
+    private static final String PNG_RESOLUTION_KEY        = "PNGResolution";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        										//$NON-NLS-1$
     private static final int[]  DPI                       = { 72, 96, 144, 150, 200, 300 };
-    private static final String USE_TEMPLATE_OVERRIDE_KEY = "UseTextTemplateOverride";                         							//$NON-NLS-1$
-    private static final String TEMPLATE_OVERRIDE_KEY     = "TextTemplateOverride";                            								//$NON-NLS-1$
-    private static final String GURPS_CALCULATOR_KEY_KEY  = "GurpsCalculatorKey";                              									//$NON-NLS-1$
-    public static final String  BASE_GURPS_CALCULATOR_URL = "http://www.gurpscalculator.com";                  						//$NON-NLS-1$
-    public static final String  GURPS_CALCULATOR_URL      = BASE_GURPS_CALCULATOR_URL + "/Character/ImportGCS";	//$NON-NLS-1$
-    private static final String DEFAULT_PAGE_SETTINGS_KEY = "DefaultPageSettings";                             								//$NON-NLS-1$
+    private static final String USE_TEMPLATE_OVERRIDE_KEY = "UseTextTemplateOverride";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                							//$NON-NLS-1$
+    private static final String TEMPLATE_OVERRIDE_KEY     = "TextTemplateOverride";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    								//$NON-NLS-1$
+    private static final String GURPS_CALCULATOR_KEY_KEY  = "GurpsCalculatorKey";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            									//$NON-NLS-1$
+    public static final String  BASE_GURPS_CALCULATOR_URL = "http://www.gurpscalculator.com";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            						//$NON-NLS-1$
+    public static final String  GURPS_CALCULATOR_URL      = BASE_GURPS_CALCULATOR_URL + "/Character/ImportGCS";                                                                                                                                                                                                                                                                    	//$NON-NLS-1$
+    private static final String DEFAULT_PAGE_SETTINGS_KEY = "DefaultPageSettings";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                								//$NON-NLS-1$
+    private static final String BLOCK_LAYOUT_KEY          = "BlockLayout";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        //$NON-NLS-1$
+    /** The block layout preference key. */
+    public static final String  BLOCK_LAYOUT_PREF_KEY     = Preferences.getModuleKey(MODULE, BLOCK_LAYOUT_KEY);
+    private static final String DEFAULT_BLOCK_LAYOUT      = "melee\nranged\nadvantages skills\nspells\nequipment\nnotes";                                 //$NON-NLS-1$
     private JComboBox<String>   mPNGResolutionCombo;
     private JCheckBox           mUseTextTemplateOverride;
     private JTextField          mTextTemplatePath;
@@ -143,6 +152,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
     private JButton             mGurpsCalculatorLink;
     private JTextField          mGurpsCalculatorKey;
     private JCheckBox           mUseNativePrinter;
+    private JTextArea           mBlockLayoutField;
 
     /** Initializes the services controlled by these preferences. */
     public static void initialize() {
@@ -166,6 +176,11 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
                 prefs.removePreference(SheetPreferences.MODULE, DEFAULT_PAGE_SETTINGS_KEY);
             }
         }
+    }
+
+    /** @return The block layout settings. */
+    public static String getBlockLayout() {
+        return Preferences.getInstance().getStringValue(MODULE, BLOCK_LAYOUT_KEY, DEFAULT_BLOCK_LAYOUT);
     }
 
     /** @return The resolution to use when saving the sheet as a PNG. */
@@ -293,7 +308,15 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         row.add(createLabel(PNG_RESOLUTION_POST, PNG_RESOLUTION_TOOLTIP, SwingConstants.LEFT));
         column.add(row);
 
-        column.add(new FlexSpacer(0, 0, false, true));
+        row = new FlexRow();
+        row.add(createLabel(BLOCK_LAYOUT, BLOCK_LAYOUT_TOOLTIP));
+        column.add(row);
+
+        row = new FlexRow();
+        mBlockLayoutField = createTextArea(BLOCK_LAYOUT_TOOLTIP, getBlockLayout());
+        row.add(mBlockLayoutField);
+        row.setFillVertical(true);
+        column.add(row);
 
         column.apply(this);
     }
@@ -365,6 +388,15 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         return field;
     }
 
+    private JTextArea createTextArea(String tooltip, String value) {
+        JTextArea field = new JTextArea(value);
+        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        field.getDocument().addDocumentListener(this);
+        field.setBorder(new LineBorder());
+        add(field);
+        return field;
+    }
+
     @Override
     public void actionPerformed(ActionEvent event) {
         Object source = event.getSource();
@@ -396,11 +428,12 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         }
         mUseTextTemplateOverride.setSelected(false);
         mUseNativePrinter.setSelected(false);
+        mBlockLayoutField.setText(DEFAULT_BLOCK_LAYOUT);
     }
 
     @Override
     public boolean isSetToDefaults() {
-        return getPNGResolution() == DEFAULT_PNG_RESOLUTION && isTextTemplateOverridden() == false && !PrintManager.useNativeDialogs() && mGurpsCalculatorKey.getText().equals(""); //$NON-NLS-1$
+        return getPNGResolution() == DEFAULT_PNG_RESOLUTION && isTextTemplateOverridden() == false && !PrintManager.useNativeDialogs() && mGurpsCalculatorKey.getText().equals("") && mBlockLayoutField.getText().equals(DEFAULT_BLOCK_LAYOUT); //$NON-NLS-1$
     }
 
     @Override
@@ -410,6 +443,8 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
             Preferences.getInstance().setValue(MODULE, TEMPLATE_OVERRIDE_KEY, mTextTemplatePath.getText());
         } else if (mGurpsCalculatorKey.getDocument() == document) {
             Preferences.getInstance().setValue(MODULE, GURPS_CALCULATOR_KEY_KEY, mGurpsCalculatorKey.getText());
+        } else if (mBlockLayoutField.getDocument() == document) {
+            Preferences.getInstance().setValue(MODULE, BLOCK_LAYOUT_KEY, mBlockLayoutField.getText());
         }
         adjustResetButton();
     }

@@ -193,29 +193,37 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         Localization.initialize();
     }
 
-    private static final String BOXING_SKILL_NAME   = "Boxing";      		//$NON-NLS-1$
-    private static final String KARATE_SKILL_NAME   = "Karate";      		//$NON-NLS-1$
-    private static final String BRAWLING_SKILL_NAME = "Brawling";	//$NON-NLS-1$
-    private static final int    GAP                 = 2;
-    private Scale               mScale;
-    private GURPSCharacter      mCharacter;
-    private int                 mLastPage;
-    private boolean             mBatchMode;
-    private AdvantageOutline    mAdvantageOutline;
-    private SkillOutline        mSkillOutline;
-    private SpellOutline        mSpellOutline;
-    private EquipmentOutline    mEquipmentOutline;
-    private NoteOutline         mNoteOutline;
-    private Outline             mMeleeWeaponOutline;
-    private Outline             mRangedWeaponOutline;
-    private boolean             mRebuildPending;
-    private Set<Outline>        mRootsToSync;
-    private PrintManager        mPrintManager;
-    private Scale               mSavedScale;
-    private boolean             mOkToPaint          = true;
-    private boolean             mIsPrinting;
-    private boolean             mSyncWeapons;
-    private boolean             mDisposed;
+    private static final String   BOXING_SKILL_NAME   = "Boxing";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         //$NON-NLS-1$
+    private static final String   KARATE_SKILL_NAME   = "Karate";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         //$NON-NLS-1$
+    private static final String   BRAWLING_SKILL_NAME = "Brawling";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  	//$NON-NLS-1$
+    private static final int      GAP                 = 2;
+    private static final String   MELEE_KEY           = "melee";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           //$NON-NLS-1$
+    private static final String   RANGED_KEY          = "ranged";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         //$NON-NLS-1$
+    private static final String   ADVANTAGES_KEY      = "advantages";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 //$NON-NLS-1$
+    private static final String   SKILLS_KEY          = "skills";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         //$NON-NLS-1$
+    private static final String   SPELLS_KEY          = "spells";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         //$NON-NLS-1$
+    private static final String   EQUIPMENT_KEY       = "equipment";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   //$NON-NLS-1$
+    private static final String   NOTES_KEY           = "notes";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           //$NON-NLS-1$
+    private static final String[] ALL_KEYS            = { MELEE_KEY, RANGED_KEY, ADVANTAGES_KEY, SKILLS_KEY, SPELLS_KEY, EQUIPMENT_KEY, NOTES_KEY };
+    private Scale                 mScale;
+    private GURPSCharacter        mCharacter;
+    private int                   mLastPage;
+    private boolean               mBatchMode;
+    private AdvantageOutline      mAdvantageOutline;
+    private SkillOutline          mSkillOutline;
+    private SpellOutline          mSpellOutline;
+    private EquipmentOutline      mEquipmentOutline;
+    private NoteOutline           mNoteOutline;
+    private Outline               mMeleeWeaponOutline;
+    private Outline               mRangedWeaponOutline;
+    private boolean               mRebuildPending;
+    private Set<Outline>          mRootsToSync;
+    private PrintManager          mPrintManager;
+    private Scale                 mSavedScale;
+    private boolean               mOkToPaint          = true;
+    private boolean               mIsPrinting;
+    private boolean               mSyncWeapons;
+    private boolean               mDisposed;
 
     /**
      * Creates a new character sheet display. {@link #rebuild()} must be called prior to the first
@@ -234,7 +242,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         if (!GraphicsUtilities.inHeadlessPrintMode()) {
             setDropTarget(new DropTarget(this, this));
         }
-        Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY, Fonts.FONT_NOTIFICATION_KEY, SheetPreferences.WEIGHT_UNITS_PREF_KEY, SheetPreferences.GURPS_METRIC_RULES_PREF_KEY, SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY, SheetPreferences.OPTIONAL_REDUCED_SWING_PREF_KEY);
+        Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY, Fonts.FONT_NOTIFICATION_KEY, SheetPreferences.WEIGHT_UNITS_PREF_KEY, SheetPreferences.GURPS_METRIC_RULES_PREF_KEY, SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY, SheetPreferences.OPTIONAL_REDUCED_SWING_PREF_KEY, OutputPreferences.BLOCK_LAYOUT_PREF_KEY);
     }
 
     /** Call when the sheet is no longer in use. */
@@ -319,18 +327,35 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         pageAssembler.addToContent(hwrap(new PortraitPanel(this), vwrap(hwrap(new IdentityPanel(this), new PlayerInfoPanel(this)), new DescriptionPanel(this)), new PointsPanel(this)), null, null);
         pageAssembler.addToContent(hwrap(new AttributesPanel(this), vwrap(new EncumbrancePanel(this), new LiftPanel(this)), new HitLocationPanel(this), new HitPointsPanel(this)), null, null);
 
-        // Add our outlines
-        addOutline(pageAssembler, mMeleeWeaponOutline, MELEE_WEAPONS);
-        addOutline(pageAssembler, mRangedWeaponOutline, RANGED_WEAPONS);
-        if (mAdvantageOutline.getModel().getRowCount() > 0 && mSkillOutline.getModel().getRowCount() > 0) {
-            addOutline(pageAssembler, mAdvantageOutline, ADVANTAGES, mSkillOutline, SKILLS);
-        } else {
-            addOutline(pageAssembler, mAdvantageOutline, ADVANTAGES);
-            addOutline(pageAssembler, mSkillOutline, SKILLS);
+        // Add the various outline blocks, based on the layout preference.
+        Set<String> remaining = prepBlockLayoutRemaining();
+        String blockLayout = OutputPreferences.getBlockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " "); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        for (String line : blockLayout.split("\n")) { //$NON-NLS-1$
+            String[] parts = line.trim().split(" "); //$NON-NLS-1$
+            if (!parts[0].isEmpty() && remaining.contains(parts[0])) {
+                String t1 = getOutlineTitleForKey(parts[0]);
+                Outline o1 = getOutlineForKey(parts[0]);
+                remaining.remove(parts[0]);
+                if (parts.length > 1 && remaining.contains(parts[1])) {
+                    String t2 = getOutlineTitleForKey(parts[1]);
+                    Outline o2 = getOutlineForKey(parts[1]);
+                    remaining.remove(parts[1]);
+                    if (o1.getModel().getRowCount() > 0 && o2.getModel().getRowCount() > 0) {
+                        addOutline(pageAssembler, o1, t1, o2, t2);
+                    } else {
+                        addOutline(pageAssembler, o1, t1);
+                        addOutline(pageAssembler, o2, t2);
+                    }
+                    continue;
+                }
+                addOutline(pageAssembler, o1, t1);
+            }
         }
-        addOutline(pageAssembler, mSpellOutline, SPELLS);
-        addOutline(pageAssembler, mEquipmentOutline, EQUIPMENT);
-        addOutline(pageAssembler, mNoteOutline, NOTES);
+        for (String one : ALL_KEYS) {
+            if (remaining.contains(one)) {
+                addOutline(pageAssembler, getOutlineForKey(one), getOutlineTitleForKey(one));
+            }
+        }
         pageAssembler.finish();
 
         // Ensure everything is laid out and register for notification
@@ -353,6 +378,93 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         }
         setSize(getPreferredSize());
         repaint();
+    }
+
+    private static Set<String> prepBlockLayoutRemaining() {
+        Set<String> remaining = new HashSet<>();
+        remaining.add(MELEE_KEY);
+        remaining.add(RANGED_KEY);
+        remaining.add(ADVANTAGES_KEY);
+        remaining.add(SKILLS_KEY);
+        remaining.add(SPELLS_KEY);
+        remaining.add(EQUIPMENT_KEY);
+        remaining.add(NOTES_KEY);
+        return remaining;
+    }
+
+    public static String getHTMLGridTemplate() {
+        Set<String> remaining = prepBlockLayoutRemaining();
+        String blockLayout = OutputPreferences.getBlockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " "); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        StringBuilder buffer = new StringBuilder();
+        for (String line : blockLayout.split("\n")) { //$NON-NLS-1$
+            String[] parts = line.trim().split(" "); //$NON-NLS-1$
+            if (!parts[0].isEmpty() && remaining.contains(parts[0])) {
+                remaining.remove(parts[0]);
+                if (parts.length > 1 && remaining.contains(parts[1])) {
+                    remaining.remove(parts[1]);
+                    appendToGridTemplate(buffer, parts[0], parts[1]);
+                    continue;
+                }
+                appendToGridTemplate(buffer, parts[0], parts[0]);
+            }
+        }
+        for (String one : ALL_KEYS) {
+            if (remaining.contains(one)) {
+                appendToGridTemplate(buffer, one, one);
+            }
+        }
+        return buffer.toString();
+    }
+
+    private static void appendToGridTemplate(StringBuilder buffer, String col1, String col2) {
+        buffer.append('"');
+        buffer.append(col1);
+        buffer.append(' ');
+        buffer.append(col2);
+        buffer.append('"');
+        buffer.append('\n');
+    }
+
+    private static String getOutlineTitleForKey(String key) {
+        switch (key) {
+            case MELEE_KEY:
+                return MELEE_WEAPONS;
+            case RANGED_KEY:
+                return RANGED_WEAPONS;
+            case ADVANTAGES_KEY:
+                return ADVANTAGES;
+            case SKILLS_KEY:
+                return SKILLS;
+            case SPELLS_KEY:
+                return SPELLS;
+            case EQUIPMENT_KEY:
+                return EQUIPMENT;
+            case NOTES_KEY:
+                return NOTES;
+            default:
+                return ""; //$NON-NLS-1$
+        }
+    }
+
+    private Outline getOutlineForKey(String key) {
+        switch (key) {
+            case MELEE_KEY:
+                return mMeleeWeaponOutline;
+            case RANGED_KEY:
+                return mRangedWeaponOutline;
+            case ADVANTAGES_KEY:
+                return mAdvantageOutline;
+            case SKILLS_KEY:
+                return mSkillOutline;
+            case SPELLS_KEY:
+                return mSpellOutline;
+            case EQUIPMENT_KEY:
+                return mEquipmentOutline;
+            case NOTES_KEY:
+                return mNoteOutline;
+            default:
+                return null;
+        }
     }
 
     private boolean restoreFocusToKey(String key, Component panel) {
@@ -732,7 +844,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     @Override
     public void handleNotification(Object producer, String type, Object data) {
-        if (SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY.equals(type) || Fonts.FONT_NOTIFICATION_KEY.equals(type) || SheetPreferences.WEIGHT_UNITS_PREF_KEY.equals(type) || SheetPreferences.GURPS_METRIC_RULES_PREF_KEY.equals(type) || Profile.ID_BODY_TYPE.equals(type) || SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY.equals(type) || SheetPreferences.OPTIONAL_REDUCED_SWING_PREF_KEY.equals(type)) {
+        if (SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY.equals(type) || Fonts.FONT_NOTIFICATION_KEY.equals(type) || SheetPreferences.WEIGHT_UNITS_PREF_KEY.equals(type) || SheetPreferences.GURPS_METRIC_RULES_PREF_KEY.equals(type) || Profile.ID_BODY_TYPE.equals(type) || SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY.equals(type) || SheetPreferences.OPTIONAL_REDUCED_SWING_PREF_KEY.equals(type) || OutputPreferences.BLOCK_LAYOUT_PREF_KEY.equals(type)) {
             markForRebuild();
         } else {
             if (type.startsWith(Advantage.PREFIX)) {
