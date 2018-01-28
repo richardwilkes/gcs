@@ -36,6 +36,7 @@ import com.trollworks.toolkit.utility.text.Text;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -256,6 +257,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private JComboBox<AdvantageContainerType>     mContainerTypeCombo;
     private JComboBox<SelfControlRoll>            mCRCombo;
     private JComboBox<SelfControlRollAdjustments> mCRAdjCombo;
+    private JPanel                                mContainerTypePanel;
+    private ContainerTypeEditor                   mContainerTypeEditor;
 
     /**
      * Creates a new {@link Advantage} editor.
@@ -415,13 +418,21 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         } else {
             mContainerTypeCombo = new JComboBox<>(AdvantageContainerType.values());
             mContainerTypeCombo.setSelectedItem(mRow.getContainerType());
+            mContainerTypeCombo.addActionListener(this);
             UIUtilities.setOnlySize(mContainerTypeCombo, mContainerTypeCombo.getPreferredSize());
             mContainerTypeCombo.setToolTipText(Text.wrapPlainTextForToolTip(CONTAINER_TYPE_TOOLTIP));
+
             add(mContainerTypeCombo);
             row.add(mContainerTypeCombo);
             innerGrid.add(new FlexComponent(new LinkedLabel(CONTAINER_TYPE, mContainerTypeCombo), Alignment.RIGHT_BOTTOM, null), ri++, 0);
-        }
 
+            mContainerTypePanel = new JPanel(new FlowLayout());
+
+            mContainerTypeEditor = mRow.getContainerType().addControls(this);
+
+            add(mContainerTypePanel);
+            row.add(mContainerTypePanel);
+        }
         row.add(new FlexSpacer(0, 0, true, false));
 
         mReferenceField = createField(mRow.getReference(), "MMMMMM", REFERENCE_TOOLTIP); //$NON-NLS-1$
@@ -531,6 +542,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         modified |= mRow.setEnabled(enabled());
         if (mRow.canHaveChildren()) {
             modified |= mRow.setContainerType((AdvantageContainerType) mContainerTypeCombo.getSelectedItem());
+            modified |= mRow.setAdvantageContainer(mContainerTypeEditor.getAdvantageContainer());
         } else {
             int type = 0;
 
@@ -615,6 +627,14 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
                 mCRAdjCombo.setEnabled(mIsEditable);
             }
             updatePoints();
+        } else if (src == mContainerTypeCombo) {
+            mContainerTypePanel.removeAll();
+            AdvantageContainerType containerType = (AdvantageContainerType) mContainerTypeCombo.getSelectedItem();
+
+            mContainerTypeEditor = containerType.addControls(this);
+
+            repaint();
+            revalidate();
         }
     }
 
@@ -646,6 +666,19 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         mLevelPointsField.setEnabled(isLeveled);
         mHalfLevel.setEnabled(isLeveled && allowHalfLevels);
         updatePoints();
+    }
+
+    AdvantageContainerType getContainerType() {
+        return mRow.getContainerType();
+    }
+
+    /** @return The containerTypePanel. */
+    JPanel getContainerTypePanel() {
+        return mContainerTypePanel;
+    }
+
+    AdvantageContainer getAdvantageContainer() {
+        return mRow.getAdvantageContainer();
     }
 
     private SelfControlRoll getCR() {

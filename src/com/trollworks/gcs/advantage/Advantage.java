@@ -27,7 +27,6 @@ import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.gcs.widgets.outline.Switchable;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImage;
@@ -132,9 +131,10 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     private String                     mReference;
     private String                     mOldPointsString;
     private AdvantageContainerType     mContainerType;
+    private AdvantageContainer         mAdvantageContainer;
     private ArrayList<WeaponStats>     mWeapons;
     private ArrayList<Modifier>        mModifiers;
-    private boolean                    mRoundCostDown;
+    boolean                            mRoundCostDown;
     private boolean                    mDisabled;
 
     /**
@@ -152,6 +152,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mLevels = -1;
         mReference = ""; //$NON-NLS-1$
         mContainerType = AdvantageContainerType.GROUP;
+        mAdvantageContainer = SummativeAdvantageContainer.getInstance();
         mWeapons = new ArrayList<>();
         mModifiers = new ArrayList<>();
     }
@@ -178,6 +179,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mDisabled = advantage.mDisabled;
         mReference = advantage.mReference;
         mContainerType = advantage.mContainerType;
+        mAdvantageContainer = advantage.mAdvantageContainer;
         mWeapons = new ArrayList<>(advantage.mWeapons.size());
         for (WeaponStats weapon : advantage.mWeapons) {
             if (weapon instanceof MeleeWeaponStats) {
@@ -218,7 +220,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         }
         if (obj instanceof Advantage && super.isEquivalentTo(obj)) {
             Advantage row = (Advantage) obj;
-            if (mType == row.mType && mLevels == row.mLevels && mHalfLevel == row.mHalfLevel && mPoints == row.mPoints && mPointsPerLevel == row.mPointsPerLevel && mDisabled == row.mDisabled && mRoundCostDown == row.mRoundCostDown && mAllowHalfLevels == row.mAllowHalfLevels && mContainerType == row.mContainerType && mCR == row.mCR && mCRAdj == row.mCRAdj && mName.equals(row.mName) && mReference.equals(row.mReference)) {
+            if (mType == row.mType && mLevels == row.mLevels && mHalfLevel == row.mHalfLevel && mPoints == row.mPoints && mPointsPerLevel == row.mPointsPerLevel && mDisabled == row.mDisabled && mRoundCostDown == row.mRoundCostDown && mAllowHalfLevels == row.mAllowHalfLevels && mContainerType == row.mContainerType && mAdvantageContainer.equals(row.mAdvantageContainer) && mCR == row.mCR && mCRAdj == row.mCRAdj && mName.equals(row.mName) && mReference.equals(row.mReference)) {
                 if (mWeapons.equals(row.mWeapons)) {
                     return mModifiers.equals(row.mModifiers);
                 }
@@ -249,6 +251,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mAllowHalfLevels = false;
         mReference = ""; //$NON-NLS-1$
         mContainerType = AdvantageContainerType.GROUP;
+        mAdvantageContainer = SummativeAdvantageContainer.getInstance();
         mPoints = 0;
         mPointsPerLevel = 0;
         mRoundCostDown = false;
@@ -422,6 +425,26 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         return false;
     }
 
+    /**
+     * @return The Advantage Container
+     */
+    public AdvantageContainer getAdvantageContainer() {
+        return mAdvantageContainer;
+    }
+
+    /**
+     * @param advantageContainer The Advantage Container data to set.
+     * @return {@code true} if advantageContainer changed
+     */
+    public boolean setAdvantageContainer(AdvantageContainer advantageContainer) {
+        if (!mAdvantageContainer.equals(advantageContainer)) {
+            mAdvantageContainer = advantageContainer;
+            notifySingle(ID_CONTAINER_TYPE);
+            return true;
+        }
+        return false;
+    }
+
     /** @return The type. */
     public int getType() {
         return mType;
@@ -571,37 +594,12 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             return 0;
         }
         if (canHaveChildren()) {
-            int points = 0;
-            if (mContainerType == AdvantageContainerType.ALTERNATIVE_ABILITIES) {
-                ArrayList<Integer> values = new ArrayList<>();
-                for (Advantage child : new FilteredIterator<>(getChildren(), Advantage.class)) {
-                    int pts = child.getAdjustedPoints();
-                    values.add(Integer.valueOf(pts));
-                    if (pts > points) {
-                        points = pts;
-                    }
-                }
-                int max = points;
-                boolean found = false;
-                for (Integer one : values) {
-                    int value = one.intValue();
-                    if (!found && max == value) {
-                        found = true;
-                    } else {
-                        points += applyRounding(calculateModifierPoints(value, 20), mRoundCostDown);
-                    }
-                }
-            } else {
-                for (Advantage child : new FilteredIterator<>(getChildren(), Advantage.class)) {
-                    points += child.getAdjustedPoints();
-                }
-            }
-            return points;
+            return mAdvantageContainer.getAdjustedPoints(this);
         }
         return getAdjustedPoints(mPoints, mLevels, mAllowHalfLevels && mHalfLevel, mPointsPerLevel, mCR, getAllModifiers(), mRoundCostDown);
     }
 
-    private static int applyRounding(double value, boolean roundCostDown) {
+    static int applyRounding(double value, boolean roundCostDown) {
         return (int) (roundCostDown ? Math.floor(value) : Math.ceil(value));
     }
 
@@ -753,7 +751,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         return points + calculateModifierPoints(points, modifier);
     }
 
-    private static double calculateModifierPoints(double points, int modifier) {
+    static double calculateModifierPoints(double points, int modifier) {
         return points * modifier / 100.0;
     }
 

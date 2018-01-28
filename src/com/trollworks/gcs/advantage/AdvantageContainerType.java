@@ -22,6 +22,11 @@ public enum AdvantageContainerType {
         public String toString() {
             return GROUP_TITLE;
         }
+
+        @Override
+        ContainerTypeEditor addControls(AdvantageEditor editor) {
+            return SummativeContainerTypeEditor.getInstance();
+        }
     },
     /**
      * The meta-trait grouping container type. Acts as one normal trait, listed as an advantage if
@@ -32,6 +37,11 @@ public enum AdvantageContainerType {
         public String toString() {
             return META_TRAIT_TITLE;
         }
+
+        @Override
+        ContainerTypeEditor addControls(AdvantageEditor editor) {
+            return SummativeContainerTypeEditor.getInstance();
+        }
     },
     /**
      * The race grouping container type. Its point cost is tracked separately from normal advantages
@@ -41,6 +51,11 @@ public enum AdvantageContainerType {
         @Override
         public String toString() {
             return RACE_TITLE;
+        }
+
+        @Override
+        ContainerTypeEditor addControls(AdvantageEditor editor) {
+            return SummativeContainerTypeEditor.getInstance();
         }
     },
     /**
@@ -53,7 +68,15 @@ public enum AdvantageContainerType {
         public String toString() {
             return ALTERNATIVE_ABILITIES_TITLE;
         }
+
+        @Override
+        ContainerTypeEditor addControls(AdvantageEditor editor) {
+            return new AlternativeAbilitiesContainerTypeEditor();
+        }
+
     };
+
+    abstract ContainerTypeEditor addControls(AdvantageEditor editor);
 
     @Localize("Group")
     @Localize(locale = "de", value = "Gruppe")
