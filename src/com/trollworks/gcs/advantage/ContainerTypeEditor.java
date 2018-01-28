@@ -11,6 +11,8 @@
 
 package com.trollworks.gcs.advantage;
 
+import javax.swing.JTextField;
+
 interface ContainerTypeEditor {
     AdvantageContainer getAdvantageContainer();
 }
@@ -35,5 +37,27 @@ class AlternativeAbilitiesContainerTypeEditor implements ContainerTypeEditor {
     @Override
     public AdvantageContainer getAdvantageContainer() {
         return new AlternativeAbilitiesAdvantageContainer();
+    }
+}
+
+class AlternateFormsContainerTypeEditor implements ContainerTypeEditor {
+    private JTextField mCost;
+    private JTextField mBase;
+
+    AlternateFormsContainerTypeEditor(JTextField cost, JTextField base) {
+        mCost = cost;
+        mBase = base;
+    }
+
+    @Override
+    public AdvantageContainer getAdvantageContainer() {
+        return new AlternateFormsAdvantageContainer(Integer.parseInt(mCost.getText()), mBase.getText());
+    }
+}
+
+class AlternateFormContainerTypeEditor implements ContainerTypeEditor {
+    @Override
+    public AdvantageContainer getAdvantageContainer() {
+        return AlternateFormAdvantageContainer.getInstance();
     }
 }

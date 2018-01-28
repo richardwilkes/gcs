@@ -15,6 +15,11 @@ import com.trollworks.gcs.common.LoadState;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.text.NumberFilter;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 /** The types of {@link Advantage} containers. */
 public enum AdvantageContainerType {
@@ -95,6 +100,74 @@ public enum AdvantageContainerType {
         AdvantageContainer loadAttributes(XMLReader reader, LoadState state) {
             return new AlternativeAbilitiesAdvantageContainer();
         }
+
+    },
+    /**
+     * The alternate forms grouping container type. It behaves similar to a {@link #GROUP}, but
+     * applies the rules for alternate forms (see B83, P18 and P74-75) to immediate children of the
+     * {@link #ALTERNATE_FORM} type, costing only the most expensive alternate form, or the cost of
+     * the base form plus only 90% of the cost of the single alternate form.
+     */
+    ALTERNATE_FORMS {
+        @Override
+        public String toString() {
+            return ALTERNATE_FORMS_TITLE;
+        }
+
+        @SuppressWarnings("unused")
+        @Override
+        ContainerTypeEditor addControls(AdvantageEditor editor) {
+            JPanel typePanel = editor.getContainerTypePanel();
+
+            JTextField cost = new JTextField(5);
+            new NumberFilter(cost, false, true, true, 5);
+            typePanel.add(cost);
+
+            JLabel desc = new JLabel(ALTERNATE_FORMS_TEXT);
+            typePanel.add(desc);
+
+            JTextField base = new JTextField(10);
+            typePanel.add(base);
+
+            if (editor.getContainerType() == this && editor.getAdvantageContainer() instanceof AlternateFormsAdvantageContainer) {
+                AlternateFormsAdvantageContainer container = (AlternateFormsAdvantageContainer) editor.getAdvantageContainer();
+                cost.setText(Integer.toString(container.mCostModPercent));
+                base.setText(container.mBaseForm);
+            } else {
+                cost.setText(Integer.toString(0));
+                base.setText(""); //$NON-NLS-1$
+            }
+
+            return new AlternateFormsContainerTypeEditor(cost, base);
+        }
+
+        @Override
+        AdvantageContainer loadAttributes(XMLReader reader, LoadState state) {
+            int costModPercent = reader.getAttributeAsInteger(AlternateFormsAdvantageContainer.TAG_COST_MOD_PERCENT, 0);
+            String baseForm = reader.getAttribute(AlternateFormsAdvantageContainer.TAG_BASE_FORM, ""); //$NON-NLS-1$
+            return new AlternateFormsAdvantageContainer(costModPercent, baseForm);
+        }
+    },
+    /**
+     * The alternate form grouping container type. It behaves similar to a {@link #META_TRAIT}, but
+     * applies the rules for a single alternate form (see B84) to the other child Alternate Form of
+     * the parent Alternate Forms, costing only 90% of the difference in cost if it costs more.
+     */
+    ALTERNATE_FORM {
+        @Override
+        public String toString() {
+            return ALTERNATE_FORM_TITLE;
+        }
+
+        @Override
+        ContainerTypeEditor addControls(AdvantageEditor editor) {
+            return new AlternateFormContainerTypeEditor();
+        }
+
+        @Override
+        AdvantageContainer loadAttributes(XMLReader reader, LoadState state) {
+            return AlternateFormAdvantageContainer.getInstance();
+        }
     };
 
     abstract ContainerTypeEditor addControls(AdvantageEditor editor);
@@ -120,8 +193,15 @@ public enum AdvantageContainerType {
     @Localize(locale = "ru", value = "Альтернативные способности")
     @Localize(locale = "es", value = "Habilidades Alternativas")
     static String ALTERNATIVE_ABILITIES_TITLE;
+    @Localize("Alternate Forms")
+    static String ALTERNATE_FORMS_TITLE;
+    @Localize("% to the cost over base form named")
+    static String ALTERNATE_FORMS_TEXT;
+    @Localize("Alternate Form")
+    static String ALTERNATE_FORM_TITLE;
 
     static {
         Localization.initialize();
     }
+
 }
