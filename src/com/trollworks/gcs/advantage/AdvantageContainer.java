@@ -12,11 +12,14 @@
 package com.trollworks.gcs.advantage;
 
 import com.trollworks.toolkit.collections.FilteredIterator;
+import com.trollworks.toolkit.io.xml.XMLWriter;
 
 import java.util.ArrayList;
 
 interface AdvantageContainer {
     int getAdjustedPoints(Advantage advantage);
+
+    void saveAttributes(XMLWriter out);
 }
 
 class SummativeAdvantageContainer implements AdvantageContainer {
@@ -37,6 +40,11 @@ class SummativeAdvantageContainer implements AdvantageContainer {
             points += child.getAdjustedPoints();
         }
         return points;
+    }
+
+    @Override
+    public void saveAttributes(XMLWriter out) {
+        // No Additional attributes required
     }
 }
 
@@ -64,5 +72,10 @@ class AlternativeAbilitiesAdvantageContainer implements AdvantageContainer {
             }
         }
         return points;
+    }
+
+    @Override
+    public void saveAttributes(XMLWriter out) {
+        // No Additional attributes required
     }
 }

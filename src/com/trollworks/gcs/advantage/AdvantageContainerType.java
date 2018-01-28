@@ -11,7 +11,9 @@
 
 package com.trollworks.gcs.advantage;
 
+import com.trollworks.gcs.common.LoadState;
 import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.utility.Localization;
 
 /** The types of {@link Advantage} containers. */
@@ -26,6 +28,11 @@ public enum AdvantageContainerType {
         @Override
         ContainerTypeEditor addControls(AdvantageEditor editor) {
             return SummativeContainerTypeEditor.getInstance();
+        }
+
+        @Override
+        AdvantageContainer loadAttributes(XMLReader reader, LoadState state) {
+            return SummativeAdvantageContainer.getInstance();
         }
     },
     /**
@@ -42,6 +49,11 @@ public enum AdvantageContainerType {
         ContainerTypeEditor addControls(AdvantageEditor editor) {
             return SummativeContainerTypeEditor.getInstance();
         }
+
+        @Override
+        AdvantageContainer loadAttributes(XMLReader reader, LoadState state) {
+            return SummativeAdvantageContainer.getInstance();
+        }
     },
     /**
      * The race grouping container type. Its point cost is tracked separately from normal advantages
@@ -56,6 +68,11 @@ public enum AdvantageContainerType {
         @Override
         ContainerTypeEditor addControls(AdvantageEditor editor) {
             return SummativeContainerTypeEditor.getInstance();
+        }
+
+        @Override
+        AdvantageContainer loadAttributes(XMLReader reader, LoadState state) {
+            return SummativeAdvantageContainer.getInstance();
         }
     },
     /**
@@ -74,9 +91,15 @@ public enum AdvantageContainerType {
             return new AlternativeAbilitiesContainerTypeEditor();
         }
 
+        @Override
+        AdvantageContainer loadAttributes(XMLReader reader, LoadState state) {
+            return new AlternativeAbilitiesAdvantageContainer();
+        }
     };
 
     abstract ContainerTypeEditor addControls(AdvantageEditor editor);
+
+    abstract AdvantageContainer loadAttributes(XMLReader reader, LoadState state);
 
     @Localize("Group")
     @Localize(locale = "de", value = "Gruppe")

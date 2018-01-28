@@ -269,6 +269,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mAllowHalfLevels = reader.isAttributeSet(ATTR_ALLOW_HALF_LEVELS);
         if (canHaveChildren()) {
             mContainerType = Enums.extract(reader.getAttribute(TAG_TYPE), AdvantageContainerType.values(), AdvantageContainerType.GROUP);
+            mAdvantageContainer = mContainerType.loadAttributes(reader, state);
         }
     }
 
@@ -374,6 +375,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         }
         if (canHaveChildren() && mContainerType != AdvantageContainerType.GROUP) {
             out.writeAttribute(TAG_TYPE, Enums.toId(mContainerType));
+            mAdvantageContainer.saveAttributes(out);
         }
     }
 
