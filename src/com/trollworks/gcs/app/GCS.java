@@ -18,6 +18,7 @@ import com.trollworks.gcs.character.PrerequisitesThread;
 import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.library.LibraryFile;
+import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.template.Template;
@@ -74,6 +75,8 @@ public class GCS {
     @Localize(locale = "ru", value = "GCS библиотека заклинаний")
     @Localize(locale = "es", value = "Biblioteca de Sortilegios GCS")
     private static String SPELLS_LIBRARY_DESCRIPTION;
+    @Localize("GCS Notes Library")
+    private static String NOTES_LIBRARY_DESCRIPTION;
     @Localize("GCS Library")
     @Localize(locale = "de", value = "GCS Listen")
     @Localize(locale = "ru", value = "GCS библиотека")
@@ -169,12 +172,12 @@ public class GCS {
     }
 
     private static final CmdLineOption PDF_OPTION           = new CmdLineOption(PDF_OPTION_DESCRIPTION, null, FileType.PDF_EXTENSION);
-    private static final CmdLineOption TEXT_OPTION          = new CmdLineOption(TEXT_OPTION_DESCRIPTION, null, "text");                               									//$NON-NLS-1$
+    private static final CmdLineOption TEXT_OPTION          = new CmdLineOption(TEXT_OPTION_DESCRIPTION, null, "text");                                                                                                                            									//$NON-NLS-1$
     private static final CmdLineOption TEXT_TEMPLATE_OPTION = new CmdLineOption(TEXT_TEMPLATE_OPTION_DESCRIPTION, TEXT_TEMPLATE_ARG, "text_template");	//$NON-NLS-1$
     private static final CmdLineOption PNG_OPTION           = new CmdLineOption(PNG_OPTION_DESCRIPTION, null, FileType.PNG_EXTENSION);
-    private static final CmdLineOption SIZE_OPTION          = new CmdLineOption(SIZE_OPTION_DESCRIPTION, "SIZE", "paper");                            								//$NON-NLS-1$ //$NON-NLS-2$
-    private static final CmdLineOption MARGIN_OPTION        = new CmdLineOption(MARGIN_OPTION_DESCRIPTION, "MARGINS", "margins");                     						//$NON-NLS-1$ //$NON-NLS-2$
-    private static final String        REFERENCE_URL        = "http://gcs.trollworks.com";                                                            																//$NON-NLS-1$
+    private static final CmdLineOption SIZE_OPTION          = new CmdLineOption(SIZE_OPTION_DESCRIPTION, "SIZE", "paper");                                                                                                                								//$NON-NLS-1$ //$NON-NLS-2$
+    private static final CmdLineOption MARGIN_OPTION        = new CmdLineOption(MARGIN_OPTION_DESCRIPTION, "MARGINS", "margins");                                                                                    						//$NON-NLS-1$ //$NON-NLS-2$
+    private static final String        REFERENCE_URL        = "http://gcs.trollworks.com";                                                                                                                                                                                                                                                																//$NON-NLS-1$
 
     /**
      * The main entry point for the character sheet.
@@ -245,6 +248,7 @@ public class GCS {
         FileType.register(EquipmentList.EXTENSION, GCSImages.getEquipmentDocumentIcons(), EQUIPMENT_LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true, true);
         FileType.register(SkillList.EXTENSION, GCSImages.getSkillsDocumentIcons(), SKILLS_LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true, true);
         FileType.register(SpellList.EXTENSION, GCSImages.getSpellsDocumentIcons(), SPELLS_LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true, true);
+        FileType.register(NoteList.EXTENSION, GCSImages.getNoteDocumentIcons(), NOTES_LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true, true);
         FileType.register(Template.EXTENSION, GCSImages.getTemplateDocumentIcons(), TEMPLATE_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true, true);
         // For legacy
         FileType.register(LibraryFile.EXTENSION, GCSImages.getAdvantagesDocumentIcons(), LIBRARY_DESCRIPTION, REFERENCE_URL, fileProxyCreator, true, true);

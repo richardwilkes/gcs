@@ -15,6 +15,7 @@ import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.equipment.EquipmentList;
+import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.toolkit.annotation.Localize;
@@ -45,11 +46,12 @@ public class LibraryFile extends DataFile {
     /** The XML tag for library files. */
     public static final String TAG_ROOT        = "gcs_library";	//$NON-NLS-1$
     /** The extension for library files. */
-    public static final String EXTENSION       = "glb";        			//$NON-NLS-1$
+    public static final String EXTENSION       = "glb";                                        			//$NON-NLS-1$
     private AdvantageList      mAdvantages;
     private SkillList          mSkills;
     private SpellList          mSpells;
     private EquipmentList      mEquipment;
+    private NoteList           mNotes;
 
     /** Creates a new, empty, {@link LibraryFile}. */
     public LibraryFile() {
@@ -73,6 +75,7 @@ public class LibraryFile extends DataFile {
         mSkills = new SkillList();
         mSpells = new SpellList();
         mEquipment = new EquipmentList();
+        mNotes = new NoteList();
     }
 
     @Override
@@ -88,7 +91,7 @@ public class LibraryFile extends DataFile {
 
     @Override
     public boolean matchesRootTag(String name) {
-        return TAG_ROOT.equals(name) || AdvantageList.TAG_ROOT.equals(name) || SkillList.TAG_ROOT.equals(name) || SpellList.TAG_ROOT.equals(name) || EquipmentList.TAG_ROOT.equals(name);
+        return TAG_ROOT.equals(name) || AdvantageList.TAG_ROOT.equals(name) || SkillList.TAG_ROOT.equals(name) || SpellList.TAG_ROOT.equals(name) || EquipmentList.TAG_ROOT.equals(name) || NoteList.TAG_ROOT.equals(name);
     }
 
     @Override
@@ -118,6 +121,8 @@ public class LibraryFile extends DataFile {
                         mSpells.load(reader, state);
                     } else if (EquipmentList.TAG_ROOT.equals(name)) {
                         mEquipment.load(reader, state);
+                    } else if (NoteList.TAG_ROOT.equals(name)) {
+                        mNotes.load(reader, state);
                     } else {
                         reader.skipTag(name);
                     }
@@ -152,5 +157,10 @@ public class LibraryFile extends DataFile {
     /** @return The {@link EquipmentList}. */
     public EquipmentList getEquipmentList() {
         return mEquipment;
+    }
+
+    /** @return The {@link NoteList}. */
+    public NoteList getNoteList() {
+        return mNotes;
     }
 }

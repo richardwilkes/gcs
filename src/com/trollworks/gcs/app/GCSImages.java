@@ -206,6 +206,7 @@ public class GCSImages {
                 createIconFiles(getTemplateDocumentIcons(), dir, Template.EXTENSION, icns, ico);
                 createIconFiles(getSkillsDocumentIcons(), dir, SkillList.EXTENSION, icns, ico);
                 createIconFiles(getSpellsDocumentIcons(), dir, SpellList.EXTENSION, icns, ico);
+                createIconFiles(getNoteDocumentIcons(), dir, NoteList.EXTENSION, icns, ico);
                 createIconFiles(getPDFDocumentIcons(), dir, FileType.PDF_EXTENSION, icns, ico);
             }
         } catch (Exception exception) {

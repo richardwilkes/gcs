@@ -20,6 +20,8 @@ import com.trollworks.gcs.common.ListCollectionThread;
 import com.trollworks.gcs.common.Workspace;
 import com.trollworks.gcs.equipment.EquipmentDockable;
 import com.trollworks.gcs.equipment.EquipmentList;
+import com.trollworks.gcs.notes.NoteList;
+import com.trollworks.gcs.notes.NotesDockable;
 import com.trollworks.gcs.pdfview.PdfDockable;
 import com.trollworks.gcs.pdfview.PdfRef;
 import com.trollworks.gcs.skill.SkillList;
@@ -315,6 +317,9 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
                     case SpellList.EXTENSION:
                         proxy = openSpellList(path);
                         break;
+                    case NoteList.EXTENSION:
+                        proxy = openNoteList(path);
+                        break;
                     case LibraryFile.EXTENSION:
                         proxy = openLibrary(path);
                         break;
@@ -375,6 +380,13 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
         return dockLibrary(new SpellsDockable(list));
     }
 
+    private FileProxy openNoteList(Path path) throws IOException {
+        NoteList list = new NoteList();
+        list.load(path.toFile());
+        list.getModel().setLocked(true);
+        return dockLibrary(new NotesDockable(list));
+    }
+
     private FileProxy openLibrary(Path path) throws IOException {
         FileProxy proxy = null;
         LibraryFile library = new LibraryFile(path.toFile());
@@ -397,6 +409,11 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
         if (!adq.isEmpty()) {
             adq.setModified(true);
             proxy = dockLibrary(new AdvantagesDockable(adq));
+        }
+        NoteList notes = library.getNoteList();
+        if (!notes.isEmpty()) {
+            notes.setModified(true);
+            proxy = dockLibrary(new NotesDockable(notes));
         }
         return proxy;
     }
