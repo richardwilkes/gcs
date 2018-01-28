@@ -34,9 +34,15 @@ class SummativeContainerTypeEditor implements ContainerTypeEditor {
 }
 
 class AlternativeAbilitiesContainerTypeEditor implements ContainerTypeEditor {
+    private JTextField mSimultaneous;
+
+    AlternativeAbilitiesContainerTypeEditor(JTextField simultaneous) {
+        mSimultaneous = simultaneous;
+    }
+
     @Override
     public AdvantageContainer getAdvantageContainer() {
-        return new AlternativeAbilitiesAdvantageContainer();
+        return new AlternativeAbilitiesAdvantageContainer(Integer.parseUnsignedInt(mSimultaneous.getText()));
     }
 }
 

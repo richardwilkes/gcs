@@ -19,6 +19,7 @@ import com.trollworks.toolkit.utility.Localization;
 import java.text.MessageFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
@@ -70,24 +71,28 @@ class SummativeAdvantageContainer implements AdvantageContainer {
 }
 
 class AlternativeAbilitiesAdvantageContainer implements AdvantageContainer {
+    static final String TAG_SIMULTANEOUS = "simultaneous"; //$NON-NLS-1$
+    int                 mSimultaneous;
+
+    AlternativeAbilitiesAdvantageContainer(int simultaneous) {
+        mSimultaneous = simultaneous;
+    }
 
     @Override
     public int getAdjustedPoints(Advantage advantage) {
-        int points = 0;
         ArrayList<Integer> values = new ArrayList<>();
         for (Advantage child : new FilteredIterator<>(advantage.getChildren(), Advantage.class)) {
             int pts = child.getAdjustedPoints();
             values.add(Integer.valueOf(pts));
-            if (pts > points) {
-                points = pts;
-            }
         }
-        int max = points;
-        boolean found = false;
-        for (Integer one : values) {
-            int value = one.intValue();
-            if (!found && max == value) {
-                found = true;
+        Collections.sort(values);
+        Collections.reverse(values);
+
+        int points = 0;
+        for (int i = 0; i < values.size(); i++) {
+            int value = values.get(i).intValue();
+            if (i < mSimultaneous) {
+                points += Advantage.applyRounding(value, advantage.mRoundCostDown);
             } else {
                 points += Advantage.applyRounding(Advantage.calculateModifierPoints(value, 20), advantage.mRoundCostDown);
             }
@@ -97,17 +102,30 @@ class AlternativeAbilitiesAdvantageContainer implements AdvantageContainer {
 
     @Override
     public void saveAttributes(XMLWriter out) {
-        // No Additional attributes required
+        out.writeAttribute(TAG_SIMULTANEOUS, Integer.toString(mSimultaneous));
     }
 
     @Override
     public boolean checkSatisfied(Advantage advantage, StringBuilder builder, String prefix) {
+        if (advantage.getChildren().size() < mSimultaneous) {
+            builder.append(MessageFormat.format(FEWER_CHILDREN, prefix, Integer.valueOf(mSimultaneous)));
+            return false;
+        }
+
         return true;
     }
 
     @Override
     public String getNotes() {
-        return ""; //$NON-NLS-1$
+        return MessageFormat.format(SIMULTANEOUSLY_USABLE, Integer.valueOf(mSimultaneous));
+    }
+
+    @Localize("{0}Fewer than {1,number} Alternative Advantages")
+    private static String FEWER_CHILDREN;
+    @Localize("{0,number} simultaneously usable")
+    private static String SIMULTANEOUSLY_USABLE;
+    static {
+        Localization.initialize();
     }
 }
 

@@ -91,14 +91,32 @@ public enum AdvantageContainerType {
             return ALTERNATIVE_ABILITIES_TITLE;
         }
 
+        @SuppressWarnings("unused")
         @Override
         ContainerTypeEditor addControls(AdvantageEditor editor) {
-            return new AlternativeAbilitiesContainerTypeEditor();
+            JPanel typePanel = editor.getContainerTypePanel();
+
+            JTextField simultaneous = new JTextField(2);
+            new NumberFilter(simultaneous, false, true, true, 2);
+            typePanel.add(simultaneous);
+
+            JLabel desc = new JLabel(ALTERNATIVE_ABILITIES_TEXT);
+            typePanel.add(desc);
+
+            if (editor.getContainerType() == this && editor.getAdvantageContainer() instanceof AlternativeAbilitiesAdvantageContainer) {
+                AlternativeAbilitiesAdvantageContainer container = (AlternativeAbilitiesAdvantageContainer) editor.getAdvantageContainer();
+                simultaneous.setText(Integer.toString(container.mSimultaneous));
+            } else {
+                simultaneous.setText(Integer.toString(1));
+            }
+
+            return new AlternativeAbilitiesContainerTypeEditor(simultaneous);
         }
 
         @Override
         AdvantageContainer loadAttributes(XMLReader reader, LoadState state) {
-            return new AlternativeAbilitiesAdvantageContainer();
+            int costModPercent = reader.getAttributeAsInteger(AlternativeAbilitiesAdvantageContainer.TAG_SIMULTANEOUS, 1);
+            return new AlternativeAbilitiesAdvantageContainer(costModPercent);
         }
 
     },
@@ -193,6 +211,8 @@ public enum AdvantageContainerType {
     @Localize(locale = "ru", value = "Альтернативные способности")
     @Localize(locale = "es", value = "Habilidades Alternativas")
     static String ALTERNATIVE_ABILITIES_TITLE;
+    @Localize("simultaneously usable")
+    static String ALTERNATIVE_ABILITIES_TEXT;
     @Localize("Alternate Forms")
     static String ALTERNATE_FORMS_TITLE;
     @Localize("% to the cost over base form named")
