@@ -20,6 +20,8 @@ interface AdvantageContainer {
     int getAdjustedPoints(Advantage advantage);
 
     void saveAttributes(XMLWriter out);
+
+    boolean checkSatisfied(Advantage advantage, StringBuilder builder, String prefix);
 }
 
 class SummativeAdvantageContainer implements AdvantageContainer {
@@ -45,6 +47,11 @@ class SummativeAdvantageContainer implements AdvantageContainer {
     @Override
     public void saveAttributes(XMLWriter out) {
         // No Additional attributes required
+    }
+
+    @Override
+    public boolean checkSatisfied(Advantage advantage, StringBuilder builder, String prefix) {
+        return true;
     }
 }
 
@@ -77,5 +84,10 @@ class AlternativeAbilitiesAdvantageContainer implements AdvantageContainer {
     @Override
     public void saveAttributes(XMLWriter out) {
         // No Additional attributes required
+    }
+
+    @Override
+    public boolean checkSatisfied(Advantage advantage, StringBuilder builder, String prefix) {
+        return true;
     }
 }

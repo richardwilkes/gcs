@@ -570,6 +570,15 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         return false;
     }
 
+    @Override
+    public boolean satisfied(StringBuilder builder, String prefix) {
+        if (!canHaveChildren()) {
+            return true;
+        }
+
+        return mAdvantageContainer.checkSatisfied(this, builder, prefix);
+    }
+
     /**
      * @param factor The number of levels or half levels to set.
      * @return Whether it was modified.
