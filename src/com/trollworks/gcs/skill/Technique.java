@@ -246,6 +246,7 @@ public class Technique extends Skill {
      * @param prefix The prefix to add to each line appended to the builder.
      * @return <code>true</code> if this technique has its default satisfied.
      */
+    @Override
     public boolean satisfied(StringBuilder builder, String prefix) {
         if (mDefault.getType().isSkillBased()) {
             Skill skill = getCharacter().getBestSkillNamed(mDefault.getName(), mDefault.getSpecialization(), false, new HashSet<String>());

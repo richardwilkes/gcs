@@ -658,4 +658,13 @@ public abstract class ListRow extends Row {
         }
         return false;
     }
+
+    /**
+     * @param builder
+     * @param prefix
+     * @return Whether the row is satisfied.
+     */
+    public boolean satisfied(StringBuilder builder, String prefix) {
+        return true;
+    }
 }

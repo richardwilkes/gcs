@@ -18,7 +18,6 @@ import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
-import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
@@ -221,8 +220,8 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
             ListRow row = iterator.next();
             builder.setLength(0);
             boolean satisfied = row.getPrereqs().satisfied(mCharacter, row, builder, "<li>"); //$NON-NLS-1$
-            if (satisfied && row instanceof Technique) {
-                satisfied = ((Technique) row).satisfied(builder, "<li>"); //$NON-NLS-1$
+            if (satisfied) {
+                satisfied = row.satisfied(builder, "<li>"); //$NON-NLS-1$
             }
             if (row.isSatisfied() != satisfied) {
                 row.setSatisfied(satisfied);
