@@ -1054,6 +1054,11 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     @Override
     public String getModifierNotes() {
         StringBuilder builder = new StringBuilder();
+        String advantageContainerNotes = mAdvantageContainer.getNotes();
+        if (!advantageContainerNotes.equals("")) { //$NON-NLS-1$
+            builder.append(advantageContainerNotes);
+            builder.append(MODIFIER_SEPARATOR);
+        }
         if (mCR != SelfControlRoll.NONE_REQUIRED) {
             builder.append(mCR);
             if (mCRAdj != SelfControlRollAdjustments.NONE) {

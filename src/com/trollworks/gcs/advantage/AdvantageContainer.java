@@ -22,6 +22,8 @@ interface AdvantageContainer {
     void saveAttributes(XMLWriter out);
 
     boolean checkSatisfied(Advantage advantage, StringBuilder builder, String prefix);
+
+    String getNotes();
 }
 
 class SummativeAdvantageContainer implements AdvantageContainer {
@@ -52,6 +54,11 @@ class SummativeAdvantageContainer implements AdvantageContainer {
     @Override
     public boolean checkSatisfied(Advantage advantage, StringBuilder builder, String prefix) {
         return true;
+    }
+
+    @Override
+    public String getNotes() {
+        return ""; //$NON-NLS-1$
     }
 }
 
@@ -89,5 +96,10 @@ class AlternativeAbilitiesAdvantageContainer implements AdvantageContainer {
     @Override
     public boolean checkSatisfied(Advantage advantage, StringBuilder builder, String prefix) {
         return true;
+    }
+
+    @Override
+    public String getNotes() {
+        return ""; //$NON-NLS-1$
     }
 }
