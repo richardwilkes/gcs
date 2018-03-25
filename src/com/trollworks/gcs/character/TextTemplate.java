@@ -14,6 +14,7 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageColumn;
 import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
@@ -389,7 +390,7 @@ public class TextTemplate {
                 writeEncodedText(out, description.getGender());
                 break;
             case KEY_WEIGHT:
-                writeEncodedText(out, description.getWeight().toString());
+                writeEncodedText(out, EquipmentColumn.getDisplayWeight(description.getWeight()));
                 break;
             case KEY_EYES:
                 writeEncodedText(out, description.getEyeColor());
@@ -533,7 +534,7 @@ public class TextTemplate {
                 writeEncodedText(out, gurpsCharacter.getShiftSlightly().toString());
                 break;
             case KEY_CARRIED_WEIGHT:
-                writeEncodedText(out, gurpsCharacter.getWeightCarried().toString());
+                writeEncodedText(out, EquipmentColumn.getDisplayWeight(gurpsCharacter.getWeightCarried()));
                 break;
             case KEY_CARRIED_VALUE:
                 writeEncodedText(out, "$" + Numbers.format(gurpsCharacter.getWealthCarried()));
@@ -1178,13 +1179,13 @@ public class TextTemplate {
                                         writeEncodedText(out, Numbers.format(equipment.getValue()));
                                         break;
                                     case KEY_WEIGHT:
-                                        writeEncodedText(out, equipment.getWeight().toString());
+                                        writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getWeight()));
                                         break;
                                     case KEY_COST_SUMMARY:
                                         writeEncodedText(out, Numbers.format(equipment.getExtendedValue()));
                                         break;
                                     case KEY_WEIGHT_SUMMARY:
-                                        writeEncodedText(out, equipment.getExtendedWeight().toString());
+                                        writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getExtendedWeight()));
                                         break;
                                     case KEY_REF:
                                         writeEncodedText(out, equipment.getReference());
