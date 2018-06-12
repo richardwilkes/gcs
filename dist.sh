@@ -43,5 +43,6 @@ mv .mac/*.icns pkg/gcs.app/Contents/Resources/
 mv .mac/package/macosx/PkgInfo pkg/gcs.app/Contents/
 mv pkg/gcs.app "pkg/GURPS Character Sheet.app"
 
-ln -s ../../gcs_library/Library pkg/Library
+/bin/cp -R ../gcs_library/Library pkg/
+
 /bin/rm -rf .mac
