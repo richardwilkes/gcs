@@ -33,7 +33,7 @@ public class NewCharacterTemplateCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String                      CMD_NEW_CHARACTER_TEMPLATE = "NewCharacterTemplate";           			//$NON-NLS-1$
+    public static final String                      CMD_NEW_CHARACTER_TEMPLATE = "NewCharacterTemplate"; //$NON-NLS-1$
 
     /** The singletone {@link NewCharacterTemplateCommand}. */
     public static final NewCharacterTemplateCommand INSTANCE                   = new NewCharacterTemplateCommand();

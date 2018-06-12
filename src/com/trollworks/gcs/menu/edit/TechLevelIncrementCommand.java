@@ -30,7 +30,7 @@ public class TechLevelIncrementCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String                    CMD_INCREMENT_TL = "IncrementTL";                  					//$NON-NLS-1$
+    public static final String                    CMD_INCREMENT_TL = "IncrementTL"; //$NON-NLS-1$
 
     /** The singleton {@link TechLevelIncrementCommand}. */
     public static final TechLevelIncrementCommand INSTANCE         = new TechLevelIncrementCommand();

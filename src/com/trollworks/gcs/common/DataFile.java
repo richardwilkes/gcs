@@ -40,7 +40,7 @@ import javax.swing.undo.UndoableEdit;
 /** A common super class for all data file-based model objects. */
 public abstract class DataFile implements Undoable {
     /** The 'id' attribute. */
-    public static final String              ATTRIBUTE_ID           = "id";                					//$NON-NLS-1$
+    public static final String              ATTRIBUTE_ID           = "id"; //$NON-NLS-1$
     private File                            mFile;
     private UUID                            mId                    = UUID.randomUUID();
     private Notifier                        mNotifier              = new Notifier();

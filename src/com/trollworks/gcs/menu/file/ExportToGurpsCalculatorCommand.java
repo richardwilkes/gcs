@@ -29,7 +29,7 @@ public class ExportToGurpsCalculatorCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String                         CMD_EXPORT_TO_GUPRS_CALCULATOR = "ExportToGurpsCalculator";           			//$NON-NLS-1$
+    public static final String                         CMD_EXPORT_TO_GUPRS_CALCULATOR = "ExportToGurpsCalculator"; //$NON-NLS-1$
 
     /** The singleton {@link ExportToGurpsCalculatorCommand}. */
     public static final ExportToGurpsCalculatorCommand INSTANCE                       = new ExportToGurpsCalculatorCommand();

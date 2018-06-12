@@ -19,6 +19,7 @@ import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.toolkit.ui.RetinaIcon;
+import com.trollworks.toolkit.ui.image.ModuleImageLoader;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.utility.BundleInfo;
@@ -36,7 +37,7 @@ import java.util.jar.Attributes;
 @SuppressWarnings("nls")
 public class GCSImages {
     static {
-        StdImage.addLocation(GCSImages.class.getResource("images/")); //$NON-NLS-1$
+        StdImage.addLoader(new ModuleImageLoader(GCSImages.class.getModule(), "/com/trollworks/gcs/app/images")); //$NON-NLS-1$
     }
 
     public static final RetinaIcon getGCalcLogo() {

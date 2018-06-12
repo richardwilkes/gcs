@@ -32,7 +32,7 @@ public abstract class NumericCriteria {
     }
 
     /** The comparison attribute. */
-    public static final String ATTRIBUTE_COMPARE = "compare";	//$NON-NLS-1$
+    public static final String ATTRIBUTE_COMPARE = "compare"; //$NON-NLS-1$
     private NumericCompareType mType;
 
     /**

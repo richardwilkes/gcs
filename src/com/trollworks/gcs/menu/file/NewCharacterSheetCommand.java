@@ -34,7 +34,7 @@ public class NewCharacterSheetCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String                   CMD_NEW_CHARACTER_SHEET = "NewCharacterSheet";           				//$NON-NLS-1$
+    public static final String                   CMD_NEW_CHARACTER_SHEET = "NewCharacterSheet"; //$NON-NLS-1$
 
     /** The singleton {@link NewCharacterSheetCommand}. */
     public static final NewCharacterSheetCommand INSTANCE                = new NewCharacterSheetCommand();

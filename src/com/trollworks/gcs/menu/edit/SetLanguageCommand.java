@@ -40,7 +40,7 @@ public class SetLanguageCommand extends Command {
         Localization.initialize();
     }
 
-    private static final String CMD = "SetLanguage:";	//$NON-NLS-1$
+    private static final String CMD = "SetLanguage:"; //$NON-NLS-1$
     private Locale              mLocale;
 
     private static String getTitle(Locale locale) {

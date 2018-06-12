@@ -35,8 +35,8 @@ public class AttributeBonusEditor extends FeatureEditor {
         Localization.initialize();
     }
 
-    private static final String CHANGE_ATTRIBUTE  = "ChangeAttribute"; 	//$NON-NLS-1$
-    private static final String CHANGE_LIMITATION = "ChangeLimitation";	//$NON-NLS-1$
+    private static final String CHANGE_ATTRIBUTE  = "ChangeAttribute"; //$NON-NLS-1$
+    private static final String CHANGE_LIMITATION = "ChangeLimitation"; //$NON-NLS-1$
 
     /**
      * Create a new attribute bonus editor.

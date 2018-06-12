@@ -33,7 +33,7 @@ public class NewSkillsLibraryCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String                  CMD_NEW_LIBRARY = "NewSkillsLibrary";           			//$NON-NLS-1$
+    public static final String                  CMD_NEW_LIBRARY = "NewSkillsLibrary"; //$NON-NLS-1$
 
     /** The singleton {@link NewSkillsLibraryCommand}. */
     public static final NewSkillsLibraryCommand INSTANCE        = new NewSkillsLibraryCommand();

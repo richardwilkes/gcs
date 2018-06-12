@@ -30,7 +30,7 @@ public class SkillLevelDecrementCommand extends Command {
         Localization.initialize();
     }
 
-    public static final String                     CMD_DECREASE_LEVEL = "DecreaseLevel";                 					//$NON-NLS-1$
+    public static final String                     CMD_DECREASE_LEVEL = "DecreaseLevel"; //$NON-NLS-1$
 
     public static final SkillLevelDecrementCommand INSTANCE           = new SkillLevelDecrementCommand();
 

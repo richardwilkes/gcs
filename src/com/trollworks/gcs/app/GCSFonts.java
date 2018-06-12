@@ -60,19 +60,19 @@ public class GCSFonts {
     }
 
     /** The label font. */
-    public static final String KEY_LABEL            = "trollworks.label";           				//$NON-NLS-1$
+    public static final String KEY_LABEL            = "trollworks.label"; //$NON-NLS-1$
     /** The field font. */
-    public static final String KEY_FIELD            = "trollworks.field";           				//$NON-NLS-1$
+    public static final String KEY_FIELD            = "trollworks.field"; //$NON-NLS-1$
     /** The field notes font. */
-    public static final String KEY_FIELD_NOTES      = "trollworks.field.notes";     			//$NON-NLS-1$
+    public static final String KEY_FIELD_NOTES      = "trollworks.field.notes"; //$NON-NLS-1$
     /** The technique field font. */
-    public static final String KEY_TECHNIQUE_FIELD  = "trollworks.field.technique"; 		//$NON-NLS-1$
+    public static final String KEY_TECHNIQUE_FIELD  = "trollworks.field.technique"; //$NON-NLS-1$
     /** The primary footer font. */
-    public static final String KEY_PRIMARY_FOOTER   = "trollworks.footer.primary";  		//$NON-NLS-1$
+    public static final String KEY_PRIMARY_FOOTER   = "trollworks.footer.primary"; //$NON-NLS-1$
     /** The secondary footer font. */
-    public static final String KEY_SECONDARY_FOOTER = "trollworks.footer.secondary";	//$NON-NLS-1$
+    public static final String KEY_SECONDARY_FOOTER = "trollworks.footer.secondary"; //$NON-NLS-1$
     /** The notes font. */
-    public static final String KEY_NOTES            = "trollworks.notes";           				//$NON-NLS-1$
+    public static final String KEY_NOTES            = "trollworks.notes"; //$NON-NLS-1$
 
     /** Register our fonts. */
     public static final void register() {

@@ -74,8 +74,8 @@ public class ListPrereqEditor extends PrereqEditor {
     }
 
     private static Class<?>     LAST_ITEM_TYPE = AdvantagePrereq.class;
-    private static final String ANY_ALL        = "AnyAll";             				//$NON-NLS-1$
-    private static final String WHEN_TL        = "WhenTL";             				//$NON-NLS-1$
+    private static final String ANY_ALL        = "AnyAll"; //$NON-NLS-1$
+    private static final String WHEN_TL        = "WhenTL"; //$NON-NLS-1$
 
     /** @param type The last item type created or switched to. */
     public static void setLastItemType(Class<?> type) {

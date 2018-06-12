@@ -34,7 +34,7 @@ public class CopyToSheetCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String             CMD_COPY_TO_SHEET = "CopyToSheet";           			//$NON-NLS-1$
+    public static final String             CMD_COPY_TO_SHEET = "CopyToSheet"; //$NON-NLS-1$
 
     /** The singleton {@link CopyToSheetCommand}. */
     public static final CopyToSheetCommand INSTANCE          = new CopyToSheetCommand();

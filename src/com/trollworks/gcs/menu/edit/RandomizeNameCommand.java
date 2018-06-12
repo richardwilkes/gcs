@@ -44,9 +44,9 @@ public class RandomizeNameCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String               CMD_GENERATE_RANDOM_MALE_NAME   = "GenerateRandomMaleName";                                                                                          																								//$NON-NLS-1$
+    public static final String               CMD_GENERATE_RANDOM_MALE_NAME   = "GenerateRandomMaleName"; //$NON-NLS-1$
     /** The action command this command will issue. */
-    public static final String               CMD_GENERATE_RANDOM_FEMALE_NAME = "GenerateRandomFemaleName";                                                                                        																							//$NON-NLS-1$
+    public static final String               CMD_GENERATE_RANDOM_FEMALE_NAME = "GenerateRandomFemaleName"; //$NON-NLS-1$
     /** The male {@link RandomizeNameCommand}. */
     public static final RandomizeNameCommand MALE_INSTANCE                   = new RandomizeNameCommand(MALE, CMD_GENERATE_RANDOM_MALE_NAME, KeyEvent.VK_V, Command.SHIFTED_COMMAND_MODIFIER);
     /** The female {@link RandomizeNameCommand}. */

@@ -1,5 +1,3 @@
-/build
-/gcs_build
-/gcs-*.zip
+/.build/
 /.apt_generated
-/ant_build
+/bin/

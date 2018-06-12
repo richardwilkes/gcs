@@ -50,8 +50,8 @@ public class SpellPrereqEditor extends PrereqEditor {
         Localization.initialize();
     }
 
-    private static final String   CHANGE_TYPE = "ChangeSpellType";                                                                                    																					//$NON-NLS-1$
-    private static final String   EMPTY       = "";                                                                                                   																									//$NON-NLS-1$
+    private static final String   CHANGE_TYPE = "ChangeSpellType"; //$NON-NLS-1$
+    private static final String   EMPTY       = ""; //$NON-NLS-1$
     private static final String[] TYPES       = { SpellPrereq.TAG_NAME, SpellPrereq.TAG_ANY, SpellPrereq.TAG_COLLEGE, SpellPrereq.TAG_COLLEGE_COUNT };
 
     /**

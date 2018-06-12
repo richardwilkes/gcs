@@ -21,7 +21,7 @@ import java.util.List;
 
 /** Tracks data for opening and navigating PDFs. */
 public class PdfRef implements Comparable<PdfRef> {
-    private static final String MODULE  = "PageReferences";	//$NON-NLS-1$
+    private static final String MODULE  = "PageReferences"; //$NON-NLS-1$
     private static final int    VERSION = 2;
 
     /** @return <code>true</code> if the {@link PdfRef} preferences are equal to their defaults. */

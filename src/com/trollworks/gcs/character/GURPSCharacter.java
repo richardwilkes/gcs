@@ -167,38 +167,38 @@ public class GURPSCharacter extends DataFile {
     }
 
     /** The extension for character sheets. */
-    public static final String                  EXTENSION                            = "gcs";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      														//$NON-NLS-1$
+    public static final String                  EXTENSION                            = "gcs"; //$NON-NLS-1$
     private static final int                    CURRENT_VERSION                      = 3;
-    private static final String                 EMPTY                                = "";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 															//$NON-NLS-1$
-    private static final String                 TAG_ROOT                             = "character";                                                                                                                                                                                                                                                                                                                                                                                                                                                													//$NON-NLS-1$
-    private static final String                 TAG_CREATED_DATE                     = "created_date";                                                                                                                                                                                                                                                                                                                                                                                                                     												//$NON-NLS-1$
-    private static final String                 TAG_MODIFIED_DATE                    = "modified_date";                                                                                                                                                                                                                                                                                                                                                                                                            												//$NON-NLS-1$
-    private static final String                 TAG_CURRENT_HP                       = "current_hp";                                                                                                                                                                                                                                                                                                                                                                                                                                       													//$NON-NLS-1$
-    private static final String                 TAG_CURRENT_FP                       = "current_fp";                                                                                                                                                                                                                                                                                                                                                                                                                                       													//$NON-NLS-1$
-    private static final String                 TAG_UNSPENT_POINTS                   = "unspent_points";                                                                                                                                                                                                                                                                                                                                                                                                   												//$NON-NLS-1$
-    private static final String                 TAG_TOTAL_POINTS                     = "total_points";                                                                                                                                                                                                                                                                                                                                                                                                                     												//$NON-NLS-1$
-    private static final String                 TAG_INCLUDE_PUNCH                    = "include_punch";                                                                                                                                                                                                                                                                                                                                                                                                            												//$NON-NLS-1$
-    private static final String                 TAG_INCLUDE_KICK                     = "include_kick";                                                                                                                                                                                                                                                                                                                                                                                                                     												//$NON-NLS-1$
-    private static final String                 TAG_INCLUDE_BOOTS                    = "include_kick_with_boots";                                                                                                                                                                                                                                                                                                                  									//$NON-NLS-1$
-    private static final String                 ATTRIBUTE_CARRIED                    = "carried";                                                                                                                                                                                                                                                                                                                                                                                                                                                                  													//$NON-NLS-1$
+    private static final String                 EMPTY                                = ""; //$NON-NLS-1$
+    private static final String                 TAG_ROOT                             = "character"; //$NON-NLS-1$
+    private static final String                 TAG_CREATED_DATE                     = "created_date"; //$NON-NLS-1$
+    private static final String                 TAG_MODIFIED_DATE                    = "modified_date"; //$NON-NLS-1$
+    private static final String                 TAG_CURRENT_HP                       = "current_hp"; //$NON-NLS-1$
+    private static final String                 TAG_CURRENT_FP                       = "current_fp"; //$NON-NLS-1$
+    private static final String                 TAG_UNSPENT_POINTS                   = "unspent_points"; //$NON-NLS-1$
+    private static final String                 TAG_TOTAL_POINTS                     = "total_points"; //$NON-NLS-1$
+    private static final String                 TAG_INCLUDE_PUNCH                    = "include_punch"; //$NON-NLS-1$
+    private static final String                 TAG_INCLUDE_KICK                     = "include_kick"; //$NON-NLS-1$
+    private static final String                 TAG_INCLUDE_BOOTS                    = "include_kick_with_boots"; //$NON-NLS-1$
+    private static final String                 ATTRIBUTE_CARRIED                    = "carried"; //$NON-NLS-1$
     /** The prefix for all character IDs. */
-    public static final String                  CHARACTER_PREFIX                     = "gcs.";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             														//$NON-NLS-1$
+    public static final String                  CHARACTER_PREFIX                     = "gcs."; //$NON-NLS-1$
     /** The field ID for last modified date changes. */
-    public static final String                  ID_LAST_MODIFIED                     = CHARACTER_PREFIX + "LastModifiedDate";                                                                                                                                                                                                      						//$NON-NLS-1$
+    public static final String                  ID_LAST_MODIFIED                     = CHARACTER_PREFIX + "LastModifiedDate"; //$NON-NLS-1$
     /** The field ID for created on date changes. */
-    public static final String                  ID_CREATED_ON                        = CHARACTER_PREFIX + "CreatedOn";                                                                                                                                                                                                                                                                     								//$NON-NLS-1$
+    public static final String                  ID_CREATED_ON                        = CHARACTER_PREFIX + "CreatedOn"; //$NON-NLS-1$
     /** The field ID for include punch changes. */
-    public static final String                  ID_INCLUDE_PUNCH                     = CHARACTER_PREFIX + "IncludePunch";                                                                                                                                                                                                                                          							//$NON-NLS-1$
+    public static final String                  ID_INCLUDE_PUNCH                     = CHARACTER_PREFIX + "IncludePunch"; //$NON-NLS-1$
     /** The field ID for include kick changes. */
-    public static final String                  ID_INCLUDE_KICK                      = CHARACTER_PREFIX + "IncludeKickFeet";                                                                                                                                                                                                               							//$NON-NLS-1$
+    public static final String                  ID_INCLUDE_KICK                      = CHARACTER_PREFIX + "IncludeKickFeet"; //$NON-NLS-1$
     /** The field ID for include kick with boots changes. */
-    public static final String                  ID_INCLUDE_BOOTS                     = CHARACTER_PREFIX + "IncludeKickBoots";                                                                                                                                                                                                      						//$NON-NLS-1$
+    public static final String                  ID_INCLUDE_BOOTS                     = CHARACTER_PREFIX + "IncludeKickBoots"; //$NON-NLS-1$
     /**
      * The prefix used to indicate a point value is requested from {@link #getValueForID(String)}.
      */
-    public static final String                  POINTS_PREFIX                        = CHARACTER_PREFIX + "points.";                                                                                                                                                                                                                                                                                       									//$NON-NLS-1$
+    public static final String                  POINTS_PREFIX                        = CHARACTER_PREFIX + "points."; //$NON-NLS-1$
     /** The prefix used in front of all IDs for basic attributes. */
-    public static final String                  ATTRIBUTES_PREFIX                    = CHARACTER_PREFIX + "ba.";                                                                                                                                                                                                                                                                                                                           										//$NON-NLS-1$
+    public static final String                  ATTRIBUTES_PREFIX                    = CHARACTER_PREFIX + "ba."; //$NON-NLS-1$
     /** The field ID for strength (ST) changes. */
     public static final String                  ID_STRENGTH                          = ATTRIBUTES_PREFIX + BonusAttributeType.ST.name();
     /** The field ID for lifting strength bonuses -- used by features. */
@@ -230,7 +230,7 @@ public class GURPSCharacter extends DataFile {
     /** The field ID for basic move changes. */
     public static final String                  ID_BASIC_MOVE                        = ATTRIBUTES_PREFIX + BonusAttributeType.MOVE.name();
     /** The prefix used in front of all IDs for dodge changes. */
-    public static final String                  DODGE_PREFIX                         = ATTRIBUTES_PREFIX + BonusAttributeType.DODGE.name() + "#.";         	//$NON-NLS-1$
+    public static final String                  DODGE_PREFIX                         = ATTRIBUTES_PREFIX + BonusAttributeType.DODGE.name() + "#."; //$NON-NLS-1$
     /** The field ID for dodge bonus changes. */
     public static final String                  ID_DODGE_BONUS                       = ATTRIBUTES_PREFIX + BonusAttributeType.DODGE.name();
     /** The field ID for parry bonus changes. */
@@ -238,84 +238,84 @@ public class GURPSCharacter extends DataFile {
     /** The field ID for block bonus changes. */
     public static final String                  ID_BLOCK_BONUS                       = ATTRIBUTES_PREFIX + BonusAttributeType.BLOCK.name();
     /** The prefix used in front of all IDs for move changes. */
-    public static final String                  MOVE_PREFIX                          = ATTRIBUTES_PREFIX + BonusAttributeType.MOVE.name() + "#.";                  	//$NON-NLS-1$
+    public static final String                  MOVE_PREFIX                          = ATTRIBUTES_PREFIX + BonusAttributeType.MOVE.name() + "#."; //$NON-NLS-1$
     /** The field ID for carried weight changes. */
-    public static final String                  ID_CARRIED_WEIGHT                    = CHARACTER_PREFIX + "CarriedWeight";                                                                                                                                                                                                                                 							//$NON-NLS-1$
+    public static final String                  ID_CARRIED_WEIGHT                    = CHARACTER_PREFIX + "CarriedWeight"; //$NON-NLS-1$
     /** The field ID for carried wealth changes. */
-    public static final String                  ID_CARRIED_WEALTH                    = CHARACTER_PREFIX + "CarriedWealth";                                                                                                                                                                                                                                 							//$NON-NLS-1$
+    public static final String                  ID_CARRIED_WEALTH                    = CHARACTER_PREFIX + "CarriedWealth"; //$NON-NLS-1$
     /** The prefix used in front of all IDs for encumbrance changes. */
-    public static final String                  MAXIMUM_CARRY_PREFIX                 = ATTRIBUTES_PREFIX + "MaximumCarry";                                                                                                                                                                                                                                 							//$NON-NLS-1$
-    private static final String                 LIFT_PREFIX                          = ATTRIBUTES_PREFIX + "lift.";                                                                                                                                                                                                                                                                                                									//$NON-NLS-1$
+    public static final String                  MAXIMUM_CARRY_PREFIX                 = ATTRIBUTES_PREFIX + "MaximumCarry"; //$NON-NLS-1$
+    private static final String                 LIFT_PREFIX                          = ATTRIBUTES_PREFIX + "lift."; //$NON-NLS-1$
     /** The field ID for basic lift changes. */
-    public static final String                  ID_BASIC_LIFT                        = LIFT_PREFIX + "BasicLift";                                                                                                                                                                                                                                                                                                                  									//$NON-NLS-1$
+    public static final String                  ID_BASIC_LIFT                        = LIFT_PREFIX + "BasicLift"; //$NON-NLS-1$
     /** The field ID for one-handed lift changes. */
-    public static final String                  ID_ONE_HANDED_LIFT                   = LIFT_PREFIX + "OneHandedLift";                                                                                                                                                                                                                                                                              								//$NON-NLS-1$
+    public static final String                  ID_ONE_HANDED_LIFT                   = LIFT_PREFIX + "OneHandedLift"; //$NON-NLS-1$
     /** The field ID for two-handed lift changes. */
-    public static final String                  ID_TWO_HANDED_LIFT                   = LIFT_PREFIX + "TwoHandedLift";                                                                                                                                                                                                                                                                              								//$NON-NLS-1$
+    public static final String                  ID_TWO_HANDED_LIFT                   = LIFT_PREFIX + "TwoHandedLift"; //$NON-NLS-1$
     /** The field ID for shove and knock over changes. */
-    public static final String                  ID_SHOVE_AND_KNOCK_OVER              = LIFT_PREFIX + "ShoveAndKnockOver";                                                                                                                                                                                                                                          							//$NON-NLS-1$
+    public static final String                  ID_SHOVE_AND_KNOCK_OVER              = LIFT_PREFIX + "ShoveAndKnockOver"; //$NON-NLS-1$
     /** The field ID for running shove and knock over changes. */
-    public static final String                  ID_RUNNING_SHOVE_AND_KNOCK_OVER      = LIFT_PREFIX + "RunningShoveAndKnockOver";                                                                                                                                                                           						//$NON-NLS-1$
+    public static final String                  ID_RUNNING_SHOVE_AND_KNOCK_OVER      = LIFT_PREFIX + "RunningShoveAndKnockOver"; //$NON-NLS-1$
     /** The field ID for carry on back changes. */
-    public static final String                  ID_CARRY_ON_BACK                     = LIFT_PREFIX + "CarryOnBack";                                                                                                                                                                                                                                                                                                									//$NON-NLS-1$
+    public static final String                  ID_CARRY_ON_BACK                     = LIFT_PREFIX + "CarryOnBack"; //$NON-NLS-1$
     /** The field ID for carry on back changes. */
-    public static final String                  ID_SHIFT_SLIGHTLY                    = LIFT_PREFIX + "ShiftSlightly";                                                                                                                                                                                                                                                                              								//$NON-NLS-1$
+    public static final String                  ID_SHIFT_SLIGHTLY                    = LIFT_PREFIX + "ShiftSlightly"; //$NON-NLS-1$
     /** The prefix used in front of all IDs for point summaries. */
-    public static final String                  POINT_SUMMARY_PREFIX                 = CHARACTER_PREFIX + "ps.";                                                                                                                                                                                                                                                                                                                           										//$NON-NLS-1$
+    public static final String                  POINT_SUMMARY_PREFIX                 = CHARACTER_PREFIX + "ps."; //$NON-NLS-1$
     /** The field ID for point total changes. */
-    public static final String                  ID_TOTAL_POINTS                      = POINT_SUMMARY_PREFIX + "TotalPoints";                                                                                                                                                                                                               							//$NON-NLS-1$
+    public static final String                  ID_TOTAL_POINTS                      = POINT_SUMMARY_PREFIX + "TotalPoints"; //$NON-NLS-1$
     /** The field ID for attribute point summary changes. */
-    public static final String                  ID_ATTRIBUTE_POINTS                  = POINT_SUMMARY_PREFIX + "AttributePoints";                                                                                                                                                                           						//$NON-NLS-1$
+    public static final String                  ID_ATTRIBUTE_POINTS                  = POINT_SUMMARY_PREFIX + "AttributePoints"; //$NON-NLS-1$
     /** The field ID for advantage point summary changes. */
-    public static final String                  ID_ADVANTAGE_POINTS                  = POINT_SUMMARY_PREFIX + "AdvantagePoints";                                                                                                                                                                           						//$NON-NLS-1$
+    public static final String                  ID_ADVANTAGE_POINTS                  = POINT_SUMMARY_PREFIX + "AdvantagePoints"; //$NON-NLS-1$
     /** The field ID for disadvantage point summary changes. */
-    public static final String                  ID_DISADVANTAGE_POINTS               = POINT_SUMMARY_PREFIX + "DisadvantagePoints";                                                                                                                                                					//$NON-NLS-1$
+    public static final String                  ID_DISADVANTAGE_POINTS               = POINT_SUMMARY_PREFIX + "DisadvantagePoints"; //$NON-NLS-1$
     /** The field ID for quirk point summary changes. */
-    public static final String                  ID_QUIRK_POINTS                      = POINT_SUMMARY_PREFIX + "QuirkPoints";                                                                                                                                                                                                               							//$NON-NLS-1$
+    public static final String                  ID_QUIRK_POINTS                      = POINT_SUMMARY_PREFIX + "QuirkPoints"; //$NON-NLS-1$
     /** The field ID for skill point summary changes. */
-    public static final String                  ID_SKILL_POINTS                      = POINT_SUMMARY_PREFIX + "SkillPoints";                                                                                                                                                                                                               							//$NON-NLS-1$
+    public static final String                  ID_SKILL_POINTS                      = POINT_SUMMARY_PREFIX + "SkillPoints"; //$NON-NLS-1$
     /** The field ID for spell point summary changes. */
-    public static final String                  ID_SPELL_POINTS                      = POINT_SUMMARY_PREFIX + "SpellPoints";                                                                                                                                                                                                               							//$NON-NLS-1$
+    public static final String                  ID_SPELL_POINTS                      = POINT_SUMMARY_PREFIX + "SpellPoints"; //$NON-NLS-1$
     /** The field ID for racial point summary changes. */
-    public static final String                  ID_RACE_POINTS                       = POINT_SUMMARY_PREFIX + "RacePoints";                                                                                                                                                                                                                        							//$NON-NLS-1$
+    public static final String                  ID_RACE_POINTS                       = POINT_SUMMARY_PREFIX + "RacePoints"; //$NON-NLS-1$
     /** The field ID for unspent point changes. */
-    public static final String                  ID_UNSPENT_POINTS                    = POINT_SUMMARY_PREFIX + "UnspentPoints";                                                                                                                                                                                                 						//$NON-NLS-1$
+    public static final String                  ID_UNSPENT_POINTS                    = POINT_SUMMARY_PREFIX + "UnspentPoints"; //$NON-NLS-1$
     /** The prefix used in front of all IDs for basic damage. */
-    public static final String                  BASIC_DAMAGE_PREFIX                  = CHARACTER_PREFIX + "bd.";                                                                                                                                                                                                                                                                                                                           										//$NON-NLS-1$
+    public static final String                  BASIC_DAMAGE_PREFIX                  = CHARACTER_PREFIX + "bd."; //$NON-NLS-1$
     /** The field ID for basic thrust damage changes. */
-    public static final String                  ID_BASIC_THRUST                      = BASIC_DAMAGE_PREFIX + "Thrust";                                                                                                                                                                                                                                                                     								//$NON-NLS-1$
+    public static final String                  ID_BASIC_THRUST                      = BASIC_DAMAGE_PREFIX + "Thrust"; //$NON-NLS-1$
     /** The field ID for basic swing damage changes. */
-    public static final String                  ID_BASIC_SWING                       = BASIC_DAMAGE_PREFIX + "Swing";                                                                                                                                                                                                                                                                              								//$NON-NLS-1$
-    private static final String                 HIT_POINTS_PREFIX                    = ATTRIBUTES_PREFIX + "derived_hp.";                                                                                                                                                                                                                                          							//$NON-NLS-1$
+    public static final String                  ID_BASIC_SWING                       = BASIC_DAMAGE_PREFIX + "Swing"; //$NON-NLS-1$
+    private static final String                 HIT_POINTS_PREFIX                    = ATTRIBUTES_PREFIX + "derived_hp."; //$NON-NLS-1$
     /** The field ID for hit point changes. */
     public static final String                  ID_HIT_POINTS                        = ATTRIBUTES_PREFIX + BonusAttributeType.HP.name();
     /** The field ID for current hit point changes. */
-    public static final String                  ID_CURRENT_HIT_POINTS                = HIT_POINTS_PREFIX + "Current";                                                                                                                                                                                                                                                                              								//$NON-NLS-1$
+    public static final String                  ID_CURRENT_HIT_POINTS                = HIT_POINTS_PREFIX + "Current"; //$NON-NLS-1$
     /** The field ID for reeling hit point changes. */
-    public static final String                  ID_REELING_HIT_POINTS                = HIT_POINTS_PREFIX + "Reeling";                                                                                                                                                                                                                                                                              								//$NON-NLS-1$
+    public static final String                  ID_REELING_HIT_POINTS                = HIT_POINTS_PREFIX + "Reeling"; //$NON-NLS-1$
     /** The field ID for unconscious check hit point changes. */
-    public static final String                  ID_UNCONSCIOUS_CHECKS_HIT_POINTS     = HIT_POINTS_PREFIX + "UnconsciousChecks";                                                                                                                                                                                    						//$NON-NLS-1$
+    public static final String                  ID_UNCONSCIOUS_CHECKS_HIT_POINTS     = HIT_POINTS_PREFIX + "UnconsciousChecks"; //$NON-NLS-1$
     /** The field ID for death check #1 hit point changes. */
-    public static final String                  ID_DEATH_CHECK_1_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck1";                                                                                                                                                                                                                                          							//$NON-NLS-1$
+    public static final String                  ID_DEATH_CHECK_1_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck1"; //$NON-NLS-1$
     /** The field ID for death check #2 hit point changes. */
-    public static final String                  ID_DEATH_CHECK_2_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck2";                                                                                                                                                                                                                                          							//$NON-NLS-1$
+    public static final String                  ID_DEATH_CHECK_2_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck2"; //$NON-NLS-1$
     /** The field ID for death check #3 hit point changes. */
-    public static final String                  ID_DEATH_CHECK_3_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck3";                                                                                                                                                                                                                                          							//$NON-NLS-1$
+    public static final String                  ID_DEATH_CHECK_3_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck3"; //$NON-NLS-1$
     /** The field ID for death check #4 hit point changes. */
-    public static final String                  ID_DEATH_CHECK_4_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck4";                                                                                                                                                                                                                                          							//$NON-NLS-1$
+    public static final String                  ID_DEATH_CHECK_4_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck4"; //$NON-NLS-1$
     /** The field ID for dead hit point changes. */
-    public static final String                  ID_DEAD_HIT_POINTS                   = HIT_POINTS_PREFIX + "Dead";                                                                                                                                                                                                                                                                                                         									//$NON-NLS-1$
-    private static final String                 FATIGUE_POINTS_PREFIX                = ATTRIBUTES_PREFIX + "derived_fp.";                                                                                                                                                                                                                                          							//$NON-NLS-1$
+    public static final String                  ID_DEAD_HIT_POINTS                   = HIT_POINTS_PREFIX + "Dead"; //$NON-NLS-1$
+    private static final String                 FATIGUE_POINTS_PREFIX                = ATTRIBUTES_PREFIX + "derived_fp."; //$NON-NLS-1$
     /** The field ID for fatigue point changes. */
     public static final String                  ID_FATIGUE_POINTS                    = ATTRIBUTES_PREFIX + BonusAttributeType.FP.name();
     /** The field ID for current fatigue point changes. */
-    public static final String                  ID_CURRENT_FATIGUE_POINTS            = FATIGUE_POINTS_PREFIX + "Current";                                                                                                                                                                                                                                          							//$NON-NLS-1$
+    public static final String                  ID_CURRENT_FATIGUE_POINTS            = FATIGUE_POINTS_PREFIX + "Current"; //$NON-NLS-1$
     /** The field ID for tired fatigue point changes. */
-    public static final String                  ID_TIRED_FATIGUE_POINTS              = FATIGUE_POINTS_PREFIX + "Tired";                                                                                                                                                                                                                                                            								//$NON-NLS-1$
+    public static final String                  ID_TIRED_FATIGUE_POINTS              = FATIGUE_POINTS_PREFIX + "Tired"; //$NON-NLS-1$
     /** The field ID for unconscious check fatigue point changes. */
-    public static final String                  ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS = FATIGUE_POINTS_PREFIX + "UnconsciousChecks";                                                                                                                                                					//$NON-NLS-1$
+    public static final String                  ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS = FATIGUE_POINTS_PREFIX + "UnconsciousChecks"; //$NON-NLS-1$
     /** The field ID for unconscious fatigue point changes. */
-    public static final String                  ID_UNCONSCIOUS_FATIGUE_POINTS        = FATIGUE_POINTS_PREFIX + "Unconscious";                                                                                                                                                                                                      						//$NON-NLS-1$
+    public static final String                  ID_UNCONSCIOUS_FATIGUE_POINTS        = FATIGUE_POINTS_PREFIX + "Unconscious"; //$NON-NLS-1$
     private long                                mLastModified;
     private long                                mCreatedOn;
     private HashMap<String, ArrayList<Feature>> mFeatureMap;

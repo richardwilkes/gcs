@@ -96,8 +96,8 @@ public abstract class FeatureEditor extends EditorPanel {
         Localization.initialize();
     }
 
-    private static final String     CHANGE_BASE_TYPE = "ChangeBaseType";                                                                                                                                                                                                                                                                                                                                                                                                                                                      																																						//$NON-NLS-1$
-    private static final String     BLANK            = " ";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             																																									//$NON-NLS-1$
+    private static final String     CHANGE_BASE_TYPE = "ChangeBaseType"; //$NON-NLS-1$
+    private static final String     BLANK            = " "; //$NON-NLS-1$
     private static final Class<?>[] BASE_TYPES       = new Class<?>[] { AttributeBonus.class, DRBonus.class, SkillBonus.class, SpellBonus.class, WeaponBonus.class, CostReduction.class, ContainedWeightReduction.class };
     private static Class<?>         LAST_ITEM_TYPE   = SkillBonus.class;
     private ListRow                 mRow;

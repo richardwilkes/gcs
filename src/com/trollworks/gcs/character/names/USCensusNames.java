@@ -15,9 +15,9 @@ package com.trollworks.gcs.character.names;
 public class USCensusNames extends Names {
     /** The one and only global instance of this class. */
     public static final USCensusNames INSTANCE = new USCensusNames();
-    private static final String[]     FEMALE   = loadNames(USCensusNames.class.getResource("USCensus1990FemaleFirstNames.txt"), "Mary"); 	//$NON-NLS-1$ //$NON-NLS-2$
-    private static final String[]     MALE     = loadNames(USCensusNames.class.getResource("USCensus1990MaleFirstNames.txt"), "Richard");	//$NON-NLS-1$ //$NON-NLS-2$
-    private static final String[]     LAST     = loadNames(USCensusNames.class.getResource("USCensus1990LastNames.txt"), "Wilkes");      		//$NON-NLS-1$ //$NON-NLS-2$
+    private static final String[]     FEMALE   = loadNames(USCensusNames.class.getResource("USCensus1990FemaleFirstNames.txt"), "Mary"); //$NON-NLS-1$ //$NON-NLS-2$
+    private static final String[]     MALE     = loadNames(USCensusNames.class.getResource("USCensus1990MaleFirstNames.txt"), "Richard"); //$NON-NLS-1$ //$NON-NLS-2$
+    private static final String[]     LAST     = loadNames(USCensusNames.class.getResource("USCensus1990LastNames.txt"), "Wilkes"); //$NON-NLS-1$ //$NON-NLS-2$
 
     private USCensusNames() {
         // Just here to prevent external instantiation

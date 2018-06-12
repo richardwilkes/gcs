@@ -127,7 +127,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
         Localization.initialize();
     }
 
-    private static final String EMPTY = "";        		//$NON-NLS-1$
+    private static final String EMPTY = ""; //$NON-NLS-1$
     private JTextField          mNameField;
     private JCheckBox           mEnabledField;
     private JTextField          mNotesField;

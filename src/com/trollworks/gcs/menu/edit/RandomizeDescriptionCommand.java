@@ -51,7 +51,7 @@ public class RandomizeDescriptionCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String                      CMD_RANDOMIZE_DESCRIPTION = "RandomizeDescription";           			//$NON-NLS-1$
+    public static final String                      CMD_RANDOMIZE_DESCRIPTION = "RandomizeDescription"; //$NON-NLS-1$
 
     /** The singleton {@link RandomizeDescriptionCommand}. */
     public static final RandomizeDescriptionCommand INSTANCE                  = new RandomizeDescriptionCommand();

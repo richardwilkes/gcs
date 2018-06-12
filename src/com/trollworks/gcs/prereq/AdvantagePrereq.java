@@ -50,9 +50,9 @@ public class AdvantagePrereq extends NameLevelPrereq {
     }
 
     /** The XML tag for this class. */
-    public static final String  TAG_ROOT  = "advantage_prereq";	//$NON-NLS-1$
-    private static final String TAG_NOTES = "notes";           				//$NON-NLS-1$
-    private static final String EMPTY     = "";                					//$NON-NLS-1$
+    public static final String  TAG_ROOT  = "advantage_prereq"; //$NON-NLS-1$
+    private static final String TAG_NOTES = "notes"; //$NON-NLS-1$
+    private static final String EMPTY     = ""; //$NON-NLS-1$
     private StringCriteria      mNotesCriteria;
 
     /**

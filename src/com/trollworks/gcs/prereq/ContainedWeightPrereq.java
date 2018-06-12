@@ -40,8 +40,8 @@ public class ContainedWeightPrereq extends HasPrereq {
     }
 
     /** The XML tag for this class. */
-    public static final String  TAG_ROOT          = "contained_weight_prereq";	//$NON-NLS-1$
-    private static final String ATTRIBUTE_COMPARE = "compare";                					//$NON-NLS-1$
+    public static final String  TAG_ROOT          = "contained_weight_prereq"; //$NON-NLS-1$
+    private static final String ATTRIBUTE_COMPARE = "compare"; //$NON-NLS-1$
     private WeightCriteria      mWeightCompare;
 
     /**

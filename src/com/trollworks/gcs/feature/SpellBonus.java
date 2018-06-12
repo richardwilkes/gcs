@@ -25,15 +25,15 @@ import java.util.HashSet;
 /** A spell bonus. */
 public class SpellBonus extends Bonus {
     /** The XML tag. */
-    public static final String TAG_ROOT               = "spell_bonus";      		//$NON-NLS-1$
+    public static final String TAG_ROOT               = "spell_bonus"; //$NON-NLS-1$
     /** Matches against the college name. */
-    public static final String TAG_COLLEGE_NAME       = "college_name";     		//$NON-NLS-1$
+    public static final String TAG_COLLEGE_NAME       = "college_name"; //$NON-NLS-1$
     /** Matches against the power source name. */
-    public static final String TAG_POWER_SOURCE_NAME  = "power_source_name";	//$NON-NLS-1$
+    public static final String TAG_POWER_SOURCE_NAME  = "power_source_name"; //$NON-NLS-1$
     /** Matches against the spell name. */
-    public static final String TAG_SPELL_NAME         = "spell_name";       			//$NON-NLS-1$
+    public static final String TAG_SPELL_NAME         = "spell_name"; //$NON-NLS-1$
     /** The XML attribute name for the "all colleges" flag. */
-    public static final String ATTRIBUTE_ALL_COLLEGES = "all_colleges";     		//$NON-NLS-1$
+    public static final String ATTRIBUTE_ALL_COLLEGES = "all_colleges"; //$NON-NLS-1$
     private boolean            mAllColleges;
     private String             mMatchType;
     private StringCriteria     mNameCriteria;

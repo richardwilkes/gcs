@@ -34,7 +34,7 @@ public abstract class HasPrereq extends Prereq {
     }
 
     /** The "has" attribute name. */
-    protected static final String ATTRIBUTE_HAS = "has";	//$NON-NLS-1$
+    protected static final String ATTRIBUTE_HAS = "has"; //$NON-NLS-1$
     private boolean               mHas;
 
     /**

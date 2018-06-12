@@ -42,9 +42,9 @@ public class NewEquipmentCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String              CMD_NEW_EQUIPMENT           = "NewEquipment";                                                                                                          																											//$NON-NLS-1$
+    public static final String              CMD_NEW_EQUIPMENT           = "NewEquipment"; //$NON-NLS-1$
     /** The action command this command will issue. */
-    public static final String              CMD_NEW_EQUIPMENT_CONTAINER = "NewEquipmentContainer";                                                                                                 																									//$NON-NLS-1$
+    public static final String              CMD_NEW_EQUIPMENT_CONTAINER = "NewEquipmentContainer"; //$NON-NLS-1$
     /** The "New Carried Equipment" command. */
     public static final NewEquipmentCommand CARRIED_INSTANCE            = new NewEquipmentCommand(false, EQUIPMENT, CMD_NEW_EQUIPMENT, KeyEvent.VK_E, COMMAND_MODIFIER);
     /** The "New Carried Equipment Container" command. */

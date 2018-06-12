@@ -36,9 +36,9 @@ public class NewNoteCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String         CMD_NEW_NOTE           = "NewNote";                                                                                                																								//$NON-NLS-1$
+    public static final String         CMD_NEW_NOTE           = "NewNote"; //$NON-NLS-1$
     /** The action command this command will issue. */
-    public static final String         CMD_NEW_NOTE_CONTAINER = "NewNoteContainer";                                                                                       																						//$NON-NLS-1$
+    public static final String         CMD_NEW_NOTE_CONTAINER = "NewNoteContainer"; //$NON-NLS-1$
     /** The "New Note" command. */
     public static final NewNoteCommand INSTANCE               = new NewNoteCommand(false, NOTE, CMD_NEW_NOTE, KeyEvent.VK_M, COMMAND_MODIFIER);
     /** The "New Note Container" command. */

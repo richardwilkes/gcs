@@ -40,16 +40,16 @@ public class SkillDefault {
     }
 
     /** The XML tag. */
-    public static final String  TAG_ROOT           = "default";       		//$NON-NLS-1$
+    public static final String  TAG_ROOT           = "default"; //$NON-NLS-1$
     /** The tag used for the type. */
-    public static final String  TAG_TYPE           = "type";          			//$NON-NLS-1$
+    public static final String  TAG_TYPE           = "type"; //$NON-NLS-1$
     /** The tag used for the skill name. */
-    public static final String  TAG_NAME           = "name";          			//$NON-NLS-1$
+    public static final String  TAG_NAME           = "name"; //$NON-NLS-1$
     /** The tag used for the skill specialization. */
-    public static final String  TAG_SPECIALIZATION = "specialization";	//$NON-NLS-1$
+    public static final String  TAG_SPECIALIZATION = "specialization"; //$NON-NLS-1$
     /** The tag used for the modifier. */
-    public static final String  TAG_MODIFIER       = "modifier";      		//$NON-NLS-1$
-    private static final String EMPTY              = "";              				//$NON-NLS-1$
+    public static final String  TAG_MODIFIER       = "modifier"; //$NON-NLS-1$
+    private static final String EMPTY              = ""; //$NON-NLS-1$
     private SkillDefaultType    mType;
     private String              mName;
     private String              mSpecialization;

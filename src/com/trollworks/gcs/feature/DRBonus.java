@@ -21,8 +21,8 @@ import java.io.IOException;
 /** A DR bonus. */
 public class DRBonus extends Bonus {
     /** The XML tag. */
-    public static final String  TAG_ROOT     = "dr_bonus";	//$NON-NLS-1$
-    private static final String TAG_LOCATION = "location";	//$NON-NLS-1$
+    public static final String  TAG_ROOT     = "dr_bonus"; //$NON-NLS-1$
+    private static final String TAG_LOCATION = "location"; //$NON-NLS-1$
     private HitLocation         mLocation;
 
     /** Creates a new DR bonus. */

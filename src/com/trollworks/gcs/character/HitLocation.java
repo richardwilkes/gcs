@@ -111,7 +111,7 @@ public class HitLocation {
     public static final HitLocation              FACE   = new HitLocation(Armor.ID_FACE_DR, FACE_TITLE, FACE_DESCRIPTION, -5, 0);
     public static final HitLocation              LEG    = new HitLocation(Armor.ID_LEG_DR, LEG_TITLE, LEG_DESCRIPTION, -2, 0);
     public static final HitLocation              ARM    = new HitLocation(Armor.ID_ARM_DR, ARM_TITLE, ARM_DESCRIPTION, -2, 0);
-    public static final HitLocation              TORSO  = new HitLocation(Armor.ID_TORSO_DR, TORSO_TITLE, "", 0, 0);                   					//$NON-NLS-1$
+    public static final HitLocation              TORSO  = new HitLocation(Armor.ID_TORSO_DR, TORSO_TITLE, "", 0, 0); //$NON-NLS-1$
     public static final HitLocation              GROIN  = new HitLocation(Armor.ID_GROIN_DR, GROIN_TITLE, GROIN_DESCRIPTION, -3, 0);
     public static final HitLocation              HAND   = new HitLocation(Armor.ID_HAND_DR, HAND_TITLE, HAND_DESCRIPTION, -4, 0);
     public static final HitLocation              FOOT   = new HitLocation(Armor.ID_FOOT_DR, FOOT_TITLE, FOOT_DESCRIPTION, -4, 0);

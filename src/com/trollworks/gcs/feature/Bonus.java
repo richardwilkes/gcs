@@ -22,7 +22,7 @@ import java.util.HashSet;
 /** Describes a bonus. */
 public abstract class Bonus implements Feature {
     /** The "amount" tag. */
-    public static final String TAG_AMOUNT = "amount";	//$NON-NLS-1$
+    public static final String TAG_AMOUNT = "amount"; //$NON-NLS-1$
     private LeveledAmount      mAmount;
 
     /**

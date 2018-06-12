@@ -11,20 +11,34 @@
 
 package com.trollworks.gcs.app;
 
+import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.utility.BundleInfo;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 
 /** Utility to generate the Info.plist file for GCS. */
 public class GCSInfoPlistCreator {
+    @SuppressWarnings("nls")
     public static void main(String[] args) {
-        if (args.length != 1) {
-            System.err.println("You must provide the path to the Info.plist you'd like created as the sole argument."); //$NON-NLS-1$
-            System.exit(1);
+        File plist = new File("Info.plist");
+        File pkg = new File("PkgInfo");
+        if (args.length > 0) {
+            plist = new File(args[0], "Info.plist");
+            pkg = new File(args[0], "PkgInfo");
         }
         App.setup(GCS.class);
         GCS.registerFileTypes(null);
-        BundleInfo.getDefault().write(new File(args[0]));
+        BundleInfo info = BundleInfo.getDefault();
+        info.write(plist);
+        try (PrintWriter out = new PrintWriter(new BufferedOutputStream(new FileOutputStream(pkg)))) {
+            out.print("APPL");
+            out.print(info.getSignature());
+        } catch (Exception exception) {
+            Log.error(exception);
+        }
     }
 }

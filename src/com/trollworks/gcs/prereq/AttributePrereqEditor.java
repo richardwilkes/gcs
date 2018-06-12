@@ -41,9 +41,9 @@ public class AttributePrereqEditor extends PrereqEditor {
         Localization.initialize();
     }
 
-    private static final String CHANGE_TYPE        = "ChangeType";      			//$NON-NLS-1$
-    private static final String CHANGE_SECOND_TYPE = "ChangeSecondType";	//$NON-NLS-1$
-    private static final String BLANK              = " ";               					//$NON-NLS-1$
+    private static final String CHANGE_TYPE        = "ChangeType"; //$NON-NLS-1$
+    private static final String CHANGE_SECOND_TYPE = "ChangeSecondType"; //$NON-NLS-1$
+    private static final String BLANK              = " "; //$NON-NLS-1$
 
     /**
      * Creates a new attribute prerequisite editor panel.

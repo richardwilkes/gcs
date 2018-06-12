@@ -27,7 +27,7 @@ import java.util.Scanner;
 
 /** A class used for interacting with web services */
 public class WebServiceClient {
-    private static final String SLASH            = "/";               					//$NON-NLS-1$
+    private static final String SLASH            = "/"; //$NON-NLS-1$
     private String              mBaseUrl;
     private Map<String, String> mQueryParameters = new HashMap<>();
     private String              mBody;

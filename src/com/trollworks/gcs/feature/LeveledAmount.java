@@ -20,7 +20,7 @@ import java.io.IOException;
 /** Manages a leveled amount. */
 public class LeveledAmount {
     /** The "per level" attribute. */
-    public static final String ATTRIBUTE_PER_LEVEL = "per_level";	//$NON-NLS-1$
+    public static final String ATTRIBUTE_PER_LEVEL = "per_level"; //$NON-NLS-1$
     private boolean            mPerLevel;
     private int                mLevel;
     private double             mAmount;

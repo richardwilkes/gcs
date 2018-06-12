@@ -44,9 +44,9 @@ public class LibraryFile extends DataFile {
     /** The current version. */
     public static final int    CURRENT_VERSION = 1;
     /** The XML tag for library files. */
-    public static final String TAG_ROOT        = "gcs_library";	//$NON-NLS-1$
+    public static final String TAG_ROOT        = "gcs_library"; //$NON-NLS-1$
     /** The extension for library files. */
-    public static final String EXTENSION       = "glb";                                        			//$NON-NLS-1$
+    public static final String EXTENSION       = "glb"; //$NON-NLS-1$
     private AdvantageList      mAdvantages;
     private SkillList          mSkills;
     private SpellList          mSpells;

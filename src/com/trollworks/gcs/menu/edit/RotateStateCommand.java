@@ -41,7 +41,7 @@ public class RotateStateCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String             CMD_ROTATE_STATE = "RotateState";           			//$NON-NLS-1$
+    public static final String             CMD_ROTATE_STATE = "RotateState"; //$NON-NLS-1$
 
     /** The singleton {@link RotateStateCommand}. */
     public static final RotateStateCommand INSTANCE         = new RotateStateCommand();

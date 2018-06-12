@@ -48,9 +48,9 @@ public class PrereqList extends Prereq {
     }
 
     /** The XML tag used for the prereq list. */
-    public static final String  TAG_ROOT      = "prereq_list";	//$NON-NLS-1$
-    private static final String TAG_WHEN_TL   = "when_tl";    		//$NON-NLS-1$
-    private static final String ATTRIBUTE_ALL = "all";        			//$NON-NLS-1$
+    public static final String  TAG_ROOT      = "prereq_list"; //$NON-NLS-1$
+    private static final String TAG_WHEN_TL   = "when_tl"; //$NON-NLS-1$
+    private static final String ATTRIBUTE_ALL = "all"; //$NON-NLS-1$
     private boolean             mAll;
     private IntegerCriteria     mWhenTLCriteria;
     private ArrayList<Prereq>   mPrereqs;

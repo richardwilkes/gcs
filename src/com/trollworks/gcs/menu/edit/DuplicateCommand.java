@@ -45,7 +45,7 @@ public class DuplicateCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String           CMD_DUPLICATE = "Duplicate";           				//$NON-NLS-1$
+    public static final String           CMD_DUPLICATE = "Duplicate"; //$NON-NLS-1$
 
     /** The singleton {@link DuplicateCommand}. */
     public static final DuplicateCommand INSTANCE      = new DuplicateCommand();

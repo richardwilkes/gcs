@@ -43,10 +43,10 @@ public class AttributePrereq extends HasPrereq {
     /** The possible {@link BonusAttributeType}s that can be affected. */
     public static final BonusAttributeType[] TYPES                   = { BonusAttributeType.ST, BonusAttributeType.DX, BonusAttributeType.IQ, BonusAttributeType.HT, BonusAttributeType.WILL, BonusAttributeType.PERCEPTION };
     /** The XML tag for this class. */
-    public static final String               TAG_ROOT                = "attribute_prereq";                                                                                                                                    																																		//$NON-NLS-1$
-    private static final String              ATTRIBUTE_WHICH         = "which";                                                                                                                                               																																					//$NON-NLS-1$
-    private static final String              ATTRIBUTE_COMBINED_WITH = "combined_with";                                                                                                                                       																																			//$NON-NLS-1$
-    private static final String              ATTRIBUTE_COMPARE       = "compare";                                                                                                                                             																																				//$NON-NLS-1$
+    public static final String               TAG_ROOT                = "attribute_prereq"; //$NON-NLS-1$
+    private static final String              ATTRIBUTE_WHICH         = "which"; //$NON-NLS-1$
+    private static final String              ATTRIBUTE_COMBINED_WITH = "combined_with"; //$NON-NLS-1$
+    private static final String              ATTRIBUTE_COMPARE       = "compare"; //$NON-NLS-1$
     private BonusAttributeType               mWhich;
     private BonusAttributeType               mCombinedWith;
     private IntegerCriteria                  mValueCompare;

@@ -30,7 +30,7 @@ public class NewNoteLibraryCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String                CMD_NEW_LIBRARY = "NewNoteLibrary";           		//$NON-NLS-1$
+    public static final String                CMD_NEW_LIBRARY = "NewNoteLibrary"; //$NON-NLS-1$
 
     /** The singleton {@link NewNoteLibraryCommand}. */
     public static final NewNoteLibraryCommand INSTANCE        = new NewNoteLibraryCommand();

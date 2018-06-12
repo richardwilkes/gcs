@@ -67,17 +67,17 @@ public class SpellPrereq extends HasPrereq {
     }
 
     /** The XML tag for this class. */
-    public static final String  TAG_ROOT          = "spell_prereq"; 	//$NON-NLS-1$
+    public static final String  TAG_ROOT          = "spell_prereq"; //$NON-NLS-1$
     /** The tag/type for name comparison. */
-    public static final String  TAG_NAME          = "name";         			//$NON-NLS-1$
+    public static final String  TAG_NAME          = "name"; //$NON-NLS-1$
     /** The tag/type for any. */
-    public static final String  TAG_ANY           = "any";          			//$NON-NLS-1$
+    public static final String  TAG_ANY           = "any"; //$NON-NLS-1$
     /** The tag/type for college name comparison. */
-    public static final String  TAG_COLLEGE       = "college";      		//$NON-NLS-1$
+    public static final String  TAG_COLLEGE       = "college"; //$NON-NLS-1$
     /** The tag/type for college count comparison. */
-    public static final String  TAG_COLLEGE_COUNT = "college_count";	//$NON-NLS-1$
-    private static final String TAG_QUANTITY      = "quantity";     		//$NON-NLS-1$
-    private static final String EMPTY             = "";             				//$NON-NLS-1$
+    public static final String  TAG_COLLEGE_COUNT = "college_count"; //$NON-NLS-1$
+    private static final String TAG_QUANTITY      = "quantity"; //$NON-NLS-1$
+    private static final String EMPTY             = ""; //$NON-NLS-1$
     private String              mType;
     private StringCriteria      mStringCriteria;
     private IntegerCriteria     mQuantityCriteria;

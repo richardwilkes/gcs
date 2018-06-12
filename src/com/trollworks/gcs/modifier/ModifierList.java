@@ -26,7 +26,7 @@ import java.io.IOException;
 public class ModifierList extends ListFile {
     private static final int   CURRENT_VERSION = 1;
     /** The XML tag for advantage lists. */
-    public static final String TAG_ROOT        = "modifier_list";	//$NON-NLS-1$
+    public static final String TAG_ROOT        = "modifier_list"; //$NON-NLS-1$
 
     /** Creates new {@link ModifierList}. */
     public ModifierList() {

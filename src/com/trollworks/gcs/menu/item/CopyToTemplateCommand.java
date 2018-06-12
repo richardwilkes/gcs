@@ -34,7 +34,7 @@ public class CopyToTemplateCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String                CMD_COPY_TO_TEMPLATE = "CopyToTemplate";           				//$NON-NLS-1$
+    public static final String                CMD_COPY_TO_TEMPLATE = "CopyToTemplate"; //$NON-NLS-1$
     /** The singleton {@link CopyToTemplateCommand}. */
     public static final CopyToTemplateCommand INSTANCE             = new CopyToTemplateCommand();
 

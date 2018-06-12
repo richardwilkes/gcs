@@ -35,8 +35,8 @@ public class CostReductionEditor extends FeatureEditor {
         Localization.initialize();
     }
 
-    private static final String CHANGE_ATTRIBUTE  = "ChangeAttribute"; 	//$NON-NLS-1$
-    private static final String CHANGE_PERCENTAGE = "ChangePercentage";	//$NON-NLS-1$
+    private static final String CHANGE_ATTRIBUTE  = "ChangeAttribute"; //$NON-NLS-1$
+    private static final String CHANGE_PERCENTAGE = "ChangePercentage"; //$NON-NLS-1$
 
     /**
      * Create a new cost reduction editor.

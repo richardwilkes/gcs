@@ -42,7 +42,7 @@ public class ApplyTemplateCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String               CMD_APPLY_TEMPLATE = "ApplyTemplate";           				//$NON-NLS-1$
+    public static final String               CMD_APPLY_TEMPLATE = "ApplyTemplate"; //$NON-NLS-1$
     /** The singleton {@link ApplyTemplateCommand}. */
     public static final ApplyTemplateCommand INSTANCE           = new ApplyTemplateCommand();
 

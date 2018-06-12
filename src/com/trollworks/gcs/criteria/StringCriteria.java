@@ -19,7 +19,7 @@ import java.io.IOException;
 
 /** Manages string comparison criteria. */
 public class StringCriteria {
-    private static final String ATTRIBUTE_COMPARE = "compare";	//$NON-NLS-1$
+    private static final String ATTRIBUTE_COMPARE = "compare"; //$NON-NLS-1$
     private StringCompareType   mType;
     private String              mQualifier;
 

@@ -55,8 +55,8 @@ public class SkillPrereq extends NameLevelPrereq {
     }
 
     /** The XML tag for this class. */
-    public static final String  TAG_ROOT           = "skill_prereq";  	//$NON-NLS-1$
-    private static final String TAG_SPECIALIZATION = "specialization";	//$NON-NLS-1$
+    public static final String  TAG_ROOT           = "skill_prereq"; //$NON-NLS-1$
+    private static final String TAG_SPECIALIZATION = "specialization"; //$NON-NLS-1$
     private StringCriteria      mSpecializationCriteria;
 
     /**

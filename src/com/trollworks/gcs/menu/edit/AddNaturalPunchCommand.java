@@ -32,7 +32,7 @@ public class AddNaturalPunchCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String                 CMD_ADD_NATURAL_PUNCH = "AddNaturalPunch";           			//$NON-NLS-1$
+    public static final String                 CMD_ADD_NATURAL_PUNCH = "AddNaturalPunch"; //$NON-NLS-1$
 
     /** The singleton {@link AddNaturalPunchCommand}. */
     public static final AddNaturalPunchCommand INSTANCE              = new AddNaturalPunchCommand();

@@ -42,9 +42,9 @@ public class NewAdvantageCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String              CMD_NEW_ADVANTAGE           = "NewAdvantage";                                                                                                          																											//$NON-NLS-1$
+    public static final String              CMD_NEW_ADVANTAGE           = "NewAdvantage"; //$NON-NLS-1$
     /** The action command this command will issue. */
-    public static final String              CMD_NEW_ADVANTAGE_CONTAINER = "NewAdvantageContainer";                                                                                                 																									//$NON-NLS-1$
+    public static final String              CMD_NEW_ADVANTAGE_CONTAINER = "NewAdvantageContainer"; //$NON-NLS-1$
     /** The "New Advantage" command. */
     public static final NewAdvantageCommand INSTANCE                    = new NewAdvantageCommand(false, ADVANTAGE, CMD_NEW_ADVANTAGE, KeyEvent.VK_D, COMMAND_MODIFIER);
     /** The "New Advantage Container" command. */

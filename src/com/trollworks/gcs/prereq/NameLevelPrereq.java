@@ -30,8 +30,8 @@ import java.util.HashSet;
  */
 public abstract class NameLevelPrereq extends HasPrereq {
     /** Provided for sub-classes. */
-    private static final String TAG_NAME  = "name"; 	//$NON-NLS-1$
-    private static final String TAG_LEVEL = "level";	//$NON-NLS-1$
+    private static final String TAG_NAME  = "name"; //$NON-NLS-1$
+    private static final String TAG_LEVEL = "level"; //$NON-NLS-1$
     private String              mTag;
     private StringCriteria      mNameCriteria;
     private IntegerCriteria     mLevelCriteria;

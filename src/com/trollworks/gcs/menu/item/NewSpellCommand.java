@@ -42,9 +42,9 @@ public class NewSpellCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String          CMD_SPELL           = "NewSpell";                                                                                              																								//$NON-NLS-1$
+    public static final String          CMD_SPELL           = "NewSpell"; //$NON-NLS-1$
     /** The action command this command will issue. */
-    public static final String          CMD_SPELL_CONTAINER = "NewSpellContainer";                                                                                     																						//$NON-NLS-1$
+    public static final String          CMD_SPELL_CONTAINER = "NewSpellContainer"; //$NON-NLS-1$
 
     /** The "New Spell" command. */
     public static final NewSpellCommand INSTANCE            = new NewSpellCommand(false, SPELL, CMD_SPELL, KeyEvent.VK_B, COMMAND_MODIFIER);

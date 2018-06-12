@@ -32,7 +32,7 @@ public class AddNaturalKickWithBootsCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String                         CMD_ADD_NATURAL_KICK_WITH_BOOTS = "AddNaturalKickWithBoots";           			//$NON-NLS-1$
+    public static final String                         CMD_ADD_NATURAL_KICK_WITH_BOOTS = "AddNaturalKickWithBoots"; //$NON-NLS-1$
 
     /** The singleton {@link AddNaturalKickWithBootsCommand}. */
     public static final AddNaturalKickWithBootsCommand INSTANCE                        = new AddNaturalKickWithBootsCommand();

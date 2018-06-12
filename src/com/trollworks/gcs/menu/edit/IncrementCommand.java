@@ -33,7 +33,7 @@ public class IncrementCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String           CMD_INCREMENT = "Increment";           				//$NON-NLS-1$
+    public static final String           CMD_INCREMENT = "Increment"; //$NON-NLS-1$
 
     /** The singleton {@link IncrementCommand}. */
     public static final IncrementCommand INSTANCE      = new IncrementCommand();

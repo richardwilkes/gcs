@@ -52,9 +52,9 @@ public class OpenPageReferenceCommand extends Command {
     }
 
     /** The singleton {@link OpenPageReferenceCommand} for opening a single page reference. */
-    public static final OpenPageReferenceCommand OPEN_ONE_INSTANCE  = new OpenPageReferenceCommand(OPEN_PAGE_REFERENCE, "OpenPageReference", KeyEvent.VK_G, COMMAND_MODIFIER);                  						//$NON-NLS-1$
+    public static final OpenPageReferenceCommand OPEN_ONE_INSTANCE  = new OpenPageReferenceCommand(OPEN_PAGE_REFERENCE, "OpenPageReference", KeyEvent.VK_G, COMMAND_MODIFIER); //$NON-NLS-1$
     /** The singleton {@link OpenPageReferenceCommand} for opening all page references. */
-    public static final OpenPageReferenceCommand OPEN_EACH_INSTANCE = new OpenPageReferenceCommand(OPEN_EACH_PAGE_REFERENCE, "OpenEachPageReferences", KeyEvent.VK_G, SHIFTED_COMMAND_MODIFIER);	//$NON-NLS-1$
+    public static final OpenPageReferenceCommand OPEN_EACH_INSTANCE = new OpenPageReferenceCommand(OPEN_EACH_PAGE_REFERENCE, "OpenEachPageReferences", KeyEvent.VK_G, SHIFTED_COMMAND_MODIFIER); //$NON-NLS-1$
 
     private OpenPageReferenceCommand(String title, String cmd, int key, int modifiers) {
         super(title, cmd, key, modifiers);

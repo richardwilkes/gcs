@@ -57,53 +57,53 @@ public class Equipment extends ListRow implements HasSourceReference {
     }
 
     private static final int       CURRENT_VERSION          = 4;
-    private static final String    NEWLINE                  = "\n";                                          												//$NON-NLS-1$
-    private static final String    SPACE                    = " ";                                           												//$NON-NLS-1$
-    private static final String    DEFAULT_LEGALITY_CLASS   = "4";                                           												//$NON-NLS-1$
-    private static final String    EMPTY                    = "";                                            												//$NON-NLS-1$
+    private static final String    NEWLINE                  = "\n"; //$NON-NLS-1$
+    private static final String    SPACE                    = " "; //$NON-NLS-1$
+    private static final String    DEFAULT_LEGALITY_CLASS   = "4"; //$NON-NLS-1$
+    private static final String    EMPTY                    = ""; //$NON-NLS-1$
     /** The extension for Equipment lists. */
-    public static final String     OLD_EQUIPMENT_EXTENSION  = "eqp";                                         											//$NON-NLS-1$
+    public static final String     OLD_EQUIPMENT_EXTENSION  = "eqp"; //$NON-NLS-1$
     /** The XML tag used for items. */
-    public static final String     TAG_EQUIPMENT            = "equipment";                                   										//$NON-NLS-1$
+    public static final String     TAG_EQUIPMENT            = "equipment"; //$NON-NLS-1$
     /** The XML tag used for containers. */
-    public static final String     TAG_EQUIPMENT_CONTAINER  = "equipment_container";                         							//$NON-NLS-1$
-    private static final String    ATTRIBUTE_STATE          = "state";                                       											//$NON-NLS-1$
-    private static final String    ATTRIBUTE_EQUIPPED       = "equipped";                                    										//$NON-NLS-1$
-    private static final String    TAG_QUANTITY             = "quantity";                                    										//$NON-NLS-1$
-    private static final String    TAG_DESCRIPTION          = "description";                                 									//$NON-NLS-1$
-    private static final String    TAG_TECH_LEVEL           = "tech_level";                                  										//$NON-NLS-1$
-    private static final String    TAG_LEGALITY_CLASS       = "legality_class";                              									//$NON-NLS-1$
-    private static final String    TAG_VALUE                = "value";                                       											//$NON-NLS-1$
-    private static final String    TAG_WEIGHT               = "weight";                                      											//$NON-NLS-1$
-    private static final String    TAG_REFERENCE            = "reference";                                   										//$NON-NLS-1$
+    public static final String     TAG_EQUIPMENT_CONTAINER  = "equipment_container"; //$NON-NLS-1$
+    private static final String    ATTRIBUTE_STATE          = "state"; //$NON-NLS-1$
+    private static final String    ATTRIBUTE_EQUIPPED       = "equipped"; //$NON-NLS-1$
+    private static final String    TAG_QUANTITY             = "quantity"; //$NON-NLS-1$
+    private static final String    TAG_DESCRIPTION          = "description"; //$NON-NLS-1$
+    private static final String    TAG_TECH_LEVEL           = "tech_level"; //$NON-NLS-1$
+    private static final String    TAG_LEGALITY_CLASS       = "legality_class"; //$NON-NLS-1$
+    private static final String    TAG_VALUE                = "value"; //$NON-NLS-1$
+    private static final String    TAG_WEIGHT               = "weight"; //$NON-NLS-1$
+    private static final String    TAG_REFERENCE            = "reference"; //$NON-NLS-1$
     /** The prefix used in front of all IDs for the equipment. */
-    public static final String     PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "equipment.";	//$NON-NLS-1$
+    public static final String     PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "equipment."; //$NON-NLS-1$
     /** The field ID for equipped/carried/not carried changes. */
-    public static final String     ID_STATE                 = PREFIX + "State";                              									//$NON-NLS-1$
+    public static final String     ID_STATE                 = PREFIX + "State"; //$NON-NLS-1$
     /** The field ID for quantity changes. */
-    public static final String     ID_QUANTITY              = PREFIX + "Quantity";                           								//$NON-NLS-1$
+    public static final String     ID_QUANTITY              = PREFIX + "Quantity"; //$NON-NLS-1$
     /** The field ID for description changes. */
-    public static final String     ID_DESCRIPTION           = PREFIX + "Description";                        							//$NON-NLS-1$
+    public static final String     ID_DESCRIPTION           = PREFIX + "Description"; //$NON-NLS-1$
     /** The field ID for tech level changes. */
-    public static final String     ID_TECH_LEVEL            = PREFIX + "TechLevel";                          								//$NON-NLS-1$
+    public static final String     ID_TECH_LEVEL            = PREFIX + "TechLevel"; //$NON-NLS-1$
     /** The field ID for legality changes. */
-    public static final String     ID_LEGALITY_CLASS        = PREFIX + "LegalityClass";                      							//$NON-NLS-1$
+    public static final String     ID_LEGALITY_CLASS        = PREFIX + "LegalityClass"; //$NON-NLS-1$
     /** The field ID for value changes. */
-    public static final String     ID_VALUE                 = PREFIX + "Value";                              									//$NON-NLS-1$
+    public static final String     ID_VALUE                 = PREFIX + "Value"; //$NON-NLS-1$
     /** The field ID for weight changes. */
-    public static final String     ID_WEIGHT                = PREFIX + "Weight";                             								//$NON-NLS-1$
+    public static final String     ID_WEIGHT                = PREFIX + "Weight"; //$NON-NLS-1$
     /** The field ID for extended value changes */
-    public static final String     ID_EXTENDED_VALUE        = PREFIX + "ExtendedValue";                      							//$NON-NLS-1$
+    public static final String     ID_EXTENDED_VALUE        = PREFIX + "ExtendedValue"; //$NON-NLS-1$
     /** The field ID for extended weight changes */
-    public static final String     ID_EXTENDED_WEIGHT       = PREFIX + "ExtendedWeight";                     						//$NON-NLS-1$
+    public static final String     ID_EXTENDED_WEIGHT       = PREFIX + "ExtendedWeight"; //$NON-NLS-1$
     /** The field ID for page reference changes. */
-    public static final String     ID_REFERENCE             = PREFIX + "Reference";                          								//$NON-NLS-1$
+    public static final String     ID_REFERENCE             = PREFIX + "Reference"; //$NON-NLS-1$
     /** The field ID for when the categories change. */
-    public static final String     ID_CATEGORY              = PREFIX + "Category";                           								//$NON-NLS-1$
+    public static final String     ID_CATEGORY              = PREFIX + "Category"; //$NON-NLS-1$
     /** The field ID for when the row hierarchy changes. */
-    public static final String     ID_LIST_CHANGED          = PREFIX + "ListChanged";                        							//$NON-NLS-1$
+    public static final String     ID_LIST_CHANGED          = PREFIX + "ListChanged"; //$NON-NLS-1$
     /** The field ID for when the equipment becomes or stops being a weapon. */
-    public static final String     ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus";                       							//$NON-NLS-1$
+    public static final String     ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus"; //$NON-NLS-1$
     private EquipmentState         mState;
     private int                    mQuantity;
     private String                 mDescription;

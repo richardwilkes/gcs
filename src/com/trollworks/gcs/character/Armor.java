@@ -16,7 +16,7 @@ import com.trollworks.gcs.feature.HitLocation;
 /** Tracks the current armor levels. */
 public class Armor {
     /** The prefix used in front of all IDs for damage resistance. */
-    public static final String  DR_PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "dr.";                          				//$NON-NLS-1$
+    public static final String  DR_PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "dr."; //$NON-NLS-1$
     /** The skull hit location's DR. */
     public static final String  ID_SKULL_DR                 = DR_PREFIX + HitLocation.SKULL.name();
     /** The eyes hit location's DR. */

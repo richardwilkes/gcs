@@ -27,10 +27,10 @@ import java.util.StringTokenizer;
 /** The stats for a melee weapon. */
 public class MeleeWeaponStats extends WeaponStats {
     /** The root XML tag. */
-    public static final String  TAG_ROOT  = "melee_weapon";    		//$NON-NLS-1$
-    private static final String TAG_REACH = "reach";           				//$NON-NLS-1$
-    private static final String TAG_PARRY = "parry";           				//$NON-NLS-1$
-    private static final String TAG_BLOCK = "block";           				//$NON-NLS-1$
+    public static final String  TAG_ROOT  = "melee_weapon"; //$NON-NLS-1$
+    private static final String TAG_REACH = "reach"; //$NON-NLS-1$
+    private static final String TAG_PARRY = "parry"; //$NON-NLS-1$
+    private static final String TAG_BLOCK = "block"; //$NON-NLS-1$
     /** The field ID for reach changes. */
     public static final String  ID_REACH  = PREFIX + TAG_REACH;
     /** The field ID for parry changes. */

@@ -25,7 +25,7 @@ import java.util.HashSet;
 /** Describes a contained weight reduction. */
 public class ContainedWeightReduction implements Feature {
     /** The XML tag. */
-    public static final String TAG_ROOT = "contained_weight_reduction";	//$NON-NLS-1$
+    public static final String TAG_ROOT = "contained_weight_reduction"; //$NON-NLS-1$
     private Object             mValue;
 
     /** Creates a new contained weight reduction. */

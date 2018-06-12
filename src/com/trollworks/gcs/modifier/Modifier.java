@@ -53,21 +53,21 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 
     private static final int      CURRENT_VERSION     = 1;
     /** The root tag. */
-    public static final String    TAG_MODIFIER        = "modifier";                         							//$NON-NLS-1$
+    public static final String    TAG_MODIFIER        = "modifier"; //$NON-NLS-1$
     /** The tag for the name. */
-    protected static final String TAG_NAME            = "name";                             								//$NON-NLS-1$
+    protected static final String TAG_NAME            = "name"; //$NON-NLS-1$
     /** The tag for the base cost. */
-    public static final String    TAG_COST            = "cost";                             								//$NON-NLS-1$
+    public static final String    TAG_COST            = "cost"; //$NON-NLS-1$
     /** The attribute for the cost type. */
-    public static final String    ATTRIBUTE_COST_TYPE = "type";                             								//$NON-NLS-1$
+    public static final String    ATTRIBUTE_COST_TYPE = "type"; //$NON-NLS-1$
     /** The tag for the cost per level. */
-    public static final String    TAG_LEVELS          = "levels";                           								//$NON-NLS-1$
+    public static final String    TAG_LEVELS          = "levels"; //$NON-NLS-1$
     /** The tag for how the cost is affected. */
-    public static final String    TAG_AFFECTS         = "affects";                          							//$NON-NLS-1$
+    public static final String    TAG_AFFECTS         = "affects"; //$NON-NLS-1$
     /** The tag for the page reference. */
-    protected static final String TAG_REFERENCE       = "reference";                        							//$NON-NLS-1$
+    protected static final String TAG_REFERENCE       = "reference"; //$NON-NLS-1$
     /** The attribute for whether it is enabled. */
-    protected static final String ATTRIBUTE_ENABLED   = "enabled";                          							//$NON-NLS-1$
+    protected static final String ATTRIBUTE_ENABLED   = "enabled"; //$NON-NLS-1$
     /** The prefix for notifications. */
     public static final String    MODIFIER_PREFIX     = TAG_MODIFIER + Notifier.SEPARATOR;
     /** The ID for name change notification. */
@@ -81,7 +81,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
     /** The ID for page reference change notification. */
     public static final String    ID_REFERENCE        = MODIFIER_PREFIX + TAG_REFERENCE;
     /** The ID for list changed change notification. */
-    public static final String    ID_LIST_CHANGED     = MODIFIER_PREFIX + "ListChanged";    		//$NON-NLS-1$
+    public static final String    ID_LIST_CHANGED     = MODIFIER_PREFIX + "ListChanged"; //$NON-NLS-1$
     /** The name of the {@link Modifier}. */
     protected String              mName;
     /** The page reference for the {@link Modifier}. */

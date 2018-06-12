@@ -30,7 +30,7 @@ public class TechLevelDecrementCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String                    CMD_DECREMENT_TL = "DecrementTL";                  					//$NON-NLS-1$
+    public static final String                    CMD_DECREMENT_TL = "DecrementTL"; //$NON-NLS-1$
 
     /** The singleton {@link TechLevelDecrementCommand}. */
     public static final TechLevelDecrementCommand INSTANCE         = new TechLevelDecrementCommand();

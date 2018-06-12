@@ -33,7 +33,7 @@ public class NewEquipmentLibraryCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String                     CMD_NEW_LIBRARY = "NewEquipmentLibrary";           			//$NON-NLS-1$
+    public static final String                     CMD_NEW_LIBRARY = "NewEquipmentLibrary"; //$NON-NLS-1$
 
     /** The singleton {@link NewEquipmentLibraryCommand}. */
     public static final NewEquipmentLibraryCommand INSTANCE        = new NewEquipmentLibraryCommand();

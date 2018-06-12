@@ -295,77 +295,77 @@ public class Profile {
     }
 
     /** The root XML tag. */
-    public static final String    TAG_ROOT           = "profile";                                                                                																				//$NON-NLS-1$
+    public static final String    TAG_ROOT           = "profile"; //$NON-NLS-1$
     /** The preferences module name. */
-    public static final String    MODULE             = "GURPSCharacter";                                                                         																			//$NON-NLS-1$
+    public static final String    MODULE             = "GURPSCharacter"; //$NON-NLS-1$
     /** The prefix used in front of all IDs for profile. */
-    public static final String    PROFILE_PREFIX     = GURPSCharacter.CHARACTER_PREFIX + "pi.";                                                  													//$NON-NLS-1$
+    public static final String    PROFILE_PREFIX     = GURPSCharacter.CHARACTER_PREFIX + "pi."; //$NON-NLS-1$
     /** The field ID for portrait changes. */
-    public static final String    ID_PORTRAIT        = PROFILE_PREFIX + "Portrait";                                                              																//$NON-NLS-1$
+    public static final String    ID_PORTRAIT        = PROFILE_PREFIX + "Portrait"; //$NON-NLS-1$
     /** The field ID for name changes. */
-    public static final String    ID_NAME            = PROFILE_PREFIX + "Name";                                                                  																	//$NON-NLS-1$
+    public static final String    ID_NAME            = PROFILE_PREFIX + "Name"; //$NON-NLS-1$
     /** The field ID for title changes. */
-    public static final String    ID_TITLE           = PROFILE_PREFIX + "Title";                                                                 																	//$NON-NLS-1$
+    public static final String    ID_TITLE           = PROFILE_PREFIX + "Title"; //$NON-NLS-1$
     /** The field ID for age changes. */
-    public static final String    ID_AGE             = PROFILE_PREFIX + "Age";                                                                   																	//$NON-NLS-1$
+    public static final String    ID_AGE             = PROFILE_PREFIX + "Age"; //$NON-NLS-1$
     /** The field ID for birthday changes. */
-    public static final String    ID_BIRTHDAY        = PROFILE_PREFIX + "Birthday";                                                              																//$NON-NLS-1$
+    public static final String    ID_BIRTHDAY        = PROFILE_PREFIX + "Birthday"; //$NON-NLS-1$
     /** The field ID for eye color changes. */
-    public static final String    ID_EYE_COLOR       = PROFILE_PREFIX + "EyeColor";                                                              																//$NON-NLS-1$
+    public static final String    ID_EYE_COLOR       = PROFILE_PREFIX + "EyeColor"; //$NON-NLS-1$
     /** The field ID for hair color changes. */
-    public static final String    ID_HAIR            = PROFILE_PREFIX + "Hair";                                                                  																	//$NON-NLS-1$
+    public static final String    ID_HAIR            = PROFILE_PREFIX + "Hair"; //$NON-NLS-1$
     /** The field ID for skin color changes. */
-    public static final String    ID_SKIN_COLOR      = PROFILE_PREFIX + "SkinColor";                                                             																//$NON-NLS-1$
+    public static final String    ID_SKIN_COLOR      = PROFILE_PREFIX + "SkinColor"; //$NON-NLS-1$
     /** The field ID for handedness changes. */
-    public static final String    ID_HANDEDNESS      = PROFILE_PREFIX + "Handedness";                                                            															//$NON-NLS-1$
+    public static final String    ID_HANDEDNESS      = PROFILE_PREFIX + "Handedness"; //$NON-NLS-1$
     /** The field ID for height changes. */
-    public static final String    ID_HEIGHT          = PROFILE_PREFIX + "Height";                                                                																//$NON-NLS-1$
+    public static final String    ID_HEIGHT          = PROFILE_PREFIX + "Height"; //$NON-NLS-1$
     /** The field ID for weight changes. */
-    public static final String    ID_WEIGHT          = PROFILE_PREFIX + "Weight";                                                                																//$NON-NLS-1$
+    public static final String    ID_WEIGHT          = PROFILE_PREFIX + "Weight"; //$NON-NLS-1$
     /** The field ID for gender changes. */
-    public static final String    ID_GENDER          = PROFILE_PREFIX + "Gender";                                                                																//$NON-NLS-1$
+    public static final String    ID_GENDER          = PROFILE_PREFIX + "Gender"; //$NON-NLS-1$
     /** The field ID for race changes. */
-    public static final String    ID_RACE            = PROFILE_PREFIX + "Race";                                                                  																	//$NON-NLS-1$
+    public static final String    ID_RACE            = PROFILE_PREFIX + "Race"; //$NON-NLS-1$
     /** The field ID for religion changes. */
-    public static final String    ID_RELIGION        = PROFILE_PREFIX + "Religion";                                                              																//$NON-NLS-1$
+    public static final String    ID_RELIGION        = PROFILE_PREFIX + "Religion"; //$NON-NLS-1$
     /** The field ID for player name changes. */
-    public static final String    ID_PLAYER_NAME     = PROFILE_PREFIX + "PlayerName";                                                            															//$NON-NLS-1$
+    public static final String    ID_PLAYER_NAME     = PROFILE_PREFIX + "PlayerName"; //$NON-NLS-1$
     /** The field ID for campaign changes. */
-    public static final String    ID_CAMPAIGN        = PROFILE_PREFIX + "Campaign";                                                              																//$NON-NLS-1$
+    public static final String    ID_CAMPAIGN        = PROFILE_PREFIX + "Campaign"; //$NON-NLS-1$
     /** The field ID for tech level changes. */
-    public static final String    ID_TECH_LEVEL      = PROFILE_PREFIX + "TechLevel";                                                             																//$NON-NLS-1$
+    public static final String    ID_TECH_LEVEL      = PROFILE_PREFIX + "TechLevel"; //$NON-NLS-1$
     /** The field ID for size modifier changes. */
     public static final String    ID_SIZE_MODIFIER   = PROFILE_PREFIX + BonusAttributeType.SM.name();
     /** The field ID for body type changes. */
-    public static final String    ID_BODY_TYPE       = PROFILE_PREFIX + "BodyType";                                                              																//$NON-NLS-1$
+    public static final String    ID_BODY_TYPE       = PROFILE_PREFIX + "BodyType"; //$NON-NLS-1$
     /** The default portrait marker. */
-    public static final String    DEFAULT_PORTRAIT   = "!\000";                                                                                  																					//$NON-NLS-1$
+    public static final String    DEFAULT_PORTRAIT   = "!\000"; //$NON-NLS-1$
     /** The default Tech Level. */
-    public static final String    DEFAULT_TECH_LEVEL = "3";                                                                                      																						//$NON-NLS-1$
+    public static final String    DEFAULT_TECH_LEVEL = "3"; //$NON-NLS-1$
     /** The height, in 1/72nds of an inch, of the portrait. */
     public static final int       PORTRAIT_HEIGHT    = 96;
     /** The width, in 1/72nds of an inch, of the portrait. */
     public static final int       PORTRAIT_WIDTH     = 3 * PORTRAIT_HEIGHT / 4;
-    private static final String   TAG_PLAYER_NAME    = "player_name";                                                                            																			//$NON-NLS-1$
-    private static final String   TAG_CAMPAIGN       = "campaign";                                                                               																				//$NON-NLS-1$
-    private static final String   TAG_NAME           = "name";                                                                                   																					//$NON-NLS-1$
-    private static final String   TAG_TITLE          = "title";                                                                                  																					//$NON-NLS-1$
-    private static final String   TAG_AGE            = "age";                                                                                    																					//$NON-NLS-1$
-    private static final String   TAG_BIRTHDAY       = "birthday";                                                                               																				//$NON-NLS-1$
-    private static final String   TAG_EYES           = "eyes";                                                                                   																					//$NON-NLS-1$
-    private static final String   TAG_HAIR           = "hair";                                                                                   																					//$NON-NLS-1$
-    private static final String   TAG_SKIN           = "skin";                                                                                   																					//$NON-NLS-1$
-    private static final String   TAG_HANDEDNESS     = "handedness";                                                                             																				//$NON-NLS-1$
-    private static final String   TAG_HEIGHT         = "height";                                                                                 																					//$NON-NLS-1$
-    private static final String   TAG_WEIGHT         = "weight";                                                                                 																					//$NON-NLS-1$
-    private static final String   TAG_GENDER         = "gender";                                                                                 																					//$NON-NLS-1$
-    private static final String   TAG_RACE           = "race";                                                                                   																					//$NON-NLS-1$
-    private static final String   TAG_TECH_LEVEL     = "tech_level";                                                                             																				//$NON-NLS-1$
-    private static final String   TAG_RELIGION       = "religion";                                                                               																				//$NON-NLS-1$
-    private static final String   TAG_PORTRAIT       = "portrait";                                                                               																				//$NON-NLS-1$
-    private static final String   TAG_OLD_NOTES      = "notes";                                                                                  																					//$NON-NLS-1$
-    private static final String   TAG_BODY_TYPE      = "body_type";                                                                              																				//$NON-NLS-1$
-    private static final String   EMPTY              = "";                                                                                       																						//$NON-NLS-1$
+    private static final String   TAG_PLAYER_NAME    = "player_name"; //$NON-NLS-1$
+    private static final String   TAG_CAMPAIGN       = "campaign"; //$NON-NLS-1$
+    private static final String   TAG_NAME           = "name"; //$NON-NLS-1$
+    private static final String   TAG_TITLE          = "title"; //$NON-NLS-1$
+    private static final String   TAG_AGE            = "age"; //$NON-NLS-1$
+    private static final String   TAG_BIRTHDAY       = "birthday"; //$NON-NLS-1$
+    private static final String   TAG_EYES           = "eyes"; //$NON-NLS-1$
+    private static final String   TAG_HAIR           = "hair"; //$NON-NLS-1$
+    private static final String   TAG_SKIN           = "skin"; //$NON-NLS-1$
+    private static final String   TAG_HANDEDNESS     = "handedness"; //$NON-NLS-1$
+    private static final String   TAG_HEIGHT         = "height"; //$NON-NLS-1$
+    private static final String   TAG_WEIGHT         = "weight"; //$NON-NLS-1$
+    private static final String   TAG_GENDER         = "gender"; //$NON-NLS-1$
+    private static final String   TAG_RACE           = "race"; //$NON-NLS-1$
+    private static final String   TAG_TECH_LEVEL     = "tech_level"; //$NON-NLS-1$
+    private static final String   TAG_RELIGION       = "religion"; //$NON-NLS-1$
+    private static final String   TAG_PORTRAIT       = "portrait"; //$NON-NLS-1$
+    private static final String   TAG_OLD_NOTES      = "notes"; //$NON-NLS-1$
+    private static final String   TAG_BODY_TYPE      = "body_type"; //$NON-NLS-1$
+    private static final String   EMPTY              = ""; //$NON-NLS-1$
     private static final Random   RANDOM             = new Random();
     private static final String[] EYE_OPTIONS        = new String[] { BROWN, BROWN, BLUE, BLUE, GREEN, GREY, VIOLET };
     private static final String[] SKIN_OPTIONS       = new String[] { FRECKLED, TAN, LIGHT_TAN, DARK_TAN, BROWN, LIGHT_BROWN, DARK_BROWN, PALE };

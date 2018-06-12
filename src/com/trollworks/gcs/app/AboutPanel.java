@@ -58,7 +58,7 @@ public class AboutPanel extends JPanel {
         Localization.initialize();
     }
 
-    private static final String SEPARATOR = "\n";	//$NON-NLS-1$
+    private static final String SEPARATOR = "\n"; //$NON-NLS-1$
     private static final int    HMARGIN   = 4;
 
     /** Creates a new about panel. */
@@ -85,7 +85,7 @@ public class AboutPanel extends JPanel {
         BundleInfo bundleInfo = BundleInfo.getDefault();
         long version = bundleInfo.getVersion();
         int y2 = draw(gc, bundleInfo.getCopyrightBanner(), y, right, false, true);
-        draw(gc, String.format(PLATFORM_FORMAT, System.getProperty("os.name"), System.getProperty("os.version"), System.getProperty("os.arch"), System.getProperty("java.version")), y, right, false, false);//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        draw(gc, String.format(PLATFORM_FORMAT, System.getProperty("os.name"), System.getProperty("os.version"), System.getProperty("os.arch"), System.getProperty("java.version")), y, right, false, false); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         y2 = draw(gc, version != 0 ? Version.toBuildTimestamp(version) : UNKNOWN_BUILD_DATE, y2, right, false, true);
         gc.setFont(baseFont.deriveFont(Font.BOLD, 12f));
         draw(gc, version != 0 ? String.format(VERSION_FORMAT, Version.toString(version, false)) : DEVELOPMENT, y2, right, false, true);

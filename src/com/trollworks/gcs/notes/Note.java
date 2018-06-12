@@ -40,16 +40,16 @@ public class Note extends ListRow {
 
     private static final int    CURRENT_VERSION    = 1;
     /** The XML tag used for items. */
-    public static final String  TAG_NOTE           = "note";                                   										//$NON-NLS-1$
+    public static final String  TAG_NOTE           = "note"; //$NON-NLS-1$
     /** The XML tag used for containers. */
-    public static final String  TAG_NOTE_CONTAINER = "note_container";                         								//$NON-NLS-1$
-    private static final String TAG_TEXT           = "text";                                   										//$NON-NLS-1$
+    public static final String  TAG_NOTE_CONTAINER = "note_container"; //$NON-NLS-1$
+    private static final String TAG_TEXT           = "text"; //$NON-NLS-1$
     /** The prefix used in front of all IDs for the notes. */
-    public static final String  PREFIX             = GURPSCharacter.CHARACTER_PREFIX + "note.";	//$NON-NLS-1$
+    public static final String  PREFIX             = GURPSCharacter.CHARACTER_PREFIX + "note."; //$NON-NLS-1$
     /** The field ID for text changes. */
-    public static final String  ID_TEXT            = PREFIX + "Text";                          								//$NON-NLS-1$
+    public static final String  ID_TEXT            = PREFIX + "Text"; //$NON-NLS-1$
     /** The field ID for when the row hierarchy changes. */
-    public static final String  ID_LIST_CHANGED    = PREFIX + "ListChanged";                   						//$NON-NLS-1$
+    public static final String  ID_LIST_CHANGED    = PREFIX + "ListChanged"; //$NON-NLS-1$
     private String              mText;
 
     /**

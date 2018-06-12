@@ -78,8 +78,8 @@ public abstract class PrereqEditor extends EditorPanel {
         Localization.initialize();
     }
 
-    private static final String     CHANGE_BASE_TYPE = "ChangeBaseType";                                                                                                                  																														//$NON-NLS-1$
-    private static final String     CHANGE_HAS       = "ChangeHas";                                                                                                                       																															//$NON-NLS-1$
+    private static final String     CHANGE_BASE_TYPE = "ChangeBaseType"; //$NON-NLS-1$
+    private static final String     CHANGE_HAS       = "ChangeHas"; //$NON-NLS-1$
     private static final Class<?>[] BASE_TYPES       = new Class<?>[] { AttributePrereq.class, AdvantagePrereq.class, SkillPrereq.class, SpellPrereq.class, ContainedWeightPrereq.class };
     /** The prerequisite this panel represents. */
     protected Prereq                mPrereq;

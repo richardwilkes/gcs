@@ -33,7 +33,7 @@ public class DecrementCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String           CMD_DECREMENT = "Decrement";           				//$NON-NLS-1$
+    public static final String           CMD_DECREMENT = "Decrement"; //$NON-NLS-1$
 
     /** The singleton {@link DecrementCommand}. */
     public static final DecrementCommand INSTANCE      = new DecrementCommand();

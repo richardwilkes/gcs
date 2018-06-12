@@ -48,11 +48,11 @@ public class NewSkillCommand extends Command {
     }
 
     /** The action command this command will issue. */
-    public static final String          CMD_NEW_SKILL           = "NewSkill";                                                                                                         																											//$NON-NLS-1$
+    public static final String          CMD_NEW_SKILL           = "NewSkill"; //$NON-NLS-1$
     /** The action command this command will issue. */
-    public static final String          CMD_NEW_SKILL_CONTAINER = "NewSkillContainer";                                                                                                																									//$NON-NLS-1$
+    public static final String          CMD_NEW_SKILL_CONTAINER = "NewSkillContainer"; //$NON-NLS-1$
     /** The action command this command will issue. */
-    public static final String          CMD_NEW_TECHNIQUE       = "NewTechnique";                                                                                                     																										//$NON-NLS-1$
+    public static final String          CMD_NEW_TECHNIQUE       = "NewTechnique"; //$NON-NLS-1$
 
     /** The "New Skill" command. */
     public static final NewSkillCommand INSTANCE                = new NewSkillCommand(false, false, SKILL, CMD_NEW_SKILL, KeyEvent.VK_K, COMMAND_MODIFIER);

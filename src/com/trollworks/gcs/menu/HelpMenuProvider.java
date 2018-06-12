@@ -13,7 +13,6 @@ package com.trollworks.gcs.menu;
 
 import com.trollworks.gcs.app.GCSApp;
 import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.menu.DynamicMenuEnabler;
 import com.trollworks.toolkit.ui.menu.MenuProvider;
@@ -41,10 +40,6 @@ public class HelpMenuProvider implements MenuProvider {
     @Localize(locale = "ru", value = "Примечания к выпуску")
     @Localize(locale = "es", value = "Notas de la versión")
     private static String RELEASE_NOTES;
-    @Localize("Bug Reports")
-    private static String BUG_REPORTS;
-    @Localize("Feature Requests")
-    private static String FEATURE_REQUESTS;
     @Localize("License")
     @Localize(locale = "de", value = "Lizenz")
     @Localize(locale = "ru", value = "Лицензия")
@@ -82,13 +77,11 @@ public class HelpMenuProvider implements MenuProvider {
         }
         menu.add(new JMenuItem(UpdateCommand.INSTANCE));
         menu.addSeparator();
-        menu.add(new JMenuItem(new OpenURICommand(RELEASE_NOTES, GCSApp.WEB_SITE + "/release_notes.html"))); //$NON-NLS-1$
-        menu.add(new JMenuItem(new OpenURICommand(LICENSE, App.getHomePath().resolve("license.html").toUri()))); //$NON-NLS-1$
+        menu.add(new JMenuItem(new OpenURICommand(RELEASE_NOTES, "https://github.com/richardwilkes/gcs/releases"))); //$NON-NLS-1$
+        menu.add(new JMenuItem(new OpenURICommand(LICENSE, "https://github.com/richardwilkes/gcs/blob/master/LICENSE"))); //$NON-NLS-1$
         menu.addSeparator();
         menu.add(new JMenuItem(new OpenURICommand(WEB_SITE, GCSApp.WEB_SITE)));
-        menu.add(new JMenuItem(new OpenURICommand(MAILING_LISTS, GCSApp.WEB_SITE + "/mailing_lists.html"))); //$NON-NLS-1$
-        menu.add(new JMenuItem(new OpenURICommand(FEATURE_REQUESTS, "https://gurpscharactersheet.atlassian.net/issues/?filter=10000"))); //$NON-NLS-1$
-        menu.add(new JMenuItem(new OpenURICommand(BUG_REPORTS, "https://gurpscharactersheet.atlassian.net/issues/?filter=10001"))); //$NON-NLS-1$
+        menu.add(new JMenuItem(new OpenURICommand(MAILING_LISTS, "https://groups.io/g/gcs"))); //$NON-NLS-1$
         DynamicMenuEnabler.add(menu);
         return menu;
     }
