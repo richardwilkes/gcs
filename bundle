@@ -6,33 +6,11 @@ PKG_BASE=pkg
 DISK_ROOT="$PKG_BASE/GURPS Character Sheet $APP_VERSION"
 APP_ROOT="$DISK_ROOT/GURPS Character Sheet"
 PKG_TMP=$PKG_BASE/tmp
+DISK_IMAGE=gcs-$APP_VERSION-mac.dmg
 
-echo Building module gnu.trove...
-cd ../gnu.trove
-./build
-
-echo Building module org.apache.commons.logging...
-cd ../org.apache.commons.logging
-./build
-
-echo Building module org.apache.fontbox...
-cd ../org.apache.fontbox
-./build
-
-echo Building module org.apache.pdfbox...
-cd ../org.apache.pdfbox
-./build
-
-echo Building module com.lowagie.text...
-cd ../com.lowagie.text
-./build
-
-echo Building module com.trollworks.toolkit...
-cd ../toolkit
-./build
+./build-deps
 
 echo Building module com.trollworks.gcs...
-cd ../gcs
 ./build
 
 echo Packaging GURPS Character Sheet...
@@ -54,9 +32,9 @@ mv "$APP_ROOT/gcs.app" "$APP_ROOT/GURPS Character Sheet.app"
 ln -s /Applications "$APP_ROOT/../Applications"
 
 echo Creating disk image...
-
+/bin/rm -f $DISK_IMAGE
 ACTUAL_SIZE=`/usr/bin/du -sm "$DISK_ROOT" | sed -e 's/	.*//g'`
 DISK_IMAGE_SIZE=$(expr $ACTUAL_SIZE + 20)
-hdiutil create -srcfolder "$DISK_ROOT" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -megabytes ${DISK_IMAGE_SIZE} -imagekey zlib-level=9 gcs-$APP_VERSION-mac
+hdiutil create -srcfolder "$DISK_ROOT" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -megabytes ${DISK_IMAGE_SIZE} -imagekey zlib-level=9 $DISK_IMAGE
 
 /bin/rm -rf $PKG_BASE
