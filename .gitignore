@@ -1,5 +1,5 @@
 /.build/
-/.apt_generated
+/.apt_generated/
 /bin/
 /pkg/
-/.mac/
+*.dmg
