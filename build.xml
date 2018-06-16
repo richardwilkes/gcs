@@ -142,11 +142,16 @@
 		</copy>
 		<copy if:true="${platform.mac}" file="${build.dir}/package/macosx/PkgInfo" tofile="${app.root}/gcs.app/Contents/PkgInfo" overwrite="true"/>
 		<move if:true="${platform.mac}" file="${app.root}/gcs.app" tofile="${app.root}/${app.name}.app"/>
-		<move if:false="${platform.mac}" file="${dist.root}/gcs" tofile="${dist.root}/gcs-tmp"/>
-		<move if:false="${platform.mac}" todir="${dist.root}">
+		<move if:true="${platform.linux}" file="${dist.root}/gcs" tofile="${dist.root}/gcs-tmp"/>
+		<move if:true="${platform.windows}" file="${dist.root}/gcs" tofile="${dist.root}/gcs-tmp"/>
+		<move if:true="${platform.linux}" todir="${dist.root}">
 			<fileset dir="${dist.root}/gcs-tmp" includes="**"/>
 		</move>
-		<delete if:false="${platform.mac}" dir="${dist.root}/gcs-tmp"/>
+		<move if:true="${platform.windows}" todir="${dist.root}">
+			<fileset dir="${dist.root}/gcs-tmp" includes="**"/>
+		</move>
+		<delete if:true="${platform.linux}" dir="${dist.root}/gcs-tmp"/>
+		<delete if:true="${platform.windows}" dir="${dist.root}/gcs-tmp"/>
 
 		<copy todir="${app.root}/Library">
 			<fileset dir="../gcs_library/Library"/>
