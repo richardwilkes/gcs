@@ -33,8 +33,10 @@
 	<property if:true="${platform.mac}" name="disk.image.name" value="${app.name} ${module.version}"/>
 	<property if:true="${platform.mac}" name="dist.root" value="${build.dir}/${disk.image.name}"/>
 	<property if:true="${platform.linux}" name="dist.root" value="${build.dir}/gcs-${module.version}"/>
+	<property if:true="${platform.windows}" name="dist.root" value="${build.dir}/gcs-${module.version}"/>
 	<property if:true="${platform.mac}" name="app.root" value="${dist.root}/${app.name}"/>
 	<property if:true="${platform.linux}" name="app.root" value="${dist.root}"/>
+	<property if:true="${platform.windows}" name="app.root" value="${dist.root}"/>
 
 	<target name="build">
 		<symlink if:true="${platform.mac}" action="delete" link="${dist.root}/Applications"/>
