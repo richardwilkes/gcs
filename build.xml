@@ -101,13 +101,17 @@
 		<symlink if:true="${platform.mac}" action="delete" link="${dist.root}/Applications"/>
 	    <delete dir="${build.dir}"/>
 		<mkdir dir="${build.dir}/icons"/>
-		<java modulepath="${modules.dir}" module="com.trollworks.gcs/com.trollworks.gcs.app.GCSImages" fork="true">
+		<exec executable="java">
+			<arg value="--module-path"/>
+			<arg value="${modules.dir}"/>
+			<arg value="--module"/>
+			<arg value="com.trollworks.gcs/com.trollworks.gcs.app.GCSImages"/>
 			<arg if:true="${platform.mac}" value="-icns"/>
 			<arg if:true="${platform.windows}" value="-ico"/>
 			<arg if:true="${platform.linux}" value="-app"/>
 			<arg value="-dir"/>
 			<arg value="${build.dir}/icons"/>
-		</java>
+		</exec>
 
 		<mkdir dir="${app.root}"/>
 		<mkdir if:true="${platform.mac}" dir="${build.dir}/package/macosx"/>
