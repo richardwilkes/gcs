@@ -4,9 +4,11 @@ GURPS Character Sheet (GCS) is a stand-alone, interactive, character sheet edito
 
 ## Building from the command line
 
-1. Make sure you have JDK 10 installed. You can download it from Oracle for your platform here: http://www.oracle.com/technetwork/java/javase/downloads/index.html
+1. Make sure you have JDK 10 installed. You can download it for your platform here: http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
-2. Clone the source repositories:
+2. Make sure you have Apache ANT installed. You can download it for your platform here: https://ant.apache.org/bindownload.cgi
+
+3. Clone the source repositories:
 
   ```
   % git clone https://github.com/richardwilkes/com.lowagie.text
@@ -19,9 +21,9 @@ GURPS Character Sheet (GCS) is a stand-alone, interactive, character sheet edito
   % git clone https://github.com/richardwilkes/toolkit
   ```
 
-3. Several scripts are provided in the gcs directory to build the source and create the bundled software:
+4. Build and bundle the code for your platform:
 
-   - `build-deps`: Builds GCS's dependencies
-   - `build`: Builds GCS
-   - `bundle-linux`: Build GCS and its dependencies for Linux, then bundle them into a .tgz file.
-   - `bundle-mac`: Build GCS and its dependencies for macOS, then bundle them into a .dmg file.
+  ```
+  % cd gcs
+  % ant bundle
+  ```

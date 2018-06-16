@@ -1,6 +1,7 @@
-/.build/
+/antbuild/
 /.apt_generated/
 /bin/
 /pkg/
 *.dmg
 *.tgz
+*.zip

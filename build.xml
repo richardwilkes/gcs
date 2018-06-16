@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project name="com.trollworks.gcs" default="build" xmlns:if="ant:if" xmlns:unless="ant:unless">
+	<property name="module.name" value="com.trollworks.gcs"/>
+	<property name="module.version" value="4.11"/>
+	<property name="module.version.medium" value="4.11.0"/>
+	<property name="app.name" value="GURPS Character Sheet"/>
+	<property name="target.version" value="10"/>
+	<property name="build.dir" value="antbuild"/>
+	<property name="modules.dir" value="../java_modules"/>
+	<tstamp>
+		<format property="module.version.long" pattern="${module.version.medium}.yyyyMMddHHmmss"/>
+	</tstamp>
+	<tstamp>
+		<format property="module.version.year" pattern="yyyy"/>
+	</tstamp>
+	<condition property="platform.mac" else="false">
+		<os family="mac"/>
+	</condition>
+	<condition property="platform.windows" else="false">
+		<os family="windows"/>
+	</condition>
+	<condition property="platform.linux" else="false">
+		<and>
+			<os family="unix"/>
+			<not>
+				<os family="mac"/>
+			</not>
+		</and>
+	</condition>
+	<property if:true="${platform.mac}" name="platform" value="macos"/>
+	<property if:true="${platform.windows}" name="platform" value="windows"/>
+	<property if:true="${platform.linux}" name="platform" value="linux"/>
+	<property if:true="${platform.mac}" name="disk.image.name" value="${app.name} ${module.version}"/>
+	<property if:true="${platform.mac}" name="dist.root" value="${build.dir}/${disk.image.name}"/>
+	<property if:true="${platform.linux}" name="dist.root" value="${build.dir}/gcs-${module.version}"/>
+	<property if:true="${platform.mac}" name="app.root" value="${dist.root}/${app.name}"/>
+	<property if:true="${platform.linux}" name="app.root" value="${dist.root}"/>
+
+	<target name="build">
+		<symlink if:true="${platform.mac}" action="delete" link="${dist.root}/Applications"/>
+	    <delete dir="${build.dir}"/>
+		<mkdir dir="${build.dir}"/>
+		<mkdir dir="${modules.dir}"/>
+		<delete>
+			<fileset dir="${modules.dir}" includes="${module.name}*"/>
+		</delete>
+
+        <javac destdir="${build.dir}" includeantruntime="false" source="${target.version}" target="${target.version}" modulepath="${modules.dir}">
+            <src path="src"/>
+        </javac>
+
+        <manifest file="manifest">
+        	<attribute name="bundle-name" value="GCS"/>
+        	<attribute name="bundle-version" value="${module.version.long}"/>
+        	<attribute name="bundle-license" value="Mozilla Public License 2.0"/>
+           	<attribute name="bundle-copyright-owner" value="Richard A. Wilkes"/>
+           	<attribute name="bundle-copyright-years" value="1998-${module.version.year}"/>
+        	<attribute name="bundle-executable" value="gcs"/>
+           	<attribute name="bundle-id" value="com.trollworks.gcs"/>
+           	<attribute name="bundle-signature" value="RWGS"/>
+           	<attribute name="bundle-category" value="public.app-category.role-playing-games"/>
+        </manifest>
+
+		<exec executable="jar">
+			<arg value="--create"/>
+			<arg value="--file"/>
+			<arg file="${modules.dir}/${module.name}-${module.version}.jar"/>
+			<arg value="--module-version"/>
+			<arg value="${module.version}"/>
+			<arg value="--manifest"/>
+			<arg value="manifest"/>
+			<arg value="--main-class"/>
+			<arg value="com.trollworks.gcs.app.GCS"/>
+			<arg value="-C"/>
+			<arg value="${build.dir}"/>
+			<arg value="."/>
+			<arg value="-C"/>
+			<arg value="resources"/>
+			<arg value="."/>
+		</exec>
+
+		<symlink if:true="${platform.mac}" action="delete" link="${dist.root}/Applications"/>
+	    <delete dir="${build.dir}"/>
+		<delete file="manifest"/>
+
+		<zip destfile="${modules.dir}/${module.name}-${module.version}-src.zip" level="9" basedir="." excludes="bin/**,*.dmg,*.tgz,*.zip"/>
+    </target>
+
+	<target name="deps">
+		<ant dir="../org.apache.commons.logging" target="build" inheritall="false"/>
+		<ant dir="../org.apache.fontbox" target="build" inheritall="false"/>
+		<ant dir="../org.apache.pdfbox" target="build" inheritall="false"/>
+		<ant dir="../gnu.trove" target="build" inheritall="false"/>
+		<ant dir="../com.lowagie.text" target="build" inheritall="false"/>
+		<ant dir="../toolkit" target="build" inheritall="false"/>
+	</target>
+
+	<target name="bundle" depends="deps,build">
+		<symlink if:true="${platform.mac}" action="delete" link="${dist.root}/Applications"/>
+	    <delete dir="${build.dir}"/>
+		<mkdir dir="${build.dir}/icons"/>
+		<java modulepath="${modules.dir}" module="com.trollworks.gcs/com.trollworks.gcs.app.GCSImages" fork="true">
+			<arg if:true="${platform.mac}" value="-icns"/>
+			<arg if:true="${platform.windows}" value="-ico"/>
+			<arg if:true="${platform.linux}" value="-app"/>
+			<arg value="-dir"/>
+			<arg value="${build.dir}/icons"/>
+		</java>
+
+		<mkdir dir="${app.root}"/>
+		<mkdir if:true="${platform.mac}" dir="${build.dir}/package/macosx"/>
+		<java if:true="${platform.mac}" modulepath="${modules.dir}" module="com.trollworks.gcs/com.trollworks.gcs.app.GCSInfoPlistCreator" fork="true">
+			<arg value="${build.dir}/package/macosx"/>
+		</java>
+		<exec executable="javapackager">
+			<arg value="-deploy"/>
+			<arg value="-native"/>
+			<arg value="image"/>
+			<arg value="--module-path"/>
+			<arg value="${modules.dir}"/>
+			<arg value="--module"/>
+			<arg value="${module.name}"/>
+			<arg value="-nosign"/>
+			<arg value="-outdir"/>
+			<arg value="${app.root}"/>
+			<arg value="-name"/>
+			<arg value="gcs"/>
+			<arg if:true="${platform.linux}" value="-Bicon=${build.dir}/icons/gcs.png"/>
+			<arg value="-BappVersion=${module.version}"/>
+			<arg value="-Bidentifier=${module.name}"/>
+			<arg value="-BdropinResourcesRoot=${build.dir}"/>
+		</exec>
+		<copy if:true="${platform.mac}" todir="${app.root}/gcs.app/Contents/Resources">
+			<fileset dir="${build.dir}/icons"/>
+		</copy>
+		<copy if:true="${platform.mac}" file="${build.dir}/package/macosx/PkgInfo" tofile="${app.root}/gcs.app/Contents/PkgInfo" overwrite="true"/>
+		<move if:true="${platform.mac}" file="${app.root}/gcs.app" tofile="${app.root}/${app.name}.app"/>
+		<move if:true="${platform.linux}" file="${dist.root}/gcs" tofile="${dist.root}/gcs-tmp"/>
+		<move if:true="${platform.linux}" todir="${dist.root}">
+			<fileset dir="${dist.root}/gcs-tmp" includes="**"/>
+		</move>
+		<delete if:true="${platform.linux}" dir="${dist.root}/gcs-tmp"/>
+
+		<copy todir="${app.root}/Library">
+			<fileset dir="../gcs_library/Library"/>
+		</copy>
+		
+		<symlink if:true="${platform.mac}" resource="/Applications" link="${dist.root}/Applications"/>
+
+		<delete if:true="${platform.mac}" file="${disk.image.name}.dmg"/>
+		<delete if:true="${platform.linux}" file="gcs-${module.version}.tgz"/>
+		
+		<exec if:true="${platform.mac}" executable="du" output="${build.dir}/du.output">
+			<arg value="-sm"/>
+			<arg value="${dist.root}"/>
+		</exec>
+		<replaceregexp if:true="${platform.mac}" file="${build.dir}/du.output" match="\t.*" replace=""/>
+		<loadfile if:true="${platform.mac}" property="du.size" srcFile="${build.dir}/du.output"/>
+		<exec if:true="${platform.mac}" executable="dc" outputproperty="disk.image.size">
+			<arg value="-e"/>
+			<arg value="${du.size} 20 + p"/>
+		</exec>
+		<exec if:true="${platform.mac}" executable="hdiutil">
+			<arg value="create"/>
+			<arg value="-srcfolder"/>
+			<arg value="${dist.root}"/>
+			<arg value="-fs"/>
+			<arg value="HFS+"/>
+			<arg value="-fsargs"/>
+			<arg value="-c c=64,a=16,e=16"/>
+			<arg value="-megabytes"/>
+			<arg value="${disk.image.size}"/>
+			<arg value="-imagekey"/>
+			<arg value="zlib-level=9"/>
+			<arg value="${disk.image.name}.dmg"/>
+		</exec>
+		
+		<tar destfile="gcs-${module.version}.tgz" compression="gzip" basedir="${dist.root}"/>
+
+		<symlink if:true="${platform.mac}" action="delete" link="${dist.root}/Applications"/>
+	    <delete dir="${build.dir}"/>
+	</target>
+</project>
