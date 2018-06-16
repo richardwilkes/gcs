@@ -175,7 +175,7 @@
 			<arg value="${disk.image.name}.dmg"/>
 		</exec>
 		
-		<tar if:true="${platform.linux}" destfile="gcs-${module.version}.tgz" compression="gzip" basedir="${dist.root}"/>
+		<tar if:true="${platform.linux}" destfile="gcs-${module.version}.tgz" compression="gzip" longfile="posix" basedir="${dist.root}"/>
 
 		<symlink if:true="${platform.mac}" action="delete" link="${dist.root}/Applications"/>
 	    <delete dir="${build.dir}"/>
