@@ -206,6 +206,9 @@
 		<exec executable="git" dir="../toolkit">
 			<arg value="pull"/>
 		</exec>
+		<exec executable="git" dir="../gcs_library">
+			<arg value="pull"/>
+		</exec>
 		<exec executable="git">
 			<arg value="pull"/>
 		</exec>
