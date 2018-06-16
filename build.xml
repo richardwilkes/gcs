@@ -186,4 +186,28 @@
 		<symlink if:true="${platform.mac}" action="delete" link="${dist.root}/Applications"/>
 	    <delete dir="${build.dir}"/>
 	</target>
+	
+	<target name="pull">
+		<exec executable="git" dir="../org.apache.commons.logging">
+			<arg value="pull"/>
+		</exec>
+		<exec executable="git" dir="../org.apache.fontbox">
+			<arg value="pull"/>
+		</exec>
+		<exec executable="git" dir="../org.apache.pdfbox">
+			<arg value="pull"/>
+		</exec>
+		<exec executable="git" dir="../gnu.trove">
+			<arg value="pull"/>
+		</exec>
+		<exec executable="git" dir="../com.lowagie.text">
+			<arg value="pull"/>
+		</exec>
+		<exec executable="git" dir="../toolkit">
+			<arg value="pull"/>
+		</exec>
+		<exec executable="git">
+			<arg value="pull"/>
+		</exec>
+	</target>
 </project>
