@@ -45,7 +45,7 @@
 			<fileset dir="${modules.dir}" includes="${module.name}*"/>
 		</delete>
 
-        <javac destdir="${build.dir}" includeantruntime="false" source="${target.version}" target="${target.version}" modulepath="${modules.dir}">
+        <javac destdir="${build.dir}" includeantruntime="false" source="${target.version}" target="${target.version}" modulepath="${modules.dir}" encoding="UTF8">
             <src path="src"/>
         </javac>
 
