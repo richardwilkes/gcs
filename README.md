@@ -19,9 +19,9 @@ GURPS Character Sheet (GCS) is a stand-alone, interactive, character sheet edito
   % git clone https://github.com/richardwilkes/toolkit
   ```
 
-2. Build a distribution package:
+3. Several scripts are provided to build the source:
 
-  ```
-  % cd gcs
-  % ./bundle
-  ```
+   - `build-deps`: Builds GCS's dependencies
+   - `build`: Build's GCS
+   - `bundle-linux`: Build GCS and its dependencies for Linux, then bundle them into a .tgz file.
+   - `bundle-mac`: Build GCS and its dependencies for macOS, then bundle them into a .dmg file.
