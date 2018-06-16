@@ -152,6 +152,10 @@
 		</move>
 		<delete if:true="${platform.linux}" dir="${dist.root}/gcs-tmp"/>
 		<delete if:true="${platform.windows}" dir="${dist.root}/gcs-tmp"/>
+		<mkdir if:true="${platform.windows}" dir="${dist.root}/support"/>
+		<copy if:true="${platform.windows}" todir="${dist.root}/support">
+			<fileset dir="${build.dir}/icons"/>
+		</copy>
 
 		<copy todir="${app.root}/Library">
 			<fileset dir="../gcs_library/Library"/>
@@ -195,6 +199,8 @@
 			<arg value="${build.dir}"/>
 			<arg value="gcs-${module.version}"/>
 		</exec>
+		
+		<zip if:true="${platform.windows}" destfile="gcs-${module.version}.zip" basedir="${build.dir}" includes="gcs-${module.version}/**"/>
 
 		<symlink if:true="${platform.mac}" action="delete" link="${dist.root}/Applications"/>
 	    <delete dir="${build.dir}"/>
