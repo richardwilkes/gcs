@@ -1,0 +1,33 @@
+#!/bin/bash
+set -e
+
+APP_VERSION=4.11
+
+PKG_BASE=pkg
+PKG_TMP=$PKG_BASE/tmp
+DIST_ROOT_NAME="gcs-$APP_VERSION"
+DIST_ROOT="$PKG_BASE/$DIST_ROOT_NAME"
+
+./build-deps
+
+echo Building module com.trollworks.gcs...
+./build
+
+echo Packaging GURPS Character Sheet...
+
+/bin/rm -rf $PKG_BASE
+mkdir -p $DIST_ROOT
+mkdir -p $PKG_TMP
+
+java --module-path ../java_modules --module com.trollworks.gcs/com.trollworks.gcs.app.GCSImages -app -dir $PKG_TMP
+
+javapackager -deploy -native image --module-path ../java_modules --module com.trollworks.gcs -nosign -outdir $DIST_ROOT -name gcs -Bicon=$PKG_TMP/gcs.png -BappVersion=$APP_VERSION -Bidentifier=com.trollworks.gcs
+
+/bin/mv $DIST_ROOT/gcs $DIST_ROOT/gcs-tmp
+/bin/mv $DIST_ROOT/gcs-tmp/* $DIST_ROOT/
+/bin/rmdir $DIST_ROOT/gcs-tmp
+/bin/cp -R ../gcs_library/Library $DIST_ROOT/
+
+tar czf $DIST_ROOT_NAME-linux.tgz -C $PKG_BASE $DIST_ROOT_NAME
+
+/bin/rm -rf $PKG_BASE
