@@ -200,8 +200,7 @@
 			<arg value="gcs-${module.version}"/>
 		</exec>
 
-		<get if:true="${platform.windows}" src="https://github.com/electron/rcedit/releases/download/v1.1.0/rcedit-x64.exe" dest="${build.dir}/rcedit-x64.exe"/>
-		<exec if:true="${platform.windows}" executable="{$build.dir}/rcedit-x64.exe">
+		<exec if:true="${platform.windows}" executable="rcedit-x64.exe">
 			<arg value="--set-icon"/>
 			<arg file="${build.dir}/icons/gcs.ico"/>
 		</exec>
