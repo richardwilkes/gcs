@@ -200,10 +200,6 @@
 			<arg value="gcs-${module.version}"/>
 		</exec>
 
-		<exec if:true="${platform.windows}" executable="rcedit-x64.exe">
-			<arg value="--set-icon"/>
-			<arg file="${build.dir}/icons/gcs.ico"/>
-		</exec>
 		<zip if:true="${platform.windows}" destfile="gcs-${module.version}.zip" basedir="${dist.root}"/>
 
 		<symlink if:true="${platform.mac}" action="delete" link="${dist.root}/Applications"/>

@@ -8,9 +8,7 @@ GURPS Character Sheet (GCS) is a stand-alone, interactive, character sheet edito
 
 2. Make sure you have Apache ANT installed. You can download it for your platform here: https://ant.apache.org/bindownload.cgi
 
-3. If you're using Windows, you should also have rcedit-x64.exe installed. You can download it from here: https://github.com/electron/rcedit/releases
-
-4. Clone the source repositories:
+3. Clone the source repositories:
 
   ```
   % git clone https://github.com/richardwilkes/com.lowagie.text
@@ -23,7 +21,7 @@ GURPS Character Sheet (GCS) is a stand-alone, interactive, character sheet edito
   % git clone https://github.com/richardwilkes/toolkit
   ```
 
-5. Build and bundle the code for your platform:
+4. Build and bundle the code for your platform:
 
   ```
   % cd gcs
