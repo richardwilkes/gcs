@@ -25,6 +25,7 @@ import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.EventQueue;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -273,5 +274,11 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
         if (!restoring && mDataFile.sortingMarksDirty()) {
             mDataFile.setModified(true);
         }
+    }
+
+    @Override
+    public void drop(DropTargetDropEvent dtde) {
+        super.drop(dtde);
+        revalidateView();
     }
 }
