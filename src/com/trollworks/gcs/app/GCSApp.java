@@ -29,16 +29,10 @@ import com.trollworks.toolkit.ui.preferences.MenuKeyPreferences;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
-import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.Platform;
-import com.trollworks.toolkit.utility.WindowsRegistry;
 import com.trollworks.toolkit.utility.cmdline.CmdLine;
 import com.trollworks.toolkit.utility.text.Text;
-
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 
 /** The main application user interface. */
 public class GCSApp extends App {
@@ -61,17 +55,6 @@ public class GCSApp extends App {
 
     @Override
     public void configureApplication(CmdLine cmdLine) {
-        if (Platform.isWindows()) {
-            Map<String, String> map = new HashMap<>();
-            for (FileType fileType : FileType.getAll()) {
-                if (fileType.shouldRegisterAppForOpening()) {
-                    map.put(fileType.getExtension(), fileType.getDescription());
-                }
-            }
-            Path home = App.getHomePath();
-            WindowsRegistry.register("GCS", map, home.resolve("gcs"), home.resolve("support")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        }
-
         UpdateChecker.check("gcs", WEB_SITE + "/versions.txt", WEB_SITE); //$NON-NLS-1$ //$NON-NLS-2$
 
         ListCollectionThread.get();
