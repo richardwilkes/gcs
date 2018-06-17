@@ -205,7 +205,38 @@
 		<symlink if:true="${platform.mac}" action="delete" link="${dist.root}/Applications"/>
 	    <delete dir="${build.dir}"/>
 	</target>
-	
+
+	<target name="clone-deps">
+		<exec executable="git" dir="..">
+			<arg value="clone"/>
+			<arg value="https://github.com/richardwilkes/org.apache.commons.logging"/>
+		</exec>
+		<exec executable="git" dir="..">
+			<arg value="clone"/>
+			<arg value="https://github.com/richardwilkes/org.apache.fontbox"/>
+		</exec>
+		<exec executable="git" dir="..">
+			<arg value="clone"/>
+			<arg value="https://github.com/richardwilkes/org.apache.pdfbox"/>
+		</exec>
+		<exec executable="git" dir="..">
+			<arg value="clone"/>
+			<arg value="https://github.com/richardwilkes/gnu.trove"/>
+		</exec>
+		<exec executable="git" dir="..">
+			<arg value="clone"/>
+			<arg value="https://github.com/richardwilkes/com.lowagie.text"/>
+		</exec>
+		<exec executable="git" dir="..">
+			<arg value="clone"/>
+			<arg value="https://github.com/richardwilkes/toolkit"/>
+		</exec>
+		<exec executable="git" dir="..">
+			<arg value="clone"/>
+			<arg value="https://github.com/richardwilkes/gcs_library"/>
+		</exec>
+	</target>
+
 	<target name="pull">
 		<exec executable="git" dir="../org.apache.commons.logging">
 			<arg value="pull"/>
