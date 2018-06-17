@@ -42,6 +42,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.KeyboardFocusManager;
+import java.awt.dnd.DropTarget;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
@@ -126,6 +127,8 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
         mScroller.setColumnHeaderView(header);
         add(mScroller, BorderLayout.CENTER);
         Preferences.getInstance().getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY);
+
+        setDropTarget(new DropTarget(mOutline, mOutline));
     }
 
     public abstract void applyScale(Scale scale);
