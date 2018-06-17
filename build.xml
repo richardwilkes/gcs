@@ -200,7 +200,7 @@
 			<arg value="gcs-${module.version}"/>
 		</exec>
 		
-		<zip if:true="${platform.windows}" destfile="gcs-${module.version}.zip" basedir="${build.dir}" includes="gcs-${module.version}/**"/>
+		<zip if:true="${platform.windows}" destfile="gcs-${module.version}.zip" basedir="${dist.root}"/>
 
 		<symlink if:true="${platform.mac}" action="delete" link="${dist.root}/Applications"/>
 	    <delete dir="${build.dir}"/>
