@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project name="com.trollworks.gcs" default="build" xmlns:if="ant:if" xmlns:unless="ant:unless">
 	<property name="module.name" value="com.trollworks.gcs"/>
-	<property name="module.version" value="4.11"/>
-	<property name="module.version.medium" value="4.11.0"/>
+	<property name="module.version" value="4.11.1"/>
+	<property name="module.version.medium" value="4.11.1"/>
 	<property name="app.name" value="GURPS Character Sheet"/>
 	<property name="target.version" value="10"/>
 	<property name="build.dir" value="antbuild"/>
