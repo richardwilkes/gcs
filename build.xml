@@ -4,7 +4,7 @@
 	<property name="module.version" value="4.11.1"/>
 	<property name="module.version.medium" value="4.11.1"/>
 	<property name="app.name" value="GURPS Character Sheet"/>
-	<property name="target.version" value="10"/>
+	<property name="target.version" value="11"/>
 	<property name="build.dir" value="antbuild"/>
 	<property name="modules.dir" value="../java_modules"/>
 	<tstamp>
